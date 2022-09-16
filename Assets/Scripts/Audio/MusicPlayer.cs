@@ -10,15 +10,11 @@ namespace MiProduction.BroAudio
     [RequireComponent(typeof(AudioSource))]
     public class MusicPlayer : MonoBehaviour
     {
-        const float MinVolume = -80f;
-        const float MaxVolume = 0f;
-
         [SerializeField] AudioSource _player = null;
         [SerializeField] AudioMixer _audioMixer;
         string _volParaName = string.Empty;
         MusicLibrary _currentMusic;
-
-        Coroutine currentPlayCoroutine;
+        Coroutine _currentPlayCoroutine;
 
         public bool IsPlaying { get; private set; }
         public bool IsFadingOut { get; private set; }
@@ -42,23 +38,19 @@ namespace MiProduction.BroAudio
             {
                 Debug.LogError("[SoundSystem] Can't get exposed parameter in audio mixer,AudioMixerGroup's name and ExposedParameter's name should be the same");
             }
+            _audioMixer.SetFloat(_volParaName, AudioExtension.MinDecibelVolume);
         }
 
 
         public void Play(MusicLibrary musicLibrary, float fadeInTime = -1f, float fadeOutTime = -1f, Action onFinishFadeIn = null, Action onFinishPlaying = null)
         {
-            currentPlayCoroutine = StartCoroutine(PlayControl(musicLibrary, fadeInTime, fadeOutTime, onFinishFadeIn, onFinishPlaying));
+            _currentPlayCoroutine = StartCoroutine(PlayControl(musicLibrary, fadeInTime, fadeOutTime, onFinishFadeIn, onFinishPlaying));
         }
 
         private IEnumerator PlayControl(MusicLibrary musicLibrary, float fadeInTime, float fadeOutTime, Action onFinishFadeIn, Action onFinishPlaying)
         {
-            _audioMixer.SetFloat(_volParaName, MinVolume);
-            // WaitForEndOfFrame to prevent pop sound
-            yield return new WaitForEndOfFrame();
-
             _currentMusic = musicLibrary;
-            _player.clip = musicLibrary.audioClip;
-            //_player.volume = musicLibrary.volume;
+            _player.clip = musicLibrary.clip;
             _player.time = musicLibrary.startPosition;
             _player.loop = musicLibrary.loop;
             _player.Play();
@@ -68,8 +60,15 @@ namespace MiProduction.BroAudio
             {
                 #region FadeIn
                 fadeInTime = fadeInTime < 0 ? musicLibrary.fadeIn : fadeInTime;
-                yield return StartCoroutine(Fade(fadeInTime, musicLibrary.volume));
-                onFinishFadeIn?.Invoke();
+                if(fadeInTime > 0)
+                {
+                    yield return StartCoroutine(Fade(fadeInTime, musicLibrary.volume));
+                    onFinishFadeIn?.Invoke();
+                }    
+                else
+                {
+                    _audioMixer.SetFloat(_volParaName,musicLibrary.volume.ToDecibel());
+                }
                 #endregion
 
                 #region FadeOut
@@ -90,7 +89,6 @@ namespace MiProduction.BroAudio
 
             EndPlaying();
             onFinishPlaying?.Invoke();
-
         }
 
         public void Stop(float fadeOutTime = -1, Action onFinishPlaying = null)
@@ -111,23 +109,19 @@ namespace MiProduction.BroAudio
             {
                 if (IsFadingOut)
                 {
+                    // 目前設計成:如果原有的音樂已經在FadeOut了，就等它FadeOut不強制停止
                     _player.loop = false;
                     yield return new WaitUntil(() => _player.clip.length == _player.time);
                 }
                 else
                 {
-                    currentPlayCoroutine.Stop(this);
+                    _currentPlayCoroutine.Stop(this);
                     yield return StartCoroutine(Fade(fadeOutTime, 0f));
                 }
             }
-            else
-            {
-                currentPlayCoroutine.Stop(this);
-                _audioMixer.SetFloat(_volParaName, MinVolume);
-            }
             EndPlaying();
             onFinishPlaying?.Invoke();
-            // 目前設計成:如果原有的音樂已經在FadeOut了，就等它FadeOut不強制停止，除非fadeTime = 0 
+            
         }
 
         public IEnumerator Fade(float duration, float targetVolume)
@@ -138,10 +132,11 @@ namespace MiProduction.BroAudio
             currentVol = Mathf.Pow(10, currentVol / 20);
             float targetValue = Mathf.Clamp(targetVolume, 0.0001f, 1);
             Ease ease = currentVol < targetValue ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
+            float newVol = 0f;
             while (currentTime < duration)
             {
                 currentTime += Time.deltaTime;
-                float newVol = Mathf.Lerp(currentVol, targetValue, (currentTime / duration).SetEase(ease));
+                newVol = Mathf.Lerp(currentVol, targetValue, (currentTime / duration).SetEase(ease));
                 _audioMixer.SetFloat(_volParaName, Mathf.Log10(newVol) * 20);
                 yield return null;
             }
@@ -150,14 +145,17 @@ namespace MiProduction.BroAudio
 
         private void EndPlaying()
         {
-            IsPlaying = false;
+            _currentPlayCoroutine.Stop(this);
+            _audioMixer.SetFloat(_volParaName, AudioExtension.MinDecibelVolume);        
             _player.Stop();
             _player.clip = null;
             _player.volume = 1f;
+            _player.loop = false;
+            IsPlaying = false;
         }
 
 
-
     }
+
 
 }

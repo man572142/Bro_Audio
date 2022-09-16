@@ -64,19 +64,28 @@ namespace MiProduction.BroAudio
         private void Awake()
         {
             //初始化音效庫
-            foreach (SoundLibrary s in _soundLibrary)
+            for(int s = 0; s < _soundLibrary.Length;s++)
             {
-                _soundBank.Add(s.sound, s);
+                if (_soundLibrary[s].Validate(s))
+                {
+                    _soundBank.Add(_soundLibrary[s].sound, _soundLibrary[s]);
+                }      
             }
             // 初始化隨機播放音效庫
-            foreach (RandomSoundLibrary rs in _randomSoundLibrary)
+            for (int r = 0; r < _randomSoundLibrary.Length; r++)
             {
-                _randomSoundBank.Add(rs.sound, rs);
+                if (_randomSoundLibrary[r].Validate(r))
+                {
+                    _randomSoundBank.Add(_randomSoundLibrary[r].sound, _randomSoundLibrary[r]);
+                }
             }
             //初始化音樂庫
-            foreach (MusicLibrary m in _musicLibrary)
+            for (int m = 0; m < _musicLibrary.Length; m++)
             {
-                _musicBank.Add(m.music, m);
+                if (_musicLibrary[m].Validate(m))
+                {
+                    _musicBank.Add(_musicLibrary[m].music, _musicLibrary[m]);
+                }
             }
         }
 
@@ -248,35 +257,50 @@ namespace MiProduction.BroAudio
 
 
     [System.Serializable]
-    public struct SoundLibrary
+    public struct SoundLibrary : IValidateAudioLibrary
     {
         public AudioClip clip;
         public Sound sound;
         [Range(0f, 1f)] public float volume;
-        public float delay;
-        public float startPosition;
+        [Min(0f)]public float delay;
+        [Min(0f)]public float startPosition;
 
+        public bool Validate(int index)
+        {
+            return AudioExtension.Validate(nameof(SoundLibrary),index, clip, startPosition);
+        }
     }
 
     [System.Serializable]
-    public struct RandomSoundLibrary
+    public struct RandomSoundLibrary :IValidateAudioLibrary
     {
         public AudioClip[] clips;
         public Sound sound;
         [Range(0f, 1f)] public float volume;
+        [Min(0f)] public float startPosition;
+
+        public bool Validate(int index)
+        {
+            return AudioExtension.Validate(nameof(RandomSoundLibrary),index,clips,startPosition);
+        }
     }
 
     [System.Serializable]
-    public struct MusicLibrary
+    public struct MusicLibrary : IValidateAudioLibrary
     {
-        public AudioClip audioClip;
+        public AudioClip clip;
         public Music music;
         [Range(0f, 1f)] public float volume;
         public float startPosition;
         //[MinMaxSlider(0f,1f)] public Vector2 fade;
-        public float fadeIn;
-        public float fadeOut;
-        public bool loop;
+        [Min(0f)] public float fadeIn;
+        [Min(0f)] public float fadeOut;
+        [Min(0f)] public bool loop;
+
+        public bool Validate(int index)
+        {
+            return AudioExtension.Validate(nameof(MusicLibrary),index, clip, startPosition, fadeIn, fadeOut);
+        }
     }
 
     public enum Transition

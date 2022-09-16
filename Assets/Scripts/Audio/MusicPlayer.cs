@@ -113,13 +113,13 @@ public class MusicPlayer : MonoBehaviour
 			}
             else
 			{
-				StopCoroutine(currentPlayCoroutine);
+				currentPlayCoroutine.Stop(this);
 				yield return StartCoroutine(Fade(fadeOutTime, 0f));
 			}
 		}
         else
 		{
-            StopAllCoroutines();
+			currentPlayCoroutine.Stop(this);
 			_audioMixer.SetFloat(_volParaName, MinVolume);
 		}
 		EndPlaying();
@@ -152,5 +152,7 @@ public class MusicPlayer : MonoBehaviour
 		_player.clip = null;
 		_player.volume = 1f;
 	}
+
+	
 
 }

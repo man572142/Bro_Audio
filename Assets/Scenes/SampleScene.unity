@@ -205,7 +205,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 245856118}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1317931362}
+        m_TargetAssemblyTypeName: Sample, Assembly-CSharp
+        m_MethodName: PlayA
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &245856118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -780,7 +792,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1428516850}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1317931362}
+        m_TargetAssemblyTypeName: Sample, Assembly-CSharp
+        m_MethodName: PlayB
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1428516850
 MonoBehaviour:
   m_ObjectHideFlags: 0

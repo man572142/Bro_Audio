@@ -1069,10 +1069,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 698a538214a0510449a43f9fe3be28f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _transitionA: 0
-  _transitionB: 0
-  _crossFadeTime: -1
-  _scenePlayer: {fileID: 595309941}
 --- !u!4 &1317931363
 Transform:
   m_ObjectHideFlags: 0

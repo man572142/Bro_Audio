@@ -54,21 +54,7 @@ MonoBehaviour:
   _fadeOutEase: 7
   _soundLibrary: []
   _randomSoundLibrary: []
-  _musicLibrary:
-  - clip: {fileID: 0}
-    music: 1
-    volume: 1
-    startPosition: 5
-    fadeIn: 2
-    fadeOut: 3
-    loop: 1
-  - clip: {fileID: 0}
-    music: 2
-    volume: 1
-    startPosition: 5
-    fadeIn: 5
-    fadeOut: 5
-    loop: 1
+  _musicLibrary: []
 --- !u!1 &3109420919187162984
 GameObject:
   m_ObjectHideFlags: 0

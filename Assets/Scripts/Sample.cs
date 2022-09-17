@@ -11,6 +11,8 @@ public class Sample : MonoBehaviour
 
     [SerializeField] float _crossFadeTime = -1f;
 
+    [SerializeField] Transform _scenePlayer = null;
+
     public void PlayA()
     {
         SoundManager.Instance.PlayMusic(Music.MusicA,_transitionA);
@@ -19,5 +21,20 @@ public class Sample : MonoBehaviour
     public void PlayB()
     {
         SoundManager.Instance.PlayMusic(Music.MusicB, _transitionB);
+    }
+
+    public void PlaySFX()
+    {
+        SoundManager.Instance.PlaySFX(Sound.None);
+    }
+
+    public void PlaySceneSFX()
+    {
+        SoundManager.Instance.PlaySFX(Sound.SceneSound,_scenePlayer.position);
+    }
+
+    public void PlayRandomSound()
+    {
+        SoundManager.Instance.PlayRandomSFX(Sound.Random);
     }
 }

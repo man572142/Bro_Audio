@@ -56,6 +56,7 @@ namespace MiProduction.BroAudio
 
         bool _isPreventPlayback = false;
         Coroutine _prevenPlayback;
+        (Sound sound , Coroutine coroutine) currentPlay;
 
         public static Ease FadeInEase { get => Instance._fadeInEase; }
         public static Ease FadeOutEase { get => Instance._fadeOutEase; }
@@ -205,16 +206,16 @@ namespace MiProduction.BroAudio
             StartCoroutine(PlayInScene(sound, position));
         }
 
-        public void PlayRandomSFX(Sound sound)
+        public void PlayRandomSFX(Sound sound,float preventTime = 0.1f)
         {
-            int randomIndex = UnityEngine.Random.Range(0, _randomSoundBank[sound].clips.Length);
+            StartCoroutine(PlayRandom(sound,preventTime));
             // TODO: 還沒做完
         }
 
 
         private IEnumerator PlayOnce(Sound sound, float preventTime = 0.1f)
         {
-            _sfxPlayer.clip = null;
+            //_sfxPlayer.clip = null;
             yield return new WaitForSeconds(_soundBank[sound].delay);
             if (_isPreventPlayback)
                 yield break;
@@ -222,6 +223,18 @@ namespace MiProduction.BroAudio
             _sfxPlayer.PlayOneShot(_soundBank[sound].clip, _soundBank[sound].volume);
             if (preventTime > 0)
                 _prevenPlayback = StartCoroutine(PreventPlaybackTime(preventTime));
+        }
+
+        private IEnumerator PlayRandom(Sound sound,float preventTime = 0.1f)
+        {
+
+            if (currentPlay.sound == sound && currentPlay.coroutine != null)
+                yield break;
+
+            int index = UnityEngine.Random.Range(0, _randomSoundBank[sound].clips.Length);
+            _sfxPlayer.PlayOneShot(_randomSoundBank[sound].clips[index], _randomSoundBank[sound].volume);
+            //if (preventTime > 0)
+            //    _prevenPlayback = StartCoroutine(PreventPlaybackTime(preventTime));
         }
 
         private IEnumerator PlayInScene(Sound sound, Vector3 pos)
@@ -245,7 +258,9 @@ namespace MiProduction.BroAudio
 
     public enum Sound
     {
-        None
+        None,
+        SceneSound,
+        Random
     }
 
     public enum Music

@@ -1,6 +1,6 @@
 namespace MiProduction.BroAudio
 {
-    public interface IValidateAudioLibrary
+    public interface IAudioLibrary
     {
         public bool Validate(int index);
     }

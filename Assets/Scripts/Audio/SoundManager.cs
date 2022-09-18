@@ -57,10 +57,9 @@ namespace MiProduction.BroAudio
         [SerializeField] MusicLibrary[] _musicLibrary = null;
         public MusicLibrary[] MusicLibraries { get => _musicLibrary; }
 
-        bool _isPreventPlayback = false;
+        Dictionary<AudioClip, bool> _preventPlayback = new Dictionary<AudioClip, bool>();
+
         // 還有點問題
-        Coroutine _prevenPlayback;
-        (Sound sound , Coroutine coroutine) currentPlay;
 
         public static Ease FadeInEase { get => Instance._fadeInEase; }
         public static Ease FadeOutEase { get => Instance._fadeOutEase; }
@@ -68,12 +67,17 @@ namespace MiProduction.BroAudio
 
         private void Awake()
         {
+            if (_musicPlayers.Length < 2)
+            {
+                Debug.LogError("[SoundSystem] Please add at least 2 MusicPlayer to SoundManager");
+            }
             //初始化音效庫
-            for(int s = 0; s < _soundLibrary.Length;s++)
+            for (int s = 0; s < _soundLibrary.Length;s++)
             {
                 if (_soundLibrary[s].Validate(s))
                 {
                     _soundBank.Add(_soundLibrary[s].Sound, _soundLibrary[s]);
+                    _preventPlayback.Add(_soundLibrary[s].Clip, false);
                 }      
             }
             // 初始化隨機播放音效庫
@@ -82,6 +86,11 @@ namespace MiProduction.BroAudio
                 if (_randomSoundLibrary[r].Validate(r))
                 {
                     _randomSoundBank.Add(_randomSoundLibrary[r].Sound, _randomSoundLibrary[r]);
+                    foreach(AudioClip clip in _randomSoundLibrary[r].Clips)
+                    {
+                        _preventPlayback.Add(clip, false);
+                    }
+                    
                 }
             }
             //初始化音樂庫
@@ -95,11 +104,7 @@ namespace MiProduction.BroAudio
         }
 
         private void Start()
-        {
-            if (_musicPlayers.Length < 2)
-            {
-                Debug.LogError("[SoundSystem] Please add at least 2 MusicPlayer to SoundManager");
-            }
+        {        
             currentPlayer = _musicPlayers[0];
         }
 
@@ -186,18 +191,19 @@ namespace MiProduction.BroAudio
         /// <param name="sound"></param>
         public void PlaySFX(Sound sound)
         {
-            StartCoroutine(PlayOnce(sound, 0.1f));
+            //StartCoroutine(PlayOnce(sound, 0.1f));
+            StartCoroutine(PlayOnce(_soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, 0.1f));
         }
 
         /// <summary>
         /// 播放
-        /// <para>preventTime:限制該時間內不能再播放</para>
         /// </summary>
         /// <param name="sound"></param>
-        /// <param name="preventTime"></param>
+        /// <param name="preventTime">限制該時間內不能再播放</param>
         public void PlaySFX(Sound sound, float preventTime)
         {
-            StartCoroutine(PlayOnce(sound, preventTime));
+            //StartCoroutine(PlayOnce(sound, preventTime));
+            StartCoroutine(PlayOnce(_soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime));
         }
 
         /// <summary>
@@ -205,40 +211,51 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <param name="sound"></param>
         /// <param name="position"></param>
-        public void PlaySFX(Sound sound, Vector3 position = default(Vector3))
+        public void PlaySFX(Sound sound, Vector3 position)
         {
             StartCoroutine(PlayInScene(sound, position));
         }
 
-        public void PlayRandomSFX(Sound sound,float preventTime = 0.1f)
+        public void PlayRandomSFX(Sound sound)
         {
-            StartCoroutine(PlayRandom(sound,preventTime));
+            StartCoroutine(PlayOnce(GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, 0.1f));
+            //StartCoroutine(PlayRandom(sound,0.1f));
         }
 
-
-        private IEnumerator PlayOnce(Sound sound, float preventTime = 0.1f)
+        public void PlayRandomSFX(Sound sound, float preventTime)
         {
-            //_sfxPlayer.clip = null;
-            yield return new WaitForSeconds(_soundBank[sound].Delay);
-            if (_isPreventPlayback)
+            StartCoroutine(PlayOnce(GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime));
+            //StartCoroutine(PlayRandom(sound, preventTime));
+        }
+
+        private IEnumerator PlayOnce(AudioClip clip,float delay,float volume,float preventTime)
+        {
+            yield return new WaitForSeconds(delay);
+            if (_preventPlayback[clip])
                 yield break;
 
-            _sfxPlayer.PlayOneShot(_soundBank[sound].Clip, _soundBank[sound].Volume);
+            _sfxPlayer.PlayOneShot(clip, volume);
             if (preventTime > 0)
-                _prevenPlayback = StartCoroutine(PreventPlaybackTime(preventTime));
+                StartCoroutine(PreventPlaybackControl(clip, preventTime));
         }
 
-        private IEnumerator PlayRandom(Sound sound,float preventTime = 0.1f)
-        {
+        //private IEnumerator PlayOnce(Sound sound, float preventTime)
+        //{
+        //    yield return new WaitForSeconds(_soundBank[sound].Delay);
+        //    if (_preventPlayback[sound])
+        //        yield break;         
 
-            if (currentPlay.sound == sound && currentPlay.coroutine != null)
-                yield break;
+        //    _sfxPlayer.PlayOneShot(_soundBank[sound].Clip, _soundBank[sound].Volume);
+        //    if (preventTime > 0)
+        //        StartCoroutine(PreventPlaybackControl(sound,preventTime));
+        //}
 
-            int index = UnityEngine.Random.Range(0, _randomSoundBank[sound].Clips.Length);
-            _sfxPlayer.PlayOneShot(_randomSoundBank[sound].Clips[index], _randomSoundBank[sound].Volume);
-            //if (preventTime > 0)
-            //    _prevenPlayback = StartCoroutine(PreventPlaybackTime(preventTime));
-        }
+        //private IEnumerator PlayRandom(Sound sound,float preventTime)
+        //{
+        //    _sfxPlayer.PlayOneShot(_randomSoundBank[sound].Clips[index], _randomSoundBank[sound].Volume);
+        //    //if (preventTime > 0)
+        //    //    _prevenPlayback = StartCoroutine(PreventPlaybackTime(preventTime));
+        //}
 
         private IEnumerator PlayInScene(Sound sound, Vector3 pos)
         {
@@ -247,59 +264,23 @@ namespace MiProduction.BroAudio
             yield break;
         }
 
+        private AudioClip GetRandomClip(Sound sound)
+        {
+            return _randomSoundBank[sound].Clips[UnityEngine.Random.Range(0, _randomSoundBank[sound].Clips.Length)];
+        }
+
         #endregion
 
-        IEnumerator PreventPlaybackTime(float time)
+        IEnumerator PreventPlaybackControl(AudioClip clip,float time)
         {
-            _isPreventPlayback = true;
+            _preventPlayback[clip] = true;
             yield return new WaitForSeconds(time);
-            _isPreventPlayback = false;
+            _preventPlayback[clip] = false;
         }
     }
 
-#if UNITY_EDITOR
-    public class GenerateEnumsAfterPrefabUpdate : UnityEditor.AssetModificationProcessor
-    {
-        //static string[] OnWillSaveAssets(string[] paths)
-        //{
-        //    foreach (string path in paths)
-        //    {
-        //        GameObject prefab = null;
-        //        if (path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase))
-        //        {
-        //            prefab = PrefabUtility.LoadPrefabContents(path);
-        //        }
-                
-        //        if (prefab != null && prefab.TryGetComponent(out SoundManager soundManager))
-        //        {
-        //            string[] soundNameList = 
-        //                soundManager.SoundLibraries.Select(x => x.Name)
-        //                .Concat(soundManager.RandomSoundLibraries.Select(x => x.Name))
-        //                .ToArray();
-        //            string[] musicNameList = soundManager.MusicLibraries.Select(x => x.Name).ToArray();
-
-        //            EnumGenerator.Generate("Sound", soundNameList);
-        //            EnumGenerator.Generate("Music", musicNameList);
-
-        //            for(int i = 0; i < soundManager.SoundLibraries.Length;i++)
-        //            {
-        //                if (Enum.TryParse(soundManager.SoundLibraries[i].Name, out Sound result))
-        //                {
-        //                    Debug.Log("ASSIGN ENUM SUCESS " + result.ToString());
-        //                    soundManager.SoundLibraries[i].Sound = result;
-        //                }                            
-        //            }
-        //        }
-        //    }
-
-
-        //    return paths;
-        //}
-    }
-#endif
-
     [System.Serializable]
-    public struct SoundLibrary : IValidateAudioLibrary
+    public struct SoundLibrary : IAudioLibrary
     {
         public string Name;
         public AudioClip Clip;
@@ -308,7 +289,6 @@ namespace MiProduction.BroAudio
         [Min(0f)] public float Delay;
         [Min(0f)] public float StartPosition;
 
-
         public bool Validate(int index)
         {
             return AudioExtension.Validate(nameof(SoundLibrary),index, Clip, StartPosition);
@@ -316,7 +296,7 @@ namespace MiProduction.BroAudio
     }
 
     [System.Serializable]
-    public struct RandomSoundLibrary :IValidateAudioLibrary
+    public struct RandomSoundLibrary :IAudioLibrary
     {
         public string Name;
         public AudioClip[] Clips;
@@ -331,7 +311,7 @@ namespace MiProduction.BroAudio
     }
 
     [System.Serializable]
-    public struct MusicLibrary : IValidateAudioLibrary
+    public struct MusicLibrary : IAudioLibrary
     {
         public string Name;
         public AudioClip Clip;

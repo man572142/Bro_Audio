@@ -57,7 +57,7 @@ namespace MiProduction.BroAudio
         [SerializeField] MusicLibrary[] _musicLibrary = null;
         public MusicLibrary[] MusicLibraries { get => _musicLibrary; }
 
-        Dictionary<AudioClip, bool> _preventPlayback = new Dictionary<AudioClip, bool>();
+        Dictionary<Sound, bool> _preventPlayback = new Dictionary<Sound, bool>();
 
         // 還有點問題
 
@@ -77,7 +77,7 @@ namespace MiProduction.BroAudio
                 if (_soundLibrary[s].Validate(s))
                 {
                     _soundBank.Add(_soundLibrary[s].Sound, _soundLibrary[s]);
-                    _preventPlayback.Add(_soundLibrary[s].Clip, false);
+                    _preventPlayback.Add(_soundLibrary[s].Sound, false);
                 }      
             }
             // 初始化隨機播放音效庫
@@ -86,11 +86,7 @@ namespace MiProduction.BroAudio
                 if (_randomSoundLibrary[r].Validate(r))
                 {
                     _randomSoundBank.Add(_randomSoundLibrary[r].Sound, _randomSoundLibrary[r]);
-                    foreach(AudioClip clip in _randomSoundLibrary[r].Clips)
-                    {
-                        _preventPlayback.Add(clip, false);
-                    }
-                    
+                    _preventPlayback.Add(_randomSoundLibrary[r].Sound, false);
                 }
             }
             //初始化音樂庫
@@ -192,7 +188,7 @@ namespace MiProduction.BroAudio
         public void PlaySFX(Sound sound)
         {
             //StartCoroutine(PlayOnce(sound, 0.1f));
-            StartCoroutine(PlayOnce(_soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, 0.1f));
+            StartCoroutine(PlayOnce(sound, _soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, 0.1f));
         }
 
         /// <summary>
@@ -203,7 +199,7 @@ namespace MiProduction.BroAudio
         public void PlaySFX(Sound sound, float preventTime)
         {
             //StartCoroutine(PlayOnce(sound, preventTime));
-            StartCoroutine(PlayOnce(_soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime));
+            StartCoroutine(PlayOnce(sound,_soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime));
         }
 
         /// <summary>
@@ -218,44 +214,24 @@ namespace MiProduction.BroAudio
 
         public void PlayRandomSFX(Sound sound)
         {
-            StartCoroutine(PlayOnce(GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, 0.1f));
-            //StartCoroutine(PlayRandom(sound,0.1f));
+            StartCoroutine(PlayOnce(sound,GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, 0.1f));
         }
 
         public void PlayRandomSFX(Sound sound, float preventTime)
         {
-            StartCoroutine(PlayOnce(GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime));
-            //StartCoroutine(PlayRandom(sound, preventTime));
+            StartCoroutine(PlayOnce(sound,GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime));
         }
 
-        private IEnumerator PlayOnce(AudioClip clip,float delay,float volume,float preventTime)
+        private IEnumerator PlayOnce(Sound sound,AudioClip clip,float delay,float volume,float preventTime)
         {
             yield return new WaitForSeconds(delay);
-            if (_preventPlayback[clip])
+            if (_preventPlayback[sound])
                 yield break;
 
             _sfxPlayer.PlayOneShot(clip, volume);
             if (preventTime > 0)
-                StartCoroutine(PreventPlaybackControl(clip, preventTime));
+                StartCoroutine(PreventPlaybackControl(sound, preventTime));
         }
-
-        //private IEnumerator PlayOnce(Sound sound, float preventTime)
-        //{
-        //    yield return new WaitForSeconds(_soundBank[sound].Delay);
-        //    if (_preventPlayback[sound])
-        //        yield break;         
-
-        //    _sfxPlayer.PlayOneShot(_soundBank[sound].Clip, _soundBank[sound].Volume);
-        //    if (preventTime > 0)
-        //        StartCoroutine(PreventPlaybackControl(sound,preventTime));
-        //}
-
-        //private IEnumerator PlayRandom(Sound sound,float preventTime)
-        //{
-        //    _sfxPlayer.PlayOneShot(_randomSoundBank[sound].Clips[index], _randomSoundBank[sound].Volume);
-        //    //if (preventTime > 0)
-        //    //    _prevenPlayback = StartCoroutine(PreventPlaybackTime(preventTime));
-        //}
 
         private IEnumerator PlayInScene(Sound sound, Vector3 pos)
         {
@@ -271,11 +247,11 @@ namespace MiProduction.BroAudio
 
         #endregion
 
-        IEnumerator PreventPlaybackControl(AudioClip clip,float time)
+        IEnumerator PreventPlaybackControl(Sound sound,float time)
         {
-            _preventPlayback[clip] = true;
+            _preventPlayback[sound] = true;
             yield return new WaitForSeconds(time);
-            _preventPlayback[clip] = false;
+            _preventPlayback[sound] = false;
         }
     }
 

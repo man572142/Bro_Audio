@@ -13,15 +13,15 @@ public class SceneMusicConfigEditor : Editor
 
 		SceneMusicConfig controller = target as SceneMusicConfig;
 
-		if (GUILayout.Button($"Get All Scene in Element {controller.element}") && controller.musicScenes != null && controller.element < controller.musicScenes.Length)
+		if (controller.musicScenes != null && controller.element < controller.musicScenes.Length && GUILayout.Button($"Get All Scene in Element {controller.element}"))
 		{
 			for(int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
 			{
 				string sceneName = SceneUtility.GetScenePathByBuildIndex(i);
 				sceneName = sceneName.Substring(sceneName.LastIndexOf("/") + 1).Replace(".unity", "");
-				if(!controller.musicScenes[controller.element].scenes.Contains(sceneName))
+				if(!controller.musicScenes[controller.element].Scenes.Contains(sceneName))
 				{
-					controller.musicScenes[controller.element].scenes.Add(sceneName);
+					controller.musicScenes[controller.element].Scenes.Add(sceneName);
 				}
 				
 			}

@@ -9,6 +9,7 @@ using UnityEditor;
 
 namespace MiProduction.BroAudio
 {
+    [DisallowMultipleComponent]
     public class SoundManager : MonoBehaviour
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -43,7 +44,7 @@ namespace MiProduction.BroAudio
         [Header("Fading Setting")]
         [SerializeField] Ease _fadeInEase = Ease.InCubic;
         [SerializeField] Ease _fadeOutEase = Ease.OutSine;
-        MusicPlayer currentPlayer;
+        MusicPlayer _currentPlayer;
 
 
         // TODO: LibraryAsset°}¦C¤Æ
@@ -61,7 +62,7 @@ namespace MiProduction.BroAudio
         // ­µ¼Ö
         [SerializeField] MusicLibraryAsset _mainMusicAsset = null;
         private Dictionary<Music, MusicLibrary> _musicBank = new Dictionary<Music, MusicLibrary>();
-        
+
 
         public static Ease FadeInEase { get => Instance._fadeInEase; }
         public static Ease FadeOutEase { get => Instance._fadeOutEase; }
@@ -99,11 +100,7 @@ namespace MiProduction.BroAudio
                     _musicBank.Add(_mainMusicAsset.Libraries[m].Music, _mainMusicAsset.Libraries[m]);
                 }
             }
-        }
-
-        private void Start()
-        {        
-            currentPlayer = _musicPlayers[0];
+            _currentPlayer = _musicPlayers[0];
         }
 
 
@@ -134,23 +131,23 @@ namespace MiProduction.BroAudio
             switch (transition)
             {
                 case Transition.Immediate:
-                    currentPlayer.Stop(0f);
-                    currentPlayer.Play(_musicBank[newMusic], 0f);
+                    _currentPlayer.Stop(0f);
+                    _currentPlayer.Play(_musicBank[newMusic], 0f);
                     break;
                 case Transition.FadeOutThenFadeIn:
-                    currentPlayer.Stop(fadeTime, () => currentPlayer.Play(_musicBank[newMusic], fadeTime));
+                    _currentPlayer.Stop(fadeTime, () => _currentPlayer.Play(_musicBank[newMusic], fadeTime));
                     break;
                 case Transition.OnlyFadeInNew:
-                    currentPlayer.Stop(0f);
-                    currentPlayer.Play(_musicBank[newMusic], fadeTime);
+                    _currentPlayer.Stop(0f);
+                    _currentPlayer.Play(_musicBank[newMusic], fadeTime);
                     break;
                 case Transition.OnlyFadeOutCurrent:
-                    currentPlayer.Stop(fadeTime, () => currentPlayer.Play(_musicBank[newMusic], 0f));
+                    _currentPlayer.Stop(fadeTime, () => _currentPlayer.Play(_musicBank[newMusic], 0f));
                     break;
                 case Transition.CrossFade:
                     if (GetAvailableMusicPlayer(out MusicPlayer otherPlayer))
                     {
-                        currentPlayer.Stop(fadeTime, () => currentPlayer = otherPlayer);
+                        _currentPlayer.Stop(fadeTime, () => _currentPlayer = otherPlayer);
                         otherPlayer.Play(_musicBank[newMusic], fadeTime);
                     }
                     else
@@ -171,7 +168,7 @@ namespace MiProduction.BroAudio
             musicPlayer = null;
             foreach (MusicPlayer player in _musicPlayers)
             {
-                if (!player.IsPlaying && player != currentPlayer)
+                if (!player.IsPlaying && player != _currentPlayer)
                 {
                     musicPlayer = player;
                     return true;
@@ -201,7 +198,7 @@ namespace MiProduction.BroAudio
         public void PlaySFX(Sound sound, float preventTime)
         {
             //StartCoroutine(PlayOnce(sound, preventTime));
-            StartCoroutine(PlayOnce(sound,_soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime));
+            StartCoroutine(PlayOnce(sound, _soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime));
         }
 
         /// <summary>
@@ -216,15 +213,15 @@ namespace MiProduction.BroAudio
 
         public void PlayRandomSFX(Sound sound)
         {
-            StartCoroutine(PlayOnce(sound,GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, 0.1f));
+            StartCoroutine(PlayOnce(sound, GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, 0.1f));
         }
 
         public void PlayRandomSFX(Sound sound, float preventTime)
         {
-            StartCoroutine(PlayOnce(sound,GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime));
+            StartCoroutine(PlayOnce(sound, GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime));
         }
 
-        private IEnumerator PlayOnce(Sound sound,AudioClip clip,float delay,float volume,float preventTime)
+        private IEnumerator PlayOnce(Sound sound, AudioClip clip, float delay, float volume, float preventTime)
         {
             yield return new WaitForSeconds(delay);
             if (_preventPlayback[sound])
@@ -249,7 +246,7 @@ namespace MiProduction.BroAudio
 
         #endregion
 
-        IEnumerator PreventPlaybackControl(Sound sound,float time)
+        IEnumerator PreventPlaybackControl(Sound sound, float time)
         {
             _preventPlayback[sound] = true;
             yield return new WaitForSeconds(time);
@@ -259,7 +256,7 @@ namespace MiProduction.BroAudio
 
 
     [System.Serializable]
-    public struct RandomSoundLibrary :IAudioLibrary
+    public struct RandomSoundLibrary : IAudioLibrary
     {
         public string Name;
         public AudioClip[] Clips;
@@ -269,7 +266,7 @@ namespace MiProduction.BroAudio
 
         public bool Validate(int index)
         {
-            return AudioExtension.Validate(nameof(RandomSoundLibrary),index,Clips,StartPosition);
+            return AudioExtension.Validate(nameof(RandomSoundLibrary), index, Clips, StartPosition);
         }
     }
 

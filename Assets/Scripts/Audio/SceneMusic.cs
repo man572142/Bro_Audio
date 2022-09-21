@@ -5,8 +5,8 @@ using UnityEngine;
 [System.Serializable]
 public class SceneMusic 
 {
-    public Music music;
-    public List<string> scenes = new List<string>();
+    public Music Music;
+    public List<string> Scenes = new List<string>();
 }
 
 

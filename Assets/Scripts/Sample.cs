@@ -6,35 +6,42 @@ using MiProduction.BroAudio;
 
 public class Sample : MonoBehaviour
 {
-    //[SerializeField] Transition _transitionA = Transition.Immediate;
-    //[SerializeField] Transition _transitionB = Transition.Immediate;
+    [SerializeField] Transition _transitionA = Transition.Immediate;
+    [SerializeField] Transition _transitionB = Transition.Immediate;
 
-    //[SerializeField] float _crossFadeTime = -1f;
+    [SerializeField] Music _musicA;
+    [SerializeField] Music _musicB;
 
-    //[SerializeField] Transform _scenePlayer = null;
+    [SerializeField] Sound _sound;
+    [SerializeField] Sound _randomSound;
+    [SerializeField] Sound _sceneSound;
+
+    [SerializeField] float _crossFadeTime = -1f;
+
+    [SerializeField] Transform _scenePlayer = null;
 
     public void PlayA()
     {
-        //SoundManager.Instance.PlayMusic(Music.MusicA,_transitionA,_crossFadeTime);
+        SoundManager.Instance.PlayMusic(_musicA, _transitionA,_crossFadeTime);
     }
     
     public void PlayB()
     {
-        //SoundManager.Instance.PlayMusic(Music.MusicB, _transitionB,_crossFadeTime);
+        SoundManager.Instance.PlayMusic(_musicB, _transitionB,_crossFadeTime);
     }
 
     public void PlaySFX()
     {
-        //SoundManager.Instance.PlaySFX(Sound.None);
+        SoundManager.Instance.PlaySFX(_sound);
     }
 
     public void PlaySceneSFX()
     {
-        //SoundManager.Instance.PlaySFX(Sound.SceneSound,_scenePlayer.position);
+        SoundManager.Instance.PlaySFX(_sceneSound,_scenePlayer.position);
     }
 
     public void PlayRandomSound()
     {
-        //SoundManager.Instance.PlayRandomSFX(Sound.Random);
+        SoundManager.Instance.PlayRandomSFX(_sceneSound);
     }
 }

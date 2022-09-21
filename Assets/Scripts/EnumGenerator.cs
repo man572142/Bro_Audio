@@ -33,7 +33,7 @@ public static class EnumGenerator
                 }
                 else
                 {
-                    streamWriter.WriteLine("\t" + enums[i] + ",");                
+                    streamWriter.WriteLine("\t" + enums[i].Replace(" ","") + ",");                
                 }
                 
             }

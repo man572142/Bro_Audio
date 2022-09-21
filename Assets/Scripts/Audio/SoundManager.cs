@@ -36,30 +36,32 @@ namespace MiProduction.BroAudio
 
         static public SoundManager Instance = null;
 
+        [Header("Player")]
         [SerializeField] AudioSource _sfxPlayer;
         [SerializeField] MusicPlayer[] _musicPlayers = null;
+
+        [Header("Fading Setting")]
         [SerializeField] Ease _fadeInEase = Ease.InCubic;
         [SerializeField] Ease _fadeOutEase = Ease.OutSine;
         MusicPlayer currentPlayer;
 
-        //音效
-        Dictionary<Sound, SoundLibrary> _soundBank = new Dictionary<Sound, SoundLibrary>();
-        [SerializeField] SoundLibrary[] _soundLibrary = null;
-        public SoundLibrary[] SoundLibraries { get => _soundLibrary; }
 
-        //隨機播放音效
+        // TODO: LibraryAsset陣列化
+        // 音效
+        [Header("Library")]
+        [SerializeField] SoundLibraryAsset _mainSoundAsset = null;
+        private Dictionary<Sound, SoundLibrary> _soundBank = new Dictionary<Sound, SoundLibrary>();
+        private Dictionary<Sound, bool> _preventPlayback = new Dictionary<Sound, bool>();
+
+        // 隨機播放音效
+        // TODO: 等LibraryAsset泛型化後再將隨機音效升級
         Dictionary<Sound, RandomSoundLibrary> _randomSoundBank = new Dictionary<Sound, RandomSoundLibrary>();
         [SerializeField] RandomSoundLibrary[] _randomSoundLibrary = null;
-        public RandomSoundLibrary[] RandomSoundLibraries { get => _randomSoundLibrary; }
 
-        //音樂
-        Dictionary<Music, MusicLibrary> _musicBank = new Dictionary<Music, MusicLibrary>();
-        [SerializeField] MusicLibrary[] _musicLibrary = null;
-        public MusicLibrary[] MusicLibraries { get => _musicLibrary; }
-
-        Dictionary<Sound, bool> _preventPlayback = new Dictionary<Sound, bool>();
-
-        // 還有點問題
+        // 音樂
+        [SerializeField] MusicLibraryAsset _mainMusicAsset = null;
+        private Dictionary<Music, MusicLibrary> _musicBank = new Dictionary<Music, MusicLibrary>();
+        
 
         public static Ease FadeInEase { get => Instance._fadeInEase; }
         public static Ease FadeOutEase { get => Instance._fadeOutEase; }
@@ -71,14 +73,14 @@ namespace MiProduction.BroAudio
             {
                 Debug.LogError("[SoundSystem] Please add at least 2 MusicPlayer to SoundManager");
             }
-            //初始化音效庫
-            for (int s = 0; s < _soundLibrary.Length;s++)
+            // 初始化音效庫
+            for (int s = 0; s < _mainSoundAsset.Libraries.Length; s++)
             {
-                if (_soundLibrary[s].Validate(s))
+                if (_mainSoundAsset.Libraries[s].Validate(s))
                 {
-                    _soundBank.Add(_soundLibrary[s].Sound, _soundLibrary[s]);
-                    _preventPlayback.Add(_soundLibrary[s].Sound, false);
-                }      
+                    _soundBank.Add(_mainSoundAsset.Libraries[s].Sound, _mainSoundAsset.Libraries[s]);
+                    _preventPlayback.Add(_mainSoundAsset.Libraries[s].Sound, false);
+                }
             }
             // 初始化隨機播放音效庫
             for (int r = 0; r < _randomSoundLibrary.Length; r++)
@@ -89,12 +91,12 @@ namespace MiProduction.BroAudio
                     _preventPlayback.Add(_randomSoundLibrary[r].Sound, false);
                 }
             }
-            //初始化音樂庫
-            for (int m = 0; m < _musicLibrary.Length; m++)
+            //音樂庫
+            for (int m = 0; m < _mainMusicAsset.Libraries.Length; m++)
             {
-                if (_musicLibrary[m].Validate(m))
+                if (_mainMusicAsset.Libraries[m].Validate(m))
                 {
-                    _musicBank.Add(_musicLibrary[m].Music, _musicLibrary[m]);
+                    _musicBank.Add(_mainMusicAsset.Libraries[m].Music, _mainMusicAsset.Libraries[m]);
                 }
             }
         }
@@ -255,21 +257,6 @@ namespace MiProduction.BroAudio
         }
     }
 
-    [System.Serializable]
-    public struct SoundLibrary : IAudioLibrary
-    {
-        public string Name;
-        public AudioClip Clip;
-        public Sound Sound;
-        [Range(0f, 1f)] public float Volume;
-        [Min(0f)] public float Delay;
-        [Min(0f)] public float StartPosition;
-
-        public bool Validate(int index)
-        {
-            return AudioExtension.Validate(nameof(SoundLibrary),index, Clip, StartPosition);
-        }
-    }
 
     [System.Serializable]
     public struct RandomSoundLibrary :IAudioLibrary
@@ -286,23 +273,6 @@ namespace MiProduction.BroAudio
         }
     }
 
-    [System.Serializable]
-    public struct MusicLibrary : IAudioLibrary
-    {
-        public string Name;
-        public AudioClip Clip;
-        public Music Music;
-        [Range(0f, 1f)] public float Volume;
-        public float StartPosition;
-        //[MinMaxSlider(0f,1f)] public Vector2 fade;
-        [Min(0f)] public float FadeIn;
-        [Min(0f)] public float FadeOut;
-        [Min(0f)] public bool Loop;
 
-        public bool Validate(int index)
-        {
-            return AudioExtension.Validate(nameof(MusicLibrary),index, Clip, StartPosition, FadeIn, FadeOut);
-        }
-    }
 }
 

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Linq;
+using MiProduction.BroAudio.Config;
 
 
 namespace MiProduction.BroAudio
@@ -26,7 +26,7 @@ namespace MiProduction.BroAudio
             {
                 if (sceneMusic.Music != _currentMusic && sceneMusic.Scenes.Contains(newScene.name))
                 {
-                    SoundManager.Instance.PlayMusic(sceneMusic.Music,_transition);
+                    SoundManager.PlayMusic(sceneMusic.Music,_transition);
                     _currentMusic = sceneMusic.Music;                    
                 }
             }

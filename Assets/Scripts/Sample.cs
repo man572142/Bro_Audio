@@ -22,26 +22,26 @@ public class Sample : MonoBehaviour
 
     public void PlayA()
     {
-        SoundManager.Instance.PlayMusic(_musicA, _transitionA,_crossFadeTime);
+        SoundManager.PlayMusic(_musicA, _transitionA,_crossFadeTime);
     }
     
     public void PlayB()
     {
-        SoundManager.Instance.PlayMusic(_musicB, _transitionB,_crossFadeTime);
+        SoundManager.PlayMusic(_musicB, _transitionB,_crossFadeTime);
     }
 
     public void PlaySFX()
     {
-        SoundManager.Instance.PlaySFX(_sound);
+        SoundManager.PlaySFX(_sound);
     }
 
     public void PlaySceneSFX()
     {
-        SoundManager.Instance.PlaySFX(_sceneSound,_scenePlayer.position);
+        SoundManager.PlaySFX(_sceneSound,_scenePlayer.position);
     }
 
     public void PlayRandomSound()
     {
-        SoundManager.Instance.PlayRandomSFX(_sceneSound);
+        SoundManager.PlayRandomSFX(_sceneSound);
     }
 }

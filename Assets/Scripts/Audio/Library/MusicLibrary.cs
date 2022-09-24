@@ -2,13 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.Asset
 {
-	[CreateAssetMenu(fileName = "MusicLibrary", menuName = "BroAudio/Create Library/Music", order = 1)]
-	public class MusicLibraryAsset : ScriptableObject
+	[CreateAssetMenu(fileName = "MusicLibrary", menuName = "BroAudio/Create Library/Music")]
+	public class MusicLibraryAsset : AudioLibraryAsset<MusicLibrary>
 	{
-		public MusicLibrary[] Libraries;
-		public Dictionary<Music, MusicLibrary> MusicBank = new Dictionary<Music, MusicLibrary>();
+
 	}
 
 
@@ -25,7 +24,9 @@ namespace MiProduction.BroAudio
         [Min(0f)] public float FadeOut;
         [Min(0f)] public bool Loop;
 
-        public bool Validate(int index)
+        public string GetName() => Name;
+
+		public bool Validate(int index)
         {
             return AudioExtension.Validate(nameof(MusicLibrary), index, Clip, StartPosition, FadeIn, FadeOut);
         }

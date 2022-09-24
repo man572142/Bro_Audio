@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using MiProduction.Extension;
+using MiProduction.BroAudio.Asset;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.Core
 {
     [RequireComponent(typeof(AudioSource))]
     public class MusicPlayer : MonoBehaviour
@@ -131,7 +132,7 @@ namespace MiProduction.BroAudio
             _audioMixer.GetFloat(_volParaName, out currentVol);
             currentVol = Mathf.Pow(10, currentVol / 20);
             float targetValue = Mathf.Clamp(targetVolume, 0.0001f, 1);
-            Ease ease = currentVol < targetValue ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
+            Ease ease = currentVol < targetValue ? SoundSystem.FadeInEase : SoundSystem.FadeOutEase;
             float newVol = 0f;
             while (currentTime < duration)
             {

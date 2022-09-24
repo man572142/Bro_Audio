@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.Asset
 {
-	[CreateAssetMenu(fileName = "SoundLibrary", menuName = "BroAudio/Create Library/Sound", order = 0)]
-	public class SoundLibraryAsset : ScriptableObject
+	[CreateAssetMenu(fileName = "SoundLibrary", menuName = "BroAudio/Create Library/Sound")]
+	public class SoundLibraryAsset : AudioLibraryAsset<SoundLibrary>
 	{
-		public SoundLibrary[] Libraries;
+
 	}
 
 
@@ -21,9 +21,14 @@ namespace MiProduction.BroAudio
         [Min(0f)] public float Delay;
         [Min(0f)] public float StartPosition;
 
-        public bool Validate(int index)
+        public string GetName() => Name;
+
+		public bool Validate(int index)
         {
             return AudioExtension.Validate(nameof(SoundLibrary), index, Clip, StartPosition);
         }
+
+        
+
     }
 }

@@ -3,10 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using MiProduction.BroAudio.Config;
 
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.SceneMusic
 {
     public class SceneMusicTrigger : MonoBehaviour
     {

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Config
+namespace MiProduction.BroAudio.SceneMusic
 {
     [CreateAssetMenu(fileName = "SceneMusicConfig", menuName = "BroAudio/Scene Music Config")]
     public class SceneMusicConfig : ScriptableObject

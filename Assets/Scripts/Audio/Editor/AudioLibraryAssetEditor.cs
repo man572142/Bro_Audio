@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Asset
+namespace MiProduction.BroAudio.Library
 {
     [CustomEditor(typeof(AudioLibraryAsset<>), true)]
     public class AudioLibraryAssetEditor : Editor

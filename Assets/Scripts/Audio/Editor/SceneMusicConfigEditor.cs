@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.SceneManagement;
 
-namespace MiProduction.BroAudio.Config
+namespace MiProduction.BroAudio.SceneMusic
 {
     [CustomEditor(typeof(SceneMusicConfig))]
     public class SceneMusicConfigEditor : Editor

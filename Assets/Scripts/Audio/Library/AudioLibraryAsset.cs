@@ -5,7 +5,7 @@ using MiProduction.BroAudio;
 using System;
 using System.Linq;
 
-namespace MiProduction.BroAudio.Asset
+namespace MiProduction.BroAudio.Library
 {
 	public abstract class AudioLibraryAsset<T> : ScriptableObject,IAudioLibraryIdentify where T : IAudioLibrary
 	{

@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MiProduction.BroAudio;
+using System;
+using System.Linq;
 
 namespace MiProduction.BroAudio.Asset
 {
@@ -11,19 +13,15 @@ namespace MiProduction.BroAudio.Asset
 
 		public string LibraryTypeName => typeof(T).Name.Replace("Library","");
 
-		IAudioLibrary[] IAudioLibraryIdentify.Libraries 
-		{
+		string[] IAudioLibraryIdentify.AllLibraryEnums
+        {
 			get
 			{
-				List<IAudioLibrary> tempLibraries = new List<IAudioLibrary>();
-				foreach(T library in Libraries)
-				{
-					tempLibraries.Add((IAudioLibrary)library);
-				}
-				return tempLibraries.ToArray();
+				if(Libraries == null)
+					Libraries = new T[0];
+
+				return Libraries.Select(x => x.EnumName).ToArray();
 			}
-		} 
-		
-		//public string GetNameByIndex(int index) => Libraries[index].Name;
+		}
 	}
 }

@@ -17,18 +17,19 @@ namespace MiProduction.BroAudio.Asset
             // 因為無法使用T,故使用interface
             var asset = target as IAudioLibraryIdentify;
 
-            if (asset != null && asset.Libraries != null && GUILayout.Button("Generate Enums"))
+            if (asset != null && GUILayout.Button("Generate Enums"))
             {
-                if(asset.Libraries.Length == 0)
+                if (asset.AllLibraryEnums == null)
+                    return;
+
+                if(asset.AllLibraryEnums.Length == 0)
                 {
                     EnumGenerator.Generate(asset.LibraryTypeName, new string[0]);
                 }
                 else
                 {
-                    EnumGenerator.Generate(asset.LibraryTypeName, asset.Libraries.Select(x => x.EnumName).ToArray());
-                }
-
-                
+                    EnumGenerator.Generate(asset.LibraryTypeName, asset.AllLibraryEnums);
+                }            
             }
         }
     }

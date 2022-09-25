@@ -32,8 +32,15 @@ namespace MiProduction.BroAudio.Core
         private IEnumerator PlayOnce(Sound sound, AudioClip clip, float delay, float volume, float preventTime)
         {
             yield return new WaitForSeconds(delay);
-            if (_preventPlayback[sound])
-                yield break;
+            if(_preventPlayback.TryGetValue(sound,out bool isPreventing))
+            {
+                if(isPreventing)
+                    yield break;
+            }
+            else if(preventTime > 0)
+            {
+                _preventPlayback.Add(sound, true);
+            }
 
             _sfxPlayer.PlayOneShot(clip, volume);
             if (preventTime > 0)

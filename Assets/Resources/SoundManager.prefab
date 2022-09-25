@@ -46,8 +46,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbcc80da4c091cf46baa2f161ad209a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _sfxPlayer: {fileID: 0}
-  _musicPlayers: []
+  _sfxPlayer: {fileID: 3515275047062953283}
+  _musicPlayers:
+  - {fileID: 6443841439991395278}
+  - {fileID: 1932754922307679714}
   _fadeInEase: 2
   _fadeOutEase: 11
   _mainSoundAsset: {fileID: 0}
@@ -205,6 +207,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1321834686942116381}
   - component: {fileID: 1045909176547971913}
+  - component: {fileID: 3515275047062953283}
   m_Layer: 0
   m_Name: SFX Player
   m_TagString: Untagged
@@ -322,6 +325,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &3515275047062953283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5059731157093549741}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59beb66a551a68d42a0a8bb43fbe10d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _sfxPlayer: {fileID: 1045909176547971913}
 --- !u!1 &7950091635078281900
 GameObject:
   m_ObjectHideFlags: 0

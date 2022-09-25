@@ -42,6 +42,6 @@ public class Sample : MonoBehaviour
 
     public void PlayRandomSound()
     {
-        SoundSystem.PlayRandomSFX(_sceneSound);
+        SoundSystem.PlayRandomSFX(_randomSound);
     }
 }

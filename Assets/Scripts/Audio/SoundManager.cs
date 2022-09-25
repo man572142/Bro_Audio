@@ -49,7 +49,6 @@ namespace MiProduction.BroAudio.Core
         [Header("Library")]
         [SerializeField] SoundLibraryAsset _mainSoundAsset = null;
         private Dictionary<Sound, SoundLibrary> _soundBank = new Dictionary<Sound, SoundLibrary>();
-        private Dictionary<Sound, bool> _preventPlayback = new Dictionary<Sound, bool>();
 
         // 隨機播放音效
         [SerializeField] SoundLibraryAsset[] _randomSoundAsset = null;
@@ -66,7 +65,7 @@ namespace MiProduction.BroAudio.Core
 
         private void Awake()
         {
-            if (_musicPlayers.Length < 2)
+            if (_musicPlayers == null || _musicPlayers.Length < 2)
             {
                 Debug.LogError("[SoundSystem] Please add at least 2 MusicPlayer to SoundManager");
             }
@@ -76,19 +75,23 @@ namespace MiProduction.BroAudio.Core
                 if (_mainSoundAsset.Libraries[s].Validate(s))
                 {
                     _soundBank.Add(_mainSoundAsset.Libraries[s].Sound, _mainSoundAsset.Libraries[s]);
-                    _preventPlayback.Add(_mainSoundAsset.Libraries[s].Sound, false);
                 }
             }
             // 初始化隨機播放音效庫
+            bool isValidated;
             foreach (SoundLibraryAsset asset in _randomSoundAsset)
             {
+                isValidated = true;
                 for (int r = 0; r < asset.Libraries.Length; r++)
                 {
                     if (!asset.Libraries[r].Validate(r))
+                    {
+                        isValidated = false;
                         break;
+                    }                    
                 }
-                _randomSoundBank.Add(asset.Libraries[0].Sound, asset.Libraries);
-                _preventPlayback.Add(asset.Libraries[0].Sound, false);
+                if(isValidated)
+                    _randomSoundBank.Add(asset.Libraries[0].Sound, asset.Libraries);
             }
             // 初始化音樂庫
             for (int m = 0; m < _mainMusicAsset.Libraries.Length; m++)
@@ -111,11 +114,8 @@ namespace MiProduction.BroAudio.Core
 
         public void PlayMusic(Music newMusic, Transition transition, float fadeTime = -1f)
         {
-            if (_musicBank.Count < 1 || newMusic == Music.None)
-            {
-                Debug.LogError("[SoundSystem] No music can play!");
+            if (!MusicPlayerCheck(newMusic))
                 return;
-            }
 
             switch (transition)
             {
@@ -147,7 +147,6 @@ namespace MiProduction.BroAudio.Core
             }
         }
 
-
         public bool GetAvailableMusicPlayer(out MusicPlayer musicPlayer)
         {
             musicPlayer = null;
@@ -168,27 +167,36 @@ namespace MiProduction.BroAudio.Core
 
         public void PlaySFX(Sound sound)
         {
-            _sfxPlayer.Play(sound, _soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, 0.1f);
+            PlaySFX(sound, 0.1f);
         }
 
         public void PlaySFX(Sound sound, float preventTime)
         {
-            _sfxPlayer.Play(sound, _soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime);
+            if(SoundPlayerCheck(sound))
+            {
+                _sfxPlayer.Play(sound, _soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime);
+            }     
         }
 
         public void PlaySFX(Sound sound, Vector3 position)
         {
-            _sfxPlayer.PlayAtPoint(sound, _soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, position);
+            if(SoundPlayerCheck(sound))
+            {
+                _sfxPlayer.PlayAtPoint(sound, _soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, position);
+            }
         }
 
         public void PlayRandomSFX(Sound sound)
         {
-            _sfxPlayer.Play(sound, GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, 0.1f);
+            PlayRandomSFX(sound, 0.1f);
         }
 
         public void PlayRandomSFX(Sound sound, float preventTime)
         {
-            _sfxPlayer.Play(sound, GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime);
+            if(RandomSoundCheck(sound))
+            {
+                _sfxPlayer.Play(sound, GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime);
+            }      
         }
 
         private AudioClip GetRandomClip(Sound sound)
@@ -199,14 +207,62 @@ namespace MiProduction.BroAudio.Core
 
         #endregion
 
-        IEnumerator PreventPlaybackControl(Sound sound, float time)
+
+        #region NullChecker
+        private bool MusicPlayerCheck(Music music)
         {
-            _preventPlayback[sound] = true;
-            yield return new WaitForSeconds(time);
-            _preventPlayback[sound] = false;
+#if UNITY_EDITOR
+            if (_mainMusicAsset == null || _musicBank.Count < 1 || music == Music.None)
+            {
+                Debug.LogError("[SoundSystem] No music can play. please check SoundManager's setting!");
+                return false;
+            }
+            else if (!_musicBank.ContainsKey(music))
+            {
+                Debug.LogError($"[SoundSystem] Enum:{music.ToString()} may not exist in the current MusicAsset");
+                return false;
+            }
+#endif
+            return true;
         }
 
-        
+        private bool SoundPlayerCheck(Sound sound)
+        {
+#if UNITY_EDITOR
+            if (_sfxPlayer == null || _mainSoundAsset == null || _soundBank.Count < 1 || !_soundBank.ContainsKey(sound))
+            {
+                Debug.LogError("[SoundSystem] No sound can play , please check SoundManager's setting");
+                return false;
+            }
+            else if (!_soundBank.ContainsKey(sound))
+            {
+                Debug.LogError($"[SoundSystem] Enum:{sound.ToString()} may not exist in the current SoundAsset");
+                return false;
+            }
+#endif
+            return true;
+        }
+
+        private bool RandomSoundCheck(Sound sound)
+        {
+#if UNITY_EDITOR
+            if (_sfxPlayer == null || _randomSoundAsset == null || _randomSoundBank.Count < 1 || !_randomSoundBank.ContainsKey(sound))
+            {
+                Debug.LogError("[SoundSystem] No sound can play , please check SoundManager's setting");
+                return false;
+            }
+            else if (!_randomSoundBank.ContainsKey(sound))
+            {
+                Debug.LogError($"[SoundSystem] Enum:{sound.ToString()} may not exist in the current RandomSoundAsset");
+                return false;
+            }
+#endif
+            return true;
+        }
+
+        #endregion
+
+
     }
 
 }

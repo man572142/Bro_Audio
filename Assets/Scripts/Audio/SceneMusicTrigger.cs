@@ -26,7 +26,7 @@ namespace MiProduction.BroAudio
             {
                 if (sceneMusic.Music != _currentMusic && sceneMusic.Scenes.Contains(newScene.name))
                 {
-                    SoundManager.PlayMusic(sceneMusic.Music,_transition);
+                    SoundSystem.PlayMusic(sceneMusic.Music,_transition);
                     _currentMusic = sceneMusic.Music;                    
                 }
             }

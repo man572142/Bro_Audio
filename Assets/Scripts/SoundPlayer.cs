@@ -12,7 +12,7 @@ public class SoundPlayer : MonoBehaviour
         StartCoroutine(PlayOnce(sound,clip,delay,volume,preventTime));
 	}
 
-    public void PlayAtPoint(Sound sound, AudioClip clip, float volume, float delay, Vector3 pos)
+    public void PlayAtPoint(Sound sound, AudioClip clip, float delay, float volume, Vector3 pos)
 	{
         StartCoroutine(PlayInScene(sound,clip,volume, delay, pos));
 	}

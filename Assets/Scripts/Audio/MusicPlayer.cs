@@ -132,7 +132,7 @@ namespace MiProduction.BroAudio.Core
             _audioMixer.GetFloat(_volParaName, out currentVol);
             currentVol = Mathf.Pow(10, currentVol / 20);
             float targetValue = Mathf.Clamp(targetVolume, 0.0001f, 1);
-            Ease ease = currentVol < targetValue ? SoundSystem.FadeInEase : SoundSystem.FadeOutEase;
+            Ease ease = currentVol < targetValue ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
             float newVol = 0f;
             while (currentTime < duration)
             {

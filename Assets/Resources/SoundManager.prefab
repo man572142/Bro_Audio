@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3109420919183503373}
-  - component: {fileID: 3109420919183503474}
+  - component: {fileID: 4505893217293699161}
   m_Layer: 0
   m_Name: SoundManager
   m_TagString: Untagged
@@ -34,7 +34,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3109420919183503474
+--- !u!114 &4505893217293699161
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -46,15 +46,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbcc80da4c091cf46baa2f161ad209a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _sfxPlayer: {fileID: 1045909176547971913}
-  _musicPlayers:
-  - {fileID: 6443841439991395278}
-  - {fileID: 1932754922307679714}
+  _sfxPlayer: {fileID: 0}
+  _musicPlayers: []
   _fadeInEase: 2
-  _fadeOutEase: 7
-  _mainSoundAsset: {fileID: 11400000, guid: cb18f19d8e694b148a6781810c473010, type: 2}
-  _randomSoundLibrary: []
-  _mainMusicAsset: {fileID: 11400000, guid: 84858987e811b8a48a93470d5f164f3b, type: 2}
+  _fadeOutEase: 11
+  _mainSoundAsset: {fileID: 0}
+  _randomSoundAsset: []
+  _mainMusicAsset: {fileID: 0}
 --- !u!1 &3109420919187162984
 GameObject:
   m_ObjectHideFlags: 0

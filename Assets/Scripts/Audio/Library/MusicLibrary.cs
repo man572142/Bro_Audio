@@ -4,17 +4,10 @@ using UnityEngine;
 
 namespace MiProduction.BroAudio.Asset
 {
-	[CreateAssetMenu(fileName = "MusicLibrary", menuName = "BroAudio/Create Library/Music")]
-	public class MusicLibraryAsset : AudioLibraryAsset<MusicLibrary>
-	{
-
-	}
-
-
     [System.Serializable]
     public struct MusicLibrary : IAudioLibrary
     {
-        public string Name;
+        [SerializeField] string _name;
         public AudioClip Clip;
         public Music Music;
         [Range(0f, 1f)] public float Volume;
@@ -24,9 +17,9 @@ namespace MiProduction.BroAudio.Asset
         [Min(0f)] public float FadeOut;
         [Min(0f)] public bool Loop;
 
-        public string GetName() => Name;
+        string IAudioLibrary.EnumName => _name;
 
-		public bool Validate(int index)
+        public bool Validate(int index)
         {
             return AudioExtension.Validate(nameof(MusicLibrary), index, Clip, StartPosition, FadeIn, FadeOut);
         }

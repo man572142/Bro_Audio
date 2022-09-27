@@ -4,15 +4,13 @@ using System.IO;
 
 public static class EnumGenerator
 {
-    const string _folderPath = "Assets/Scripts/Enums/";
-
-    public static void Generate(string enumName,string[] enums)
+    public static void Generate(string enumsPath,string enumName,string[] enums)
     {
-        string filePathAndName = _folderPath + enumName + ".cs";
+        string filePathAndName = enumsPath + "/" + enumName + ".cs";
 
-        if (!Directory.Exists(_folderPath))
+        if (!Directory.Exists(enumsPath))
         {
-            Directory.CreateDirectory(_folderPath);
+            Directory.CreateDirectory(enumsPath);
         }
 
         if(File.Exists(filePathAndName))

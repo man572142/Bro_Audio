@@ -9,7 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0e2784dfe427f7140a6edf6028436cd3, type: 3}
+  m_Script: {fileID: 11500000, guid: b8dea545865285941be8a4ddd0692911, type: 3}
   m_Name: MusicLibrary
   m_EditorClassIdentifier: 
   Libraries: []
+  _enumsPath: Assets/Scripts/Enums

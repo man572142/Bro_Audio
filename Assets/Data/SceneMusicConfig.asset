@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59bdebc14411e1d43b3887a65c5490a8, type: 3}
   m_Name: SceneMusicConfig
   m_EditorClassIdentifier: 
-  musicScenes: []
+  musicScenes:
+  - Music: 0
   element: 0

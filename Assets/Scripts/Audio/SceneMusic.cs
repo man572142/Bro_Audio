@@ -8,7 +8,7 @@ namespace MiProduction.BroAudio.SceneMusic
     public struct SceneMusic
     {
         public Music Music;
-        private List<string> _scenes;
+        [SerializeField] private List<string> _scenes;
 
         public List<string> Scenes
         {

@@ -72,6 +72,11 @@ namespace MiProduction.BroAudio.Core
             // 初始化音效庫
             for (int s = 0; s < _mainSoundAsset.Libraries.Length; s++)
             {
+                if(_soundBank.ContainsKey(_mainSoundAsset.Libraries[s].Sound))
+                {
+                    LogDuplicateError("Sound", _mainSoundAsset.Libraries[s].Sound.ToString());
+                    return;
+                }
                 if (_mainSoundAsset.Libraries[s].Validate(s))
                 {
                     _soundBank.Add(_mainSoundAsset.Libraries[s].Sound, _mainSoundAsset.Libraries[s]);
@@ -96,7 +101,12 @@ namespace MiProduction.BroAudio.Core
             // 初始化音樂庫
             for (int m = 0; m < _mainMusicAsset.Libraries.Length; m++)
             {
-                if (_mainMusicAsset.Libraries[m].Validate(m))
+                if (_musicBank.ContainsKey(_mainMusicAsset.Libraries[m].Music))
+                {
+                    LogDuplicateError("Music", _mainMusicAsset.Libraries[m].Music.ToString());
+                    return;
+                }
+                if (_mainMusicAsset.Libraries[m].Validate(m) && !_musicBank.ContainsKey(_mainMusicAsset.Libraries[m].Music))
                 {
                     _musicBank.Add(_mainMusicAsset.Libraries[m].Music, _mainMusicAsset.Libraries[m]);
                 }
@@ -262,7 +272,10 @@ namespace MiProduction.BroAudio.Core
 
         #endregion
 
-
+        private void LogDuplicateError(string enumType,string enumName)
+        {
+            Debug.LogError($"[SoundSystem] Enum {enumType}.{enumName} is duplicated !");
+        }
     }
 
 }

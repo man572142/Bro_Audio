@@ -17,9 +17,14 @@ namespace MiProduction.BroAudio.Core
         string _volParaName = string.Empty;
         MusicLibrary _currentMusic;
         Coroutine _currentPlayCoroutine;
+        Coroutine _subVolumeControl;
+        Coroutine _stopControl;
+
+        float _subVolume = 1f;
 
         public bool IsPlaying { get; private set; }
         public bool IsFadingOut { get; private set; }
+        public bool IsFadingIn { get; private set; }
 
         private void Awake()
         {
@@ -64,12 +69,14 @@ namespace MiProduction.BroAudio.Core
                 fadeInTime = fadeInTime < 0 ? musicLibrary.FadeIn : fadeInTime;
                 if(fadeInTime > 0)
                 {
+                    IsFadingIn = true;
                     yield return StartCoroutine(Fade(fadeInTime, musicLibrary.Volume));
                     onFinishFadeIn?.Invoke();
+                    IsFadingIn = false;
                 }    
                 else
                 {
-                    _audioMixer.SetFloat(_volParaName,musicLibrary.Volume.ToDecibel());
+                    _audioMixer.SetFloat(_volParaName,musicLibrary.Volume.ToDecibel() * _subVolume);
                 }
                 #endregion
 
@@ -95,7 +102,7 @@ namespace MiProduction.BroAudio.Core
 
         public void Stop(float fadeOutTime = -1, Action onFinishPlaying = null)
         {
-            StartCoroutine(StopControl(fadeOutTime, onFinishPlaying));
+            _stopControl = StartCoroutine(StopControl(fadeOutTime, onFinishPlaying));
         }
 
         private IEnumerator StopControl(float fadeOutTime, Action onFinishPlaying)
@@ -123,10 +130,10 @@ namespace MiProduction.BroAudio.Core
             }
             EndPlaying();
             onFinishPlaying?.Invoke();
-            
         }
 
-        public IEnumerator Fade(float duration, float targetVolume)
+
+        private IEnumerator Fade(float duration, float targetVolume)
         {
             float currentTime = 0;
             float currentVol;
@@ -138,8 +145,8 @@ namespace MiProduction.BroAudio.Core
             while (currentTime < duration)
             {
                 currentTime += Time.deltaTime;
-                newVol = Mathf.Lerp(currentVol, targetValue, (currentTime / duration).SetEase(ease));
-                _audioMixer.SetFloat(_volParaName, Mathf.Log10(newVol) * 20);
+                newVol = Mathf.Lerp(currentVol, targetValue , (currentTime / duration).SetEase(ease));
+                _audioMixer.SetFloat(_volParaName, Mathf.Log10(newVol) * 20 * _subVolume);
                 yield return null;
             }
             yield break;
@@ -155,6 +162,32 @@ namespace MiProduction.BroAudio.Core
             _player.loop = false;
             IsPlaying = false;
         }
+
+        public void SetMusicVolume(float vol,float fadeTime = 1f)
+		{
+            // 只動SubVolume，使原本的音量以及FadeIn/Out以及此處音量能共同運作
+            _subVolumeControl.Stop(this);
+            _subVolumeControl = StartCoroutine(FadeSubVolume(vol, fadeTime));
+            
+            
+        }
+
+        private IEnumerator FadeSubVolume(float target,float fadeTime)
+		{
+            float start = _subVolume;
+            float t = 0f;
+            while(t < 1f)
+			{
+                _subVolume = Mathf.Lerp(start, target, t);
+                t += Time.deltaTime / fadeTime;
+                if (!IsFadingIn && !IsFadingOut)
+                {
+                    // 取現在的 再乘上sub  還沒寫完!!
+                    _audioMixer.SetFloat(_volParaName, AudioExtension.ToDecibel(target));
+                }
+                yield return null;
+			}
+		}
 
 
     }

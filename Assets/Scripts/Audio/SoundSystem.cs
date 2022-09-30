@@ -59,5 +59,25 @@ namespace MiProduction.BroAudio
         /// <param name="musicPlayer"></param>
         /// <returns></returns>
         public static bool GetAvailableMusicPlayer(out MusicPlayer musicPlayer) => SoundManager.Instance.GetAvailableMusicPlayer(out musicPlayer);
+
+        /// <summary>
+        /// 停止播放音樂(使用預設FadeOut設定)
+        /// </summary>
+        public static void StopMusic() => SoundManager.Instance.StopMusic(-1f);
+
+        /// <summary>
+        /// 停止播放音樂
+        /// </summary>
+        /// <param name="fadeTime">自定FadeOut時間長度</param>
+        public static void StopMusic(float fadeTime) => SoundManager.Instance.StopMusic(fadeTime);
+
+        /// <summary>
+        /// 立即停止播放音樂
+        /// </summary>
+        public static void StopMusicImmediately() => SoundManager.Instance.StopMusic(0f);
+
+        public static void SetMusicVolume(float vol) => SoundManager.Instance.SetMusicVolume(vol, 1f);
+
+        public static void SetMusicVolume(float vol, float fadeTime) => SoundManager.Instance.SetMusicVolume(vol, fadeTime);
     }  
 }

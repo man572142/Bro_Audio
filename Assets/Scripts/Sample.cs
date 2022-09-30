@@ -18,6 +18,9 @@ public class Sample : MonoBehaviour
 
     [SerializeField] float _crossFadeTime = -1f;
 
+    [SerializeField] float _stopFadeTime = 0f;
+    [SerializeField] float _musicVolume = 1f;
+
     [SerializeField] Transform _scenePlayer = null;
 
     public void PlayA()
@@ -44,4 +47,14 @@ public class Sample : MonoBehaviour
     {
         SoundSystem.PlayRandomSFX(_randomSound);
     }
+
+    public void StopMusic()
+	{
+        SoundSystem.StopMusic(_stopFadeTime);
+	}
+
+    public void SetMusicVolume()
+	{
+        SoundSystem.SetMusicVolume(_musicVolume);
+	}
 }

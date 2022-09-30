@@ -52,9 +52,9 @@ MonoBehaviour:
   - {fileID: 1932754922307679714}
   _fadeInEase: 2
   _fadeOutEase: 11
-  _mainSoundAsset: {fileID: 0}
+  _mainSoundAsset: {fileID: 11400000, guid: cb18f19d8e694b148a6781810c473010, type: 2}
   _randomSoundAsset: []
-  _mainMusicAsset: {fileID: 0}
+  _mainMusicAsset: {fileID: 11400000, guid: 84858987e811b8a48a93470d5f164f3b, type: 2}
 --- !u!1 &3109420919187162984
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,7 +7,7 @@ namespace MiProduction.BroAudio.Library
     [System.Serializable]
     public struct MusicLibrary : IAudioLibrary
     {
-        [SerializeField] string _name;
+        [SerializeField] string Name;
         public AudioClip Clip;
         public Music Music;
         [Range(0f, 1f)] public float Volume;
@@ -17,7 +17,7 @@ namespace MiProduction.BroAudio.Library
         [Min(0f)] public float FadeOut;
         [Min(0f)] public bool Loop;
 
-        string IAudioLibrary.EnumName => _name;
+        string IAudioLibrary.EnumName => Name;
 
         public bool Validate(int index)
         {

@@ -171,6 +171,17 @@ namespace MiProduction.BroAudio.Core
             return false;
         }
 
+        public void StopMusic(float fadeTime)
+		{
+            _currentPlayer.Stop(fadeTime);
+		}
+
+        public void SetMusicVolume(float vol,float fadeTime)
+		{
+            _currentPlayer.SetMusicVolume(vol,fadeTime);
+		}
+
+
         #endregion
 
         #region ­µ®Ä

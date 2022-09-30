@@ -84,7 +84,7 @@ namespace MiProduction.BroAudio.Library
             for (int i = 0; i < _libraries.arraySize; i++)
             {
                 SerializedProperty element = _libraries.GetArrayElementAtIndex(i);
-                SerializedProperty elementEnumName = element.FindPropertyRelative("_name");
+                SerializedProperty elementEnumName = element.FindPropertyRelative("Name");
                 SerializedProperty elementEnum = element.FindPropertyRelative(asset.LibraryTypeName);
 
                 // ¥ý¹Á¸Õassign

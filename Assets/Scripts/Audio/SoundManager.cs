@@ -124,9 +124,10 @@ namespace MiProduction.BroAudio.Core
 
         public void PlayMusic(Music newMusic, Transition transition, float fadeTime = -1f)
         {
-            if (!MusicPlayerCheck(newMusic))
+            if (!PlayMusicCheck(newMusic))
                 return;
 
+            Debug.Log("PlayMusic");
             switch (transition)
             {
                 case Transition.Immediate:
@@ -178,7 +179,7 @@ namespace MiProduction.BroAudio.Core
 
         public void SetMusicVolume(float vol,float fadeTime)
 		{
-            _currentPlayer.SetMusicVolume(vol,fadeTime);
+            _currentPlayer.FadeSubVolume(vol,fadeTime);
 		}
 
 
@@ -230,7 +231,7 @@ namespace MiProduction.BroAudio.Core
 
 
         #region NullChecker
-        private bool MusicPlayerCheck(Music music)
+        private bool PlayMusicCheck(Music music)
         {
 #if UNITY_EDITOR
             if (_mainMusicAsset == null || _musicBank.Count < 1 || music == Music.None)
@@ -241,6 +242,11 @@ namespace MiProduction.BroAudio.Core
             else if (!_musicBank.ContainsKey(music))
             {
                 Debug.LogError($"[SoundSystem] Enum:{music.ToString()} may not exist in the current MusicAsset");
+                return false;
+            }
+            else if(music == _currentPlayer.CurrentMusic)
+            {
+                Debug.LogWarning("[SoundSystem] The music you want to play is already playing");
                 return false;
             }
 #endif

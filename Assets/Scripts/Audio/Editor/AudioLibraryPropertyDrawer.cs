@@ -7,38 +7,50 @@ using UnityEngine.UIElements;
 
 namespace MiProduction.BroAudio.Library
 {
-	[CustomPropertyDrawer(typeof(SoundLibrary))]
-	public class AudioLibraryPropertyDrawer : PropertyDrawer
+	public abstract class AudioLibraryPropertyDrawer : PropertyDrawer
 	{
 		protected const float ClipViewHeight = 100f;
 
+		// TODO: 如果有同名的會一起開關，需要優化
 		protected Dictionary<string, (bool isFold, bool hasClip)> _elementState = new Dictionary<string, (bool isFold, bool hasClip)>();
 
+		protected int LineIndex = 0;
+		protected int BasePropertiesLineCount = 0;
+		protected int ClipPropertiesLineCount = 0;
+
+		protected abstract Vector3[] GetClipLinePoints(float startPos,float clipLength,float width);
+		protected abstract void DrawAdditionalBaseProperties(Rect position, SerializedProperty property);
+
+		protected abstract void DrawAdditionalClipProperties(Rect position, SerializedProperty property);
 
 		public float SingleLineSpace
 		{
 			get => EditorGUIUtility.singleLineHeight + 3f;
 		}
 
+		/// <summary>
+		/// 取得目前繪製的那一行的Rect，取完自動迭代至下行 (執行順序將會決定繪製的位置)
+		/// </summary>
+		/// <param name="position"></param>
+		/// <returns></returns>
+		protected Rect GetRectAndIterateLine(Rect position)
+		{
+			Rect newRect = new Rect(position.x, position.y + SingleLineSpace * LineIndex, position.width, EditorGUIUtility.singleLineHeight);
+			LineIndex++;
+
+			return newRect;
+		}
+
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			Rect foldRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
-			Rect nameRect = new Rect(position.x, position.y + SingleLineSpace, position.width, EditorGUIUtility.singleLineHeight);
-			Rect enumRect = new Rect(position.x, position.y + SingleLineSpace * 2, position.width, EditorGUIUtility.singleLineHeight);
-			Rect volRect = new Rect(position.x, position.y + SingleLineSpace * 3, position.width, EditorGUIUtility.singleLineHeight);
-			Rect clipAssetRect = new Rect(position.x, position.y + SingleLineSpace * 4, position.width, EditorGUIUtility.singleLineHeight);
-			Rect startPosRect = new Rect(position.x, position.y + SingleLineSpace * 5, position.width, EditorGUIUtility.singleLineHeight);
-			// startPos會在沒Clip的時候也增加Property高度 (待解決)
-			Rect clipViewRect = new Rect(position.x, position.y + SingleLineSpace * 6, position.width, ClipViewHeight);
-			Rect waveformRect = new Rect(position.x, position.y + SingleLineSpace * 6, position.width, ClipViewHeight);
-			Rect totalRect = new Rect(position.x, position.y, position.width, position.height + SingleLineSpace * 6);
+			LineIndex = 0;
+			//Rect totalRect = new Rect(position.x, position.y, position.width, position.height + SingleLineSpace * (LineIndex + 1));
 
-			EditorGUI.BeginProperty(totalRect, label, property);
+			EditorGUI.BeginProperty(position, label, property);
 
 			SerializedProperty nameProperty = property.FindPropertyRelative("Name");
 			SerializedProperty volumeProperty = property.FindPropertyRelative("Volume");
 			SerializedProperty startPosProperty = property.FindPropertyRelative("StartPosition");
-
 
 			bool isFoldArray = false;
 			bool hasClip = false;
@@ -48,30 +60,42 @@ namespace MiProduction.BroAudio.Library
 			}
 			(bool isFold, bool hasClip) state = _elementState[nameProperty.stringValue];
 
-			state.isFold = EditorGUI.Foldout(foldRect, state.isFold, nameProperty.stringValue);
+			state.isFold = EditorGUI.Foldout(GetRectAndIterateLine(position), state.isFold, nameProperty.stringValue);
 			if (state.isFold)
 			{
-				nameProperty.stringValue = EditorGUI.TextField(nameRect, "Name", nameProperty.stringValue);
-				EditorGUI.PropertyField(enumRect, property.FindPropertyRelative("Sound"));
-				volumeProperty.floatValue = EditorGUI.Slider(volRect, "Volume", volumeProperty.floatValue, 0f, 1f);
-				EditorGUI.PropertyField(clipAssetRect, property.FindPropertyRelative("Clip"));
-				AudioClip clip = property.FindPropertyRelative("Clip").objectReferenceValue as AudioClip;
+				// Name
+				nameProperty.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProperty.stringValue);
+				// Volume
+				volumeProperty.floatValue = EditorGUI.Slider(GetRectAndIterateLine(position), "Volume", volumeProperty.floatValue, 0f, 1f);
+				
+				DrawAdditionalBaseProperties(position, property);
+				BasePropertiesLineCount = LineIndex + 1;
 
+				// Clip Asset
+				EditorGUI.PropertyField(GetRectAndIterateLine(position), property.FindPropertyRelative("Clip"));
+
+				AudioClip clip = property.FindPropertyRelative("Clip").objectReferenceValue as AudioClip;
 				if (clip != null)
 				{
-					startPosProperty.floatValue = Mathf.Clamp(EditorGUI.FloatField(startPosRect, "Start Position", startPosProperty.floatValue), 0f, clip.length);
+					// Start Position
+					startPosProperty.floatValue = Mathf.Clamp(EditorGUI.FloatField(GetRectAndIterateLine(position), "Start Position", startPosProperty.floatValue), 0f, clip.length);
+
+					DrawAdditionalClipProperties(position, property);
+					ClipPropertiesLineCount = LineIndex + 1 - BasePropertiesLineCount ;
+					#region Draw Waveform
 					Texture2D waveformTexture = AssetPreview.GetAssetPreview(clip);
+					Rect waveformRect = new Rect(position.x, position.y + SingleLineSpace * (LineIndex + 1), position.width, ClipViewHeight);
 					if (waveformTexture != null)
 					{
 						GUI.DrawTexture(waveformRect, waveformTexture);
 					}
-					EditorGUI.DrawRect(clipViewRect, new Color(0.05f, 0.05f, 0.05f, 0.3f));
+					EditorGUI.DrawRect(waveformRect, new Color(0.05f, 0.05f, 0.05f, 0.3f));
 
-					float startX = (startPosProperty.floatValue / clip.length) * position.width;
-					GUI.BeginClip(clipViewRect);
+					GUI.BeginClip(waveformRect);
 					Handles.color = Color.green;
-					Handles.DrawAAPolyLine(3f, new Vector3(startX, ClipViewHeight, 0f), new Vector3(startX, 0f, 0f));
+					Handles.DrawAAPolyLine(3f, GetClipLinePoints(startPosProperty.floatValue, clip.length,position.width));
 					GUI.EndClip();
+					#endregion
 				}
 				state.hasClip = clip != null;
 			}
@@ -88,11 +112,21 @@ namespace MiProduction.BroAudio.Library
 			float clipHeight = 0f;
 			if (_elementState.TryGetValue(propertyName, out var state))
 			{
-				foldHeight = state.isFold ? SingleLineSpace * 6 : 0f;
-				clipHeight = state.hasClip && state.isFold ? ClipViewHeight : 0f;
+				Debug.Log("Shit");
+				foldHeight = state.isFold ? 
+					SingleLineSpace * BasePropertiesLineCount : 0f;
+				clipHeight = state.hasClip && state.isFold ? 
+					ClipViewHeight + SingleLineSpace * ClipPropertiesLineCount  : 0f;
 			}
+
+			Debug.Log($"FoldHeight:{foldHeight}, ClipHeight:{clipHeight} , LineIndexBeforeClip:{BasePropertiesLineCount} ");
+
 			return foldHeight + clipHeight + EditorGUIUtility.singleLineHeight;
 		}
+
+		
+		
+
 	}
 
 }

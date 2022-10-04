@@ -11,8 +11,9 @@ namespace MiProduction.BroAudio.Library
         public Sound Sound;
         public AudioClip Clip;
         [Range(0f, 1f)] public float Volume;
-        [Min(0f)] public float Delay;
-        [Min(0f)] public float StartPosition;
+        public float Delay;
+        public float StartPosition;
+        public float EndPosition;
 
         public string EnumName  => Name;
 

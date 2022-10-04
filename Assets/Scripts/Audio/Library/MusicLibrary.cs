@@ -12,10 +12,11 @@ namespace MiProduction.BroAudio.Library
         public Music Music;
         [Range(0f, 1f)] public float Volume;
         public float StartPosition;
+        public float EndPosition;
         //[MinMaxSlider(0f,1f)] public Vector2 fade;
-        [Min(0f)] public float FadeIn;
-        [Min(0f)] public float FadeOut;
-        [Min(0f)] public bool Loop;
+        public float FadeIn;
+        public float FadeOut;
+        public bool Loop;
 
         string IAudioLibrary.EnumName => Name;
 

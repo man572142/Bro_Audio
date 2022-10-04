@@ -18,10 +18,10 @@ namespace MiProduction.BroAudio.Library
 		protected int BasePropertiesLineCount = 0;
 		protected int ClipPropertiesLineCount = 0;
 
-		protected abstract Vector3[] GetClipLinePoints(float startPos,float clipLength,float width);
+		protected abstract Vector3[] GetClipLinePoints(float width);
 		protected abstract void DrawAdditionalBaseProperties(Rect position, SerializedProperty property);
 
-		protected abstract void DrawAdditionalClipProperties(Rect position, SerializedProperty property);
+		protected abstract void DrawClipProperties(Rect position, SerializedProperty property,float clipLength);
 
 		public float SingleLineSpace
 		{
@@ -50,9 +50,8 @@ namespace MiProduction.BroAudio.Library
 
 			SerializedProperty nameProperty = property.FindPropertyRelative("Name");
 			SerializedProperty volumeProperty = property.FindPropertyRelative("Volume");
-			SerializedProperty startPosProperty = property.FindPropertyRelative("StartPosition");
 
-			bool isFoldArray = false;
+            bool isFoldArray = false;
 			bool hasClip = false;
 			if (!_elementState.ContainsKey(nameProperty.stringValue))
 			{
@@ -77,11 +76,11 @@ namespace MiProduction.BroAudio.Library
 				AudioClip clip = property.FindPropertyRelative("Clip").objectReferenceValue as AudioClip;
 				if (clip != null)
 				{
-					// Start Position
-					startPosProperty.floatValue = Mathf.Clamp(EditorGUI.FloatField(GetRectAndIterateLine(position), "Start Position", startPosProperty.floatValue), 0f, clip.length);
+					
 
-					DrawAdditionalClipProperties(position, property);
+                    DrawClipProperties(position, property,clip.length);
 					ClipPropertiesLineCount = LineIndex + 1 - BasePropertiesLineCount ;
+
 					#region Draw Waveform
 					Texture2D waveformTexture = AssetPreview.GetAssetPreview(clip);
 					Rect waveformRect = new Rect(position.x, position.y + SingleLineSpace * (LineIndex + 1), position.width, ClipViewHeight);
@@ -93,7 +92,7 @@ namespace MiProduction.BroAudio.Library
 
 					GUI.BeginClip(waveformRect);
 					Handles.color = Color.green;
-					Handles.DrawAAPolyLine(3f, GetClipLinePoints(startPosProperty.floatValue, clip.length,position.width));
+					Handles.DrawAAPolyLine(2f, GetClipLinePoints(position.width));
 					GUI.EndClip();
 					#endregion
 				}
@@ -112,14 +111,13 @@ namespace MiProduction.BroAudio.Library
 			float clipHeight = 0f;
 			if (_elementState.TryGetValue(propertyName, out var state))
 			{
-				Debug.Log("Shit");
 				foldHeight = state.isFold ? 
 					SingleLineSpace * BasePropertiesLineCount : 0f;
 				clipHeight = state.hasClip && state.isFold ? 
 					ClipViewHeight + SingleLineSpace * ClipPropertiesLineCount  : 0f;
 			}
 
-			Debug.Log($"FoldHeight:{foldHeight}, ClipHeight:{clipHeight} , LineIndexBeforeClip:{BasePropertiesLineCount} ");
+			//Debug.Log($"FoldHeight:{foldHeight}, ClipHeight:{clipHeight} , LineIndexBeforeClip:{BasePropertiesLineCount} ");
 
 			return foldHeight + clipHeight + EditorGUIUtility.singleLineHeight;
 		}

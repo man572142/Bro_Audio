@@ -31,7 +31,13 @@ namespace MiProduction.BroAudio.Library
             {
                 SetEnumsPath();
 
-                if (_asset != null && GUILayout.Button("Generate and Assign Enums", GUILayout.Height(30f)))
+                if (IsEnumNeedRefresh())
+                {
+                    // 既然都這樣了，何不乾脆直接就Assign
+                    EditorGUILayout.HelpBox("This library needs to be updated and reassigned", MessageType.Warning);
+                }
+
+                if (_asset != null && GUILayout.Button("Update and Assign Enums", GUILayout.Height(30f)))
                 {
                     if (_asset.AllLibraryEnumNames == null)
                         return;
@@ -47,17 +53,17 @@ namespace MiProduction.BroAudio.Library
                     _hasUnassignedEnum = true;
                     _waitingString = string.Empty;
                 }
-
             }
             else
             {
                 EditorGUILayout.LabelField("Assigning enums" + _waitingString);
-                AssignEnum(_asset);
+                AssignEnum();
                 _waitingString += " .";
             }
 
-            serializedObject.ApplyModifiedProperties();
+            
 
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void SetEnumsPath()
@@ -68,24 +74,29 @@ namespace MiProduction.BroAudio.Library
                 _pathProperty.stringValue = _defaultEnumsPath;
             }
             EditorGUILayout.LabelField("Enums Path");
-            EditorGUILayout.LabelField(_pathProperty.stringValue);
-            if (GUILayout.Button("Change Enums Path"))
-            {
-                string path = EditorUtility.OpenFolderPanel("Enums Path", _pathProperty.stringValue, _pathProperty.stringValue);
-                if (!string.IsNullOrWhiteSpace(path))
+			EditorGUILayout.BeginHorizontal();
+			{
+                EditorGUILayout.LabelField(_pathProperty.stringValue);
+                if (GUILayout.Button("Change Enums Path", GUILayout.Width(150f)))
                 {
-                    _pathProperty.stringValue = path.Substring(path.IndexOf("Assets"));
+                    string path = EditorUtility.OpenFolderPanel("Enums Path", _pathProperty.stringValue, _pathProperty.stringValue);
+                    if (!string.IsNullOrWhiteSpace(path))
+                    {
+                        _pathProperty.stringValue = path.Substring(path.IndexOf("Assets"));
+                    }
                 }
             }
+            EditorGUILayout.EndHorizontal();
+
         }
 
-        private void AssignEnum(IAudioLibraryIdentify asset)
+        private void AssignEnum()
         {
             for (int i = 0; i < _libraries.arraySize; i++)
             {
                 SerializedProperty element = _libraries.GetArrayElementAtIndex(i);
                 SerializedProperty elementEnumName = element.FindPropertyRelative("Name");
-                SerializedProperty elementEnum = element.FindPropertyRelative(asset.LibraryTypeName);
+                SerializedProperty elementEnum = element.FindPropertyRelative(_asset.LibraryTypeName);
 
                 // 先嘗試assign
                 for (int e = 0; e < elementEnum.enumNames.Length; e++)
@@ -109,6 +120,22 @@ namespace MiProduction.BroAudio.Library
             _hasUnassignedEnum = false;
             Debug.Log("All enums have been assigned successfully!");
         }
-    }
+
+        private bool IsEnumNeedRefresh()
+        {
+            for (int i = 0; i < _libraries.arraySize; i++)
+            {
+                SerializedProperty element = _libraries.GetArrayElementAtIndex(i);
+                SerializedProperty elementEnumName = element.FindPropertyRelative("Name");
+                SerializedProperty elementEnum = element.FindPropertyRelative(_asset.LibraryTypeName);
+
+                if (elementEnumName.stringValue != elementEnum.enumNames[elementEnum.enumValueIndex])
+				{
+                    return true;
+				}
+            }
+            return false;
+        }
+	}
 
 }

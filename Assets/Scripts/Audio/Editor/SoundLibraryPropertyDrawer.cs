@@ -8,8 +8,8 @@ namespace MiProduction.BroAudio.Library
 	[CustomPropertyDrawer(typeof(SoundLibrary))]
 	public class SoundLibraryPropertyDrawer : AudioLibraryPropertyDrawer
 	{
-		private float _startPos = 0f;
-		private float _endPos = 0f;
+		private GUIContent[] _playbackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
+		private float[] _playbackValues = new float[2];
 		private float _clipLength = 0f;
 
 		protected override void DrawAdditionalBaseProperties(Rect position, SerializedProperty property)
@@ -22,22 +22,19 @@ namespace MiProduction.BroAudio.Library
             SerializedProperty startPosProperty = property.FindPropertyRelative("StartPosition");
             SerializedProperty endPosProperty = property.FindPropertyRelative("EndPosition");
 
-			_startPos = startPosProperty.floatValue;
-			_endPos = endPosProperty.floatValue;
+			_playbackValues[0] = startPosProperty.floatValue;
+			_playbackValues[1] = endPosProperty.floatValue;
 			_clipLength = clipLength;
 
-            // Start Position
-            startPosProperty.floatValue =
-                Mathf.Clamp(EditorGUI.FloatField(GetRectAndIterateLine(position), "Start Position", startPosProperty.floatValue), 0f, clipLength - endPosProperty.floatValue);
-            // End Position
-            endPosProperty.floatValue =
-                Mathf.Clamp(EditorGUI.FloatField(GetRectAndIterateLine(position), "End Position", endPosProperty.floatValue), 0f, clipLength - startPosProperty.floatValue);
-        }
+			EditorGUI.MultiFloatField(GetRectAndIterateLine(position), new GUIContent("Playback Position"), _playbackLabels, _playbackValues);
+			startPosProperty.floatValue = Mathf.Clamp(_playbackValues[0], 0f, GetLengthLimit(_playbackValues[0]));
+			endPosProperty.floatValue = Mathf.Clamp(_playbackValues[1], 0f, GetLengthLimit(_playbackValues[1]));
+		}
 
 		protected override Vector3[] GetClipLinePoints(float width)
 		{
-			float startPoint = Mathf.Lerp(0f, width, _startPos / _clipLength);
-			float endPoint = Mathf.Lerp(0f, width, _clipLength - _endPos / _clipLength);
+			float startPoint = Mathf.Lerp(0f, width, _playbackValues[0] / _clipLength);
+			float endPoint = Mathf.Lerp(0f, width, _clipLength - _playbackValues[1] / _clipLength);
 			Vector3[] points = new Vector3[4];
 			points[0] = new Vector3(startPoint, ClipViewHeight, 0f);
 			points[1] = new Vector3(startPoint, 0f, 0f);
@@ -46,6 +43,11 @@ namespace MiProduction.BroAudio.Library
 
             //Debug.Log($"{points[0]},{points[1]},{points[2]},{points[3]}");
             return points;
+		}
+
+		private float GetLengthLimit(float self)
+		{
+			return _clipLength - _playbackValues[0] -_playbackValues[1] + self;
 		}
 	}
 }

@@ -8,11 +8,12 @@ namespace MiProduction.BroAudio.Library
 	[CustomPropertyDrawer(typeof(MusicLibrary))]
 	public class MusicLibraryPropertyDrawer : AudioLibraryPropertyDrawer
 	{
-		private float _fadeIn = 0f;
-		private float _fadeOut = 0f;
-		private float _startPos = 0f;
-		private float _endPos = 0f;
+
 		private float _clipLength = 0f;
+		private GUIContent[] _fadeLabels = { new GUIContent("    In    "), new GUIContent(" Out ") };
+		private float[] _fadeValues = new float[2];
+		private GUIContent[] _playbackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
+		private float[] _playbackValues = new float[2];
 
 		protected override void DrawAdditionalBaseProperties(Rect position, SerializedProperty property)
 		{
@@ -21,27 +22,24 @@ namespace MiProduction.BroAudio.Library
 
 		protected override void DrawClipProperties(Rect position, SerializedProperty property,float clipLength)
 		{
+			SerializedProperty startPosProperty = property.FindPropertyRelative("StartPosition");
+			SerializedProperty endPosProperty = property.FindPropertyRelative("EndPosition");
 			SerializedProperty fadeInProperty = property.FindPropertyRelative("FadeIn");
 			SerializedProperty fadeOutProperty = property.FindPropertyRelative("FadeOut");
-            SerializedProperty startPosProperty = property.FindPropertyRelative("StartPosition");
-            SerializedProperty endPosProperty = property.FindPropertyRelative("EndPosition");
 
-            _fadeIn = fadeInProperty.floatValue;
-            _fadeOut = fadeOutProperty.floatValue;
-            _startPos = startPosProperty.floatValue;
-            _endPos = endPosProperty.floatValue;
+			_playbackValues[0] = startPosProperty.floatValue;
+			_playbackValues[1] = endPosProperty.floatValue;
+			_fadeValues[0] = fadeInProperty.floatValue;
+			_fadeValues[1] = fadeOutProperty.floatValue;
 			_clipLength = clipLength;
 
-            fadeInProperty.floatValue = Mathf.Clamp(
-				EditorGUI.FloatField(GetRectAndIterateLine(position), "Fade In", _fadeIn),0f,GetLengthLimit(_fadeIn));
-			fadeOutProperty.floatValue = Mathf.Clamp(
-				EditorGUI.FloatField(GetRectAndIterateLine(position), "Fade Out", _fadeOut),0f,GetLengthLimit(_fadeOut));
-            startPosProperty.floatValue = Mathf.Clamp(
-                EditorGUI.FloatField(GetRectAndIterateLine(position), "Start Position", _startPos), 0f, GetLengthLimit(_startPos));
-            endPosProperty.floatValue = Mathf.Clamp(
-                EditorGUI.FloatField(GetRectAndIterateLine(position), "End Position", _endPos), 0f,GetLengthLimit(_endPos));
+			EditorGUI.MultiFloatField(GetRectAndIterateLine(position), new GUIContent("Playback Position"), _playbackLabels, _playbackValues);
+			startPosProperty.floatValue = Mathf.Clamp(_playbackValues[0], 0f, GetLengthLimit(_playbackValues[0]));
+			endPosProperty.floatValue = Mathf.Clamp(_playbackValues[1], 0f, GetLengthLimit(_playbackValues[1]));
 
-            
+			EditorGUI.MultiFloatField(GetRectAndIterateLine(position),new GUIContent("Fade") ,_fadeLabels, _fadeValues);
+            fadeInProperty.floatValue = Mathf.Clamp(_fadeValues[0],0f,GetLengthLimit(_fadeValues[0]));
+			fadeOutProperty.floatValue = Mathf.Clamp(_fadeValues[1],0f,GetLengthLimit(_fadeValues[1]));   
         }
 
 		protected override Vector3[] GetClipLinePoints(float width)
@@ -50,10 +48,10 @@ namespace MiProduction.BroAudio.Library
 				return new Vector3[0];
 
 			Vector3[] points = new Vector3[4];
-			points[0] = new Vector3(Mathf.Lerp(0f, width, _startPos / _clipLength), ClipViewHeight, 0f);
-			points[1] = new Vector3(Mathf.Lerp(0f, width, (_startPos + _fadeIn) / _clipLength), 0f, 0f);
-			points[2] = new Vector3(Mathf.Lerp(0f, width, (_clipLength - _endPos - _fadeOut) / _clipLength), 0f, 0f);
-			points[3] = new Vector3(Mathf.Lerp(0f, width, (_clipLength - _endPos) / _clipLength), ClipViewHeight, 0f);
+			points[0] = new Vector3(Mathf.Lerp(0f, width, _playbackValues[0] / _clipLength), ClipViewHeight, 0f);
+			points[1] = new Vector3(Mathf.Lerp(0f, width, (_playbackValues[0] + _fadeValues[0]) / _clipLength), 0f, 0f);
+			points[2] = new Vector3(Mathf.Lerp(0f, width, (_clipLength - _playbackValues[1] - _fadeValues[1]) / _clipLength), 0f, 0f);
+			points[3] = new Vector3(Mathf.Lerp(0f, width, (_clipLength - _playbackValues[1]) / _clipLength), ClipViewHeight, 0f);
 
 			//Debug.Log($"{points[0]},{points[1]},{points[2]},{points[3]}");
 			return points;
@@ -61,7 +59,7 @@ namespace MiProduction.BroAudio.Library
 
 		private float GetLengthLimit(float self)
 		{
-			return _clipLength - _startPos - _fadeIn - _fadeOut - _endPos + self;
+			return _clipLength - _playbackValues[0] - _fadeValues[0] - _fadeValues[1] - _playbackValues[1] + self;
 		}
 	}
 }

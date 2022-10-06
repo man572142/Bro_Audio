@@ -15,6 +15,8 @@ namespace MiProduction.BroAudio.Library
 		private GUIContent[] _playbackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
 		private float[] _playbackValues = new float[2];
 
+
+
 		protected override void DrawAdditionalBaseProperties(Rect position, SerializedProperty property)
 		{
 			
@@ -34,13 +36,19 @@ namespace MiProduction.BroAudio.Library
 			_clipLength = clipLength;
 
 			EditorGUI.MultiFloatField(GetRectAndIterateLine(position), new GUIContent("Playback Position"), _playbackLabels, _playbackValues);
-			startPosProperty.floatValue = Mathf.Clamp(_playbackValues[0], 0f, GetLengthLimit(_playbackValues[0]));
-			endPosProperty.floatValue = Mathf.Clamp(_playbackValues[1], 0f, GetLengthLimit(_playbackValues[1]));
+			
+			startPosProperty.floatValue = Mathf.Clamp(_playbackValues[0], 0f, GetLengthLimit(0,endPosProperty.floatValue,fadeInProperty.floatValue, fadeOutProperty.floatValue));
+			_playbackValues[0] = startPosProperty.floatValue;
+			endPosProperty.floatValue = Mathf.Clamp(_playbackValues[1], 0f, GetLengthLimit(startPosProperty.floatValue,0f, fadeInProperty.floatValue, fadeOutProperty.floatValue));
+			_playbackValues[1] = endPosProperty.floatValue;
 
-			EditorGUI.MultiFloatField(GetRectAndIterateLine(position),new GUIContent("Fade") ,_fadeLabels, _fadeValues);
-            fadeInProperty.floatValue = Mathf.Clamp(_fadeValues[0],0f,GetLengthLimit(_fadeValues[0]));
-			fadeOutProperty.floatValue = Mathf.Clamp(_fadeValues[1],0f,GetLengthLimit(_fadeValues[1]));   
-        }
+			EditorGUI.MultiFloatField(GetRectAndIterateLine(position),new GUIContent("Fade") ,_fadeLabels, _fadeValues);	
+            fadeInProperty.floatValue = Mathf.Clamp(_fadeValues[0],0f, GetLengthLimit(startPosProperty.floatValue, endPosProperty.floatValue, 0f, fadeOutProperty.floatValue));
+			_fadeValues[0] = fadeInProperty.floatValue;
+			fadeOutProperty.floatValue = Mathf.Clamp(_fadeValues[1],0f, GetLengthLimit(startPosProperty.floatValue, endPosProperty.floatValue, fadeInProperty.floatValue, 0f));
+			_fadeValues[1] = fadeOutProperty.floatValue;
+			//Debug.Log(GetLengthLimit(_fadeValues[0]));
+		}
 
 		protected override Vector3[] GetClipLinePoints(float width)
 		{
@@ -57,9 +65,10 @@ namespace MiProduction.BroAudio.Library
 			return points;
 		}
 
-		private float GetLengthLimit(float self)
+		private float GetLengthLimit(float start,float end,float fadeIn,float fadeOut)
 		{
-			return _clipLength - _playbackValues[0] - _fadeValues[0] - _fadeValues[1] - _playbackValues[1] + self;
+			
+			return _clipLength - start - end - fadeIn - fadeOut;
 		}
 	}
 }

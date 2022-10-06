@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -11,7 +11,7 @@ namespace MiProduction.BroAudio.Library
 	{
 		protected const float ClipViewHeight = 100f;
 
-		// TODO: ¦pªG¦³¦P¦Wªº·|¤@°_¶}Ãö¡A»İ­nÀu¤Æ
+		// TODO: å¦‚æœæœ‰åŒåçš„æœƒä¸€èµ·é–‹é—œï¼Œéœ€è¦å„ªåŒ–
 		protected Dictionary<string, (bool isFold, bool hasClip)> _elementState = new Dictionary<string, (bool isFold, bool hasClip)>();
 
 		protected int LineIndex = 0;
@@ -20,7 +20,6 @@ namespace MiProduction.BroAudio.Library
 
 		protected abstract Vector3[] GetClipLinePoints(float width);
 		protected abstract void DrawAdditionalBaseProperties(Rect position, SerializedProperty property);
-
 		protected abstract void DrawClipProperties(Rect position, SerializedProperty property,float clipLength);
 
 		public float SingleLineSpace
@@ -29,7 +28,7 @@ namespace MiProduction.BroAudio.Library
 		}
 
 		/// <summary>
-		/// ¨ú±o¥Ø«eÃ¸»sªº¨º¤@¦æªºRect¡A¨ú§¹¦Û°Ê­¡¥N¦Ü¤U¦æ (°õ¦æ¶¶§Ç±N·|¨M©wÃ¸»sªº¦ì¸m)
+		/// å–å¾—ç›®å‰ç¹ªè£½çš„é‚£ä¸€è¡Œçš„Rectï¼Œå–å®Œè‡ªå‹•è¿­ä»£è‡³ä¸‹è¡Œ (åŸ·è¡Œé †åºå°‡æœƒæ±ºå®šç¹ªè£½çš„ä½ç½®)
 		/// </summary>
 		/// <param name="position"></param>
 		/// <returns></returns>
@@ -79,11 +78,30 @@ namespace MiProduction.BroAudio.Library
 					
 
                     DrawClipProperties(position, property,clip.length);
-					ClipPropertiesLineCount = LineIndex + 1 - BasePropertiesLineCount ;
+					
+					ClipPropertiesLineCount = LineIndex - BasePropertiesLineCount ;
 
+
+					Rect clipViewRect = GetRectAndIterateLine(position);
+					Rect waveformRect = new Rect(clipViewRect.xMin + clipViewRect.width *0.1f,clipViewRect.center.y ,clipViewRect.width * 0.9f, ClipViewHeight);
+					Rect playRect = new Rect(clipViewRect.xMin,clipViewRect.yMin + ClipViewHeight * 0.15f, 40f, 40f);
+					Rect stopRect = new Rect(clipViewRect.xMin,clipViewRect.yMin + ClipViewHeight * 0.65f, 40f, 40f);
+
+
+					if (GUI.Button(playRect, "â–¶"))
+					{
+						// é‚„è¦æŠ“START POS
+						EditorPlayAudioClip.PlayClip(clip);
+					}
+					if (GUI.Button(stopRect, "â– "))
+					{
+						EditorPlayAudioClip.StopAllClips();
+					}
+					EditorGUI.DrawRect(playRect, new Color(0.25f, 0.9f, 0.25f, 0.4f));
+					EditorGUI.DrawRect(stopRect, new Color(0.9f, 0.25f, 0.25f, 0.4f));
 					#region Draw Waveform
 					Texture2D waveformTexture = AssetPreview.GetAssetPreview(clip);
-					Rect waveformRect = new Rect(position.x, position.y + SingleLineSpace * (LineIndex + 1), position.width, ClipViewHeight);
+					//Rect waveformRect = new Rect(position.x, position.y + SingleLineSpace * (LineIndex + 1), position.width, ClipViewHeight);
 					if (waveformTexture != null)
 					{
 						GUI.DrawTexture(waveformRect, waveformTexture);
@@ -92,7 +110,7 @@ namespace MiProduction.BroAudio.Library
 
 					GUI.BeginClip(waveformRect);
 					Handles.color = Color.green;
-					Handles.DrawAAPolyLine(2f, GetClipLinePoints(position.width));
+					Handles.DrawAAPolyLine(2f, GetClipLinePoints(waveformRect.width));
 					GUI.EndClip();
 					#endregion
 				}

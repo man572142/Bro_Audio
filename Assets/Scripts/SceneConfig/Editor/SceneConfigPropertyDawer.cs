@@ -14,8 +14,6 @@ public class SceneConfigPropertyDawer : PropertyDrawer,IEditorDrawer
     public int LineIndex { get; set; }
     public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 
-    private bool isArrayExpanded = false;
-
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
         LineIndex = 0;
@@ -31,14 +29,7 @@ public class SceneConfigPropertyDawer : PropertyDrawer,IEditorDrawer
             if(dataProperty.isArray)
             {
                 string typeName = dataProperty.arrayElementType.Replace("PPtr<$", string.Empty).Replace(">", string.Empty);
-                isArrayExpanded = EditorGUI.PropertyField(GetRectAndIterateLine(this, position), dataProperty, new GUIContent(typeName));
-                if(isArrayExpanded)
-                {
-                    for(int i = 0; i < dataProperty.arraySize;i++)
-                    {
-                        EditorGUI.PropertyField(GetRectAndIterateLine(this, position), dataProperty.GetArrayElementAtIndex(i));
-                    }
-                }
+                EditorGUI.PropertyField(GetRectAndIterateLine(this, position), dataProperty, new GUIContent(typeName),true);
             }
             else
             {
@@ -56,19 +47,17 @@ public class SceneConfigPropertyDawer : PropertyDrawer,IEditorDrawer
         if(property.isExpanded && LineIndex > 0)
         {
             height += LineIndex * SingleLineSpace;
-            //SerializedProperty dataProperty = property.FindPropertyRelative("Data");
-            //if(dataProperty.isArray && isArrayExpanded)
-            //{
-            //    height += (dataProperty.arraySize + 1) * SingleLineSpace;
-            //}
-            
+            SerializedProperty dataProperty = property.FindPropertyRelative("Data");
+            if(dataProperty.isArray && dataProperty.isExpanded)
+            {
+                height += (dataProperty.arraySize + 3) * EditorGUIUtility.singleLineHeight;
+            }
         }
         else
         {
             property.isExpanded = false;
             height += SingleLineSpace;
         }
-
         return height;
     }
 

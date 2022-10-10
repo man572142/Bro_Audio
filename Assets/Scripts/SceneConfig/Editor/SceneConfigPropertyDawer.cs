@@ -20,7 +20,6 @@ public class SceneConfigPropertyDawer : PropertyDrawer,IEditorDrawer
         SerializedProperty sceneProperty = property.FindPropertyRelative("Scene");
         SerializedProperty dataProperty = property.FindPropertyRelative("Data");
         
-
         property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(this, position), property.isExpanded, new GUIContent(GetSceneName(sceneProperty.stringValue)));
         if (property.isExpanded)
         {
@@ -35,8 +34,7 @@ public class SceneConfigPropertyDawer : PropertyDrawer,IEditorDrawer
             {
                 EditorGUI.PropertyField(GetRectAndIterateLine(this, position), dataProperty, new GUIContent(dataProperty.type));
             }
-        }
-        
+        } 
 
     }
 
@@ -44,7 +42,7 @@ public class SceneConfigPropertyDawer : PropertyDrawer,IEditorDrawer
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
         float height = 0f;
-        if(property.isExpanded && LineIndex > 0)
+        if(property.isExpanded)
         {
             height += LineIndex * SingleLineSpace;
             SerializedProperty dataProperty = property.FindPropertyRelative("Data");

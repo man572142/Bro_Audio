@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using static EditorDrawingUtility;
 
-//[CustomPropertyDrawer(typeof(SceneConfig<>),true)]
+[CustomPropertyDrawer(typeof(SceneConfig<>))]
 public class SceneConfigPropertyDawer : PropertyDrawer,IEditorDrawer
 {
     public int LineIndex { get; set; }
@@ -15,7 +15,7 @@ public class SceneConfigPropertyDawer : PropertyDrawer,IEditorDrawer
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
         SerializedProperty sceneProperty = property.FindPropertyRelative("Scene");
-        base.OnGUI(position, property, new GUIContent(GetSceneName(sceneProperty.stringValue)));
+        //base.OnGUI(position, property, new GUIContent(GetSceneName(sceneProperty.stringValue)));
 
         LineIndex = 0;
         
@@ -26,14 +26,18 @@ public class SceneConfigPropertyDawer : PropertyDrawer,IEditorDrawer
         if (property.isExpanded)
         {
             EditorGUI.PropertyField(GetRectAndIterateLine(this, position), sceneProperty, new GUIContent("Scene"));
+        }
+        if (dataProperty.isArray)
+        {
 
-            if (dataProperty.isArray)
-            {
-
-            }
+        }
+        else
+        {
             EditorGUI.PropertyField(GetRectAndIterateLine(this, position), dataProperty, new GUIContent(dataProperty.type));
         }
+        
     }
+
 
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {

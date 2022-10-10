@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "SceneConfig_Sprites", menuName = "MiProduction/SceneConfig/MultipleSprites")]
-public class SceneConfig_MultipleSprites : ScriptableObject
+public class SceneConfig_MultipleSprites : SceneConfigAsset<Sprite[]>
 {
-    public SceneConfig<Sprite[]> SceneSprites;
+
 }

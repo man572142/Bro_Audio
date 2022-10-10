@@ -5,9 +5,8 @@ using UnityEngine;
 namespace MiProduction.Scene
 {
 	[CreateAssetMenu(fileName = "SceneConfig_Music", menuName = "MiProduction/SceneConfig/Music")]
-	public class SceneConfig_Music : ScriptableObject
+	public class SceneConfig_Music : SceneConfigAsset<Music>
 	{
-		[SerializeField] SceneConfig<Music>[] SceneMusic;
 
 	}
 

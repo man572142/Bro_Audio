@@ -11,50 +11,48 @@ using UnityEngine.UIElements;
 [CustomPropertyDrawer(typeof(SceneConfig<>))]
 public class SceneConfigPropertyDawer : PropertyDrawer,IEditorDrawer
 {
-    public int LineIndex { get; set; }
-    public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
+    public int DrawLineCount { get; set ; }
+    public float SingleLineSpace => EditorGUIUtility.singleLineHeight;
+    public Rect GetRectAndIterateLine(Rect position)
+    {
+        return EditorDrawingUtility.GetRectAndIterateLine(this, position);
+    }
 
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
-        LineIndex = 0;
+        DrawLineCount = 0;
+        EditorGUI.BeginProperty(position, label, property);
+
         SerializedProperty sceneProperty = property.FindPropertyRelative("Scene");
         SerializedProperty dataProperty = property.FindPropertyRelative("Data");
         
-        property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(this, position), property.isExpanded, new GUIContent(GetSceneName(sceneProperty.stringValue)));
+        property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, new GUIContent(GetSceneName(sceneProperty.stringValue)));
         if (property.isExpanded)
         {
-            EditorGUI.PropertyField(GetRectAndIterateLine(this, position), sceneProperty, new GUIContent("Scene"));
+            EditorGUI.PropertyField(GetRectAndIterateLine(position), sceneProperty, new GUIContent("Scene"));
 
             if(dataProperty.isArray)
             {
                 string typeName = dataProperty.arrayElementType.Replace("PPtr<$", string.Empty).Replace(">", string.Empty);
-                EditorGUI.PropertyField(GetRectAndIterateLine(this, position), dataProperty, new GUIContent(typeName),true);
+                EditorGUI.PropertyField(GetRectAndIterateLine(position), dataProperty, new GUIContent(typeName),true);
             }
             else
             {
-                EditorGUI.PropertyField(GetRectAndIterateLine(this, position), dataProperty, new GUIContent(dataProperty.type));
+                EditorGUI.PropertyField(GetRectAndIterateLine(position), dataProperty, new GUIContent(dataProperty.type));
             }
-        } 
-
+        }
+        EditorGUI.EndProperty();
     }
 
 
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
-        float height = 0f;
-        if(property.isExpanded)
+        float height = EditorGUIUtility.singleLineHeight;
+        if (property.isExpanded)
         {
-            height += LineIndex * SingleLineSpace;
+            SerializedProperty sceneProperty = property.FindPropertyRelative("Scene");
             SerializedProperty dataProperty = property.FindPropertyRelative("Data");
-            if(dataProperty.isArray && dataProperty.isExpanded)
-            {
-                height += (dataProperty.arraySize + 3) * EditorGUIUtility.singleLineHeight;
-            }
-        }
-        else
-        {
-            property.isExpanded = false;
-            height += SingleLineSpace;
+            height += EditorGUI.GetPropertyHeight(dataProperty) + EditorGUI.GetPropertyHeight(sceneProperty);
         }
         return height;
     }
@@ -64,6 +62,5 @@ public class SceneConfigPropertyDawer : PropertyDrawer,IEditorDrawer
         return scenePath.Substring(scenePath.LastIndexOf("/") + 1).Replace(".unity", "");
     }
 
-    
-
+	
 }

@@ -36,14 +36,13 @@ namespace MiProduction.BroAudio.Library
 			_clipLength = clipLength;
 
 			EditorGUI.MultiFloatField(GetRectAndIterateLine(position), new GUIContent("Playback Position"), _playbackLabels, _playbackValues);
-			
 			startPosProperty.floatValue = Mathf.Clamp(_playbackValues[0], 0f, GetLengthLimit(0,endPosProperty.floatValue,fadeInProperty.floatValue, fadeOutProperty.floatValue));
 			_playbackValues[0] = startPosProperty.floatValue;
 			endPosProperty.floatValue = Mathf.Clamp(_playbackValues[1], 0f, GetLengthLimit(startPosProperty.floatValue,0f, fadeInProperty.floatValue, fadeOutProperty.floatValue));
 			_playbackValues[1] = endPosProperty.floatValue;
 
-			EditorGUI.MultiFloatField(GetRectAndIterateLine(position),new GUIContent("Fade") ,_fadeLabels, _fadeValues);	
-            fadeInProperty.floatValue = Mathf.Clamp(_fadeValues[0],0f, GetLengthLimit(startPosProperty.floatValue, endPosProperty.floatValue, 0f, fadeOutProperty.floatValue));
+			EditorGUI.MultiFloatField(GetRectAndIterateLine(position),new GUIContent("Fade") ,_fadeLabels, _fadeValues);
+			fadeInProperty.floatValue = Mathf.Clamp(_fadeValues[0],0f, GetLengthLimit(startPosProperty.floatValue, endPosProperty.floatValue, 0f, fadeOutProperty.floatValue));
 			_fadeValues[0] = fadeInProperty.floatValue;
 			fadeOutProperty.floatValue = Mathf.Clamp(_fadeValues[1],0f, GetLengthLimit(startPosProperty.floatValue, endPosProperty.floatValue, fadeInProperty.floatValue, 0f));
 			_fadeValues[1] = fadeOutProperty.floatValue;

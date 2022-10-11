@@ -14,10 +14,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SceneConfig_MultipleSprites
   SceneConfigs:
   - Scene: Assets/Scenes/SampleScene.unity
-    Data: []
+    Data:
+    - {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    - {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    - {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   - Scene: Assets/Scenes/SampleScene 2.unity
-    Data: []
+    Data:
+    - {fileID: 0}
+    - {fileID: 0}
   - Scene: Assets/Scenes/New Scene.unity
-    Data: []
+    Data:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
   - Scene: Assets/Scenes/SampleScene 1.unity
-    Data: []
+    Data:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}

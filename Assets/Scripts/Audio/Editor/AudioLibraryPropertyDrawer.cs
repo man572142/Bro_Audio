@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System;
 
 namespace MiProduction.BroAudio.Library
 {
@@ -10,13 +11,17 @@ namespace MiProduction.BroAudio.Library
 		protected const float ClipViewHeight = 100f;
 		protected int BasePropertiesLineCount = 0;
 		protected int ClipPropertiesLineCount = 0;
-
+		protected float ClipLength = 0f;
+		protected GUIContent[] FadeLabels = { new GUIContent("    In    "), new GUIContent(" Out ") };
+		protected float[] FadeValues = new float[2];
+		protected GUIContent[] PlaybackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
+		protected float[] PlaybackValues = new float[2];
 		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public int DrawLineCount { get ; set; }
 
 		protected abstract Vector3[] GetClipLinePoints(float width);
 		protected abstract void DrawAdditionalBaseProperties(Rect position, SerializedProperty property);
-		protected abstract void DrawClipProperties(Rect position, SerializedProperty property,float clipLength);
+		protected abstract void DrawAdditionalClipProperties(Rect position, SerializedProperty property);
 
 		public Rect GetRectAndIterateLine(Rect position)
 		{
@@ -31,10 +36,6 @@ namespace MiProduction.BroAudio.Library
 
 			SerializedProperty nameProperty = property.FindPropertyRelative("Name");
 			SerializedProperty volumeProperty = property.FindPropertyRelative("Volume");
-
-            bool isFoldArray = false;
-			bool hasClip = false;
-
 
 			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProperty.stringValue);
 			if (property.isExpanded)
@@ -53,23 +54,22 @@ namespace MiProduction.BroAudio.Library
 				AudioClip clip = property.FindPropertyRelative("Clip").objectReferenceValue as AudioClip;
 				if (clip != null)
 				{
-					
-
-                    DrawClipProperties(position, property,clip.length);
+					ClipLength = clip.length;
+					DrawClipProperites(position,property);
+                    DrawAdditionalClipProperties(position, property);
 					
 					ClipPropertiesLineCount = DrawLineCount - BasePropertiesLineCount ;
-
 
 					Rect clipViewRect = GetRectAndIterateLine(position);
 					Rect waveformRect = new Rect(clipViewRect.xMin + clipViewRect.width *0.1f,clipViewRect.center.y ,clipViewRect.width * 0.9f, ClipViewHeight);
 					Rect playRect = new Rect(clipViewRect.xMin,clipViewRect.yMin + ClipViewHeight * 0.15f, 40f, 40f);
 					Rect stopRect = new Rect(clipViewRect.xMin,clipViewRect.yMin + ClipViewHeight * 0.65f, 40f, 40f);
 
-
 					if (GUI.Button(playRect, "▶"))
 					{
-						// 還要抓START POS
-						EditorPlayAudioClip.PlayClip(clip);
+						SerializedProperty startPosProperty = property.FindPropertyRelative("StartPosition");
+
+						EditorPlayAudioClip.PlayClip(clip, Mathf.RoundToInt(AudioSettings.outputSampleRate * startPosProperty.floatValue));
 					}
 					if (GUI.Button(stopRect, "■"))
 					{
@@ -96,6 +96,31 @@ namespace MiProduction.BroAudio.Library
 			EditorGUI.EndProperty();
 		}
 
+		private void DrawClipProperites(Rect position, SerializedProperty property)
+		{
+			SerializedProperty startPosProperty = property.FindPropertyRelative("StartPosition");
+			SerializedProperty endPosProperty = property.FindPropertyRelative("EndPosition");
+			SerializedProperty fadeInProperty = property.FindPropertyRelative("FadeIn");
+			SerializedProperty fadeOutProperty = property.FindPropertyRelative("FadeOut");
+
+			PlaybackValues[0] = startPosProperty.floatValue;
+			PlaybackValues[1] = endPosProperty.floatValue;
+			FadeValues[0] = fadeInProperty.floatValue;
+			FadeValues[1] = fadeOutProperty.floatValue;
+
+			EditorGUI.MultiFloatField(GetRectAndIterateLine(position), new GUIContent("Playback Position"), PlaybackLabels, PlaybackValues);
+			startPosProperty.floatValue = Mathf.Clamp(PlaybackValues[0], 0f, GetLengthLimit(0, endPosProperty.floatValue, fadeInProperty.floatValue, fadeOutProperty.floatValue));
+			PlaybackValues[0] = startPosProperty.floatValue;
+			endPosProperty.floatValue = Mathf.Clamp(PlaybackValues[1], 0f, GetLengthLimit(startPosProperty.floatValue, 0f, fadeInProperty.floatValue, fadeOutProperty.floatValue));
+			PlaybackValues[1] = endPosProperty.floatValue;
+
+			EditorGUI.MultiFloatField(GetRectAndIterateLine(position), new GUIContent("Fade"), FadeLabels, FadeValues);
+			fadeInProperty.floatValue = Mathf.Clamp(FadeValues[0], 0f, GetLengthLimit(startPosProperty.floatValue, endPosProperty.floatValue, 0f, fadeOutProperty.floatValue));
+			FadeValues[0] = fadeInProperty.floatValue;
+			fadeOutProperty.floatValue = Mathf.Clamp(FadeValues[1], 0f, GetLengthLimit(startPosProperty.floatValue, endPosProperty.floatValue, fadeInProperty.floatValue, 0f));
+			FadeValues[1] = fadeOutProperty.floatValue;
+		}
+
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
 			float height = property.isExpanded ? SingleLineSpace * BasePropertiesLineCount : SingleLineSpace;
@@ -108,7 +133,11 @@ namespace MiProduction.BroAudio.Library
 			return height;
 		}
 
-		
+		private float GetLengthLimit(float start, float end, float fadeIn, float fadeOut)
+		{
+
+			return ClipLength - start - end - fadeIn - fadeOut;
+		}
 
 
 

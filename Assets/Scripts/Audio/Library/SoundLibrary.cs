@@ -14,6 +14,8 @@ namespace MiProduction.BroAudio.Library
         public float Delay;
         public float StartPosition;
         public float EndPosition;
+        public float FadeIn;
+        public float FadeOut;
 
         public string EnumName  => Name;
 

@@ -12,10 +12,10 @@ namespace MiProduction.BroAudio.Library
 		protected int BasePropertiesLineCount = 0;
 		protected int ClipPropertiesLineCount = 0;
 		protected float ClipLength = 0f;
-		protected GUIContent[] FadeLabels = { new GUIContent("    In    "), new GUIContent(" Out ") };
-		protected float[] FadeValues = new float[2];
-		protected GUIContent[] PlaybackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
-		protected float[] PlaybackValues = new float[2];
+		private GUIContent[] FadeLabels = { new GUIContent("    In    "), new GUIContent(" Out ") };
+		private float[] FadeValues = new float[2];
+		private GUIContent[] PlaybackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
+		private float[] PlaybackValues = new float[2];
 		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public int DrawLineCount { get ; set; }
 
@@ -31,7 +31,6 @@ namespace MiProduction.BroAudio.Library
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
 			DrawLineCount = 0;
-
 			EditorGUI.BeginProperty(position, label, property);
 
 			SerializedProperty nameProperty = property.FindPropertyRelative("Name");
@@ -40,60 +39,92 @@ namespace MiProduction.BroAudio.Library
 			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProperty.stringValue);
 			if (property.isExpanded)
 			{
-				// Name
 				nameProperty.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProperty.stringValue);
-				// Volume
 				volumeProperty.floatValue = EditorGUI.Slider(GetRectAndIterateLine(position), "Volume", volumeProperty.floatValue, 0f, 1f);
 				
 				DrawAdditionalBaseProperties(position, property);
 				BasePropertiesLineCount = DrawLineCount + 1;
 
-				// Clip Asset
+				#region Clip View
 				EditorGUI.PropertyField(GetRectAndIterateLine(position), property.FindPropertyRelative("Clip"));
-
 				AudioClip clip = property.FindPropertyRelative("Clip").objectReferenceValue as AudioClip;
 				if (clip != null)
 				{
 					ClipLength = clip.length;
-					DrawClipProperites(position,property);
-                    DrawAdditionalClipProperties(position, property);
-					
-					ClipPropertiesLineCount = DrawLineCount - BasePropertiesLineCount ;
+					DrawClipProperites(position, property);
+					DrawAdditionalClipProperties(position, property);
+
+					ClipPropertiesLineCount = DrawLineCount - BasePropertiesLineCount;
 
 					Rect clipViewRect = GetRectAndIterateLine(position);
-					Rect waveformRect = new Rect(clipViewRect.xMin + clipViewRect.width *0.1f,clipViewRect.center.y ,clipViewRect.width * 0.9f, ClipViewHeight);
-					Rect playRect = new Rect(clipViewRect.xMin,clipViewRect.yMin + ClipViewHeight * 0.15f, 40f, 40f);
-					Rect stopRect = new Rect(clipViewRect.xMin,clipViewRect.yMin + ClipViewHeight * 0.65f, 40f, 40f);
+					Rect waveformRect = new Rect(clipViewRect.xMin + clipViewRect.width * 0.1f, clipViewRect.center.y, clipViewRect.width * 0.9f, ClipViewHeight);
 
-					if (GUI.Button(playRect, "▶"))
-					{
-						EditorPlayAudioClip.StopAllClips();
-						SerializedProperty startPosProperty = property.FindPropertyRelative("StartPosition");
-						EditorPlayAudioClip.PlayClip(clip, Mathf.RoundToInt(AudioSettings.outputSampleRate * startPosProperty.floatValue));
-					}
-					if (GUI.Button(stopRect, "■"))
-					{
-						EditorPlayAudioClip.StopAllClips();
-					}
-					EditorGUI.DrawRect(playRect, new Color(0.25f, 0.9f, 0.25f, 0.4f));
-					EditorGUI.DrawRect(stopRect, new Color(0.9f, 0.25f, 0.25f, 0.4f));
-					#region Draw Waveform
-					Texture2D waveformTexture = AssetPreview.GetAssetPreview(clip);
-					if (waveformTexture != null)
-					{
-						GUI.DrawTexture(waveformRect, waveformTexture);
-					}
-					EditorGUI.DrawRect(waveformRect, new Color(0.05f, 0.05f, 0.05f, 0.3f));
-
-					GUI.BeginClip(waveformRect);
-					Handles.color = Color.green;
-					Handles.DrawAAPolyLine(2f, GetClipLinePoints(waveformRect.width));
-					GUI.EndClip();
-					#endregion
+					DrawWaveformPreview(clip, waveformRect);
+					DrawPlaybackButton(clip, property.FindPropertyRelative("StartPosition").floatValue, clipViewRect);
+					DrawClipPlaybackLine(waveformRect);
 				}
+				#endregion
 			}
 
 			EditorGUI.EndProperty();
+		}
+
+		private static void DrawWaveformPreview(AudioClip clip, Rect waveformRect)
+		{
+			Texture2D waveformTexture = AssetPreview.GetAssetPreview(clip);
+			if (waveformTexture != null)
+			{
+				GUI.DrawTexture(waveformRect, waveformTexture);
+			}
+			EditorGUI.DrawRect(waveformRect, new Color(0.05f, 0.05f, 0.05f, 0.3f));
+		}
+
+		private void DrawPlaybackButton(AudioClip clip, float startPos,  Rect clipViewRect)
+		{
+			Rect playRect = new Rect(clipViewRect.xMin, clipViewRect.yMin + ClipViewHeight * 0.15f, 40f, 40f);
+			Rect stopRect = new Rect(clipViewRect.xMin, clipViewRect.yMin + ClipViewHeight * 0.65f, 40f, 40f);
+			if (GUI.Button(playRect, "▶"))
+			{
+				EditorPlayAudioClip.StopAllClips();
+				EditorPlayAudioClip.PlayClip(clip, Mathf.RoundToInt(AudioSettings.outputSampleRate * startPos));
+			}
+			if (GUI.Button(stopRect, "■"))
+			{
+				EditorPlayAudioClip.StopAllClips();
+			}
+
+			EditorGUI.DrawRect(playRect, new Color(0.25f, 0.9f, 0.25f, 0.4f));
+			EditorGUI.DrawRect(stopRect, new Color(0.9f, 0.25f, 0.25f, 0.4f));
+		}
+
+		private void DrawClipPlaybackLine(Rect waveformRect)
+		{
+			Vector3[] points = GetClipLinePoints(waveformRect.width);
+			if (points.Length < 4)
+			{
+				return;
+			}
+
+			GUI.BeginClip(waveformRect);
+			Handles.color = Color.green;
+			Handles.DrawAAPolyLine(2f, points);
+
+			Handles.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
+			Vector3[] leftBlock = new Vector3[4];
+			leftBlock[0] = Vector3.zero;
+			leftBlock[1] = points[1];
+			leftBlock[2] = points[0];
+			leftBlock[3] = new Vector3(0f, ClipViewHeight, 0f);
+			Handles.DrawAAConvexPolygon(leftBlock);
+
+			Vector3[] rightBlock = new Vector3[4];
+			rightBlock[0] = points[2];
+			rightBlock[1] = new Vector3(waveformRect.width, 0f, 0f);
+			rightBlock[2] = new Vector3(waveformRect.width, ClipViewHeight, 0f);
+			rightBlock[3] = points[3];
+			Handles.DrawAAConvexPolygon(rightBlock);
+
+			GUI.EndClip();
 		}
 
 		private void DrawClipProperites(Rect position, SerializedProperty property)
@@ -127,14 +158,20 @@ namespace MiProduction.BroAudio.Library
 				return new Vector3[0];
 
 			Vector3[] points = new Vector3[4];
+			// Start
 			points[0] = new Vector3(Mathf.Lerp(0f, width, PlaybackValues[0] / ClipLength), ClipViewHeight, 0f);
+			// FadeIn
 			points[1] = new Vector3(Mathf.Lerp(0f, width, (PlaybackValues[0] + FadeValues[0]) / ClipLength), 0f, 0f);
+			// FadeOut
 			points[2] = new Vector3(Mathf.Lerp(0f, width, (ClipLength - PlaybackValues[1] - FadeValues[1]) / ClipLength), 0f, 0f);
+			// End
 			points[3] = new Vector3(Mathf.Lerp(0f, width, (ClipLength - PlaybackValues[1]) / ClipLength), ClipViewHeight, 0f);
+
 
 			//Debug.Log($"{points[0]},{points[1]},{points[2]},{points[3]}");
 			return points;
 		}
+
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{

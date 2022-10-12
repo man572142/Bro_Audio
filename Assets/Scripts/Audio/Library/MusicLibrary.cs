@@ -13,7 +13,6 @@ namespace MiProduction.BroAudio.Library
         [Range(0f, 1f)] public float Volume;
         public float StartPosition;
         public float EndPosition;
-        //[MinMaxSlider(0f,1f)] public Vector2 fade;
         public float FadeIn;
         public float FadeOut;
         public bool Loop;

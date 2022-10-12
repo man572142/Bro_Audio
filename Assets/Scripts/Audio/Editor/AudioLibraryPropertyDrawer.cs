@@ -19,7 +19,7 @@ namespace MiProduction.BroAudio.Library
 		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public int DrawLineCount { get ; set; }
 
-		protected abstract Vector3[] GetClipLinePoints(float width);
+		//protected abstract Vector3[] GetClipLinePoints(float width);
 		protected abstract void DrawAdditionalBaseProperties(Rect position, SerializedProperty property);
 		protected abstract void DrawAdditionalClipProperties(Rect position, SerializedProperty property);
 
@@ -67,8 +67,8 @@ namespace MiProduction.BroAudio.Library
 
 					if (GUI.Button(playRect, "▶"))
 					{
+						EditorPlayAudioClip.StopAllClips();
 						SerializedProperty startPosProperty = property.FindPropertyRelative("StartPosition");
-
 						EditorPlayAudioClip.PlayClip(clip, Mathf.RoundToInt(AudioSettings.outputSampleRate * startPosProperty.floatValue));
 					}
 					if (GUI.Button(stopRect, "■"))
@@ -119,6 +119,21 @@ namespace MiProduction.BroAudio.Library
 			FadeValues[0] = fadeInProperty.floatValue;
 			fadeOutProperty.floatValue = Mathf.Clamp(FadeValues[1], 0f, GetLengthLimit(startPosProperty.floatValue, endPosProperty.floatValue, fadeInProperty.floatValue, 0f));
 			FadeValues[1] = fadeOutProperty.floatValue;
+		}
+
+		protected Vector3[] GetClipLinePoints(float width)
+		{
+			if (width <= 0f)
+				return new Vector3[0];
+
+			Vector3[] points = new Vector3[4];
+			points[0] = new Vector3(Mathf.Lerp(0f, width, PlaybackValues[0] / ClipLength), ClipViewHeight, 0f);
+			points[1] = new Vector3(Mathf.Lerp(0f, width, (PlaybackValues[0] + FadeValues[0]) / ClipLength), 0f, 0f);
+			points[2] = new Vector3(Mathf.Lerp(0f, width, (ClipLength - PlaybackValues[1] - FadeValues[1]) / ClipLength), 0f, 0f);
+			points[3] = new Vector3(Mathf.Lerp(0f, width, (ClipLength - PlaybackValues[1]) / ClipLength), ClipViewHeight, 0f);
+
+			//Debug.Log($"{points[0]},{points[1]},{points[2]},{points[3]}");
+			return points;
 		}
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)

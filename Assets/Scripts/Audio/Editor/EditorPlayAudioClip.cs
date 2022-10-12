@@ -19,7 +19,7 @@ public static class EditorPlayAudioClip
             null
         );
 
-        Debug.Log(method);
+        //Debug.Log(method);
         method.Invoke(
             null,
             new object[] { clip, startSample, loop }
@@ -39,7 +39,7 @@ public static class EditorPlayAudioClip
             null
         );
 
-        Debug.Log(method);
+        //Debug.Log(method);
         method.Invoke(
             null,
             new object[] { }

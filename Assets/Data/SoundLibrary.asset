@@ -12,14 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7503726fe06fa14b86343a58f57c179, type: 3}
   m_Name: SoundLibrary
   m_EditorClassIdentifier: 
-  Libraries:
-  - Name: SoundTest
-    Sound: 1
-    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
-    Volume: 1
-    Delay: 0
-    StartPosition: 13.65
-    EndPosition: 0
-    FadeIn: 0
-    FadeOut: 0
+  Libraries: []
   _enumsPath: Assets/Scripts/Enums

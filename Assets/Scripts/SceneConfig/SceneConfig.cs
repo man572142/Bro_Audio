@@ -10,6 +10,5 @@ namespace MiProduction.Scene
         [SceneSelector]
         public string Scene;
         public T Data;
-
     } 
 }

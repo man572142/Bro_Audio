@@ -1,40 +1,35 @@
-//using System;
-//using System.Collections;
-//using System.Collections.Generic;
-//using UnityEngine;
-//using UnityEngine.SceneManagement;
+using MiProduction.BroAudio;
+using MiProduction.Scene;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
+public class SceneMusicTrigger : MonoBehaviour
+{
+    [SerializeField] SceneConfig_Music sceneMusic;
+    private Music currentMusic;
+    private void Awake()
+    {
+        SceneManager.activeSceneChanged += OnSceneChanged;
+    }
 
-//namespace MiProduction.BroAudio.SceneMusic
-//{
-//    public class SceneMusicTrigger : MonoBehaviour
-//    {
-//        [SerializeField] SceneMusicConfig _config = null;
-//        [SerializeField] Transition _transition = Transition.FadeOutThenFadeIn;
+    private void OnSceneChanged(Scene oldScene, Scene newScene)
+    {
+        if (sceneMusic.TryGetSceneData(out Music music))
+        {
+            if (music == Music.None)
+            {
+                SoundSystem.StopMusicImmediately();
+            }
+            else if (currentMusic != music)
+            {
+                SoundSystem.PlayMusic(music, Transition.FadeOutThenFadeIn);
+            }
+            currentMusic = music;
+        }
+    }
 
-//        private Music _currentMusic = Music.None;
-
-//        private void Awake()
-//        {
-//            SceneManager.activeSceneChanged += OnSceneChanged;
-//        }
-
-//        private void OnSceneChanged(Scene oldScene, Scene newScene)
-//        {
-//            foreach(SceneMusic sceneMusic in _config.musicScenes)
-//            {
-//                if (sceneMusic.Music != _currentMusic && sceneMusic.Scenes.Contains(newScene.name))
-//                {
-//                    SoundSystem.PlayMusic(sceneMusic.Music,_transition);
-//                    _currentMusic = sceneMusic.Music;                    
-//                }
-//            }
-
-//        }
-
-//        private void OnDestroy()
-//        {
-//            SceneManager.activeSceneChanged -= OnSceneChanged;
-//        }
-//    } 
-//}
+    private void OnDestroy()
+    {
+        SceneManager.activeSceneChanged -= OnSceneChanged;
+    }
+}

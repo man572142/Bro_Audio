@@ -83,7 +83,6 @@ namespace MiProduction.BroAudio.Core
 
         private IEnumerator PlayControl(MusicLibrary musicLibrary, float fadeInTime, float fadeOutTime, Action onFinishFadeIn, Action onFinishPlaying)
         {
-            Debug.Log("PlayMusicCoroutine");
             _currentMusic = musicLibrary;
             _player.clip = musicLibrary.Clip;
             _player.time = musicLibrary.StartPosition;
@@ -140,8 +139,6 @@ namespace MiProduction.BroAudio.Core
 
         private IEnumerator StopControl(float fadeOutTime, Action onFinishPlaying)
         {
-            Debug.Log("StopMusicCoroutine");
-
             if (_currentMusic.Music == Music.None || !IsPlaying)
             {
                 onFinishPlaying?.Invoke();
@@ -153,7 +150,6 @@ namespace MiProduction.BroAudio.Core
             {
                 if (IsFadingOut)
                 {
-                    Debug.Log("ISFADEOUT");
                     // 目前設計成:如果原有的音樂已經在FadeOut了，就等它FadeOut不強制停止
                     _player.loop = false;
                     yield return new WaitUntil(() => _player.clip.length == _player.time);
@@ -188,7 +184,6 @@ namespace MiProduction.BroAudio.Core
 
         private void EndPlaying()
         {
-            Debug.Log("End");
             _currentMusic = default;
             _currentPlayCoroutine.Stop(this);
             MixerVolume = 0f;     

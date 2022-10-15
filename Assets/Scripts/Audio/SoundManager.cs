@@ -127,7 +127,6 @@ namespace MiProduction.BroAudio.Core
             if (!PlayMusicCheck(newMusic))
                 return;
 
-            Debug.Log("PlayMusic");
             switch (transition)
             {
                 case Transition.Immediate:

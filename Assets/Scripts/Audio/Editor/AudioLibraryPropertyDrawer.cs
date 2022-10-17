@@ -57,7 +57,9 @@ namespace MiProduction.BroAudio.Library
 					ClipPropertiesLineCount = DrawLineCount - BasePropertiesLineCount;
 
 					Rect clipViewRect = GetRectAndIterateLine(position);
-					Rect waveformRect = new Rect(clipViewRect.xMin + clipViewRect.width * 0.1f, clipViewRect.center.y, clipViewRect.width * 0.9f, ClipViewHeight);
+					clipViewRect.height = ClipViewHeight;
+					//EditorGUI.DrawRect(clipViewRect,Color.cyan);
+					Rect waveformRect = new Rect(clipViewRect.xMin + clipViewRect.width * 0.1f,clipViewRect.yMin + clipViewRect.height *0.1f, clipViewRect.width * 0.9f, clipViewRect.height);
 
 					DrawWaveformPreview(clip, waveformRect);
 					DrawPlaybackButton(clip, property.FindPropertyRelative("StartPosition").floatValue, clipViewRect);
@@ -81,8 +83,10 @@ namespace MiProduction.BroAudio.Library
 
 		private void DrawPlaybackButton(AudioClip clip, float startPos,  Rect clipViewRect)
 		{
-			Rect playRect = new Rect(clipViewRect.xMin, clipViewRect.yMin + ClipViewHeight * 0.15f, 40f, 40f);
-			Rect stopRect = new Rect(clipViewRect.xMin, clipViewRect.yMin + ClipViewHeight * 0.65f, 40f, 40f);
+			float width = Mathf.Clamp(clipViewRect.width * 0.08f, clipViewRect.width * 0.08f,clipViewRect.height *0.4f);
+			float height = Mathf.Clamp(width,width,clipViewRect.height * 0.4f);
+			Rect playRect = new Rect(clipViewRect.xMin, clipViewRect.yMin + ClipViewHeight * 0.15f, width,height);
+			Rect stopRect = new Rect(clipViewRect.xMin, clipViewRect.yMin + ClipViewHeight * 0.65f, width,height);
 			if (GUI.Button(playRect, "▶"))
 			{
 				EditorPlayAudioClip.StopAllClips();

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using MiProduction.Extension;
 using MiProduction.BroAudio.Library;
-using static UnityEngine.GraphicsBuffer;
+using static MiProduction.BroAudio.AudioExtension;
 
 namespace MiProduction.BroAudio.Core
 {
@@ -26,7 +26,7 @@ namespace MiProduction.BroAudio.Core
         {
             get
             {
-                return (MixerDecibelVolume / AudioExtension.MinDecibelVolume * -1f) + 1f;
+                return MixerDecibelVolume.ToNormalizeVolume();
             }
             private set
             {
@@ -46,7 +46,10 @@ namespace MiProduction.BroAudio.Core
             }
             set
             {
-                _audioMixer.SetFloat(_volParaName, value * _subVolume);
+
+                float result = (value.ToNormalizeVolume() * _subVolume).ToDecibel();
+                Debug.Log($"value:{value} , sub:{_subVolume}, result:{Mathf.Clamp(result, MinDecibelVolume, MaxDecibelVolume)}");
+                _audioMixer.SetFloat(_volParaName, Mathf.Clamp(result,MinDecibelVolume,MaxDecibelVolume));
             }
         }
 
@@ -169,14 +172,15 @@ namespace MiProduction.BroAudio.Core
         {
             float currentTime = 0;
             float currentVol = Mathf.Pow(10, MixerDecibelVolume / 20);
-            float targetValue = Mathf.Clamp(targetVolume, 0.0001f, 1);
+            float targetValue = Mathf.Clamp(targetVolume, MinVolume, 1);
             Ease ease = currentVol < targetValue ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
             float newVol = 0f;
             while (currentTime < duration)
             {
                 currentTime += Time.deltaTime;
                 newVol = Mathf.Lerp(currentVol, targetValue , (currentTime / duration).SetEase(ease));
-                MixerDecibelVolume = Mathf.Log10(newVol) * 20;
+                Debug.Log(newVol);
+                MixerDecibelVolume = Mathf.Log10(newVol) * 20 ;
                 yield return null;
             }
             yield break;
@@ -207,15 +211,17 @@ namespace MiProduction.BroAudio.Core
             float t = 0f;
             while(t < 1f)
 			{
+                //Debug.Log(_subVolume);
                 _subVolume = Mathf.Lerp(start, target, t);
                 t += Time.deltaTime / fadeTime;
                 if (!IsFadingIn && !IsFadingOut)
                 {
-                    // 取現在的 再乘上sub  還沒寫完!!
-                    MixerVolume = target;
+                    // 還沒解決
+                    //MixerDecibelVolume = MixerDecibelVolume;
                 }
                 yield return null;
 			}
+            _subVolume = target;
 		}
 
     }

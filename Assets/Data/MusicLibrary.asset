@@ -16,11 +16,11 @@ MonoBehaviour:
   - Name: PlasticLove
     Clip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
     Music: 1
-    Volume: 1
+    Volume: 0.8
     StartPosition: 44.32
     EndPosition: 92.61
-    FadeIn: 28.74
-    FadeOut: 37.1
+    FadeIn: 3
+    FadeOut: 5
     Loop: 0
   - Name: RealEstate
     Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}

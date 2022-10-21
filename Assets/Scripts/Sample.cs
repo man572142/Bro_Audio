@@ -55,6 +55,6 @@ public class Sample : MonoBehaviour
 
     public void SetMusicVolume()
 	{
-        SoundSystem.SetMusicVolume(_musicVolume);
+        SoundSystem.SetVolume(_musicVolume,AudioType.Music);
 	}
 }

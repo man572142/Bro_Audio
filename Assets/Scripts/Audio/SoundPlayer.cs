@@ -21,7 +21,7 @@ namespace MiProduction.BroAudio.Core
 
         public void Stop()
         {
-
+            // PlayOneShot沒辦法停，只能Mute
         }
 
         public void Mute()

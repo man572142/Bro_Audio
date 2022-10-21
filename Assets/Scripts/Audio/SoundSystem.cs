@@ -58,7 +58,7 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <param name="musicPlayer"></param>
         /// <returns></returns>
-        public static bool GetAvailableMusicPlayer(out MusicPlayer musicPlayer) => SoundManager.Instance.GetAvailableMusicPlayer(out musicPlayer);
+        //public static bool GetAvailableMusicPlayer(out MusicPlayer musicPlayer) => SoundManager.Instance.GetAvailableMusicPlayer(out musicPlayer);
 
         /// <summary>
         /// 停止播放音樂(使用預設FadeOut設定)
@@ -68,16 +68,36 @@ namespace MiProduction.BroAudio
         /// <summary>
         /// 停止播放音樂
         /// </summary>
-        /// <param name="fadeTime">自定FadeOut時間長度</param>
-        public static void StopMusic(float fadeTime) => SoundManager.Instance.StopMusic(fadeTime);
+        /// <param name="fadeOutTime">自定FadeOut時間長度</param>
+        public static void StopMusic(float fadeOutTime) => SoundManager.Instance.StopMusic(fadeOutTime);
 
         /// <summary>
         /// 立即停止播放音樂
         /// </summary>
-        public static void StopMusicImmediately() => SoundManager.Instance.StopMusic(0f);
+        //public static void StopMusicImmediately() => SoundManager.Instance.StopMusic(0f);
 
-        public static void SetMusicVolume(float vol) => SoundManager.Instance.SetMusicVolume(vol, 1f);
+        public static void SetVolume(float vol, AudioType type) => SetVolume(vol, 1f, type);
 
-        public static void SetMusicVolume(float vol, float fadeTime) => SoundManager.Instance.SetMusicVolume(vol, fadeTime);
-    }  
+        public static void SetVolume(float vol, float fadeTime,AudioType type)
+		{
+			switch (type)
+			{
+                case AudioType.All:
+                    SoundManager.Instance.SetSFXVolume(vol, fadeTime);
+                    SoundManager.Instance.SetMusicVolume(vol, fadeTime);
+                    break;
+				case AudioType.SFX:
+                    SoundManager.Instance.SetSFXVolume(vol,fadeTime);
+                    break;
+				case AudioType.Music:
+                    SoundManager.Instance.SetMusicVolume(vol, fadeTime);
+					break;
+				case AudioType.Ambience:
+					break;
+				case AudioType.UI:
+					break;
+			}
+		}
+
+	}
 }

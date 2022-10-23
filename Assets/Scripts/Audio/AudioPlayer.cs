@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using static MiProduction.BroAudio.AudioExtension;
+using static UnityEngine.Networking.UnityWebRequest;
 
 namespace MiProduction.BroAudio.Core
 {
@@ -30,17 +31,17 @@ namespace MiProduction.BroAudio.Core
             }
         }
 
-        private float _mixerDecibelVolune = -1;
+        private float _mixerDecibelVolume = -1;
         protected float MixerDecibelVolume
         {
             get
             {
-                if(_mixerDecibelVolune < 0)
+                if(_mixerDecibelVolume < 0)
                 {
                     if (AudioMixer.GetFloat(_volParaName, out float currentVol))
                     {
-                        Debug.Log(currentVol);
-                        _mixerDecibelVolune = currentVol;
+                        //Debug.Log(currentVol);
+                        _mixerDecibelVolume = currentVol;
                     }
                     else
                     {
@@ -48,32 +49,31 @@ namespace MiProduction.BroAudio.Core
                     }
                 }
                 
-                return _mixerDecibelVolune;
+                return _mixerDecibelVolume;
             }
             set
             {
-                Debug.Log("value:" + value.ToString());
-                float result = (value.ToNormalizeVolume() * _subVolume).ToDecibel();
-                _mixerDecibelVolune = Mathf.Clamp(result, MinDecibelVolume, MaxDecibelVolume);
-                AudioMixer.SetFloat(_volParaName, _mixerDecibelVolune);
-                Debug.Log(_mixerDecibelVolune);
+                if(_isControllingSubVolume)
+                {
+                    _mixerDecibelVolume = value.ClampDecibel();
+                    AudioMixer.SetFloat(_volParaName, _mixerDecibelVolume);
+                }
+                else
+                {
+                    float result = (value.ToNormalizeVolume() * _subVolume).ToDecibel();
+                    _mixerDecibelVolume = result.ClampDecibel();
+                    AudioMixer.SetFloat(_volParaName, _mixerDecibelVolume);
+                }
+                //float result = (_mixerDecibelVolume.ToNormalizeVolume() * _subVolume).ToDecibel();
+                //Debug.Log($"value:{value.ToNormalizeVolume()},result:{result},sub:{_subVolume}");
+                //_mixerDecibelVolume = Mathf.Clamp(result, MinDecibelVolume, MaxDecibelVolume);
+                //AudioMixer.SetFloat(_volParaName, _mixerDecibelVolume);
+                
             }
         }
 
         private float _subVolume = 1f;
-        //private float SubVolume
-        //{
-        //    get
-        //    {
-        //        return _subVolume;
-        //    }
-        //    set
-        //    {
-        //        _subVolume = value;
-        //        // 強迫更新
-        //        MixerDecibelVolume = MixerDecibelVolume;
-        //    }
-        //}
+        private bool _isControllingSubVolume = false;
 
 
         public abstract bool IsPlaying { get; protected set; }
@@ -114,8 +114,7 @@ namespace MiProduction.BroAudio.Core
                 t += Time.deltaTime / fadeTime;
                 if (!IsFadingIn && !IsFadingOut)
                 {
-                    // 強迫更新
-                    MixerDecibelVolume = MixerDecibelVolume;
+
                 }
                 yield return null;
             }

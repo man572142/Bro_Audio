@@ -14,7 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SceneConfigs:
   - Scene: Assets/Scenes/SampleScene.unity
-    Data: []
+    Data:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
   - Scene: Assets/Scenes/SampleScene 2.unity
     Data: []
   - Scene: Assets/Scenes/New Scene.unity

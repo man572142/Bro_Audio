@@ -13,15 +13,31 @@ namespace MiProduction.BroAudio
         public const float MaxVolume = 1f;
 
         public static float ToDecibel(this float vol)
-        {
-            vol = Mathf.Clamp(vol, MinVolume, MaxVolume);
-            return Mathf.Log10(vol) * 20f;
+        {  
+            //vol = Mathf.Clamp(vol, MinVolume, MaxVolume);
+            //Debug.Log("toDb:" + vol.ToString());
+            return Mathf.Log10(vol.ClampNormalize()) * 20f;
         }
 
         public static float ToNormalizeVolume(this float dB)
         {
-            dB = Mathf.Clamp(dB, MinDecibelVolume, MaxDecibelVolume);
-            return Mathf.Pow(10, dB / 20f);
+            if(dB == 0)
+            {
+                Debug.Log("is Zero");
+                return 1;
+            }
+            // = Mathf.Clamp(dB, MinDecibelVolume, MaxDecibelVolume);
+            return Mathf.Pow(10, dB.ClampDecibel() / 20f);
+        }
+
+        public static float ClampNormalize(this float vol)
+        {
+            return Mathf.Clamp(vol, MinVolume, MaxVolume);
+        }
+
+        public static float ClampDecibel(this float dB)
+        {
+            return Mathf.Clamp(dB,MinDecibelVolume, MaxDecibelVolume);
         }
 
         public static bool Validate(string typeName, int index,AudioClip clip , float startPosition, float fadeInTime = -1,float fadeOutTime = -1)

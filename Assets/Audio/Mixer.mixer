@@ -194,6 +194,8 @@ AudioMixerController:
     name: MusicB
   - guid: 66b8019fa1392cb42b5890dd6e1c0141
     name: MusicC
+  - guid: bb137e2af252c5a49adadec2baedadf7
+    name: SFX
   m_AudioMixerGroupViews:
   - guids:
     - 84d693e89ed210e43b080efe6f71f9bd

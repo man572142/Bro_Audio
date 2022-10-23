@@ -119,15 +119,15 @@ namespace MiProduction.BroAudio.Core
         private IEnumerator Fade(float duration, float targetVolume)
         {
             float currentTime = 0;
-            float currentVol = Mathf.Pow(10, MixerDecibelVolume / 20);
-            float targetValue = Mathf.Clamp(targetVolume, MinVolume, 1);
+            float currentVol = MixerVolume;
+            float targetValue = Mathf.Clamp(targetVolume, MinVolume, MaxVolume);
             Ease ease = currentVol < targetValue ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
             float newVol = 0f;
             while (currentTime < duration)
             {
                 currentTime += Time.deltaTime;
                 newVol = Mathf.Lerp(currentVol, targetValue , (currentTime / duration).SetEase(ease));
-                MixerDecibelVolume = Mathf.Log10(newVol) * 20 ;
+                MixerDecibelVolume = newVol.ToDecibel();
                 yield return null;
             }
             yield break;

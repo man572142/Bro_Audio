@@ -1442,12 +1442,12 @@ MonoBehaviour:
   _transitionB: 1
   _musicA: 1
   _musicB: 2
-  _sound: 0
+  _sound: 1
   _randomSound: 0
   _sceneSound: 0
   _crossFadeTime: -1
   _stopFadeTime: -1
-  _musicVolume: 0.5
+  _targetVolume: 1
   _scenePlayer: {fileID: 595309941}
 --- !u!4 &1317931363
 Transform:

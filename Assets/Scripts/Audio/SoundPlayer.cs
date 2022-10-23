@@ -4,10 +4,19 @@ using UnityEngine;
 
 namespace MiProduction.BroAudio.Core
 {
-    public class SoundPlayer : MonoBehaviour
+    public class SoundPlayer : AudioPlayer
     {
         private Dictionary<Sound, bool> _preventPlayback = new Dictionary<Sound, bool>();
-        [SerializeField] private AudioSource _sfxPlayer = null;
+
+        public override bool IsPlaying { get; protected set; }
+        public override bool IsStoping { get; protected set; }
+        public override bool IsFadingOut { get; protected set; }
+        public override bool IsFadingIn { get; protected set; }
+
+        private void Start()
+        {
+            MixerVolume = 1f;
+        }
 
         public void Play(Sound sound, AudioClip clip, float delay, float volume, float preventTime)
         {
@@ -24,10 +33,6 @@ namespace MiProduction.BroAudio.Core
             // PlayOneShot沒辦法停，只能Mute
         }
 
-        public void Mute()
-        {
-
-        }
 
         private IEnumerator PlayOnce(Sound sound, AudioClip clip, float delay, float volume, float preventTime)
         {
@@ -41,8 +46,7 @@ namespace MiProduction.BroAudio.Core
             {
                 _preventPlayback.Add(sound, true);
             }
-
-            _sfxPlayer.PlayOneShot(clip, volume);
+            AudioSource.PlayOneShot(clip, volume);
             if (preventTime > 0)
                 StartCoroutine(PreventPlaybackControl(sound, preventTime));
         }

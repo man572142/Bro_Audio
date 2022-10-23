@@ -71,13 +71,24 @@ namespace MiProduction.BroAudio
         /// <param name="fadeOutTime">自定FadeOut時間長度</param>
         public static void StopMusic(float fadeOutTime) => SoundManager.Instance.StopMusic(fadeOutTime);
 
-        /// <summary>
-        /// 立即停止播放音樂
-        /// </summary>
+        
         //public static void StopMusicImmediately() => SoundManager.Instance.StopMusic(0f);
 
+
+
+        /// <summary>
+        /// 設定音量
+        /// </summary>
+        /// <param name="vol">過渡到指定音量的時間</param>
+        /// <param name="type">設定的聲音類型</param>
         public static void SetVolume(float vol, AudioType type) => SetVolume(vol, 1f, type);
 
+        /// <summary>
+        /// 設定音量
+        /// </summary>
+        /// <param name="vol">0~1的音量值</param>
+        /// <param name="fadeTime">過渡到指定音量的時間</param>
+        /// <param name="type">設定的聲音類型</param>
         public static void SetVolume(float vol, float fadeTime,AudioType type)
 		{
 			switch (type)
@@ -99,5 +110,6 @@ namespace MiProduction.BroAudio
 			}
 		}
 
+        //public static void SetVolumeExcept(float vol, float fadeTime, AudioType type)
 	}
 }

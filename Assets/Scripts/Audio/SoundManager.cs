@@ -178,7 +178,7 @@ namespace MiProduction.BroAudio.Core
 
         public void SetMusicVolume(float vol,float fadeTime)
 		{
-            _currentPlayer.SetMusicVolume(vol,fadeTime);
+            _currentPlayer.SetVolume(vol,fadeTime);
 		}
 
 
@@ -222,7 +222,7 @@ namespace MiProduction.BroAudio.Core
 
         public void SetSFXVolume(float vol,float fadeTime)
 		{
-            // 還沒做好
+            _sfxPlayer.SetVolume(vol,fadeTime);
 		}
 
         private AudioClip GetRandomClip(Sound sound)

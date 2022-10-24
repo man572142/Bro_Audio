@@ -11,7 +11,7 @@ using UnityEngine.UIElements;
 namespace MiProduction.Scene
 {
     [CustomPropertyDrawer(typeof(SceneConfig<>))]
-    public class SceneConfigPropertyDawer : PropertyDrawer, IEditorDrawer
+    public class SceneConfigPropertyDrawer : PropertyDrawer, IEditorDrawer
     {
         public int DrawLineCount { get; set; }
         public float SingleLineSpace => EditorGUIUtility.singleLineHeight;

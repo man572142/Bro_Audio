@@ -19,20 +19,8 @@ namespace MiProduction.BroAudio.Core
 
         private Coroutine _subVolumeControl;
         
-        public float MixerVolume
-        {
-            get
-            {
-                return MixerDecibelVolume.ToNormalizeVolume();
-            }
-            protected set
-            {
-                MixerDecibelVolume = value.ToDecibel();
-            }
-        }
-
         private float _mixerDecibelVolume = -1;
-        protected float MixerDecibelVolume
+        public float MixerDecibelVolume
         {
             get
             {
@@ -51,29 +39,14 @@ namespace MiProduction.BroAudio.Core
                 
                 return _mixerDecibelVolume;
             }
-            set
+            private set
             {
-                if(_isControllingSubVolume)
-                {
-                    _mixerDecibelVolume = value.ClampDecibel();
-                    AudioMixer.SetFloat(_volParaName, _mixerDecibelVolume);
-                }
-                else
-                {
-                    float result = (value.ToNormalizeVolume() * _subVolume).ToDecibel();
-                    _mixerDecibelVolume = result.ClampDecibel();
-                    AudioMixer.SetFloat(_volParaName, _mixerDecibelVolume);
-                }
-                //float result = (_mixerDecibelVolume.ToNormalizeVolume() * _subVolume).ToDecibel();
-                //Debug.Log($"value:{value.ToNormalizeVolume()},result:{result},sub:{_subVolume}");
-                //_mixerDecibelVolume = Mathf.Clamp(result, MinDecibelVolume, MaxDecibelVolume);
-                //AudioMixer.SetFloat(_volParaName, _mixerDecibelVolume);
-                
+                _mixerDecibelVolume = value.ClampDecibel();
+                AudioMixer.SetFloat(_volParaName, _mixerDecibelVolume);
             }
         }
 
         private float _subVolume = 1f;
-        private bool _isControllingSubVolume = false;
 
 
         public abstract bool IsPlaying { get; protected set; }
@@ -103,9 +76,32 @@ namespace MiProduction.BroAudio.Core
             _subVolumeControl = StartCoroutine(SubVolumeControl(vol, fadeTime));
         }
 
+        protected void SetMixerNormalizeVolume(float vol)
+		{
+            MixerDecibelVolume = (vol * _subVolume).ToDecibel();
+		}
+
+        protected IEnumerator Fade(float duration, float targetVolume)
+        {
+            float currentTime = 0;
+            float currentVol = MixerDecibelVolume.ToNormalizeVolume();
+            float targetValue = Mathf.Clamp(targetVolume, MinVolume, MaxVolume);
+            Ease ease = currentVol < targetValue ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
+            float newVol = 0f;
+            while (currentTime < duration)
+            {
+                currentTime += Time.deltaTime;
+                newVol = Mathf.Lerp(currentVol, targetValue, (currentTime / duration).SetEase(ease));
+                MixerDecibelVolume = newVol.ToDecibel();
+                yield return null;
+            }
+            yield break;
+        }
+
         private IEnumerator SubVolumeControl(float target, float fadeTime)
         {
             float start = _subVolume;
+            float startMixerVol = MixerDecibelVolume.ToNormalizeVolume();
             float t = 0f;
             while (t < 1f)
             {
@@ -114,11 +110,12 @@ namespace MiProduction.BroAudio.Core
                 t += Time.deltaTime / fadeTime;
                 if (!IsFadingIn && !IsFadingOut)
                 {
-
+                    MixerDecibelVolume = (startMixerVol * _subVolume).ToDecibel();
                 }
                 yield return null;
             }
             _subVolume = target;
+            MixerDecibelVolume = (startMixerVol * _subVolume).ToDecibel();
         }
     } 
 }

@@ -23,7 +23,7 @@ namespace MiProduction.BroAudio.Core
 
         private void Start()
         {
-            MixerVolume = 0f;
+            SetMixerNormalizeVolume(0f);
         }
 
         public void Play(MusicLibrary musicLibrary, float fadeInTime = -1f, float fadeOutTime = -1f, Action onFinishFadeIn = null, Action onFinishPlaying = null)
@@ -53,7 +53,7 @@ namespace MiProduction.BroAudio.Core
                 }    
                 else
                 {
-                    MixerVolume = musicLibrary.Volume;
+                    SetMixerNormalizeVolume(musicLibrary.Volume);
                 }
                 #endregion
 
@@ -116,28 +116,13 @@ namespace MiProduction.BroAudio.Core
         }
 
 
-        private IEnumerator Fade(float duration, float targetVolume)
-        {
-            float currentTime = 0;
-            float currentVol = MixerVolume;
-            float targetValue = Mathf.Clamp(targetVolume, MinVolume, MaxVolume);
-            Ease ease = currentVol < targetValue ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
-            float newVol = 0f;
-            while (currentTime < duration)
-            {
-                currentTime += Time.deltaTime;
-                newVol = Mathf.Lerp(currentVol, targetValue , (currentTime / duration).SetEase(ease));
-                MixerDecibelVolume = newVol.ToDecibel();
-                yield return null;
-            }
-            yield break;
-        }
+        
 
         private void EndPlaying()
         {
             _currentMusicLibrary = default;
             _currentPlayCoroutine.Stop(this);
-            MixerVolume = 0f;     
+            SetMixerNormalizeVolume(0f);    
             AudioSource.Stop();
             AudioSource.clip = null;
             AudioSource.volume = 1f;

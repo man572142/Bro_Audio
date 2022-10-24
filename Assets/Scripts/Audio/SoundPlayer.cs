@@ -15,7 +15,7 @@ namespace MiProduction.BroAudio.Core
 
         private void Start()
         {
-            SetClipVolume(1f);
+            ClipVolume = 1f;
         }
 
         public void Play(Sound sound, AudioClip clip, float delay, float volume, float preventTime)

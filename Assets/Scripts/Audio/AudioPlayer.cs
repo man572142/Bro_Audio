@@ -22,7 +22,27 @@ namespace MiProduction.BroAudio.Core
         // MixerDecibelVolume 實際在AudioMixer上的分貝數
 
         private float _clipVolume = 1f;
+        public float ClipVolume
+        {
+            get => _clipVolume;
+            protected set
+            {
+                _clipVolume = value;
+                MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
+            }
+        }
+
         private float _trackVolume = 1f;
+        public float TrackVolume
+        {
+            get => _trackVolume;
+            private set
+            {
+                _trackVolume = value;
+                MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
+            }
+        }
+        
         private float _mixerDecibelVolume = -1;
         public float MixerDecibelVolume
         {
@@ -67,20 +87,12 @@ namespace MiProduction.BroAudio.Core
             _volParaName = AudioSource.outputAudioMixerGroup.name;
         }
 
-        
-
         public void SetVolume(float vol, float fadeTime)
         {
-            // 只動SubVolume，使原本的音量以及FadeIn/Out以及此處音量能共同運作
+            // 只動TrackVolume
             _subVolumeControl.Stop(this);
             _subVolumeControl = StartCoroutine(TrackVolumeControl(vol, fadeTime));
         }
-
-        protected void SetClipVolume(float vol)
-		{
-            _clipVolume = vol;
-            MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
-		}
 
         protected IEnumerator Fade(float duration, float targetVolume)
         {
@@ -93,7 +105,7 @@ namespace MiProduction.BroAudio.Core
             {
                 currentTime += Time.deltaTime;
                 newVol = Mathf.Lerp(currentVol, targetValue, (currentTime / duration).SetEase(ease));
-                SetClipVolume(newVol);
+                ClipVolume = newVol;
                 yield return null;
             }
             yield break;
@@ -101,21 +113,15 @@ namespace MiProduction.BroAudio.Core
 
         private IEnumerator TrackVolumeControl(float target, float fadeTime)
         {
-            float start = _trackVolume;
+            float start = TrackVolume;
             float t = 0f;
             while (t < 1f)
             {
-                _trackVolume = Mathf.Lerp(start, target, t);
+                TrackVolume = Mathf.Lerp(start, target, t);
                 t += Time.deltaTime / fadeTime;
-                if (!IsFadingIn && !IsFadingOut)
-                {
-                    Debug.Log(_clipVolume * _trackVolume);
-                    MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
-                }
                 yield return null;
             }
-            _trackVolume = target;
-            MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
+            TrackVolume = target;
         }
     } 
 }

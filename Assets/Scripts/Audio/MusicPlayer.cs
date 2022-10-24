@@ -23,7 +23,7 @@ namespace MiProduction.BroAudio.Core
 
         private void Start()
         {
-            SetClipVolume(0f);
+            ClipVolume = 0f;
         }
 
         public void Play(MusicLibrary musicLibrary, float fadeInTime = -1f, float fadeOutTime = -1f, Action onFinishFadeIn = null, Action onFinishPlaying = null)
@@ -53,7 +53,7 @@ namespace MiProduction.BroAudio.Core
                 }    
                 else
                 {
-                    SetClipVolume(musicLibrary.Volume);
+                    ClipVolume = musicLibrary.Volume;
                 }
                 #endregion
 
@@ -122,7 +122,7 @@ namespace MiProduction.BroAudio.Core
         {
             _currentMusicLibrary = default;
             _currentPlayCoroutine.Stop(this);
-            SetClipVolume(0f);    
+            ClipVolume = 0f;    
             AudioSource.Stop();
             AudioSource.clip = null;
             AudioSource.loop = false;

@@ -92,7 +92,7 @@ namespace MiProduction.BroAudio.Core
             {
                 currentTime += Time.deltaTime;
                 newVol = Mathf.Lerp(currentVol, targetValue, (currentTime / duration).SetEase(ease));
-                MixerDecibelVolume = newVol.ToDecibel();
+                SetMixerNormalizeVolume(newVol);
                 yield return null;
             }
             yield break;

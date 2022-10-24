@@ -1,4 +1,3 @@
-using MiProduction.BroAudio.Library;
 using MiProduction.Extension;
 using System;
 using System.Collections;
@@ -6,7 +5,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using static MiProduction.BroAudio.AudioExtension;
-using static UnityEngine.Networking.UnityWebRequest;
 
 namespace MiProduction.BroAudio.Core
 {
@@ -18,7 +16,13 @@ namespace MiProduction.BroAudio.Core
         private string _volParaName = string.Empty;
 
         private Coroutine _subVolumeControl;
-        
+
+        // ClipVolume : 播放Clip的音量(0~1)，依不同的Clip有不同設定，而FadeIn/FadeOut也只作用在此值
+        // TrackVolume : 音軌的音量(0~1)，也可算是此Player的音量，作用相當於混音的Fader
+        // MixerDecibelVolume 實際在AudioMixer上的分貝數
+
+        private float _clipVolume = 1f;
+        private float _trackVolume = 1f;
         private float _mixerDecibelVolume = -1;
         public float MixerDecibelVolume
         {
@@ -28,7 +32,6 @@ namespace MiProduction.BroAudio.Core
                 {
                     if (AudioMixer.GetFloat(_volParaName, out float currentVol))
                     {
-                        //Debug.Log(currentVol);
                         _mixerDecibelVolume = currentVol;
                     }
                     else
@@ -45,9 +48,6 @@ namespace MiProduction.BroAudio.Core
                 AudioMixer.SetFloat(_volParaName, _mixerDecibelVolume);
             }
         }
-
-        private float _subVolume = 1f;
-
 
         public abstract bool IsPlaying { get; protected set; }
         public abstract bool IsStoping { get; protected set; }
@@ -73,18 +73,19 @@ namespace MiProduction.BroAudio.Core
         {
             // 只動SubVolume，使原本的音量以及FadeIn/Out以及此處音量能共同運作
             _subVolumeControl.Stop(this);
-            _subVolumeControl = StartCoroutine(SubVolumeControl(vol, fadeTime));
+            _subVolumeControl = StartCoroutine(TrackVolumeControl(vol, fadeTime));
         }
 
-        protected void SetMixerNormalizeVolume(float vol)
+        protected void SetClipVolume(float vol)
 		{
-            MixerDecibelVolume = (vol * _subVolume).ToDecibel();
+            _clipVolume = vol;
+            MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
 		}
 
         protected IEnumerator Fade(float duration, float targetVolume)
         {
             float currentTime = 0;
-            float currentVol = MixerDecibelVolume.ToNormalizeVolume();
+            float currentVol = _clipVolume;
             float targetValue = Mathf.Clamp(targetVolume, MinVolume, MaxVolume);
             Ease ease = currentVol < targetValue ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
             float newVol = 0f;
@@ -92,30 +93,29 @@ namespace MiProduction.BroAudio.Core
             {
                 currentTime += Time.deltaTime;
                 newVol = Mathf.Lerp(currentVol, targetValue, (currentTime / duration).SetEase(ease));
-                SetMixerNormalizeVolume(newVol);
+                SetClipVolume(newVol);
                 yield return null;
             }
             yield break;
         }
 
-        private IEnumerator SubVolumeControl(float target, float fadeTime)
+        private IEnumerator TrackVolumeControl(float target, float fadeTime)
         {
-            float start = _subVolume;
-            float startMixerVol = MixerDecibelVolume.ToNormalizeVolume();
+            float start = _trackVolume;
             float t = 0f;
             while (t < 1f)
             {
-                //Debug.Log(_subVolume);
-                _subVolume = Mathf.Lerp(start, target, t);
+                _trackVolume = Mathf.Lerp(start, target, t);
                 t += Time.deltaTime / fadeTime;
                 if (!IsFadingIn && !IsFadingOut)
                 {
-                    MixerDecibelVolume = (startMixerVol * _subVolume).ToDecibel();
+                    Debug.Log(_clipVolume * _trackVolume);
+                    MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
                 }
                 yield return null;
             }
-            _subVolume = target;
-            MixerDecibelVolume = (startMixerVol * _subVolume).ToDecibel();
+            _trackVolume = target;
+            MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
         }
     } 
 }

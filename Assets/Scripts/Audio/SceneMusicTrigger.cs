@@ -18,7 +18,7 @@ public class SceneMusicTrigger : MonoBehaviour
         {
             if (music == Music.None)
             {
-                SoundSystem.StopMusic(0f);
+                SoundSystem.Stop(0f,AudioType.Music);
             }
             else if (currentMusic != music)
             {

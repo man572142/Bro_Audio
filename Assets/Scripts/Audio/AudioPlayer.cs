@@ -97,7 +97,7 @@ namespace MiProduction.BroAudio.Core
         protected IEnumerator Fade(float duration, float targetVolume)
         {
             float currentTime = 0;
-            float currentVol = _clipVolume;
+            float currentVol = ClipVolume;
             float targetValue = Mathf.Clamp(targetVolume, MinVolume, MaxVolume);
             Ease ease = currentVol < targetValue ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
             float newVol = 0f;

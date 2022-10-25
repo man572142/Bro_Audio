@@ -12,5 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8dea545865285941be8a4ddd0692911, type: 3}
   m_Name: MusicLibraryAlter
   m_EditorClassIdentifier: 
-  Libraries: []
+  Libraries:
+  - Name: Toe
+    Clip: {fileID: 0}
+    Music: 3
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 0
+    FadeOut: 0
+    Loop: 0
+  - Name: Rock
+    Clip: {fileID: 0}
+    Music: 4
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 0
+    FadeOut: 0
+    Loop: 0
+  - Name: Cool
+    Clip: {fileID: 0}
+    Music: 5
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 0
+    FadeOut: 0
+    Loop: 0
   _enumsPath: Assets/Scripts/Enums

@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 14128381}
   - component: {fileID: 14128380}
   m_Layer: 5
-  m_Name: StopMusic
+  m_Name: Stop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -208,7 +208,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1317931362}
         m_TargetAssemblyTypeName: Sample, Assembly-CSharp
-        m_MethodName: StopMusic
+        m_MethodName: Stop
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1210,7 +1210,7 @@ GameObject:
   - component: {fileID: 978664460}
   - component: {fileID: 978664459}
   m_Layer: 5
-  m_Name: MuiscVolume
+  m_Name: Volume
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1282,7 +1282,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1317931362}
         m_TargetAssemblyTypeName: Sample, Assembly-CSharp
-        m_MethodName: SetMusicVolume
+        m_MethodName: SetVolume
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1447,7 +1447,7 @@ MonoBehaviour:
   _sceneSound: 0
   _crossFadeTime: -1
   _stopFadeTime: -1
-  _musicVolume: 0.5
+  _targetVolume: 1
   _scenePlayer: {fileID: 595309941}
 --- !u!4 &1317931363
 Transform:

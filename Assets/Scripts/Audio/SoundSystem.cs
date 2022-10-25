@@ -53,35 +53,52 @@ namespace MiProduction.BroAudio
         /// <param name="fadeTime">若為-1則會採用Library當中所設定的值</param>
         public static void PlayMusic(Music newMusic, Transition transition, float fadeTime = -1f) => SoundManager.Instance.PlayMusic(newMusic, transition, fadeTime);
 
-        /// <summary>
-        /// 取得目前可用的Music Player
-        /// </summary>
-        /// <param name="musicPlayer"></param>
-        /// <returns></returns>
         //public static bool GetAvailableMusicPlayer(out MusicPlayer musicPlayer) => SoundManager.Instance.GetAvailableMusicPlayer(out musicPlayer);
 
-        /// <summary>
-        /// 停止播放音樂(使用預設FadeOut設定)
-        /// </summary>
-        public static void StopMusic() => SoundManager.Instance.StopMusic(-1f);
-
-        /// <summary>
-        /// 停止播放音樂
-        /// </summary>
-        /// <param name="fadeOutTime">自定FadeOut時間長度</param>
-        public static void StopMusic(float fadeOutTime) => SoundManager.Instance.StopMusic(fadeOutTime);
+        //public static void StopMusic() => SoundManager.Instance.StopMusic(-1f);
 
         
+        //public static void StopMusic(float fadeOutTime) => SoundManager.Instance.StopMusic(fadeOutTime);
+
+
         //public static void StopMusicImmediately() => SoundManager.Instance.StopMusic(0f);
 
-
+        /// <summary>
+        /// 停止播放(使用預設FadeOut設定)
+        /// </summary>
+        public static void Stop(AudioType type) => Stop(-1f, type);
 
         /// <summary>
-        /// 設定音量
+        /// 停止播放
         /// </summary>
-        /// <param name="vol">過渡到指定音量的時間</param>
-        /// <param name="type">設定的聲音類型</param>
-        public static void SetVolume(float vol, AudioType type) => SetVolume(vol, 1f, type);
+        /// <param name="fadeOutTime">自定FadeOut時間長度</param>
+        public static void Stop(float fadeTime,AudioType type)
+		{
+			switch (type)
+			{
+				case AudioType.All:
+                    SoundManager.Instance.StopMusic(fadeTime);
+                    SoundManager.Instance.StopSFX(fadeTime);
+					break;
+				case AudioType.SFX:
+                    SoundManager.Instance.StopSFX(fadeTime);
+                    break;
+				case AudioType.Music:
+                    SoundManager.Instance.StopMusic(fadeTime);
+                    break;
+				case AudioType.Ambience:
+					break;
+				case AudioType.UI:
+					break;
+			}
+		}
+
+		/// <summary>
+		/// 設定音量
+		/// </summary>
+		/// <param name="vol">過渡到指定音量的時間</param>
+		/// <param name="type">設定的聲音類型</param>
+		public static void SetVolume(float vol, AudioType type) => SetVolume(vol, 1f, type);
 
         /// <summary>
         /// 設定音量
@@ -110,6 +127,6 @@ namespace MiProduction.BroAudio
 			}
 		}
 
-        //public static void SetVolumeExcept(float vol, float fadeTime, AudioType type)
+		//public static void SetVolumeExcept(float vol, float fadeTime, AudioType type)
 	}
 }

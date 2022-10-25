@@ -48,12 +48,12 @@ public class Sample : MonoBehaviour
         SoundSystem.PlayRandomSFX(_randomSound);
     }
 
-    public void StopMusic()
+    public void Stop()
 	{
-        SoundSystem.StopMusic(_stopFadeTime);
+        SoundSystem.Stop(_stopFadeTime,AudioType.All);
 	}
 
-    public void SetMusicVolume()
+    public void SetVolume()
 	{
         SoundSystem.SetVolume(_targetVolume,AudioType.Music);
 	}

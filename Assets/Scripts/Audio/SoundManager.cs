@@ -225,6 +225,11 @@ namespace MiProduction.BroAudio.Core
             _sfxPlayer.SetVolume(vol,fadeTime);
 		}
 
+        public void StopSFX(float fadeTime)
+		{
+            _sfxPlayer.Stop(fadeTime);
+		}
+
         private AudioClip GetRandomClip(Sound sound)
         {
             int index = Random.Range(0, _randomSoundBank[sound].Length);
@@ -260,7 +265,7 @@ namespace MiProduction.BroAudio.Core
         private bool SoundPlayerCheck(Sound sound)
         {
 #if UNITY_EDITOR
-            if (_sfxPlayer == null || _mainSoundAsset == null || _soundBank.Count < 1 || !_soundBank.ContainsKey(sound))
+            if (_sfxPlayer == null || _mainSoundAsset == null || _soundBank.Count < 1)
             {
                 Debug.LogError("[SoundSystem] No sound can play , please check SoundManager's setting");
                 return false;

@@ -33,7 +33,6 @@ namespace MiProduction.BroAudio.Library
 
                 if (IsEnumNeedRefresh())
                 {
-                    // 既然都這樣了，何不乾脆直接就Assign
                     EditorGUILayout.HelpBox("This library needs to be updated and reassigned", MessageType.Warning);
                 }
 

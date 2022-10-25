@@ -1,10 +1,12 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using System.IO;
+using System;
+using System.Linq;
 
 public static class EnumGenerator
 {
-    public static void Generate(string enumsPath,string enumName,string[] enums)
+    public static void Generate(string enumsPath,string enumName,string[] enums,bool replaceOld = false)
     {
         string filePathAndName = enumsPath + "/" + enumName + ".cs";
 
@@ -13,16 +15,31 @@ public static class EnumGenerator
             Directory.CreateDirectory(enumsPath);
         }
 
-        if(File.Exists(filePathAndName))
+        bool isFileExists = File.Exists(filePathAndName);
+        if (isFileExists)
         {
-            File.Delete(filePathAndName);
+            if(replaceOld)
+			{
+                File.Delete(filePathAndName);
+            }
+			else
+			{
+                
+                string[] currentEnumNames = Enum.GetNames(Type.GetType(enumName));
+                enums = currentEnumNames.Concat(enums).Distinct().ToArray();
+			}
         }
+
 
         using (StreamWriter streamWriter = new StreamWriter(filePathAndName))
         {
             streamWriter.WriteLine("public enum " + enumName);
             streamWriter.WriteLine("{");
-            streamWriter.WriteLine("\t" + "None" + ",");
+            if(!isFileExists)
+			{
+                streamWriter.WriteLine("\t" + "None,");
+            }
+            
             for (int i = 0; i < enums.Length; i++)
             {
                 if (string.IsNullOrWhiteSpace(enums[i]))

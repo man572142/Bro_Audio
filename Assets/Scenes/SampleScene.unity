@@ -1442,9 +1442,9 @@ MonoBehaviour:
   _transitionB: 1
   _musicA: 1
   _musicB: 2
-  _sound: 0
-  _randomSound: 0
-  _sceneSound: 0
+  _sound: 1
+  _randomSound: 1
+  _sceneSound: 1
   _crossFadeTime: -1
   _stopFadeTime: -1
   _targetVolume: 1

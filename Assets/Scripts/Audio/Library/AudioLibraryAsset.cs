@@ -11,7 +11,7 @@ namespace MiProduction.BroAudio.Library
     {
         public T[] Libraries;
 
-        public string LibraryTypeName => typeof(T).Name.Replace("Library", "");
+        public abstract string LibraryTypeName { get; }
 
         [SerializeField, HideInInspector] private string _enumsPath = string.Empty;
 

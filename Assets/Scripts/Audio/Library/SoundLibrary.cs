@@ -8,7 +8,7 @@ namespace MiProduction.BroAudio.Library
     public struct SoundLibrary : IAudioLibrary
     {
         [SerializeField] string Name;
-        public Sound Sound;
+        public int ID;
         public AudioClip Clip;
         [Range(0f, 1f)] public float Volume;
         public float Delay;

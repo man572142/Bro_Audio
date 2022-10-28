@@ -1,5 +1,6 @@
+// Auto-Generate script,DO NOT EDIT!
 public enum Sound
 {
-	None,
-	TestSound,
+	None = 0,
+	TestSound = 6,
 }

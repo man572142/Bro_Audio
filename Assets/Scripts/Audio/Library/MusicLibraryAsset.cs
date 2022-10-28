@@ -8,6 +8,6 @@ namespace MiProduction.BroAudio.Library
 	[CreateAssetMenu(fileName = "MusicLibrary", menuName = "MiProduction/BroAudio/Create Library/Music")]
 	public class MusicLibraryAsset : AudioLibraryAsset<MusicLibrary>
 	{
-
-	} 
+		public override string LibraryTypeName => "Music";
+	}
 }

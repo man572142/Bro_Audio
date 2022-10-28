@@ -8,8 +8,8 @@ namespace MiProduction.BroAudio.Library
     public struct MusicLibrary : IAudioLibrary
     {
         [SerializeField] string Name;
+        public int ID;
         public AudioClip Clip;
-        public Music Music;
         [Range(0f, 1f)] public float Volume;
         public float StartPosition;
         public float EndPosition;

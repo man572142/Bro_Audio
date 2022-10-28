@@ -48,15 +48,15 @@ namespace MiProduction.BroAudio.Core
         // 音效
         [Header("Library")]
         [SerializeField] SoundLibraryAsset _mainSoundAsset = null;
-        private Dictionary<Sound, SoundLibrary> _soundBank = new Dictionary<Sound, SoundLibrary>();
+        private Dictionary<int, SoundLibrary> _soundBank = new Dictionary<int, SoundLibrary>();
 
         // 隨機播放音效
         [SerializeField] SoundLibraryAsset[] _randomSoundAsset = null;
-        Dictionary<Sound, SoundLibrary[]> _randomSoundBank = new Dictionary<Sound, SoundLibrary[]>();
+        Dictionary<int, SoundLibrary[]> _randomSoundBank = new Dictionary<int, SoundLibrary[]>();
 
         // 音樂
         [SerializeField] MusicLibraryAsset _mainMusicAsset = null;
-        private Dictionary<Music, MusicLibrary> _musicBank = new Dictionary<Music, MusicLibrary>();
+        private Dictionary<int, MusicLibrary> _musicBank = new Dictionary<int, MusicLibrary>();
 
 
         public static Ease FadeInEase { get => Instance._fadeInEase; }
@@ -72,14 +72,14 @@ namespace MiProduction.BroAudio.Core
             // 初始化音效庫
             for (int s = 0; s < _mainSoundAsset.Libraries.Length; s++)
             {
-                if(_soundBank.ContainsKey(_mainSoundAsset.Libraries[s].Sound))
+                if(_soundBank.ContainsKey(_mainSoundAsset.Libraries[s].ID))
                 {
-                    LogDuplicateError("Sound", _mainSoundAsset.Libraries[s].Sound.ToString());
+                    LogDuplicateError("Sound", _mainSoundAsset.Libraries[s].ID.ToString());
                     return;
                 }
                 if (_mainSoundAsset.Libraries[s].Validate(s))
                 {
-                    _soundBank.Add(_mainSoundAsset.Libraries[s].Sound, _mainSoundAsset.Libraries[s]);
+                    _soundBank.Add(_mainSoundAsset.Libraries[s].ID, _mainSoundAsset.Libraries[s]);
                 }
             }
             // 初始化隨機播放音效庫
@@ -96,19 +96,19 @@ namespace MiProduction.BroAudio.Core
                     }                    
                 }
                 if(isValidated)
-                    _randomSoundBank.Add(asset.Libraries[0].Sound, asset.Libraries);
+                    _randomSoundBank.Add(asset.Libraries[0].ID, asset.Libraries);
             }
             // 初始化音樂庫
             for (int m = 0; m < _mainMusicAsset.Libraries.Length; m++)
             {
-                if (_musicBank.ContainsKey(_mainMusicAsset.Libraries[m].Music))
+                if (_musicBank.ContainsKey(_mainMusicAsset.Libraries[m].ID))
                 {
-                    LogDuplicateError("Music", _mainMusicAsset.Libraries[m].Music.ToString());
+                    LogDuplicateError("Music", _mainMusicAsset.Libraries[m].ID.ToString());
                     return;
                 }
-                if (_mainMusicAsset.Libraries[m].Validate(m) && !_musicBank.ContainsKey(_mainMusicAsset.Libraries[m].Music))
+                if (_mainMusicAsset.Libraries[m].Validate(m) && !_musicBank.ContainsKey(_mainMusicAsset.Libraries[m].ID))
                 {
-                    _musicBank.Add(_mainMusicAsset.Libraries[m].Music, _mainMusicAsset.Libraries[m]);
+                    _musicBank.Add(_mainMusicAsset.Libraries[m].ID, _mainMusicAsset.Libraries[m]);
                 }
             }
             _currentPlayer = _musicPlayers[0];
@@ -127,27 +127,28 @@ namespace MiProduction.BroAudio.Core
             if (!PlayMusicCheck(newMusic))
                 return;
 
+            int id = (int)newMusic;
             switch (transition)
             {
                 case Transition.Immediate:
                     _currentPlayer.Stop(0f);
-                    _currentPlayer.Play(_musicBank[newMusic], 0f);
+                    _currentPlayer.Play(_musicBank[id], 0f);
                     break;
                 case Transition.FadeOutThenFadeIn:
-                    _currentPlayer.Stop(fadeTime, () => _currentPlayer.Play(_musicBank[newMusic], fadeTime));
+                    _currentPlayer.Stop(fadeTime, () => _currentPlayer.Play(_musicBank[id], fadeTime));
                     break;
                 case Transition.OnlyFadeInNew:
                     _currentPlayer.Stop(0f);
-                    _currentPlayer.Play(_musicBank[newMusic], fadeTime);
+                    _currentPlayer.Play(_musicBank[id], fadeTime);
                     break;
                 case Transition.OnlyFadeOutCurrent:
-                    _currentPlayer.Stop(fadeTime, () => _currentPlayer.Play(_musicBank[newMusic], 0f));
+                    _currentPlayer.Stop(fadeTime, () => _currentPlayer.Play(_musicBank[id], 0f));
                     break;
                 case Transition.CrossFade:
                     if (GetAvailableMusicPlayer(out MusicPlayer otherPlayer))
                     {
                         _currentPlayer.Stop(fadeTime, () => _currentPlayer = otherPlayer);
-                        otherPlayer.Play(_musicBank[newMusic], fadeTime);
+                        otherPlayer.Play(_musicBank[id], fadeTime);
                     }
                     else
                     {
@@ -193,9 +194,10 @@ namespace MiProduction.BroAudio.Core
 
         public void PlaySFX(Sound sound, float preventTime)
         {
+            int id = (int)sound;
             if(SoundPlayerCheck(sound))
             {
-                _sfxPlayer.Play(sound, _soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime);
+                _sfxPlayer.Play(sound, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
             }     
         }
 
@@ -203,7 +205,8 @@ namespace MiProduction.BroAudio.Core
         {
             if(SoundPlayerCheck(sound))
             {
-                _sfxPlayer.PlayAtPoint(sound, _soundBank[sound].Clip, _soundBank[sound].Delay, _soundBank[sound].Volume, position);
+                int id = (int)sound;
+                _sfxPlayer.PlayAtPoint(sound, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, position);
             }
         }
 
@@ -216,7 +219,8 @@ namespace MiProduction.BroAudio.Core
         {
             if(RandomSoundCheck(sound))
             {
-                _sfxPlayer.Play(sound, GetRandomClip(sound), _soundBank[sound].Delay, _soundBank[sound].Volume, preventTime);
+                int id = (int)sound;
+                _sfxPlayer.Play(sound, GetRandomClip(sound), _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
             }      
         }
 
@@ -232,8 +236,9 @@ namespace MiProduction.BroAudio.Core
 
         private AudioClip GetRandomClip(Sound sound)
         {
-            int index = Random.Range(0, _randomSoundBank[sound].Length);
-            return _randomSoundBank[sound][index].Clip;
+            int id = (int)sound;
+            int index = Random.Range(0, _randomSoundBank[id].Length);
+            return _randomSoundBank[id][index].Clip;
         }
 
         #endregion
@@ -248,7 +253,7 @@ namespace MiProduction.BroAudio.Core
                 Debug.LogError("[SoundSystem] No music can play. please check SoundManager's setting!");
                 return false;
             }
-            else if (!_musicBank.ContainsKey(music))
+            else if (!_musicBank.ContainsKey((int)music))
             {
                 Debug.LogError($"[SoundSystem] Enum:{music.ToString()} may not exist in the current MusicAsset");
                 return false;
@@ -270,7 +275,7 @@ namespace MiProduction.BroAudio.Core
                 Debug.LogError("[SoundSystem] No sound can play , please check SoundManager's setting");
                 return false;
             }
-            else if (!_soundBank.ContainsKey(sound))
+            else if (!_soundBank.ContainsKey((int)sound))
             {
                 Debug.LogError($"[SoundSystem] Enum:{sound.ToString()} may not exist in the current SoundAsset");
                 return false;
@@ -282,12 +287,12 @@ namespace MiProduction.BroAudio.Core
         private bool RandomSoundCheck(Sound sound)
         {
 #if UNITY_EDITOR
-            if (_sfxPlayer == null || _randomSoundAsset == null || _randomSoundBank.Count < 1 || !_randomSoundBank.ContainsKey(sound))
+            if (_sfxPlayer == null || _randomSoundAsset == null || _randomSoundBank.Count < 1 || !_randomSoundBank.ContainsKey((int)sound))
             {
                 Debug.LogError("[SoundSystem] No sound can play , please check SoundManager's setting");
                 return false;
             }
-            else if (!_randomSoundBank.ContainsKey(sound))
+            else if (!_randomSoundBank.ContainsKey((int)sound))
             {
                 Debug.LogError($"[SoundSystem] Enum:{sound.ToString()} may not exist in the current RandomSoundAsset");
                 return false;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace MiProduction.BroAudio.Library
         private SerializedProperty _libraries;
         private IAudioLibraryIdentify _asset;
         private string _waitingString = string.Empty;
+        private EnumGenerator _enumGenerator = null;
 
         private void OnEnable()
         {
@@ -41,13 +43,17 @@ namespace MiProduction.BroAudio.Library
                     if (_asset.AllLibraryEnumNames == null)
                         return;
 
+                    if(_enumGenerator == null)
+					{
+                        _enumGenerator = new EnumGenerator();
+					}
                     if (_asset.AllLibraryEnumNames.Length == 0)
                     {
-                        EnumGenerator.Generate(_pathProperty.stringValue, _asset.LibraryTypeName, new string[0]);
+                        _enumGenerator.Generate(_pathProperty.stringValue, _asset.LibraryTypeName, new string[0]);
                     }
                     else
                     {
-                        EnumGenerator.Generate(_pathProperty.stringValue, _asset.LibraryTypeName, _asset.AllLibraryEnumNames);
+                        _enumGenerator.Generate(_pathProperty.stringValue, _asset.LibraryTypeName, _asset.AllLibraryEnumNames);
                     }
                     _hasUnassignedEnum = true;
                     _waitingString = string.Empty;
@@ -56,7 +62,10 @@ namespace MiProduction.BroAudio.Library
             else
             {
                 EditorGUILayout.LabelField("Assigning enums" + _waitingString);
-                AssignEnum();
+                if(!EditorApplication.isCompiling)
+				{
+                    AssignEnum();
+                }
                 _waitingString += " .";
             }
 
@@ -95,20 +104,19 @@ namespace MiProduction.BroAudio.Library
             {
                 SerializedProperty element = _libraries.GetArrayElementAtIndex(i);
                 SerializedProperty elementEnumName = element.FindPropertyRelative("Name");
-                SerializedProperty elementEnum = element.FindPropertyRelative(_asset.LibraryTypeName);
+                SerializedProperty elementID = element.FindPropertyRelative("ID");
 
                 // 先嘗試assign
-                for (int e = 0; e < elementEnum.enumNames.Length; e++)
-                {
-                    elementEnum.enumValueIndex = 0;
-                    if (elementEnum.enumNames[e] == elementEnumName.stringValue)
-                    {
-                        elementEnum.enumValueIndex = e;
-                        break;
-                    }
-                }
+				if(Enum.TryParse(elementEnumName.stringValue,out CoreLibraryEnum elementEnum))
+				{
+                    elementID.intValue = (int)elementEnum;
+				}
+                else
+				{
+                    Debug.LogError("");
+				}
                 // 如果嘗試assign過後還是None，而且EnumName不是空的，代表還沒importAsset
-                if (elementEnum.enumValueIndex == 0
+                if (elementID.intValue == 0
                     && !string.IsNullOrWhiteSpace(elementEnumName.stringValue)
                     && elementEnumName.stringValue != "None")
                 {
@@ -126,9 +134,11 @@ namespace MiProduction.BroAudio.Library
             {
                 SerializedProperty element = _libraries.GetArrayElementAtIndex(i);
                 SerializedProperty elementEnumName = element.FindPropertyRelative("Name");
-                SerializedProperty elementEnum = element.FindPropertyRelative(_asset.LibraryTypeName);
+                SerializedProperty elementID = element.FindPropertyRelative("ID");
 
-                if (elementEnumName.stringValue != elementEnum.enumNames[elementEnum.enumValueIndex])
+                CoreLibraryEnum enumValue = (CoreLibraryEnum)elementID.intValue;
+
+                if (elementEnumName.stringValue != enumValue.ToString())
 				{
                     return true;
 				}

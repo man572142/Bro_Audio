@@ -53,16 +53,6 @@ namespace MiProduction.BroAudio
         /// <param name="fadeTime">若為-1則會採用Library當中所設定的值</param>
         public static void PlayMusic(Music newMusic, Transition transition, float fadeTime = -1f) => SoundManager.Instance.PlayMusic(newMusic, transition, fadeTime);
 
-        //public static bool GetAvailableMusicPlayer(out MusicPlayer musicPlayer) => SoundManager.Instance.GetAvailableMusicPlayer(out musicPlayer);
-
-        //public static void StopMusic() => SoundManager.Instance.StopMusic(-1f);
-
-        
-        //public static void StopMusic(float fadeOutTime) => SoundManager.Instance.StopMusic(fadeOutTime);
-
-
-        //public static void StopMusicImmediately() => SoundManager.Instance.StopMusic(0f);
-
         /// <summary>
         /// 停止播放(使用預設FadeOut設定)
         /// </summary>
@@ -127,6 +117,5 @@ namespace MiProduction.BroAudio
 			}
 		}
 
-		//public static void SetVolumeExcept(float vol, float fadeTime, AudioType type)
 	}
 }

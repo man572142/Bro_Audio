@@ -15,7 +15,7 @@ namespace MiProduction.BroAudio.Core
         private Coroutine _currentPlayCoroutine;
         private Coroutine _stopControlCoroutine;
 
-        public Music CurrentMusic { get => _currentMusicLibrary.Music; }
+        public Music CurrentMusic { get => (Music)_currentMusicLibrary.ID; }
         public override bool IsPlaying { get; protected set; }
         public override bool IsStoping { get; protected set; }
         public override bool IsFadingOut { get; protected set; }
@@ -89,7 +89,7 @@ namespace MiProduction.BroAudio.Core
 
         private IEnumerator StopControl(float fadeOutTime, Action onFinishPlaying)
         {
-            if (_currentMusicLibrary.Music == Music.None || !IsPlaying)
+            if (_currentMusicLibrary.ID == 0 || !IsPlaying)
             {
                 onFinishPlaying?.Invoke();
                 yield break;

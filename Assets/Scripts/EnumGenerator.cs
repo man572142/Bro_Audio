@@ -51,11 +51,11 @@ public class EnumGenerator
 		{
             if(String.IsNullOrWhiteSpace(enumString))
 			{
-                UnityEngine.Debug.LogWarning("[SoundSystem] there is an empty name in " + enumName);
+                UnityEngine.Debug.LogError("[SoundSystem] there is an empty name in " + enumName);
             }
             else if (!Regex.IsMatch(enumString, @"^[a-zA-Z]+$"))
 			{
-                UnityEngine.Debug.LogWarning($"[SoundSystem] {enumString} is not a valid name for library of " + enumName);
+                UnityEngine.Debug.LogError($"[SoundSystem] {enumString} is not a valid name for library of " + enumName);
             }
             else if(!_enumList.Contains(enumString) && enumString != "None")
 			{

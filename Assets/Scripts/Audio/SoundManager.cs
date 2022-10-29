@@ -305,7 +305,7 @@ namespace MiProduction.BroAudio.Core
 
         private void LogDuplicateError(string enumType,string enumName)
         {
-            Debug.LogError($"[SoundSystem] Enum {enumType}.{enumName} is duplicated !");
+            Debug.LogError($"[SoundSystem] Enum {enumType} ID:{enumName} is duplicated !");
         }
     }
 

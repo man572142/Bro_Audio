@@ -125,6 +125,7 @@ namespace MiProduction.BroAudio.Library
                 }
             }
             _hasUnassignedEnum = false;
+            serializedObject.ApplyModifiedProperties();
             Debug.Log("All enums have been assigned successfully!");
         }
 

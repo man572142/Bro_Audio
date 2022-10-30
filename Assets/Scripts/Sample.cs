@@ -16,6 +16,7 @@ public class Sample : MonoBehaviour
     [SerializeField] Sound _randomSound;
     [SerializeField] Sound _sceneSound;
 
+
     [SerializeField] float _crossFadeTime = -1f;
 
     [SerializeField] float _stopFadeTime = 0f;
@@ -25,12 +26,12 @@ public class Sample : MonoBehaviour
 
     public void PlayA()
     {
-        SoundSystem.PlayMusic(_musicA, _transitionA,_crossFadeTime);
+        SoundSystem.PlayMusic(_musicA, _transitionA, _crossFadeTime);
     }
-    
+
     public void PlayB()
     {
-        SoundSystem.PlayMusic(_musicB, _transitionB,_crossFadeTime);
+        SoundSystem.PlayMusic(_musicB, _transitionB, _crossFadeTime);
     }
 
     public void PlaySFX()
@@ -40,7 +41,7 @@ public class Sample : MonoBehaviour
 
     public void PlaySceneSFX()
     {
-        SoundSystem.PlaySFX(_sceneSound,_scenePlayer.position);
+        SoundSystem.PlaySFX(_sceneSound, _scenePlayer.position);
     }
 
     public void PlayRandomSound()
@@ -49,12 +50,12 @@ public class Sample : MonoBehaviour
     }
 
     public void Stop()
-	{
-        SoundSystem.Stop(_stopFadeTime,AudioType.All);
-	}
+    {
+        SoundSystem.Stop(_stopFadeTime, AudioType.All);
+    }
 
     public void SetVolume()
-	{
-        SoundSystem.SetVolume(_targetVolume,AudioType.Music);
-	}
+    {
+        SoundSystem.SetVolume(_targetVolume, AudioType.Music);
+    }
 }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Libraries:
   - Name: TestSound
-    Sound: 1
+    ID: 1
     Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
     Volume: 1
     Delay: 0

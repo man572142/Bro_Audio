@@ -1,6 +1,6 @@
 // Auto-Generate script,DO NOT EDIT!
-public enum Sound
+public enum UI
 {
 	None = 0,
-	TestSound = 16,
+	ButtonClick = 1,
 }

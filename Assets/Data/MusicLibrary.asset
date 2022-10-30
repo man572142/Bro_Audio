@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Libraries:
   - Name: PlasticLove
+    ID: 1
     Clip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
-    Music: 1
     Volume: 0.8
     StartPosition: 44.32
     EndPosition: 92.61
@@ -23,8 +23,116 @@ MonoBehaviour:
     FadeOut: 5
     Loop: 0
   - Name: RealEstate
+    ID: 2
     Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
-    Music: 2
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: Cyberpunk
+    ID: 7
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: Awsome
+    ID: 8
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: HolyShit
+    ID: 9
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: MacDemarco
+    ID: 10
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: HarryPotter
+    ID: 11
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: McDonald
+    ID: 12
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: MoreEnum
+    ID: 13
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: ComeOn
+    ID: 14
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: BayBay
+    ID: 15
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: SunsetRollercoaster
+    ID: 16
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: Fender
+    ID: 17
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 1
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 1
+    FadeOut: 5
+    Loop: 0
+  - Name: Marshall
+    ID: 18
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
     Volume: 1
     StartPosition: 0
     EndPosition: 0

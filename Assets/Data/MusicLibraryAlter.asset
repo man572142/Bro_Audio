@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Libraries:
   - Name: Toe
-    Clip: {fileID: 0}
-    Music: 3
+    ID: 4
+    Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
     Volume: 1
     StartPosition: 0
     EndPosition: 0
@@ -23,8 +23,8 @@ MonoBehaviour:
     FadeOut: 0
     Loop: 0
   - Name: Rock
+    ID: 5
     Clip: {fileID: 0}
-    Music: 4
     Volume: 1
     StartPosition: 0
     EndPosition: 0
@@ -32,8 +32,8 @@ MonoBehaviour:
     FadeOut: 0
     Loop: 0
   - Name: Cool
+    ID: 6
     Clip: {fileID: 0}
-    Music: 5
     Volume: 1
     StartPosition: 0
     EndPosition: 0

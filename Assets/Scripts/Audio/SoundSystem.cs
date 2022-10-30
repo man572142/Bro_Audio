@@ -41,6 +41,8 @@ namespace MiProduction.BroAudio
             PlaySFX((int)(CoreLibraryEnum)(ValueType)sound, position);
         }
 
+        public static void PlaySFX(int soundID) => SoundManager.Instance.PlaySFX(soundID, 0.1f);
+
         /// <summary>
         /// ¼½©ñ­µ®Ä
         /// </summary>

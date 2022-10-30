@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MiProduction.BroAudio.Library;
+using System;
+using UnityEngine.Profiling;
 
 namespace MiProduction.BroAudio.Core
 {
@@ -74,7 +76,7 @@ namespace MiProduction.BroAudio.Core
             {
                 if(_soundBank.ContainsKey(_mainSoundAsset.Libraries[s].ID))
                 {
-                    LogDuplicateError("Sound", _mainSoundAsset.Libraries[s].ID.ToString());
+                    Debug.LogError($"[SoundSystem] Sound ID:{_mainSoundAsset.Libraries[s].ID} is duplicated !");
                     return;
                 }
                 if (_mainSoundAsset.Libraries[s].Validate(s))
@@ -103,7 +105,7 @@ namespace MiProduction.BroAudio.Core
             {
                 if (_musicBank.ContainsKey(_mainMusicAsset.Libraries[m].ID))
                 {
-                    LogDuplicateError("Music", _mainMusicAsset.Libraries[m].ID.ToString());
+                    Debug.LogError($"[SoundSystem] Music ID:{_mainMusicAsset.Libraries[m].ID} is duplicated !");
                     return;
                 }
                 if (_mainMusicAsset.Libraries[m].Validate(m) && !_musicBank.ContainsKey(_mainMusicAsset.Libraries[m].ID))
@@ -117,17 +119,11 @@ namespace MiProduction.BroAudio.Core
 
         #region 音樂
 
-        public void PlayMusic(Music newMusic)
+        public void PlayMusic(int id,Transition transition,float fadeTime = -1)
         {
-            PlayMusic(newMusic, Transition.Immediate);
-        }
-
-        public void PlayMusic(Music newMusic, Transition transition, float fadeTime = -1f)
-        {
-            if (!PlayMusicCheck(newMusic))
+            if (!PlayMusicCheck(id))
                 return;
 
-            int id = (int)newMusic;
             switch (transition)
             {
                 case Transition.Immediate:
@@ -158,7 +154,7 @@ namespace MiProduction.BroAudio.Core
             }
         }
 
-        public bool GetAvailableMusicPlayer(out MusicPlayer musicPlayer)
+        private bool GetAvailableMusicPlayer(out MusicPlayer musicPlayer)
         {
             musicPlayer = null;
             foreach (MusicPlayer player in _musicPlayers)
@@ -187,40 +183,27 @@ namespace MiProduction.BroAudio.Core
 
         #region 音效
 
-        public void PlaySFX(Sound sound)
+        public void PlaySFX(int id, float preventTime)
         {
-            PlaySFX(sound, 0.1f);
-        }
-
-        public void PlaySFX(Sound sound, float preventTime)
-        {
-            int id = (int)sound;
-            if(SoundPlayerCheck(sound))
+            if(SoundPlayerCheck(id))
             {
-                _sfxPlayer.Play(sound, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
+                _sfxPlayer.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
             }     
         }
 
-        public void PlaySFX(Sound sound, Vector3 position)
+        public void PlaySFX(int id, Vector3 position)
         {
-            if(SoundPlayerCheck(sound))
+            if(SoundPlayerCheck(id))
             {
-                int id = (int)sound;
-                _sfxPlayer.PlayAtPoint(sound, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, position);
+                _sfxPlayer.PlayAtPoint( _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, position);
             }
         }
 
-        public void PlayRandomSFX(Sound sound)
+        public void PlayRandomSFX(int id, float preventTime)
         {
-            PlayRandomSFX(sound, 0.1f);
-        }
-
-        public void PlayRandomSFX(Sound sound, float preventTime)
-        {
-            if(RandomSoundCheck(sound))
+            if(RandomSoundCheck(id))
             {
-                int id = (int)sound;
-                _sfxPlayer.Play(sound, GetRandomClip(sound), _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
+                _sfxPlayer.Play(id, GetRandomClip(id), _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
             }      
         }
 
@@ -234,10 +217,9 @@ namespace MiProduction.BroAudio.Core
             _sfxPlayer.Stop(fadeTime);
 		}
 
-        private AudioClip GetRandomClip(Sound sound)
+        private AudioClip GetRandomClip(int id)
         {
-            int id = (int)sound;
-            int index = Random.Range(0, _randomSoundBank[id].Length);
+            int index = UnityEngine.Random.Range(0, _randomSoundBank[id].Length);
             return _randomSoundBank[id][index].Clip;
         }
 
@@ -245,20 +227,20 @@ namespace MiProduction.BroAudio.Core
 
 
         #region NullChecker
-        private bool PlayMusicCheck(Music music)
+        private bool PlayMusicCheck(int id)
         {
 #if UNITY_EDITOR
-            if (_mainMusicAsset == null || _musicBank.Count < 1 || music == Music.None)
+            if (_mainMusicAsset == null || _musicBank.Count < 1 || id == 0)
             {
                 Debug.LogError("[SoundSystem] No music can play. please check SoundManager's setting!");
                 return false;
             }
-            else if (!_musicBank.ContainsKey((int)music))
+            else if (!_musicBank.ContainsKey(id))
             {
-                Debug.LogError($"[SoundSystem] Enum:{music.ToString()} may not exist in the current MusicAsset");
+                Debug.LogError($"[SoundSystem] Music ID: {id} may not exist in the current MusicAsset");
                 return false;
             }
-            else if(music == _currentPlayer.CurrentMusic)
+            else if(id == _currentPlayer.CurrentMusicID)
             {
                 Debug.LogWarning("[SoundSystem] The music you want to play is already playing");
                 return false;
@@ -267,7 +249,7 @@ namespace MiProduction.BroAudio.Core
             return true;
         }
 
-        private bool SoundPlayerCheck(Sound sound)
+        private bool SoundPlayerCheck(int id)
         {
 #if UNITY_EDITOR
             if (_sfxPlayer == null || _mainSoundAsset == null || _soundBank.Count < 1)
@@ -275,26 +257,26 @@ namespace MiProduction.BroAudio.Core
                 Debug.LogError("[SoundSystem] No sound can play , please check SoundManager's setting");
                 return false;
             }
-            else if (!_soundBank.ContainsKey((int)sound))
+            else if (!_soundBank.ContainsKey(id))
             {
-                Debug.LogError($"[SoundSystem] Enum:{sound.ToString()} may not exist in the current SoundAsset");
+                Debug.LogError($"[SoundSystem] SoundID:{id} may not exist in the current SoundAsset");
                 return false;
             }
 #endif
             return true;
         }
 
-        private bool RandomSoundCheck(Sound sound)
+        private bool RandomSoundCheck(int id)
         {
 #if UNITY_EDITOR
-            if (_sfxPlayer == null || _randomSoundAsset == null || _randomSoundBank.Count < 1 || !_randomSoundBank.ContainsKey((int)sound))
+            if (_sfxPlayer == null || _randomSoundAsset == null || _randomSoundBank.Count < 1 || !_randomSoundBank.ContainsKey(id))
             {
                 Debug.LogError("[SoundSystem] No sound can play , please check SoundManager's setting");
                 return false;
             }
-            else if (!_randomSoundBank.ContainsKey((int)sound))
+            else if (!_randomSoundBank.ContainsKey((int)id))
             {
-                Debug.LogError($"[SoundSystem] Enum:{sound.ToString()} may not exist in the current RandomSoundAsset");
+                Debug.LogError($"[SoundSystem] SoundID:{id} may not exist in the current RandomSoundAsset");
                 return false;
             }
 #endif
@@ -303,10 +285,6 @@ namespace MiProduction.BroAudio.Core
 
         #endregion
 
-        private void LogDuplicateError(string enumType,string enumName)
-        {
-            Debug.LogError($"[SoundSystem] Enum {enumType} ID:{enumName} is duplicated !");
-        }
     }
 
 }

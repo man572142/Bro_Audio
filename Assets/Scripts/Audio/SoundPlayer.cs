@@ -9,7 +9,7 @@ namespace MiProduction.BroAudio.Core
     {
         private const float DefaultFadeOutTime = 1f;
 
-        private Dictionary<Sound, bool> _preventPlayback = new Dictionary<Sound, bool>();
+        private Dictionary<int, bool> _preventPlayback = new Dictionary<int, bool>();
         private int _currentPlayingSoundCount = 0;
         private Coroutine _stopCoroutine;
 
@@ -23,16 +23,16 @@ namespace MiProduction.BroAudio.Core
             ClipVolume = 1f;
         }
 
-        public void Play(Sound sound, AudioClip clip, float delay, float volume, float preventTime)
+        public void Play(int id, AudioClip clip, float delay, float volume, float preventTime)
         {
             _stopCoroutine.Stop(this);
-            StartCoroutine(PlayOnce(sound, clip, delay, volume, preventTime));
+            StartCoroutine(PlayOnce(id, clip, delay, volume, preventTime));
         }
 
-        public void PlayAtPoint(Sound sound, AudioClip clip, float delay, float volume, Vector3 pos)
+        public void PlayAtPoint(AudioClip clip, float delay, float volume, Vector3 pos)
         {
             _stopCoroutine.Stop(this);
-            StartCoroutine(PlayInScene(sound, clip, volume, delay, pos));
+            StartCoroutine(PlayInScene(clip, volume, delay, pos));
         }
 
         public void Stop(float fadeOutTime)
@@ -46,29 +46,29 @@ namespace MiProduction.BroAudio.Core
         }
 
 
-        private IEnumerator PlayOnce(Sound sound, AudioClip clip, float delay, float volume, float preventTime)
+        private IEnumerator PlayOnce(int id, AudioClip clip, float delay, float volume, float preventTime)
         {
             yield return new WaitForSeconds(delay);
-            if(_preventPlayback.TryGetValue(sound,out bool isPreventing))
+            if(_preventPlayback.TryGetValue(id,out bool isPreventing))
             {
                 if(isPreventing)
                     yield break;
             }
             else if(preventTime > 0)
             {
-                _preventPlayback.Add(sound, true);
+                _preventPlayback.Add(id, true);
             }
             AudioSource.PlayOneShot(clip, volume);
             _currentPlayingSoundCount++;
 
             if (preventTime > 0)
-                StartCoroutine(PreventPlaybackControl(sound, preventTime));
+                StartCoroutine(PreventPlaybackControl(id, preventTime));
 
             yield return new WaitForSeconds(clip.length);
             _currentPlayingSoundCount--;
         }
 
-        private IEnumerator PlayInScene(Sound sound, AudioClip clip, float volume, float delay, Vector3 pos)
+        private IEnumerator PlayInScene(AudioClip clip, float volume, float delay, Vector3 pos)
         {
             yield return new WaitForSeconds(delay);
             AudioSource.PlayClipAtPoint(clip, pos, volume);
@@ -78,11 +78,11 @@ namespace MiProduction.BroAudio.Core
         }
 
 
-        IEnumerator PreventPlaybackControl(Sound sound, float time)
+        IEnumerator PreventPlaybackControl(int id, float time)
         {
-            _preventPlayback[sound] = true;
+            _preventPlayback[id] = true;
             yield return new WaitForSeconds(time);
-            _preventPlayback[sound] = false;
+            _preventPlayback[id] = false;
         }
     }
 

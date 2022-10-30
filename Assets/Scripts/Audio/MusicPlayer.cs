@@ -15,7 +15,7 @@ namespace MiProduction.BroAudio.Core
         private Coroutine _currentPlayCoroutine;
         private Coroutine _stopControlCoroutine;
 
-        public Music CurrentMusic { get => (Music)_currentMusicLibrary.ID; }
+        public int CurrentMusicID { get => _currentMusicLibrary.ID; }
         public override bool IsPlaying { get; protected set; }
         public override bool IsStoping { get; protected set; }
         public override bool IsFadingOut { get; protected set; }

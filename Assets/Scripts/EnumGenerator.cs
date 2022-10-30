@@ -20,9 +20,11 @@ public class EnumGenerator
         WriteCoreLibraryEnum(enumsPath + "/CoreLibraryEnum.cs",enumName,enumsToWrite);
 
         string filePathAndName = enumsPath + "/" + enumName + ".cs";
-        if (File.Exists(filePathAndName))
+        bool isFileExists = File.Exists(filePathAndName);
+        if (isFileExists)
         {
             string[] currentEnumNames = Enum.GetNames(Type.GetType(enumName));
+
             enumsToWrite = currentEnumNames.Concat(enumsToWrite).Distinct().ToArray();
         }
 
@@ -31,6 +33,10 @@ public class EnumGenerator
             streamWriter.WriteLine("// Auto-Generate script,DO NOT EDIT!");
             streamWriter.WriteLine("public enum " + enumName);
             streamWriter.WriteLine("{");
+            if(!isFileExists)
+            {
+                streamWriter.WriteLine("\tNone = 0,");
+            }
 
             for (int i = 0; i < enumsToWrite.Length; i++)
             {
@@ -69,7 +75,8 @@ public class EnumGenerator
             streamWriter.WriteLine("// this is the actual enums that BroAudio system use under the hood , all other user-define enums will be added to this after enum generation.");
             streamWriter.WriteLine("public enum CoreLibraryEnum");
             streamWriter.WriteLine("{");
-            for (int i = 0; i < _enumList.Count; i++)
+            streamWriter.WriteLine("\tNone = 0,");
+            for (int i = 1; i < _enumList.Count; i++)
             {
                 streamWriter.WriteLine($"\t{_enumList[i]} = {i},");
             }

@@ -28,6 +28,6 @@ public class ButtonSoundTrigger : MonoBehaviour
 
     private void OnButtonClick()
     {
-        SoundSystem.PlaySFX((int)UI.ButtonClick);
+        SoundSystem.PlaySFX(_uiSound);
     }
 }

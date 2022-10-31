@@ -22,4 +22,4 @@ MonoBehaviour:
     EndPosition: 0
     FadeIn: 0
     FadeOut: 0
-  _enumsPath: Assets/Scripts/Enums
+  _enumsPath: Assets/BroAudio/Scripts/Audio/Enums

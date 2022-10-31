@@ -139,4 +139,4 @@ MonoBehaviour:
     FadeIn: 1
     FadeOut: 5
     Loop: 0
-  _enumsPath: Assets/Scripts/Enums
+  _enumsPath: Assets/BroAudio/Scripts/Audio/Enums

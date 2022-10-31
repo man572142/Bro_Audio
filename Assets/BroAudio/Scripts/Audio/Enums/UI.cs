@@ -1,6 +1,9 @@
 // Auto-Generate script,DO NOT EDIT!
-public enum UI
+namespace MiProduction.BroAudio
 {
-	None = 0,
-	ButtonClick = 1,
+	public enum UI
+	{
+		None = 0,
+	}
+
 }

@@ -10,10 +10,4 @@ namespace MiProduction.BroAudio.Library
 	{
 		public override string LibraryTypeName => "Sound";
 	}
-
-	[CreateAssetMenu(fileName = "UISoundLibrary", menuName = "MiProduction/BroAudio/Create Library/UI")]
-	public class UISoundLibraryAsset : AudioLibraryAsset<SoundLibrary>
-	{
-		public override string LibraryTypeName => "UI";
-	}
 }

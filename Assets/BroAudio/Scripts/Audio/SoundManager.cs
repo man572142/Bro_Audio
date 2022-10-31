@@ -289,5 +289,6 @@ namespace MiProduction.BroAudio.Core
 
 }
 
-
+// by «} 2022
+// https://github.com/man572142/Bro_Audio.git
 

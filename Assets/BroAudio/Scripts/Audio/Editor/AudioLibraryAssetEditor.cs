@@ -11,7 +11,7 @@ namespace MiProduction.BroAudio.Library
     [CustomEditor(typeof(AudioLibraryAsset<>), true)]
     public class AudioLibraryAssetEditor : Editor
     {
-        private const string _defaultEnumsPath = "Assets/Scripts/Enums";
+        private const string _defaultEnumsPath = "Assets/BroAudio/Scripts/Audio/Enums";
         private SerializedProperty _pathProperty;
         private bool _hasUnassignedEnum = false;
         private SerializedProperty _libraries;

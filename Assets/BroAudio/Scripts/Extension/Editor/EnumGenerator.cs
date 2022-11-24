@@ -11,6 +11,7 @@ namespace MiProduction.BroAudio
 	{
 		private List<string> _enumList;
 		private const string _nameSpace = "MiProduction.BroAudio.";
+		private const string _coreEnumsFileName = "/CoreLibraryEnum.cs";
 
 
 		public void Generate(string enumsPath, string enumName, string[] enumsToWrite)
@@ -20,16 +21,13 @@ namespace MiProduction.BroAudio
 				Directory.CreateDirectory(enumsPath);
 			}
 
-			WriteCoreLibraryEnum(enumsPath + "/CoreLibraryEnum.cs", enumName, enumsToWrite);
+			WriteCoreLibraryEnum(enumsPath + _coreEnumsFileName, enumName, enumsToWrite);
 
 			string filePathAndName = enumsPath + "/" + enumName + ".cs";
 			bool isFileExists = File.Exists(filePathAndName);
 			if (isFileExists)
 			{
-
-				UnityEngine.Debug.Log(Type.GetType(_nameSpace + enumName) == null);
-				UnityEngine.Debug.Log(_nameSpace + enumName);
-				string[] currentEnumNames = Enum.GetNames(Type.GetType(_nameSpace + enumName));
+				string[] currentEnumNames = Enum.GetNames(GetEnumType(_nameSpace + enumName));
 
 				enumsToWrite = currentEnumNames.Concat(enumsToWrite).Distinct().ToArray();
 			}
@@ -91,6 +89,18 @@ namespace MiProduction.BroAudio
 				streamWriter.WriteLine("}}");
 			}
 			AssetDatabase.Refresh();
+		}
+		public static Type GetEnumType(string enumName)
+		{
+			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				var type = assembly.GetType(enumName);
+				if (type == null)
+					continue;
+				if (type.IsEnum)
+					return type;
+			}
+			return null;
 		}
 	} 
 }

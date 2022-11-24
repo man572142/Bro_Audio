@@ -1,9 +1,7 @@
 // Auto-Generate script,DO NOT EDIT!
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio {
+public enum Sound
 {
-	public enum Sound
-	{
-		None = 0,
-	}
-
-}
+	None = 0,
+	TestSound = 1,
+}}

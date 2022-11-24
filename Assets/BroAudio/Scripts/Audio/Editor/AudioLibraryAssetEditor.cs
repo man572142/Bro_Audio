@@ -15,14 +15,14 @@ namespace MiProduction.BroAudio.Library
         private SerializedProperty _pathProperty;
         private bool _hasUnassignedEnum = false;
         private SerializedProperty _libraries;
-        private IAudioLibraryIdentify _asset;
+        private IAudioLibraryAsset _asset;
         private string _waitingString = string.Empty;
         private EnumGenerator _enumGenerator = null;
 
         private void OnEnable()
         {
             _libraries = serializedObject.FindProperty("Libraries");
-            _asset = target as IAudioLibraryIdentify;
+            _asset = target as IAudioLibraryAsset;
         }
 
         public override void OnInspectorGUI()

@@ -5,9 +5,12 @@ using UnityEngine;
 
 namespace MiProduction.BroAudio.Library
 {
-	[CreateAssetMenu(fileName = "SoundLibrary", menuName = "MiProduction/BroAudio/Create Library/Sound")]
-	public class SoundLibraryAsset : AudioLibraryAsset<SoundLibrary>
+	
+	public abstract class SoundLibraryAsset : AudioLibraryAsset<SoundLibrary>
 	{
-		public override string LibraryTypeName => "Sound";
+		public override string LibraryTypeName => SoundLibraryTypeName;
+
+		public abstract string SoundLibraryTypeName { get; }
 	}
+
 }

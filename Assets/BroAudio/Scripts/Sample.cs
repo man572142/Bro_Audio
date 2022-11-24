@@ -36,12 +36,12 @@ public class Sample : MonoBehaviour
 
     public void PlaySFX()
     {
-        SoundSystem.PlaySFX(_sound);
+        SoundSystem.PlaySound(_sound);
     }
 
     public void PlaySceneSFX()
     {
-        SoundSystem.PlaySFX(_sceneSound, _scenePlayer.position);
+        SoundSystem.PlaySound(_sceneSound, _scenePlayer.position);
     }
 
     public void PlayRandomSound()

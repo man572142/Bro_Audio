@@ -37,19 +37,20 @@ namespace MiProduction.BroAudio.Core
         public static SoundManager Instance = null;
 
         [Header("Player")]
-        [SerializeField] SoundPlayer _sfxPlayer;
+        [SerializeField] SoundPlayer _sfxPlayer = null;
+        [SerializeField] SoundPlayer _uiPlayer = null;
+        [SerializeField] SoundPlayer _standOutPlayer = null;
         [SerializeField] MusicPlayer[] _musicPlayers = null;
+        private MusicPlayer _currentPlayer;
 
         [Header("Fading Setting")]
         [SerializeField] Ease _fadeInEase = Ease.InCubic;
         [SerializeField] Ease _fadeOutEase = Ease.OutSine;
-        MusicPlayer _currentPlayer;
+        
 
-
-        // TODO: LibraryAsset陣列化
         // 音效
         [Header("Library")]
-        [SerializeField] SoundLibraryAsset _mainSoundAsset = null;
+        [SerializeField] SoundLibraryAsset[] _allSoundAssets = null;
         private Dictionary<int, SoundLibrary> _soundBank = new Dictionary<int, SoundLibrary>();
 
         // 隨機播放音效
@@ -71,20 +72,33 @@ namespace MiProduction.BroAudio.Core
             {
                 Debug.LogError("[SoundSystem] Please add at least 2 MusicPlayer to SoundManager");
             }
-            // 初始化音效庫
-            for (int s = 0; s < _mainSoundAsset.Libraries.Length; s++)
+
+            InitSoundBank();
+            InitRandomSoundBank();
+            InitMusicBank();
+        }
+
+		private void InitSoundBank()
+		{
+            foreach (var soundAsset in _allSoundAssets)
             {
-                if(_soundBank.ContainsKey(_mainSoundAsset.Libraries[s].ID))
+                for (int s = 0; s < soundAsset.Libraries.Length; s++)
                 {
-                    Debug.LogError($"[SoundSystem] Sound ID:{_mainSoundAsset.Libraries[s].ID} is duplicated !");
-                    return;
-                }
-                if (_mainSoundAsset.Libraries[s].Validate(s))
-                {
-                    _soundBank.Add(_mainSoundAsset.Libraries[s].ID, _mainSoundAsset.Libraries[s]);
+                    var soundLibrary = soundAsset.Libraries[s];
+                    if (_soundBank.ContainsKey(soundLibrary.ID))
+                    {
+                        Debug.LogError($"[SoundSystem] Sound :{(CoreLibraryEnum)soundLibrary.ID} is duplicated !");
+                        return;
+                    }
+                    if (soundLibrary.Validate(s))
+                    {
+                        _soundBank.Add(soundLibrary.ID, soundLibrary);
+                    }
                 }
             }
-            // 初始化隨機播放音效庫
+        }
+        private void InitRandomSoundBank()
+        {
             bool isValidated;
             foreach (SoundLibraryAsset asset in _randomSoundAsset)
             {
@@ -95,22 +109,25 @@ namespace MiProduction.BroAudio.Core
                     {
                         isValidated = false;
                         break;
-                    }                    
+                    }
                 }
-                if(isValidated)
+                if (isValidated)
                     _randomSoundBank.Add(asset.Libraries[0].ID, asset.Libraries);
             }
-            // 初始化音樂庫
+        }
+        private void InitMusicBank()
+        {
             for (int m = 0; m < _mainMusicAsset.Libraries.Length; m++)
             {
-                if (_musicBank.ContainsKey(_mainMusicAsset.Libraries[m].ID))
+                var musicLibrary = _mainMusicAsset.Libraries[m];
+                if (_musicBank.ContainsKey(musicLibrary.ID))
                 {
-                    Debug.LogError($"[SoundSystem] Music ID:{_mainMusicAsset.Libraries[m].ID} is duplicated !");
+                    Debug.LogError($"[SoundSystem] Music :{(CoreLibraryEnum)musicLibrary.ID} is duplicated !");
                     return;
                 }
-                if (_mainMusicAsset.Libraries[m].Validate(m) && !_musicBank.ContainsKey(_mainMusicAsset.Libraries[m].ID))
+                if (musicLibrary.Validate(m) && !_musicBank.ContainsKey(musicLibrary.ID))
                 {
-                    _musicBank.Add(_mainMusicAsset.Libraries[m].ID, _mainMusicAsset.Libraries[m]);
+                    _musicBank.Add(musicLibrary.ID, musicLibrary);
                 }
             }
             _currentPlayer = _musicPlayers[0];
@@ -185,6 +202,7 @@ namespace MiProduction.BroAudio.Core
 
         public void PlaySFX(int id, float preventTime)
         {
+
             if(SoundPlayerCheck(id))
             {
                 _sfxPlayer.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
@@ -252,7 +270,7 @@ namespace MiProduction.BroAudio.Core
         private bool SoundPlayerCheck(int id)
         {
 #if UNITY_EDITOR
-            if (_sfxPlayer == null || _mainSoundAsset == null || _soundBank.Count < 1)
+            if (_sfxPlayer == null || _allSoundAssets == null || _soundBank.Count < 1)
             {
                 Debug.LogError("[SoundSystem] No sound can play , please check SoundManager's setting");
                 return false;

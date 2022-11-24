@@ -4,5 +4,10 @@ namespace MiProduction.BroAudio {
 public enum CoreLibraryEnum
 {
 	None = 0,
-	ButtonClick = 1,
+	TestSound = 1,
+	Click = 2,
+	Cancel = 3,
+	PlasticLove = 4,
+	RealEstate = 5,
+	Bad = 6,
 }}

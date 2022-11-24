@@ -14,9 +14,9 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <typeparam name="TEnum">任何音效的Enum</typeparam>
         /// <param name="sound"></param>
-        public static void PlaySFX<TEnum>(TEnum sound) where TEnum : Enum
+        public static void PlaySound<TEnum>(TEnum sound) where TEnum : Enum
         {
-            PlaySFX(sound, 0.1f);
+            PlaySound(sound, 0.1f);
         }
 
         /// <summary>
@@ -25,9 +25,9 @@ namespace MiProduction.BroAudio
         /// <typeparam name="TEnum">任何音效的Enum</typeparam>
         /// <param name="sound"></param>
         /// <param name="preventTime">限制該時間內不能再播放</param>
-        public static void PlaySFX<TEnum>(TEnum sound, float preventTime) where TEnum : Enum
+        public static void PlaySound<TEnum>(TEnum sound, float preventTime) where TEnum : Enum
         {
-            PlaySFX((int)(CoreLibraryEnum)(ValueType)sound, preventTime);
+            PlaySound((int)(CoreLibraryEnum)(ValueType)sound, preventTime);
         }
 
         /// <summary>
@@ -36,26 +36,30 @@ namespace MiProduction.BroAudio
         /// <typeparam name="TEnum">任何音效的Enum</typeparam>
         /// <param name="sound"></param>
         /// <param name="position">播放的座標</param>
-        public static void PlaySFX<TEnum>(TEnum sound, Vector3 position) where TEnum : Enum
+        public static void PlaySound<TEnum>(TEnum sound, Vector3 position) where TEnum : Enum
         {
-            PlaySFX((int)(CoreLibraryEnum)(ValueType)sound, position);
+            PlaySound((int)(CoreLibraryEnum)(ValueType)sound, position);
         }
 
-        public static void PlaySFX(int soundID) => SoundManager.Instance.PlaySFX(soundID, 0.1f);
+        /// <summary>
+        /// 播放音效
+        /// </summary>
+        /// <param name="soundID"></param>
+        public static void PlaySound(int soundID) => SoundManager.Instance.PlaySFX(soundID, 0.1f);
 
         /// <summary>
         /// 播放音效
         /// </summary>
         /// <param name="soundID"></param>
         /// <param name="preventTime">限制該時間內不能再播放</param>
-        public static void PlaySFX(int soundID, float preventTime) => SoundManager.Instance.PlaySFX(soundID, preventTime);
+        public static void PlaySound(int soundID, float preventTime) => SoundManager.Instance.PlaySFX(soundID, preventTime);
 
         /// <summary>
         /// 於場景中的指定地點播放
         /// </summary>
         /// <param name="soundID"></param>
         /// <param name="position">播放的座標</param>
-        public static void PlaySFX(int soundID, Vector3 position) => SoundManager.Instance.PlaySFX(soundID, position);
+        public static void PlaySound(int soundID, Vector3 position) => SoundManager.Instance.PlaySFX(soundID, position);
         #endregion
 
         #region RandomSFX
@@ -197,8 +201,29 @@ namespace MiProduction.BroAudio
                     break;
                 case AudioType.UI:
                     break;
+                case AudioType.StandOut:
+                    break;
             }
         } 
+
+        private static void SetStandOutVolume(float blendRatio, float fadeTime)
+		{
+            SetVolume(1 - blendRatio, fadeTime, AudioType.All);
+            SetVolume(blendRatio, fadeTime, AudioType.StandOut);
+
+        }
+
+  //      private static void SetStandOutVolume(float blendRatio,float fadeTime,AudioType standOutType)
+		//{
+  //          AudioType allDuckType = AudioType.All ^ standOutType;
+  //          foreach(AudioType audioType in Enum.GetValues(typeof(AudioType)))
+		//	{
+  //              if((audioType & allDuckType) != 0)
+		//		{
+  //                  SetVolume(1- blendRatio, fadeTime,audioType);
+		//		}
+		//	}
+  //      }
         #endregion
 
     }

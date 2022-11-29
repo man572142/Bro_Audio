@@ -28,6 +28,7 @@ namespace MiProduction.BroAudio.Library
         // Do Not Delete This Line
         [SerializeField, HideInInspector] private string _enumsPath = string.Empty;
         public abstract string LibraryTypeName { get; }
+        public abstract int InitialID { get; }
 
         string[] IAudioLibraryAsset.AllLibraryEnumNames
         {
@@ -38,8 +39,6 @@ namespace MiProduction.BroAudio.Library
 
                 return Libraries.Select(x => x.EnumName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
             }
-        }
-
-		
+        }	
 	}
 }

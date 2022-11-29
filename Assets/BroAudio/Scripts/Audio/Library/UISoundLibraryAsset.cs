@@ -8,5 +8,7 @@ namespace MiProduction.BroAudio.Library
 	public class UISoundLibraryAsset : SoundLibraryAsset
 	{
 		public override string SoundLibraryTypeName { get => "UI"; }
+
+		public override int InitialID => ConstantID.UI;
 	} 
 }

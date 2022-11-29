@@ -9,5 +9,7 @@ namespace MiProduction.BroAudio.Library
 	public class MusicLibraryAsset : AudioLibraryAsset<MusicLibrary>
 	{
 		public override string LibraryTypeName => "Music";
+
+		public override int InitialID => ConstantID.Music;
 	}
 }

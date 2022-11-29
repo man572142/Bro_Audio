@@ -14,7 +14,7 @@ namespace MiProduction.BroAudio
 		private const string _coreEnumsFileName = "/CoreLibraryEnum.cs";
 
 
-		public void Generate(string enumsPath, string enumName, string[] enumsToWrite)
+		public void Generate(string enumsPath, string enumName,int enumInitialID, string[] enumsToWrite)
 		{
 			if (!Directory.Exists(enumsPath))
 			{
@@ -22,37 +22,42 @@ namespace MiProduction.BroAudio
 			}
 
 			WriteCoreLibraryEnum(enumsPath + _coreEnumsFileName, enumName, enumsToWrite);
-
-			string filePathAndName = enumsPath + "/" + enumName + ".cs";
-			bool isFileExists = File.Exists(filePathAndName);
-			if (isFileExists)
-			{
-				string[] currentEnumNames = Enum.GetNames(GetEnumType(_nameSpace + enumName));
-
-				enumsToWrite = currentEnumNames.Concat(enumsToWrite).Distinct().ToArray();
-			}
-
-			using (StreamWriter streamWriter = new StreamWriter(filePathAndName))
-			{
-				streamWriter.WriteLine("// Auto-Generate script,DO NOT EDIT!");
-				streamWriter.WriteLine("namespace MiProduction.BroAudio {");
-				streamWriter.WriteLine("public enum " + enumName);
-				streamWriter.WriteLine("{");
-				if (!isFileExists)
-				{
-					streamWriter.WriteLine("\tNone = 0,");
-				}
-
-				for (int i = 0; i < enumsToWrite.Length; i++)
-				{
-					string newEnum = enumsToWrite[i].Replace(" ", string.Empty);
-					int index = _enumList.IndexOf(newEnum);
-					streamWriter.WriteLine($"\t{newEnum} = {index},");
-				}
-				streamWriter.WriteLine("}}");
-			}
+			WriteEnum(enumsPath,enumName,enumsToWrite);
+			
 			AssetDatabase.Refresh();
 		}
+
+		private void WriteEnum(string enumsPath, string enumName, string[] enumsToWrite)
+		{
+            string filePathAndName = enumsPath + "/" + enumName + ".cs";
+            bool isFileExists = File.Exists(filePathAndName);
+            if (isFileExists)
+            {
+                string[] currentEnumNames = Enum.GetNames(GetEnumType(_nameSpace + enumName));
+
+                enumsToWrite = currentEnumNames.Concat(enumsToWrite).Distinct().ToArray();
+            }
+
+            using (StreamWriter streamWriter = new StreamWriter(filePathAndName))
+            {
+                streamWriter.WriteLine("// Auto-Generate script,DO NOT EDIT!");
+                streamWriter.WriteLine("namespace MiProduction.BroAudio {");
+                streamWriter.WriteLine("public enum " + enumName);
+                streamWriter.WriteLine("{");
+                if (!isFileExists)
+                {
+                    streamWriter.WriteLine("\tNone = 0,");
+                }
+
+                for (int i = 0; i < enumsToWrite.Length; i++)
+                {
+                    string newEnum = enumsToWrite[i].Replace(" ", string.Empty);
+                    int index = _enumList.IndexOf(newEnum);
+                    streamWriter.WriteLine($"\t{newEnum} = {index},");
+                }
+                streamWriter.WriteLine("}}");
+            }
+        }
 
 		private void WriteCoreLibraryEnum(string filePath, string enumName, string[] enumsToWrite)
 		{
@@ -60,19 +65,11 @@ namespace MiProduction.BroAudio
 			_enumList.AddRange(Enum.GetNames(typeof(CoreLibraryEnum)));
 			foreach (string enumString in enumsToWrite)
 			{
-				if (String.IsNullOrWhiteSpace(enumString))
+				if(IsValidEnum(enumName, enumString))
 				{
-					UnityEngine.Debug.LogError("[SoundSystem] there is an empty name in " + enumName);
-				}
-				else if (!Regex.IsMatch(enumString, @"^[a-zA-Z]+$"))
-				{
-					UnityEngine.Debug.LogError($"[SoundSystem] {enumString} is not a valid name for library of " + enumName);
-				}
-				else if (!_enumList.Contains(enumString) && enumString != "None")
-				{
-					_enumList.Add(enumString.Replace(" ", string.Empty));
-				}
-			}
+                    _enumList.Add(enumString.Replace(" ", string.Empty));
+                }
+            }
 
 			using (StreamWriter streamWriter = new StreamWriter(filePath))
 			{
@@ -90,6 +87,22 @@ namespace MiProduction.BroAudio
 			}
 			AssetDatabase.Refresh();
 		}
+
+		private bool IsValidEnum(string enumName, string enumString)
+		{
+			if (String.IsNullOrWhiteSpace(enumString))
+			{
+				UnityEngine.Debug.LogError("[SoundSystem] there is an empty name in " + enumName);
+				return false;
+			}
+			else if (!Regex.IsMatch(enumString, @"^[a-zA-Z]+$"))
+			{
+				UnityEngine.Debug.LogError($"[SoundSystem] {enumString} is not a valid name for library of " + enumName);
+				return false;
+			}
+			return true;
+		}
+
 		public static Type GetEnumType(string enumName)
 		{
 			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())

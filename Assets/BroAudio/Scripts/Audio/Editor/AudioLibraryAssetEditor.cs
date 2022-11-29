@@ -49,11 +49,11 @@ namespace MiProduction.BroAudio.Library
 					}
                     if (_asset.AllLibraryEnumNames.Length == 0)
                     {
-                        _enumGenerator.Generate(_pathProperty.stringValue, _asset.LibraryTypeName, new string[0]);
+                        _enumGenerator.Generate(_pathProperty.stringValue, _asset.LibraryTypeName,_asset.InitialID, new string[0]);
                     }
                     else
                     {
-                        _enumGenerator.Generate(_pathProperty.stringValue, _asset.LibraryTypeName, _asset.AllLibraryEnumNames);
+                        _enumGenerator.Generate(_pathProperty.stringValue, _asset.LibraryTypeName,_asset.InitialID, _asset.AllLibraryEnumNames);
                     }
                     _hasUnassignedEnum = true;
                     _waitingString = string.Empty;

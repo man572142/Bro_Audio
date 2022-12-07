@@ -13,9 +13,18 @@ MonoBehaviour:
   m_Name: SoundLibrary
   m_EditorClassIdentifier: 
   Libraries:
-  - Name: TestSound
-    ID: 1
-    Clip: {fileID: 0}
+  - Name: Test
+    ID: 1754
+    Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
+    Volume: 1
+    Delay: 0
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 0
+    FadeOut: 0
+  - Name: Football
+    ID: 1566
+    Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
     Volume: 1
     Delay: 0
     StartPosition: 0

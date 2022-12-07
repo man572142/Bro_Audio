@@ -4,6 +4,7 @@ using UnityEngine;
 using MiProduction.BroAudio;
 using System;
 using System.Linq;
+using UnityEditor;
 
 namespace MiProduction.BroAudio.Library
 {
@@ -11,26 +12,29 @@ namespace MiProduction.BroAudio.Library
     {
         public T[] Libraries;
 
-        //IAudioLibrary[] IAudioLibraryAsset.Libraries
-        //{
-        //    get
-        //    {
-        //        //List<IAudioLibrary> tempLibraries = new List<IAudioLibrary>();
-        //        //foreach (T library in Libraries)
-        //        //{
-        //        //    tempLibraries.Add(library);
-        //        //}
-        //        //return tempLibraries.ToArray();
-        //        return Libraries.Cast<IAudioLibrary>().ToArray();
-        //    }
-        //}
+        private string _assetGUID = string.Empty;
+
+        public string AssetGUID
+		{
+			get
+			{
+                if(string.IsNullOrEmpty(_assetGUID))
+				{
+                    _assetGUID = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(this));
+                    Debug.Log(_assetGUID);
+                }
+                return _assetGUID;
+			}
+		}
 
         // Do Not Delete This Line
         [SerializeField, HideInInspector] private string _enumsPath = string.Empty;
         public abstract string LibraryTypeName { get; }
-        public abstract int InitialID { get; }
 
-        string[] IAudioLibraryAsset.AllLibraryEnumNames
+		public abstract AudioType AudioType { get; }
+
+
+		string[] IAudioLibraryAsset.AllLibraryEnumNames
         {
             get
             {
@@ -39,6 +43,6 @@ namespace MiProduction.BroAudio.Library
 
                 return Libraries.Select(x => x.EnumName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
             }
-        }	
+        }
 	}
 }

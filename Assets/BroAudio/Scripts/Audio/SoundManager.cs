@@ -87,7 +87,7 @@ namespace MiProduction.BroAudio.Core
                     var soundLibrary = soundAsset.Libraries[s];
                     if (_soundBank.ContainsKey(soundLibrary.ID))
                     {
-                        Debug.LogError($"[SoundSystem] Sound :{(CoreLibraryEnum)soundLibrary.ID} is duplicated !");
+                        Debug.LogError($"[SoundSystem] Sound :{soundLibrary.EnumName} is duplicated !");
                         return;
                     }
                     if (soundLibrary.Validate(s))
@@ -122,7 +122,7 @@ namespace MiProduction.BroAudio.Core
                 var musicLibrary = _mainMusicAsset.Libraries[m];
                 if (_musicBank.ContainsKey(musicLibrary.ID))
                 {
-                    Debug.LogError($"[SoundSystem] Music :{(CoreLibraryEnum)musicLibrary.ID} is duplicated !");
+                    Debug.LogError($"[SoundSystem] Music :{musicLibrary.EnumName} is duplicated !");
                     return;
                 }
                 if (musicLibrary.Validate(m) && !_musicBank.ContainsKey(musicLibrary.ID))

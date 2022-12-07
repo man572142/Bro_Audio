@@ -10,6 +10,6 @@ namespace MiProduction.BroAudio.Library
 	{
 		public override string LibraryTypeName => "Music";
 
-		public override int InitialID => ConstantID.Music;
+		public override AudioType AudioType => AudioType.Music;
 	}
 }

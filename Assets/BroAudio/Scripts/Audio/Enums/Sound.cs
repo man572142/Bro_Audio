@@ -3,5 +3,6 @@ namespace MiProduction.BroAudio {
 public enum Sound
 {
 	None = 0,
-	TestSound = 1,
+	Test = 1754,
+	Football = 1566,
 }}

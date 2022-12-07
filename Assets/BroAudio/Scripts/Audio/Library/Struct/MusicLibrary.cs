@@ -17,7 +17,7 @@ namespace MiProduction.BroAudio.Library
         public float FadeOut;
         public bool Loop;
         
-        string IAudioLibrary.EnumName => Name;
+        public string EnumName => Name;
 
         public bool Validate(int index)
         {

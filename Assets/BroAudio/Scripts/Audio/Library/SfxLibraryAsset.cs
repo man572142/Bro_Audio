@@ -8,6 +8,7 @@ namespace MiProduction.BroAudio.Library
 	public class SfxLibraryAsset : SoundLibraryAsset
 	{
 		public override string SoundLibraryTypeName { get => "Sound"; }
-		public override int InitialID => ConstantID.Sfx;
+
+		public override AudioType AudioType => AudioType.SFX;
 	} 
 }

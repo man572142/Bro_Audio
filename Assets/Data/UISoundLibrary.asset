@@ -14,18 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Libraries:
   - Name: Click
-    ID: 2
+    ID: 1000976
     Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
-    Volume: 1
+    Volume: 0
     Delay: 0
     StartPosition: 0
     EndPosition: 0
     FadeIn: 0
     FadeOut: 0
   - Name: Cancel
-    ID: 3
+    ID: 1000434
     Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
-    Volume: 1
+    Volume: 0
     Delay: 0
     StartPosition: 0
     EndPosition: 0

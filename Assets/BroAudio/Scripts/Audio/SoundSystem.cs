@@ -27,7 +27,7 @@ namespace MiProduction.BroAudio
         /// <param name="preventTime">限制該時間內不能再播放</param>
         public static void PlaySound<TEnum>(TEnum sound, float preventTime) where TEnum : Enum
         {
-            PlaySound((int)(CoreLibraryEnum)(ValueType)sound, preventTime);
+            PlaySound((int)(ValueType)sound, preventTime);
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace MiProduction.BroAudio
         /// <param name="position">播放的座標</param>
         public static void PlaySound<TEnum>(TEnum sound, Vector3 position) where TEnum : Enum
         {
-            PlaySound((int)(CoreLibraryEnum)(ValueType)sound, position);
+            PlaySound((int)(ValueType)sound, position);
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace MiProduction.BroAudio
         /// <param name="preventTime">限制該時間內不能再播放</param>
         public static void PlayRandomSFX<TEnum>(TEnum sound, float preventTime) where TEnum : Enum
         {
-            PlayRandomSFX((int)(CoreLibraryEnum)(ValueType)sound, preventTime);
+            PlayRandomSFX((int)(ValueType)sound, preventTime);
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace MiProduction.BroAudio
         /// <param name="fadeTime">若為-1則會採用Library當中所設定的值</param>
         public static void PlayMusic<TEnum>(TEnum music, Transition transition, float fadeTime = -1f) where TEnum : Enum
         {
-            PlayMusic((int)(CoreLibraryEnum)(ValueType)music, transition, fadeTime);
+            PlayMusic((int)(ValueType)music, transition, fadeTime);
         }
 
         /// <summary>

@@ -22,22 +22,10 @@ namespace MiProduction.BroAudio
 
 		private static readonly string JsonFilePath = Application.dataPath + "/BroAudio/BroAudioData.json";
 
-		public static void WriteJson(string assetFilePath, AudioType audioType, string[] dataToWrite, ref List<AudioData> audioData)
+		public static void WriteJson(string assetGUID, AudioType audioType, string[] dataToWrite, ref List<AudioData> audioData)
 		{
-			List<AudioData> newDataList = new List<AudioData>();
-
-			IEnumerable<AudioData> oldDatas = null;
-			IEnumerable<int> currentTypeIdList = null;
-
-			if (audioData != null)
-			{
-				oldDatas = audioData.Where(x => x.AssetGUID != assetFilePath);
-				if(oldDatas != null)
-				{
-					newDataList.AddRange(oldDatas);
-					currentTypeIdList = oldDatas.Where(x => x.AudioType == audioType).Select(x => x.ID);
-				}	
-			}
+			audioData?.RemoveAll(x => x.AssetGUID == assetGUID);
+			IEnumerable<int> usedIdList = audioData?.Where(x => x.AudioType == audioType).Select(x => x.ID);
 
 			for (int i = 0; i < dataToWrite.Length; i++)
 			{
@@ -45,13 +33,12 @@ namespace MiProduction.BroAudio
 				{
 					continue;
 				}
-				int id = GetUniqueID(audioType, currentTypeIdList);
-				newDataList.Add(new AudioData(id, dataToWrite[i], audioType, assetFilePath));
+				int id = GetUniqueID(audioType, usedIdList);
+				string name = dataToWrite[i].Replace(" ", string.Empty);
+				audioData.Add(new AudioData(id,name , audioType, assetGUID));
 			}
-			audioData = newDataList;
-			SerializedAudioDataList serializedData = new SerializedAudioDataList(newDataList);
-			Debug.Log("Write : " + JsonUtility.ToJson(serializedData));
-			File.WriteAllText(JsonFilePath, JsonUtility.ToJson(serializedData));
+			SerializedAudioDataList serializedData = new SerializedAudioDataList(audioData);
+			File.WriteAllText(JsonFilePath, JsonUtility.ToJson(serializedData,true));
 		}
 
 		public static List<AudioData> ReadJson()
@@ -59,14 +46,17 @@ namespace MiProduction.BroAudio
 			if (File.Exists(JsonFilePath))
 			{
 				string json = File.ReadAllText(JsonFilePath);
-				Debug.Log("Read : " + json);
+				if(string.IsNullOrEmpty(json))
+				{
+					return new List<AudioData>();
+				}
 				SerializedAudioDataList data = JsonUtility.FromJson<SerializedAudioDataList>(json);
 				return data.Datas;
 			}
 			else
 			{
 				File.WriteAllText(JsonFilePath,string.Empty);
-				return null;
+				return new List<AudioData>();
 			}
 
 			
@@ -75,10 +65,9 @@ namespace MiProduction.BroAudio
 		private static int GetUniqueID(AudioType audioType, IEnumerable<int> idList)
 		{
 			int id = 0;
-
 			while (true)
 			{
-				id = audioType.ToConstantID() + UnityEngine.Random.Range(0, ConstantID.TypeCapacity);
+				id = UnityEngine.Random.Range(audioType.ToConstantID(), audioType.ToConstantID() * ConstantID.RangeMultiplier);
 				if(idList == null || !idList.Contains(id))
 				{
 					return id;
@@ -95,7 +84,7 @@ namespace MiProduction.BroAudio
 
 			foreach (char word in name)
 			{
-				if (!Char.IsLetter(word))
+				if (!Char.IsLetter(word) && !Char.IsWhiteSpace(word))
 				{
 					return false;
 				}

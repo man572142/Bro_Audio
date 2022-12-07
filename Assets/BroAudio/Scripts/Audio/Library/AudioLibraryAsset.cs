@@ -12,35 +12,34 @@ namespace MiProduction.BroAudio.Library
     {
         public T[] Libraries;
 
-        private string _assetGUID = string.Empty;
-
-        public string AssetGUID
-		{
-			get
-			{
-                if(string.IsNullOrEmpty(_assetGUID))
-				{
-                    _assetGUID = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(this));
-                    Debug.Log(_assetGUID);
-                }
-                return _assetGUID;
-			}
-		}
-
         // Do Not Delete This Line
         [SerializeField, HideInInspector] private string _enumsPath = string.Empty;
-        public abstract string LibraryTypeName { get; }
 
+        private string _assetGUID = string.Empty;
+        
+        public abstract string LibraryTypeName { get; }
 		public abstract AudioType AudioType { get; }
 
+        public string AssetGUID
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_assetGUID))
+                {
+                    _assetGUID = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(this));
+                }
+                return _assetGUID;
+            }
+        }
 
-		string[] IAudioLibraryAsset.AllLibraryEnumNames
+        public string[] AllAudioDataNames
         {
             get
             {
                 if (Libraries == null)
                     Libraries = new T[0];
 
+                // 每次get都要跑Linq效能消耗有點大
                 return Libraries.Select(x => x.EnumName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
             }
         }

@@ -9,5 +9,5 @@ public static class ConstantID
     public const int UI = 1000000;
 
 
-    public const int TypeCapacity = 1000;
+    public const int RangeMultiplier = 1000;
 }

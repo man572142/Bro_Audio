@@ -40,8 +40,14 @@ namespace MiProduction.BroAudio
             return Mathf.Clamp(dB,MinDecibelVolume, MaxDecibelVolume);
         }
 
-        public static bool Validate(string typeName, int index,AudioClip clip , float startPosition, float fadeInTime = -1,float fadeOutTime = -1)
+        public static bool Validate(string typeName, int index,AudioClip clip ,int id ,float startPosition, float fadeInTime = -1,float fadeOutTime = -1)
         {
+            if(id <= 0)
+			{
+                //本來就會有0,不用警告
+                //Debug.LogError($"[SoundSystem] There is an invalid ID ! please update AudioLibraryAsset.");
+                return false;
+            }
             if (clip == null)
             {
                 Debug.LogError($"[SoundSystem] Audio clip has not been assigned! please check element {index} in {typeName}.");

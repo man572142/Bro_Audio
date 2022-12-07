@@ -29,6 +29,7 @@ namespace MiProduction.BroAudio
 					return -1;
 			}
 		}
+
 		public static Type GetEnumType(string enumName)
 		{
 			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())

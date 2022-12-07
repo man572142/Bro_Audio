@@ -125,7 +125,7 @@ namespace MiProduction.BroAudio.Core
                     Debug.LogError($"[SoundSystem] Music :{musicLibrary.EnumName} is duplicated !");
                     return;
                 }
-                if (musicLibrary.Validate(m) && !_musicBank.ContainsKey(musicLibrary.ID))
+                if (musicLibrary.Validate(m))
                 {
                     _musicBank.Add(musicLibrary.ID, musicLibrary);
                 }
@@ -202,7 +202,6 @@ namespace MiProduction.BroAudio.Core
 
         public void PlaySFX(int id, float preventTime)
         {
-
             if(SoundPlayerCheck(id))
             {
                 _sfxPlayer.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, preventTime);

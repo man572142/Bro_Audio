@@ -13,26 +13,17 @@ MonoBehaviour:
   m_Name: MusicLibrary
   m_EditorClassIdentifier: 
   Libraries:
-  - Name: Kings
-    ID: 347
-    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
-    Volume: 0.997
-    StartPosition: 0
-    EndPosition: 0
-    FadeIn: 0
-    FadeOut: 0
-    Loop: 0
-  - Name: Of
-    ID: 972
-    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+  - Name: Hello
+    ID: 756
+    Clip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
     Volume: 1
     StartPosition: 0
     EndPosition: 0
     FadeIn: 0
     FadeOut: 0
     Loop: 0
-  - Name: Convenience
-    ID: 172
+  - Name: World
+    ID: 292
     Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
     Volume: 1
     StartPosition: 0

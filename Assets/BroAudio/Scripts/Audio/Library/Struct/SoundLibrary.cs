@@ -22,7 +22,7 @@ namespace MiProduction.BroAudio.Library
 
 		public bool Validate(int index)
         {
-            return AudioExtension.Validate(nameof(SoundLibrary), index, Clip, StartPosition);
+            return AudioExtension.Validate(nameof(SoundLibrary), index, Clip, ID,StartPosition);
         }
     }
 }

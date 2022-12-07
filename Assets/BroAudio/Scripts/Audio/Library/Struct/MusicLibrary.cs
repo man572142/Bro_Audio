@@ -21,7 +21,7 @@ namespace MiProduction.BroAudio.Library
 
         public bool Validate(int index)
         {
-            return AudioExtension.Validate(nameof(MusicLibrary), index, Clip, StartPosition, FadeIn, FadeOut);
+            return AudioExtension.Validate(nameof(MusicLibrary), index, Clip,ID,StartPosition, FadeIn, FadeOut);
         }
     }
 }

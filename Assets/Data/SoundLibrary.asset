@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Libraries:
   - Name: WTF
-    ID: 517985678
+    ID: 96875290
     Clip: {fileID: 8300000, guid: b3e697400ba46bf45b351dbab1ec8148, type: 3}
     Volume: 0.509
     Delay: 0
@@ -23,7 +23,7 @@ MonoBehaviour:
     FadeIn: 0
     FadeOut: 0
   - Name: Wait
-    ID: -644169223
+    ID: 95315179
     Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
     Volume: 0.509
     Delay: 0

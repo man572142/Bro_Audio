@@ -308,11 +308,11 @@ namespace MiProduction.BroAudio.Core
 
             if(player == null)
 			{
-                LogError($"The SoundPlayer for {audioType} has null refernece");
+                LogError($"The SoundPlayer for <b>{audioType}</b> has null refernece");
 			}
-			if (player == null || _soundBank.Count < 1)
+			if (_soundBank.Count < 1)
             {
-                LogError("No sound can play , please check SoundManager's setting");
+                LogError($"No sound can play , please check {nameof(SoundManager)}'s setting");
                 return false;
             }
             else if (!_soundBank.ContainsKey(id))
@@ -328,7 +328,7 @@ namespace MiProduction.BroAudio.Core
         {
             if (_sfxPlayer == null || _randomSoundAsset == null || _randomSoundBank.Count < 1 || !_randomSoundBank.ContainsKey(id))
             {
-                LogError("No sound can play , please check SoundManager's setting");
+                LogError($"No sound can play , please check {nameof(SoundManager)}'s setting");
                 return false;
             }
             else if (!_randomSoundBank.ContainsKey((int)id))

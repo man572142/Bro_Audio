@@ -9,7 +9,7 @@ namespace MiProduction.BroAudio
 	{
 		// 最後一個enum = ALL加1再右移一位
 		public static readonly int LastAudioType = ((int)AudioType.All + 1) >> 1;
-		public const int IdMultiplier = 1000;
+		public const int IdMultiplier = 100; // 用到1000會超出int上限，若有需要則必須改用long
 		
 
 		public static int ToConstantID(this AudioType audioType)
@@ -19,10 +19,9 @@ namespace MiProduction.BroAudio
 				return 0;
 			}
 
+			// Faster than Math.Log2 ()
 			int result = 1;
 			int type = (int)audioType;
-
-			// Faster than Math.Log2 ()
 			while ((type >> 1 ) > 0)
 			{
 				type = type >> 1; 
@@ -52,7 +51,7 @@ namespace MiProduction.BroAudio
 			AudioType resultType = AudioType.None;
 			AudioType nextType = resultType.ToNext();
 
-			while(nextType <= (AudioType)LastAudioType)
+			while (nextType <= (AudioType)LastAudioType)
 			{
 				if(id >= resultType.ToConstantID() && id < nextType.ToConstantID())
 				{
@@ -63,14 +62,6 @@ namespace MiProduction.BroAudio
 			}
 			return resultType;
 		}
-
-		//public static bool TryGetAudioIDRange(AudioType audioType,out int min,out int max)
-		//{
-		//	min = -1;
-		//	max = -1;
-			
-		//	return true;
-		//}
 
 		public static Type GetEnumType(string enumName)
 		{

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Libraries:
   - Name: Click
-    ID: 769876
+    ID: 7558
     Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
     Volume: 0.771
     Delay: 0
@@ -23,7 +23,7 @@ MonoBehaviour:
     FadeIn: 0
     FadeOut: 0
   - Name: Cancel
-    ID: 898860
+    ID: 2659
     Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
     Volume: 0.33
     Delay: 0

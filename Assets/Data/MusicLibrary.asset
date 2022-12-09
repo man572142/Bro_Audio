@@ -12,5 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8dea545865285941be8a4ddd0692911, type: 3}
   m_Name: MusicLibrary
   m_EditorClassIdentifier: 
-  Libraries: []
+  Libraries:
+  - Name: RealEstate
+    ID: 52
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 0.884
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 0
+    FadeOut: 0
+    Loop: 0
+  - Name: PlasticLove
+    ID: 66
+    Clip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+    Volume: 0.884
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 0
+    FadeOut: 0
+    Loop: 0
   _enumsPath: 

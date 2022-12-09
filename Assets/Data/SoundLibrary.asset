@@ -12,5 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf606c48b48ff1e46b789209070be0cc, type: 3}
   m_Name: SoundLibrary
   m_EditorClassIdentifier: 
-  Libraries: []
+  Libraries:
+  - Name: WTF
+    ID: 517985678
+    Clip: {fileID: 8300000, guid: b3e697400ba46bf45b351dbab1ec8148, type: 3}
+    Volume: 0.509
+    Delay: 0
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 0
+    FadeOut: 0
+  - Name: Wait
+    ID: -644169223
+    Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
+    Volume: 0.509
+    Delay: 0
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 0
+    FadeOut: 0
   _enumsPath: 

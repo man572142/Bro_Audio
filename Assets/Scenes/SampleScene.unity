@@ -1574,12 +1574,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _transitionA: 1
   _transitionB: 1
-  _musicA: 756
-  _musicB: 292
-  _sound: 345221
-  _randomSound: 993387
-  _sceneSound: 345221
-  _uiSound: 0
+  _musicA: 66
+  _musicB: 52
+  _sound: -644169223
+  _randomSound: 517985678
+  _sceneSound: 517985678
+  _uiSound: 769876
   _crossFadeTime: -1
   _stopFadeTime: -1
   _targetVolume: 1

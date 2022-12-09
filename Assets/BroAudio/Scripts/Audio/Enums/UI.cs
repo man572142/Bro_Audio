@@ -3,6 +3,6 @@ namespace MiProduction.BroAudio {
 public enum UI
 {
 	None = 0,
-	Click = 85282640,
-	CancelTest = 528274479,
+	Click = 769876,
+	Cancel = 898860,
 }}

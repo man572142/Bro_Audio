@@ -3,6 +3,6 @@ namespace MiProduction.BroAudio {
 public enum Music
 {
 	None = 0,
-	Hello = 756,
-	World = 292,
+	RealEstate = 52,
+	PlasticLove = 66,
 }}

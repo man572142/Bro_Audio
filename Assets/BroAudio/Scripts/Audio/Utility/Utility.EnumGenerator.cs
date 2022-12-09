@@ -4,57 +4,58 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using static MiProduction.BroAudio.BroAudioUtility;
 
 namespace MiProduction.BroAudio
 {
-	public static class EnumGenerator
+	public static partial class Utility
 	{
 		private const string _nameSpace = "MiProduction.BroAudio.";
-		//private const string _coreEnumsFileName = "/CoreLibraryEnum.cs";
 
-		public static void Generate(string enumsPath, string enumName, AudioData[] data)
+		public static void GenerateEnum(string enumsPath, string enumTypeName, AudioData[] datas)
 		{
 			if (!Directory.Exists(enumsPath))
 			{
 				Directory.CreateDirectory(enumsPath);
 			}
 
-			WriteEnum(enumsPath, enumName, data);
+			WriteEnumFile(enumsPath, enumTypeName, datas);
 			
 			AssetDatabase.Refresh();
 		}
 
-		private static void WriteEnum(string enumsPath, string enumName, AudioData[] datas)
+		private static void WriteEnumFile(string enumsPath, string enumTypeName, AudioData[] datas)
 		{
-			string filePathAndName = enumsPath + "/" + enumName + ".cs";
+			string filePathAndName = enumsPath + "/" + enumTypeName + ".cs";
 
             using (StreamWriter streamWriter = new StreamWriter(filePathAndName))
             {
                 streamWriter.WriteLine("// Auto-Generate script,DO NOT EDIT!");
                 streamWriter.WriteLine("namespace MiProduction.BroAudio {");
-                streamWriter.WriteLine("public enum " + enumName);
+                streamWriter.WriteLine("public enum " + enumTypeName);
                 streamWriter.WriteLine("{");
 				streamWriter.WriteLine("\tNone = 0,");
 
 				for (int i = 0; i < datas.Length; i++)
                 {
-                    streamWriter.WriteLine($"\t{datas[i].Name} = {datas[i].ID},");
+					if(IsValidEnum(enumTypeName, datas[i].Name))
+					{
+						streamWriter.WriteLine($"\t{datas[i].Name} = {datas[i].ID},");
+					}
                 }
                 streamWriter.WriteLine("}}");
             }
         }
 
-		private static bool IsValidEnum(string enumName, string enumString)
+		private static bool IsValidEnum(string enumTypeName, string enumName)
 		{
-			if (String.IsNullOrWhiteSpace(enumString))
+			if (String.IsNullOrWhiteSpace(enumName))
 			{
-				UnityEngine.Debug.LogError("[SoundSystem] there is an empty name in " + enumName);
+				UnityEngine.Debug.LogError("[SoundSystem] there is an empty name in " + enumTypeName);
 				return false;
 			}
-			else if (!Regex.IsMatch(enumString, @"^[a-zA-Z]+$"))
+			else if (!Regex.IsMatch(enumName, @"^[a-zA-Z]+$"))
 			{
-				UnityEngine.Debug.LogError($"[SoundSystem] {enumString} is not a valid name for library of " + enumName);
+				UnityEngine.Debug.LogError($"[SoundSystem] {enumName} is not a valid name for library of " + enumTypeName);
 				return false;
 			}
 			return true;

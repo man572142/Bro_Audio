@@ -18,11 +18,11 @@ public class SceneMusicTrigger : MonoBehaviour
         {
             if (music == Music.None)
             {
-                SoundSystem.Stop(0f, AudioType.Music);
+                BroAudio.Stop(0f, AudioType.Music);
             }
             else if (currentMusic != music)
             {
-                SoundSystem.PlayMusic(music, Transition.FadeOutThenFadeIn);
+                BroAudio.PlayMusic(music, Transition.FadeOutThenFadeIn);
             }
             currentMusic = music;
         }

@@ -5,6 +5,7 @@ using UnityEngine;
 using MiProduction.BroAudio.Library;
 using System;
 using UnityEngine.Profiling;
+using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Core
 {
@@ -18,7 +19,7 @@ namespace MiProduction.BroAudio.Core
 
             if (prefab == null)
             {
-                Debug.LogError("[SoundSystem] initialize failed ,please check SoundManager.prefab in your Resources folder!");
+                LogError($"Initialize failed ,please check {nameof(SoundManager)}.prefab in your Resources folder!");
                 return;
             }
 
@@ -28,7 +29,7 @@ namespace MiProduction.BroAudio.Core
             }
             else
             {
-                Debug.LogError("[SoundSystem] initialize failed ,please add SoundManager component to SoundManager.prefab");
+                LogError($"Initialize failed ,please add {nameof(SoundManager)} component to {nameof(SoundManager)}.prefab");
             }
 
             DontDestroyOnLoad(prefab);
@@ -39,6 +40,8 @@ namespace MiProduction.BroAudio.Core
         [Header("Player")]
         [SerializeField] SoundPlayer _sfxPlayer = null;
         [SerializeField] SoundPlayer _uiPlayer = null;
+        [SerializeField] SoundPlayer _voicePlayer = null;
+        [SerializeField] SoundPlayer _ambiencePlayer = null;
         [SerializeField] SoundPlayer _standOutPlayer = null;
         [SerializeField] MusicPlayer[] _musicPlayers = null;
         private MusicPlayer _currentPlayer;
@@ -70,7 +73,7 @@ namespace MiProduction.BroAudio.Core
         {
             if (_musicPlayers == null || _musicPlayers.Length < 2)
             {
-                Debug.LogError("[SoundSystem] Please add at least 2 MusicPlayer to SoundManager");
+                LogError($"Please add at least 2 MusicPlayer to {nameof(SoundManager)}");
             }
 
             InitSoundBank();
@@ -82,12 +85,16 @@ namespace MiProduction.BroAudio.Core
 		{
             foreach (var soundAsset in _allSoundAssets)
             {
+                if(soundAsset == null)
+				{
+                    continue;
+				}
                 for (int s = 0; s < soundAsset.Libraries.Length; s++)
                 {
                     var soundLibrary = soundAsset.Libraries[s];
                     if (_soundBank.ContainsKey(soundLibrary.ID))
                     {
-                        Debug.LogError($"[SoundSystem] Sound :{soundLibrary.EnumName} is duplicated !");
+                        LogError($"Sound :{soundLibrary.EnumName} is duplicated !");
                         return;
                     }
                     if (soundLibrary.Validate(s))
@@ -96,6 +103,10 @@ namespace MiProduction.BroAudio.Core
                     }
                 }
             }
+            if(_soundBank.Count == 0)
+			{
+                LogError($"There isn't any sound asset in the {nameof(SoundManager)}!");
+			}
         }
         private void InitRandomSoundBank()
         {
@@ -117,12 +128,19 @@ namespace MiProduction.BroAudio.Core
         }
         private void InitMusicBank()
         {
+            if(_mainMusicAsset == null)
+			{
+                LogError($"There isn't any music asset in the {nameof(SoundManager)}!");
+                return;
+			}
+
             for (int m = 0; m < _mainMusicAsset.Libraries.Length; m++)
             {
+
                 var musicLibrary = _mainMusicAsset.Libraries[m];
                 if (_musicBank.ContainsKey(musicLibrary.ID))
                 {
-                    Debug.LogError($"[SoundSystem] Music :{musicLibrary.EnumName} is duplicated !");
+                    LogError($"Music :{musicLibrary.EnumName} is duplicated !");
                     return;
                 }
                 if (musicLibrary.Validate(m))
@@ -165,7 +183,7 @@ namespace MiProduction.BroAudio.Core
                     }
                     else
                     {
-                        Debug.LogError("[SoundSystem] No playable music player for another music!");
+                        LogError("No playable music player for another music!");
                     }
                     break;
             }
@@ -200,19 +218,19 @@ namespace MiProduction.BroAudio.Core
 
         #region ­µ®Ä
 
-        public void PlaySFX(int id, float preventTime)
+        public void PlaySound(int id, float preventTime)
         {
-            if(SoundPlayerCheck(id))
+            if(GetSoundPlayer(id,out SoundPlayer soundPlayer))
             {
-                _sfxPlayer.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
+                soundPlayer.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
             }     
         }
 
-        public void PlaySFX(int id, Vector3 position)
+        public void PlaySound(int id, Vector3 position)
         {
-            if(SoundPlayerCheck(id))
+            if(GetSoundPlayer(id, out SoundPlayer soundPlayer))
             {
-                _sfxPlayer.PlayAtPoint( _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, position);
+                soundPlayer.PlayAtPoint( _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, position);
             }
         }
 
@@ -224,12 +242,12 @@ namespace MiProduction.BroAudio.Core
             }      
         }
 
-        public void SetSFXVolume(float vol,float fadeTime)
+        public void SetSoundVolume(float vol,float fadeTime)
 		{
             _sfxPlayer.SetVolume(vol,fadeTime);
 		}
 
-        public void StopSFX(float fadeTime)
+        public void StopSound(float fadeTime)
 		{
             _sfxPlayer.Stop(fadeTime);
 		}
@@ -246,63 +264,82 @@ namespace MiProduction.BroAudio.Core
         #region NullChecker
         private bool PlayMusicCheck(int id)
         {
-#if UNITY_EDITOR
-            if (_mainMusicAsset == null || _musicBank.Count < 1 || id == 0)
+            if (id == 0)
             {
-                Debug.LogError("[SoundSystem] No music can play. please check SoundManager's setting!");
+                LogError("Music ID is 0 (None). No music will play");
                 return false;
             }
             else if (!_musicBank.ContainsKey(id))
             {
-                Debug.LogError($"[SoundSystem] Music ID: {id} may not exist in the current MusicAsset");
+                LogError($"Music ID: {id} may not exist ,please check the MusicAsset's setting");
                 return false;
             }
             else if(id == _currentPlayer.CurrentMusicID)
             {
-                Debug.LogWarning("[SoundSystem] The music you want to play is already playing");
+                LogWarning("The music you want to play is already playing");
                 return false;
             }
-#endif
             return true;
         }
 
-        private bool SoundPlayerCheck(int id)
+        private bool GetSoundPlayer(int id,out SoundPlayer player)
         {
-#if UNITY_EDITOR
-            if (_sfxPlayer == null || _allSoundAssets == null || _soundBank.Count < 1)
+            player = null;
+            AudioType audioType = Utility.GetAudioType(id);
+
+			switch (audioType)
+			{
+				case AudioType.UI:
+                    player = _uiPlayer;
+					break;
+				case AudioType.SFX:
+                    player = _sfxPlayer;
+					break;
+				case AudioType.VoiceOver:
+                    player = _voicePlayer;
+					break;
+                case AudioType.Ambience:
+                    player = _ambiencePlayer;
+                    break;
+                default:
+                    LogWarning($"{audioType} is not suppose to play in any SoundPlayer");
+                    return false;
+			}
+
+            if(player == null)
+			{
+                LogError($"The SoundPlayer for {audioType} has null refernece");
+			}
+			if (player == null || _soundBank.Count < 1)
             {
-                Debug.LogError("[SoundSystem] No sound can play , please check SoundManager's setting");
+                LogError("No sound can play , please check SoundManager's setting");
                 return false;
             }
             else if (!_soundBank.ContainsKey(id))
             {
-                Debug.LogError($"[SoundSystem] SoundID:{id} may not exist in the current SoundAsset");
+                LogError($"Audio may not exist in the current SoundAsset,AudioType:{audioType},SoundID:{id}");
                 return false;
             }
-#endif
-            return true;
-        }
 
-        private bool RandomSoundCheck(int id)
+            return true;
+		}
+
+		private bool RandomSoundCheck(int id)
         {
-#if UNITY_EDITOR
             if (_sfxPlayer == null || _randomSoundAsset == null || _randomSoundBank.Count < 1 || !_randomSoundBank.ContainsKey(id))
             {
-                Debug.LogError("[SoundSystem] No sound can play , please check SoundManager's setting");
+                LogError("No sound can play , please check SoundManager's setting");
                 return false;
             }
             else if (!_randomSoundBank.ContainsKey((int)id))
             {
-                Debug.LogError($"[SoundSystem] SoundID:{id} may not exist in the current RandomSoundAsset");
+                LogError($"SoundID:{id} may not exist in the current RandomSoundAsset");
                 return false;
             }
-#endif
             return true;
         }
-
-        #endregion
-
-    }
+		#endregion
+	}
 
 }
 

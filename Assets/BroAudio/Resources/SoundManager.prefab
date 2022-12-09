@@ -192,6 +192,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sfxPlayer: {fileID: 3515275047062953283}
   _uiPlayer: {fileID: 941300637168065474}
+  _voicePlayer: {fileID: 0}
+  _ambiencePlayer: {fileID: 0}
   _standOutPlayer: {fileID: 3209373321783841419}
   _musicPlayers:
   - {fileID: 6443841439991395278}
@@ -199,10 +201,10 @@ MonoBehaviour:
   _fadeInEase: 2
   _fadeOutEase: 11
   _allSoundAssets:
-  - {fileID: 11400000, guid: 161c6730ab32b6a4eb504f8984ccf0df, type: 2}
-  - {fileID: 11400000, guid: b28453cc60a012f499f80e108e11346d, type: 2}
+  - {fileID: 11400000, guid: 8fee7568a8f32b941bebc99664e9096e, type: 2}
+  - {fileID: 11400000, guid: 4c8bafa6bfbe036439f257cc90be5af3, type: 2}
   _randomSoundAsset: []
-  _mainMusicAsset: {fileID: 11400000, guid: 84858987e811b8a48a93470d5f164f3b, type: 2}
+  _mainMusicAsset: {fileID: 11400000, guid: 8130d3afe8282084baf72a1d4ac14faf, type: 2}
 --- !u!1 &3109420919187162984
 GameObject:
   m_ObjectHideFlags: 0

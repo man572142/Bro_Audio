@@ -12,23 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 680bf00f28c5cb040b3225278702641a, type: 3}
   m_Name: UISoundLibrary
   m_EditorClassIdentifier: 
-  Libraries:
-  - Name: Click
-    ID: 85282640
-    Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
-    Volume: 0.671
-    Delay: 0
-    StartPosition: 0
-    EndPosition: 0
-    FadeIn: 0
-    FadeOut: 0
-  - Name: CancelTest
-    ID: 528274479
-    Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
-    Volume: 1
-    Delay: 0
-    StartPosition: 0
-    EndPosition: 0
-    FadeIn: 0
-    FadeOut: 0
-  _enumsPath: Assets/BroAudio/Scripts/Audio/Enums
+  Libraries: []
+  _enumsPath: 

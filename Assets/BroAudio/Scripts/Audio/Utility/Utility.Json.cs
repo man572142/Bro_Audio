@@ -7,7 +7,7 @@ using System;
 
 namespace MiProduction.BroAudio
 {
-	public static class AudioJsonUtility
+	public static partial class Utility
 	{
 		[Serializable]
 		public struct SerializedAudioDataList
@@ -58,8 +58,6 @@ namespace MiProduction.BroAudio
 				File.WriteAllText(JsonFilePath,string.Empty);
 				return new List<AudioData>();
 			}
-
-			
 		}
 
 		private static int GetUniqueID(AudioType audioType, IEnumerable<int> idList)
@@ -67,8 +65,8 @@ namespace MiProduction.BroAudio
 			int id = 0;
 			while (true)
 			{
-				id = UnityEngine.Random.Range(audioType.ToConstantID(), audioType.ToConstantID() * ConstantID.RangeMultiplier);
-				if(idList == null || !idList.Contains(id))
+				id = UnityEngine.Random.Range(audioType.ToConstantID(), audioType.ToNext().ToConstantID());
+				if (idList == null || !idList.Contains(id))
 				{
 					return id;
 				}

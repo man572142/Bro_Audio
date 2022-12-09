@@ -32,6 +32,9 @@ namespace MiProduction.BroAudio.Library
             }
         }
 
+        /// <summary>
+        /// 每次Get都要跑Linq，若要在Loop中使用建議先暫存起來
+        /// </summary>
         public string[] AllAudioDataNames
         {
             get
@@ -39,7 +42,6 @@ namespace MiProduction.BroAudio.Library
                 if (Libraries == null)
                     Libraries = new T[0];
 
-                // 每次get都要跑Linq效能消耗有點大
                 return Libraries.Select(x => x.EnumName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
             }
         }

@@ -4,14 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Library
 {
     [CustomEditor(typeof(AudioLibraryAsset<>), true)]
     public class AudioLibraryAssetEditor : Editor
     {
-        private const string _defaultEnumsPath = "Assets/BroAudio/Scripts/Audio/Enums";
-        private SerializedProperty _pathProperty;
+        private const string EmptyString = "<color=cyan>EmptyString</color>";
+        private const string DefaultEnumsPath = "Assets/BroAudio/Scripts/Audio/Enums";
+        //private SerializedProperty _pathProperty;
         private bool _hasUnassignedID = false;
         private SerializedProperty _libraries;
         private IAudioLibraryAsset _asset;
@@ -26,9 +28,11 @@ namespace MiProduction.BroAudio.Library
             _libraries = serializedObject.FindProperty("Libraries");
             _asset = target as IAudioLibraryAsset;
 
+            //_pathProperty = serializedObject.FindProperty("_enumsPath");
+
             if (_currentAudioData == null)
             {
-                _currentAudioData = AudioJsonUtility.ReadJson();
+                _currentAudioData = ReadJson();
             }
         }
 
@@ -36,7 +40,7 @@ namespace MiProduction.BroAudio.Library
 		{
 			if(_hasUnassignedID && EditorApplication.isCompiling)
 			{
-                Debug.LogError($"LibraryAsset:[{_asset.LibraryTypeName}] ID assigning is not finished yet! Please update the library again, and wait for the process to finish.");
+                LogError($"LibraryAsset:[{_asset.LibraryTypeName}] ID assigning is not finished yet! Please update the library again, and wait for the process to finish.");
 			}
 		}
 
@@ -46,22 +50,18 @@ namespace MiProduction.BroAudio.Library
 
             if (!_hasUnassignedID)
             {
-                SetEnumsPath();
+                //SetEnumsPath();
 
                 if (IsLibraryNeedRefresh())
                 {
                     EditorGUILayout.HelpBox("This library needs to be updated !", MessageType.Warning);
                 }
 
-                string[] allAudioDataNames = _asset.AllAudioDataNames;
-                if (_asset == null || allAudioDataNames == null || allAudioDataNames.Length == 0)
-				{
-                    return;
-				}
-
-                if (GUILayout.Button("Update", GUILayout.Height(30f)))
+                if (GUILayout.Button("Update", GUILayout.Height(30f)) && HasAudioData(out string[] allAudioDataNames))
                 {
-                    UpdateData(allAudioDataNames);
+                    WriteJson(_asset.AssetGUID, _asset.AudioType, allAudioDataNames, ref _currentAudioData);
+                    _newEnumDatas = _currentAudioData.Where(x => x.AudioType == _asset.AudioType).ToArray();
+                    GenerateEnum(DefaultEnumsPath, _asset.LibraryTypeName, _newEnumDatas);
                     _hasUnassignedID = true;
                     _waitingString = string.Empty;
                 }
@@ -80,34 +80,33 @@ namespace MiProduction.BroAudio.Library
             serializedObject.ApplyModifiedProperties();
         }
 
-        private void SetEnumsPath()
-        {
-            _pathProperty = serializedObject.FindProperty("_enumsPath");
-            if (string.IsNullOrWhiteSpace(_pathProperty.stringValue))
-            {
-                _pathProperty.stringValue = _defaultEnumsPath;
-            }
-            EditorGUILayout.LabelField("Enums Path");
-            EditorGUILayout.BeginHorizontal();
-            {
-                EditorGUILayout.LabelField(_pathProperty.stringValue);
-                if (GUILayout.Button("Change Enums Path", GUILayout.Width(150f)))
-                {
-                    string path = EditorUtility.OpenFolderPanel("Enums Path", _pathProperty.stringValue, _pathProperty.stringValue);
-                    if (!string.IsNullOrWhiteSpace(path))
-                    {
-                        _pathProperty.stringValue = path.Substring(path.IndexOf("Assets"));
-                    }
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-        }
+        //private void SetEnumsPath()
+        //      {
+        //          //_pathProperty = serializedObject.FindProperty("_enumsPath");
+        //          if (string.IsNullOrWhiteSpace(_pathProperty.stringValue))
+        //          {
+        //              _pathProperty.stringValue = _defaultEnumsPath;
+        //          }
+        //          EditorGUILayout.LabelField("Enums Path");
+        //          EditorGUILayout.BeginHorizontal();
+        //          {
+        //              EditorGUILayout.LabelField(_pathProperty.stringValue);
+        //              if (GUILayout.Button("Change Enums Path", GUILayout.Width(150f)))
+        //              {
+        //                  string path = EditorUtility.OpenFolderPanel("Enums Path", _pathProperty.stringValue, _pathProperty.stringValue);
+        //                  if (!string.IsNullOrWhiteSpace(path))
+        //                  {
+        //                      _pathProperty.stringValue = path.Substring(path.IndexOf("Assets"));
+        //                  }
+        //              }
+        //          }
+        //          EditorGUILayout.EndHorizontal();
+        //      }
 
-        private void UpdateData(string[] allAudioDataNames)
-		{
-            AudioJsonUtility.WriteJson(_asset.AssetGUID, _asset.AudioType, allAudioDataNames, ref _currentAudioData);
-            _newEnumDatas = _currentAudioData.Where(x => x.AudioType == _asset.AudioType).ToArray();
-            EnumGenerator.Generate(_pathProperty.stringValue, _asset.LibraryTypeName, _newEnumDatas);
+        private bool HasAudioData(out string[] allAudioDataNames)
+        {
+            allAudioDataNames = _asset.AllAudioDataNames;
+            return allAudioDataNames != null && allAudioDataNames.Length > 0;
         }
 
         private void AssignID(AudioData[] newDatas)
@@ -119,15 +118,25 @@ namespace MiProduction.BroAudio.Library
                 SerializedProperty elementID = element.FindPropertyRelative("ID");
 
                 elementName.stringValue = elementName.stringValue.Replace(" ", string.Empty);
-                elementID.intValue = GetEnumID(elementName.stringValue);
+                elementID.intValue = GetEnumID(elementName.stringValue,i);
             }
             _hasUnassignedID = false;
             serializedObject.ApplyModifiedProperties();
-            Debug.Log("All enums have been assigned successfully!");
+            Log("<color=#00ff00ff>All enums have been generated and assigned successfully!</color>");
 
-            int GetEnumID(string enumName)
+            int GetEnumID(string enumName,int index)
             {          
-                return newDatas.Where(x => x.Name == enumName).Select(x => x.ID).FirstOrDefault();
+                foreach(var data in newDatas)
+				{
+                    if(data.Name == enumName)
+					{
+                        return data.ID;
+					}
+				}
+
+                string subject = string.IsNullOrWhiteSpace(enumName) ? EmptyString : enumName;
+                LogWarning($"Can't get audio ID with: {subject}. Element {index} has been skipped");
+                return -1;
             }
         }
 

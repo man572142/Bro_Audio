@@ -25,7 +25,6 @@ namespace MiProduction.BroAudio.Core
 
         public void Play(int id, AudioClip clip, float delay, float volume, float preventTime)
         {
-            Debug.Log(id);
             _stopCoroutine.Stop(this);
             StartCoroutine(PlayOnce(id, clip, delay, volume, preventTime));
         }

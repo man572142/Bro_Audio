@@ -4,7 +4,7 @@ using System;
 
 namespace MiProduction.BroAudio
 { 
-    public static class SoundSystem
+    public static class BroAudio
     {
         #region SFX
         // *使用TEnum會用到Boxing/Unboxing，有些微的效能開銷(但非常小)
@@ -45,21 +45,21 @@ namespace MiProduction.BroAudio
         /// 播放音效
         /// </summary>
         /// <param name="soundID"></param>
-        public static void PlaySound(int soundID) => SoundManager.Instance.PlaySFX(soundID, 0.1f);
+        public static void PlaySound(int soundID) => SoundManager.Instance.PlaySound(soundID, 0.1f);
 
         /// <summary>
         /// 播放音效
         /// </summary>
         /// <param name="soundID"></param>
         /// <param name="preventTime">限制該時間內不能再播放</param>
-        public static void PlaySound(int soundID, float preventTime) => SoundManager.Instance.PlaySFX(soundID, preventTime);
+        public static void PlaySound(int soundID, float preventTime) => SoundManager.Instance.PlaySound(soundID, preventTime);
 
         /// <summary>
         /// 於場景中的指定地點播放
         /// </summary>
         /// <param name="soundID"></param>
         /// <param name="position">播放的座標</param>
-        public static void PlaySound(int soundID, Vector3 position) => SoundManager.Instance.PlaySFX(soundID, position);
+        public static void PlaySound(int soundID, Vector3 position) => SoundManager.Instance.PlaySound(soundID, position);
         #endregion
 
         #region RandomSFX
@@ -153,15 +153,15 @@ namespace MiProduction.BroAudio
             {
                 case AudioType.All:
                     SoundManager.Instance.StopMusic(fadeTime);
-                    SoundManager.Instance.StopSFX(fadeTime);
+                    SoundManager.Instance.StopSound(fadeTime);
                     break;
                 case AudioType.SFX:
-                    SoundManager.Instance.StopSFX(fadeTime);
+                    SoundManager.Instance.StopSound(fadeTime);
                     break;
                 case AudioType.Music:
                     SoundManager.Instance.StopMusic(fadeTime);
                     break;
-                case AudioType.Ambience:
+                case AudioType.VoiceOver:
                     break;
                 case AudioType.UI:
                     break;
@@ -188,20 +188,18 @@ namespace MiProduction.BroAudio
             switch (type)
             {
                 case AudioType.All:
-                    SoundManager.Instance.SetSFXVolume(vol, fadeTime);
+                    SoundManager.Instance.SetSoundVolume(vol, fadeTime);
                     SoundManager.Instance.SetMusicVolume(vol, fadeTime);
                     break;
                 case AudioType.SFX:
-                    SoundManager.Instance.SetSFXVolume(vol, fadeTime);
+                    SoundManager.Instance.SetSoundVolume(vol, fadeTime);
                     break;
                 case AudioType.Music:
                     SoundManager.Instance.SetMusicVolume(vol, fadeTime);
                     break;
-                case AudioType.Ambience:
+                case AudioType.VoiceOver:
                     break;
                 case AudioType.UI:
-                    break;
-                case AudioType.StandOut:
                     break;
             }
         } 
@@ -209,7 +207,7 @@ namespace MiProduction.BroAudio
         private static void SetStandOutVolume(float blendRatio, float fadeTime)
 		{
             SetVolume(1 - blendRatio, fadeTime, AudioType.All);
-            SetVolume(blendRatio, fadeTime, AudioType.StandOut);
+            //SetVolume(blendRatio, fadeTime, AudioType.StandOut);
 
         }
 

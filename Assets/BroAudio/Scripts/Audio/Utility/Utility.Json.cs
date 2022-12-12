@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Linq;
 using System.IO;
 using System;
+using static MiProduction.Extension.LoopExtension;
 
 namespace MiProduction.BroAudio
 {
@@ -35,10 +36,18 @@ namespace MiProduction.BroAudio
 				}
 				int id = GetUniqueID(audioType, usedIdList);
 				string name = dataToWrite[i].Replace(" ", string.Empty);
-				audioData.Add(new AudioData(id,name , audioType, assetGUID));
+				audioData.Add(new AudioData(id, name, audioType, assetGUID));
 			}
+			WriteToFile(audioData);
+		}
+
+		private static void WriteToFile(List<AudioData> audioData)
+		{
 			SerializedAudioDataList serializedData = new SerializedAudioDataList(audioData);
-			File.WriteAllText(JsonFilePath, JsonUtility.ToJson(serializedData,true));
+			File.WriteAllText(JsonFilePath, JsonUtility.ToJson(serializedData, true));
+
+
+			
 		}
 
 		public static List<AudioData> ReadJson()
@@ -58,6 +67,14 @@ namespace MiProduction.BroAudio
 				File.WriteAllText(JsonFilePath,string.Empty);
 				return new List<AudioData>();
 			}
+		}
+
+		public static void DeleteDataByAsset(string assetGUID)
+		{
+			List<AudioData> audioDatas = ReadJson();
+			audioDatas?.RemoveAll(x => x.AssetGUID == assetGUID);
+
+			WriteToFile(audioDatas);
 		}
 
 		private static int GetUniqueID(AudioType audioType, IEnumerable<int> idList)

@@ -25,14 +25,44 @@
             "AssetGUID": "8fee7568a8f32b941bebc99664e9096e"
         },
         {
-            "ID": 7558,
+            "ID": 20,
+            "Name": "CHANGE",
+            "AudioType": 1,
+            "AssetGUID": "dce07689483133f4c8b2018a3dad21b2"
+        },
+        {
+            "ID": 83,
+            "Name": "EVERY",
+            "AudioType": 1,
+            "AssetGUID": "dce07689483133f4c8b2018a3dad21b2"
+        },
+        {
+            "ID": 6005,
             "Name": "Click",
             "AudioType": 2,
             "AssetGUID": "4c8bafa6bfbe036439f257cc90be5af3"
         },
         {
-            "ID": 2659,
+            "ID": 7778,
             "Name": "Cancel",
+            "AudioType": 2,
+            "AssetGUID": "4c8bafa6bfbe036439f257cc90be5af3"
+        },
+        {
+            "ID": 3355,
+            "Name": "Continue",
+            "AudioType": 2,
+            "AssetGUID": "4c8bafa6bfbe036439f257cc90be5af3"
+        },
+        {
+            "ID": 1882,
+            "Name": "Skip",
+            "AudioType": 2,
+            "AssetGUID": "4c8bafa6bfbe036439f257cc90be5af3"
+        },
+        {
+            "ID": 3179,
+            "Name": "Confirm",
             "AudioType": 2,
             "AssetGUID": "4c8bafa6bfbe036439f257cc90be5af3"
         }

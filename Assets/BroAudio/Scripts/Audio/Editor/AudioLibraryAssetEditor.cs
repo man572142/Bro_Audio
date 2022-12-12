@@ -44,6 +44,7 @@ namespace MiProduction.BroAudio.Library
 			}
 		}
 
+
 		public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
@@ -59,6 +60,7 @@ namespace MiProduction.BroAudio.Library
 
                 if (GUILayout.Button("Update", GUILayout.Height(30f)) && HasAudioData(out string[] allAudioDataNames))
                 {
+                    // 這一步驟有限定順序，並且都要執行到，需要想辦法整合綁定，可能可以用Facade Pattern解決?
                     WriteJson(_asset.AssetGUID, _asset.AudioType, allAudioDataNames, ref _currentAudioData);
                     _newEnumDatas = _currentAudioData.Where(x => x.AudioType == _asset.AudioType).ToArray();
                     GenerateEnum(DefaultEnumsPath, _asset.LibraryTypeName, _newEnumDatas);
@@ -172,7 +174,7 @@ namespace MiProduction.BroAudio.Library
                 {
                     return false;
                 }
-
+                // 考慮去除Linq?
                 name = _currentAudioData.Where(x => x.ID == id).Select(x => x.Name).FirstOrDefault();
                 return !string.IsNullOrEmpty(name);
             }

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static MiProduction.Extension.LoopExtension;
 
 namespace MiProduction.BroAudio
 {
@@ -22,11 +23,14 @@ namespace MiProduction.BroAudio
 			// Faster than Math.Log2 ()
 			int result = 1;
 			int type = (int)audioType;
-			while ((type >> 1 ) > 0)
+
+			While(_ => (type >> 1) > 0, () => 
 			{
-				type = type >> 1; 
+				type = type >> 1;
 				result *= IdMultiplier;
-			}
+
+				return Statement.Continue;
+			});
 			return result;
 		}
 
@@ -51,15 +55,17 @@ namespace MiProduction.BroAudio
 			AudioType resultType = AudioType.None;
 			AudioType nextType = resultType.ToNext();
 
-			while (nextType <= (AudioType)LastAudioType)
+			While(_ => nextType <= (AudioType)LastAudioType, () => 
 			{
-				if(id >= resultType.ToConstantID() && id < nextType.ToConstantID())
+				if (id >= resultType.ToConstantID() && id < nextType.ToConstantID())
 				{
-					break;
+					return Statement.Break;
 				}
 				resultType = nextType;
 				nextType = nextType.ToNext();
-			}
+
+				return Statement.Continue;
+			});
 			return resultType;
 		}
 

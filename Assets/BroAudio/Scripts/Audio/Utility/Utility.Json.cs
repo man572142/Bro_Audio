@@ -45,9 +45,6 @@ namespace MiProduction.BroAudio
 		{
 			SerializedAudioDataList serializedData = new SerializedAudioDataList(audioData);
 			File.WriteAllText(JsonFilePath, JsonUtility.ToJson(serializedData, true));
-
-
-			
 		}
 
 		public static List<AudioData> ReadJson()
@@ -80,14 +77,17 @@ namespace MiProduction.BroAudio
 		private static int GetUniqueID(AudioType audioType, IEnumerable<int> idList)
 		{
 			int id = 0;
-			while (true)
+
+			Loop(() =>
 			{
 				id = UnityEngine.Random.Range(audioType.ToConstantID(), audioType.ToNext().ToConstantID());
 				if (idList == null || !idList.Contains(id))
 				{
-					return id;
+					return Statement.Break;
 				}
-			}
+				return Statement.Continue;
+			});
+			return id;
 		}
 
 		private static bool IsValidName(string name)

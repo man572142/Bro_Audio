@@ -23,10 +23,10 @@ namespace MiProduction.BroAudio
 
 		private static readonly string JsonFilePath = Application.dataPath + "/BroAudio/BroAudioData.json";
 
-		public static void WriteJson(string assetGUID, AudioType audioType, string[] dataToWrite, ref List<AudioData> audioData)
+		private static void WriteJson(string assetGUID, AudioType audioType, string[] dataToWrite, ref List<AudioData> allAudioData)
 		{
-			audioData?.RemoveAll(x => x.AssetGUID == assetGUID);
-			IEnumerable<int> usedIdList = audioData?.Where(x => x.AudioType == audioType).Select(x => x.ID);
+			allAudioData?.RemoveAll(x => x.AssetGUID == assetGUID);
+			IEnumerable<int> usedIdList = allAudioData?.Where(x => x.AudioType == audioType).Select(x => x.ID);
 
 			for (int i = 0; i < dataToWrite.Length; i++)
 			{
@@ -36,9 +36,9 @@ namespace MiProduction.BroAudio
 				}
 				int id = GetUniqueID(audioType, usedIdList);
 				string name = dataToWrite[i].Replace(" ", string.Empty);
-				audioData.Add(new AudioData(id, name, audioType, assetGUID));
+				allAudioData.Add(new AudioData(id, name, audioType, assetGUID));
 			}
-			WriteToFile(audioData);
+			WriteToFile(allAudioData);
 		}
 
 		private static void WriteToFile(List<AudioData> audioData)
@@ -66,12 +66,24 @@ namespace MiProduction.BroAudio
 			}
 		}
 
-		public static void DeleteDataByAsset(string assetGUID)
+		private static void DeleteJsonDataByAsset(string assetGUID,out List<AudioData> currentAudioDatas,out AudioType deletedType)
 		{
-			List<AudioData> audioDatas = ReadJson();
-			audioDatas?.RemoveAll(x => x.AssetGUID == assetGUID);
+			currentAudioDatas = ReadJson();
+			deletedType = AudioType.None;
 
-			WriteToFile(audioDatas);
+			for(int i = 0; i < currentAudioDatas?.Count; i++)
+			{
+				if(currentAudioDatas[i].AssetGUID == assetGUID)
+				{
+					deletedType = currentAudioDatas[i].AudioType;
+					currentAudioDatas.RemoveAt(i);
+				}
+			}
+
+			if(deletedType != AudioType.None)
+			{
+				WriteToFile(currentAudioDatas);
+			}
 		}
 
 		private static int GetUniqueID(AudioType audioType, IEnumerable<int> idList)

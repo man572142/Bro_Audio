@@ -8,9 +8,7 @@ namespace MiProduction.BroAudio.Library
 	
 	public abstract class SoundLibraryAsset : AudioLibraryAsset<SoundLibrary>
 	{
-		public override string LibraryTypeName => SoundLibraryTypeName;
 
-		public abstract string SoundLibraryTypeName { get; }
 	}
 
 }

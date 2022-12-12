@@ -1,9 +1,6 @@
 // Auto-Generate script,DO NOT EDIT!
 namespace MiProduction.BroAudio {
-public enum Sound
+public enum SFX
 {
 	None = 0,
-	WTF = 96875290,
-	Wait = 95315179,
-	SHIT = 94997972,
 }}

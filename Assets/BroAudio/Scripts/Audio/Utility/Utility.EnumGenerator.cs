@@ -11,21 +11,22 @@ namespace MiProduction.BroAudio
 	{
 		private const string _nameSpace = "MiProduction.BroAudio.";
 
-		public static void GenerateEnum(string enumsPath, string enumTypeName, AudioData[] datas)
+		private static void GenerateEnum(AudioType audioType, IEnumerable<AudioData> currentAudioDatas)
 		{
-			if (!Directory.Exists(enumsPath))
+			if (!Directory.Exists(DefaultEnumsPath))
 			{
-				Directory.CreateDirectory(enumsPath);
+				Directory.CreateDirectory(DefaultEnumsPath);
 			}
-
-			WriteEnumFile(enumsPath, enumTypeName, datas);
+			var datasToWrite = currentAudioDatas.Where(x => x.AudioType == audioType);
+			WriteEnumFile(audioType, datasToWrite);
 			
 			AssetDatabase.Refresh();
 		}
 
-		private static void WriteEnumFile(string enumsPath, string enumTypeName, AudioData[] datas)
+		private static void WriteEnumFile(AudioType audioType, IEnumerable<AudioData> datasToWrite)
 		{
-			string filePathAndName = enumsPath + "/" + enumTypeName + ".cs";
+			string enumTypeName = audioType.ToString();
+			string filePathAndName = DefaultEnumsPath + "/" + enumTypeName + ".cs";
 
             using (StreamWriter streamWriter = new StreamWriter(filePathAndName))
             {
@@ -35,13 +36,13 @@ namespace MiProduction.BroAudio
                 streamWriter.WriteLine("{");
 				streamWriter.WriteLine("\tNone = 0,");
 
-				for (int i = 0; i < datas.Length; i++)
-                {
-					if(IsValidEnum(enumTypeName, datas[i].Name))
+				foreach(var data in datasToWrite)
+				{
+					if (IsValidEnum(enumTypeName, data.Name))
 					{
-						streamWriter.WriteLine($"\t{datas[i].Name} = {datas[i].ID},");
+						streamWriter.WriteLine($"\t{data.Name} = {data.ID},");
 					}
-                }
+				}
                 streamWriter.WriteLine("}}");
             }
         }

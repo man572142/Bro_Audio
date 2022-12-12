@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using MiProduction.BroAudio;
 
 namespace MiProduction.BroAudio.Library
 {
@@ -10,9 +9,8 @@ namespace MiProduction.BroAudio.Library
 	{
 		public static AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions option)
 		{
-			// delete from json
 			string guid = AssetDatabase.AssetPathToGUID(assetPath);
-			Utility.DeleteDataByAsset(guid);
+			Utility.DeleteAudioData(guid);
 
 			return AssetDeleteResult.DidNotDelete;
 		}

@@ -7,8 +7,6 @@ namespace MiProduction.BroAudio.Library
 	[CreateAssetMenu(fileName = "SoundLibrary", menuName = "MiProduction/BroAudio/Create Library/Sound")]
 	public class SfxLibraryAsset : SoundLibraryAsset
 	{
-		public override string SoundLibraryTypeName { get => "Sound"; }
-
 		public override AudioType AudioType => AudioType.SFX;
 	} 
 }

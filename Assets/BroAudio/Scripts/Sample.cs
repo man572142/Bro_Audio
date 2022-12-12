@@ -12,11 +12,11 @@ public class Sample : MonoBehaviour
     [SerializeField] Music _musicA;
     [SerializeField] Music _musicB;
 
-    [SerializeField] Sound _sound;
-    [SerializeField] Sound _randomSound;
-    [SerializeField] Sound _sceneSound;
+	[SerializeField] SFX _sound;
+	[SerializeField] SFX _randomSound;
+	[SerializeField] SFX _sceneSound;
 
-    [SerializeField] UI _uiSound;
+	[SerializeField] UI _uiSound;
 
     [SerializeField] float _crossFadeTime = -1f;
 

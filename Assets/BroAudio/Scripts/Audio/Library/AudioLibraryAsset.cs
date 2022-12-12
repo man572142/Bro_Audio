@@ -17,7 +17,7 @@ namespace MiProduction.BroAudio.Library
 
         private string _assetGUID = string.Empty;
         
-        public abstract string LibraryTypeName { get; }
+        //public abstract string LibraryTypeName { get; }
 		public abstract AudioType AudioType { get; }
 
         public string AssetGUID

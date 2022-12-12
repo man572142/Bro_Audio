@@ -12,7 +12,7 @@ namespace MiProduction.BroAudio.Library
     public class AudioLibraryAssetEditor : Editor
     {
         private const string EmptyString = "<color=cyan>EmptyString</color>";
-        private const string DefaultEnumsPath = "Assets/BroAudio/Scripts/Audio/Enums";
+        
         //private SerializedProperty _pathProperty;
         private bool _hasUnassignedID = false;
         private SerializedProperty _libraries;
@@ -21,7 +21,7 @@ namespace MiProduction.BroAudio.Library
 
         private List<AudioData> _currentAudioData = null;
 
-        private AudioData[] _newEnumDatas = null;
+        //private IEnumerable<AudioData> _newEnumDatas = null;
 
         private void OnEnable()
         {
@@ -40,7 +40,7 @@ namespace MiProduction.BroAudio.Library
 		{
 			if(_hasUnassignedID && EditorApplication.isCompiling)
 			{
-                LogError($"LibraryAsset:[{_asset.LibraryTypeName}] ID assigning is not finished yet! Please update the library again, and wait for the process to finish.");
+                LogError($"LibraryAsset:[{_asset.AudioType}] ID assigning is not finished yet! Please update the library again, and wait for the process to finish.");
 			}
 		}
 
@@ -60,21 +60,18 @@ namespace MiProduction.BroAudio.Library
 
                 if (GUILayout.Button("Update", GUILayout.Height(30f)) && HasAudioData(out string[] allAudioDataNames))
                 {
-                    // 這一步驟有限定順序，並且都要執行到，需要想辦法整合綁定，可能可以用Facade Pattern解決?
-                    WriteJson(_asset.AssetGUID, _asset.AudioType, allAudioDataNames, ref _currentAudioData);
-                    _newEnumDatas = _currentAudioData.Where(x => x.AudioType == _asset.AudioType).ToArray();
-                    GenerateEnum(DefaultEnumsPath, _asset.LibraryTypeName, _newEnumDatas);
+                    WriteAudioData(_asset.AssetGUID, _asset.AudioType, allAudioDataNames, out var newAudioDatas);
+                    _currentAudioData = newAudioDatas;
                     _hasUnassignedID = true;
-                    _waitingString = string.Empty;
-                }
+					_waitingString = string.Empty;
+				}
             }
             else
             {
                 EditorGUILayout.LabelField("Assigning enums" + _waitingString);
-                if (!EditorApplication.isCompiling && _newEnumDatas != null)
+                if (!EditorApplication.isCompiling)
 				{
-                    AssignID(_newEnumDatas);
-                    _newEnumDatas = null;
+                    AssignID();
                 }
                 _waitingString += " .";
             }
@@ -111,7 +108,7 @@ namespace MiProduction.BroAudio.Library
             return allAudioDataNames != null && allAudioDataNames.Length > 0;
         }
 
-        private void AssignID(AudioData[] newDatas)
+        private void AssignID()
         {
             for (int i = 0; i < _libraries.arraySize; i++)
             {
@@ -128,7 +125,7 @@ namespace MiProduction.BroAudio.Library
 
             int GetEnumID(string enumName,int index)
             {          
-                foreach(var data in newDatas)
+                foreach(var data in _currentAudioData)
 				{
                     if(data.Name == enumName)
 					{
@@ -174,9 +171,17 @@ namespace MiProduction.BroAudio.Library
                 {
                     return false;
                 }
-                // 考慮去除Linq?
-                name = _currentAudioData.Where(x => x.ID == id).Select(x => x.Name).FirstOrDefault();
-                return !string.IsNullOrEmpty(name);
+
+                foreach(var data in _currentAudioData)
+				{
+                    if(data.ID == id)
+					{
+                        name = data.Name;
+                        return !string.IsNullOrEmpty(data.Name);
+                    }
+				}
+
+                return false;
             }
         }
 

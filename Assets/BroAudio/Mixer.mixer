@@ -1,5 +1,19 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!244 &-9156549213414105378
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Attenuation
+  m_EffectID: f03cccf7f2a6e1f4490e7f20b8ddc2ad
+  m_EffectName: Attenuation
+  m_MixLevel: ff5989c29111f69449c12d33775b5197
+  m_Parameters: []
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
 --- !u!243 &-9013434230505610011
 AudioMixerGroupController:
   m_ObjectHideFlags: 0
@@ -183,6 +197,8 @@ AudioMixerController:
     name: StandOut
   - guid: 137fbf476f7863f4a95b1168b99413bd
     name: UI
+  - guid: 7aeab7418c1b1d74cacdc6b9928cf3c5
+    name: VoiceOver
   m_AudioMixerGroupViews:
   - guids:
     - 84d693e89ed210e43b080efe6f71f9bd
@@ -191,6 +207,7 @@ AudioMixerController:
     - 4313f17d55f92394ba2f12d5653b2b03
     - 726b8b491dcef3047a326fe3748aa206
     - a2391af30ab71a540a0a2f4283f02004
+    - a30e02b039fd12e45856a30916b87545
     name: View
   m_CurrentViewIndex: 0
   m_TargetSnapshot: {fileID: 24500006}
@@ -207,8 +224,9 @@ AudioMixerGroupController:
   - {fileID: -7961843172974828819}
   - {fileID: -9013434230505610011}
   - {fileID: 5191733852679147159}
-  - {fileID: -904268718525914487}
+  - {fileID: 1643983614995851372}
   - {fileID: 7518081801412734225}
+  - {fileID: -904268718525914487}
   m_Volume: 95e041290ed3c994caaf85a4be89648f
   m_Pitch: 669bf766fdf47fd439d3d18b654092ef
   m_Send: 00000000000000000000000000000000
@@ -250,6 +268,7 @@ AudioMixerSnapshotController:
     151c4076f4ee7854e9ac088aab325825: 0
     9607d0874f07afc4086c82ca0a6cdef5: 0
     fd70f4189211e15428b679a72501a0d5: 0
+    f3e65f680d919c64c8ce24797ef47efc: 0
     9558cd4911cd5ff4699a7ff96f5cc130: 0
     476ba6693db904345a9ebc6bcfeb4b41: 0
     7df47c798a16e764096b8455254c96f6: -1
@@ -343,6 +362,26 @@ AudioMixerEffectController:
   m_SendTarget: {fileID: 0}
   m_EnableWetMix: 0
   m_Bypass: 0
+--- !u!243 &1643983614995851372
+AudioMixerGroupController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: VoiceOver
+  m_AudioMixer: {fileID: 24100000}
+  m_GroupID: a30e02b039fd12e45856a30916b87545
+  m_Children: []
+  m_Volume: 7aeab7418c1b1d74cacdc6b9928cf3c5
+  m_Pitch: 0c162d86e9cc19646952e26f244cff87
+  m_Send: 00000000000000000000000000000000
+  m_Effects:
+  - {fileID: -9156549213414105378}
+  - {fileID: 8831947184435513605}
+  m_UserColorIndex: 0
+  m_Mute: 0
+  m_Solo: 0
+  m_BypassEffects: 0
 --- !u!244 &2946027365505124704
 AudioMixerEffectController:
   m_ObjectHideFlags: 3
@@ -451,5 +490,19 @@ AudioMixerEffectController:
   m_MixLevel: fd70f4189211e15428b679a72501a0d5
   m_Parameters: []
   m_SendTarget: {fileID: -2497323651804098648}
+  m_EnableWetMix: 0
+  m_Bypass: 0
+--- !u!244 &8831947184435513605
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Send
+  m_EffectID: 6a7ec60dc5cfcf9488f23275301fbe42
+  m_EffectName: Send
+  m_MixLevel: f3e65f680d919c64c8ce24797ef47efc
+  m_Parameters: []
+  m_SendTarget: {fileID: 0}
   m_EnableWetMix: 0
   m_Bypass: 0

@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio
 {
@@ -51,12 +52,12 @@ namespace MiProduction.BroAudio
 		{
 			if (String.IsNullOrWhiteSpace(enumName))
 			{
-				UnityEngine.Debug.LogError("[SoundSystem] there is an empty name in " + enumTypeName);
+				LogError("There is an empty name in " + enumTypeName);
 				return false;
 			}
 			else if (!Regex.IsMatch(enumName, @"^[a-zA-Z]+$"))
 			{
-				UnityEngine.Debug.LogError($"[SoundSystem] {enumName} is not a valid name for library of " + enumTypeName);
+				LogError($"{enumName} is not a valid name for library of " + enumTypeName);
 				return false;
 			}
 			return true;

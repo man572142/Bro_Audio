@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using static MiProduction.BroAudio.AudioExtension;
+using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Core
 {
@@ -56,7 +57,7 @@ namespace MiProduction.BroAudio.Core
                     }
                     else
                     {
-                        Debug.LogError("[SoundSystem] Can't get exposed parameter in audio mixer,AudioMixerGroup's name and ExposedParameter's name should be the same");
+                        LogError("Can't get exposed parameter in audio mixer,AudioMixerGroup's name and ExposedParameter's name should be the same");
                     }
                 }
                 

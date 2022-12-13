@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MiProduction.BroAudio.Core;
+using System;
 
 namespace MiProduction.BroAudio
 {
@@ -29,12 +30,39 @@ namespace MiProduction.BroAudio
 			Debug.Log(LogTitle + message);
 #endif
 		}
+
+		//public static string BroMessage(ErrorCode errorCode,Color color = default,params object[] args)
+		//{
+		//	string errorString = GetErrorString(errorCode);
+
+			
+		//}
+
+		//private static string GetErrorString(ErrorCode errorCode)
+		//{
+		//	switch (errorCode)
+		//	{
+		//		case ErrorCode.ObjectReferenceIsNull:
+		//			return ""
+		//		case ErrorCode.ElementAtIndexIsNull:
+		//			break;
+		//		case ErrorCode.InvalidValue:
+		//			break;
+		//		case ErrorCode.DataEmpty:
+		//			break;
+		//	}
+		//}
 	}
 
 
 	//public enum ErrorCode
 	//{
-	//	NoSuchMusicData,
-
+	//	ObjectReferenceIsNull,
+	//	ElementAtIndexIsNull,
+	//	InvalidValue,
+	//	DataEmpty,
+	//	ValueEmpty,
+	//	InitializeFailed,
+	//	NotInitializeYet,
 	//}
 }

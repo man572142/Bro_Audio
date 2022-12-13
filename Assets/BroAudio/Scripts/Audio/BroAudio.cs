@@ -141,32 +141,14 @@ namespace MiProduction.BroAudio
         /// <summary>
         /// 停止播放(使用預設FadeOut設定)
         /// </summary>
-        public static void Stop(AudioType type) => Stop(-1f, type);
+        public static void Stop(AudioType audioType) => Stop(-1f, audioType);
 
         /// <summary>
         /// 停止播放
         /// </summary>
         /// <param name="fadeOutTime">自定FadeOut時間長度</param>
-        public static void Stop(float fadeTime, AudioType type)
-        {
-            switch (type)
-            {
-                case AudioType.All:
-                    SoundManager.Instance.StopMusic(fadeTime);
-                    SoundManager.Instance.StopSound(fadeTime);
-                    break;
-                case AudioType.SFX:
-                    SoundManager.Instance.StopSound(fadeTime);
-                    break;
-                case AudioType.Music:
-                    SoundManager.Instance.StopMusic(fadeTime);
-                    break;
-                case AudioType.VoiceOver:
-                    break;
-                case AudioType.UI:
-                    break;
-            }
-        } 
+        public static void Stop(float fadeTime, AudioType audioType) => SoundManager.Instance.StopPlaying(fadeTime, audioType);
+
         #endregion
 
         #region Volume
@@ -183,45 +165,13 @@ namespace MiProduction.BroAudio
         /// <param name="vol">0~1的音量值</param>
         /// <param name="fadeTime">過渡到指定音量的時間</param>
         /// <param name="type">設定的聲音類型</param>
-        public static void SetVolume(float vol, float fadeTime, AudioType type)
-        {
-            switch (type)
-            {
-                case AudioType.All:
-                    SoundManager.Instance.SetSoundVolume(vol, fadeTime);
-                    SoundManager.Instance.SetMusicVolume(vol, fadeTime);
-                    break;
-                case AudioType.SFX:
-                    SoundManager.Instance.SetSoundVolume(vol, fadeTime);
-                    break;
-                case AudioType.Music:
-                    SoundManager.Instance.SetMusicVolume(vol, fadeTime);
-                    break;
-                case AudioType.VoiceOver:
-                    break;
-                case AudioType.UI:
-                    break;
-            }
-        } 
+        public static void SetVolume(float vol, float fadeTime, AudioType audioType) => SoundManager.Instance.SetVolume(vol, fadeTime, audioType);
 
-        private static void SetStandOutVolume(float blendRatio, float fadeTime)
+        private static void SetStandOutVolume(float standRatio, float fadeTime)
 		{
-            SetVolume(1 - blendRatio, fadeTime, AudioType.All);
-            //SetVolume(blendRatio, fadeTime, AudioType.StandOut);
-
+            SetVolume(1 - standRatio, fadeTime, AudioType.All);
+            //SetVolume(standRatio, fadeTime,);
         }
-
-  //      private static void SetStandOutVolume(float blendRatio,float fadeTime,AudioType standOutType)
-		//{
-  //          AudioType allDuckType = AudioType.All ^ standOutType;
-  //          foreach(AudioType audioType in Enum.GetValues(typeof(AudioType)))
-		//	{
-  //              if((audioType & allDuckType) != 0)
-		//		{
-  //                  SetVolume(1- blendRatio, fadeTime,audioType);
-		//		}
-		//	}
-  //      }
         #endregion
 
     }

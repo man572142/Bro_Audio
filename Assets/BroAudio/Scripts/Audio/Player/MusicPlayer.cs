@@ -77,6 +77,11 @@ namespace MiProduction.BroAudio.Core
             onFinishPlaying?.Invoke();
         }
 
+        public override void Stop(float fadeTime)
+        {
+            Stop(fadeTime);
+        }
+
         public void Stop(float fadeOutTime = -1, Action onFinishPlaying = null)
         {
             if(IsStoping)
@@ -129,8 +134,7 @@ namespace MiProduction.BroAudio.Core
             IsPlaying = false;
             IsStoping = false;
         }
-
-    }
+	}
 
 
 }

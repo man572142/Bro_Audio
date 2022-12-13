@@ -43,8 +43,9 @@ namespace MiProduction.BroAudio.Core
         [SerializeField] SoundPlayer _voicePlayer = null;
         [SerializeField] SoundPlayer _ambiencePlayer = null;
         [SerializeField] SoundPlayer _standOutPlayer = null;
+
         [SerializeField] MusicPlayer[] _musicPlayers = null;
-        private MusicPlayer _currentPlayer;
+        private MusicPlayer _currentMusicPlayer;
 
         [Header("Fading Setting")]
         [SerializeField] Ease _fadeInEase = Ease.InCubic;
@@ -70,91 +71,93 @@ namespace MiProduction.BroAudio.Core
 
 
         private void Awake()
-        {
+		{
             if (_musicPlayers == null || _musicPlayers.Length < 2)
             {
                 LogError($"Please add at least 2 MusicPlayer to {nameof(SoundManager)}");
             }
 
             InitSoundBank();
-            InitRandomSoundBank();
-            InitMusicBank();
-        }
+			InitRandomSoundBank();
+			InitMusicBank();
+		}
 
+		#region InitBank
 		private void InitSoundBank()
 		{
-            foreach (var soundAsset in _allSoundAssets)
-            {
-                if(soundAsset == null)
+			foreach (var soundAsset in _allSoundAssets)
+			{
+				if (soundAsset == null)
 				{
-                    continue;
+					continue;
 				}
-                for (int s = 0; s < soundAsset.Libraries.Length; s++)
-                {
-                    var soundLibrary = soundAsset.Libraries[s];
-                    if (_soundBank.ContainsKey(soundLibrary.ID))
-                    {
-                        LogError($"Sound :{soundLibrary.EnumName} is duplicated !");
-                        return;
-                    }
-                    if (soundLibrary.Validate(s))
-                    {
-                        _soundBank.Add(soundLibrary.ID, soundLibrary);
-                    }
-                }
-            }
-            if(_soundBank.Count == 0)
-			{
-                LogError($"There isn't any sound asset in the {nameof(SoundManager)}!");
+				for (int s = 0; s < soundAsset.Libraries.Length; s++)
+				{
+					var soundLibrary = soundAsset.Libraries[s];
+					if (_soundBank.ContainsKey(soundLibrary.ID))
+					{
+						LogError($"Sound :{soundLibrary.EnumName} is duplicated !");
+						return;
+					}
+					if (soundLibrary.Validate(s))
+					{
+						_soundBank.Add(soundLibrary.ID, soundLibrary);
+					}
+				}
 			}
-        }
-        private void InitRandomSoundBank()
-        {
-            bool isValidated;
-            foreach (SoundLibraryAsset asset in _randomSoundAsset)
-            {
-                isValidated = true;
-                for (int r = 0; r < asset.Libraries.Length; r++)
-                {
-                    if (!asset.Libraries[r].Validate(r))
-                    {
-                        isValidated = false;
-                        break;
-                    }
-                }
-                if (isValidated)
-                    _randomSoundBank.Add(asset.Libraries[0].ID, asset.Libraries);
-            }
-        }
-        private void InitMusicBank()
-        {
-            if(_mainMusicAsset == null)
+			if (_soundBank.Count == 0)
 			{
-                LogError($"There isn't any music asset in the {nameof(SoundManager)}!");
-                return;
+				LogError($"There isn't any sound asset in the {nameof(SoundManager)}!");
+			}
+		}
+		private void InitRandomSoundBank()
+		{
+			bool isValidated;
+			foreach (SoundLibraryAsset asset in _randomSoundAsset)
+			{
+				isValidated = true;
+				for (int r = 0; r < asset.Libraries.Length; r++)
+				{
+					if (!asset.Libraries[r].Validate(r))
+					{
+						isValidated = false;
+						break;
+					}
+				}
+				if (isValidated)
+					_randomSoundBank.Add(asset.Libraries[0].ID, asset.Libraries);
+			}
+		}
+		private void InitMusicBank()
+		{
+			if (_mainMusicAsset == null)
+			{
+				LogError($"There isn't any music asset in the {nameof(SoundManager)}!");
+				return;
 			}
 
-            for (int m = 0; m < _mainMusicAsset.Libraries.Length; m++)
-            {
+			for (int m = 0; m < _mainMusicAsset.Libraries.Length; m++)
+			{
 
-                var musicLibrary = _mainMusicAsset.Libraries[m];
-                if (_musicBank.ContainsKey(musicLibrary.ID))
-                {
-                    LogError($"Music :{musicLibrary.EnumName} is duplicated !");
-                    return;
-                }
-                if (musicLibrary.Validate(m))
-                {
-                    _musicBank.Add(musicLibrary.ID, musicLibrary);
-                }
-            }
-            _currentPlayer = _musicPlayers[0];
-        }
+				var musicLibrary = _mainMusicAsset.Libraries[m];
+				if (_musicBank.ContainsKey(musicLibrary.ID))
+				{
+					LogError($"Music :{musicLibrary.EnumName} is duplicated !");
+					return;
+				}
+				if (musicLibrary.Validate(m))
+				{
+					_musicBank.Add(musicLibrary.ID, musicLibrary);
+				}
+			}
+			_currentMusicPlayer = _musicPlayers[0];
+		} 
+		#endregion
 
 
-        #region 音樂
+		#region 音樂
 
-        public void PlayMusic(int id,Transition transition,float fadeTime = -1)
+		public void PlayMusic(int id,Transition transition,float fadeTime = -1)
         {
             if (!PlayMusicCheck(id))
                 return;
@@ -162,23 +165,23 @@ namespace MiProduction.BroAudio.Core
             switch (transition)
             {
                 case Transition.Immediate:
-                    _currentPlayer.Stop(0f);
-                    _currentPlayer.Play(_musicBank[id], 0f);
+                    _currentMusicPlayer.Stop(0f);
+                    _currentMusicPlayer.Play(_musicBank[id], 0f);
                     break;
                 case Transition.FadeOutThenFadeIn:
-                    _currentPlayer.Stop(fadeTime, () => _currentPlayer.Play(_musicBank[id], fadeTime));
+                    _currentMusicPlayer.Stop(fadeTime, () => _currentMusicPlayer.Play(_musicBank[id], fadeTime));
                     break;
                 case Transition.OnlyFadeInNew:
-                    _currentPlayer.Stop(0f);
-                    _currentPlayer.Play(_musicBank[id], fadeTime);
+                    _currentMusicPlayer.Stop(0f);
+                    _currentMusicPlayer.Play(_musicBank[id], fadeTime);
                     break;
                 case Transition.OnlyFadeOutCurrent:
-                    _currentPlayer.Stop(fadeTime, () => _currentPlayer.Play(_musicBank[id], 0f));
+                    _currentMusicPlayer.Stop(fadeTime, () => _currentMusicPlayer.Play(_musicBank[id], 0f));
                     break;
                 case Transition.CrossFade:
                     if (GetAvailableMusicPlayer(out MusicPlayer otherPlayer))
                     {
-                        _currentPlayer.Stop(fadeTime, () => _currentPlayer = otherPlayer);
+                        _currentMusicPlayer.Stop(fadeTime, () => _currentMusicPlayer = otherPlayer);
                         otherPlayer.Play(_musicBank[id], fadeTime);
                     }
                     else
@@ -194,7 +197,7 @@ namespace MiProduction.BroAudio.Core
             musicPlayer = null;
             foreach (MusicPlayer player in _musicPlayers)
             {
-                if (!player.IsPlaying && player != _currentPlayer)
+                if (!player.IsPlaying && player != _currentMusicPlayer)
                 {
                     musicPlayer = player;
                     return true;
@@ -205,12 +208,12 @@ namespace MiProduction.BroAudio.Core
 
         public void StopMusic(float fadeTime)
 		{
-            _currentPlayer.Stop(fadeTime);
+            _currentMusicPlayer.Stop(fadeTime);
 		}
 
-        public void SetMusicVolume(float vol,float fadeTime)
+        private void SetMusicVolume(float vol,float fadeTime)
 		{
-            _currentPlayer.SetVolume(vol,fadeTime);
+            _currentMusicPlayer.SetVolume(vol,fadeTime);
 		}
 
 
@@ -220,16 +223,18 @@ namespace MiProduction.BroAudio.Core
 
         public void PlaySound(int id, float preventTime)
         {
-            if(GetSoundPlayer(id,out SoundPlayer soundPlayer))
+            if(IsInSoundBank(id) && TryGetPlayer(id,out AudioPlayer audioPlayer))
             {
-                soundPlayer.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
+                SoundPlayer soundPlayer = audioPlayer as SoundPlayer;
+                soundPlayer?.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
             }     
         }
 
         public void PlaySound(int id, Vector3 position)
         {
-            if(GetSoundPlayer(id, out SoundPlayer soundPlayer))
+            if(IsInSoundBank(id) && TryGetPlayer(id, out AudioPlayer audioPlayer))
             {
+                SoundPlayer soundPlayer = audioPlayer as SoundPlayer;
                 soundPlayer.PlayAtPoint( _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, position);
             }
         }
@@ -242,24 +247,106 @@ namespace MiProduction.BroAudio.Core
             }      
         }
 
-        public void SetSoundVolume(float vol,float fadeTime)
-		{
-            _sfxPlayer.SetVolume(vol,fadeTime);
-		}
-
-        public void StopSound(float fadeTime)
-		{
-            _sfxPlayer.Stop(fadeTime);
-		}
-
         private AudioClip GetRandomClip(int id)
         {
             int index = UnityEngine.Random.Range(0, _randomSoundBank[id].Length);
             return _randomSoundBank[id][index].Clip;
         }
 
+		private bool TryGetPlayer(int id, out AudioPlayer player)
+        {
+            AudioType audioType = GetAudioType(id);
+            return TryGetPlayer(audioType, out player);
+        }
+
+        private bool TryGetPlayer(AudioType audioType, out AudioPlayer player)
+        {
+            player = null;
+			switch (audioType)
+			{
+				case AudioType.UI:
+					player = _uiPlayer;
+					break;
+				case AudioType.SFX:
+					player = _sfxPlayer;
+					break;
+				case AudioType.VoiceOver:
+					player = _voicePlayer;
+					break;
+				case AudioType.Ambience:
+					player = _ambiencePlayer;
+					break;
+				case AudioType.Music:
+                    player = _currentMusicPlayer;
+					break;
+				default:
+					LogWarning($"{audioType} is not suppose to play in any AudioPlayer");
+					return false;
+			}
+
+			if (player == null)
+            {
+                LogError($"The AudioPlayer for <b>{audioType}</b> is null");
+            }
+            return true;
+		}
+
+		public bool IsInSoundBank(int id)
+		{
+            if (_soundBank.Count < 1)
+            {
+                LogError($"SoundBank is empty, please check {nameof(SoundManager)}'s setting");
+                return false;
+            }
+            else if (!_soundBank.ContainsKey(id))
+            {
+                LogError($"Audio may not exist in the current SoundAsset,AudioType:{GetAudioType(id)},SoundID:{id}");
+                return false;
+            }
+            return true;
+        }
         #endregion
 
+        public void SetVolume(float vol, float fadeTime, AudioType audioType)
+        {
+            if(audioType == AudioType.All)
+			{
+                LoopAllAudioType((loopAudioType) => SetPlayerVolume(loopAudioType));
+            }
+            else
+			{
+                SetPlayerVolume(audioType);
+			}
+
+            void SetPlayerVolume(AudioType target)
+			{
+                if (TryGetPlayer(target, out var player))
+                {
+                    player.SetVolume(vol, fadeTime);
+                }
+            }
+        }
+
+        public void StopPlaying(float fadeTime,AudioType audioType)
+        {
+            if(audioType == AudioType.All)
+			{
+                LoopAllAudioType((loopAudioType) => Stop(loopAudioType));
+            }
+            else
+			{
+                Stop(audioType);
+            }
+
+            void Stop(AudioType target)
+			{
+                if (TryGetPlayer(target, out var player))
+                {
+                    player.Stop(fadeTime);
+                }
+            }
+            
+        }
 
         #region NullChecker
         private bool PlayMusicCheck(int id)
@@ -274,55 +361,13 @@ namespace MiProduction.BroAudio.Core
                 LogError($"Music ID: {id} may not exist ,please check the MusicAsset's setting");
                 return false;
             }
-            else if(id == _currentPlayer.CurrentMusicID)
+            else if(id == _currentMusicPlayer.CurrentMusicID)
             {
                 LogWarning("The music you want to play is already playing");
                 return false;
             }
             return true;
         }
-
-        private bool GetSoundPlayer(int id,out SoundPlayer player)
-        {
-            player = null;
-            AudioType audioType = Utility.GetAudioType(id);
-
-			switch (audioType)
-			{
-				case AudioType.UI:
-                    player = _uiPlayer;
-					break;
-				case AudioType.SFX:
-                    player = _sfxPlayer;
-					break;
-				case AudioType.VoiceOver:
-                    player = _voicePlayer;
-					break;
-                case AudioType.Ambience:
-                    player = _ambiencePlayer;
-                    break;
-                default:
-                    LogWarning($"{audioType} is not suppose to play in any SoundPlayer");
-                    return false;
-			}
-
-            if(player == null)
-			{
-                LogError($"The SoundPlayer for <b>{audioType}</b> has null refernece");
-			}
-			if (_soundBank.Count < 1)
-            {
-                LogError($"No sound can play , please check {nameof(SoundManager)}'s setting");
-                return false;
-            }
-            else if (!_soundBank.ContainsKey(id))
-            {
-                LogError($"Audio may not exist in the current SoundAsset,AudioType:{audioType},SoundID:{id}");
-                return false;
-            }
-
-            return true;
-		}
 
 		private bool RandomSoundCheck(int id)
         {
@@ -340,7 +385,6 @@ namespace MiProduction.BroAudio.Core
         }
 		#endregion
 	}
-
 }
 
 // by 咪 2022

@@ -55,7 +55,7 @@ namespace MiProduction.BroAudio
 			AudioType resultType = AudioType.None;
 			AudioType nextType = resultType.ToNext();
 
-			While(_ => nextType <= (AudioType)LastAudioType, () => 
+			While(_ => nextType <= (AudioType)LastAudioType, () =>
 			{
 				if (id >= resultType.ToConstantID() && id < nextType.ToConstantID())
 				{
@@ -68,6 +68,20 @@ namespace MiProduction.BroAudio
 			});
 			return resultType;
 		}
+		
+		/// <summary>
+		/// 每輪迴圈以callback回傳AudioType
+		/// </summary>
+		public static void LoopAllAudioType(Action<AudioType> loopCallback)
+		{
+			AudioType currentType = AudioType.None;
+			While(_ => currentType <= (AudioType)LastAudioType, () =>
+			{
+				loopCallback?.Invoke(currentType);
+				return Statement.Continue;
+			});
+		}
+
 
 		public static Type GetEnumType(string enumName)
 		{

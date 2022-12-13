@@ -75,6 +75,8 @@ namespace MiProduction.BroAudio.Core
         public abstract bool IsFadingOut { get; protected set; }
         public abstract bool IsFadingIn { get; protected set; }
 
+        public abstract void Stop(float fadeTime);
+
         protected virtual void Awake()
         {
             if (AudioSource == null)

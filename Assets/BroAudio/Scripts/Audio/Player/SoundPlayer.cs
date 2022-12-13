@@ -35,7 +35,7 @@ namespace MiProduction.BroAudio.Core
             StartCoroutine(PlayInScene(clip, volume, delay, pos));
         }
 
-        public void Stop(float fadeOutTime)
+        public override void Stop(float fadeOutTime)
         {
             // 因為PlayOneShot沒辦法停，因此這裡是把音軌Mute掉
             if(fadeOutTime < 0)

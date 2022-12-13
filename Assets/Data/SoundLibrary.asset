@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf606c48b48ff1e46b789209070be0cc, type: 3}
+  m_Name: SoundLibrary
+  m_EditorClassIdentifier: 
+  Libraries:
+  - Name: Damn
+    ID: 60629562
+    Clip: {fileID: 0}
+    Volume: 0.917
+    Delay: 0
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 0
+    FadeOut: 0
+  - Name: Shout
+    ID: 6944904
+    Clip: {fileID: 0}
+    Volume: 0.917
+    Delay: 0
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 0
+    FadeOut: 0
+  _enumsPath: 

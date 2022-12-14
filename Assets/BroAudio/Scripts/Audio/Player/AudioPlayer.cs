@@ -76,7 +76,6 @@ namespace MiProduction.BroAudio.Core
         public abstract bool IsStoping { get; protected set; }
         public abstract bool IsFadingOut { get; protected set; }
         public abstract bool IsFadingIn { get; protected set; }
-        public bool IsStandOutPlayer { get; private set; }
 
         public abstract void Stop(float fadeTime);
 
@@ -102,16 +101,12 @@ namespace MiProduction.BroAudio.Core
             _subVolumeControl = StartCoroutine(SetTrackVolume(vol, fadeTime));
         }
 
-  //      public void SetVolume(float vol,float fadeTime,float duration)
-		//{
-  //          StartCoroutine(SetVolumeForAWhile(vol,fadeTime,duration));
-  //      }
 
         private void OnStandOutHandler(float standoutRatio,float fadeTime,AudioPlayer standoutPlayer)
 		{
-            if(standoutPlayer == this)
+            // 要再控制Coroutine?
+            if (standoutPlayer == this)
 			{
-                //StandsOut(1 - standoutRatio, fadeTime);
                 StartCoroutine(StandsOutControl(standoutRatio, fadeTime, standoutPlayer));
             }
             else
@@ -127,10 +122,7 @@ namespace MiProduction.BroAudio.Core
                 LogError("Stand out volume ratio should be between 0 and 1");
                 return;
             }
-
-            // 要再控制Coroutine
-            //StartCoroutine(StandsOutControl(standoutRatio, fadeTime));
-            IsStandOutPlayer = true;
+            
             OnStandOut?.Invoke(standoutRatio, fadeTime,this);
         }
 
@@ -146,7 +138,6 @@ namespace MiProduction.BroAudio.Core
 
             _subVolumeControl.Stop(this);
             _subVolumeControl = StartCoroutine(SetTrackVolume(origin, fadeTime));
-            IsStandOutPlayer = false;
         }
 
         private IEnumerator SetTrackVolume(float target, float fadeTime)

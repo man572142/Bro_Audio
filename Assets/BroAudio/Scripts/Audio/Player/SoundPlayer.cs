@@ -58,8 +58,10 @@ namespace MiProduction.BroAudio.Core
             {
                 _preventPlayback.Add(id, true);
             }
+
+            ClipVolume = volume;
             IsPlaying = true;
-            AudioSource.PlayOneShot(clip, volume);
+            AudioSource.PlayOneShot(clip);
             _currentPlayingSoundCount++;
 
             if (preventTime > 0)
@@ -74,7 +76,8 @@ namespace MiProduction.BroAudio.Core
         {
             yield return new WaitForSeconds(delay);
             IsPlaying = true;
-            AudioSource.PlayClipAtPoint(clip, pos, volume);
+            ClipVolume = volume;
+            AudioSource.PlayClipAtPoint(clip, pos);
             _currentPlayingSoundCount++;
             yield return new WaitForSeconds(clip.length);
             _currentPlayingSoundCount--;

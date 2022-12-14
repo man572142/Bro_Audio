@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using MiProduction.Extension;
 using MiProduction.BroAudio.Library;
-using static MiProduction.BroAudio.AudioExtension;
+using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Core
 {
@@ -86,7 +86,7 @@ namespace MiProduction.BroAudio.Core
         {
             if(IsStoping)
             {
-                Debug.LogWarning("[SoundSystem]The music player is already processing StopMusic !");
+                LogWarning("The music player is already processing StopMusic !");
                 return;
             }
             _stopControlCoroutine = StartCoroutine(StopControl(fadeOutTime, onFinishPlaying));

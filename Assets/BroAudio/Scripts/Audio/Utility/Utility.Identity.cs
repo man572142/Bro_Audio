@@ -78,6 +78,7 @@ namespace MiProduction.BroAudio
 			While(_ => currentType <= (AudioType)LastAudioType, () =>
 			{
 				loopCallback?.Invoke(currentType);
+				currentType = currentType.ToNext();
 				return Statement.Continue;
 			});
 		}

@@ -18,6 +18,11 @@ public class Sample : MonoBehaviour
 
 	[SerializeField] UI _uiSound;
 
+    [SerializeField] SFX _voiceOver;
+
+    [SerializeField] float _standOutRatio = 1f;
+    [SerializeField] float _standOutFadeTime = 0f;
+
     [SerializeField] float _crossFadeTime = -1f;
 
     [SerializeField] float _stopFadeTime = 0f;
@@ -63,4 +68,11 @@ public class Sample : MonoBehaviour
     {
         BroAudio.SetVolume(_targetVolume, AudioType.Music);
     }
+    
+    public void PlayStandOutSound()
+	{
+        BroAudio.PlaySound((int)_voiceOver).StandsOut(_standOutRatio,_standOutFadeTime);
+        //BroAudio.SetStandOutVolume(_standOutRatio, _standOutTime, AudioType.SFX, 1f);
+
+	}
 }

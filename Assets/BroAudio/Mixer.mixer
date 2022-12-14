@@ -187,6 +187,8 @@ AudioMixerController:
   m_EnableSuspend: 1
   m_UpdateMode: 1
   m_ExposedParameters:
+  - guid: d750d16bf1db99f41a3283dfd223f268
+    name: Ambience
   - guid: 8b5e1822e4d8b3f4eaf30adb65f91c02
     name: MusicA
   - guid: ed39e729da68b9d479de5ffb0bfae556
@@ -203,11 +205,13 @@ AudioMixerController:
   - guids:
     - 84d693e89ed210e43b080efe6f71f9bd
     - 69eeff8c6cc046e408bc7f4f889bf95f
+    - 85a907d8cd8f7b34cbe11232f1d178ac
+    - 18e5fe858fa48a94d88f25998ddc3811
     - ec4ac2eae000e44429ef9812b922e5d7
     - 4313f17d55f92394ba2f12d5653b2b03
-    - 726b8b491dcef3047a326fe3748aa206
-    - a2391af30ab71a540a0a2f4283f02004
     - a30e02b039fd12e45856a30916b87545
+    - a2391af30ab71a540a0a2f4283f02004
+    - 726b8b491dcef3047a326fe3748aa206
     name: View
   m_CurrentViewIndex: 0
   m_TargetSnapshot: {fileID: 24500006}
@@ -274,6 +278,7 @@ AudioMixerSnapshotController:
     7df47c798a16e764096b8455254c96f6: -1
     add2ffbaa0a10a84095c58d3220d1610: -1
     231f823c881e6d14e9afa8b8542c0481: 0.192
+    1c6ff1ac65445aa43bc84f36aa7c6524: 0
     461f62ad3b9170d4e8abdc9f426b57f1: 0
     635f0fbfe7fcdd44aa210aa37d4d76b2: 0
     42b9a9ff3a1c807479051e3cce0cc1cb: 0
@@ -503,6 +508,6 @@ AudioMixerEffectController:
   m_EffectName: Send
   m_MixLevel: f3e65f680d919c64c8ce24797ef47efc
   m_Parameters: []
-  m_SendTarget: {fileID: 0}
+  m_SendTarget: {fileID: -2497323651804098648}
   m_EnableWetMix: 0
   m_Bypass: 0

@@ -157,10 +157,10 @@ namespace MiProduction.BroAudio.Core
 
 		#region 音樂
 
-		public void PlayMusic(int id,Transition transition,float fadeTime = -1)
+		public IAudioPlayer PlayMusic(int id,Transition transition,float fadeTime = -1)
         {
             if (!PlayMusicCheck(id))
-                return;
+                return null;
 
             switch (transition)
             {
@@ -190,6 +190,7 @@ namespace MiProduction.BroAudio.Core
                     }
                     break;
             }
+            return _currentMusicPlayer;
         }
 
         private bool GetAvailableMusicPlayer(out MusicPlayer musicPlayer)
@@ -221,30 +222,37 @@ namespace MiProduction.BroAudio.Core
 
         #region 音效
 
-        public void PlaySound(int id, float preventTime)
+        public IAudioPlayer PlaySound(int id, float preventTime)
         {
             if(IsInSoundBank(id) && TryGetPlayer(id,out AudioPlayer audioPlayer))
             {
                 SoundPlayer soundPlayer = audioPlayer as SoundPlayer;
                 soundPlayer?.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
-            }     
+                return soundPlayer;
+            }
+            return null;
         }
 
-        public void PlaySound(int id, Vector3 position)
+        public IAudioPlayer PlaySound(int id, Vector3 position)
         {
             if(IsInSoundBank(id) && TryGetPlayer(id, out AudioPlayer audioPlayer))
             {
                 SoundPlayer soundPlayer = audioPlayer as SoundPlayer;
-                soundPlayer.PlayAtPoint( _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, position);
+                soundPlayer?.PlayAtPoint( _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, position);
+                return soundPlayer;
             }
+            return null;
         }
 
-        public void PlayRandomSFX(int id, float preventTime)
+        public IAudioPlayer PlayRandomSFX(int id, float preventTime)
         {
+            // 待修整
             if(RandomSoundCheck(id))
             {
                 _sfxPlayer.Play(id, GetRandomClip(id), _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
-            }      
+                return _sfxPlayer;
+            }
+            return null;
         }
 
         private AudioClip GetRandomClip(int id)
@@ -327,7 +335,7 @@ namespace MiProduction.BroAudio.Core
             }
         }
 
-        public void StopPlaying(float fadeTime,AudioType audioType)
+		public void StopPlaying(float fadeTime,AudioType audioType)
         {
             if(audioType == AudioType.All)
 			{
@@ -345,11 +353,59 @@ namespace MiProduction.BroAudio.Core
                     player.Stop(fadeTime);
                 }
             }
-            
         }
 
-        #region NullChecker
-        private bool PlayMusicCheck(int id)
+  //      public void SetStandOutVolume(float standRatio, AudioType audioType, float duration , float fadeTime)
+		//{
+  //          if(audioType == AudioType.All)
+		//	{
+  //              LogError("You shouldn't stand out with AudioType.All, that doesn't make any sense!");
+  //              return;
+		//	}
+  //          if(standRatio < 0 || standRatio > 1)
+		//	{
+  //              LogError("Stand out volume ratio should be between 0 and 1");
+  //              return;
+		//	}
+
+  //          LoopAllAudioType((loopAudioType) => 
+  //          {
+  //              if(audioType == loopAudioType)
+		//		{
+  //                  if(TryGetPlayer(audioType,out var player))
+		//			{
+  //                      player.SetVolume(standRatio, fadeTime,duration);
+		//			}
+		//		}
+  //              else
+		//		{
+  //                  if(TryGetPlayer(loopAudioType, out var player))
+		//			{
+  //                      player.SetVolume(1 - standRatio, fadeTime,duration);
+		//			}
+		//		}
+  //          });
+		//}
+
+        public float GetAudioClipLength(int id,AudioType audioType)
+		{
+			switch (audioType)
+			{
+				case AudioType.Music:
+                    return _musicBank[id].Clip.length;
+				case AudioType.UI:
+				case AudioType.Ambience:
+				case AudioType.SFX:
+				case AudioType.VoiceOver:
+                    return _soundBank[id].Clip.length;
+                default:
+                    return 0f;
+			}
+		}
+
+
+		#region NullChecker
+		private bool PlayMusicCheck(int id)
         {
             if (id == 0)
             {

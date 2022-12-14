@@ -10,8 +10,10 @@ using static MiProduction.BroAudio.Utility;
 namespace MiProduction.BroAudio.Core
 {
     [RequireComponent(typeof(AudioSource))]
-	public abstract class AudioPlayer : MonoBehaviour
+	public abstract class AudioPlayer : MonoBehaviour,IAudioPlayer
 	{
+        private static event Action<float,float,AudioPlayer> OnStandOut;
+
         [SerializeField] protected AudioSource AudioSource = null;
         [SerializeField] protected AudioMixer AudioMixer;
         private string _volParaName = string.Empty;
@@ -74,6 +76,7 @@ namespace MiProduction.BroAudio.Core
         public abstract bool IsStoping { get; protected set; }
         public abstract bool IsFadingOut { get; protected set; }
         public abstract bool IsFadingIn { get; protected set; }
+        public bool IsStandOutPlayer { get; private set; }
 
         public abstract void Stop(float fadeTime);
 
@@ -88,14 +91,77 @@ namespace MiProduction.BroAudio.Core
                 AudioMixer = AudioSource.outputAudioMixerGroup.audioMixer;
             }
             _volParaName = AudioSource.outputAudioMixerGroup.name;
+
+            OnStandOut += OnStandOutHandler;
         }
 
-        public void SetVolume(float vol, float fadeTime)
+        public void SetVolume(float vol,float fadeTime)
         {
             // 只動TrackVolume
             _subVolumeControl.Stop(this);
-            _subVolumeControl = StartCoroutine(TrackVolumeControl(vol, fadeTime));
+            _subVolumeControl = StartCoroutine(SetTrackVolume(vol, fadeTime));
         }
+
+  //      public void SetVolume(float vol,float fadeTime,float duration)
+		//{
+  //          StartCoroutine(SetVolumeForAWhile(vol,fadeTime,duration));
+  //      }
+
+        private void OnStandOutHandler(float standoutRatio,float fadeTime,AudioPlayer standoutPlayer)
+		{
+            if(standoutPlayer == this)
+			{
+                //StandsOut(1 - standoutRatio, fadeTime);
+                StartCoroutine(StandsOutControl(standoutRatio, fadeTime, standoutPlayer));
+            }
+            else
+			{
+                StartCoroutine(StandsOutControl(1 - standoutRatio, fadeTime, standoutPlayer));
+            }
+		}
+
+        public void StandsOut(float standoutRatio,float fadeTime = 1f)
+		{
+            if (standoutRatio < 0 || standoutRatio > 1)
+            {
+                LogError("Stand out volume ratio should be between 0 and 1");
+                return;
+            }
+
+            // 要再控制Coroutine
+            //StartCoroutine(StandsOutControl(standoutRatio, fadeTime));
+            IsStandOutPlayer = true;
+            OnStandOut?.Invoke(standoutRatio, fadeTime,this);
+        }
+
+        private IEnumerator StandsOutControl(float vol, float fadeTime,AudioPlayer standoutPlayer)
+		{
+            float origin = TrackVolume;
+
+            _subVolumeControl.Stop(this);
+            _subVolumeControl = StartCoroutine(SetTrackVolume(vol, fadeTime));
+
+            yield return _subVolumeControl;
+            yield return new WaitWhile(() => standoutPlayer.IsPlaying);
+
+            _subVolumeControl.Stop(this);
+            _subVolumeControl = StartCoroutine(SetTrackVolume(origin, fadeTime));
+            IsStandOutPlayer = false;
+        }
+
+        private IEnumerator SetTrackVolume(float target, float fadeTime)
+        {
+            float start = TrackVolume;
+            float t = 0f;
+            while (t < 1f)
+            {
+                TrackVolume = Mathf.Lerp(start, target, t);
+                t += Time.deltaTime / fadeTime;
+                yield return null;
+            }
+            TrackVolume = target;
+        }
+
 
         protected IEnumerator Fade(float duration, float targetVolume)
         {
@@ -114,17 +180,6 @@ namespace MiProduction.BroAudio.Core
             yield break;
         }
 
-        private IEnumerator TrackVolumeControl(float target, float fadeTime)
-        {
-            float start = TrackVolume;
-            float t = 0f;
-            while (t < 1f)
-            {
-                TrackVolume = Mathf.Lerp(start, target, t);
-                t += Time.deltaTime / fadeTime;
-                yield return null;
-            }
-            TrackVolume = target;
-        }
+        
     } 
 }

@@ -15,11 +15,11 @@ MonoBehaviour:
   Libraries:
   - Name: Persona
     ID: 36
-    Clip: {fileID: 0}
-    Volume: 0.701
+    Clip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
+    Volume: 1
     StartPosition: 0
     EndPosition: 0
     FadeIn: 0
-    FadeOut: 0
-    Loop: 0
+    FadeOut: 3
+    Loop: 1
   _enumsPath: 

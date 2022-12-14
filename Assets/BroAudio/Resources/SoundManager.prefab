@@ -203,9 +203,9 @@ MonoBehaviour:
   _fadeOutEase: 11
   _allSoundAssets:
   - {fileID: 11400000, guid: 8fee7568a8f32b941bebc99664e9096e, type: 2}
-  - {fileID: 0}
+  - {fileID: 11400000, guid: 1fa8f00dd6d8c454bb3247b479220474, type: 2}
   _randomSoundAsset: []
-  _mainMusicAsset: {fileID: 0}
+  _mainMusicAsset: {fileID: 11400000, guid: 814aec160ae6b384da0908c29bf472f5, type: 2}
 --- !u!1 &3109420919187162984
 GameObject:
   m_ObjectHideFlags: 0

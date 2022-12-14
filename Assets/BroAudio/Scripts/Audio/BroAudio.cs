@@ -14,9 +14,9 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <typeparam name="TEnum">任何音效的Enum</typeparam>
         /// <param name="sound"></param>
-        public static void PlaySound<TEnum>(TEnum sound) where TEnum : Enum
+        public static IAudioPlayer PlaySound<TEnum>(TEnum sound) where TEnum : Enum
         {
-            PlaySound(sound, 0.1f);
+            return PlaySound(sound, 0.1f);
         }
 
         /// <summary>
@@ -25,9 +25,9 @@ namespace MiProduction.BroAudio
         /// <typeparam name="TEnum">任何音效的Enum</typeparam>
         /// <param name="sound"></param>
         /// <param name="preventTime">限制該時間內不能再播放</param>
-        public static void PlaySound<TEnum>(TEnum sound, float preventTime) where TEnum : Enum
+        public static IAudioPlayer PlaySound<TEnum>(TEnum sound, float preventTime) where TEnum : Enum
         {
-            PlaySound((int)(ValueType)sound, preventTime);
+            return PlaySound((int)(ValueType)sound, preventTime);
         }
 
         /// <summary>
@@ -36,30 +36,30 @@ namespace MiProduction.BroAudio
         /// <typeparam name="TEnum">任何音效的Enum</typeparam>
         /// <param name="sound"></param>
         /// <param name="position">播放的座標</param>
-        public static void PlaySound<TEnum>(TEnum sound, Vector3 position) where TEnum : Enum
+        public static IAudioPlayer PlaySound<TEnum>(TEnum sound, Vector3 position) where TEnum : Enum
         {
-            PlaySound((int)(ValueType)sound, position);
+            return PlaySound((int)(ValueType)sound, position);
         }
 
         /// <summary>
         /// 播放音效
         /// </summary>
         /// <param name="soundID"></param>
-        public static void PlaySound(int soundID) => SoundManager.Instance.PlaySound(soundID, 0.1f);
+        public static IAudioPlayer PlaySound(int soundID) => SoundManager.Instance.PlaySound(soundID, 0.1f);
 
         /// <summary>
         /// 播放音效
         /// </summary>
         /// <param name="soundID"></param>
         /// <param name="preventTime">限制該時間內不能再播放</param>
-        public static void PlaySound(int soundID, float preventTime) => SoundManager.Instance.PlaySound(soundID, preventTime);
+        public static IAudioPlayer PlaySound(int soundID, float preventTime) => SoundManager.Instance.PlaySound(soundID, preventTime);
 
         /// <summary>
         /// 於場景中的指定地點播放
         /// </summary>
         /// <param name="soundID"></param>
         /// <param name="position">播放的座標</param>
-        public static void PlaySound(int soundID, Vector3 position) => SoundManager.Instance.PlaySound(soundID, position);
+        public static IAudioPlayer PlaySound(int soundID, Vector3 position) => SoundManager.Instance.PlaySound(soundID, position);
         #endregion
 
         #region RandomSFX
@@ -105,9 +105,9 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <typeparam name="TEnum"></typeparam>
         /// <param name="music"></param>
-        public static void PlayMusic<TEnum>(TEnum music) where TEnum : Enum
+        public static IAudioPlayer PlayMusic<TEnum>(TEnum music) where TEnum : Enum
         {
-            PlayMusic(music, Transition.Immediate);
+            return PlayMusic(music, Transition.Immediate);
         }
 
         /// <summary>
@@ -117,16 +117,16 @@ namespace MiProduction.BroAudio
         /// <param name="music"></param>
         /// <param name="transition">音樂過渡類型</param>
         /// <param name="fadeTime">若為-1則會採用Library當中所設定的值</param>
-        public static void PlayMusic<TEnum>(TEnum music, Transition transition, float fadeTime = -1f) where TEnum : Enum
+        public static IAudioPlayer PlayMusic<TEnum>(TEnum music, Transition transition, float fadeTime = -1f) where TEnum : Enum
         {
-            PlayMusic((int)(ValueType)music, transition, fadeTime);
+            return PlayMusic((int)(ValueType)music, transition, fadeTime);
         }
 
         /// <summary>
         /// 播放音樂(立即播放與停止)
         /// </summary>
         /// <param name="musicID"></param>
-        public static void PlayMusic(int musicID) => PlayMusic(musicID, Transition.Immediate);
+        public static IAudioPlayer PlayMusic(int musicID) => PlayMusic(musicID, Transition.Immediate);
 
         /// <summary>
         /// 播放音樂
@@ -134,7 +134,7 @@ namespace MiProduction.BroAudio
         /// <param name="musicID">可直接將Enum轉為ID</param>
         /// <param name="transition">音樂過渡類型</param>
         /// <param name="fadeTime">若為-1則會採用Library當中所設定的值</param>
-        public static void PlayMusic(int musicID, Transition transition, float fadeTime = -1f) => SoundManager.Instance.PlayMusic(musicID, transition, fadeTime);
+        public static IAudioPlayer PlayMusic(int musicID, Transition transition, float fadeTime = -1f) => SoundManager.Instance.PlayMusic(musicID, transition, fadeTime);
         #endregion
 
         #region Stop
@@ -167,11 +167,11 @@ namespace MiProduction.BroAudio
         /// <param name="type">設定的聲音類型</param>
         public static void SetVolume(float vol, float fadeTime, AudioType audioType) => SoundManager.Instance.SetVolume(vol, fadeTime, audioType);
 
-        private static void SetStandOutVolume(float standRatio, float fadeTime)
-		{
-            SetVolume(1 - standRatio, fadeTime, AudioType.All);
-            //SetVolume(standRatio, fadeTime,);
-        }
+        //public static void SetStandOutVolume(float standRatio, AudioType audioType) => SoundManager.Instance.SetStandOutVolume(standRatio, audioType,-1,1f);
+
+        //public static void SetStandOutVolume(float standRatio, float duration, AudioType audioType, float fadeTime) => SoundManager.Instance.SetStandOutVolume(standRatio, audioType, duration, fadeTime);
+		
+        
         #endregion
 
     }

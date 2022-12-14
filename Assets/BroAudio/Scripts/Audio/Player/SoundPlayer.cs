@@ -58,6 +58,7 @@ namespace MiProduction.BroAudio.Core
             {
                 _preventPlayback.Add(id, true);
             }
+            IsPlaying = true;
             AudioSource.PlayOneShot(clip, volume);
             _currentPlayingSoundCount++;
 
@@ -66,15 +67,18 @@ namespace MiProduction.BroAudio.Core
 
             yield return new WaitForSeconds(clip.length);
             _currentPlayingSoundCount--;
+            IsPlaying = false;
         }
 
         private IEnumerator PlayInScene(AudioClip clip, float volume, float delay, Vector3 pos)
         {
             yield return new WaitForSeconds(delay);
+            IsPlaying = true;
             AudioSource.PlayClipAtPoint(clip, pos, volume);
             _currentPlayingSoundCount++;
             yield return new WaitForSeconds(clip.length);
             _currentPlayingSoundCount--;
+            IsPlaying = false;
         }
 
 

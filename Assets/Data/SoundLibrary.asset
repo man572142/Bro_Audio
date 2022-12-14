@@ -15,7 +15,7 @@ MonoBehaviour:
   Libraries:
   - Name: Damn
     ID: 60629562
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: 24302d986d3af6c4dbf3895d9deb3649, type: 3}
     Volume: 0.917
     Delay: 0
     StartPosition: 0
@@ -24,7 +24,7 @@ MonoBehaviour:
     FadeOut: 0
   - Name: Shout
     ID: 6944904
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
     Volume: 0.917
     Delay: 0
     StartPosition: 0

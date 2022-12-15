@@ -1,9 +1,7 @@
 // Auto-Generate script,DO NOT EDIT!
 namespace MiProduction.BroAudio {
-public enum SFX
+public enum VoiceOver
 {
 	None = 0,
-	Damn = 18063625,
-	Shout = 86850027,
-	Hollow = 83592160,
+	Man = 100000000,
 }}

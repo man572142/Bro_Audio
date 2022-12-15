@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Libraries:
   - Name: Damn
-    ID: 60629562
-    Clip: {fileID: 8300000, guid: 24302d986d3af6c4dbf3895d9deb3649, type: 3}
+    ID: 18063625
+    Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
     Volume: 0.917
     Delay: 0
     StartPosition: 0
@@ -23,9 +23,18 @@ MonoBehaviour:
     FadeIn: 0
     FadeOut: 0
   - Name: Shout
-    ID: 6944904
-    Clip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
-    Volume: 0.917
+    ID: 86850027
+    Clip: {fileID: 8300000, guid: 138057753561787459cddb97dd2e52bc, type: 3}
+    Volume: 0.65
+    Delay: 0
+    StartPosition: 0
+    EndPosition: 0
+    FadeIn: 0
+    FadeOut: 0
+  - Name: Hollow
+    ID: 83592160
+    Clip: {fileID: 8300000, guid: ef1b1a7680b07b9438370bf81f0dcf9e, type: 3}
+    Volume: 1
     Delay: 0
     StartPosition: 0
     EndPosition: 0

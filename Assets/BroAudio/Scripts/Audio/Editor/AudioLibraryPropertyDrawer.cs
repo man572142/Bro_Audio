@@ -58,7 +58,7 @@ namespace MiProduction.BroAudio.Library
 					DrawAdditionalClipProperties(position, property);
 
 					SerializedProperty isShowClipProperty = property.FindPropertyRelative("IsShowClipView");
-					isShowClipProperty.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProperty.boolValue, "ClipView");
+					isShowClipProperty.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProperty.boolValue, "Preview");
 
 					ClipPropertiesLineCount = DrawLineCount - BasePropertiesLineCount;
 
@@ -199,7 +199,6 @@ namespace MiProduction.BroAudio.Library
 				{
 					height += SingleLineSpace + ClipViewHeight;
 				}
-				//height += clip != null ? ClipViewHeight + SingleLineSpace * (ClipPropertiesLineCount +1) : 0f;
 			}
 
 			return height;

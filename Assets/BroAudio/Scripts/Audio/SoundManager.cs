@@ -244,22 +244,22 @@ namespace MiProduction.BroAudio.Core
             return null;
         }
 
-        public IAudioPlayer PlayRandomSFX(int id, float preventTime)
-        {
-            // «Ý­×¾ã
-            if(RandomSoundCheck(id))
-            {
-                _sfxPlayer.Play(id, GetRandomClip(id), _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
-                return _sfxPlayer;
-            }
-            return null;
-        }
+        //public IAudioPlayer PlayRandomSFX(int id, float preventTime)
+        //{
+        //    // «Ý­×¾ã
+        //    if(RandomSoundCheck(id))
+        //    {
+        //        _sfxPlayer.Play(id, GetRandomClip(id), _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
+        //        return _sfxPlayer;
+        //    }
+        //    return null;
+        //}
 
-        private AudioClip GetRandomClip(int id)
-        {
-            int index = UnityEngine.Random.Range(0, _randomSoundBank[id].Length);
-            return _randomSoundBank[id][index].Clip;
-        }
+        //private AudioClip GetRandomClip(int id)
+        //{
+        //    int index = UnityEngine.Random.Range(0, _randomSoundBank[id].Length);
+        //    return _randomSoundBank[id][index].Clip;
+        //}
 
 		private bool TryGetPlayer(int id, out AudioPlayer player)
         {
@@ -354,55 +354,6 @@ namespace MiProduction.BroAudio.Core
                 }
             }
         }
-
-  //      public void SetStandOutVolume(float standRatio, AudioType audioType, float duration , float fadeTime)
-		//{
-  //          if(audioType == AudioType.All)
-		//	{
-  //              LogError("You shouldn't stand out with AudioType.All, that doesn't make any sense!");
-  //              return;
-		//	}
-  //          if(standRatio < 0 || standRatio > 1)
-		//	{
-  //              LogError("Stand out volume ratio should be between 0 and 1");
-  //              return;
-		//	}
-
-  //          LoopAllAudioType((loopAudioType) => 
-  //          {
-  //              if(audioType == loopAudioType)
-		//		{
-  //                  if(TryGetPlayer(audioType,out var player))
-		//			{
-  //                      player.SetVolume(standRatio, fadeTime,duration);
-		//			}
-		//		}
-  //              else
-		//		{
-  //                  if(TryGetPlayer(loopAudioType, out var player))
-		//			{
-  //                      player.SetVolume(1 - standRatio, fadeTime,duration);
-		//			}
-		//		}
-  //          });
-		//}
-
-        public float GetAudioClipLength(int id,AudioType audioType)
-		{
-			switch (audioType)
-			{
-				case AudioType.Music:
-                    return _musicBank[id].Clip.length;
-				case AudioType.UI:
-				case AudioType.Ambience:
-				case AudioType.SFX:
-				case AudioType.VoiceOver:
-                    return _soundBank[id].Clip.length;
-                default:
-                    return 0f;
-			}
-		}
-
 
 		#region NullChecker
 		private bool PlayMusicCheck(int id)

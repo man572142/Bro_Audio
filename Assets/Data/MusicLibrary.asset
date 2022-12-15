@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Libraries:
   - Name: Persona
-    ID: 36
-    Clip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
+    ID: 44
+    Clip: {fileID: 8300000, guid: 24302d986d3af6c4dbf3895d9deb3649, type: 3}
     Volume: 1
     StartPosition: 0
     EndPosition: 0
-    FadeIn: 0
-    FadeOut: 3
+    FadeIn: 0.98
+    FadeOut: 0.61
     Loop: 1
+    IsShowClipView: 0
   _enumsPath: 

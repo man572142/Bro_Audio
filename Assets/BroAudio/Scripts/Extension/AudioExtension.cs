@@ -39,7 +39,7 @@ namespace MiProduction.BroAudio
             return Mathf.Clamp(dB,MinDecibelVolume, MaxDecibelVolume);
         }
 
-        public static bool Validate(string typeName, int index,AudioClip clip ,int id ,float startPosition, float fadeInTime = -1,float fadeOutTime = -1)
+        public static bool Validate(string name, int index,AudioClip clip ,int id ,float startPosition, float fadeInTime = -1,float fadeOutTime = -1)
         {
             if(id <= 0)
 			{
@@ -49,32 +49,32 @@ namespace MiProduction.BroAudio
             }
             if (clip == null)
             {
-                LogError($"Audio clip has not been assigned! please check element {index} in {typeName}.");
+                LogError($"Audio clip has not been assigned! please check element {index} in {name}.");
                 return false;
             }
             float controlLength = (fadeInTime > 0f ? fadeInTime : 0f) + (fadeOutTime > 0f ? fadeOutTime : 0f) + startPosition;
             if (controlLength  > clip.length)
             {
-                LogError($"Time control value should not greater than clip's length! please check element {index} in {typeName}.");
+                LogError($"Time control value should not greater than clip's length! please check element {index} in {name}.");
                 return false;
             }
             return true;
         }
 
-        public static bool Validate(string typeName, int index, AudioClip[] clips, float startPosition)
+        public static bool Validate(string name, int index, AudioClip[] clips,int id)
         {
             foreach(AudioClip clip in clips)
             {
+                if (id <= 0)
+                {
+                    return false;
+                }
                 if (clip == null)
                 {
-                    LogError($"sound clip in element {index} has not been assigned!");
+                    LogError($"{name}'s audio clip at element {index} has not been assigned!");
                     return false;
                 }
-                if (startPosition > clip.length)
-                {
-                    LogError($"Time control value should not greater than clip's length! please check element {index} in {typeName}.");
-                    return false;
-                }
+                
             }
             
             return true;

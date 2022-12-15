@@ -1,12 +1,6 @@
 {
     "Datas": [
         {
-            "ID": 36,
-            "Name": "Persona",
-            "AudioType": 1,
-            "AssetGUID": "814aec160ae6b384da0908c29bf472f5"
-        },
-        {
             "ID": 5495,
             "Name": "Facade",
             "AudioType": 2,
@@ -41,6 +35,12 @@
             "Name": "Hollow",
             "AudioType": 8,
             "AssetGUID": "8fee7568a8f32b941bebc99664e9096e"
+        },
+        {
+            "ID": 44,
+            "Name": "Persona",
+            "AudioType": 1,
+            "AssetGUID": "814aec160ae6b384da0908c29bf472f5"
         }
     ]
 }

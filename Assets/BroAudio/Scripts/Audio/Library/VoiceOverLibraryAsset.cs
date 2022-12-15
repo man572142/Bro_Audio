@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace MiProduction.BroAudio.Library
 {
-	[CreateAssetMenu(fileName = "VoiceOverLibrary", menuName = "MiProduction/BroAudio/Create Library/VoiceOver")]
+	[CreateAssetMenu(fileName = "VoiceOverLibrary", menuName = "MiProduction/BroAudio/Library/VoiceOver")]
 	public class VoiceOverLibraryAsset : SoundLibraryAsset
 	{
 		public override AudioType AudioType => AudioType.VoiceOver;

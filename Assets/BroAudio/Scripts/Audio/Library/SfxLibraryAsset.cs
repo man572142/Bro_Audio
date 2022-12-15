@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace MiProduction.BroAudio.Library
 {
-	[CreateAssetMenu(fileName = "SoundLibrary", menuName = "MiProduction/BroAudio/Create Library/Sound")]
+	[CreateAssetMenu(fileName = "SoundLibrary", menuName = "MiProduction/BroAudio/Library/Sound")]
 	public class SfxLibraryAsset : SoundLibraryAsset
 	{
 		public override AudioType AudioType => AudioType.SFX;

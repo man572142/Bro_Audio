@@ -17,8 +17,10 @@ namespace MiProduction.BroAudio.Library
         public float FadeOut;
         public bool Loop;
 
+        public bool HasMultipleClips;
+        public AudioClip[] MultipleClips;
+
         #region Properties Setting
-        [HideInInspector]
         public bool IsShowClipView;
         #endregion
 

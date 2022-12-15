@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace MiProduction.BroAudio.Library
 {
-	[CreateAssetMenu(fileName = "UISoundLibrary", menuName = "MiProduction/BroAudio/Create Library/UI")]
+	[CreateAssetMenu(fileName = "UISoundLibrary", menuName = "MiProduction/BroAudio/Library/UI")]
 	public class UISoundLibraryAsset : SoundLibraryAsset
 	{
 		public override AudioType AudioType => AudioType.UI;

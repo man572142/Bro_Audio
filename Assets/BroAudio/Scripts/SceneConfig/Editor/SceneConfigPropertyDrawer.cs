@@ -4,9 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEditorInternal;
-using static EditorDrawingUtility;
-using UnityEngine.UIElements;
+using MiProduction.Extension;
 
 namespace MiProduction.Scene
 {
@@ -17,7 +15,7 @@ namespace MiProduction.Scene
         public float SingleLineSpace => EditorGUIUtility.singleLineHeight;
         public Rect GetRectAndIterateLine(Rect position)
         {
-            return EditorDrawingUtility.GetRectAndIterateLine(this, position);
+            return EditorScriptingExtension.GetRectAndIterateLine(this, position);
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)

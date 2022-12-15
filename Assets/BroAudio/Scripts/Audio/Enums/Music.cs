@@ -3,5 +3,4 @@ namespace MiProduction.BroAudio {
 public enum Music
 {
 	None = 0,
-	Persona = 36,
 }}

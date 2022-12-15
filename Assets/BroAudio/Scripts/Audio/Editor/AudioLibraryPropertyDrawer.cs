@@ -16,6 +16,9 @@ namespace MiProduction.BroAudio.Library
 		private float[] FadeValues = new float[2];
 		private GUIContent[] PlaybackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
 		private float[] PlaybackValues = new float[2];
+
+		private bool _isShowClipView = false;
+
 		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public int DrawLineCount { get ; set; }
 
@@ -45,7 +48,7 @@ namespace MiProduction.BroAudio.Library
 				DrawAdditionalBaseProperties(position, property);
 				BasePropertiesLineCount = DrawLineCount + 1;
 
-				#region Clip View
+				#region Clip Properties
 				EditorGUI.PropertyField(GetRectAndIterateLine(position), property.FindPropertyRelative("Clip"));
 				AudioClip clip = property.FindPropertyRelative("Clip").objectReferenceValue as AudioClip;
 				if (clip != null)
@@ -54,17 +57,23 @@ namespace MiProduction.BroAudio.Library
 					DrawClipProperites(position, property);
 					DrawAdditionalClipProperties(position, property);
 
+					SerializedProperty isShowClipProperty = property.FindPropertyRelative("IsShowClipView");
+					isShowClipProperty.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProperty.boolValue, "ClipView");
+
 					ClipPropertiesLineCount = DrawLineCount - BasePropertiesLineCount;
 
-					Rect clipViewRect = GetRectAndIterateLine(position);
-					clipViewRect.height = ClipViewHeight;
-					//EditorGUI.DrawRect(clipViewRect,Color.cyan);
-					Rect waveformRect = new Rect(clipViewRect.xMin + clipViewRect.width * 0.1f,clipViewRect.yMin + clipViewRect.height *0.1f, clipViewRect.width * 0.9f, clipViewRect.height);
+					if (isShowClipProperty.boolValue)
+					{
+						Rect clipViewRect = GetRectAndIterateLine(position);
+						clipViewRect.height = ClipViewHeight;
+						Rect waveformRect = new Rect(clipViewRect.xMin + clipViewRect.width * 0.1f, clipViewRect.yMin + clipViewRect.height * 0.1f, clipViewRect.width * 0.9f, clipViewRect.height);
 
-					DrawWaveformPreview(clip, waveformRect);
-					DrawPlaybackButton(clip, property.FindPropertyRelative("StartPosition").floatValue, clipViewRect);
-					DrawClipPlaybackLine(waveformRect);
+						DrawWaveformPreview(clip, waveformRect);
+						DrawPlaybackButton(clip, property.FindPropertyRelative("StartPosition").floatValue, clipViewRect);
+						DrawClipPlaybackLine(waveformRect);
+					}
 				}
+				
 				#endregion
 			}
 
@@ -171,8 +180,6 @@ namespace MiProduction.BroAudio.Library
 			// End
 			points[3] = new Vector3(Mathf.Lerp(0f, width, (ClipLength - PlaybackValues[1]) / ClipLength), ClipViewHeight, 0f);
 
-
-			//Debug.Log($"{points[0]},{points[1]},{points[2]},{points[3]}");
 			return points;
 		}
 
@@ -183,7 +190,16 @@ namespace MiProduction.BroAudio.Library
 			if (property.isExpanded)
 			{
 				AudioClip clip = property.FindPropertyRelative("Clip").objectReferenceValue as AudioClip;
-				height += clip != null ? ClipViewHeight + SingleLineSpace * (ClipPropertiesLineCount +1) : 0f;
+				bool isShowClipView = property.FindPropertyRelative("IsShowClipView").boolValue;
+				if(clip != null)
+				{
+					height += SingleLineSpace * ClipPropertiesLineCount;
+				}
+				if(isShowClipView)
+				{
+					height += SingleLineSpace + ClipViewHeight;
+				}
+				//height += clip != null ? ClipViewHeight + SingleLineSpace * (ClipPropertiesLineCount +1) : 0f;
 			}
 
 			return height;

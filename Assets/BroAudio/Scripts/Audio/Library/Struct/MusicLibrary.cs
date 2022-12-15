@@ -16,10 +16,15 @@ namespace MiProduction.BroAudio.Library
         public float FadeIn;
         public float FadeOut;
         public bool Loop;
-        
+
+        #region Properties Setting
+        [HideInInspector]
+        public bool IsShowClipView;
+        #endregion
+
         public string EnumName => Name;
 
-        public bool Validate(int index)
+		public bool Validate(int index)
         {
             return AudioExtension.Validate(nameof(MusicLibrary), index, Clip,ID,StartPosition, FadeIn, FadeOut);
         }

@@ -7,7 +7,6 @@ namespace MiProduction.BroAudio.Library
     [System.Serializable]
     public struct SoundLibrary : IAudioLibrary
     {
-        
         [SerializeField] string Name;
         public int ID;
         public AudioClip Clip;
@@ -18,7 +17,12 @@ namespace MiProduction.BroAudio.Library
         public float FadeIn;
         public float FadeOut;
 
-        public string EnumName  => Name;
+		#region Properties Setting
+		[HideInInspector] 
+        public bool IsShowClipView;
+		#endregion
+
+		public string EnumName  => Name;
 
 		public bool Validate(int index)
         {

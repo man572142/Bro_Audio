@@ -11,7 +11,8 @@ namespace MiProduction.BroAudio.Library
 
 		protected override void DrawAdditionalBaseProperties(Rect position, SerializedProperty property)
 		{
-
+			SerializedProperty delayProperty = property.FindPropertyRelative("Delay");
+			delayProperty.floatValue = EditorGUI.FloatField(GetRectAndIterateLine(position), "Delay", delayProperty.floatValue);
 		}
 
 		protected override void DrawAdditionalClipProperties(Rect position, SerializedProperty property)

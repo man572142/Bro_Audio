@@ -1789,13 +1789,15 @@ MonoBehaviour:
   _transitionB: 1
   _musicA: 36
   _musicB: 36
-  _sound: 6944904
-  _randomSound: 60629562
+  _sound: 83592160
+  _randomSound: 18063625
   _sceneSound: 0
   _uiSound: 5495
-  _voiceOver: 60629562
-  _standOutRatio: 0.8
+  _voiceOver: 100000000
+  _standOutRatio: 0
   _standOutFadeTime: 0.5
+  _lowpassFreq: -1
+  _lowpassFadeTime: 1
   _crossFadeTime: -1
   _stopFadeTime: -1
   _targetVolume: 1

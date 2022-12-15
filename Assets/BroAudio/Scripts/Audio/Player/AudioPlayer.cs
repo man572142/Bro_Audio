@@ -10,9 +10,8 @@ using static MiProduction.BroAudio.Utility;
 namespace MiProduction.BroAudio.Core
 {
     [RequireComponent(typeof(AudioSource))]
-	public abstract class AudioPlayer : MonoBehaviour,IAudioPlayer
+	public abstract partial class AudioPlayer : MonoBehaviour,IAudioPlayer
 	{
-        private static event Action<float,float,AudioPlayer> OnStandOut;
 
         [SerializeField] protected AudioSource AudioSource = null;
         [SerializeField] protected AudioMixer AudioMixer;
@@ -91,7 +90,8 @@ namespace MiProduction.BroAudio.Core
             }
             _volParaName = AudioSource.outputAudioMixerGroup.name;
 
-            OnStandOut += OnStandOutHandler;
+            OnStandOut += StandOutHandler;
+            OnLowPassOthers += LowPassHandler;
         }
 
         public void SetVolume(float vol,float fadeTime)
@@ -99,45 +99,6 @@ namespace MiProduction.BroAudio.Core
             // 只動TrackVolume
             _subVolumeControl.Stop(this);
             _subVolumeControl = StartCoroutine(SetTrackVolume(vol, fadeTime));
-        }
-
-
-        private void OnStandOutHandler(float standoutRatio,float fadeTime,AudioPlayer standoutPlayer)
-		{
-            // 要再控制Coroutine?
-            if (standoutPlayer == this)
-			{
-                StartCoroutine(StandsOutControl(standoutRatio, fadeTime, standoutPlayer));
-            }
-            else
-			{
-                StartCoroutine(StandsOutControl(1 - standoutRatio, fadeTime, standoutPlayer));
-            }
-		}
-
-        public void StandsOut(float standoutRatio,float fadeTime = 1f)
-		{
-            if (standoutRatio < 0 || standoutRatio > 1)
-            {
-                LogError("Stand out volume ratio should be between 0 and 1");
-                return;
-            }
-            
-            OnStandOut?.Invoke(standoutRatio, fadeTime,this);
-        }
-
-        private IEnumerator StandsOutControl(float vol, float fadeTime,AudioPlayer standoutPlayer)
-		{
-            float origin = TrackVolume;
-
-            _subVolumeControl.Stop(this);
-            _subVolumeControl = StartCoroutine(SetTrackVolume(vol, fadeTime));
-
-            yield return _subVolumeControl;
-            yield return new WaitWhile(() => standoutPlayer.IsPlaying);
-
-            _subVolumeControl.Stop(this);
-            _subVolumeControl = StartCoroutine(SetTrackVolume(origin, fadeTime));
         }
 
         private IEnumerator SetTrackVolume(float target, float fadeTime)
@@ -171,6 +132,79 @@ namespace MiProduction.BroAudio.Core
             yield break;
         }
 
-        
-    } 
+		private void OnDestroy()
+		{
+            OnStandOut -= StandOutHandler;
+		}
+	}
+
+	#region Stands Out
+	[RequireComponent(typeof(AudioSource))]
+    public abstract partial class AudioPlayer : MonoBehaviour, IAudioPlayer
+    {
+        private static event Action<float, float, AudioPlayer> OnStandOut;
+
+        public IAudioPlayer StandsOut(float standoutRatio, float fadeTime = 0.5f)
+        {
+            if (standoutRatio < 0 || standoutRatio > 1)
+            {
+                LogError("Stand out volume ratio should be between 0 and 1");
+                return null;
+            }
+
+            OnStandOut?.Invoke(standoutRatio, fadeTime, this);
+            return this;
+        }
+
+        private void StandOutHandler(float standoutRatio, float fadeTime, AudioPlayer standoutPlayer)
+        {
+            // 要再控制Coroutine?
+            if (standoutPlayer == this)
+            {
+                StartCoroutine(StandsOutControl(standoutRatio, fadeTime, standoutPlayer));
+            }
+            else
+            {
+                StartCoroutine(StandsOutControl(1 - standoutRatio, fadeTime, standoutPlayer));
+            }
+        }
+
+        private IEnumerator StandsOutControl(float vol, float fadeTime, AudioPlayer standoutPlayer)
+        {
+            float origin = TrackVolume;
+
+            SetVolume(vol, fadeTime);
+
+            yield return _subVolumeControl;
+            yield return new WaitWhile(() => standoutPlayer.IsPlaying);
+
+            SetVolume(origin, fadeTime);
+        }
+    }
+    #endregion
+
+
+    #region LowPass Other
+    [RequireComponent(typeof(AudioSource))]
+    public abstract partial class AudioPlayer : MonoBehaviour, IAudioPlayer
+    {
+        public const string LowPassExposedName = "_LowPass";
+        public const float DefaultLowPassFrequence = 300f;
+        private static event Action<float,float,AudioPlayer> OnLowPassOthers;
+
+        public IAudioPlayer LowPassOthers(float freq,float fadeTime)
+        {
+            OnLowPassOthers?.Invoke(freq,fadeTime,this);
+            return this;
+        }
+
+        public void LowPassHandler(float freq, float fadeTime,AudioPlayer player)
+		{
+            if(player != this)
+			{
+                AudioMixer.SetFloat(_volParaName + LowPassExposedName, freq < 0? DefaultLowPassFrequence: freq);
+            }
+		}
+    }
+    #endregion
 }

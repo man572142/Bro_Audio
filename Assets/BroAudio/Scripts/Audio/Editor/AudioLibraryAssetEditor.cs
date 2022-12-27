@@ -68,7 +68,7 @@ namespace MiProduction.BroAudio.Library
             }
             else
             {
-                EditorGUILayout.LabelField("Assigning enums" + _waitingString);
+                EditorGUILayout.LabelField("Generating IDs and enums" + _waitingString);
                 if (!EditorApplication.isCompiling)
 				{
                     AssignID();
@@ -121,7 +121,7 @@ namespace MiProduction.BroAudio.Library
             }
             _hasUnassignedID = false;
             serializedObject.ApplyModifiedProperties();
-            Log("<color=#00ff00ff>All enums have been generated and assigned successfully!</color>");
+            Log("<color=#00ff00ff>All enums and IDs have been generated and assigned successfully!</color>");
 
             int GetEnumID(string enumName,int index)
             {          

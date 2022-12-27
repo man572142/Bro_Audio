@@ -105,10 +105,6 @@ namespace MiProduction.BroAudio.Core
 					}
 				}
 			}
-			if (_soundBank.Count == 0)
-			{
-				LogError($"There isn't any sound asset in the {nameof(SoundManager)}!");
-			}
 		}
 		private void InitRandomSoundBank()
 		{
@@ -306,7 +302,7 @@ namespace MiProduction.BroAudio.Core
 		{
             if (_soundBank.Count < 1)
             {
-                LogError($"SoundBank is empty, please check {nameof(SoundManager)}'s setting");
+                LogError($"There isn't any sound asset in {nameof(SoundManager)}!");
                 return false;
             }
             else if (!_soundBank.ContainsKey(id))

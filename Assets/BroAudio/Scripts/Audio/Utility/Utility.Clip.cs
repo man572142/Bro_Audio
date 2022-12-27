@@ -37,14 +37,13 @@ public static partial class Utility
 		int resultIndex = 0;
 		if (ClipsSequencer.ContainsKey(id))
 		{
-			ClipsSequencer[id] += 1;
+			ClipsSequencer[id] = ClipsSequencer[id] + 1 >= clips.Length ? 0 : ClipsSequencer[id] + 1;
 			resultIndex = ClipsSequencer[id];
 		}
 		else
 		{
 			ClipsSequencer.Add(id, 0);
 		}
-
 		return clips[resultIndex];
 	}
 

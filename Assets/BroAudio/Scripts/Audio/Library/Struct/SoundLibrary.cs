@@ -8,26 +8,20 @@ namespace MiProduction.BroAudio.Library
     [System.Serializable]
     public struct SoundLibrary : IAudioLibrary
     {
-        [SerializeField] string Name;
+        public string Name;
         public int ID;
         public BroAudioClip[] Clips;
         public float Delay;
 
 		#region Properties Setting
-		[HideInInspector] 
-        public bool IsShowClipView;
+        public bool IsShowClipPreview;
 		public MulticlipsPlayMode MulticlipsPlayMode;
         #endregion
 
         private BroAudioClip _clip;
 
-
         public string EnumName  => Name;
 
-        public bool Validate(int index)
-        {
-            return AudioExtension.Validate(nameof(SoundLibrary), index, Clips, ID);
-        }
 
         public BroAudioClip Clip
         {
@@ -41,5 +35,9 @@ namespace MiProduction.BroAudio.Library
 			}
         }
 
+		public bool Validate(int index)
+        {
+            return AudioExtension.Validate(nameof(SoundLibrary), index, Clips, ID);
+        }
     }
 }

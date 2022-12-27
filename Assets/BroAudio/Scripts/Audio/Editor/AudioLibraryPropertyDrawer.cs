@@ -5,67 +5,38 @@ using UnityEditor;
 using UnityEditorInternal;
 using MiProduction.Extension;
 using System;
-using UnityEngine.UIElements;
 
 namespace MiProduction.BroAudio.Library
 {
 	public abstract class AudioLibraryPropertyDrawer : PropertyDrawer, IEditorDrawer
 	{
 		public static readonly Color ClipLabelColor = new Color(0f, 0.9f, 0.5f);
+		public static readonly Color PlayButtonColor = new Color(0.25f, 0.9f, 0.25f, 0.4f);
+		public static readonly Color StopButtonColor = new Color(0.9f, 0.25f, 0.25f, 0.4f);
+		public static readonly Color WaveformMaskColor = new Color(0.05f, 0.05f, 0.05f, 0.3f);
 		protected const float ClipViewHeight = 100f;
+		protected const int ClipPropertiesLineCount = 4;
 
-		
-		protected float ClipLength = 0f;
+		public GUIStyleHelper GUIStyle = GUIStyleHelper.Instance;
+
 		private GUIContent[] FadeLabels = { new GUIContent("    In    "), new GUIContent(" Out ") };
 		private float[] FadeValues = new float[2];
 		private GUIContent[] PlaybackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
 		private float[] PlaybackValues = new float[2];
-
-		private GUIStyle _richTextStyle;
-		private GUIStyle _middleCenterStyle;
+		private Dictionary<string, ReorderableList> _reorderableListDict = new Dictionary<string, ReorderableList>();
 
 		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public int DrawLineCount { get; set; }
 
-		Dictionary<string, ReorderableList> _reorderableListDict = new Dictionary<string, ReorderableList>();
-
 		protected abstract void DrawAdditionalBaseProperties(Rect position, SerializedProperty property);
 		protected abstract void DrawAdditionalClipProperties(Rect position, SerializedProperty property);
-
-		public GUIStyle MiddleCenterStyle 
-		{
-			get
-			{
-				if(_middleCenterStyle == null)
-				{
-					_middleCenterStyle = new GUIStyle();
-					_middleCenterStyle.alignment = TextAnchor.MiddleCenter;
-					_middleCenterStyle.normal.textColor = Color.white;
-				}
-				return _middleCenterStyle;
-			}
-		}
-
-		public GUIStyle RichTextStyle
-		{
-			get
-			{
-				if(_richTextStyle == null)
-				{
-					_richTextStyle = new GUIStyle();
-					_richTextStyle.richText = true;
-				}
-				return _richTextStyle;
-			}
-		}
-
-
 
 		public Rect GetRectAndIterateLine(Rect position)
 		{
 			return EditorScriptingExtension.GetRectAndIterateLine(this, position);
 		}
 
+		#region Unity Entry Overrider
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
 			DrawLineCount = 0;
@@ -77,88 +48,98 @@ namespace MiProduction.BroAudio.Library
 			if (property.isExpanded)
 			{
 				nameProp.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProp.stringValue);
-				
 				DrawAdditionalBaseProperties(position, property);
 
 				#region Clip Properties
-
-				DrawReorderableClipsList(position, property ,out var currShowClip);
-				if (currShowClip != null)
+				DrawReorderableClipsList(position, property, out var currSelectedClip);
+				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip),out AudioClip audioClip))
 				{
-					AudioClip audioClip = currShowClip.FindPropertyRelative(nameof(BroAudioClip.AudioClip))?.objectReferenceValue as AudioClip;
-					if (audioClip != null)
-					{
-						ClipLength = audioClip.length;
-						DrawClipProperties(position, currShowClip);
-						DrawAdditionalClipProperties(position, property);
+					DrawClipProperties(position, currSelectedClip, audioClip.length);
+					DrawAdditionalClipProperties(position, property);
 
-						SerializedProperty isShowClipProp = property.FindPropertyRelative("IsShowClipView");
-						isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
-						if (isShowClipProp.boolValue && audioClip != null)
-						{
-							DrawClipPreview(position, currShowClip, audioClip);
-						}
+					SerializedProperty isShowClipProp = property.FindPropertyRelative("IsShowClipPreview");
+					isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
+					bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
+					if (isShowPreview)
+					{
+						DrawClipPreview(position, currSelectedClip, audioClip);
 					}
 				}
-				#endregion
+				#endregion	
 			}
 			EditorGUI.EndProperty();
 		}
 
-		private void DrawReorderableClipsList(Rect position, SerializedProperty property, out SerializedProperty outShowClip)
+		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+		{
+			float height = SingleLineSpace;
+
+			if (property.isExpanded)
+			{
+				if (_reorderableListDict.TryGetValue(property.propertyPath, out ReorderableList list))
+				{
+					height += list.GetHeight();
+
+					bool isShowClipProp = 
+						property.TryGetArrayElementAtIndex("Clips", list.index, out var clipProp) &&
+						clipProp.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip);
+					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative("IsShowClipPreview").boolValue;
+
+					if(!isShowClipProp)
+					{
+						height -= ClipPropertiesLineCount * SingleLineSpace;
+					}
+					if(isShowClipPreview)
+					{
+						height += ClipViewHeight;
+					}
+				}
+				height += property.CountInProperty() * SingleLineSpace;
+			}
+			return height;
+		} 
+		#endregion
+
+		private void DrawReorderableClipsList(Rect position, SerializedProperty property, out SerializedProperty outSelectedClip)
 		{
 			SerializedProperty clipsProp = property.FindPropertyRelative("Clips");
-			string propertyPath = property.propertyPath;
-			if(!_reorderableListDict.ContainsKey(propertyPath))
-			{
-				_reorderableListDict.Add(propertyPath, new ReorderableList(clipsProp.serializedObject, clipsProp));
-			}
-			ReorderableList reorderableList = _reorderableListDict[propertyPath];
+			ReorderableList reorderableList = GetReorderableList(property.propertyPath, clipsProp);
 
 			bool isMulticlips = reorderableList.count > 1;
-			SerializedProperty multiclipsModeProp = property.FindPropertyRelative("MulticlipsPlayMode");
-			int playModeIndex = multiclipsModeProp.enumValueIndex;
-			if (isMulticlips && playModeIndex == 0)
-			{
-				playModeIndex = 1;
-			}
-			MulticlipsPlayMode currentPlayMode = (MulticlipsPlayMode)playModeIndex;
+			SetCurrentPlayMode(property, isMulticlips, out SerializedProperty playModeProp, out MulticlipsPlayMode currentPlayMode);
 
-			int showIndex = reorderableList.index > 0 ? reorderableList.index : 0;
-			SerializedProperty currSelectedClip = reorderableList.count > 0 ? clipsProp.GetArrayElementAtIndex(showIndex) : null;
-			outShowClip = currSelectedClip;
+			int selectedIndex = reorderableList.index > 0 ? reorderableList.index : 0;
+			SerializedProperty currSelectedClip = reorderableList.count > 0 ? clipsProp.GetArrayElementAtIndex(selectedIndex) : null;
+			outSelectedClip = currSelectedClip;
 
 			reorderableList.draggable = true;
 			reorderableList.drawHeaderCallback = OnDrawHeader;
 			reorderableList.drawElementCallback = OnDrawElement;
 			reorderableList.drawFooterCallback = OnDrawFooter;
-
 			reorderableList.DoList(GetRectAndIterateLine(position));
 
 			void OnDrawHeader(Rect rect)
 			{
-				float[] ratio = { 0.2f,0.5f,0.18f,0.12f };
-				if(EditorScriptingExtension.TrySplitRectHorizontal(rect, ratio, 15f, out Rect[] newRects))
+				float[] ratio = { 0.2f, 0.5f, 0.18f, 0.12f };
+				if (EditorScriptingExtension.TrySplitRectHorizontal(rect, ratio, 15f, out Rect[] newRects))
 				{
 					EditorGUI.LabelField(newRects[0], "Clips");
 					if (isMulticlips)
 					{
-						multiclipsModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(newRects[1], currentPlayMode);
+						playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(newRects[1], currentPlayMode);
 						switch (currentPlayMode)
 						{
 							case MulticlipsPlayMode.Sequence:
-								EditorGUI.LabelField(newRects[ratio.Length -1], "Index");
+								EditorGUI.LabelField(newRects[ratio.Length - 1], "Index");
 								break;
 							case MulticlipsPlayMode.Random:
 								EditorGUI.LabelField(newRects[ratio.Length - 1], "Weight");
 								break;
 						}
-						EditorGUI.LabelField(newRects[1].DissolveHorizontal(0.4f), "(PlayMode)".SetColor(Color.gray),RichTextStyle);
+						EditorGUI.LabelField(newRects[1].DissolveHorizontal(0.4f), "(PlayMode)".SetColor(Color.gray), GUIStyle.RichText);
 					}
-					
 					DrawLineCount++;
 				}
-				
 			}
 
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -173,7 +154,7 @@ namespace MiProduction.BroAudio.Library
 					case MulticlipsPlayMode.Single:
 						break;
 					case MulticlipsPlayMode.Sequence:
-						EditorGUI.LabelField(valueRect, index.ToString(), MiddleCenterStyle);
+						EditorGUI.LabelField(valueRect, index.ToString(), GUIStyle.MiddleCenterText);
 						break;
 					case MulticlipsPlayMode.Random:
 						SerializedProperty weightProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Weight));
@@ -189,19 +170,40 @@ namespace MiProduction.BroAudio.Library
 			{
 				ReorderableList.defaultBehaviours.DrawFooter(rect, reorderableList);
 
-				SerializedProperty currSelectedAudioClip = currSelectedClip?.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
-				AudioClip audioClip = currSelectedAudioClip?.objectReferenceValue as AudioClip;
-				if(audioClip != null)
+				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
 				{
 					Rect labelRect = new Rect(rect);
 					labelRect.y += 5f;
-					EditorGUI.LabelField(labelRect, audioClip?.name.SetColor(ClipLabelColor).ToBold(),RichTextStyle);
+					EditorGUI.LabelField(labelRect, audioClip.name.SetColor(ClipLabelColor).ToBold(), GUIStyle.RichText);
 				}
+				DrawLineCount++;
 			}
-			DrawLineCount++;
+
+			void SetCurrentPlayMode(SerializedProperty property, bool isMulticlips, out SerializedProperty playModeProp, out MulticlipsPlayMode currentPlayMode)
+			{
+				playModeProp = property.FindPropertyRelative("MulticlipsPlayMode");
+				if (!isMulticlips)
+				{
+					playModeProp.enumValueIndex = 0;
+				}
+				else if (isMulticlips && playModeProp.enumValueIndex == 0)
+				{
+					playModeProp.enumValueIndex = 1;
+				}
+				currentPlayMode = (MulticlipsPlayMode)playModeProp.enumValueIndex;
+			}
+
+			ReorderableList GetReorderableList(string propertyPath, SerializedProperty clipsProp)
+			{
+				if (!_reorderableListDict.ContainsKey(propertyPath))
+				{
+					_reorderableListDict.Add(propertyPath, new ReorderableList(clipsProp.serializedObject, clipsProp));
+				}
+				return _reorderableListDict[propertyPath];
+			}
 		}
 
-		private void DrawClipProperties(Rect position, SerializedProperty clipProp)
+		private void DrawClipProperties(Rect position, SerializedProperty clipProp,float audioClipLength)
 		{
 			SerializedProperty volumeProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
 			SerializedProperty startPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition));
@@ -226,18 +228,18 @@ namespace MiProduction.BroAudio.Library
 			void DrawPlaybackPositionField(Rect position, SerializedProperty startPosProp, SerializedProperty endPosProp, SerializedProperty fadeInProp, SerializedProperty fadeOutProp)
 			{
 				EditorGUI.MultiFloatField(GetRectAndIterateLine(position), new GUIContent("Playback Position"), PlaybackLabels, PlaybackValues);
-				startPosProp.floatValue = Mathf.Clamp(PlaybackValues[0], 0f, GetLengthLimit(0, endPosProp.floatValue, fadeInProp.floatValue, fadeOutProp.floatValue));
+				startPosProp.floatValue = Mathf.Clamp(PlaybackValues[0], 0f, GetLengthLimit(0, endPosProp.floatValue, fadeInProp.floatValue, fadeOutProp.floatValue, audioClipLength));
 				PlaybackValues[0] = startPosProp.floatValue;
-				endPosProp.floatValue = Mathf.Clamp(PlaybackValues[1], 0f, GetLengthLimit(startPosProp.floatValue, 0f, fadeInProp.floatValue, fadeOutProp.floatValue));
+				endPosProp.floatValue = Mathf.Clamp(PlaybackValues[1], 0f, GetLengthLimit(startPosProp.floatValue, 0f, fadeInProp.floatValue, fadeOutProp.floatValue, audioClipLength));
 				PlaybackValues[1] = endPosProp.floatValue;
 			}
 
 			void DrawFadingField(Rect position, SerializedProperty startPosProp, SerializedProperty endPosProp, SerializedProperty fadeInProp, SerializedProperty fadeOutProp)
 			{
 				EditorGUI.MultiFloatField(GetRectAndIterateLine(position), new GUIContent("Fade"), FadeLabels, FadeValues);
-				fadeInProp.floatValue = Mathf.Clamp(FadeValues[0], 0f, GetLengthLimit(startPosProp.floatValue, endPosProp.floatValue, 0f, fadeOutProp.floatValue));
+				fadeInProp.floatValue = Mathf.Clamp(FadeValues[0], 0f, GetLengthLimit(startPosProp.floatValue, endPosProp.floatValue, 0f, fadeOutProp.floatValue, audioClipLength));
 				FadeValues[0] = fadeInProp.floatValue;
-				fadeOutProp.floatValue = Mathf.Clamp(FadeValues[1], 0f, GetLengthLimit(startPosProp.floatValue, endPosProp.floatValue, fadeInProp.floatValue, 0f));
+				fadeOutProp.floatValue = Mathf.Clamp(FadeValues[1], 0f, GetLengthLimit(startPosProp.floatValue, endPosProp.floatValue, fadeInProp.floatValue, 0f, audioClipLength));
 				FadeValues[1] = fadeOutProp.floatValue;
 			}
 		}
@@ -249,122 +251,96 @@ namespace MiProduction.BroAudio.Library
 			EditorScriptingExtension.SplitRectHorizontal(clipViewRect, 0.1f, 15f, out Rect playbackRect, out Rect waveformRect);
 
 			SerializedProperty startPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition));
-			DrawWaveformPreview(audioClip, waveformRect);
-			DrawPlaybackButton(audioClip, startPosProp.floatValue, playbackRect);
+			DrawWaveformPreview(waveformRect);
+			DrawPlaybackButton(startPosProp.floatValue, playbackRect);
 			DrawClipPlaybackLine(waveformRect);
-		}
 
-		private static void DrawWaveformPreview(AudioClip clip, Rect waveformRect)
-		{
-			Texture2D waveformTexture = AssetPreview.GetAssetPreview(clip);
-			if (waveformTexture != null)
+			void DrawWaveformPreview(Rect waveformRect)
 			{
-				GUI.DrawTexture(waveformRect, waveformTexture);
-			}
-			EditorGUI.DrawRect(waveformRect, new Color(0.05f, 0.05f, 0.05f, 0.3f));
-		}
-
-		private void DrawPlaybackButton(AudioClip clip, float startPos, Rect clipViewRect)
-		{
-			EditorScriptingExtension.SplitRectVertical(clipViewRect, 0.5f, 15f ,out Rect playRect, out Rect stopRect);
-			// 保持在正方形
-			float maxHeight = playRect.height;
-			playRect.width = Mathf.Clamp(playRect.width, playRect.width,maxHeight);
-			playRect.height = playRect.width;
-			stopRect.width = playRect.width;
-			stopRect.height = playRect.height;
-
-			if (GUI.Button(playRect, "▶"))
-			{
-				EditorPlayAudioClip.StopAllClips();
-				EditorPlayAudioClip.PlayClip(clip, Mathf.RoundToInt(AudioSettings.outputSampleRate * startPos));
-			}
-			if (GUI.Button(stopRect, "■"))
-			{
-				EditorPlayAudioClip.StopAllClips();
+				Texture2D waveformTexture = AssetPreview.GetAssetPreview(audioClip);
+				if (waveformTexture != null)
+				{
+					GUI.DrawTexture(waveformRect, waveformTexture);
+				}
+				EditorGUI.DrawRect(waveformRect, WaveformMaskColor);
 			}
 
-			EditorGUI.DrawRect(playRect, new Color(0.25f, 0.9f, 0.25f, 0.4f));
-			EditorGUI.DrawRect(stopRect, new Color(0.9f, 0.25f, 0.25f, 0.4f));
-		}
-
-		private void DrawClipPlaybackLine(Rect waveformRect)
-		{
-			Vector3[] points = GetClipLinePoints(waveformRect.width);
-			if (points.Length < 4)
+			void DrawPlaybackButton(float startPos, Rect clipViewRect)
 			{
-				return;
+				EditorScriptingExtension.SplitRectVertical(clipViewRect, 0.5f, 15f, out Rect playRect, out Rect stopRect);
+				// 保持在正方形
+				float maxHeight = playRect.height;
+				playRect.width = Mathf.Clamp(playRect.width, playRect.width, maxHeight);
+				playRect.height = playRect.width;
+				stopRect.width = playRect.width;
+				stopRect.height = playRect.height;
+
+				if (GUI.Button(playRect, "▶"))
+				{
+					EditorPlayAudioClip.StopAllClips();
+					EditorPlayAudioClip.PlayClip(audioClip, Mathf.RoundToInt(AudioSettings.outputSampleRate * startPos));
+				}
+				if (GUI.Button(stopRect, "■"))
+				{
+					EditorPlayAudioClip.StopAllClips();
+				}
+
+				EditorGUI.DrawRect(playRect, PlayButtonColor);
+				EditorGUI.DrawRect(stopRect, StopButtonColor);
 			}
 
-			GUI.BeginClip(waveformRect);
-			Handles.color = Color.green;
-			Handles.DrawAAPolyLine(2f, points);
+			void DrawClipPlaybackLine(Rect waveformRect)
+			{
+				Vector3[] points = GetClipLinePoints(waveformRect.width, audioClip.length);
+				if (points.Length < 4)
+				{
+					return;
+				}
 
-			Handles.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
-			Vector3[] leftBlock = new Vector3[4];
-			leftBlock[0] = Vector3.zero;
-			leftBlock[1] = points[1];
-			leftBlock[2] = points[0];
-			leftBlock[3] = new Vector3(0f, ClipViewHeight, 0f);
-			Handles.DrawAAConvexPolygon(leftBlock);
+				GUI.BeginClip(waveformRect);
+				Handles.color = Color.green;
+				Handles.DrawAAPolyLine(2f, points);
 
-			Vector3[] rightBlock = new Vector3[4];
-			rightBlock[0] = points[2];
-			rightBlock[1] = new Vector3(waveformRect.width, 0f, 0f);
-			rightBlock[2] = new Vector3(waveformRect.width, ClipViewHeight, 0f);
-			rightBlock[3] = points[3];
-			Handles.DrawAAConvexPolygon(rightBlock);
+				Handles.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
+				Vector3[] leftBlock = new Vector3[4];
+				leftBlock[0] = Vector3.zero;
+				leftBlock[1] = points[1];
+				leftBlock[2] = points[0];
+				leftBlock[3] = new Vector3(0f, ClipViewHeight, 0f);
+				Handles.DrawAAConvexPolygon(leftBlock);
 
-			GUI.EndClip();
+				Vector3[] rightBlock = new Vector3[4];
+				rightBlock[0] = points[2];
+				rightBlock[1] = new Vector3(waveformRect.width, 0f, 0f);
+				rightBlock[2] = new Vector3(waveformRect.width, ClipViewHeight, 0f);
+				rightBlock[3] = points[3];
+				Handles.DrawAAConvexPolygon(rightBlock);
+
+				GUI.EndClip();
+			}
 		}
 
-
-		protected Vector3[] GetClipLinePoints(float width)
+		private Vector3[] GetClipLinePoints(float width,float clipLength)
 		{
 			if (width <= 0f)
 				return new Vector3[0];
 
 			Vector3[] points = new Vector3[4];
 			// Start
-			points[0] = new Vector3(Mathf.Lerp(0f, width, PlaybackValues[0] / ClipLength), ClipViewHeight, 0f);
+			points[0] = new Vector3(Mathf.Lerp(0f, width, PlaybackValues[0] / clipLength), ClipViewHeight, 0f);
 			// FadeIn
-			points[1] = new Vector3(Mathf.Lerp(0f, width, (PlaybackValues[0] + FadeValues[0]) / ClipLength), 0f, 0f);
+			points[1] = new Vector3(Mathf.Lerp(0f, width, (PlaybackValues[0] + FadeValues[0]) / clipLength), 0f, 0f);
 			// FadeOut
-			points[2] = new Vector3(Mathf.Lerp(0f, width, (ClipLength - PlaybackValues[1] - FadeValues[1]) / ClipLength), 0f, 0f);
+			points[2] = new Vector3(Mathf.Lerp(0f, width, (clipLength - PlaybackValues[1] - FadeValues[1]) / clipLength), 0f, 0f);
 			// End
-			points[3] = new Vector3(Mathf.Lerp(0f, width, (ClipLength - PlaybackValues[1]) / ClipLength), ClipViewHeight, 0f);
+			points[3] = new Vector3(Mathf.Lerp(0f, width, (clipLength - PlaybackValues[1]) / clipLength), ClipViewHeight, 0f);
 
 			return points;
 		}
 
-
-		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+		private float GetLengthLimit(float start, float end, float fadeIn, float fadeOut,float clipLength)
 		{
-			float height = SingleLineSpace;
-
-			if (property.isExpanded)
-			{
-				if (_reorderableListDict.TryGetValue(property.propertyPath, out ReorderableList list))
-				{
-					height += list.GetHeight();
-
-					SerializedProperty clipProp = property.FindPropertyRelative("Clips").GetArrayElementAtIndex(list.index >= 0 ? list.index : 0);
-					AudioClip audioClip = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue as AudioClip;
-					bool isShowClipView = property.FindPropertyRelative("IsShowClipView").boolValue;
-					if (audioClip != null && isShowClipView)
-					{
-						height += ClipViewHeight;
-					}
-				}
-				height += property.CountInProperty() * SingleLineSpace;
-			}
-			return height;
-		}
-
-		private float GetLengthLimit(float start, float end, float fadeIn, float fadeOut)
-		{
-			return ClipLength - start - end - fadeIn - fadeOut;
+			return clipLength - start - end - fadeIn - fadeOut;
 		}
 	}
-
 }

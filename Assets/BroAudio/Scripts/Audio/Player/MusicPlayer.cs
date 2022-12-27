@@ -97,6 +97,7 @@ namespace MiProduction.BroAudio.Core
         {
             if (CurrentMusicID <= 0 || !IsPlaying)
             {
+                EndPlaying();
                 onFinishPlaying?.Invoke();
                 yield break;
             }

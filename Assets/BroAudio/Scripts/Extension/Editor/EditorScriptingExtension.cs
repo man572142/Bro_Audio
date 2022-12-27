@@ -94,6 +94,13 @@ namespace MiProduction.Extension
 		{
 			return new Rect(origin.xMin + dissolveRatio * origin.width, origin.y, dissolveRatio * origin.width, origin.height);
 		}
+
+		public static bool TryFindObjectProperty<T>(this SerializedProperty property, string propertyPath, out T newProperty) where T : class
+		{
+			newProperty = property.FindPropertyRelative(propertyPath)?.objectReferenceValue as T;
+			return newProperty != null;
+		}
+
 	}
 
 }

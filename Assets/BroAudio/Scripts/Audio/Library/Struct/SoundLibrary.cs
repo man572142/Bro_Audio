@@ -14,7 +14,6 @@ namespace MiProduction.BroAudio.Library
         public float Delay;
 
 		#region Properties Setting
-		[HideInInspector] 
         public bool IsShowClipView;
 		public MulticlipsPlayMode MulticlipsPlayMode;
         #endregion

@@ -39,7 +39,7 @@ namespace MiProduction.BroAudio
             return Mathf.Clamp(dB,MinDecibelVolume, MaxDecibelVolume);
         }
 
-        public static bool Validate(string name, int index,AudioClip clip ,int id ,float startPosition, float fadeInTime = -1,float fadeOutTime = -1)
+        public static bool Validate(string name, int index,BroAudioClip[] clips ,int id )
         {
             if(id <= 0)
 			{
@@ -47,38 +47,42 @@ namespace MiProduction.BroAudio
                 //Debug.LogError($"[SoundSystem] There is an invalid ID ! please update AudioLibraryAsset.");
                 return false;
             }
-            if (clip == null)
-            {
-                LogError($"Audio clip has not been assigned! please check element {index} in {name}.");
-                return false;
-            }
-            float controlLength = (fadeInTime > 0f ? fadeInTime : 0f) + (fadeOutTime > 0f ? fadeOutTime : 0f) + startPosition;
-            if (controlLength  > clip.length)
-            {
-                LogError($"Time control value should not greater than clip's length! please check element {index} in {name}.");
-                return false;
+
+            foreach(BroAudioClip clipData in clips)
+			{
+                if (clipData.AudioClip == null)
+                {
+                    LogError($"Audio clip has not been assigned! please check element {index} in {name}.");
+                    return false;
+                }
+                float controlLength = (clipData.FadeIn > 0f ? clipData.FadeIn : 0f) + (clipData.FadeOut > 0f ? clipData.FadeOut : 0f) + clipData.StartPosition;
+                if (controlLength > clipData.AudioClip.length)
+                {
+                    LogError($"Time control value should not greater than clip's length! please check element {index} in {name}.");
+                    return false;
+                }
             }
             return true;
         }
 
-        public static bool Validate(string name, int index, AudioClip[] clips,int id)
-        {
-            foreach(AudioClip clip in clips)
-            {
-                if (id <= 0)
-                {
-                    return false;
-                }
-                if (clip == null)
-                {
-                    LogError($"{name}'s audio clip at element {index} has not been assigned!");
-                    return false;
-                }
+        //public static bool Validate(string name, int index, AudioClip[] clips,int id)
+        //{
+        //    foreach(AudioClip clip in clips)
+        //    {
+        //        if (id <= 0)
+        //        {
+        //            return false;
+        //        }
+        //        if (clip == null)
+        //        {
+        //            LogError($"{name}'s audio clip at element {index} has not been assigned!");
+        //            return false;
+        //        }
                 
-            }
+        //    }
             
-            return true;
-        }
+        //    return true;
+        //}
     }
 
 }

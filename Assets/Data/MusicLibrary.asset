@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8dea545865285941be8a4ddd0692911, type: 3}
+  m_Name: MusicLibrary
+  m_EditorClassIdentifier: 
+  Libraries:
+  - Name: sssss
+    ID: 0
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: 24302d986d3af6c4dbf3895d9deb3649, type: 3}
+      Volume: 0.779
+      Delay: 0
+      StartPosition: 0.36
+      EndPosition: 1.02
+      FadeIn: 0.58
+      FadeOut: 0.72
+      Weight: 0
+    - AudioClip: {fileID: 8300000, guid: d067c36e5f74cca4e8dba498b765c122, type: 3}
+      Volume: 0.884
+      Delay: 0
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    Loop: 0
+    IsShowClipView: 0
+    MulticlipsPlayMode: 2
+  - Name: ddddddd
+    ID: 0
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: 24302d986d3af6c4dbf3895d9deb3649, type: 3}
+      Volume: 0.49
+      Delay: 0
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    - AudioClip: {fileID: 8300000, guid: 24302d986d3af6c4dbf3895d9deb3649, type: 3}
+      Volume: 0.49
+      Delay: 0
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    Loop: 0
+    IsShowClipView: 0
+    MulticlipsPlayMode: 1
+  _enumsPath: 

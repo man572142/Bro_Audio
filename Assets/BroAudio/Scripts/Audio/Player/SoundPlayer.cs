@@ -10,7 +10,6 @@ namespace MiProduction.BroAudio.Core
         private const float DefaultFadeOutTime = 1f;
 
         private Dictionary<int, bool> _preventPlayback = new Dictionary<int, bool>();
-        private int _currentPlayingSoundCount = 0;
         private Coroutine _stopCoroutine;
 
         public override bool IsPlaying { get; protected set; }
@@ -23,19 +22,19 @@ namespace MiProduction.BroAudio.Core
             ClipVolume = 1f;
         }
 
-        public void Play(int id, AudioClip clip, float delay, float volume, float preventTime)
-        {
-            _stopCoroutine.Stop(this);
-            StartCoroutine(PlayOnce(id, clip, delay, volume, preventTime));
-        }
+		public void Play(int id, BroAudioClip clip, float delay, float preventTime)
+		{
+			_stopCoroutine.Stop(this);
+			StartCoroutine(PlayOnce(id, clip, delay, preventTime));
+		}
 
-        public void PlayAtPoint(AudioClip clip, float delay, float volume, Vector3 pos)
-        {
-            _stopCoroutine.Stop(this);
-            StartCoroutine(PlayInScene(clip, volume, delay, pos));
-        }
+		public void PlayAtPoint(BroAudioClip clip, float delay, Vector3 pos)
+		{
+			_stopCoroutine.Stop(this);
+			StartCoroutine(PlayInScene(clip, delay, pos));
+		}
 
-        public override void Stop(float fadeOutTime)
+		public override void Stop(float fadeOutTime)
         {
             // 因為PlayOneShot沒辦法停，因此這裡是把音軌Mute掉
             if(fadeOutTime < 0)
@@ -46,7 +45,7 @@ namespace MiProduction.BroAudio.Core
         }
 
 
-        private IEnumerator PlayOnce(int id, AudioClip clip, float delay, float volume, float preventTime)
+        private IEnumerator PlayOnce(int id, BroAudioClip clip, float delay, float preventTime)
         {
             yield return new WaitForSeconds(delay);
             if(_preventPlayback.TryGetValue(id,out bool isPreventing))
@@ -59,28 +58,24 @@ namespace MiProduction.BroAudio.Core
                 _preventPlayback.Add(id, true);
             }
 
-            ClipVolume = volume;
+            ClipVolume = clip.Volume;
             IsPlaying = true;
-            AudioSource.PlayOneShot(clip);
-            _currentPlayingSoundCount++;
+            AudioSource.PlayOneShot(clip.AudioClip);
 
             if (preventTime > 0)
                 StartCoroutine(PreventPlaybackControl(id, preventTime));
 
-            yield return new WaitForSeconds(clip.length);
-            _currentPlayingSoundCount--;
+            yield return new WaitForSeconds(clip.AudioClip.length);
             IsPlaying = false;
         }
 
-        private IEnumerator PlayInScene(AudioClip clip, float volume, float delay, Vector3 pos)
+        private IEnumerator PlayInScene(BroAudioClip clip, float delay, Vector3 pos)
         {
             yield return new WaitForSeconds(delay);
             IsPlaying = true;
-            ClipVolume = volume;
-            AudioSource.PlayClipAtPoint(clip, pos);
-            _currentPlayingSoundCount++;
-            yield return new WaitForSeconds(clip.length);
-            _currentPlayingSoundCount--;
+            ClipVolume = clip.Volume;
+            AudioSource.PlayClipAtPoint(clip.AudioClip, pos);
+            yield return new WaitForSeconds(clip.AudioClip.length);
             IsPlaying = false;
         }
 

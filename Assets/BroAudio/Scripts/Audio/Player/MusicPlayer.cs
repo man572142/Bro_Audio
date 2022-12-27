@@ -11,11 +11,11 @@ namespace MiProduction.BroAudio.Core
 {
     public class MusicPlayer : AudioPlayer
     {
-        private MusicLibrary _currentMusicLibrary;
         private Coroutine _currentPlayCoroutine;
         private Coroutine _stopControlCoroutine;
+        private BroAudioClip _currentClip;
 
-        public int CurrentMusicID { get => _currentMusicLibrary.ID; }
+        public int CurrentMusicID { get; private set; } = -1;
         public override bool IsPlaying { get; protected set; }
         public override bool IsStoping { get; protected set; }
         public override bool IsFadingOut { get; protected set; }
@@ -26,39 +26,40 @@ namespace MiProduction.BroAudio.Core
             ClipVolume = 0f;
         }
 
-        public void Play(MusicLibrary musicLibrary, float fadeInTime = -1f, float fadeOutTime = -1f, Action onFinishFadeIn = null, Action onFinishPlaying = null)
+        public void Play(int id,BroAudioClip clip, bool isLoop, float fadeInTime = -1f, float fadeOutTime = -1f, Action onFinishFadeIn = null, Action onFinishPlaying = null)
         {
-            _currentPlayCoroutine = StartCoroutine(PlayControl(musicLibrary, fadeInTime, fadeOutTime, onFinishFadeIn, onFinishPlaying));
+            CurrentMusicID = id;
+            _currentClip = clip;
+            _currentPlayCoroutine = StartCoroutine(PlayControl(clip,isLoop, fadeInTime, fadeOutTime, onFinishFadeIn, onFinishPlaying));
         }
 
-        private IEnumerator PlayControl(MusicLibrary musicLibrary, float fadeInTime, float fadeOutTime, Action onFinishFadeIn, Action onFinishPlaying)
+        private IEnumerator PlayControl(BroAudioClip clip,bool isLoop ,float fadeInTime, float fadeOutTime, Action onFinishFadeIn, Action onFinishPlaying)
         {
-            _currentMusicLibrary = musicLibrary;
-            AudioSource.clip = musicLibrary.Clip;
-            AudioSource.time = musicLibrary.StartPosition;
-            AudioSource.loop = musicLibrary.Loop;
+            AudioSource.clip = clip.AudioClip;  
+            AudioSource.time = clip.StartPosition;
+            AudioSource.loop = isLoop;
             AudioSource.Play();
             IsPlaying = true;
 
             do
             {
                 #region FadeIn
-                fadeInTime = fadeInTime < 0 ? musicLibrary.FadeIn : fadeInTime;
+                fadeInTime = fadeInTime < 0 ? clip.FadeIn : fadeInTime;
                 if(fadeInTime > 0)
                 {
                     IsFadingIn = true;
-                    yield return StartCoroutine(Fade(fadeInTime, musicLibrary.Volume));
+                    yield return StartCoroutine(Fade(fadeInTime, clip.Volume));
                     onFinishFadeIn?.Invoke();
                     IsFadingIn = false;
                 }    
                 else
                 {
-                    ClipVolume = musicLibrary.Volume;
+                    ClipVolume = clip.Volume;
                 }
                 #endregion
 
                 #region FadeOut
-                fadeOutTime = fadeOutTime < 0 ? musicLibrary.FadeOut : fadeOutTime;
+                fadeOutTime = fadeOutTime < 0 ? clip.FadeOut : fadeOutTime;
                 if (fadeOutTime > 0)
                 {
                     yield return new WaitUntil(() => (AudioSource.clip.length - AudioSource.time) <= fadeOutTime);
@@ -71,7 +72,7 @@ namespace MiProduction.BroAudio.Core
                     yield return new WaitUntil(() => AudioSource.clip.length == AudioSource.time);
                 }
                 #endregion
-            } while (musicLibrary.Loop);
+            } while (isLoop);
 
             EndPlaying();
             onFinishPlaying?.Invoke();
@@ -94,14 +95,14 @@ namespace MiProduction.BroAudio.Core
 
         private IEnumerator StopControl(float fadeOutTime, Action onFinishPlaying)
         {
-            if (_currentMusicLibrary.ID == 0 || !IsPlaying)
+            if (CurrentMusicID <= 0 || !IsPlaying)
             {
                 onFinishPlaying?.Invoke();
                 yield break;
             }
 
             IsStoping = true;
-            fadeOutTime = fadeOutTime < 0 ? _currentMusicLibrary.FadeOut : fadeOutTime;
+            fadeOutTime = fadeOutTime < 0 ? _currentClip.FadeOut : fadeOutTime;
             if (fadeOutTime > 0)
             {
                 if (IsFadingOut)
@@ -121,11 +122,10 @@ namespace MiProduction.BroAudio.Core
         }
 
 
-        
-
         private void EndPlaying()
         {
-            _currentMusicLibrary = default;
+            _currentClip.ClearData();
+            CurrentMusicID = -1;
             _currentPlayCoroutine.Stop(this);
             ClipVolume = 0f;    
             AudioSource.Stop();

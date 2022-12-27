@@ -271,6 +271,10 @@ namespace MiProduction.BroAudio.Library
 			void DrawClipPlaybackLine(Rect waveformRect)
 			{
 				Vector3[] points = GetClipLinePoints(waveformRect.width, audioClip.length);
+				if (points.Length < 4)
+				{
+					return;
+				}
 
 				GUI.BeginClip(waveformRect);
 				Handles.color = Color.green;

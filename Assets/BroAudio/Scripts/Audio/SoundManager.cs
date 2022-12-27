@@ -45,7 +45,7 @@ namespace MiProduction.BroAudio.Core
         [SerializeField] SoundPlayer _standOutPlayer = null;
 
         [SerializeField] MusicPlayer[] _musicPlayers = null;
-        private MusicPlayer _currentMusicPlayer;
+        private MusicPlayer _currMusicPlayer;
 
         [Header("Fading Setting")]
         [SerializeField] Ease _fadeInEase = Ease.InCubic;
@@ -150,7 +150,7 @@ namespace MiProduction.BroAudio.Core
 					_musicBank.Add(musicLibrary.ID, musicLibrary);
 				}
 			}
-			_currentMusicPlayer = _musicPlayers[0];
+			_currMusicPlayer = _musicPlayers[0];
 		} 
 		#endregion
 
@@ -162,27 +162,30 @@ namespace MiProduction.BroAudio.Core
             if (!PlayMusicCheck(id))
                 return null;
 
+            BroAudioClip clip = _musicBank[id].Clip;
+            bool isLoop = _musicBank[id].Loop;
+
             switch (transition)
             {
                 case Transition.Immediate:
-                    _currentMusicPlayer.Stop(0f);
-                    _currentMusicPlayer.Play(_musicBank[id], 0f);
+                    _currMusicPlayer.Stop(0f);
+                    _currMusicPlayer.Play(id,clip,isLoop ,0f);
                     break;
                 case Transition.FadeOutThenFadeIn:
-                    _currentMusicPlayer.Stop(fadeTime, () => _currentMusicPlayer.Play(_musicBank[id], fadeTime));
+                    _currMusicPlayer.Stop(fadeTime, () => _currMusicPlayer.Play(id,clip,isLoop, fadeTime));
                     break;
                 case Transition.OnlyFadeInNew:
-                    _currentMusicPlayer.Stop(0f);
-                    _currentMusicPlayer.Play(_musicBank[id], fadeTime);
+                    _currMusicPlayer.Stop(0f);
+                    _currMusicPlayer.Play(id,clip,isLoop, fadeTime);
                     break;
                 case Transition.OnlyFadeOutCurrent:
-                    _currentMusicPlayer.Stop(fadeTime, () => _currentMusicPlayer.Play(_musicBank[id], 0f));
+                    _currMusicPlayer.Stop(fadeTime, () => _currMusicPlayer.Play(id,clip,isLoop, 0f));
                     break;
                 case Transition.CrossFade:
                     if (GetAvailableMusicPlayer(out MusicPlayer otherPlayer))
                     {
-                        _currentMusicPlayer.Stop(fadeTime, () => _currentMusicPlayer = otherPlayer);
-                        otherPlayer.Play(_musicBank[id], fadeTime);
+                        _currMusicPlayer.Stop(fadeTime, () => _currMusicPlayer = otherPlayer);
+                        otherPlayer.Play(id,clip,isLoop, fadeTime);
                     }
                     else
                     {
@@ -190,7 +193,7 @@ namespace MiProduction.BroAudio.Core
                     }
                     break;
             }
-            return _currentMusicPlayer;
+            return _currMusicPlayer;
         }
 
         private bool GetAvailableMusicPlayer(out MusicPlayer musicPlayer)
@@ -198,7 +201,7 @@ namespace MiProduction.BroAudio.Core
             musicPlayer = null;
             foreach (MusicPlayer player in _musicPlayers)
             {
-                if (!player.IsPlaying && player != _currentMusicPlayer)
+                if (!player.IsPlaying && player != _currMusicPlayer)
                 {
                     musicPlayer = player;
                     return true;
@@ -209,12 +212,12 @@ namespace MiProduction.BroAudio.Core
 
         public void StopMusic(float fadeTime)
 		{
-            _currentMusicPlayer.Stop(fadeTime);
+            _currMusicPlayer.Stop(fadeTime);
 		}
 
         private void SetMusicVolume(float vol,float fadeTime)
 		{
-            _currentMusicPlayer.SetVolume(vol,fadeTime);
+            _currMusicPlayer.SetVolume(vol,fadeTime);
 		}
 
 
@@ -227,7 +230,7 @@ namespace MiProduction.BroAudio.Core
             if(IsInSoundBank(id) && TryGetPlayer(id,out AudioPlayer audioPlayer))
             {
                 SoundPlayer soundPlayer = audioPlayer as SoundPlayer;
-                soundPlayer?.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, preventTime);
+                soundPlayer?.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, preventTime);
                 return soundPlayer;
             }
             return null;
@@ -238,7 +241,7 @@ namespace MiProduction.BroAudio.Core
             if(IsInSoundBank(id) && TryGetPlayer(id, out AudioPlayer audioPlayer))
             {
                 SoundPlayer soundPlayer = audioPlayer as SoundPlayer;
-                soundPlayer?.PlayAtPoint( _soundBank[id].Clip, _soundBank[id].Delay, _soundBank[id].Volume, position);
+                soundPlayer?.PlayAtPoint( _soundBank[id].Clip, _soundBank[id].Delay, position);
                 return soundPlayer;
             }
             return null;
@@ -285,7 +288,7 @@ namespace MiProduction.BroAudio.Core
 					player = _ambiencePlayer;
 					break;
 				case AudioType.Music:
-                    player = _currentMusicPlayer;
+                    player = _currMusicPlayer;
 					break;
 				default:
 					LogWarning($"{audioType} is not suppose to play in any AudioPlayer");
@@ -368,7 +371,7 @@ namespace MiProduction.BroAudio.Core
                 LogError($"Music ID: {id} may not exist ,please check the MusicAsset's setting");
                 return false;
             }
-            else if(id == _currentMusicPlayer.CurrentMusicID)
+            else if(id == _currMusicPlayer.CurrentMusicID)
             {
                 LogWarning("The music you want to play is already playing");
                 return false;

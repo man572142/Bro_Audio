@@ -13,15 +13,3 @@ public enum AudioType
 
     All = Music | UI | Ambience | SFX | VoiceOver,
 }
-
-//public static class ConstantID
-//{
-//    public const int Music = 1;
-//    public const int UI = 100;
-//    public const int Ambience = 10000;
-//    public const int Sfx = 1000000;
-//    public const int VoiceOver = 100000000;
-//    public const int Limit = int.MaxValue;
-
-//    public static int[] AudioIDs = { Music, UI, Sfx, VoiceOver, Limit };
-//}

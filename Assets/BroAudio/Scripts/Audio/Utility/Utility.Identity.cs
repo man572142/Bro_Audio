@@ -44,7 +44,6 @@ namespace MiProduction.BroAudio
 			int next = (int)current << 1;
 			if(next > LastAudioType)
 			{
-				// 回傳ALL可以work但不是很漂亮
 				return AudioType.All;
 			}
 			return (AudioType)next;

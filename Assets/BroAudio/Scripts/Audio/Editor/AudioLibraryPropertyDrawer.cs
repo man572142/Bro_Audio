@@ -14,6 +14,7 @@ namespace MiProduction.BroAudio.Library
 		public static readonly Color StopButtonColor = new Color(0.9f, 0.25f, 0.25f, 0.4f);
 		public static readonly Color WaveformMaskColor = new Color(0.05f, 0.05f, 0.05f, 0.3f);
 		protected const float ClipViewHeight = 100f;
+		protected const int ClipPropertiesLineCount = 4;
 
 		public GUIStyleHelper GUIStyle = GUIStyleHelper.Instance;
 
@@ -50,12 +51,12 @@ namespace MiProduction.BroAudio.Library
 
 				#region Clip Properties
 				DrawReorderableClipsList(position, property, out var currSelectedClip);
-				if (currSelectedClip != null && currSelectedClip.TryFindObjectProperty(nameof(BroAudioClip.AudioClip),out AudioClip audioClip))
+				if (currSelectedClip.TryFindObjectProperty(nameof(BroAudioClip.AudioClip),out AudioClip audioClip))
 				{
 					DrawClipProperties(position, currSelectedClip, audioClip.length);
 					DrawAdditionalClipProperties(position, property);
 
-					SerializedProperty isShowClipProp = property.FindPropertyRelative("IsShowClipView");
+					SerializedProperty isShowClipProp = property.FindPropertyRelative("IsShowClipPreview");
 					isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
 					if (isShowClipProp.boolValue && audioClip != null)
 					{
@@ -77,9 +78,16 @@ namespace MiProduction.BroAudio.Library
 				{
 					height += list.GetHeight();
 
-					SerializedProperty clipProp = property.FindPropertyRelative("Clips").GetArrayElementAtIndex(list.index >= 0 ? list.index : 0);
-					bool isShowClipView = property.FindPropertyRelative("IsShowClipView").boolValue;
-					if (clipProp.TryFindObjectProperty(nameof(BroAudioClip.AudioClip),out AudioClip audioClip) && isShowClipView)
+					bool isShowClipProp = 
+						property.TryGetArrayElementAtIndex("Clips", list.index, out var clipProp) &&
+						clipProp.TryFindObjectProperty(nameof(BroAudioClip.AudioClip), out AudioClip audioClip);
+					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative("IsShowClipPreview").boolValue;
+
+					if(!isShowClipProp)
+					{
+						height -= ClipPropertiesLineCount * SingleLineSpace;
+					}
+					if(isShowClipPreview)
 					{
 						height += ClipViewHeight;
 					}

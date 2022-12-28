@@ -62,42 +62,6 @@ namespace MiProduction.BroAudio
         public static IAudioPlayer PlaySound(int soundID, Vector3 position) => SoundManager.Instance.PlaySound(soundID, position);
         #endregion
 
-        //#region RandomSFX
-        ///// <summary>
-        ///// 隨機播放指定音效集合中的任一個Clip (會使用到Boxing/Unboxing，建議可以將Enum轉為int做為ID使用，節省一點效能開銷)
-        ///// </summary>
-        ///// <typeparam name="TEnum"></typeparam>
-        ///// <param name="sound"></param>
-        //public static void PlayRandomSFX<TEnum>(TEnum sound) where TEnum : Enum
-        //{
-        //    PlayRandomSFX(sound,0.1f);
-        //}
-
-        ///// <summary>
-        ///// 隨機播放指定音效集合中的任一個Clip (會使用到Boxing/Unboxing，建議可以將Enum轉為int做為ID使用，節省一點效能開銷)
-        ///// </summary>
-        ///// <typeparam name="TEnum"></typeparam>
-        ///// <param name="sound"></param>
-        ///// <param name="preventTime">限制該時間內不能再播放</param>
-        //public static void PlayRandomSFX<TEnum>(TEnum sound, float preventTime) where TEnum : Enum
-        //{
-        //    PlayRandomSFX((int)(ValueType)sound, preventTime);
-        //}
-
-        ///// <summary>
-        ///// 隨機播放指定音效集合中的任一個Clip
-        ///// </summary>
-        ///// <param name="soundID"></param>
-        //public static void PlayRandomSFX(int soundID) => PlayRandomSFX(soundID, 0.1f);
-
-        ///// <summary>
-        ///// 隨機播放指定音效集合中的任一個Clip
-        ///// </summary>
-        ///// <param name="soundID"></param>
-        ///// <param name="preventTime">限制該時間內不能再播放</param>
-        //public static void PlayRandomSFX(int soundID, float preventTime) => SoundManager.Instance.PlayRandomSFX(soundID, preventTime);
-        //#endregion
-
         #region Music
 
         /// <summary>

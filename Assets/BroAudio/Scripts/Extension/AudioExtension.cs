@@ -15,8 +15,6 @@ namespace MiProduction.BroAudio
 
         public static float ToDecibel(this float vol)
         {  
-            //vol = Mathf.Clamp(vol, MinVolume, MaxVolume);
-            //Debug.Log("toDb:" + vol.ToString());
             return Mathf.Log10(vol.ClampNormalize()) * 20f;
         }
 
@@ -44,7 +42,6 @@ namespace MiProduction.BroAudio
             if(id <= 0)
 			{
                 //本來就會有0,不用警告
-                //Debug.LogError($"[SoundSystem] There is an invalid ID ! please update AudioLibraryAsset.");
                 return false;
             }
 
@@ -65,24 +62,6 @@ namespace MiProduction.BroAudio
             return true;
         }
 
-        //public static bool Validate(string name, int index, AudioClip[] clips,int id)
-        //{
-        //    foreach(AudioClip clip in clips)
-        //    {
-        //        if (id <= 0)
-        //        {
-        //            return false;
-        //        }
-        //        if (clip == null)
-        //        {
-        //            LogError($"{name}'s audio clip at element {index} has not been assigned!");
-        //            return false;
-        //        }
-                
-        //    }
-            
-        //    return true;
-        //}
     }
 
 }

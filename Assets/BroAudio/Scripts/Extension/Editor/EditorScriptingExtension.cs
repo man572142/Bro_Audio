@@ -124,7 +124,7 @@ namespace MiProduction.Extension
 			return new Rect(origin.xMin + dissolveRatio * origin.width, origin.y, dissolveRatio * origin.width, origin.height);
 		}
 
-		public static bool TryFindObjectProperty<T>(this SerializedProperty sourceProperty, string propertyPath, out T newProperty) where T : class
+		public static bool TryGetPropertyObject<T>(this SerializedProperty sourceProperty, string propertyPath, out T newProperty) where T : class
 		{
 			newProperty = null;
 			if (sourceProperty == null)
@@ -139,10 +139,10 @@ namespace MiProduction.Extension
 		public static bool TryGetArrayElementAtIndex(this SerializedProperty sourceProperty,string arrayPropertyPath,int index,out SerializedProperty result)
 		{
 			result = null;
-			SerializedProperty clipsArrayProp = sourceProperty.FindPropertyRelative(arrayPropertyPath);
-			if(clipsArrayProp.isArray && clipsArrayProp.arraySize > 0)
+			SerializedProperty arrayProp = sourceProperty.FindPropertyRelative(arrayPropertyPath);
+			if(arrayProp.isArray && arrayProp.arraySize > 0)
 			{
-				result = clipsArrayProp.GetArrayElementAtIndex(index >= 0 ? index : 0);
+				result = arrayProp.GetArrayElementAtIndex(index >= 0 ? index : 0);
 				return true;
 			}
 			return false;

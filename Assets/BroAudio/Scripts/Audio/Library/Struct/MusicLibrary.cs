@@ -7,7 +7,7 @@ namespace MiProduction.BroAudio.Library
     [System.Serializable]
     public struct MusicLibrary : IAudioLibrary
     {
-        [SerializeField] string Name;
+        public string Name;
         public int ID;
         public BroAudioClip[] Clips;
 		public bool Loop;

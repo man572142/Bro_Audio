@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 using MiProduction.Extension;
+using System;
 
 namespace MiProduction.BroAudio.Library
 {
@@ -51,19 +52,20 @@ namespace MiProduction.BroAudio.Library
 
 				#region Clip Properties
 				DrawReorderableClipsList(position, property, out var currSelectedClip);
-				if (currSelectedClip.TryFindObjectProperty(nameof(BroAudioClip.AudioClip),out AudioClip audioClip))
+				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip),out AudioClip audioClip))
 				{
 					DrawClipProperties(position, currSelectedClip, audioClip.length);
 					DrawAdditionalClipProperties(position, property);
 
 					SerializedProperty isShowClipProp = property.FindPropertyRelative("IsShowClipPreview");
 					isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
-					if (isShowClipProp.boolValue && audioClip != null)
+					bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
+					if (isShowPreview)
 					{
 						DrawClipPreview(position, currSelectedClip, audioClip);
 					}
 				}
-				#endregion
+				#endregion	
 			}
 			EditorGUI.EndProperty();
 		}
@@ -80,7 +82,7 @@ namespace MiProduction.BroAudio.Library
 
 					bool isShowClipProp = 
 						property.TryGetArrayElementAtIndex("Clips", list.index, out var clipProp) &&
-						clipProp.TryFindObjectProperty(nameof(BroAudioClip.AudioClip), out AudioClip audioClip);
+						clipProp.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip);
 					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative("IsShowClipPreview").boolValue;
 
 					if(!isShowClipProp)
@@ -101,53 +103,41 @@ namespace MiProduction.BroAudio.Library
 		private void DrawReorderableClipsList(Rect position, SerializedProperty property, out SerializedProperty outSelectedClip)
 		{
 			SerializedProperty clipsProp = property.FindPropertyRelative("Clips");
-			string propertyPath = property.propertyPath;
-			if(!_reorderableListDict.ContainsKey(propertyPath))
-			{
-				_reorderableListDict.Add(propertyPath, new ReorderableList(clipsProp.serializedObject, clipsProp));
-			}
-			ReorderableList reorderableList = _reorderableListDict[propertyPath];
+			ReorderableList reorderableList = GetReorderableList(property.propertyPath, clipsProp);
 
 			bool isMulticlips = reorderableList.count > 1;
-			SerializedProperty multiclipsModeProp = property.FindPropertyRelative("MulticlipsPlayMode");
-			int playModeIndex = multiclipsModeProp.enumValueIndex;
-			if (isMulticlips && playModeIndex == 0)
-			{
-				playModeIndex = 1;
-			}
-			MulticlipsPlayMode currentPlayMode = (MulticlipsPlayMode)playModeIndex;
+			SetCurrentPlayMode(property, isMulticlips, out SerializedProperty playModeProp, out MulticlipsPlayMode currentPlayMode);
 
-			int showIndex = reorderableList.index > 0 ? reorderableList.index : 0;
-			SerializedProperty currSelectedClip = reorderableList.count > 0 ? clipsProp.GetArrayElementAtIndex(showIndex) : null;
+			int selectedIndex = reorderableList.index > 0 ? reorderableList.index : 0;
+			SerializedProperty currSelectedClip = reorderableList.count > 0 ? clipsProp.GetArrayElementAtIndex(selectedIndex) : null;
 			outSelectedClip = currSelectedClip;
 
 			reorderableList.draggable = true;
 			reorderableList.drawHeaderCallback = OnDrawHeader;
 			reorderableList.drawElementCallback = OnDrawElement;
 			reorderableList.drawFooterCallback = OnDrawFooter;
-
 			reorderableList.DoList(GetRectAndIterateLine(position));
 
 			void OnDrawHeader(Rect rect)
 			{
-				float[] ratio = { 0.2f,0.5f,0.18f,0.12f };
-				if(EditorScriptingExtension.TrySplitRectHorizontal(rect, ratio, 15f, out Rect[] newRects))
+				float[] ratio = { 0.2f, 0.5f, 0.18f, 0.12f };
+				if (EditorScriptingExtension.TrySplitRectHorizontal(rect, ratio, 15f, out Rect[] newRects))
 				{
 					EditorGUI.LabelField(newRects[0], "Clips");
 					if (isMulticlips)
 					{
-						multiclipsModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(newRects[1], currentPlayMode);
+						playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(newRects[1], currentPlayMode);
 						switch (currentPlayMode)
 						{
 							case MulticlipsPlayMode.Sequence:
-								EditorGUI.LabelField(newRects[ratio.Length -1], "Index");
+								EditorGUI.LabelField(newRects[ratio.Length - 1], "Index");
 								break;
 							case MulticlipsPlayMode.Random:
 								EditorGUI.LabelField(newRects[ratio.Length - 1], "Weight");
 								break;
 						}
 						EditorGUI.LabelField(newRects[1].DissolveHorizontal(0.4f), "(PlayMode)".SetColor(Color.gray), GUIStyle.RichText);
-					}	
+					}
 					DrawLineCount++;
 				}
 			}
@@ -180,13 +170,36 @@ namespace MiProduction.BroAudio.Library
 			{
 				ReorderableList.defaultBehaviours.DrawFooter(rect, reorderableList);
 
-				if(currSelectedClip.TryFindObjectProperty(nameof(BroAudioClip.AudioClip),out AudioClip audioClip))
+				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
 				{
 					Rect labelRect = new Rect(rect);
 					labelRect.y += 5f;
 					EditorGUI.LabelField(labelRect, audioClip.name.SetColor(ClipLabelColor).ToBold(), GUIStyle.RichText);
 				}
 				DrawLineCount++;
+			}
+
+			void SetCurrentPlayMode(SerializedProperty property, bool isMulticlips, out SerializedProperty playModeProp, out MulticlipsPlayMode currentPlayMode)
+			{
+				playModeProp = property.FindPropertyRelative("MulticlipsPlayMode");
+				if (!isMulticlips)
+				{
+					playModeProp.enumValueIndex = 0;
+				}
+				else if (isMulticlips && playModeProp.enumValueIndex == 0)
+				{
+					playModeProp.enumValueIndex = 1;
+				}
+				currentPlayMode = (MulticlipsPlayMode)playModeProp.enumValueIndex;
+			}
+
+			ReorderableList GetReorderableList(string propertyPath, SerializedProperty clipsProp)
+			{
+				if (!_reorderableListDict.ContainsKey(propertyPath))
+				{
+					_reorderableListDict.Add(propertyPath, new ReorderableList(clipsProp.serializedObject, clipsProp));
+				}
+				return _reorderableListDict[propertyPath];
 			}
 		}
 

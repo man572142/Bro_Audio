@@ -8,7 +8,7 @@ namespace MiProduction.BroAudio.Library
     [System.Serializable]
     public struct SoundLibrary : IAudioLibrary
     {
-        [SerializeField] string Name;
+        public string Name;
         public int ID;
         public BroAudioClip[] Clips;
         public float Delay;
@@ -34,7 +34,8 @@ namespace MiProduction.BroAudio.Library
                 return _clip;
 			}
         }
-        public bool Validate(int index)
+
+		public bool Validate(int index)
         {
             return AudioExtension.Validate(nameof(SoundLibrary), index, Clips, ID);
         }

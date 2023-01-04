@@ -30,7 +30,7 @@ namespace MiProduction.BroAudio
 
 			for (int i = 0; i < dataToWrite.Length; i++)
 			{
-				if (!IsValidName(dataToWrite[i]))
+				if (!IsValidName(dataToWrite[i],out ValidationErrorCode errorCode))
 				{
 					continue;
 				}
@@ -101,23 +101,6 @@ namespace MiProduction.BroAudio
 				return Statement.Continue;
 			});
 			return id;
-		}
-
-		private static bool IsValidName(string name)
-		{
-			if (string.IsNullOrWhiteSpace(name))
-			{
-				return false;
-			}
-
-			foreach (char word in name)
-			{
-				if (!Char.IsLetter(word) && !Char.IsWhiteSpace(word))
-				{
-					return false;
-				}
-			}
-			return true;
 		}
 	}
 

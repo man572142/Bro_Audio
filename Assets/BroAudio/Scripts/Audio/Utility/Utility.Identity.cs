@@ -8,9 +8,18 @@ namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
+		public enum ValidationErrorCode
+		{
+			NoError,
+			IsNullOrEmpty,
+			StartWithNumber,
+			ContainsInvalidWord,
+		}
+
 		// 最後一個enum = ALL加1再右移一位
 		public static readonly int LastAudioType = ((int)AudioType.All + 1) >> 1;
 		public const int IdMultiplier = 100; // 用到1000會超出int上限，若有需要則必須改用long
+
 
 		public static int ToConstantID(this AudioType audioType)
 		{
@@ -81,22 +90,30 @@ namespace MiProduction.BroAudio
 			});
 		}
 
-		public static Type GetEnumType(string enumName)
+		public static bool IsValidName(string name,out ValidationErrorCode errorCode)
 		{
-			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+			if (String.IsNullOrWhiteSpace(name))
 			{
-				var type = assembly.GetType(enumName);
-				if (type == null)
-					continue;
-				if (type.IsEnum)
-					return type;
+				errorCode = ValidationErrorCode.IsNullOrEmpty;
+				return false;
 			}
-			return null;
-		}
 
-		public static bool HasEnumType(string enumName)
-		{
-			return GetEnumType(enumName) != null;
+			if(Char.IsNumber(name[0]))
+			{
+				errorCode = ValidationErrorCode.StartWithNumber;
+				return false;
+			}
+
+			foreach(char word in name)
+			{
+				if(!Char.IsLetter(word) && !Char.IsNumber(word) && word != '_')
+				{
+					errorCode = ValidationErrorCode.ContainsInvalidWord;
+					return false;
+				}
+			}
+			errorCode = ValidationErrorCode.NoError;
+			return true;
 		}
 	} 
 }

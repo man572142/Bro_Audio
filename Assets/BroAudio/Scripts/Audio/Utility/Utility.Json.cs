@@ -23,10 +23,10 @@ namespace MiProduction.BroAudio
 
 		private static readonly string JsonFilePath = Application.dataPath + "/BroAudio/BroAudioData.json";
 
-		private static void WriteJson(string assetGUID, AudioType audioType, string[] dataToWrite, ref List<AudioData> allAudioData)
+		private static void WriteJson(string assetGUID, string libraryName, string[] dataToWrite,AudioType audioType ,ref List<AudioData> allAudioData)
 		{
 			allAudioData?.RemoveAll(x => x.AssetGUID == assetGUID);
-			IEnumerable<int> usedIdList = allAudioData?.Where(x => x.AudioType == audioType).Select(x => x.ID);
+			IEnumerable<int> usedIdList = allAudioData?.Where(x => x.LibraryName == libraryName).Select(x => x.ID);
 
 			for (int i = 0; i < dataToWrite.Length; i++)
 			{
@@ -36,7 +36,7 @@ namespace MiProduction.BroAudio
 				}
 				int id = GetUniqueID(audioType, usedIdList);
 				string name = dataToWrite[i].Replace(" ", string.Empty);
-				allAudioData.Add(new AudioData(id, name, audioType, assetGUID));
+				allAudioData.Add(new AudioData(id, name, libraryName, assetGUID));
 			}
 			WriteToFile(allAudioData);
 		}
@@ -66,21 +66,22 @@ namespace MiProduction.BroAudio
 			}
 		}
 
-		private static void DeleteJsonDataByAsset(string assetGUID,out List<AudioData> currentAudioDatas,out AudioType deletedType)
+		private static void DeleteJsonDataByAsset(string assetGUID,out List<AudioData> currentAudioDatas,out string deletedLibraryName)
 		{
 			currentAudioDatas = ReadJson();
-			deletedType = AudioType.None;
+			deletedLibraryName = string.Empty;
 
-			for(int i = 0; i < currentAudioDatas?.Count; i++)
+			int dataCount = currentAudioDatas != null? currentAudioDatas.Count :0 ;
+			for (int i = dataCount - 1; i >= 0 ; i--)
 			{
 				if(currentAudioDatas[i].AssetGUID == assetGUID)
 				{
-					deletedType = currentAudioDatas[i].AudioType;
+					deletedLibraryName = currentAudioDatas[i].LibraryName;
 					currentAudioDatas.RemoveAt(i);
 				}
 			}
 
-			if(deletedType != AudioType.None)
+			if(!string.IsNullOrEmpty(deletedLibraryName))
 			{
 				WriteToFile(currentAudioDatas);
 			}

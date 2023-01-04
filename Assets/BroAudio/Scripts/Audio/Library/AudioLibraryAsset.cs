@@ -6,18 +6,19 @@ using System;
 using System.Linq;
 using UnityEditor;
 
-namespace MiProduction.BroAudio.Library
+namespace MiProduction.BroAudio.Library.Core
 {
     public abstract class AudioLibraryAsset<T> : ScriptableObject, IAudioLibraryAsset where T : IAudioLibrary
     {
-        public T[] Libraries;
+        public string LibraryName;
+
+        public T[] Sets;
 
         // Do Not Delete This Line
         [SerializeField, HideInInspector] private string _enumsPath = string.Empty;
 
         private string _assetGUID = string.Empty;
         
-        //public abstract string LibraryTypeName { get; }
 		public abstract AudioType AudioType { get; }
 
         public string AssetGUID
@@ -39,10 +40,10 @@ namespace MiProduction.BroAudio.Library
         {
             get
             {
-                if (Libraries == null)
-                    Libraries = new T[0];
+                if (Sets == null)
+                    Sets = new T[0];
 
-                return Libraries.Select(x => x.EnumName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
+                return Sets.Select(x => x.EnumName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
             }
         }
 	}

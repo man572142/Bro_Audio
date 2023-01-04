@@ -2,7 +2,7 @@ using MiProduction.Extension;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MiProduction.BroAudio.Library;
+using MiProduction.BroAudio.Library.Core;
 using System;
 using UnityEngine.Profiling;
 using static MiProduction.BroAudio.Utility;
@@ -91,9 +91,9 @@ namespace MiProduction.BroAudio.Core
 				{
 					continue;
 				}
-				for (int s = 0; s < soundAsset.Libraries.Length; s++)
+				for (int s = 0; s < soundAsset.Sets.Length; s++)
 				{
-					var soundLibrary = soundAsset.Libraries[s];
+					var soundLibrary = soundAsset.Sets[s];
 					if (_soundBank.ContainsKey(soundLibrary.ID))
 					{
 						LogError($"Sound :{soundLibrary.EnumName} is duplicated !");
@@ -112,16 +112,16 @@ namespace MiProduction.BroAudio.Core
 			foreach (SoundLibraryAsset asset in _randomSoundAsset)
 			{
 				isValidated = true;
-				for (int r = 0; r < asset.Libraries.Length; r++)
+				for (int r = 0; r < asset.Sets.Length; r++)
 				{
-					if (!asset.Libraries[r].Validate(r))
+					if (!asset.Sets[r].Validate(r))
 					{
 						isValidated = false;
 						break;
 					}
 				}
 				if (isValidated)
-					_randomSoundBank.Add(asset.Libraries[0].ID, asset.Libraries);
+					_randomSoundBank.Add(asset.Sets[0].ID, asset.Sets);
 			}
 		}
 		private void InitMusicBank()
@@ -132,10 +132,10 @@ namespace MiProduction.BroAudio.Core
 				return;
 			}
 
-			for (int m = 0; m < _mainMusicAsset.Libraries.Length; m++)
+			for (int m = 0; m < _mainMusicAsset.Sets.Length; m++)
 			{
 
-				var musicLibrary = _mainMusicAsset.Libraries[m];
+				var musicLibrary = _mainMusicAsset.Sets[m];
 				if (_musicBank.ContainsKey(musicLibrary.ID))
 				{
 					LogError($"Music :{musicLibrary.EnumName} is duplicated !");

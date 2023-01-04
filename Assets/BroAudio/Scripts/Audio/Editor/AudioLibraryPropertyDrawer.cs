@@ -6,7 +6,7 @@ using UnityEditorInternal;
 using MiProduction.Extension;
 using System;
 
-namespace MiProduction.BroAudio.Library
+namespace MiProduction.BroAudio.Library.Core
 {
 	public abstract class AudioLibraryPropertyDrawer : PropertyDrawer, IEditorDrawer
 	{

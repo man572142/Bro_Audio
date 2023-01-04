@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static MiProduction.BroAudio.Utility;
 
-namespace MiProduction.BroAudio.Library
+namespace MiProduction.BroAudio.Library.Core
 {
     [System.Serializable]
     public struct SoundLibrary : IAudioLibrary

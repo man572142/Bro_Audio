@@ -8,22 +8,21 @@ namespace MiProduction.BroAudio
 	public static partial class Utility
 	{
 		public const string DefaultEnumsPath = "Assets/BroAudio/Scripts/Audio/Enums";
-		public static void WriteAudioData(string assetGUID,AudioType audioType,string[] dataToWrite,out List<AudioData> currentAudioDatas)
+		public static void WriteAudioData(string assetGUID,string libraryName, string[] dataToWrite,AudioType audioType,out List<AudioData> currentAudioDatas)
 		{
 			currentAudioDatas = ReadJson();
-			WriteJson(assetGUID, audioType, dataToWrite, ref currentAudioDatas);
-			GenerateEnum(audioType, currentAudioDatas);
+			WriteJson(assetGUID, libraryName, dataToWrite, audioType, ref currentAudioDatas);
+			GenerateEnum(libraryName, currentAudioDatas);
 		}
 
 		public static void DeleteAudioData(string assetGUID)
 		{
-			DeleteJsonDataByAsset(assetGUID,out var currentAudioDatas,out var deletedType);
-			if(deletedType != AudioType.None)
+			DeleteJsonDataByAsset(assetGUID,out var currentAudioDatas,out var deletedLibrary);
+			Debug.Log(deletedLibrary);
+			if(!string.IsNullOrEmpty(deletedLibrary))
 			{
-				GenerateEnum(deletedType, currentAudioDatas);
-			}
-			
+				GenerateEnum(deletedLibrary, currentAudioDatas);
+			}	
 		}
 	}
-
 }

@@ -1,6 +1,6 @@
 using MiProduction.BroAudio;
 
-namespace MiProduction.BroAudio.Library
+namespace MiProduction.BroAudio.Library.Core
 {
     public interface IAudioLibraryAsset
     {

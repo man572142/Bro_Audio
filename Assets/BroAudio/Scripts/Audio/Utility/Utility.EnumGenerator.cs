@@ -4,42 +4,40 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
-		private const string _nameSpace = "MiProduction.BroAudio.";
+		private const string _nameSpace = "MiProduction.BroAudio.Library";
 
-		private static void GenerateEnum(AudioType audioType, IEnumerable<AudioData> currentAudioDatas)
+		private static void GenerateEnum(string libraryName, IEnumerable<AudioData> currentAudioDatas)
 		{
 			if (!Directory.Exists(DefaultEnumsPath))
 			{
 				Directory.CreateDirectory(DefaultEnumsPath);
 			}
-			var datasToWrite = currentAudioDatas.Where(x => x.AudioType == audioType);
-			WriteEnumFile(audioType, datasToWrite);
+			var datasToWrite = currentAudioDatas.Where(x => x.LibraryName == libraryName);
+			WriteEnumFile(libraryName, datasToWrite);
 			
 			AssetDatabase.Refresh();
 		}
 
-		private static void WriteEnumFile(AudioType audioType, IEnumerable<AudioData> datasToWrite)
+		private static void WriteEnumFile(string libraryName, IEnumerable<AudioData> datasToWrite)
 		{
-			string enumTypeName = audioType.ToString();
-			string filePathAndName = DefaultEnumsPath + "/" + enumTypeName + ".cs";
+			string filePathAndName = DefaultEnumsPath + "/" + libraryName + ".cs";
 
             using (StreamWriter streamWriter = new StreamWriter(filePathAndName))
             {
                 streamWriter.WriteLine("// Auto-Generate script,DO NOT EDIT!");
-                streamWriter.WriteLine("namespace MiProduction.BroAudio {");
-                streamWriter.WriteLine("public enum " + enumTypeName);
+                streamWriter.WriteLine("namespace " + _nameSpace + " {");
+                streamWriter.WriteLine("public enum " + libraryName);
                 streamWriter.WriteLine("{");
 				streamWriter.WriteLine("\tNone = 0,");
 
 				foreach(var data in datasToWrite)
 				{
-					if (IsValidEnum(enumTypeName, data.Name))
+					if (IsValidEnum(libraryName, data.Name))
 					{
 						streamWriter.WriteLine($"\t{data.Name} = {data.ID},");
 					}

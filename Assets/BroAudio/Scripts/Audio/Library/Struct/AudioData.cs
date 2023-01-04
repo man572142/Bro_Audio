@@ -9,13 +9,13 @@ namespace MiProduction.BroAudio
 	{
 		public int ID;
 		public string Name;
-		public AudioType AudioType;
+		public string LibraryName;
 		public string AssetGUID;
 
-		public AudioData(int id, string name, AudioType audioType, string assetGUID)
+		public AudioData(int id, string name, string libraryName, string assetGUID)
 		{
 			ID = id;
-			AudioType = audioType;
+			LibraryName = libraryName;
 			Name = name;
 			AssetGUID = assetGUID;
 		}

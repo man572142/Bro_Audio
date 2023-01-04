@@ -6,26 +6,27 @@ using UnityEditor;
 using UnityEngine;
 using static MiProduction.BroAudio.Utility;
 
-namespace MiProduction.BroAudio.Library
+namespace MiProduction.BroAudio.Library.Core
 {
     [CustomEditor(typeof(AudioLibraryAsset<>), true)]
     public class AudioLibraryAssetEditor : Editor
     {
         private const string EmptyString = "<color=cyan>EmptyString</color>";
-        
+
         //private SerializedProperty _pathProperty;
+        
         private bool _hasUnassignedID = false;
-        private SerializedProperty _libraries;
+        private SerializedProperty _sets;
+        private SerializedProperty _libraryName;
         private IAudioLibraryAsset _asset;
         private string _waitingString = string.Empty;
 
         private List<AudioData> _currentAudioData = null;
 
-        //private IEnumerable<AudioData> _newEnumDatas = null;
-
         private void OnEnable()
         {
-            _libraries = serializedObject.FindProperty("Libraries");
+            _libraryName = serializedObject.FindProperty("LibraryName");
+            _sets = serializedObject.FindProperty("Sets");
             _asset = target as IAudioLibraryAsset;
 
             //_pathProperty = serializedObject.FindProperty("_enumsPath");
@@ -47,28 +48,33 @@ namespace MiProduction.BroAudio.Library
 
 		public override void OnInspectorGUI()
         {
-            base.OnInspectorGUI();
+            _libraryName.stringValue = EditorGUILayout.TextField("Library Name",_libraryName.stringValue);
 
+            if(string.IsNullOrWhiteSpace(_libraryName.stringValue))
+			{
+                EditorGUILayout.HelpBox("Please enter a Name to identify this library.\n(this will also be the enum type name in later use", MessageType.Warning);
+                return;
+            }
+            
             if (!_hasUnassignedID)
             {
                 //SetEnumsPath();
-
+                EditorGUILayout.PropertyField(_sets, new GUIContent("Sets"), true);
                 if (IsLibraryNeedRefresh())
                 {
                     EditorGUILayout.HelpBox("This library needs to be updated !", MessageType.Warning);
+                    if (GUILayout.Button("Update", GUILayout.Height(30f)) && HasAudioData(out string[] allAudioDataNames))
+                    {
+                        WriteAudioData(_asset.AssetGUID, _libraryName.stringValue, allAudioDataNames, _asset.AudioType, out var newAudioDatas);
+                        _currentAudioData = newAudioDatas;
+                        _hasUnassignedID = true;
+                        _waitingString = string.Empty;
+                    }
                 }
-
-                if (GUILayout.Button("Update", GUILayout.Height(30f)) && HasAudioData(out string[] allAudioDataNames))
-                {
-                    WriteAudioData(_asset.AssetGUID, _asset.AudioType, allAudioDataNames, out var newAudioDatas);
-                    _currentAudioData = newAudioDatas;
-                    _hasUnassignedID = true;
-					_waitingString = string.Empty;
-				}
             }
             else
             {
-                EditorGUILayout.LabelField("Generating IDs and enums" + _waitingString);
+                EditorGUILayout.LabelField("Generating IDs and enums, please don't leave " + _waitingString);
                 if (!EditorApplication.isCompiling)
 				{
                     AssignID();
@@ -110,9 +116,9 @@ namespace MiProduction.BroAudio.Library
 
         private void AssignID()
         {
-            for (int i = 0; i < _libraries.arraySize; i++)
+            for (int i = 0; i < _sets.arraySize; i++)
             {
-                SerializedProperty element = _libraries.GetArrayElementAtIndex(i);
+                SerializedProperty element = _sets.GetArrayElementAtIndex(i);
                 SerializedProperty elementName = element.FindPropertyRelative("Name");
                 SerializedProperty elementID = element.FindPropertyRelative("ID");
 
@@ -141,9 +147,9 @@ namespace MiProduction.BroAudio.Library
 
 		private bool IsLibraryNeedRefresh()
         {
-            for (int i = 0; i < _libraries.arraySize; i++)
+            for (int i = 0; i < _sets.arraySize; i++)
             {
-                SerializedProperty element = _libraries.GetArrayElementAtIndex(i);
+                SerializedProperty element = _sets.GetArrayElementAtIndex(i);
                 SerializedProperty elementName = element.FindPropertyRelative("Name");
                 SerializedProperty elementID = element.FindPropertyRelative("ID");
 

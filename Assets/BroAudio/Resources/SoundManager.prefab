@@ -202,9 +202,7 @@ MonoBehaviour:
   _fadeInEase: 2
   _fadeOutEase: 11
   _allSoundAssets:
-  - {fileID: 11400000, guid: 8fee7568a8f32b941bebc99664e9096e, type: 2}
-  - {fileID: 11400000, guid: 1fa8f00dd6d8c454bb3247b479220474, type: 2}
-  - {fileID: 11400000, guid: 2becbdd0140d20946af56e78695a6abe, type: 2}
+  - {fileID: 11400000, guid: aaf1306ada843bb4fa644fd4b6899923, type: 2}
   _randomSoundAsset: []
   _mainMusicAsset: {fileID: 11400000, guid: 814aec160ae6b384da0908c29bf472f5, type: 2}
 --- !u!1 &3109420919187162984

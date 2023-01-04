@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace MiProduction.BroAudio.Library
+namespace MiProduction.BroAudio.Library.Core
 {
 	public class AssetModificationEditor : UnityEditor.AssetModificationProcessor
 	{

@@ -37,28 +37,48 @@ namespace MiProduction.BroAudio
 
 				foreach(var data in datasToWrite)
 				{
-					if (IsValidEnum(libraryName, data.Name))
+					if (IsValidName(libraryName, out ValidationErrorCode errorCode))
 					{
 						streamWriter.WriteLine($"\t{data.Name} = {data.ID},");
 					}
+					else
+					{
+						switch (errorCode)
+						{
+							case ValidationErrorCode.NoError:
+								break;
+							case ValidationErrorCode.IsNullOrEmpty:
+								LogError($"There is an Empty name in {libraryName}.");
+								break;
+							case ValidationErrorCode.StartWithNumber:
+								LogError($"Name should not start with a number! {data.Name} from {libraryName} library is invalid");
+								break;
+							case ValidationErrorCode.ContainsInvalidWord:
+								LogError($"Name can only use \"Letter\",\"Number\" and \"_(Undersocre)\",{ data.Name} from {libraryName} library is invalid");
+								break;
+						}
+					}
 				}
-                streamWriter.WriteLine("}}");
-            }
-        }
-
-		private static bool IsValidEnum(string enumTypeName, string enumName)
-		{
-			if (String.IsNullOrWhiteSpace(enumName))
-			{
-				LogError("There is an empty name in " + enumTypeName);
-				return false;
+				streamWriter.WriteLine("}}");
 			}
-			else if (!Regex.IsMatch(enumName, @"^[a-zA-Z]+$"))
-			{
-				LogError($"{enumName} is not a valid name for library of " + enumTypeName);
-				return false;
-			}
-			return true;
 		}
-	} 
+
+		public static Type GetEnumType(string enumName)
+		{
+			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				var type = assembly.GetType(enumName);
+				if (type == null)
+					continue;
+				if (type.IsEnum)
+					return type;
+			}
+			return null;
+		}
+
+		public static bool HasEnumType(string enumName)
+		{
+			return GetEnumType(enumName) != null;
+		}
+	}
 }

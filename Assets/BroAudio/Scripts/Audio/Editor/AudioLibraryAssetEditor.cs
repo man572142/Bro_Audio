@@ -50,13 +50,26 @@ namespace MiProduction.BroAudio.Library.Core
         {
             _libraryName.stringValue = EditorGUILayout.TextField("Library Name",_libraryName.stringValue);
 
-            if(string.IsNullOrWhiteSpace(_libraryName.stringValue))
+            if(!IsValidName(_libraryName.stringValue,out ValidationErrorCode errorCode))
 			{
-                EditorGUILayout.HelpBox("Please enter a Name to identify this library.\n(this will also be the enum type name in later use", MessageType.Warning);
+				switch (errorCode)
+				{
+					case ValidationErrorCode.NoError:
+						break;
+					case ValidationErrorCode.IsNullOrEmpty:
+                        EditorGUILayout.HelpBox("Please enter a Name to identify this library.\n(this will also be the enum type name in later use", MessageType.Warning);
+                        break;
+					case ValidationErrorCode.StartWithNumber:
+                        EditorGUILayout.HelpBox("Library Name should not start with a number", MessageType.Error);
+                        break;
+					case ValidationErrorCode.ContainsInvalidWord:
+                        EditorGUILayout.HelpBox("Library Name can only use \"Letter\",\"Number\" and \"_(Undersocre)\"", MessageType.Error);
+                        break;
+				}
                 return;
-            }
-            
-            if (!_hasUnassignedID)
+			}
+
+			if (!_hasUnassignedID)
             {
                 //SetEnumsPath();
                 EditorGUILayout.PropertyField(_sets, new GUIContent("Sets"), true);
@@ -83,32 +96,32 @@ namespace MiProduction.BroAudio.Library.Core
             }
 
             serializedObject.ApplyModifiedProperties();
-        }
+		}
 
-        //private void SetEnumsPath()
-        //      {
-        //          //_pathProperty = serializedObject.FindProperty("_enumsPath");
-        //          if (string.IsNullOrWhiteSpace(_pathProperty.stringValue))
-        //          {
-        //              _pathProperty.stringValue = _defaultEnumsPath;
-        //          }
-        //          EditorGUILayout.LabelField("Enums Path");
-        //          EditorGUILayout.BeginHorizontal();
-        //          {
-        //              EditorGUILayout.LabelField(_pathProperty.stringValue);
-        //              if (GUILayout.Button("Change Enums Path", GUILayout.Width(150f)))
-        //              {
-        //                  string path = EditorUtility.OpenFolderPanel("Enums Path", _pathProperty.stringValue, _pathProperty.stringValue);
-        //                  if (!string.IsNullOrWhiteSpace(path))
-        //                  {
-        //                      _pathProperty.stringValue = path.Substring(path.IndexOf("Assets"));
-        //                  }
-        //              }
-        //          }
-        //          EditorGUILayout.EndHorizontal();
-        //      }
+		//private void SetEnumsPath()
+		//      {
+		//          //_pathProperty = serializedObject.FindProperty("_enumsPath");
+		//          if (string.IsNullOrWhiteSpace(_pathProperty.stringValue))
+		//          {
+		//              _pathProperty.stringValue = _defaultEnumsPath;
+		//          }
+		//          EditorGUILayout.LabelField("Enums Path");
+		//          EditorGUILayout.BeginHorizontal();
+		//          {
+		//              EditorGUILayout.LabelField(_pathProperty.stringValue);
+		//              if (GUILayout.Button("Change Enums Path", GUILayout.Width(150f)))
+		//              {
+		//                  string path = EditorUtility.OpenFolderPanel("Enums Path", _pathProperty.stringValue, _pathProperty.stringValue);
+		//                  if (!string.IsNullOrWhiteSpace(path))
+		//                  {
+		//                      _pathProperty.stringValue = path.Substring(path.IndexOf("Assets"));
+		//                  }
+		//              }
+		//          }
+		//          EditorGUILayout.EndHorizontal();
+		//      }
 
-        private bool HasAudioData(out string[] allAudioDataNames)
+		private bool HasAudioData(out string[] allAudioDataNames)
         {
             allAudioDataNames = _asset.AllAudioDataNames;
             return allAudioDataNames != null && allAudioDataNames.Length > 0;
@@ -191,7 +204,7 @@ namespace MiProduction.BroAudio.Library.Core
             }
         }
 
-        
+
 	}
 
 }

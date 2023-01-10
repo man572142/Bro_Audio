@@ -18,7 +18,6 @@ namespace MiProduction.BroAudio
 		public static void DeleteAudioData(string assetGUID)
 		{
 			DeleteJsonDataByAsset(assetGUID,out var currentAudioDatas,out var deletedLibrary);
-			Debug.Log(deletedLibrary);
 			if(!string.IsNullOrEmpty(deletedLibrary))
 			{
 				GenerateEnum(deletedLibrary, currentAudioDatas);

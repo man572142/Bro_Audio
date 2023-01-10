@@ -28,7 +28,7 @@ namespace MiProduction.BroAudio
 		}
 		public string LocalPath => Application.dataPath.Replace("Assets", string.Empty) + Path;
 
-		public string FilePath => Path + FileName;
-		public string LocalFilePath => LocalPath + FileName;
+		public string FilePath => Path + "/" + FileName;
+		public string LocalFilePath => LocalPath + "/" + FileName;
 	} 
 }

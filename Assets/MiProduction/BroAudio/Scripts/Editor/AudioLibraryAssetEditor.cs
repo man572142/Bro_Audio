@@ -16,9 +16,9 @@ namespace MiProduction.BroAudio.Library.Core
         //private SerializedProperty _pathProperty;
         
         private bool _hasUnassignedID = false;
-        private SerializedProperty _sets;
-        private SerializedProperty _libraryName;
-        private IAudioLibraryAsset _asset;
+        private SerializedProperty _sets = null;
+        private SerializedProperty _libraryName = null;
+        private IAudioLibraryAsset _asset = null;
         private string _waitingString = string.Empty;
 
         private List<AudioData> _currentAudioData = null;

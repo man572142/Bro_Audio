@@ -14,4 +14,9 @@ public static class StringExtension
 	{
 		return $"<b>{text}</b>";
 	}
+
+	public static string SetSize(this string text,int size)
+	{
+		return $"<size={size}>{text}</size>";
+	}
 }

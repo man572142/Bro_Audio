@@ -19,6 +19,7 @@ public class GUIStyleHelper
 	private static GUIStyleHelper _instance;
 	private GUIStyle _richTextStyle;
 	private GUIStyle _middleCenterStyle;
+	private GUIStyle _defaultDarkBackground;
 
 	public GUIStyle MiddleCenterText
 	{
@@ -44,6 +45,18 @@ public class GUIStyleHelper
 				_richTextStyle.richText = true;
 			}
 			return _richTextStyle;
+		}
+	}
+
+	public GUIStyle DefaultDarkBackground
+	{
+		get
+		{
+			if(_defaultDarkBackground == null)
+			{
+				_defaultDarkBackground = new GUIStyle(GUI.skin.box);
+			}
+			return _defaultDarkBackground;
 		}
 	}
 }

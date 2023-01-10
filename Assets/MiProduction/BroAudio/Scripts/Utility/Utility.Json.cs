@@ -21,8 +21,6 @@ namespace MiProduction.BroAudio
 			}
 		}
 
-		private static readonly string JsonFilePath = Application.dataPath + "/MiProduction/BroAudio/BroAudioData.json";
-
 		private static void WriteJson(string assetGUID, string libraryName, string[] dataToWrite,AudioType audioType ,ref List<AudioData> allAudioData)
 		{
 			allAudioData?.RemoveAll(x => x.AssetGUID == assetGUID);
@@ -44,14 +42,14 @@ namespace MiProduction.BroAudio
 		private static void WriteToFile(List<AudioData> audioData)
 		{
 			SerializedAudioDataList serializedData = new SerializedAudioDataList(audioData);
-			File.WriteAllText(JsonFilePath, JsonUtility.ToJson(serializedData, true));
+			File.WriteAllText(JsonFileDir.FilePath, JsonUtility.ToJson(serializedData, true));
 		}
 
 		public static List<AudioData> ReadJson()
 		{
-			if (File.Exists(JsonFilePath))
+			if (File.Exists(JsonFileDir.FilePath))
 			{
-				string json = File.ReadAllText(JsonFilePath);
+				string json = File.ReadAllText(JsonFileDir.FilePath);
 				if(string.IsNullOrEmpty(json))
 				{
 					return new List<AudioData>();
@@ -61,7 +59,7 @@ namespace MiProduction.BroAudio
 			}
 			else
 			{
-				File.WriteAllText(JsonFilePath,string.Empty);
+				File.WriteAllText(JsonFileDir.FilePath, string.Empty);
 				return new List<AudioData>();
 			}
 		}

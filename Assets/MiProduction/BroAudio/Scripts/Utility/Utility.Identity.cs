@@ -115,5 +115,43 @@ namespace MiProduction.BroAudio
 			errorCode = ValidationErrorCode.NoError;
 			return true;
 		}
-	} 
+
+		//public static UnityEngine.Object CreateLibrary(this AudioType audioType)
+		//{
+		//	switch (audioType)
+		//	{
+		//		case AudioType.Music:
+		//			return new Library.Core.MusicLibraryAsset();
+		//		case AudioType.UI:
+		//			return new Library.Core.UISoundLibraryAsset();
+		//		case AudioType.Ambience:
+		//			return new Library.Core.AmbienceLibraryAsset();
+		//		case AudioType.SFX:
+		//			return new Library.Core.SfxLibraryAsset();
+		//		case AudioType.VoiceOver:
+		//			return new Library.Core.VoiceOverLibraryAsset();
+		//		default:
+		//			return null;
+		//	}
+		//}
+
+		public static string GetLibraryTypeName(this AudioType audioType)
+		{
+			switch (audioType)
+			{
+				case AudioType.Music:
+					return nameof(Library.Core.MusicLibraryAsset);
+				case AudioType.UI:
+					return nameof(Library.Core.UISoundLibraryAsset);
+				case AudioType.Ambience:
+					return nameof(Library.Core.AmbienceLibraryAsset);
+				case AudioType.SFX:
+					return nameof(Library.Core.SfxLibraryAsset);
+				case AudioType.VoiceOver:
+					return nameof(Library.Core.VoiceOverLibraryAsset);
+				default:
+					return null;
+			}
+		}
+	}
 }

@@ -42,8 +42,21 @@ public static void ShowWindow()
 		private void InitLibraryOptionGenericMenu()
 		{
 			_libraryOption = new GenericMenu();
-		}
 
+			LoopAllAudioType((AudioType audioType) => 
+			{ 
+				if(audioType == AudioType.None)
+				{
+					_libraryOption.AddItem(new GUIContent("Choose an AudioType to create a library"), false, null);
+					_libraryOption.AddSeparator("");
+				}
+				else
+				{
+					_libraryOption.AddItem(new GUIContent(audioType.ToString()), false, () => OnCreateLibrary(audioType));
+				}
+			});
+		}
+		
 		private void InitReorderableList()
 		{
 			_libraryList = new ReorderableList(_datas,typeof(AudioData));
@@ -70,8 +83,15 @@ public static void ShowWindow()
 
 			void OnAddDropdown(Rect buttonRect, ReorderableList list)
 			{
-				throw new NotImplementedException();
+				_libraryOption.DropDown(buttonRect);
 			}
+		}
+		private void OnCreateLibrary(AudioType audioType)
+		{
+			BroAudioDirectory newAssetPath = new BroAudioDirectory(RootDir, "test_" + audioType.ToString() + ".asset");
+			var newAsset = ScriptableObject.CreateInstance(audioType.GetLibraryTypeName());
+			AssetDatabase.CreateAsset(newAsset, newAssetPath.FilePath);
+			AssetDatabase.SaveAssets();
 		}
 
 		private void OnGUI()

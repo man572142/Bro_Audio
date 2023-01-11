@@ -13,9 +13,9 @@ namespace MiProduction.BroAudio
 
 		private static void GenerateEnum(string libraryName, IEnumerable<AudioData> currentAudioDatas)
 		{
-			if (!Directory.Exists(DefaultEnumsPath))
+			if (!Directory.Exists(EnumsDir.Path))
 			{
-				Directory.CreateDirectory(DefaultEnumsPath);
+				Directory.CreateDirectory(EnumsDir.Path);
 			}
 			var datasToWrite = currentAudioDatas.Where(x => x.LibraryName == libraryName);
 			WriteEnumFile(libraryName, datasToWrite);
@@ -25,7 +25,7 @@ namespace MiProduction.BroAudio
 
 		private static void WriteEnumFile(string libraryName, IEnumerable<AudioData> datasToWrite)
 		{
-			string filePathAndName = DefaultEnumsPath + "/" + libraryName + ".cs";
+			string filePathAndName = EnumsDir.Path + "/" + libraryName + ".cs";
 
             using (StreamWriter streamWriter = new StreamWriter(filePathAndName))
             {

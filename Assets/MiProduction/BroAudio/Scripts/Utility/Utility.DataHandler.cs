@@ -7,7 +7,6 @@ namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
-		public const string DefaultEnumsPath = "Assets/MiProduction/BroAudio/Scripts/Audio/Enums";
 		public static void WriteAudioData(string assetGUID,string libraryName, string[] dataToWrite,AudioType audioType,out List<AudioData> currentAudioDatas)
 		{
 			currentAudioDatas = ReadJson();

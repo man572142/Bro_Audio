@@ -39,6 +39,8 @@ namespace MiProduction.BroAudio.Library.Core
 		#region Unity Entry Overrider
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
+			EditorGUIUtility.wideMode = true;
+
 			DrawLineCount = 0;
 			EditorGUI.BeginProperty(position, label, property);
 

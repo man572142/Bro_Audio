@@ -5,6 +5,8 @@ using UnityEditor;
 using UnityEditorInternal;
 using static MiProduction.BroAudio.Utility;
 using System;
+using System.Linq;
+using MiProduction.BroAudio.Library.Core;
 
 namespace MiProduction.BroAudio
 {
@@ -14,7 +16,6 @@ namespace MiProduction.BroAudio
 
 		internal GUIStyleHelper GUIStyle = GUIStyleHelper.Instance;
 
-		
 		private List<AudioData> _datas = null;
 		private ReorderableList _libraryList = null;
 		private GenericMenu _libraryOption = null;
@@ -22,9 +23,8 @@ namespace MiProduction.BroAudio
 		private Vector2 _libraryListScrollPos = Vector2.zero;
 		private Vector2 _settingScrollPos = Vector2.zero;
 
-
 		[MenuItem("BroAudio/Library Manager")]
-public static void ShowWindow()
+		public static void ShowWindow()
 		{
 			EditorWindow window = GetWindow(typeof(BroAudioEditorWindow));
 			window.minSize = MinWindowSize;
@@ -59,38 +59,31 @@ public static void ShowWindow()
 		
 		private void InitReorderableList()
 		{
-			_libraryList = new ReorderableList(_datas,typeof(AudioData));
+			string[] libraryNameList = _datas.Select(x => x.LibraryName).Distinct().ToArray();
 
-			_libraryList.drawElementCallback = OnDrawElement;
+			_libraryList = new ReorderableList(libraryNameList, typeof(AudioData));
 			_libraryList.onAddDropdownCallback = OnAddDropdown;
 			_libraryList.onRemoveCallback = OnRemove;
-			_libraryList.onSelectCallback = OnSelect;
-
-			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
-			{
-				throw new NotImplementedException();
-			}
-
-			void OnSelect(ReorderableList list)
-			{
-				throw new NotImplementedException();
-			}
-
-			void OnRemove(ReorderableList list)
-			{
-				throw new NotImplementedException();
-			}
-
+			
 			void OnAddDropdown(Rect buttonRect, ReorderableList list)
 			{
 				_libraryOption.DropDown(buttonRect);
 			}
+
+			void OnRemove(ReorderableList list)
+			{
+				// ¥ÎAssetGUID
+				throw new NotImplementedException();
+			}
+
 		}
 		private void OnCreateLibrary(AudioType audioType)
 		{
 			BroAudioDirectory newAssetPath = new BroAudioDirectory(RootDir, "test_" + audioType.ToString() + ".asset");
 			var newAsset = ScriptableObject.CreateInstance(audioType.GetLibraryTypeName());
 			AssetDatabase.CreateAsset(newAsset, newAssetPath.FilePath);
+
+
 			AssetDatabase.SaveAssets();
 		}
 
@@ -130,22 +123,51 @@ public static void ShowWindow()
 			EditorGUILayout.BeginVertical(GUIStyle.DefaultDarkBackground,GUILayout.Width(width));
 			{
 				EditorGUILayout.LabelField("Setting".SetColor(Color.white).ToBold(), GUIStyle.RichText);
-				_settingScrollPos = EditorGUILayout.BeginScrollView(_settingScrollPos);
+
+				if (_libraryList.count > 0)
 				{
-					if (_libraryList.count > 0)
+					int selectedIndex = _libraryList.index > 0 ? _libraryList.index : 0;
+					string assetPath = AssetDatabase.GUIDToAssetPath(_datas[selectedIndex].AssetGUID);
+					Editor editor = Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject)));
+					if (TryGetAudioLibraryEditor(editor, out var libraryEditor))
 					{
-						int selectedIndex = _libraryList.index > 0 ? _libraryList.index : 0;
-						string assetPath = AssetDatabase.GUIDToAssetPath(_datas[selectedIndex].AssetGUID);
-						Editor libraryEditor = Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject)));
-						libraryEditor.OnInspectorGUI();
+						libraryEditor.IsInEditorWindow = true;
+						DrawLibraryRefreshHelper(libraryEditor);
 					}
+
+					EditorGUILayout.Space(20f);
+					_settingScrollPos = EditorGUILayout.BeginScrollView(_settingScrollPos);
+					{
+						editor.OnInspectorGUI();
+					}
+					EditorGUILayout.EndScrollView();
 				}
-				EditorGUILayout.EndScrollView();
+				else
+				{
+					EditorGUILayout.LabelField("No Data!".SetSize(50).SetColor(Color.gray), GUIStyle.RichText);
+				}
+				
 			}
 			EditorGUILayout.EndVertical();
+
+			bool TryGetAudioLibraryEditor(Editor libraryEditor,out AudioLibraryAssetEditor result)
+			{
+				result = libraryEditor as AudioLibraryAssetEditor;
+				return result != null;
+			}
 		}
 
-		
+		private static void DrawLibraryRefreshHelper(AudioLibraryAssetEditor libraryEditor)
+		{
+			if (libraryEditor.IsLibraryNeedRefresh())
+			{
+				EditorGUILayout.HelpBox("This library needs to be updated !", MessageType.Warning);
+				if (GUILayout.Button("Update", GUILayout.Height(30f)))
+				{
+					libraryEditor.UpdateLibrary();
+				}
+			}
+		}
 
 		private string DrawPathSetting(string name,BroAudioDirectory dir)
 		{

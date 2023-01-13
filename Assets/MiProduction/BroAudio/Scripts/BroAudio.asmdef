@@ -1,0 +1,16 @@
+{
+    "name": "MiProduction.BroAudio",
+    "rootNamespace": "",
+    "references": [
+        "GUID:58473f43d728a59409d9b19f6af982e7"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

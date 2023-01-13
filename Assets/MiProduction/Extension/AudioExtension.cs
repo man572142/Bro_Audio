@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio
 {
@@ -35,31 +34,6 @@ namespace MiProduction.BroAudio
         public static float ClampDecibel(this float dB)
         {
             return Mathf.Clamp(dB,MinDecibelVolume, MaxDecibelVolume);
-        }
-
-        public static bool Validate(string name, int index,BroAudioClip[] clips ,int id )
-        {
-            if(id <= 0)
-			{
-                //本來就會有0,不用警告
-                return false;
-            }
-
-            foreach(BroAudioClip clipData in clips)
-			{
-                if (clipData.AudioClip == null)
-                {
-                    LogError($"Audio clip has not been assigned! please check element {index} in {name}.");
-                    return false;
-                }
-                float controlLength = (clipData.FadeIn > 0f ? clipData.FadeIn : 0f) + (clipData.FadeOut > 0f ? clipData.FadeOut : 0f) + clipData.StartPosition;
-                if (controlLength > clipData.AudioClip.length)
-                {
-                    LogError($"Time control value should not greater than clip's length! please check element {index} in {name}.");
-                    return false;
-                }
-            }
-            return true;
         }
 
     }

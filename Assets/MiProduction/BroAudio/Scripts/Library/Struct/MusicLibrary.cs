@@ -35,7 +35,7 @@ namespace MiProduction.BroAudio.Library.Core
 
 		public bool Validate(int index)
         {
-            return AudioExtension.Validate(nameof(MusicLibrary), index, Clips,ID);
+            return Utility.Validate(nameof(MusicLibrary), index, Clips,ID);
         }
 	}
 }

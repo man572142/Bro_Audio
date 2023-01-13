@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Library.Core
 {
@@ -37,7 +33,7 @@ namespace MiProduction.BroAudio.Library.Core
 
 		public bool Validate(int index)
         {
-            return AudioExtension.Validate(nameof(SoundLibrary), index, Clips, ID);
+            return Utility.Validate(nameof(SoundLibrary), index, Clips, ID);
         }
     }
 }

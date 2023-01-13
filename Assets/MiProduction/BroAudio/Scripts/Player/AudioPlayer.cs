@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using MiProduction.Extension;
-using static MiProduction.BroAudio.AudioExtension;
+using static MiProduction.Extension.AudioExtension;
 using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Core

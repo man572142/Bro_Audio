@@ -1,10 +1,10 @@
-using MiProduction.Extension;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
-using static MiProduction.BroAudio.AudioExtension;
+using MiProduction.Extension;
+using static MiProduction.Extension.AudioExtension;
 using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Core

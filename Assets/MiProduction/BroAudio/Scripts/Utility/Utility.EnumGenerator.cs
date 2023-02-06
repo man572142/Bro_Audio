@@ -13,21 +13,22 @@ namespace MiProduction.BroAudio
 
 		private static void GenerateEnum(string libraryName, IEnumerable<AudioData> currentAudioDatas)
 		{
-			if (!Directory.Exists(EnumsDir.Path))
+			string enumsFullPath = GetFullPath(EnumsPath);
+			if (!Directory.Exists(enumsFullPath))
 			{
-				Directory.CreateDirectory(EnumsDir.Path);
+				Directory.CreateDirectory(enumsFullPath);
 			}
 			var datasToWrite = currentAudioDatas.Where(x => x.LibraryName == libraryName);
-			WriteEnumFile(libraryName, datasToWrite);
+			WriteEnumFile(enumsFullPath,libraryName, datasToWrite);
 			
 			AssetDatabase.Refresh();
 		}
 
-		private static void WriteEnumFile(string libraryName, IEnumerable<AudioData> datasToWrite)
+		private static void WriteEnumFile(string enumsFullPath,string libraryName, IEnumerable<AudioData> datasToWrite)
 		{
-			string filePathAndName = EnumsDir.Path + "/" + libraryName + ".cs";
+			//string filePathAndName = EnumsDir.FullFilePath;
 
-            using (StreamWriter streamWriter = new StreamWriter(filePathAndName))
+            using (StreamWriter streamWriter = new StreamWriter(enumsFullPath))
             {
                 streamWriter.WriteLine("// Auto-Generate script,DO NOT EDIT!");
                 streamWriter.WriteLine("namespace " + _nameSpace + " {");

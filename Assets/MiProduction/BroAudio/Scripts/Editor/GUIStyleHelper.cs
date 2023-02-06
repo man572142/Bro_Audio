@@ -1,62 +1,80 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
-public class GUIStyleHelper
+namespace MiProduction.BroAudio
 {
-	public static GUIStyleHelper Instance
+	public class GUIStyleHelper
 	{
-		get
+		public static GUIStyleHelper Instance
 		{
-			if(_instance == null)
+			get
 			{
-				_instance = new GUIStyleHelper();
+				if (_instance == null)
+				{
+					_instance = new GUIStyleHelper();
+				}
+				return _instance;
 			}
-			return _instance;
+		}
+
+		private static GUIStyleHelper _instance;
+		private GUIStyle _richTextStyle;
+		private GUIStyle _middleCenterStyle;
+		private GUIStyle _defaultDarkBackground;
+		private GUIStyle _fieldStyle;
+
+		public GUIStyle MiddleCenterText
+		{
+			get
+			{
+				if (_middleCenterStyle == null)
+				{
+					_middleCenterStyle = new GUIStyle();
+					_middleCenterStyle.alignment = TextAnchor.MiddleCenter;
+					_middleCenterStyle.normal.textColor = Color.white;
+				}
+				return _middleCenterStyle;
+			}
+		}
+
+		public GUIStyle RichText
+		{
+			get
+			{
+				if (_richTextStyle == null)
+				{
+					_richTextStyle = new GUIStyle();
+					_richTextStyle.richText = true;
+				}
+				return _richTextStyle;
+			}
+		}
+
+		public GUIStyle DefaultDarkBackground
+		{
+			get
+			{
+				if (_defaultDarkBackground == null)
+				{
+					_defaultDarkBackground = new GUIStyle(GUI.skin.box);
+				}
+				return _defaultDarkBackground;
+			}
+		}
+
+		public GUIStyle DefaultFieldStyle
+		{
+			get
+			{
+				if (_fieldStyle == null)
+				{
+					_fieldStyle = new GUIStyle(EditorStyles.textField);
+				}
+				return _fieldStyle;
+			}
 		}
 	}
 
-	private static GUIStyleHelper _instance;
-	private GUIStyle _richTextStyle;
-	private GUIStyle _middleCenterStyle;
-	private GUIStyle _defaultDarkBackground;
-
-	public GUIStyle MiddleCenterText
-	{
-		get
-		{
-			if (_middleCenterStyle == null)
-			{
-				_middleCenterStyle = new GUIStyle();
-				_middleCenterStyle.alignment = TextAnchor.MiddleCenter;
-				_middleCenterStyle.normal.textColor = Color.white;
-			}
-			return _middleCenterStyle;
-		}
-	}
-
-	public GUIStyle RichText
-	{
-		get
-		{
-			if (_richTextStyle == null)
-			{
-				_richTextStyle = new GUIStyle();
-				_richTextStyle.richText = true;
-			}
-			return _richTextStyle;
-		}
-	}
-
-	public GUIStyle DefaultDarkBackground
-	{
-		get
-		{
-			if(_defaultDarkBackground == null)
-			{
-				_defaultDarkBackground = new GUIStyle(GUI.skin.box);
-			}
-			return _defaultDarkBackground;
-		}
-	}
 }

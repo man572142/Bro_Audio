@@ -15,11 +15,12 @@ namespace MiProduction.BroAudio
 	{
 		public static readonly Vector2 MinWindowSize = new Vector2(960f, 540f);
 
-		internal GUIStyleHelper GUIStyle = GUIStyleHelper.Instance;
+		public GUIStyleHelper GUIStyle = GUIStyleHelper.Instance;
 
 		private List<AudioData> _datas = null;
 		private ReorderableList _libraryList = null;
 		private GenericMenu _libraryOption = null;
+
 
 		private Vector2 _libraryListScrollPos = Vector2.zero;
 		private Vector2 _settingScrollPos = Vector2.zero;
@@ -29,6 +30,7 @@ namespace MiProduction.BroAudio
 		{
 			EditorWindow window = GetWindow(typeof(BroAudioEditorWindow));
 			window.minSize = MinWindowSize;
+			window.titleContent = new GUIContent("BroAudio Library Manager");
 			window.Show();
 		}
 
@@ -80,9 +82,10 @@ namespace MiProduction.BroAudio
 		}
 		private void OnCreateLibrary(AudioType audioType)
 		{
-			BroAudioDirectory newAssetPath = new BroAudioDirectory(RootDir, "test_" + audioType.ToString() + ".asset");
+			// 先用假檔名測試
+			string fileName = "test_" + audioType.ToString() + ".asset";
 			var newAsset = ScriptableObject.CreateInstance(audioType.GetLibraryTypeName());
-			AssetDatabase.CreateAsset(newAsset, newAssetPath.FilePath);
+			AssetDatabase.CreateAsset(newAsset, GetFilePath(RootPath, fileName));
 
 
 			AssetDatabase.SaveAssets();
@@ -92,8 +95,9 @@ namespace MiProduction.BroAudio
 		{
 			EditorGUILayout.LabelField("BroAudio".ToBold().SetColor(Color.yellow).SetSize(30), GUIStyle.RichText);
 			EditorGUILayout.Space(20f);
-			EnumsDir.Path = DrawPathSetting("Enums Path :", EnumsDir);
-			JsonFileDir.Path = DrawPathSetting("Json Path :", JsonFileDir);
+			RootPath = DrawPathSetting("Root Path :", RootPath);
+			CheckRootPath();
+			EnumsPath = DrawPathSetting("Enums Path :", EnumsPath);
 
 			EditorGUILayout.BeginHorizontal();
 			{
@@ -103,6 +107,20 @@ namespace MiProduction.BroAudio
 				DrawLibrarySetting(position.width * 0.7f - 30f);
 			}
 			EditorGUILayout.EndHorizontal();
+		}
+
+		private void CheckRootPath()
+		{
+			string coreDataFilePath = GetFilePath(RootPath, CoreDataFileName);
+			if (!System.IO.File.Exists(coreDataFilePath))
+			{
+				EditorGUILayout.HelpBox($"The root path should be {CoreDataFileName}'s path. Please relocate or recreate it!", MessageType.Error);
+
+				if (GUILayout.Button($"Recreate {CoreDataFileName}", GUILayout.Width(200f)))
+				{
+					System.IO.File.WriteAllText(coreDataFilePath, string.Empty);
+				}
+			}
 		}
 
 		private void DrawLibraryAssetList(float width)
@@ -170,19 +188,22 @@ namespace MiProduction.BroAudio
 			}
 		}
 
-		private string DrawPathSetting(string name,BroAudioDirectory dir)
+		private string DrawPathSetting(string buttonName,string path)
 		{
 			EditorGUILayout.BeginHorizontal();
 			{
-				if (GUILayout.Button(name, GUILayout.Width(90f)))
+				if (GUILayout.Button(buttonName, GUILayout.Width(90f)))
 				{
-					string newPath = EditorUtility.OpenFolderPanel("", dir.Path, "");
-					dir.Path = string.IsNullOrEmpty(newPath) ? dir.Path : "Assets" + newPath.Replace(Application.dataPath, string.Empty);
+					string newPath = EditorUtility.OpenFolderPanel("", path, "");
+					if (!string.IsNullOrEmpty(newPath))
+					{
+						path = newPath.Substring(UnityAssetsRootPath.Length + 1);
+					}
 				}
-				EditorGUILayout.LabelField(dir.Path);
+				EditorGUILayout.LabelField(path);
 			}
 			EditorGUILayout.EndHorizontal();
-			return dir.Path;
+			return path;
 		}
 	}
 

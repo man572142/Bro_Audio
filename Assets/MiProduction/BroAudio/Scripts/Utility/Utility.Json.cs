@@ -5,18 +5,21 @@ using System.Linq;
 using System.IO;
 using System;
 using static MiProduction.Extension.LoopExtension;
+using UnityEditor;
 
 namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
 		[Serializable]
-		public struct SerializedAudioDataList
+		public struct SerializedCoreData
 		{
+			public string RootPath;
 			public List<AudioData> Datas;
 
-			public SerializedAudioDataList(List<AudioData> datas)
+			public SerializedCoreData(string rootPath,List<AudioData> datas)
 			{
+				RootPath = rootPath;
 				Datas = datas;
 			}
 		}
@@ -41,26 +44,43 @@ namespace MiProduction.BroAudio
 
 		private static void WriteToFile(List<AudioData> audioData)
 		{
-			SerializedAudioDataList serializedData = new SerializedAudioDataList(audioData);
-			File.WriteAllText(JsonFileDir.FilePath, JsonUtility.ToJson(serializedData, true));
+			SerializedCoreData serializedData = new SerializedCoreData(RootPath, audioData);
+			File.WriteAllText(GetFilePath(RootPath,CoreDataFileName), JsonUtility.ToJson(serializedData, true));
 		}
 
 		public static List<AudioData> ReadJson()
 		{
-			if (File.Exists(JsonFileDir.FilePath))
+			string coreDataFilePath = GetFilePath(RootPath, CoreDataFileName);
+			if (File.Exists(coreDataFilePath))
 			{
-				string json = File.ReadAllText(JsonFileDir.FilePath);
+				string json = File.ReadAllText(coreDataFilePath);
 				if(string.IsNullOrEmpty(json))
 				{
 					return new List<AudioData>();
 				}
-				SerializedAudioDataList data = JsonUtility.FromJson<SerializedAudioDataList>(json);
+				SerializedCoreData data = JsonUtility.FromJson<SerializedCoreData>(json);
 				return data.Datas;
 			}
 			else
 			{
-				File.WriteAllText(JsonFileDir.FilePath, string.Empty);
-				return new List<AudioData>();
+				//BroAudioEditorWindow.ShowWindow();
+				FindJsonData();
+				
+
+
+
+				return null;
+				//File.WriteAllText(JsonFileDir.FilePath, string.Empty);
+				//return new List<AudioData>();
+			}
+		}
+
+		private static void FindJsonData()
+		{
+			string[] assets = AssetDatabase.FindAssets("BroAudioData");
+			foreach(string guid in assets)
+			{
+				string path = AssetDatabase.GUIDToAssetPath(guid);
 			}
 		}
 

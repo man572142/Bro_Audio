@@ -12,13 +12,15 @@ public class ButtonSoundTrigger : MonoBehaviour,IPointerClickHandler,IPointerDow
 {
     [SerializeField] Button _button = null;
 
+#pragma warning disable CS0414
 	[SerializeField] UnityEvent _onClick = null;
 	[SerializeField] UnityEvent _onPointerDown = null;
 	[SerializeField] UnityEvent _onPointerEnter = null;
 	[SerializeField] UnityEvent _onPointerExit = null;
 	[SerializeField] UnityEvent _onPointerUp = null;
+# pragma warning restore CS0414
 
-    private void Start()
+	private void Start()
     {
         if(_button == null)
         {

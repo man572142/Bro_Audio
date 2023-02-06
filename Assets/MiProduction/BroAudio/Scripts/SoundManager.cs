@@ -42,7 +42,6 @@ namespace MiProduction.BroAudio.Core
         [SerializeField] SoundPlayer _uiPlayer = null;
         [SerializeField] SoundPlayer _voicePlayer = null;
         [SerializeField] SoundPlayer _ambiencePlayer = null;
-        [SerializeField] SoundPlayer _standOutPlayer = null;
 
         [SerializeField] MusicPlayer[] _musicPlayers = null;
         private MusicPlayer _currMusicPlayer;
@@ -50,7 +49,6 @@ namespace MiProduction.BroAudio.Core
         [Header("Fading Setting")]
         [SerializeField] Ease _fadeInEase = Ease.InCubic;
         [SerializeField] Ease _fadeOutEase = Ease.OutSine;
-        [SerializeField] AnimationCurve _curve = null;
 
         // ­µ®Ä
         [Header("Library")]

@@ -21,6 +21,8 @@ namespace MiProduction.BroAudio
 		private ReorderableList _libraryList = null;
 		private GenericMenu _libraryOption = null;
 
+		private Dictionary<string, string> _libraryGUIDDict = new Dictionary<string, string>();
+		private List<string> _libraryNameList = null;
 
 		private Vector2 _libraryListScrollPos = Vector2.zero;
 		private Vector2 _settingScrollPos = Vector2.zero;
@@ -36,10 +38,29 @@ namespace MiProduction.BroAudio
 
 		private void OnEnable()
 		{
+			Debug.Log("OnEnable");
 			_datas = ReadJson();
+			if(_datas != null)
+			{
+				_libraryNameList = _datas.Select(x => x.LibraryName).Distinct().ToList();
+			}
 
+			InitDictionary();
 			InitLibraryOptionGenericMenu();
 			InitReorderableList();
+		}
+
+
+		private void InitDictionary()
+		{
+			_libraryGUIDDict.Clear();
+			foreach(AudioData data in _datas)
+			{
+				if(!_libraryGUIDDict.ContainsKey(data.LibraryName))
+				{
+					_libraryGUIDDict.Add(data.LibraryName, data.AssetGUID);
+				}
+			}
 		}
 
 		private void InitLibraryOptionGenericMenu()
@@ -55,19 +76,19 @@ namespace MiProduction.BroAudio
 				}
 				else
 				{
-					_libraryOption.AddItem(new GUIContent(audioType.ToString()), false, () => OnCreateLibrary(audioType));
+					_libraryOption.AddItem(new GUIContent(audioType.ToString()), false, () => OnCreateLibrary("Test",audioType));
 				}
 			});
 		}
 		
 		private void InitReorderableList()
 		{
-			string[] libraryNameList = _datas.Select(x => x.LibraryName).Distinct().ToArray();
-
-			_libraryList = new ReorderableList(libraryNameList, typeof(AudioData));
+			_libraryList = new ReorderableList(_libraryNameList, typeof(AudioData));
 			_libraryList.onAddDropdownCallback = OnAddDropdown;
 			_libraryList.onRemoveCallback = OnRemove;
-			
+			_libraryList.onAddCallback = OnAdd;
+
+
 			void OnAddDropdown(Rect buttonRect, ReorderableList list)
 			{
 				_libraryOption.DropDown(buttonRect);
@@ -79,15 +100,22 @@ namespace MiProduction.BroAudio
 				throw new NotImplementedException();
 			}
 
+			void OnAdd(ReorderableList list)
+			{
+				Debug.Log("#OnAdd");
+			}
 		}
-		private void OnCreateLibrary(AudioType audioType)
+
+		private void OnCreateLibrary(string libraryName,AudioType audioType)
 		{
-			// 先用假檔名測試
-			string fileName = "test_" + audioType.ToString() + ".asset";
+			string fileName = libraryName + ".asset";
+			string path = GetFilePath(RootPath, fileName);
+
+			_libraryNameList.Add(libraryName);
+			_libraryGUIDDict.Add(libraryName, AssetDatabase.AssetPathToGUID(path));
+
 			var newAsset = ScriptableObject.CreateInstance(audioType.GetLibraryTypeName());
-			AssetDatabase.CreateAsset(newAsset, GetFilePath(RootPath, fileName));
-
-
+			AssetDatabase.CreateAsset(newAsset, path);
 			AssetDatabase.SaveAssets();
 		}
 
@@ -152,7 +180,8 @@ namespace MiProduction.BroAudio
 				if (_libraryList.count > 0)
 				{
 					int selectedIndex = _libraryList.index > 0 ? _libraryList.index : 0;
-					string assetPath = AssetDatabase.GUIDToAssetPath(_datas[selectedIndex].AssetGUID);
+					string libraryName = _libraryNameList[selectedIndex];
+					string assetPath = AssetDatabase.GUIDToAssetPath(_libraryGUIDDict[libraryName]);
 					Editor editor = Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject)));
 					if (TryGetAudioLibraryEditor(editor, out var libraryEditor))
 					{
@@ -171,7 +200,6 @@ namespace MiProduction.BroAudio
 				{
 					EditorGUILayout.LabelField("No Data!".SetSize(50).SetColor(Color.gray), GUIStyle.RichText);
 				}
-				
 			}
 			EditorGUILayout.EndVertical();
 

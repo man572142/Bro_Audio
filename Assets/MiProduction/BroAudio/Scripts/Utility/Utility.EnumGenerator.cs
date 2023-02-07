@@ -26,9 +26,7 @@ namespace MiProduction.BroAudio
 
 		private static void WriteEnumFile(string enumsFullPath,string libraryName, IEnumerable<AudioData> datasToWrite)
 		{
-			//string filePathAndName = EnumsDir.FullFilePath;
-
-            using (StreamWriter streamWriter = new StreamWriter(enumsFullPath))
+            using (StreamWriter streamWriter = new StreamWriter(GetFullFilePath(EnumsPath,libraryName + ".cs")))
             {
                 streamWriter.WriteLine("// Auto-Generate script,DO NOT EDIT!");
                 streamWriter.WriteLine("namespace " + _nameSpace + " {");

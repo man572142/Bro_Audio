@@ -53,7 +53,7 @@ namespace MiProduction.BroAudio
 
 		private static void WriteToFile(List<AudioData> audioData)
 		{
-			SerializedCoreData serializedData = new SerializedCoreData(audioData);
+			SerializedCoreData serializedData = new SerializedCoreData(RootPath,EnumsPath,audioData);
 			File.WriteAllText(GetFilePath(RootPath,CoreDataFileName), JsonUtility.ToJson(serializedData, true));
 		}
 
@@ -78,9 +78,9 @@ namespace MiProduction.BroAudio
 			else
 			{
 				//BroAudioEditorWindow.ShowWindow();
-				FindJsonData();
-				
+				//FindJsonData();
 
+				Debug.Log("NoData");
 
 
 				return null;

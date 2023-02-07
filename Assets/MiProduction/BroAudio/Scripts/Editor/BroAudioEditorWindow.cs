@@ -96,7 +96,10 @@ namespace MiProduction.BroAudio
 			EditorGUILayout.LabelField("BroAudio".ToBold().SetColor(Color.yellow).SetSize(30), GUIStyle.RichText);
 			EditorGUILayout.Space(20f);
 			RootPath = DrawPathSetting("Root Path :", RootPath);
-			CheckRootPath();
+			if(!IsValidRootPath())
+			{
+				return;
+			}
 			EnumsPath = DrawPathSetting("Enums Path :", EnumsPath);
 
 			EditorGUILayout.BeginHorizontal();
@@ -109,18 +112,21 @@ namespace MiProduction.BroAudio
 			EditorGUILayout.EndHorizontal();
 		}
 
-		private void CheckRootPath()
+		private bool IsValidRootPath()
 		{
 			string coreDataFilePath = GetFilePath(RootPath, CoreDataFileName);
 			if (!System.IO.File.Exists(coreDataFilePath))
 			{
-				EditorGUILayout.HelpBox($"The root path should be {CoreDataFileName}'s path. Please relocate or recreate it!", MessageType.Error);
+				EditorGUILayout.HelpBox($"The root path should be {CoreDataFileName}'s path. Please relocate it it!\n" +
+					$"If the file is missing, please click the button below to recreate it in current RootPath ", MessageType.Error);
 
 				if (GUILayout.Button($"Recreate {CoreDataFileName}", GUILayout.Width(200f)))
 				{
-					System.IO.File.WriteAllText(coreDataFilePath, string.Empty);
+					CreateDefaultCoreData();
 				}
+				return false;
 			}
+			return true;
 		}
 
 		private void DrawLibraryAssetList(float width)

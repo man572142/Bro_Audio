@@ -1,1 +1,5 @@
-{"RootPath":"Assets\\MiProduction\\BroAudio","Datas":[]}
+{
+    "RootPath": "Assets/MiProduction/BroAudio",
+    "EnumsPath": "Assets/MiProduction/BroAudio/Scripts/Enums",
+    "Datas": []
+}

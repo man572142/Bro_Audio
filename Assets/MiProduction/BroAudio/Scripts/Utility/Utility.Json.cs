@@ -15,11 +15,20 @@ namespace MiProduction.BroAudio
 		public struct SerializedCoreData
 		{
 			public string RootPath;
+			public string EnumsPath;
 			public List<AudioData> Datas;
 
-			public SerializedCoreData(string rootPath,List<AudioData> datas)
+			public SerializedCoreData(string rootPath,string enumsPath,List<AudioData> datas)
 			{
 				RootPath = rootPath;
+				EnumsPath = enumsPath;
+				Datas = datas;
+			}
+
+			public SerializedCoreData(List<AudioData> datas)
+			{
+				RootPath = Utility.RootPath;
+				EnumsPath = Utility.EnumsPath;
 				Datas = datas;
 			}
 		}
@@ -44,8 +53,13 @@ namespace MiProduction.BroAudio
 
 		private static void WriteToFile(List<AudioData> audioData)
 		{
-			SerializedCoreData serializedData = new SerializedCoreData(RootPath, audioData);
+			SerializedCoreData serializedData = new SerializedCoreData(audioData);
 			File.WriteAllText(GetFilePath(RootPath,CoreDataFileName), JsonUtility.ToJson(serializedData, true));
+		}
+
+		public static void CreateDefaultCoreData()
+		{
+			WriteToFile(null);
 		}
 
 		public static List<AudioData> ReadJson()

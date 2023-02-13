@@ -1,16 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
-		public static void WriteAudioData(string assetGUID,string libraryName, string[] dataToWrite,AudioType audioType,out List<AudioData> currentAudioDatas)
+		public static void WriteAudioData(string assetGUID,string libraryName, string[] dataToWrite,AudioType audioType,List<AudioData> currentAudioDatas,Action onAudioDataUpdatFinished)
 		{
-			currentAudioDatas = ReadJson();
-			WriteJson(assetGUID, libraryName, dataToWrite, audioType, ref currentAudioDatas);
+			WriteJson(assetGUID, libraryName, dataToWrite, audioType, currentAudioDatas,onAudioDataUpdatFinished);
 			GenerateEnum(libraryName, currentAudioDatas);
 		}
 
@@ -21,6 +21,12 @@ namespace MiProduction.BroAudio
 			{
 				GenerateEnum(deletedLibrary, currentAudioDatas);
 			}	
+		}
+
+		public static void CreateNewLibrary(string assetGUID, string libraryName,List<AudioData> currentAudioDatas)
+		{
+			WriteEmptyAudioData(assetGUID,libraryName,ref currentAudioDatas);
+			AssetDatabase.Refresh();
 		}
 	}
 }

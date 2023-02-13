@@ -33,7 +33,7 @@ namespace MiProduction.BroAudio
 			}
 		}
 
-		private static void WriteJson(string assetGUID, string libraryName, string[] dataToWrite,AudioType audioType ,ref List<AudioData> allAudioData)
+		private static void WriteJson(string assetGUID, string libraryName, string[] dataToWrite,AudioType audioType ,List<AudioData> allAudioData,Action onAudioDataUpdatFinished)
 		{
 			allAudioData?.RemoveAll(x => x.AssetGUID == assetGUID);
 			IEnumerable<int> usedIdList = allAudioData?.Where(x => x.LibraryName == libraryName).Select(x => x.ID);
@@ -48,12 +48,19 @@ namespace MiProduction.BroAudio
 				string name = dataToWrite[i].Replace(" ", string.Empty);
 				allAudioData.Add(new AudioData(id, name, libraryName, assetGUID));
 			}
+			onAudioDataUpdatFinished?.Invoke();
 			WriteToFile(allAudioData);
 		}
 
-		private static void WriteToFile(List<AudioData> audioData)
+		private static void WriteEmptyAudioData(string assetGUID, string libraryName, ref List<AudioData> allAudioData)
 		{
-			SerializedCoreData serializedData = new SerializedCoreData(RootPath,EnumsPath,audioData);
+			allAudioData.Add(new AudioData(0, "None", libraryName,assetGUID));
+			WriteToFile(allAudioData);
+		}
+
+		private static void WriteToFile(List<AudioData> audioDatas)
+		{
+			SerializedCoreData serializedData = new SerializedCoreData(RootPath,EnumsPath,audioDatas);
 			File.WriteAllText(GetFilePath(RootPath,CoreDataFileName), JsonUtility.ToJson(serializedData, true));
 		}
 

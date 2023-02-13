@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 namespace MiProduction.BroAudio
 {
@@ -30,7 +31,7 @@ namespace MiProduction.BroAudio
 
 		public static string EnumsPath 
 		{
-			get => _enumsLocalPath.WithRootPath();
+			get => _enumsLocalPath.WithRootPath().EnsureDirectoryExists();
 			set 
 			{
 				if(!string.IsNullOrEmpty(value))
@@ -43,7 +44,7 @@ namespace MiProduction.BroAudio
 		private static string _libraryLocalPath = _defaultLocalLibraryPath;
 		public static string LibraryPath
 		{
-			get => _libraryLocalPath.WithRootPath();
+			get => _libraryLocalPath.WithRootPath().EnsureDirectoryExists();
 			set
 			{
 				if(!string.IsNullOrEmpty(value))
@@ -57,6 +58,25 @@ namespace MiProduction.BroAudio
 		public static string GetFullPath(string path) => Combine(UnityAssetsRootPath,path);
 		public static string GetFilePath(string path,string fileName) => Combine(path,fileName);
 		public static string GetFullFilePath(string path,string fileName) => Combine(UnityAssetsRootPath, path, fileName);
+
+		public static string EnsureDirectoryExists(this string path)
+		{
+			if (!Directory.Exists(path))
+			{
+				Directory.CreateDirectory(path);
+			}
+			return path;
+		}
+
+		public static bool IsInProjectFolder(string path)
+		{
+			if (!path.Contains(UnityAssetsRootPath))
+			{
+				LogError("The path must be under Assets folder or its sub-folder");
+				return false;
+			}
+			return true;
+		}
 
 		public static string ToUnitySeparator(this string value) => value.Replace('\\','/');
 		public static string ToMicrosoftSeparator(this string value) => value.Replace('/', '\\');

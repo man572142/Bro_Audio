@@ -11,7 +11,7 @@ namespace MiProduction.BroAudio
 		public static void WriteAudioData(string assetGUID,string libraryName, string[] dataToWrite,AudioType audioType,List<AudioData> currentAudioDatas,Action onAudioDataUpdatFinished)
 		{
 			WriteJson(assetGUID, libraryName, dataToWrite, audioType, currentAudioDatas,onAudioDataUpdatFinished);
-			GenerateEnum(libraryName, currentAudioDatas);
+			WriteEnum(libraryName, currentAudioDatas);
 		}
 
 		public static void DeleteAudioData(string assetGUID)
@@ -19,7 +19,7 @@ namespace MiProduction.BroAudio
 			DeleteJsonDataByAsset(assetGUID,out var currentAudioDatas,out var deletedLibrary);
 			if(!string.IsNullOrEmpty(deletedLibrary))
 			{
-				GenerateEnum(deletedLibrary, currentAudioDatas);
+				WriteEnum(deletedLibrary, currentAudioDatas);
 			}	
 		}
 

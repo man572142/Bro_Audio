@@ -11,7 +11,7 @@ namespace MiProduction.BroAudio
 	{
 		private const string _nameSpace = "MiProduction.BroAudio.Library";
 
-		private static void GenerateEnum(string libraryName, IEnumerable<AudioData> currentAudioDatas)
+		private static void WriteEnum(string libraryName, IEnumerable<AudioData> currentAudioDatas)
 		{
 			string enumsFullPath = GetFullPath(EnumsPath);
 			if (!Directory.Exists(enumsFullPath))
@@ -19,22 +19,32 @@ namespace MiProduction.BroAudio
 				Directory.CreateDirectory(enumsFullPath);
 			}
 			var datasToWrite = currentAudioDatas.Where(x => x.LibraryName == libraryName);
-			WriteEnumFile(enumsFullPath,libraryName, datasToWrite);
-			
+			string fullFilePath = GetFullFilePath(EnumsPath, libraryName + ".cs");
+
+			if (datasToWrite.Count() > 0)
+			{
+				WriteEnumTextFile(libraryName, fullFilePath, datasToWrite);
+			}
+			else
+			{
+				File.Delete(fullFilePath);
+				File.Delete(fullFilePath + ".meta");
+			}
+
 			AssetDatabase.Refresh();
 		}
 
-		private static void WriteEnumFile(string enumsFullPath,string libraryName, IEnumerable<AudioData> datasToWrite)
+		private static void WriteEnumTextFile(string libraryName,string fullFilePath, IEnumerable<AudioData> datasToWrite)
 		{
-            using (StreamWriter streamWriter = new StreamWriter(GetFullFilePath(EnumsPath,libraryName + ".cs")))
-            {
-                streamWriter.WriteLine("// Auto-Generate script,DO NOT EDIT!");
-                streamWriter.WriteLine("namespace " + _nameSpace + " {");
-                streamWriter.WriteLine("public enum " + libraryName);
-                streamWriter.WriteLine("{");
+			using (StreamWriter streamWriter = new StreamWriter(fullFilePath))
+			{
+				streamWriter.WriteLine("// Auto-Generate script,DO NOT EDIT!");
+				streamWriter.WriteLine("namespace " + _nameSpace + " {");
+				streamWriter.WriteLine("public enum " + libraryName);
+				streamWriter.WriteLine("{");
 				streamWriter.WriteLine("\tNone = 0,");
 
-				foreach(var data in datasToWrite)
+				foreach (var data in datasToWrite)
 				{
 					if (IsValidName(libraryName, out ValidationErrorCode errorCode))
 					{

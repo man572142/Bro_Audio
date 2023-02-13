@@ -10,7 +10,6 @@ namespace MiProduction.BroAudio.Library.Core
 {
     public abstract class AudioLibraryAsset<T> : ScriptableObject, IAudioLibraryAsset where T : IAudioLibrary
     {
-        public string LibraryName;
 
         public T[] Sets;
 
@@ -46,5 +45,7 @@ namespace MiProduction.BroAudio.Library.Core
                 return Sets.Select(x => x.EnumName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
             }
         }
+
+		public string LibraryName { get ; set; }
 	}
 }

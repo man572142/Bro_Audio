@@ -8,6 +8,7 @@ namespace MiProduction.BroAudio
 	{
 		private const string _defaultRootPath = "Assets/MiProduction/BroAudio";
 		private const string _defaultLocalEnumsPath = "Scripts/Enums";
+		private const string _defaultLocalLibraryPath = "Library";
 		public const string CoreDataFileName = "BroAudioData.json";
 
 		public static readonly string UnityAssetsRootPath = Application.dataPath.Replace("/Assets", string.Empty);
@@ -29,7 +30,7 @@ namespace MiProduction.BroAudio
 
 		public static string EnumsPath 
 		{
-			get => _enumsLocalPath.AppendRootPath();
+			get => _enumsLocalPath.WithRootPath();
 			set 
 			{
 				if(!string.IsNullOrEmpty(value))
@@ -39,7 +40,20 @@ namespace MiProduction.BroAudio
 			}
 		}
 
-		public static string AppendRootPath(this string localPath) => Combine(RootPath, localPath);
+		private static string _libraryLocalPath = _defaultLocalLibraryPath;
+		public static string LibraryPath
+		{
+			get => _libraryLocalPath.WithRootPath();
+			set
+			{
+				if(!string.IsNullOrEmpty(value))
+				{
+					_libraryLocalPath = value.Substring(RootPath.Length + 1);
+				}
+			}
+		}
+
+		public static string WithRootPath(this string localPath) => Combine(RootPath, localPath);
 		public static string GetFullPath(string path) => Combine(UnityAssetsRootPath,path);
 		public static string GetFilePath(string path,string fileName) => Combine(path,fileName);
 		public static string GetFullFilePath(string path,string fileName) => Combine(UnityAssetsRootPath, path, fileName);

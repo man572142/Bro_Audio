@@ -27,6 +27,10 @@ namespace MiProduction.BroAudio
 			{
 				return 0;
 			}
+			else if (audioType == AudioType.All)
+			{
+				return int.MaxValue;
+			}
 
 			// Faster than Math.Log2 ()
 			int result = 1;

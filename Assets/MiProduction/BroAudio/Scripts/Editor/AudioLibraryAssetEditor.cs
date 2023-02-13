@@ -13,10 +13,11 @@ namespace MiProduction.BroAudio.Library.Core
     public class AudioLibraryAssetEditor : Editor
     {
         private const string EmptyString = "<color=cyan>EmptyString</color>";
-        
+        private string _libraryName = string.Empty;
+
         private SerializedProperty _sets = null;
         private IAudioLibraryAsset _asset = null;
-        public string LibraryName = string.Empty;
+        
 
         private List<AudioData> _currentAudioData = null;
 
@@ -42,7 +43,7 @@ namespace MiProduction.BroAudio.Library.Core
 
 		public override void OnInspectorGUI()
         {
-            EditorGUILayout.LabelField(LibraryName.SetSize(25).SetColor(Color.white), _libraryNameTitleStyle);
+            EditorGUILayout.LabelField(_libraryName.SetSize(25).SetColor(Color.white), _libraryNameTitleStyle);
 
 			if (!IsUpdatingLibrary)
             {
@@ -64,7 +65,7 @@ namespace MiProduction.BroAudio.Library.Core
             if(HasAudioData(out string[] allAudioDataNames))
 			{
                 IsUpdatingLibrary = true;
-                WriteAudioData(_asset.AssetGUID, LibraryName, allAudioDataNames, _asset.AudioType, _currentAudioData, AssignID);
+                WriteAudioData(_asset.AssetGUID, _libraryName, allAudioDataNames, _asset.AudioType, _currentAudioData, AssignID);
                 IsUpdatingLibrary = false;
             }
 
@@ -153,5 +154,9 @@ namespace MiProduction.BroAudio.Library.Core
             }
         }
 
+        public void SetLibraryName(string name)
+		{
+            _libraryName = name;
+		}
 	}
 }

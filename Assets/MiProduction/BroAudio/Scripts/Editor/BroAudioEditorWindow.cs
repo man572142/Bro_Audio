@@ -79,7 +79,7 @@ namespace MiProduction.BroAudio
 			AudioLibraryAssetEditor libraryEditor = editor as AudioLibraryAssetEditor;
 			if (libraryEditor != null)
 			{
-				libraryEditor.LibraryName = libraryName;
+				libraryEditor.SetLibraryName(libraryName);
 				libraryEditor.serializedObject.ApplyModifiedProperties();
 			}
 

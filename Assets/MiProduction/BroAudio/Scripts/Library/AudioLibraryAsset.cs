@@ -17,6 +17,7 @@ namespace MiProduction.BroAudio.Library.Core
         [SerializeField, HideInInspector] private string _enumsPath = string.Empty;
 
         private string _assetGUID = string.Empty;
+        private string _libraryName = string.Empty;
         
 		public abstract AudioType AudioType { get; }
 
@@ -45,7 +46,5 @@ namespace MiProduction.BroAudio.Library.Core
                 return Sets.Select(x => x.EnumName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
             }
         }
-
-		public string LibraryName { get ; set; }
 	}
 }

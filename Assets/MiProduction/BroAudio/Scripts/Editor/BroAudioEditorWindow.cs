@@ -129,7 +129,7 @@ namespace MiProduction.BroAudio
 		private void OnCreateLibrary(string libraryName, AudioType audioType)
 		{
 			string fileName = libraryName + ".asset";
-			string path = GetFilePath(RootPath, fileName);
+			string path = GetFilePath(LibraryPath, fileName);
 
 			var newAsset = ScriptableObject.CreateInstance(audioType.GetLibraryTypeName());
 			AssetDatabase.CreateAsset(newAsset, path);
@@ -155,6 +155,7 @@ namespace MiProduction.BroAudio
 				return;
 			}
 			EnumsPath = DrawPathSetting("Enums Path :", EnumsPath);
+			LibraryPath = DrawPathSetting("Library Path :", LibraryPath);
 
 			EditorGUILayout.BeginHorizontal();
 			{
@@ -231,7 +232,7 @@ namespace MiProduction.BroAudio
 				if (GUILayout.Button(buttonName, GUILayout.Width(90f)))
 				{
 					string newPath = EditorUtility.OpenFolderPanel("", path, "");
-					if (!string.IsNullOrEmpty(newPath))
+					if (!string.IsNullOrEmpty(newPath) && IsInProjectFolder(newPath))
 					{
 						path = newPath.Substring(UnityAssetsRootPath.Length + 1);
 					}

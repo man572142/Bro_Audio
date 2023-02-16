@@ -96,6 +96,7 @@ namespace MiProduction.BroAudio
 
 		public static bool IsValidName(string name,out ValidationErrorCode errorCode)
 		{
+			
 			if (String.IsNullOrWhiteSpace(name))
 			{
 				errorCode = ValidationErrorCode.IsNullOrEmpty;
@@ -108,9 +109,10 @@ namespace MiProduction.BroAudio
 				return false;
 			}
 
-			foreach(char word in name)
+			foreach (char word in name)
 			{
-				if(!Char.IsLetter(word) && !Char.IsNumber(word) && word != '_')
+				Debug.Log($"#char:{word} isLetterOrDigit:{Char.IsLetterOrDigit(word)} && isUnderScore:{word == '_'} < 128 :{word < 128}");
+				if (!Char.IsNumber(word) && word != '_' && !IsEnglishLetter(word))
 				{
 					errorCode = ValidationErrorCode.ContainsInvalidWord;
 					return false;
@@ -118,6 +120,11 @@ namespace MiProduction.BroAudio
 			}
 			errorCode = ValidationErrorCode.NoError;
 			return true;
+		}
+
+		public static bool IsEnglishLetter(char word)
+		{
+			return (word >= 65 && word <= 90) || (word >= 97 && word <= 122);
 		}
 
 		public static bool Validate(string name, int index, BroAudioClip[] clips, int id)

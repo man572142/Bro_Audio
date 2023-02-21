@@ -57,13 +57,14 @@ namespace MiProduction.BroAudio
 			}
 		}
 
+		#region Init
 
 		private void InitEditorDictionary()
 		{
 			_libraryEditorDict.Clear();
-			foreach(AudioData data in _datas)
+			foreach (AudioData data in _datas)
 			{
-				if(!_libraryEditorDict.ContainsKey(data.LibraryName))
+				if (!_libraryEditorDict.ContainsKey(data.LibraryName))
 				{
 					string assetPath = AssetDatabase.GUIDToAssetPath(data.AssetGUID);
 					_libraryEditorDict.Add(data.LibraryName, CreateLibraryEditor(data.LibraryName, assetPath));
@@ -98,16 +99,15 @@ namespace MiProduction.BroAudio
 			void OnRemove(ReorderableList list)
 			{
 				string libraryName = _libraryNameList[list.index];
-				foreach(AudioData data in _datas)
+				foreach (AudioData data in _datas)
 				{
-					if(data.LibraryName.Equals(libraryName))
+					if (data.LibraryName.Equals(libraryName))
 					{
 						DeleteLibrary(data.AssetGUID);
 						_libraryNameList.RemoveAt(list.index);
 						AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(data.AssetGUID));
 					}
 				}
-
 			}
 		}
 
@@ -115,9 +115,9 @@ namespace MiProduction.BroAudio
 		{
 			_libraryOption = new GenericMenu();
 
-			LoopAllAudioType((AudioType audioType) => 
-			{ 
-				if(audioType == AudioType.None)
+			LoopAllAudioType((AudioType audioType) =>
+			{
+				if (audioType == AudioType.None)
 				{
 					_libraryOption.AddItem(new GUIContent("Choose an AudioType to create a library"), false, null);
 					_libraryOption.AddSeparator("");
@@ -127,7 +127,8 @@ namespace MiProduction.BroAudio
 					_libraryOption.AddItem(new GUIContent(audioType.ToString()), false, () => OnCreateLibraryAskName(audioType));
 				}
 			});
-		}
+		} 
+		#endregion
 
 		private void OnCreateLibraryAskName(AudioType audioType)
 		{
@@ -157,22 +158,64 @@ namespace MiProduction.BroAudio
 			EditorGUILayout.LabelField("BroAudio".ToBold().SetColor(Color.yellow).SetSize(30), GUIStyle.RichText);
 			EditorGUILayout.Space(20f);
 
-			RootPath = DrawPathSetting("Root Path :", RootPath);
-			if(!IsValidRootPath())
+			var libraryEditor = GetCurrentLibraryEditor();
+
+			EditorGUILayout.BeginHorizontal();
 			{
-				return;
+				EditorGUILayout.BeginVertical();
+				{
+					RootPath = DrawPathSetting("Root Path :", RootPath);
+					if (!IsValidRootPath())
+					{
+						return;
+					}
+					EnumsPath = DrawPathSetting("Enums Path :", EnumsPath);
+					LibraryPath = DrawPathSetting("Library Path :", LibraryPath);
+				}
+				EditorGUILayout.EndVertical();
+
+				EditorGUILayout.BeginVertical();
+				{
+					DrawUpdateReminder(libraryEditor);
+				}
+				EditorGUILayout.EndVertical();
 			}
-			EnumsPath = DrawPathSetting("Enums Path :", EnumsPath);
-			LibraryPath = DrawPathSetting("Library Path :", LibraryPath);
+			EditorGUILayout.EndHorizontal();
 
 			EditorGUILayout.BeginHorizontal();
 			{
 				EditorGUILayout.Space(10f);
-				DrawLibraryAssetList(position.width * 0.3f -10f);
+				DrawLibraryAssetList(position.width * 0.3f - 10f);
 				EditorGUILayout.Space(10f);
-				DrawLibrarySetting(position.width * 0.7f - 30f);
+				DrawLibrarySetting(position.width * 0.7f - 30f, libraryEditor);
 			}
 			EditorGUILayout.EndHorizontal();
+		}
+
+		private AudioLibraryAssetEditor GetCurrentLibraryEditor()
+		{
+			if (_libraryNameList.Count > 0)
+			{
+				int selectedIndex = _libraryList.index > 0 ? _libraryList.index : 0;
+				string libraryName = _libraryNameList[selectedIndex];
+				if (_libraryEditorDict.TryGetValue(libraryName, out Editor editor))
+				{
+					return editor as AudioLibraryAssetEditor;
+				}
+			}
+			return null;
+		}
+
+		private void DrawUpdateReminder(AudioLibraryAssetEditor editor)
+		{
+			if(editor != null && editor.IsLibraryNeedRefresh())
+			{
+				EditorGUILayout.HelpBox("This library needs to be updated !", MessageType.Warning);
+				if (GUILayout.Button("Update", GUILayout.Height(30f)))
+				{
+					editor.UpdateLibrary();
+				}
+			}
 		}
 
 		private bool IsValidRootPath()
@@ -206,19 +249,16 @@ namespace MiProduction.BroAudio
 			EditorGUILayout.EndVertical();
 		}
 
-		private void DrawLibrarySetting(float width)
+		private void DrawLibrarySetting(float width,Editor editor)
 		{
 			EditorGUILayout.BeginVertical(GUIStyle.DefaultDarkBackground,GUILayout.Width(width));
 			{
 				EditorGUILayout.LabelField("Setting".SetColor(Color.white).ToBold(), GUIStyle.RichText);
-
 				if (_libraryList.count > 0)
 				{
 					_settingScrollPos = EditorGUILayout.BeginScrollView(_settingScrollPos);
 					{
-						int selectedIndex = _libraryList.index > 0 ? _libraryList.index : 0;
-						string libraryName = _libraryNameList[selectedIndex];
-						if (_libraryEditorDict.TryGetValue(libraryName,out Editor editor))
+						if(editor != null)
 						{
 							editor.OnInspectorGUI();
 						}

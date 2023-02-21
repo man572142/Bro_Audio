@@ -43,19 +43,20 @@ namespace MiProduction.BroAudio.Library.Core
 
 		public override void OnInspectorGUI()
         {
-            EditorGUILayout.LabelField(_libraryName.SetSize(25).SetColor(Color.white), _libraryNameTitleStyle);
+            EditorGUILayout.LabelField(_libraryName.SetSize(25).SetColor(Color.cyan), _libraryNameTitleStyle);
+            EditorGUILayout.Space(10f);
 
 			if (!IsUpdatingLibrary)
             {
                 EditorGUILayout.PropertyField(_sets, new GUIContent("Sets"), true);
-                if (IsLibraryNeedRefresh())
-                {
-                    EditorGUILayout.HelpBox("This library needs to be updated !", MessageType.Warning);
-                    if (GUILayout.Button("Update", GUILayout.Height(30f)))
-					{
-						UpdateLibrary();
-					}
-				}
+    //            if (IsLibraryNeedRefresh())
+    //            {
+    //                EditorGUILayout.HelpBox("This library needs to be updated !", MessageType.Warning);
+    //                if (GUILayout.Button("Update", GUILayout.Height(30f)))
+				//	{
+				//		UpdateLibrary();
+				//	}
+				//}
                 serializedObject.ApplyModifiedProperties();
             }
 		}

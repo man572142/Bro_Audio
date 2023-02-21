@@ -23,7 +23,6 @@ namespace MiProduction.BroAudio
 
 		private Dictionary<string, Editor> _libraryEditorDict = new Dictionary<string, Editor>();
 		private List<string> _libraryNameList = null;
-		private string _currentSelectedLibrary = string.Empty;
 
 		private Vector2 _libraryListScrollPos = Vector2.zero;
 		private Vector2 _settingScrollPos = Vector2.zero;
@@ -98,7 +97,16 @@ namespace MiProduction.BroAudio
 
 			void OnRemove(ReorderableList list)
 			{
-				// ¥ÎAssetGUID
+				string libraryName = _libraryNameList[list.index];
+				foreach(AudioData data in _datas)
+				{
+					if(data.LibraryName.Equals(libraryName))
+					{
+						DeleteLibrary(data.AssetGUID);
+						_libraryNameList.RemoveAt(list.index);
+						AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(data.AssetGUID));
+					}
+				}
 
 			}
 		}

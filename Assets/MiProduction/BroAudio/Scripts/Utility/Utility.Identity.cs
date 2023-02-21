@@ -111,7 +111,6 @@ namespace MiProduction.BroAudio
 
 			foreach (char word in name)
 			{
-				Debug.Log($"#char:{word} isLetterOrDigit:{Char.IsLetterOrDigit(word)} && isUnderScore:{word == '_'} < 128 :{word < 128}");
 				if (!Char.IsNumber(word) && word != '_' && !IsEnglishLetter(word))
 				{
 					errorCode = ValidationErrorCode.ContainsInvalidWord;

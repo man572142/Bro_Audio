@@ -104,14 +104,13 @@ namespace MiProduction.BroAudio.Library.Core
 
 		private void DrawReorderableClipsList(Rect position, SerializedProperty property, out SerializedProperty outSelectedClip)
 		{
-			SerializedProperty clipsProp = property.FindPropertyRelative("Clips");
-			ReorderableList reorderableList = GetReorderableList(property.propertyPath, clipsProp);
+			ReorderableList reorderableList = GetReorderableList(property.propertyPath);
 
 			bool isMulticlips = reorderableList.count > 1;
 			SetCurrentPlayMode(property, isMulticlips, out SerializedProperty playModeProp, out MulticlipsPlayMode currentPlayMode);
 
 			int selectedIndex = reorderableList.index > 0 ? reorderableList.index : 0;
-			SerializedProperty currSelectedClip = reorderableList.count > 0 ? clipsProp.GetArrayElementAtIndex(selectedIndex) : null;
+			SerializedProperty currSelectedClip = reorderableList.count > 0 ? reorderableList.serializedProperty.GetArrayElementAtIndex(selectedIndex) : null;
 			outSelectedClip = currSelectedClip;
 
 			reorderableList.draggable = true;
@@ -146,7 +145,7 @@ namespace MiProduction.BroAudio.Library.Core
 
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
 			{
-				SerializedProperty clipProp = clipsProp.GetArrayElementAtIndex(index);
+				SerializedProperty clipProp = reorderableList.serializedProperty.GetArrayElementAtIndex(index);
 				SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
 				EditorScriptingExtension.SplitRectHorizontal(rect, 0.9f, 15f, out Rect clipRect, out Rect valueRect);
 				EditorGUI.PropertyField(clipRect, audioClipProp, new GUIContent(""));
@@ -195,10 +194,11 @@ namespace MiProduction.BroAudio.Library.Core
 				currentPlayMode = (MulticlipsPlayMode)playModeProp.enumValueIndex;
 			}
 
-			ReorderableList GetReorderableList(string propertyPath, SerializedProperty clipsProp)
+			ReorderableList GetReorderableList(string propertyPath)
 			{
 				if (!_reorderableListDict.ContainsKey(propertyPath))
 				{
+					SerializedProperty clipsProp = property.FindPropertyRelative("Clips");
 					_reorderableListDict.Add(propertyPath, new ReorderableList(clipsProp.serializedObject, clipsProp));
 				}
 				return _reorderableListDict[propertyPath];

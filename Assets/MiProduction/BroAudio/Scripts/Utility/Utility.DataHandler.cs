@@ -14,13 +14,14 @@ namespace MiProduction.BroAudio
 			WriteEnum(libraryName, currentAudioDatas);
 		}
 
-		public static void DeleteAudioData(string assetGUID)
+		public static void DeleteLibrary(string assetGUID)
 		{
 			DeleteJsonDataByAsset(assetGUID,out var currentAudioDatas,out var deletedLibrary);
 			if(!string.IsNullOrEmpty(deletedLibrary))
 			{
 				WriteEnum(deletedLibrary, currentAudioDatas);
 			}	
+
 		}
 
 		public static void CreateNewLibrary(string assetGUID, string libraryName,List<AudioData> currentAudioDatas)

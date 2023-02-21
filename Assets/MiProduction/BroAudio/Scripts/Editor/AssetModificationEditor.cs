@@ -10,7 +10,7 @@ namespace MiProduction.BroAudio.Library.Core
 		public static AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions option)
 		{
 			string guid = AssetDatabase.AssetPathToGUID(assetPath);
-			Utility.DeleteAudioData(guid);
+			Utility.DeleteLibrary(guid);
 
 			return AssetDeleteResult.DidNotDelete;
 		}

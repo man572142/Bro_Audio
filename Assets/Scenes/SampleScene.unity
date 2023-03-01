@@ -206,7 +206,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1317931362}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Sample, Assembly-CSharp
         m_MethodName: Stop
         m_Mode: 1
@@ -568,7 +568,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1317931362}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Sample, Assembly-CSharp
         m_MethodName: PlayStandOutSound
         m_Mode: 1
@@ -701,7 +701,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1317931362}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Sample, Assembly-CSharp
         m_MethodName: PlayA
         m_Mode: 1
@@ -1511,7 +1511,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1317931362}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Sample, Assembly-CSharp
         m_MethodName: PlayRandomSound
         m_Mode: 1
@@ -1644,7 +1644,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1317931362}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Sample, Assembly-CSharp
         m_MethodName: SetVolume
         m_Mode: 1
@@ -1799,26 +1799,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1317931361}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 698a538214a0510449a43f9fe3be28f9, type: 3}
+  m_Script: {fileID: 11500000, guid: aae8d27aed2798c4b924b5ece1a9dae0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _transitionA: 1
-  _transitionB: 1
-  _musicA: 57
-  _musicB: 86
-  _sound: 30272058
-  _randomSound: 30272058
-  _sceneSound: 30272058
-  _uiSound: 5495
-  _voiceOver: 100000000
-  _standOutRatio: 0
-  _standOutFadeTime: 0.5
-  _lowpassFreq: -1
-  _lowpassFadeTime: 1
-  _crossFadeTime: -1
-  _stopFadeTime: -1
-  _targetVolume: 1
-  _scenePlayer: {fileID: 595309941}
 --- !u!4 &1317931363
 Transform:
   m_ObjectHideFlags: 0
@@ -1916,7 +1899,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1317931362}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Sample, Assembly-CSharp
         m_MethodName: PlayB
         m_Mode: 1
@@ -2211,7 +2194,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1317931362}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Sample, Assembly-CSharp
         m_MethodName: PlaySFX
         m_Mode: 1
@@ -2344,7 +2327,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1317931362}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Sample, Assembly-CSharp
         m_MethodName: PlaySceneSFX
         m_Mode: 1

@@ -4,8 +4,9 @@ using UnityEngine;
 using System.Linq;
 using System.IO;
 using System;
-using static MiProduction.Extension.LoopExtension;
+
 using UnityEditor;
+using MiProduction.BroAudio.Library.Core;
 
 namespace MiProduction.BroAudio
 {
@@ -16,60 +17,37 @@ namespace MiProduction.BroAudio
 		{
 			public string RootPath;
 			public string EnumsPath;
-			public List<AudioData> Datas;
+			public List<string> GUIDs;
 
-			public SerializedCoreData(string rootPath,string enumsPath,List<AudioData> datas)
+			public SerializedCoreData(string rootPath,string enumsPath,List<string> guids)
 			{
 				RootPath = rootPath;
 				EnumsPath = enumsPath;
-				Datas = datas;
+				GUIDs = guids;
 			}
 
-			public SerializedCoreData(List<AudioData> datas)
+			public SerializedCoreData(List<string> guids)
 			{
 				RootPath = Utility.RootPath;
 				EnumsPath = Utility.EnumsPath;
-				Datas = datas;
+				GUIDs = guids;
 			}
 		}
 
-		private static void WriteJson(string assetGUID, string libraryName, string[] dataToWrite,AudioType audioType ,List<AudioData> allAudioData,Action onAudioDataUpdatFinished)
-		{
-			allAudioData?.RemoveAll(x => x.AssetGUID == assetGUID);
-			IEnumerable<int> usedIdList = allAudioData?.Where(x => x.LibraryName == libraryName).Select(x => x.ID);
 
-			for (int i = 0; i < dataToWrite.Length; i++)
-			{
-				if (!IsValidName(dataToWrite[i],out ValidationErrorCode errorCode))
-				{
-					continue;
-				}
-				int id = GetUniqueID(audioType, usedIdList);
-				string name = dataToWrite[i].Replace(" ", string.Empty);
-				allAudioData.Add(new AudioData(id, name, libraryName, assetGUID));
-			}
-			onAudioDataUpdatFinished?.Invoke();
-			WriteToFile(allAudioData);
-		}
-
-		private static void WriteEmptyAudioData(string assetGUID, string libraryName, ref List<AudioData> allAudioData)
+		public static void WriteJsonToFile(List<string> allLibraryGUID)
 		{
-			allAudioData.Add(new AudioData(0, "None", libraryName,assetGUID));
-			WriteToFile(allAudioData);
-		}
-
-		private static void WriteToFile(List<AudioData> audioDatas)
-		{
-			SerializedCoreData serializedData = new SerializedCoreData(RootPath,EnumsPath,audioDatas);
+			SerializedCoreData serializedData = new SerializedCoreData(RootPath,EnumsPath,allLibraryGUID);
 			File.WriteAllText(GetFilePath(RootPath,CoreDataFileName), JsonUtility.ToJson(serializedData, true));
+			AssetDatabase.Refresh();
 		}
 
 		public static void CreateDefaultCoreData()
 		{
-			WriteToFile(null);
+			WriteJsonToFile(null);
 		}
 
-		public static List<AudioData> ReadJson()
+		public static List<string> GetGUIDListFromJson()
 		{
 			string coreDataFilePath = GetFilePath(RootPath, CoreDataFileName);
 			if (File.Exists(coreDataFilePath))
@@ -77,10 +55,10 @@ namespace MiProduction.BroAudio
 				string json = File.ReadAllText(coreDataFilePath);
 				if(string.IsNullOrEmpty(json))
 				{
-					return new List<AudioData>();
+					return new List<string>();
 				}
 				SerializedCoreData data = JsonUtility.FromJson<SerializedCoreData>(json);
-				return data.Datas;
+				return data.GUIDs;
 			}
 			else
 			{
@@ -105,42 +83,23 @@ namespace MiProduction.BroAudio
 			}
 		}
 
-		private static void DeleteJsonDataByAsset(string assetGUID,out List<AudioData> currentAudioDatas,out string deletedLibraryName)
+		private static void DeleteJsonDataByAsset(string assetGUID)
 		{
-			currentAudioDatas = ReadJson();
-			deletedLibraryName = string.Empty;
+			var currentLibraryGUID = GetGUIDListFromJson();
 
-			int dataCount = currentAudioDatas != null? currentAudioDatas.Count :0 ;
+			int dataCount = currentLibraryGUID != null? currentLibraryGUID.Count :0 ;
 			for (int i = dataCount - 1; i >= 0 ; i--)
 			{
-				if(currentAudioDatas[i].AssetGUID == assetGUID)
+				if(currentLibraryGUID[i] == assetGUID)
 				{
-					deletedLibraryName = currentAudioDatas[i].LibraryName;
-					currentAudioDatas.RemoveAt(i);
+					currentLibraryGUID.RemoveAt(i);
 				}
 			}
 
-			if(!string.IsNullOrEmpty(deletedLibraryName))
-			{
-				WriteToFile(currentAudioDatas);
-			}
+			WriteJsonToFile(currentLibraryGUID);
 		}
 
-		private static int GetUniqueID(AudioType audioType, IEnumerable<int> idList)
-		{
-			int id = 0;
-
-			Loop(() =>
-			{
-				id = UnityEngine.Random.Range(audioType.ToConstantID(), audioType.ToNext().ToConstantID());
-				if (idList == null || !idList.Contains(id))
-				{
-					return Statement.Break;
-				}
-				return Statement.Continue;
-			});
-			return id;
-		}
+		
 	}
 
 }

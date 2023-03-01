@@ -10,17 +10,14 @@ namespace MiProduction.BroAudio.Library.Core
 {
     public abstract class AudioLibraryAsset<T> : ScriptableObject, IAudioLibraryAsset where T : IAudioLibrary
     {
-
         public T[] Sets;
 
-        // Do Not Delete This Line
-        [SerializeField, HideInInspector] private string _enumsPath = string.Empty;
-
-        private string _assetGUID = string.Empty;
-        private string _libraryName = string.Empty;
-        
 		public abstract AudioType AudioType { get; }
 
+        [SerializeField] private string _libraryName = string.Empty;
+        public string LibraryName { get => _libraryName;  set => _libraryName = value; }
+
+        [SerializeField] private string _assetGUID = string.Empty;
         public string AssetGUID
         {
             get
@@ -31,20 +28,24 @@ namespace MiProduction.BroAudio.Library.Core
                 }
                 return _assetGUID;
             }
+			set
+			{
+                _assetGUID = value;
+			}
         }
 
-        /// <summary>
-        /// 每次Get都要跑Linq，若要在Loop中使用建議先暫存起來
-        /// </summary>
-        public string[] AllAudioDataNames
-        {
-            get
-            {
-                if (Sets == null)
-                    Sets = new T[0];
+		public IEnumerable<AudioData> AllAudioData
+		{
+			get
+			{
+				if (Sets == null)
+					Sets = new T[0];
 
-                return Sets.Select(x => x.EnumName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
-            }
-        }
+				foreach (var data in Sets)
+				{
+					yield return new AudioData(data.ID, data.EnumName);
+				}
+			}
+		}
 	}
 }

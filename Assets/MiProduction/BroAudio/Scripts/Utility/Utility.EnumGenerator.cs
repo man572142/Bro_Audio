@@ -4,6 +4,8 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using MiProduction.BroAudio.Library.Core;
+using MiProduction.BroAudio.Library;
 
 namespace MiProduction.BroAudio
 {
@@ -11,27 +13,27 @@ namespace MiProduction.BroAudio
 	{
 		private const string _nameSpace = "MiProduction.BroAudio.Library";
 
-		private static void WriteEnum(string libraryName, IEnumerable<AudioData> currentAudioDatas)
+		public static void GenerateEnum(IAudioLibraryAsset asset, IEnumerable<string> currentLibraryGUIDs)
 		{
 			string enumsFullPath = GetFullPath(EnumsPath);
 			if (!Directory.Exists(enumsFullPath))
 			{
 				Directory.CreateDirectory(enumsFullPath);
 			}
-			var datasToWrite = currentAudioDatas.Where(x => x.LibraryName == libraryName);
-			string fullFilePath = GetFullFilePath(EnumsPath, libraryName + ".cs");
+			
+			string fullFilePath = GetFullFilePath(EnumsPath,asset.LibraryName + ".cs");
 
-			if (datasToWrite.Count() > 0)
-			{
-				WriteEnumTextFile(libraryName, fullFilePath, datasToWrite);
-			}
-			else
-			{
-				File.Delete(fullFilePath);
-				File.Delete(fullFilePath + ".meta");
-			}
+			IEnumerable<AudioData> datasToWrite = asset.AllAudioData;
+			WriteEnumTextFile(asset.LibraryName, fullFilePath, datasToWrite);
 
 			AssetDatabase.Refresh();
+		}
+
+		private static void DeleteEnumFile(string libraryName)
+		{
+			string fullFilePath = GetFullFilePath(EnumsPath, libraryName + ".cs");
+			File.Delete(fullFilePath);
+			File.Delete(fullFilePath + ".meta");
 		}
 
 		private static void WriteEnumTextFile(string libraryName,string fullFilePath, IEnumerable<AudioData> datasToWrite)
@@ -46,11 +48,7 @@ namespace MiProduction.BroAudio
 
 				foreach (var data in datasToWrite)
 				{
-					if (IsValidName(libraryName, out ValidationErrorCode errorCode))
-					{
-						streamWriter.WriteLine($"\t{data.Name} = {data.ID},");
-					}
-					else
+					if (IsInvalidName(libraryName, out ValidationErrorCode errorCode))
 					{
 						switch (errorCode)
 						{
@@ -66,6 +64,11 @@ namespace MiProduction.BroAudio
 								LogError($"Name can only use \"Letter\",\"Number\" and \"_(Undersocre)\",{ data.Name} from {libraryName} library is invalid");
 								break;
 						}
+						
+					}
+					else
+					{
+						streamWriter.WriteLine($"\t{data.Name} = {data.ID},");
 					}
 				}
 				streamWriter.WriteLine("}}");

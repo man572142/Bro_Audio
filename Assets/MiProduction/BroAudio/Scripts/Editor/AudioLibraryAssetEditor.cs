@@ -6,78 +6,84 @@ using UnityEditor;
 using UnityEngine;
 using static MiProduction.BroAudio.Utility;
 using MiProduction.Extension;
+using static MiProduction.Extension.LoopExtension;
 
 namespace MiProduction.BroAudio.Library.Core
 {
     [CustomEditor(typeof(AudioLibraryAsset<>), true)]
     public class AudioLibraryAssetEditor : Editor
     {
-        private const string EmptyString = "<color=cyan>EmptyString</color>";
-        private string _libraryName = string.Empty;
+		private const string EmptyString = "<color=cyan>EmptyString</color>";
 
         private SerializedProperty _sets = null;
         private IAudioLibraryAsset _asset = null;
         
 
-        private List<AudioData> _currentAudioData = null;
+        private List<string> _currentLibraryGUIDs = null;
 
-        private GUIStyle _libraryNameTitleStyle = null;
 
-        
+        private IEnumerable<AudioData> _currentAudioDatas = null;
+
         public bool IsUpdatingLibrary { get; private set; }
+        public event Action<LibraryState,string> OnLibraryChange;
+       
+
+        public IAudioLibraryAsset Asset => _asset;
 
         private void OnEnable()
         {
             _sets = serializedObject.FindProperty("Sets");
             _asset = target as IAudioLibraryAsset;
 
-            if (_currentAudioData == null)
-            {
-                _currentAudioData = ReadJson();
-            }
+            _currentAudioDatas = GetLatestAudioDatas();
 
-            _libraryNameTitleStyle = GUIStyleHelper.Instance.MiddleCenterText;
-            _libraryNameTitleStyle.richText = true;
+            if (_currentLibraryGUIDs == null)
+            {
+                _currentLibraryGUIDs = GetGUIDListFromJson();
+            }
+            
         }
 
 
 		public override void OnInspectorGUI()
         {
-            EditorGUILayout.LabelField(_libraryName.SetSize(25).SetColor(Color.cyan), _libraryNameTitleStyle);
-            EditorGUILayout.Space(10f);
+            EditorGUI.BeginChangeCheck();
 
-			if (!IsUpdatingLibrary)
+            if (!IsUpdatingLibrary)
             {
                 EditorGUILayout.PropertyField(_sets, new GUIContent("Sets"), true);
-    //            if (IsLibraryNeedRefresh())
-    //            {
-    //                EditorGUILayout.HelpBox("This library needs to be updated !", MessageType.Warning);
-    //                if (GUILayout.Button("Update", GUILayout.Height(30f)))
-				//	{
-				//		UpdateLibrary();
-				//	}
-				//}
                 serializedObject.ApplyModifiedProperties();
+            }
+
+            if(EditorGUI.EndChangeCheck())
+			{
+                LibraryState state = CheckLibraryState(out string dataName);
+                OnLibraryChange?.Invoke(state,dataName);
             }
 		}
 
-		public void UpdateLibrary()
+        public void UpdateLibrary()
 		{
-            if(HasAudioData(out string[] allAudioDataNames))
-			{
-                IsUpdatingLibrary = true;
-                WriteAudioData(_asset.AssetGUID, _libraryName, allAudioDataNames, _asset.AudioType, _currentAudioData, AssignID);
-                IsUpdatingLibrary = false;
-            }
+            IsUpdatingLibrary = true;
+            GenerateAndAssignID();
+            GenerateEnum(_asset, _currentLibraryGUIDs);
+            IsUpdatingLibrary = false;
 
-            bool HasAudioData(out string[] allAudioDataNames)
+            void GenerateAndAssignID()
             {
-                allAudioDataNames = _asset.AllAudioDataNames;
-                return allAudioDataNames != null && allAudioDataNames.Length > 0;
-            }
+                List<int> usedIDList = new List<int>();
+                for(int i = 0; i < _sets.arraySize;i++)
+				{
+                    SerializedProperty element = _sets.GetArrayElementAtIndex(i);
+                    SerializedProperty elementID = element.FindPropertyRelative("ID");
 
-            void AssignID()
-            {
+                    if(elementID.intValue > 0)
+					{
+                        usedIDList.Add(elementID.intValue);
+					}
+                }
+
+
                 for (int i = 0; i < _sets.arraySize; i++)
                 {
                     SerializedProperty element = _sets.GetArrayElementAtIndex(i);
@@ -85,79 +91,88 @@ namespace MiProduction.BroAudio.Library.Core
                     SerializedProperty elementID = element.FindPropertyRelative("ID");
 
                     elementName.stringValue = elementName.stringValue.Replace(" ", string.Empty);
-                    elementID.intValue = GetEnumID(elementName.stringValue, i);
+                    elementID.intValue = GetUniqueID(usedIDList);
                 }
                 serializedObject.ApplyModifiedProperties();
                 // 這個時機點要調整到Compile結束
                 //Log("All enums and IDs have been generated and assigned successfully!".SetColor(Color.green));
+            }
 
-                int GetEnumID(string enumName, int index)
+            int GetUniqueID(IEnumerable<int> idList)
+            {
+                int id = 0;
+
+                int min = _asset.AudioType.ToConstantID();
+                int max = _asset.AudioType.ToNext().ToConstantID();
+
+                Loop(() =>
                 {
-                    foreach (var data in _currentAudioData)
+                    id = UnityEngine.Random.Range(min,max);
+                    if (idList == null || !idList.Contains(id))
                     {
-                        if (data.Name == enumName)
-                        {
-                            return data.ID;
-                        }
+                        return Statement.Break;
                     }
-
-                    string subject = string.IsNullOrWhiteSpace(enumName) ? EmptyString : enumName;
-                    LogWarning($"Can't get audio ID with: {subject}. Element {index} has been skipped");
-                    return -1;
-                }
+                    return Statement.Continue;
+                });
+                return id;
             }
         }
 
 
-		public bool IsLibraryNeedRefresh()
+		public LibraryState CheckLibraryState(out string outputName)
         {
-            for (int i = 0; i < _sets.arraySize; i++)
-            {
-                SerializedProperty element = _sets.GetArrayElementAtIndex(i);
-                SerializedProperty elementName = element.FindPropertyRelative("Name");
-                SerializedProperty elementID = element.FindPropertyRelative("ID");
-
-                bool hasFreshData = false;
-
-                if(HasEnumName(elementID.intValue,out string enumName))
+            outputName = string.Empty;
+            
+            // Compare with previous
+            AudioData previousData = default;
+            foreach (AudioData data in _currentAudioDatas)
+			{
+                if (string.IsNullOrEmpty(data.Name))
 				{
-                    hasFreshData = !string.Equals(enumName, elementName.stringValue);
+                    return LibraryState.HasEmptyName;
 				}
-                else
+                else if(data.Name.Equals(previousData.Name))
 				{
-                    hasFreshData =  !string.IsNullOrEmpty(elementName.stringValue);
+                    outputName = data.Name;
+                    return LibraryState.HasNameDuplicated;
 				}
-                if(hasFreshData)
+                else if(IsInvalidName(data.Name,out var errorCode))
 				{
-                    return true;
+                    outputName = data.Name;
+                    return LibraryState.HasInvalidName;
 				}
+            
+                previousData = data;
             }
-            return false;
 
-            bool HasEnumName(int id, out string name)
-            {
-                name = string.Empty;
-                if (_currentAudioData == null || _currentAudioData.Count == 0)
-                {
-                    return false;
+            // Compare with all
+            List<string> nameList = new List<string>();
+            foreach(AudioData data in _currentAudioDatas)
+			{
+                if(nameList.Contains(data.Name))
+				{
+                    outputName = data.Name;
+                    return LibraryState.HasNameDuplicated;
                 }
-
-                foreach(var data in _currentAudioData)
-				{
-                    if(data.ID == id)
-					{
-                        name = data.Name;
-                        return !string.IsNullOrEmpty(data.Name);
-                    }
-				}
-
-                return false;
+                nameList.Add(data.Name);
             }
+
+            List<int> idList = new List<int>();
+            foreach(AudioData data in _currentAudioDatas)
+			{
+                if(data.ID == 0 || idList.Contains(data.ID))
+				{
+                    return LibraryState.NeedToUpdate;
+				}
+                idList.Add(data.ID);
+			}
+
+            return LibraryState.Fine;
         }
 
-        public void SetLibraryName(string name)
+        private IEnumerable<AudioData> GetLatestAudioDatas()
 		{
-            _libraryName = name;
-		}
+            return _asset.AllAudioData;
+        }
 	}
 }

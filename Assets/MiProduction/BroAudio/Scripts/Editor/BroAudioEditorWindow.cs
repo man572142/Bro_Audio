@@ -17,15 +17,17 @@ namespace MiProduction.BroAudio
 
 		public GUIStyleHelper GUIStyle = GUIStyleHelper.Instance;
 
-		private List<AudioData> _datas = null;
-		private ReorderableList _libraryList = null;
+		private List<string> _allLibraryGUIDs = null;
+		private ReorderableList _libraryReorderableList = null;
 		private GenericMenu _libraryOption = null;
 
-		private Dictionary<string, Editor> _libraryEditorDict = new Dictionary<string, Editor>();
-		private List<string> _libraryNameList = null;
+		private Dictionary<string, AudioLibraryAssetEditor> _libraryEditorDict = new Dictionary<string, AudioLibraryAssetEditor>();
+		//private List<string> _libraryNameList = null;
 
 		private Vector2 _libraryListScrollPos = Vector2.zero;
 		private Vector2 _settingScrollPos = Vector2.zero;
+
+		private GUIStyle _libraryNameTitleStyle = null;
 
 		[MenuItem("BroAudio/Library Manager")]
 		public static void ShowWindow()
@@ -36,60 +38,70 @@ namespace MiProduction.BroAudio
 			window.Show();
 		}
 
+
 		private void OnEnable()
 		{
-			_datas = ReadJson();
-			if(_datas != null)
-			{
-				_libraryNameList = _datas.Select(x => x.LibraryName).Distinct().ToList();
-			}
+			_allLibraryGUIDs = GetGUIDListFromJson();
+
+			InitGUIStyle();
 
 			InitEditorDictionary();
 			InitLibraryOptionGenericMenu();
 			InitReorderableList();
 		}
 
+
 		private void OnDisable()
 		{
-			foreach(Editor editor in _libraryEditorDict.Values)
+			foreach(AudioLibraryAssetEditor editor in _libraryEditorDict.Values)
 			{
 				DestroyImmediate(editor);
 			}
 		}
 
 		#region Init
+		private void InitGUIStyle()
+		{
+			_libraryNameTitleStyle = GUIStyleHelper.Instance.MiddleCenterText;
+			_libraryNameTitleStyle.richText = true;
+		}
 
 		private void InitEditorDictionary()
 		{
 			_libraryEditorDict.Clear();
-			foreach (AudioData data in _datas)
+			foreach (string guid in _allLibraryGUIDs)
 			{
-				if (!_libraryEditorDict.ContainsKey(data.LibraryName))
+				if (!string.IsNullOrEmpty(guid) && !_libraryEditorDict.ContainsKey(guid))
 				{
-					string assetPath = AssetDatabase.GUIDToAssetPath(data.AssetGUID);
-					_libraryEditorDict.Add(data.LibraryName, CreateLibraryEditor(data.LibraryName, assetPath));
+					_libraryEditorDict.Add(guid, CreateLibraryEditor(guid));
 				}
 			}
 		}
 
-		private Editor CreateLibraryEditor(string libraryName, string assetPath)
+		private AudioLibraryAssetEditor CreateLibraryEditor(string guid , string libraryName = "")
 		{
-			Editor editor = Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject)));
-
-			AudioLibraryAssetEditor libraryEditor = editor as AudioLibraryAssetEditor;
-			if (libraryEditor != null)
+			string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+			AudioLibraryAssetEditor editor = Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject))) as AudioLibraryAssetEditor;
+			if(string.IsNullOrEmpty(editor.Asset.LibraryName))
 			{
-				libraryEditor.SetLibraryName(libraryName);
-				libraryEditor.serializedObject.ApplyModifiedProperties();
+				editor.serializedObject.FindProperty("_libraryName").stringValue = libraryName;
+				editor.serializedObject.FindProperty("_assetGUID").stringValue = guid;
+				editor.serializedObject.ApplyModifiedPropertiesWithoutUndo();
 			}
-
 			return editor;
 		}
 		private void InitReorderableList()
 		{
-			_libraryList = new ReorderableList(_libraryNameList, typeof(AudioData));
-			_libraryList.onAddDropdownCallback = OnAddDropdown;
-			_libraryList.onRemoveCallback = OnRemove;
+			_libraryReorderableList = new ReorderableList(_allLibraryGUIDs, typeof(string));
+			_libraryReorderableList.drawHeaderCallback = OnDrawHeader;
+			_libraryReorderableList.onAddDropdownCallback = OnAddDropdown;
+			_libraryReorderableList.onRemoveCallback = OnRemove;
+			_libraryReorderableList.drawElementCallback = OnDrawElement;
+
+			void OnDrawHeader(Rect rect)
+			{
+				EditorGUI.LabelField(rect, "Library List");
+			}
 
 			void OnAddDropdown(Rect buttonRect, ReorderableList list)
 			{
@@ -98,15 +110,32 @@ namespace MiProduction.BroAudio
 
 			void OnRemove(ReorderableList list)
 			{
-				string libraryName = _libraryNameList[list.index];
-				foreach (AudioData data in _datas)
+				DeleteLibrary(_allLibraryGUIDs[list.index]);
+				AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(_allLibraryGUIDs[list.index]));
+				_allLibraryGUIDs.RemoveAt(list.index);
+				AssetDatabase.Refresh();
+			}
+
+			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
+			{
+				if(_libraryEditorDict.TryGetValue(_allLibraryGUIDs[index],out var editor))
 				{
-					if (data.LibraryName.Equals(libraryName))
+					if(editor.Asset == null)
 					{
-						DeleteLibrary(data.AssetGUID);
-						_libraryNameList.RemoveAt(list.index);
-						AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(data.AssetGUID));
+						return;
 					}
+
+					Rect labelRect = rect;
+					labelRect.width *= 0.7f;
+					EditorGUI.LabelField(labelRect, editor.Asset.LibraryName);
+
+					Rect audioTypeRect = rect;
+					audioTypeRect.width *= 0.3f;
+					audioTypeRect.x = labelRect.xMax;
+					EditorGUI.DrawRect(audioTypeRect, GetAudioTypeColor(editor.Asset.AudioType));
+					EditorGUI.LabelField(audioTypeRect, editor.Asset.AudioType.ToString(), GUIStyleHelper.Instance.MiddleCenterText);
+
+					
 				}
 			}
 		}
@@ -132,7 +161,9 @@ namespace MiProduction.BroAudio
 
 		private void OnCreateLibraryAskName(AudioType audioType)
 		{
-			LibraryNameEditorWindow.ShowWindow(_libraryNameList,(libraryName)=> OnCreateLibrary(libraryName,audioType));
+			// In the following case. List has better performance than IEnumerable , even with a ToList() method.
+			List<string> libraryNames = _libraryEditorDict.Values.Select(x => x.Asset.LibraryName).ToList();
+			LibraryNameEditorWindow.ShowWindow(libraryNames, (libraryName)=> OnCreateLibrary(libraryName,audioType));
 		}
 
 		private void OnCreateLibrary(string libraryName, AudioType audioType)
@@ -146,10 +177,10 @@ namespace MiProduction.BroAudio
 
 			string guid = AssetDatabase.AssetPathToGUID(path);
 
-			_libraryNameList.Add(libraryName);
-			_libraryEditorDict.Add(libraryName, CreateLibraryEditor(libraryName, path));
+			_allLibraryGUIDs.Add(guid);
+			_libraryEditorDict.Add(guid, CreateLibraryEditor(guid,libraryName));
 
-			CreateNewLibrary(guid, libraryName, _datas);
+			WriteJsonToFile(_allLibraryGUIDs);
 		}
 
 
@@ -158,64 +189,83 @@ namespace MiProduction.BroAudio
 			EditorGUILayout.LabelField("BroAudio".ToBold().SetColor(Color.yellow).SetSize(30), GUIStyle.RichText);
 			EditorGUILayout.Space(20f);
 
-			var libraryEditor = GetCurrentLibraryEditor();
-
-			EditorGUILayout.BeginHorizontal();
-			{
-				EditorGUILayout.BeginVertical();
-				{
-					RootPath = DrawPathSetting("Root Path :", RootPath);
-					if (!IsValidRootPath())
-					{
-						return;
-					}
-					EnumsPath = DrawPathSetting("Enums Path :", EnumsPath);
-					LibraryPath = DrawPathSetting("Library Path :", LibraryPath);
-				}
-				EditorGUILayout.EndVertical();
-
-				EditorGUILayout.BeginVertical();
-				{
-					DrawUpdateReminder(libraryEditor);
-				}
-				EditorGUILayout.EndVertical();
-			}
-			EditorGUILayout.EndHorizontal();
+			//RootPath = DrawPathSetting("Root Path :", RootPath);
+			//if (!IsValidRootPath())
+			//{
+			//	return;
+			//}
+			//EnumsPath = DrawPathSetting("Enums Path :", EnumsPath);
+			//LibraryPath = DrawPathSetting("Library Path :", LibraryPath);
 
 			EditorGUILayout.BeginHorizontal();
 			{
 				EditorGUILayout.Space(10f);
 				DrawLibraryAssetList(position.width * 0.3f - 10f);
 				EditorGUILayout.Space(10f);
-				DrawLibrarySetting(position.width * 0.7f - 30f, libraryEditor);
+				DrawLibrarySetting(position.width * 0.7f - 30f, GetCurrentLibraryEditor());
 			}
 			EditorGUILayout.EndHorizontal();
 		}
 
 		private AudioLibraryAssetEditor GetCurrentLibraryEditor()
 		{
-			if (_libraryNameList.Count > 0)
+			if (_allLibraryGUIDs.Count > 0)
 			{
-				int selectedIndex = _libraryList.index > 0 ? _libraryList.index : 0;
-				string libraryName = _libraryNameList[selectedIndex];
-				if (_libraryEditorDict.TryGetValue(libraryName, out Editor editor))
+				int index = _libraryReorderableList.index > 0 ? _libraryReorderableList.index : 0;
+				if (_libraryEditorDict.TryGetValue(_allLibraryGUIDs[index], out var editor))
 				{
-					return editor as AudioLibraryAssetEditor;
+					return editor;
 				}
 			}
 			return null;
 		}
+		
 
-		private void DrawUpdateReminder(AudioLibraryAssetEditor editor)
+		private void DrawLibraryAssetList(float width)
 		{
-			if(editor != null && editor.IsLibraryNeedRefresh())
+			EditorGUILayout.BeginVertical(GUIStyle.DefaultDarkBackground,GUILayout.Width(width));
 			{
-				EditorGUILayout.HelpBox("This library needs to be updated !", MessageType.Warning);
-				if (GUILayout.Button("Update", GUILayout.Height(30f)))
+				//EditorGUILayout.LabelField("Library".SetColor(Color.white).ToBold(),GUIStyle.RichText);
+				_libraryListScrollPos = EditorGUILayout.BeginScrollView(_libraryListScrollPos);
 				{
-					editor.UpdateLibrary();
+					_libraryReorderableList.DoLayoutList();
+				}
+				EditorGUILayout.EndScrollView();
+			}
+			EditorGUILayout.EndVertical();
+		}
+
+		private void DrawLibrarySetting(float width, AudioLibraryAssetEditor editor)
+		{
+			EditorGUILayout.BeginVertical(GUIStyle.DefaultDarkBackground,GUILayout.Width(width));
+			{
+				//EditorGUILayout.LabelField("Setting".SetColor(Color.white).ToBold(), GUIStyle.RichText);
+				if(editor == null)
+				{
+					EditorGUILayout.LabelField("No library".SetSize(30).SetColor(Color.white), GUIStyle.RichText);
+					goto DrawEnd;
+				}
+				EditorGUILayout.LabelField(editor.Asset.LibraryName.SetSize(25).SetColor(Color.white),_libraryNameTitleStyle);
+				EditorGUILayout.Space(10f);
+				DrawLibraryState(editor);
+				if (_libraryReorderableList.count > 0)
+				{
+					_settingScrollPos = EditorGUILayout.BeginScrollView(_settingScrollPos);
+					{
+						if(editor != null)
+						{
+							editor.OnInspectorGUI();
+						}
+					}
+					EditorGUILayout.EndScrollView();
+				}
+				else
+				{
+					EditorGUILayout.LabelField("No Data!".SetSize(50).SetColor(Color.gray), GUIStyle.RichText);
 				}
 			}
+			DrawEnd:
+			EditorGUILayout.EndVertical();
 		}
 
 		private bool IsValidRootPath()
@@ -235,44 +285,6 @@ namespace MiProduction.BroAudio
 			return true;
 		}
 
-		private void DrawLibraryAssetList(float width)
-		{
-			EditorGUILayout.BeginVertical(GUIStyle.DefaultDarkBackground,GUILayout.Width(width));
-			{
-				EditorGUILayout.LabelField("Library".SetColor(Color.white).ToBold(),GUIStyle.RichText);
-				_libraryListScrollPos = EditorGUILayout.BeginScrollView(_libraryListScrollPos);
-				{
-					_libraryList.DoLayoutList();
-				}
-				EditorGUILayout.EndScrollView();
-			}
-			EditorGUILayout.EndVertical();
-		}
-
-		private void DrawLibrarySetting(float width,Editor editor)
-		{
-			EditorGUILayout.BeginVertical(GUIStyle.DefaultDarkBackground,GUILayout.Width(width));
-			{
-				EditorGUILayout.LabelField("Setting".SetColor(Color.white).ToBold(), GUIStyle.RichText);
-				if (_libraryList.count > 0)
-				{
-					_settingScrollPos = EditorGUILayout.BeginScrollView(_settingScrollPos);
-					{
-						if(editor != null)
-						{
-							editor.OnInspectorGUI();
-						}
-					}
-					EditorGUILayout.EndScrollView();
-				}
-				else
-				{
-					EditorGUILayout.LabelField("No Data!".SetSize(50).SetColor(Color.gray), GUIStyle.RichText);
-				}
-			}
-			EditorGUILayout.EndVertical();
-		}
-
 		private string DrawPathSetting(string buttonName,string path)
 		{
 			EditorGUILayout.BeginHorizontal();
@@ -290,6 +302,36 @@ namespace MiProduction.BroAudio
 			EditorGUILayout.EndHorizontal();
 			return path;
 		}
-	}
 
+		private void DrawLibraryState(AudioLibraryAssetEditor editor)
+		{
+			switch (editor.CheckLibraryState(out string dataName))
+			{
+				case LibraryState.Fine:
+					break;
+				case LibraryState.HasEmptyName:
+					EditorGUILayout.HelpBox("There are some audio set's name is empty !", MessageType.Error);
+					break;
+				case LibraryState.HasNameDuplicated:
+					
+					GUIContent content = new GUIContent($"Name:{dataName.ToBold().SetColor(Color.white)} is duplicated !", EditorGUIUtility.IconContent("console.erroricon").image);
+					EditorGUILayout.LabelField(content,GUIStyleHelper.Instance.RichTextHelpBox);
+					break;
+				case LibraryState.HasInvalidName:
+					EditorGUILayout.HelpBox($"Name:[{dataName}] has invalidWord !", MessageType.Error);
+					break;
+				case LibraryState.NeedToUpdate:
+					EditorGUILayout.BeginHorizontal();
+					{
+						EditorGUILayout.HelpBox("This library needs to be updated !", MessageType.Warning);
+						if (GUILayout.Button("Update", GUILayout.Height(30f)))
+						{
+							editor.UpdateLibrary();
+						}
+					}
+					EditorGUILayout.EndHorizontal();
+					break;
+			}
+		}
+	}
 }

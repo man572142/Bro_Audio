@@ -55,15 +55,7 @@ namespace MiProduction.BroAudio
 
 		private bool IsValidName()
 		{
-			if (Utility.IsValidName(_libraryName, out Utility.ValidationErrorCode code))
-			{
-				if (CurrentLibrariesName.Contains(_libraryName))
-				{
-					EditorGUILayout.HelpBox("Name already exists!", MessageType.Error);
-					return false;
-				}
-			}
-			else
+			if (Utility.IsInvalidName(_libraryName, out Utility.ValidationErrorCode code))
 			{
 				switch (code)
 				{
@@ -77,6 +69,15 @@ namespace MiProduction.BroAudio
 						EditorGUILayout.HelpBox("Name contains invalid word!", MessageType.Error);
 						return false;
 				}
+			}
+			else
+			{
+				if (CurrentLibrariesName.Contains(_libraryName))
+				{
+					EditorGUILayout.HelpBox("Name already exists!", MessageType.Error);
+					return false;
+				}
+				
 			}
 			return true;
 		}

@@ -31,6 +31,8 @@ namespace MiProduction.BroAudio.Library.Core
 			}
         }
 
+		int IAudioLibrary.ID => ID;
+
 		public bool Validate(int index)
         {
             return Utility.Validate(nameof(SoundLibrary), index, Clips, ID);

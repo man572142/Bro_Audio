@@ -24,6 +24,7 @@ namespace MiProduction.BroAudio
 		private GUIStyle _middleCenterStyle;
 		private GUIStyle _defaultDarkBackground;
 		private GUIStyle _fieldStyle;
+		private GUIStyle _richTextHelpbox;
 
 		public GUIStyle MiddleCenterText
 		{
@@ -73,6 +74,19 @@ namespace MiProduction.BroAudio
 					_fieldStyle = new GUIStyle(EditorStyles.textField);
 				}
 				return _fieldStyle;
+			}
+		}
+
+		public GUIStyle RichTextHelpBox
+		{
+			get
+			{
+				if (_richTextHelpbox == null)
+				{
+					_richTextHelpbox = new GUIStyle(EditorStyles.helpBox);
+					_richTextHelpbox.richText = true;
+				}
+				return _richTextHelpbox;
 			}
 		}
 	}

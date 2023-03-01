@@ -195,38 +195,13 @@ MonoBehaviour:
   _uiPlayer: {fileID: 941300637168065474}
   _voicePlayer: {fileID: 2391731641564020021}
   _ambiencePlayer: {fileID: 3209373321783841419}
-  _standOutPlayer: {fileID: 0}
   _musicPlayers:
   - {fileID: 6443841439991395278}
   - {fileID: 1932754922307679714}
   _fadeInEase: 2
   _fadeOutEase: 11
-  _curve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   _allSoundAssets:
-  - {fileID: 0}
+  - {fileID: 11400000, guid: fcbe2e78ab008874ca4e81f90b2ec1a2, type: 2}
   _randomSoundAsset: []
   _mainMusicAsset: {fileID: 0}
 --- !u!1 &3109420919187162984

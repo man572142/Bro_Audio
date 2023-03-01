@@ -3,31 +3,29 @@ using System.Collections.Generic;
 using System;
 using UnityEditor;
 using UnityEngine;
+using MiProduction.BroAudio.Library.Core;
+
+using System.Linq;
 
 namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
-		public static void WriteAudioData(string assetGUID,string libraryName, string[] dataToWrite,AudioType audioType,List<AudioData> currentAudioDatas,Action onAudioDataUpdatFinished)
-		{
-			WriteJson(assetGUID, libraryName, dataToWrite, audioType, currentAudioDatas,onAudioDataUpdatFinished);
-			WriteEnum(libraryName, currentAudioDatas);
-		}
 
 		public static void DeleteLibrary(string assetGUID)
 		{
-			DeleteJsonDataByAsset(assetGUID,out var currentAudioDatas,out var deletedLibrary);
-			if(!string.IsNullOrEmpty(deletedLibrary))
+			DeleteJsonDataByAsset(assetGUID);
+			if(TryGetAsset(assetGUID, out var asset))
 			{
-				WriteEnum(deletedLibrary, currentAudioDatas);
-			}	
-
+				DeleteEnumFile(asset.LibraryName);
+			}
 		}
 
-		public static void CreateNewLibrary(string assetGUID, string libraryName,List<AudioData> currentAudioDatas)
+
+		public static bool TryGetAsset(string assetGUID,out IAudioLibraryAsset asset)
 		{
-			WriteEmptyAudioData(assetGUID,libraryName,ref currentAudioDatas);
-			AssetDatabase.Refresh();
+			asset = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(assetGUID) , typeof(ScriptableObject)) as IAudioLibraryAsset;
+			return asset != null;
 		}
 	}
 }

@@ -1,12 +1,15 @@
-using MiProduction.BroAudio;
+using System.Collections.Generic;
 
 namespace MiProduction.BroAudio.Library.Core
 {
     public interface IAudioLibraryAsset
     {
-        public string[] AllAudioDataNames { get; }
+        public IEnumerable<AudioData> AllAudioData { get; }
+
         public AudioType AudioType { get; }
-        public string AssetGUID { get; }
+        public string AssetGUID { get; set; }
+
+        public string LibraryName { get; }
     }
 
 }

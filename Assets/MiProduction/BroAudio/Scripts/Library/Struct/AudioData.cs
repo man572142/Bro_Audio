@@ -2,22 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.Library
 {
-	[System.Serializable]
 	public struct AudioData
 	{
 		public int ID;
 		public string Name;
-		public string LibraryName;
-		public string AssetGUID;
 
-		public AudioData(int id, string name, string libraryName, string assetGUID)
+		public AudioData(int iD, string name)
 		{
-			ID = id;
-			LibraryName = libraryName;
+			ID = iD;
 			Name = name;
-			AssetGUID = assetGUID;
 		}
-	} 
+	}
+
 }

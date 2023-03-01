@@ -8,6 +8,13 @@ namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
+		public static Color MusicColor = new Color(0f, 0.1f, 0.3f, 0.3f);
+		public static Color UIColor = new Color(0f, 0.5f, 0.2f, 0.3f);
+		public static Color AmbienceColor = new Color(0.1f, 0.5f, 0.5f, 0.3f);
+		public static Color SFXColor = new Color(0.7f, 0.2f, 0.2f, 0.3f);
+		public static Color VoiceoverColor = new Color(0.8f, 0.6f, 0f, 0.3f);
+
+
 		public enum ValidationErrorCode
 		{
 			NoError,
@@ -94,19 +101,19 @@ namespace MiProduction.BroAudio
 			});
 		}
 
-		public static bool IsValidName(string name,out ValidationErrorCode errorCode)
+		public static bool IsInvalidName(string name,out ValidationErrorCode errorCode)
 		{
 			
 			if (String.IsNullOrWhiteSpace(name))
 			{
 				errorCode = ValidationErrorCode.IsNullOrEmpty;
-				return false;
+				return true;
 			}
 
 			if(Char.IsNumber(name[0]))
 			{
 				errorCode = ValidationErrorCode.StartWithNumber;
-				return false;
+				return true;
 			}
 
 			foreach (char word in name)
@@ -114,11 +121,11 @@ namespace MiProduction.BroAudio
 				if (!Char.IsNumber(word) && word != '_' && !IsEnglishLetter(word))
 				{
 					errorCode = ValidationErrorCode.ContainsInvalidWord;
-					return false;
+					return true;
 				}
 			}
 			errorCode = ValidationErrorCode.NoError;
-			return true;
+			return false;
 		}
 
 		public static bool IsEnglishLetter(char word)
@@ -186,6 +193,25 @@ namespace MiProduction.BroAudio
 					return nameof(Library.Core.VoiceOverLibraryAsset);
 				default:
 					return null;
+			}
+		}
+
+		public static Color GetAudioTypeColor(AudioType audioType)
+		{
+			switch (audioType)
+			{
+				case AudioType.Music:
+					return MusicColor;
+				case AudioType.UI:
+					return UIColor;
+				case AudioType.Ambience:
+					return AmbienceColor;
+				case AudioType.SFX:
+					return SFXColor;
+				case AudioType.VoiceOver:
+					return VoiceoverColor;
+				default:
+					return Color.white;
 			}
 		}
 	}

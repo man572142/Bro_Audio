@@ -10,6 +10,33 @@ namespace MiProduction.BroAudio.Library.Core
 {
 	public abstract class AudioLibraryPropertyDrawer : PropertyDrawer, IEditorDrawer
 	{
+		private struct ClipList
+		{
+			public ReorderableList ReorderableList;
+
+			private int _selectedIndex;
+			private float _height;
+			public int SelectedIndex => _selectedIndex;
+			public float Height => _height;
+
+			public ClipList(ReorderableList list)
+			{
+				ReorderableList = list;
+				_selectedIndex = list.index;
+				_height = list.GetHeight();
+			}
+
+			public void Refresh()
+			{
+				if(ReorderableList != null)
+				{
+					_selectedIndex = ReorderableList.index;
+					_height = ReorderableList.GetHeight();
+				}
+			}
+
+		}
+
 		public static readonly Color ClipLabelColor = new Color(0f, 0.9f, 0.5f);
 		public static readonly Color PlayButtonColor = new Color(0.25f, 0.9f, 0.25f, 0.4f);
 		public static readonly Color StopButtonColor = new Color(0.9f, 0.25f, 0.25f, 0.4f);
@@ -23,7 +50,7 @@ namespace MiProduction.BroAudio.Library.Core
 		private float[] FadeValues = new float[2];
 		private GUIContent[] PlaybackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
 		private float[] PlaybackValues = new float[2];
-		private Dictionary<string, ReorderableList> _reorderableListDict = new Dictionary<string, ReorderableList>();
+		private Dictionary<string, ClipList> _clipListDict = new Dictionary<string, ClipList>();
 
 		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public int DrawLineCount { get; set; }
@@ -78,12 +105,12 @@ namespace MiProduction.BroAudio.Library.Core
 
 			if (property.isExpanded)
 			{
-				if (_reorderableListDict.TryGetValue(property.propertyPath, out ReorderableList list))
+				if (_clipListDict.TryGetValue(property.propertyPath, out ClipList list))
 				{
-					height += list.GetHeight();
+					height += list.Height;
 
 					bool isShowClipProp = 
-						property.TryGetArrayElementAtIndex("Clips", list.index, out var clipProp) &&
+						property.TryGetArrayElementAtIndex("Clips", list.SelectedIndex, out var clipProp) &&
 						clipProp.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip);
 					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative("IsShowClipPreview").boolValue;
 
@@ -104,7 +131,8 @@ namespace MiProduction.BroAudio.Library.Core
 
 		private void DrawReorderableClipsList(Rect position, SerializedProperty property, out SerializedProperty outSelectedClip)
 		{
-			ReorderableList reorderableList = GetReorderableList(property.propertyPath);
+			
+			ReorderableList reorderableList = GetReorderableList(property);
 
 			bool isMulticlips = reorderableList.count > 1;
 			SetCurrentPlayMode(property, isMulticlips, out SerializedProperty playModeProp, out MulticlipsPlayMode currentPlayMode);
@@ -194,14 +222,17 @@ namespace MiProduction.BroAudio.Library.Core
 				currentPlayMode = (MulticlipsPlayMode)playModeProp.enumValueIndex;
 			}
 
-			ReorderableList GetReorderableList(string propertyPath)
+			ReorderableList GetReorderableList(SerializedProperty property)
 			{
-				if (!_reorderableListDict.ContainsKey(propertyPath))
+				SerializedProperty clipsProp = property.FindPropertyRelative("Clips");
+				if (!_clipListDict.ContainsKey(property.propertyPath))
 				{
-					SerializedProperty clipsProp = property.FindPropertyRelative("Clips");
-					_reorderableListDict.Add(propertyPath, new ReorderableList(clipsProp.serializedObject, clipsProp));
+					_clipListDict.Add(property.propertyPath,new ClipList(new ReorderableList(clipsProp.serializedObject, clipsProp)));
 				}
-				return _reorderableListDict[propertyPath];
+				_clipListDict[property.propertyPath].ReorderableList.serializedProperty = clipsProp;
+				_clipListDict[property.propertyPath].Refresh();
+
+				return _clipListDict[property.propertyPath].ReorderableList;
 			}
 		}
 

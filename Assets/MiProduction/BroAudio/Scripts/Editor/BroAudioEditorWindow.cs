@@ -90,6 +90,7 @@ namespace MiProduction.BroAudio
 			}
 			return editor;
 		}
+
 		private void InitReorderableList()
 		{
 			_libraryReorderableList = new ReorderableList(_allLibraryGUIDs, typeof(string));

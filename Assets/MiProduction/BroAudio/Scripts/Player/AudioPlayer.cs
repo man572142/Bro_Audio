@@ -94,11 +94,12 @@ namespace MiProduction.BroAudio.Core
             OnLowPassOthers += LowPassHandler;
         }
 
-        public void SetVolume(float vol,float fadeTime)
+        public IAudioPlayer SetVolume(float vol,float fadeTime)
         {
             // ¥u°ÊTrackVolume
             _subVolumeControl.Stop(this);
             _subVolumeControl = StartCoroutine(SetTrackVolume(vol, fadeTime));
+            return this;
         }
 
         private IEnumerator SetTrackVolume(float target, float fadeTime)

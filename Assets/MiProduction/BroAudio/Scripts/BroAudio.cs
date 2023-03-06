@@ -102,16 +102,32 @@ namespace MiProduction.BroAudio
         #endregion
 
         #region Stop
+
         /// <summary>
-        /// 停止播放(使用預設FadeOut設定)
+        /// 停止播放
         /// </summary>
+        /// <param name="audioType">停止的聲音類型</param>
         public static void Stop(AudioType audioType) => Stop(-1f, audioType);
 
         /// <summary>
         /// 停止播放
         /// </summary>
-        /// <param name="fadeOutTime">自定FadeOut時間長度</param>
+        /// <param name="id">停止的聲音ID (相同聲音類型的也都會停止)</param>
+        public static void Stop(int id) => Stop(-1f, id);
+
+        /// <summary>
+        /// 停止播放
+        /// </summary>
+        /// <param name="fadeTime">自定FadeOut時間長度</param>
+        /// <param name="audioType">停止的聲音類型</param>
         public static void Stop(float fadeTime, AudioType audioType) => SoundManager.Instance.StopPlaying(fadeTime, audioType);
+
+        /// <summary>
+        /// 停止播放
+        /// </summary>
+        /// <param name="fadeTime">自定FadeOut時間長度</param>
+        /// <param name="id">停止的聲音ID (相同聲音類型的也都會停止)</param>
+        public static void Stop(float fadeTime, int id) => SoundManager.Instance.StopPlaying(fadeTime, id);
 
         #endregion
 
@@ -126,11 +142,26 @@ namespace MiProduction.BroAudio
         /// <summary>
         /// 設定音量
         /// </summary>
+        /// <param name="vol">過渡到指定音量的時間</param>
+        /// <param name="id">設定的聲音ID (相同聲音類型的都會被設定)</param>
+        public static void SetVolume(float vol, int id) => SetVolume(vol, 1f, id);
+
+        /// <summary>
+        /// 設定音量
+        /// </summary>
         /// <param name="vol">0~1的音量值</param>
         /// <param name="fadeTime">過渡到指定音量的時間</param>
         /// <param name="type">設定的聲音類型</param>
         public static void SetVolume(float vol, float fadeTime, AudioType audioType) => SoundManager.Instance.SetVolume(vol, fadeTime, audioType);
-        
+
+        /// <summary>
+        /// 設定音量
+        /// </summary>
+        /// <param name="vol">0~1的音量值</param>
+        /// <param name="fadeTime">過渡到指定音量的時間</param>
+        /// <param name="id">設定的聲音ID (相同聲音類型的都會被設定)</param>
+        public static void SetVolume(float vol, float fadeTime, int id) => SoundManager.Instance.SetVolume(vol, fadeTime, id);
+
         #endregion
 
     }

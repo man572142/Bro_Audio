@@ -25,16 +25,6 @@ namespace MiProduction.BroAudio.Library.Core
 				_selectedIndex = list.index;
 				_height = list.GetHeight();
 			}
-
-			public void Refresh()
-			{
-				if(ReorderableList != null)
-				{
-					_selectedIndex = ReorderableList.index;
-					_height = ReorderableList.GetHeight();
-				}
-			}
-
 		}
 
 		public static readonly Color ClipLabelColor = new Color(0f, 0.9f, 0.5f);
@@ -131,12 +121,10 @@ namespace MiProduction.BroAudio.Library.Core
 
 		private void DrawReorderableClipsList(Rect position, SerializedProperty property, out SerializedProperty outSelectedClip)
 		{
-			
 			ReorderableList reorderableList = GetReorderableList(property);
 
 			bool isMulticlips = reorderableList.count > 1;
 			SetCurrentPlayMode(property, isMulticlips, out SerializedProperty playModeProp, out MulticlipsPlayMode currentPlayMode);
-
 			int selectedIndex = reorderableList.index > 0 ? reorderableList.index : 0;
 			SerializedProperty currSelectedClip = reorderableList.count > 0 ? reorderableList.serializedProperty.GetArrayElementAtIndex(selectedIndex) : null;
 			outSelectedClip = currSelectedClip;
@@ -145,8 +133,40 @@ namespace MiProduction.BroAudio.Library.Core
 			reorderableList.drawHeaderCallback = OnDrawHeader;
 			reorderableList.drawElementCallback = OnDrawElement;
 			reorderableList.drawFooterCallback = OnDrawFooter;
+			reorderableList.onAddCallback = OnAdd;
+			reorderableList.onRemoveCallback = OnRemove;
 			reorderableList.DoList(GetRectAndIterateLine(position));
 
+			ReorderableList GetReorderableList(SerializedProperty property)
+			{
+				SerializedProperty clipsProp = property.FindPropertyRelative("Clips");
+				if (!_clipListDict.ContainsKey(property.propertyPath))
+				{
+					_clipListDict.Add(property.propertyPath, new ClipList(new ReorderableList(clipsProp.serializedObject, clipsProp)));
+				}
+				else
+				{
+					_clipListDict[property.propertyPath] = new ClipList(_clipListDict[property.propertyPath].ReorderableList);
+				}
+
+				return _clipListDict[property.propertyPath].ReorderableList;
+			}
+
+			void SetCurrentPlayMode(SerializedProperty property, bool isMulticlips, out SerializedProperty playModeProp, out MulticlipsPlayMode currentPlayMode)
+			{
+				playModeProp = property.FindPropertyRelative("MulticlipsPlayMode");
+				if (!isMulticlips)
+				{
+					playModeProp.enumValueIndex = 0;
+				}
+				else if (isMulticlips && playModeProp.enumValueIndex == 0)
+				{
+					playModeProp.enumValueIndex = 1;
+				}
+				currentPlayMode = (MulticlipsPlayMode)playModeProp.enumValueIndex;
+			}
+
+			#region ReorderableList Callback
 			void OnDrawHeader(Rect rect)
 			{
 				float[] ratio = { 0.2f, 0.5f, 0.18f, 0.12f };
@@ -198,7 +218,6 @@ namespace MiProduction.BroAudio.Library.Core
 			void OnDrawFooter(Rect rect)
 			{
 				ReorderableList.defaultBehaviours.DrawFooter(rect, reorderableList);
-
 				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
 				{
 					Rect labelRect = new Rect(rect);
@@ -208,33 +227,21 @@ namespace MiProduction.BroAudio.Library.Core
 				DrawLineCount++;
 			}
 
-			void SetCurrentPlayMode(SerializedProperty property, bool isMulticlips, out SerializedProperty playModeProp, out MulticlipsPlayMode currentPlayMode)
+			void OnRemove(ReorderableList list)
 			{
-				playModeProp = property.FindPropertyRelative("MulticlipsPlayMode");
-				if (!isMulticlips)
-				{
-					playModeProp.enumValueIndex = 0;
-				}
-				else if (isMulticlips && playModeProp.enumValueIndex == 0)
-				{
-					playModeProp.enumValueIndex = 1;
-				}
-				currentPlayMode = (MulticlipsPlayMode)playModeProp.enumValueIndex;
+				ReorderableList.defaultBehaviours.DoRemoveButton(list);
+				_clipListDict[property.propertyPath] = new ClipList(list);
 			}
 
-			ReorderableList GetReorderableList(SerializedProperty property)
+			void OnAdd(ReorderableList list)
 			{
-				SerializedProperty clipsProp = property.FindPropertyRelative("Clips");
-				if (!_clipListDict.ContainsKey(property.propertyPath))
-				{
-					_clipListDict.Add(property.propertyPath,new ClipList(new ReorderableList(clipsProp.serializedObject, clipsProp)));
-				}
-				_clipListDict[property.propertyPath].ReorderableList.serializedProperty = clipsProp;
-				_clipListDict[property.propertyPath].Refresh();
-
-				return _clipListDict[property.propertyPath].ReorderableList;
+				ReorderableList.defaultBehaviours.DoAddButton(list);
+				_clipListDict[property.propertyPath] = new ClipList(list);
 			}
+			#endregion
+
 		}
+
 
 		private void DrawClipProperties(Rect position, SerializedProperty clipProp,float audioClipLength)
 		{
@@ -308,12 +315,12 @@ namespace MiProduction.BroAudio.Library.Core
 				stopRect.width = playRect.width;
 				stopRect.height = playRect.height;
 
-				if (GUI.Button(playRect, "▶"))
+				if (GUI.Button(playRect, EditorGUIUtility.IconContent("d_PlayButton")))
 				{
 					EditorPlayAudioClip.StopAllClips();
 					EditorPlayAudioClip.PlayClip(audioClip, Mathf.RoundToInt(AudioSettings.outputSampleRate * startPos));
 				}
-				if (GUI.Button(stopRect, "■"))
+				if (GUI.Button(stopRect, EditorGUIUtility.IconContent("d_PreMatQuad")))
 				{
 					EditorPlayAudioClip.StopAllClips();
 				}

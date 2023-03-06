@@ -133,11 +133,11 @@ namespace MiProduction.Extension
 			return newProperty != null;
 		}
 
-		public static bool TryGetArrayElementAtIndex(this SerializedProperty sourceProperty,string arrayPropertyPath,int index,out SerializedProperty result)
+		public static bool TryGetArrayPropertyElementAtIndex(this SerializedProperty sourceProperty,string arrayPropertyPath,int index,out SerializedProperty result)
 		{
 			result = null;
 			SerializedProperty arrayProp = sourceProperty.FindPropertyRelative(arrayPropertyPath);
-			if(arrayProp.isArray && arrayProp.arraySize > 0)
+			if(arrayProp != null && arrayProp.isArray && arrayProp.arraySize > 0)
 			{
 				result = arrayProp.GetArrayElementAtIndex(index >= 0 ? index : 0);
 				return true;

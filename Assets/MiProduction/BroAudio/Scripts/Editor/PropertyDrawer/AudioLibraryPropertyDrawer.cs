@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 using MiProduction.Extension;
-using System;
+using static MiProduction.Extension.EditorScriptingExtension;
 
 namespace MiProduction.BroAudio.Library.Core
 {
@@ -100,7 +100,7 @@ namespace MiProduction.BroAudio.Library.Core
 					height += list.Height;
 
 					bool isShowClipProp = 
-						property.TryGetArrayElementAtIndex("Clips", list.SelectedIndex, out var clipProp) &&
+						property.TryGetArrayPropertyElementAtIndex("Clips", list.SelectedIndex, out var clipProp) &&
 						clipProp.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip);
 					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative("IsShowClipPreview").boolValue;
 
@@ -236,6 +236,8 @@ namespace MiProduction.BroAudio.Library.Core
 			void OnAdd(ReorderableList list)
 			{
 				ReorderableList.defaultBehaviours.DoAddButton(list);
+				var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
+				clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = 1f;
 				_clipListDict[property.propertyPath] = new ClipList(list);
 			}
 			#endregion

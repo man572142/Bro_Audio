@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -50,6 +51,44 @@ namespace MiProduction.Extension
                 resultClip.SetData(sampleArray, 0);
             }
 
+            return resultClip;
+        }
+
+        public static AudioClip Boost(this AudioClip originClip, float boostVol, string clipNameSuffix = "_Edited")
+		{
+            float[] sampleArray = new float[originClip.samples];
+            originClip.GetData(sampleArray, 0);
+
+            for(int i = 0; i < sampleArray.Length;i++)
+			{
+                int sign = 1;
+                float vol = sampleArray[i];
+                if(vol < 0)
+				{
+                    sign = -1;
+                    vol *= sign;
+				}
+
+                float db = vol.ToDecibel();
+                db += boostVol;
+
+                sampleArray[i] = db.ToNormalizeVolume() * sign;
+			}
+
+            AudioClip resultClip = AudioClip.Create(originClip.name + clipNameSuffix, sampleArray.Length, originClip.channels, originClip.frequency, originClip.loadType == AudioClipLoadType.Streaming);
+            resultClip.SetData(sampleArray, 0);
+            return resultClip;
+		}
+
+        public static AudioClip Reverse(this AudioClip originClip,string clipNameSuffix = "_Edited")
+		{
+            float[] sampleArray = new float[originClip.samples];
+            originClip.GetData(sampleArray, 0);
+
+            Array.Reverse(sampleArray);
+
+            AudioClip resultClip = AudioClip.Create(originClip.name + clipNameSuffix, sampleArray.Length, originClip.channels, originClip.frequency, originClip.loadType == AudioClipLoadType.Streaming);
+            resultClip.SetData(sampleArray, 0);
             return resultClip;
         }
     }

@@ -5,7 +5,8 @@ using UnityEngine;
 [System.Serializable]
 public struct BroAudioClip
 {
-    public AudioClip AudioClip;
+    public AudioClip OriginAudioClip;
+    public AudioClip EditedAudioClip;
     [Range(0f, 1f)] public float Volume;
     public float Delay;
     public float StartPosition;
@@ -15,11 +16,28 @@ public struct BroAudioClip
 
     public int Weight;
 
+    public AudioClip AudioClip
+	{
+        get
+		{
+            if(EditedAudioClip != null)
+			{
+                return EditedAudioClip;
+			}
+            else
+			{
+                return OriginAudioClip;
+			}
+		}
+	}
+
+
+
     public bool IsNull() => AudioClip == null;
 
-    public void ClearData()
-	{
-        AudioClip = null;
-        this = default;
-	}
+ //   public void ClearData()
+	//{
+ //       AudioClip = null;
+ //       this = default;
+	//}
 }

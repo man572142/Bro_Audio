@@ -13,17 +13,14 @@ namespace MiProduction.BroAudio.Library.Core
 		private struct ClipList
 		{
 			public ReorderableList ReorderableList;
-
-			private int _selectedIndex;
-			private float _height;
-			public int SelectedIndex => _selectedIndex;
-			public float Height => _height;
+			public int SelectedIndex { get; private set; }
+			public float Height { get; private set; }
 
 			public ClipList(ReorderableList list)
 			{
 				ReorderableList = list;
-				_selectedIndex = list.index;
-				_height = list.GetHeight();
+				SelectedIndex = list.index;
+				Height = list.GetHeight();
 			}
 		}
 
@@ -42,6 +39,9 @@ namespace MiProduction.BroAudio.Library.Core
 		private float[] PlaybackValues = new float[2];
 		private Dictionary<string, ClipList> _clipListDict = new Dictionary<string, ClipList>();
 
+		private bool _isEditingPlaybackPos = false;
+		private float[] _playbackPosBeforeEdit = new float[2];
+
 		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public int DrawLineCount { get; set; }
 
@@ -59,7 +59,7 @@ namespace MiProduction.BroAudio.Library.Core
 			EditorGUIUtility.wideMode = true;
 
 			DrawLineCount = 0;
-			EditorGUI.BeginProperty(position, label, property);
+			//EditorGUI.BeginProperty(position, label, property);
 
 			SerializedProperty nameProp = property.FindPropertyRelative("Name");
 
@@ -71,9 +71,9 @@ namespace MiProduction.BroAudio.Library.Core
 
 				#region Clip Properties
 				DrawReorderableClipsList(position, property, out var currSelectedClip);
-				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip),out AudioClip audioClip))
+				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.OriginAudioClip),out AudioClip audioClip))
 				{
-					DrawClipProperties(position, currSelectedClip, audioClip.length);
+					DrawClipProperties(position, currSelectedClip, audioClip);
 					DrawAdditionalClipProperties(position, property);
 
 					SerializedProperty isShowClipProp = property.FindPropertyRelative("IsShowClipPreview");
@@ -86,7 +86,7 @@ namespace MiProduction.BroAudio.Library.Core
 				}
 				#endregion	
 			}
-			EditorGUI.EndProperty();
+			//EditorGUI.EndProperty();
 		}
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
@@ -101,7 +101,7 @@ namespace MiProduction.BroAudio.Library.Core
 
 					bool isShowClipProp = 
 						property.TryGetArrayPropertyElementAtIndex("Clips", list.SelectedIndex, out var clipProp) &&
-						clipProp.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip);
+						clipProp.TryGetPropertyObject(nameof(BroAudioClip.OriginAudioClip), out AudioClip audioClip);
 					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative("IsShowClipPreview").boolValue;
 
 					if(!isShowClipProp)
@@ -135,6 +135,7 @@ namespace MiProduction.BroAudio.Library.Core
 			reorderableList.drawFooterCallback = OnDrawFooter;
 			reorderableList.onAddCallback = OnAdd;
 			reorderableList.onRemoveCallback = OnRemove;
+			reorderableList.onSelectCallback = OnSelect;
 			reorderableList.DoList(GetRectAndIterateLine(position));
 
 			ReorderableList GetReorderableList(SerializedProperty property)
@@ -194,7 +195,7 @@ namespace MiProduction.BroAudio.Library.Core
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
 			{
 				SerializedProperty clipProp = reorderableList.serializedProperty.GetArrayElementAtIndex(index);
-				SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
+				SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.OriginAudioClip));
 				EditorScriptingExtension.SplitRectHorizontal(rect, 0.9f, 15f, out Rect clipRect, out Rect valueRect);
 				EditorGUI.PropertyField(clipRect, audioClipProp, new GUIContent(""));
 
@@ -218,7 +219,7 @@ namespace MiProduction.BroAudio.Library.Core
 			void OnDrawFooter(Rect rect)
 			{
 				ReorderableList.defaultBehaviours.DrawFooter(rect, reorderableList);
-				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
+				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.OriginAudioClip), out AudioClip audioClip))
 				{
 					Rect labelRect = new Rect(rect);
 					labelRect.y += 5f;
@@ -240,12 +241,19 @@ namespace MiProduction.BroAudio.Library.Core
 				clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = 1f;
 				_clipListDict[property.propertyPath] = new ClipList(list);
 			}
-			#endregion
 
+			void OnSelect(ReorderableList list)
+			{
+				_isEditingPlaybackPos = false;
+				for(int i = 0; i < _playbackPosBeforeEdit.Length;i++)
+				{
+					_playbackPosBeforeEdit[i] = 0f; 
+				}
+			}
+			#endregion
 		}
 
-
-		private void DrawClipProperties(Rect position, SerializedProperty clipProp,float audioClipLength)
+		private void DrawClipProperties(Rect position, SerializedProperty clipProp,AudioClip audioClip)
 		{
 			SerializedProperty volumeProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
 			SerializedProperty startPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition));
@@ -269,21 +277,82 @@ namespace MiProduction.BroAudio.Library.Core
 
 			void DrawPlaybackPositionField(Rect position, SerializedProperty startPosProp, SerializedProperty endPosProp, SerializedProperty fadeInProp, SerializedProperty fadeOutProp)
 			{
-				EditorGUI.MultiFloatField(GetRectAndIterateLine(position), new GUIContent("Playback Position"), PlaybackLabels, PlaybackValues);
-				startPosProp.floatValue = Mathf.Clamp(PlaybackValues[0], 0f, GetLengthLimit(0, endPosProp.floatValue, fadeInProp.floatValue, fadeOutProp.floatValue, audioClipLength));
-				PlaybackValues[0] = startPosProp.floatValue;
-				endPosProp.floatValue = Mathf.Clamp(PlaybackValues[1], 0f, GetLengthLimit(startPosProp.floatValue, 0f, fadeInProp.floatValue, fadeOutProp.floatValue, audioClipLength));
-				PlaybackValues[1] = endPosProp.floatValue;
+				Rect multiFieldRect = GetRectAndIterateLine(position);
+				EditorGUI.BeginDisabledGroup(!_isEditingPlaybackPos);
+				{
+					EditorGUI.MultiFloatField(multiFieldRect, new GUIContent("Playback Position"), PlaybackLabels, PlaybackValues);
+					startPosProp.floatValue = Mathf.Clamp(PlaybackValues[0], 0f, GetLengthLimit(0, endPosProp.floatValue, fadeInProp.floatValue, fadeOutProp.floatValue, audioClip.length));
+					PlaybackValues[0] = startPosProp.floatValue;
+					endPosProp.floatValue = Mathf.Clamp(PlaybackValues[1], 0f, GetLengthLimit(startPosProp.floatValue, 0f, fadeInProp.floatValue, fadeOutProp.floatValue, audioClip.length));
+					PlaybackValues[1] = endPosProp.floatValue;
+				}
+				EditorGUI.EndDisabledGroup();
+
+				Rect buttonRect = new Rect(multiFieldRect);
+				EditorGUI.BeginDisabledGroup(_isEditingPlaybackPos);
+				{
+					buttonRect.width = 40f;
+					buttonRect.x = multiFieldRect.xMax - 100f;
+					bool isEditClicked = GUI.Button(buttonRect, "Edit");
+					if(isEditClicked)
+					{
+						_isEditingPlaybackPos = true;
+						PlaybackValues.CopyTo(_playbackPosBeforeEdit,0);
+					}
+				}
+				EditorGUI.EndDisabledGroup();
+
+				EditorGUI.BeginDisabledGroup(!_isEditingPlaybackPos);
+				{
+					buttonRect.x += 50f;
+					bool isSaveClicked = GUI.Button(buttonRect, "Save");
+					if(isSaveClicked)
+					{
+						_isEditingPlaybackPos = false;
+						TrimAudioClip(clipProp,audioClip);
+					}
+				}
+				EditorGUI.EndDisabledGroup();
 			}
 
 			void DrawFadingField(Rect position, SerializedProperty startPosProp, SerializedProperty endPosProp, SerializedProperty fadeInProp, SerializedProperty fadeOutProp)
 			{
 				EditorGUI.MultiFloatField(GetRectAndIterateLine(position), new GUIContent("Fade"), FadeLabels, FadeValues);
-				fadeInProp.floatValue = Mathf.Clamp(FadeValues[0], 0f, GetLengthLimit(startPosProp.floatValue, endPosProp.floatValue, 0f, fadeOutProp.floatValue, audioClipLength));
+				fadeInProp.floatValue = Mathf.Clamp(FadeValues[0], 0f, GetLengthLimit(startPosProp.floatValue, endPosProp.floatValue, 0f, fadeOutProp.floatValue, audioClip.length));
 				FadeValues[0] = fadeInProp.floatValue;
-				fadeOutProp.floatValue = Mathf.Clamp(FadeValues[1], 0f, GetLengthLimit(startPosProp.floatValue, endPosProp.floatValue, fadeInProp.floatValue, 0f, audioClipLength));
+				fadeOutProp.floatValue = Mathf.Clamp(FadeValues[1], 0f, GetLengthLimit(startPosProp.floatValue, endPosProp.floatValue, fadeInProp.floatValue, 0f, audioClip.length));
 				FadeValues[1] = fadeOutProp.floatValue;
 			}
+		}
+
+		private void TrimAudioClip(SerializedProperty clipProp,AudioClip origin)
+		{
+			if(PlaybackValues[0] != _playbackPosBeforeEdit[0] || PlaybackValues[1] != _playbackPosBeforeEdit[1])
+			{
+				AudioClip trimmedClip = origin.Trim(PlaybackValues[0], PlaybackValues[1]);
+				SaveEditedAudioClip(clipProp, origin, trimmedClip);
+			}
+		}
+
+		private static void SaveEditedAudioClip(SerializedProperty clipProp,AudioClip originClip, AudioClip editedClip)
+		{
+			string extension = System.IO.Path.GetExtension(AssetDatabase.GetAssetPath(originClip));
+			string path = Utility.GetFilePath(Utility.EditedClipsPath, editedClip.name + extension);
+			bool suecss = SavWav.Save(Utility.GetFullPath(path), editedClip);
+
+			if (suecss)
+			{
+				AssetDatabase.SaveAssets();
+				AssetDatabase.Refresh();
+				var obj = AssetDatabase.LoadAssetAtPath(path, typeof(Object));
+				clipProp.FindPropertyRelative(nameof(BroAudioClip.EditedAudioClip)).objectReferenceValue = obj;
+				clipProp.serializedObject.ApplyModifiedProperties();
+			}
+			else
+			{
+				Utility.LogError("trim audio clip failed");
+			}
+			
 		}
 
 		private void DrawClipPreview(Rect position, SerializedProperty clipProp, AudioClip audioClip)

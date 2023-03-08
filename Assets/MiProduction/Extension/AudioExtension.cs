@@ -36,6 +36,22 @@ namespace MiProduction.Extension
             return Mathf.Clamp(dB,MinDecibelVolume, MaxDecibelVolume);
         }
 
+        public static AudioClip Trim(this AudioClip originClip, float startPos, float endPos,string clipNameSuffix = "_Edited")
+        {
+            int startSample = (int)(startPos * originClip.frequency);
+            int sampleLength = (int)((originClip.length - endPos - startPos) * originClip.frequency);
+            float[] sampleArray = new float[sampleLength];
+            bool sucess = originClip.GetData(sampleArray, startSample);
+
+            AudioClip resultClip = null;
+            if (sucess)
+            {
+                resultClip = AudioClip.Create(originClip.name + clipNameSuffix, sampleLength, originClip.channels, originClip.frequency, originClip.loadType == AudioClipLoadType.Streaming);
+                resultClip.SetData(sampleArray, 0);
+            }
+
+            return resultClip;
+        }
     }
 
 }

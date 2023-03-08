@@ -124,7 +124,6 @@ namespace MiProduction.BroAudio.Core
 
         private void EndPlaying()
         {
-            _currentClip.ClearData();
             CurrentMusicID = -1;
             _currentPlayCoroutine.Stop(this);
             ClipVolume = 0f;    

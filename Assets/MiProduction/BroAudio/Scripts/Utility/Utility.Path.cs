@@ -10,6 +10,7 @@ namespace MiProduction.BroAudio
 		private const string _defaultRootPath = "Assets/MiProduction/BroAudio";
 		private const string _defaultLocalEnumsPath = "Scripts/Enums";
 		private const string _defaultLocalLibraryPath = "Library";
+		private const string _defaultLocalEditedClipsPath = "EditedClips";
 		public const string CoreDataFileName = "BroAudioData.json";
 
 		public static readonly string UnityAssetsRootPath = Application.dataPath.Replace("/Assets", string.Empty);
@@ -50,6 +51,19 @@ namespace MiProduction.BroAudio
 				if(!string.IsNullOrEmpty(value))
 				{
 					_libraryLocalPath = value.Substring(RootPath.Length + 1);
+				}
+			}
+		}
+
+		private static string _editedClipsLocalPath = _defaultLocalEditedClipsPath;
+		public static string EditedClipsPath
+		{
+			get => _editedClipsLocalPath.WithRootPath().EnsureDirectoryExists();
+			set
+			{
+				if (!string.IsNullOrEmpty(value))
+				{
+					_editedClipsLocalPath = value.Substring(RootPath.Length + 1);
 				}
 			}
 		}

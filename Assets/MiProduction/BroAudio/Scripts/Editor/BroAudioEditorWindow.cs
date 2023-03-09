@@ -14,6 +14,7 @@ namespace MiProduction.BroAudio
 	public class BroAudioEditorWindow : EditorWindow
 	{
 		public static event Action OnCloseEditorWindow;
+		public static event Action OnSelectLibrary;
 
 		public static readonly Vector2 MinWindowSize = new Vector2(960f, 540f);
 
@@ -55,11 +56,11 @@ namespace MiProduction.BroAudio
 
 		private void OnDisable()
 		{
-			foreach(AudioLibraryAssetEditor editor in _libraryEditorDict.Values)
+			OnCloseEditorWindow?.Invoke();
+			foreach (AudioLibraryAssetEditor editor in _libraryEditorDict.Values)
 			{
 				DestroyImmediate(editor);
 			}
-			OnCloseEditorWindow?.Invoke();
 		}
 
 		#region Init
@@ -101,6 +102,7 @@ namespace MiProduction.BroAudio
 			_libraryReorderableList.onAddDropdownCallback = OnAddDropdown;
 			_libraryReorderableList.onRemoveCallback = OnRemove;
 			_libraryReorderableList.drawElementCallback = OnDrawElement;
+			_libraryReorderableList.onSelectCallback = OnSelect;
 
 			void OnDrawHeader(Rect rect)
 			{
@@ -138,9 +140,12 @@ namespace MiProduction.BroAudio
 					audioTypeRect.x = labelRect.xMax;
 					EditorGUI.DrawRect(audioTypeRect, GetAudioTypeColor(editor.Asset.AudioType));
 					EditorGUI.LabelField(audioTypeRect, editor.Asset.AudioType.ToString(), GUIStyleHelper.Instance.MiddleCenterText);
-
-					
 				}
+			}
+
+			void OnSelect(ReorderableList list)
+			{
+				OnSelectLibrary?.Invoke();
 			}
 		}
 

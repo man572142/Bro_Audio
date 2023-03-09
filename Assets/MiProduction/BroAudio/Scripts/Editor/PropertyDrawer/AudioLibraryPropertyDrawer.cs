@@ -31,8 +31,7 @@ namespace MiProduction.BroAudio.Library.Core
 
 		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public int DrawLineCount { get; set; }
-
-		public bool HasSubscribedEditorWindow { get; private set; } = false;
+		public bool IsEnable { get; private set; } = false;
 
 		protected abstract void DrawAdditionalBaseProperties(Rect position, SerializedProperty property);
 		protected abstract void DrawAdditionalClipProperties(Rect position, SerializedProperty property);
@@ -42,27 +41,32 @@ namespace MiProduction.BroAudio.Library.Core
 			return EditorScriptingExtension.GetRectAndIterateLine(this, position);
 		}
 
-		private void OnCloseEditorWindow()
+		private void Enable()
 		{
+			BroAudioEditorWindow.OnCloseEditorWindow += Disable;
+			BroAudioEditorWindow.OnSelectLibrary += Disable;
+			IsEnable = true;
+		}
+
+		private void Disable()
+		{
+			_clipEditingHelper.Reset();
 			_reorderableListDict.Clear();
-			BroAudioEditorWindow.OnCloseEditorWindow -= OnCloseEditorWindow;
-			HasSubscribedEditorWindow = false;
+			BroAudioEditorWindow.OnCloseEditorWindow -= Disable;
+			BroAudioEditorWindow.OnSelectLibrary -= Disable;
+			IsEnable = false;
 		}
 
 		#region Unity Entry Overrider
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			if(!HasSubscribedEditorWindow)
+			if(!IsEnable)
 			{
-				BroAudioEditorWindow.OnCloseEditorWindow += OnCloseEditorWindow;
-				HasSubscribedEditorWindow = true;
+				Enable();
 			}
 
 			EditorGUIUtility.wideMode = true;
-
 			DrawLineCount = 0;
-			//EditorGUI.BeginProperty(position, label, property);
-
 			SerializedProperty nameProp = property.FindPropertyRelative("Name");
 
 			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProp.stringValue);
@@ -88,8 +92,8 @@ namespace MiProduction.BroAudio.Library.Core
 				}
 				#endregion	
 			}
-			//EditorGUI.EndProperty();
 		}
+
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{

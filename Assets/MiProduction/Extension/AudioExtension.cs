@@ -20,7 +20,7 @@ namespace MiProduction.Extension
 
         public static float ToNormalizeVolume(this float dB)
         {
-            if(dB == 0)
+            if(dB >= 0)
             {
                 return 1;
             }

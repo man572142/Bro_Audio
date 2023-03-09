@@ -56,6 +56,7 @@ namespace MiProduction.BroAudio
 			{
 				_clipProperty.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue = start;
 				_clipProperty.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue = end;
+				_clipProperty.serializedObject.ApplyModifiedProperties();
 			}
 		}
 

@@ -13,6 +13,8 @@ namespace MiProduction.BroAudio
 {
 	public class BroAudioEditorWindow : EditorWindow
 	{
+		public static event Action OnCloseEditorWindow;
+
 		public static readonly Vector2 MinWindowSize = new Vector2(960f, 540f);
 
 		public GUIStyleHelper GUIStyle = GUIStyleHelper.Instance;
@@ -57,6 +59,7 @@ namespace MiProduction.BroAudio
 			{
 				DestroyImmediate(editor);
 			}
+			OnCloseEditorWindow?.Invoke();
 		}
 
 		#region Init

@@ -6,7 +6,7 @@ using UnityEngine;
 public struct BroAudioClip
 {
     public AudioClip OriginAudioClip;
-    public AudioClip EditedAudioClip;
+    //public AudioClip EditedAudioClip;
     [Range(0f, 1f)] public float Volume;
     public float Delay;
     public float StartPosition;
@@ -20,14 +20,15 @@ public struct BroAudioClip
 	{
         get
 		{
-            if(EditedAudioClip != null)
-			{
-                return EditedAudioClip;
-			}
-            else
-			{
-                return OriginAudioClip;
-			}
+            //         if(EditedAudioClip != null)
+            //{
+            //             return EditedAudioClip;
+            //}
+            //         else
+            //{
+            //             return OriginAudioClip;
+            //}
+            return OriginAudioClip;
 		}
 	}
 

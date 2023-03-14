@@ -33,7 +33,7 @@ namespace MiProduction.BroAudio
 
 		
 
-		public void Save(float newStartPos,float newEndPos,AudioClip audioClip)
+		public void Save(float newStartPos,float newEndPos,AudioClip audioClip,string saveName)
 		{
 			if(!IsEditing)
 			{
@@ -44,7 +44,7 @@ namespace MiProduction.BroAudio
 			if (newStartPos != PositionBeforeEdit.Start || newStartPos != PositionBeforeEdit.End)
 			{
 				SetPlaybackPosition(newStartPos, newEndPos);
-				AudioClip trimmedClip = audioClip.Trim(newStartPos, newEndPos);
+				AudioClip trimmedClip = audioClip.Trim(newStartPos, newEndPos, saveName);
 				StoreEditedAudioClipToDisk(audioClip, trimmedClip);
 			}
 			IsEditing = false;

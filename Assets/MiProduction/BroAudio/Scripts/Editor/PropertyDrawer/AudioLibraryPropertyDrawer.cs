@@ -74,7 +74,7 @@ namespace MiProduction.BroAudio.Library.Core
 
 				#region Clip Properties
 				DrawReorderableClipsList(position, property, out var currSelectedClip);
-				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.OriginAudioClip),out AudioClip audioClip))
+				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip),out AudioClip audioClip))
 				{
 					DrawClipProperties(position, currSelectedClip, audioClip);
 					DrawAdditionalClipProperties(position, property);
@@ -104,7 +104,7 @@ namespace MiProduction.BroAudio.Library.Core
 
 					bool isShowClipProp = 
 						property.TryGetArrayPropertyElementAtIndex("Clips", list.index, out var clipProp) &&
-						clipProp.TryGetPropertyObject(nameof(BroAudioClip.OriginAudioClip), out AudioClip audioClip);
+						clipProp.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip);
 					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative("IsShowClipPreview").boolValue;
 
 					if(!isShowClipProp)
@@ -193,7 +193,7 @@ namespace MiProduction.BroAudio.Library.Core
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
 			{
 				SerializedProperty clipProp = reorderableList.serializedProperty.GetArrayElementAtIndex(index);
-				SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.OriginAudioClip));
+				SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
 				EditorScriptingExtension.SplitRectHorizontal(rect, 0.9f, 15f, out Rect clipRect, out Rect valueRect);
 				EditorGUI.PropertyField(clipRect, audioClipProp, new GUIContent(""));
 
@@ -217,7 +217,7 @@ namespace MiProduction.BroAudio.Library.Core
 			void OnDrawFooter(Rect rect)
 			{
 				ReorderableList.defaultBehaviours.DrawFooter(rect, reorderableList);
-				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.OriginAudioClip), out AudioClip audioClip))
+				if (currSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
 				{
 					Rect labelRect = new Rect(rect);
 					labelRect.y += 5f;
@@ -233,11 +233,12 @@ namespace MiProduction.BroAudio.Library.Core
 
 			void OnAdd(ReorderableList list)
 			{
-				list.serializedProperty.InsertArrayElementAtIndex(list.count - 1);
-				//ReorderableList.defaultBehaviours.DoAddButton(list);
-				var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
-				clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = 1f;
+				//list.serializedProperty.InsertArrayElementAtIndex(list.count - 1);
+				//this is the same as below... it didn't insert "empty" element as described.
+				ReorderableList.defaultBehaviours.DoAddButton(list);
 
+				var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
+				BroAudioClip.ResetAllSerializedProperties(clipProp);
 			}
 			#endregion
 		}

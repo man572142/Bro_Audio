@@ -27,8 +27,6 @@ namespace MiProduction.BroAudio.Library.Core
 		private float[] PlaybackValues = new float[2];
 		private Dictionary<string, ReorderableList> _reorderableListDict = new Dictionary<string, ReorderableList>();
 
-		private ClipEditingHelper _clipEditingHelper = new ClipEditingHelper();
-
 		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public int DrawLineCount { get; set; }
 		public bool IsEnable { get; private set; } = false;
@@ -50,7 +48,6 @@ namespace MiProduction.BroAudio.Library.Core
 
 		private void Disable()
 		{
-			_clipEditingHelper.Reset();
 			_reorderableListDict.Clear();
 			BroAudioEditorWindow.OnCloseEditorWindow -= Disable;
 			BroAudioEditorWindow.OnSelectLibrary -= Disable;
@@ -141,7 +138,6 @@ namespace MiProduction.BroAudio.Library.Core
 			reorderableList.drawFooterCallback = OnDrawFooter;
 			reorderableList.onAddCallback = OnAdd;
 			reorderableList.onRemoveCallback = OnRemove;
-			reorderableList.onSelectCallback = OnSelect;
 			reorderableList.DoList(GetRectAndIterateLine(position));
 
 			ReorderableList GetReorderableList(SerializedProperty property)
@@ -237,17 +233,11 @@ namespace MiProduction.BroAudio.Library.Core
 
 			void OnAdd(ReorderableList list)
 			{
-				ReorderableList.defaultBehaviours.DoAddButton(list);
+				list.serializedProperty.InsertArrayElementAtIndex(list.count - 1);
+				//ReorderableList.defaultBehaviours.DoAddButton(list);
 				var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
 				clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = 1f;
-			}
 
-			void OnSelect(ReorderableList list)
-			{
-				if(_clipEditingHelper != null)
-				{
-					_clipEditingHelper.Reset();
-				}
 			}
 			#endregion
 		}
@@ -276,38 +266,11 @@ namespace MiProduction.BroAudio.Library.Core
 
 			void DrawPlaybackPositionField(Rect position, SerializedProperty startPosProp, SerializedProperty endPosProp, SerializedProperty fadeInProp, SerializedProperty fadeOutProp)
 			{
-				Rect multiFieldRect = GetRectAndIterateLine(position);
-				EditorGUI.BeginDisabledGroup(!_clipEditingHelper.IsEditing);
-				{
-					EditorGUI.MultiFloatField(multiFieldRect, new GUIContent("Playback Position"), PlaybackLabels, PlaybackValues);
-					startPosProp.floatValue = Mathf.Clamp(PlaybackValues[0], 0f, GetLengthLimit(0, endPosProp.floatValue, fadeInProp.floatValue, fadeOutProp.floatValue, audioClip.length));
-					PlaybackValues[0] = startPosProp.floatValue;
-					endPosProp.floatValue = Mathf.Clamp(PlaybackValues[1], 0f, GetLengthLimit(startPosProp.floatValue, 0f, fadeInProp.floatValue, fadeOutProp.floatValue, audioClip.length));
-					PlaybackValues[1] = endPosProp.floatValue;
-				}
-				EditorGUI.EndDisabledGroup();
-
-				Rect buttonRect = new Rect(multiFieldRect);
-				buttonRect.width = 40f;
-				buttonRect.x = multiFieldRect.xMax - 100f;
-				EditorGUI.BeginDisabledGroup(_clipEditingHelper.IsEditing);
-				{	
-					if(GUI.Button(buttonRect, "Edit"))
-					{
-						_clipEditingHelper.StartEditing(clipProp, startPosProp.floatValue, endPosProp.floatValue);
-					}
-				}
-				EditorGUI.EndDisabledGroup();
-
-				buttonRect.x += 50f;
-				EditorGUI.BeginDisabledGroup(!_clipEditingHelper.IsEditing);
-				{
-					if(GUI.Button(buttonRect, "Save"))
-					{
-						_clipEditingHelper.Save(PlaybackValues[0], PlaybackValues[1],audioClip);
-					}
-				}
-				EditorGUI.EndDisabledGroup();
+				EditorGUI.MultiFloatField(GetRectAndIterateLine(position), new GUIContent("Playback Position"), PlaybackLabels, PlaybackValues);
+				startPosProp.floatValue = Mathf.Clamp(PlaybackValues[0], 0f, GetLengthLimit(0, endPosProp.floatValue, fadeInProp.floatValue, fadeOutProp.floatValue, audioClip.length));
+				PlaybackValues[0] = startPosProp.floatValue;
+				endPosProp.floatValue = Mathf.Clamp(PlaybackValues[1], 0f, GetLengthLimit(startPosProp.floatValue, 0f, fadeInProp.floatValue, fadeOutProp.floatValue, audioClip.length));
+				PlaybackValues[1] = endPosProp.floatValue;
 			}
 
 			void DrawFadingField(Rect position, SerializedProperty startPosProp, SerializedProperty endPosProp, SerializedProperty fadeInProp, SerializedProperty fadeOutProp)

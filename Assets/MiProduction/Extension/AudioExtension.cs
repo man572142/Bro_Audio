@@ -7,6 +7,8 @@ namespace MiProduction.Extension
 {
     public static class AudioExtension
     {
+        public const float HaasEffectInSecond = 0.04f;
+
         public const float MinDecibelVolume = -80f;
         public const float MaxDecibelVolume = 0f;
 

@@ -57,6 +57,9 @@ namespace MiProduction.BroAudio.Core
         [SerializeField] MusicLibraryAsset _mainMusicAsset = null;
         private Dictionary<int, MusicLibrary> _musicBank = new Dictionary<int, MusicLibrary>();
 
+        // 防止Haas Effect產生的Comb Filtering效應
+        // TODO: 如果是每次播放都在不同聲道就不用
+        public Dictionary<int, bool> CombFilteringPreventer = new Dictionary<int, bool>();
 
         public static Ease FadeInEase { get => Instance._fadeInEase; }
         public static Ease FadeOutEase { get => Instance._fadeOutEase; }
@@ -128,7 +131,7 @@ namespace MiProduction.BroAudio.Core
 
 		public IAudioPlayer PlayMusic(int id,Transition transition,float fadeTime = -1)
         {
-            if (!PlayMusicCheck(id))
+            if (!IsPlayable(id))
                 return null;
 
             BroAudioClip clip = _musicBank[id].Clip;
@@ -162,6 +165,7 @@ namespace MiProduction.BroAudio.Core
                     }
                     break;
             }
+            StartCoroutine(PreventCombFiltering(id));
             return _currMusicPlayer;
         }
 
@@ -196,10 +200,11 @@ namespace MiProduction.BroAudio.Core
 
         public IAudioPlayer PlaySound(int id, float preventTime)
         {
-            if(IsInSoundBank(id) && TryGetPlayer(id,out AudioPlayer audioPlayer))
+            if(IsPlayable(id) && TryGetPlayer(id,out AudioPlayer audioPlayer))
             {
                 SoundPlayer soundPlayer = audioPlayer as SoundPlayer;
                 soundPlayer?.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, preventTime);
+                StartCoroutine(PreventCombFiltering(id));
                 return soundPlayer;
             }
             return null;
@@ -207,29 +212,16 @@ namespace MiProduction.BroAudio.Core
 
         public IAudioPlayer PlaySound(int id, Vector3 position)
         {
-            if(IsInSoundBank(id) && TryGetPlayer(id, out AudioPlayer audioPlayer))
+            if(IsPlayable(id) && TryGetPlayer(id, out AudioPlayer audioPlayer))
             {
                 SoundPlayer soundPlayer = audioPlayer as SoundPlayer;
                 soundPlayer?.PlayAtPoint( _soundBank[id].Clip, _soundBank[id].Delay, position);
+                StartCoroutine(PreventCombFiltering(id));
                 return soundPlayer;
             }
             return null;
         }
 
-		public bool IsInSoundBank(int id)
-		{
-            if (_soundBank.Count < 1)
-            {
-                LogError($"There isn't any sound asset in {nameof(SoundManager)}!");
-                return false;
-            }
-            else if (!_soundBank.ContainsKey(id))
-            {
-                LogError($"Audio may not exist in the current SoundAsset,AudioType:{GetAudioType(id)},SoundID:{id}");
-                return false;
-            }
-            return true;
-        }
         #endregion
 
         #region PlayerControl
@@ -325,31 +317,55 @@ namespace MiProduction.BroAudio.Core
 			{
 				player.Stop(fadeTime);
 			}
-		} 
-		#endregion
+		}
+        #endregion
 
-		#region NullChecker
-		private bool PlayMusicCheck(int id)
+        private IEnumerator PreventCombFiltering(int id)
+        {
+            CombFilteringPreventer[id] = true;
+            yield return new WaitForSeconds(AudioExtension.HaasEffectInSecond);
+            CombFilteringPreventer[id] = false;
+        }
+
+        #region NullChecker
+        private bool IsPlayable(int id)
         {
             if (id == 0)
             {
-                LogError("Music ID is 0 (None). No music will play");
+                LogError("AudioID is 0 (None). No Sound will play");
                 return false;
             }
-            else if (!_musicBank.ContainsKey(id))
+
+            if (!_musicBank.ContainsKey(id) && !_soundBank.ContainsKey(id))
             {
-                LogError($"Music ID: {id} may not exist ,please check the MusicAsset's setting");
+                LogError($"AudioID:{id} may not exist ,please check [BroAudio > Library Manager]");
                 return false;
             }
-            else if(id == _currMusicPlayer.CurrentMusicID)
+
+            AudioType audioType = GetAudioType(id);
+            if (audioType == AudioType.All)
+            {
+                LogError($"AudioID:{id} is invalid");
+                return false;
+            }
+            else if (audioType == AudioType.Music && id == _currMusicPlayer.CurrentPlayingID)
             {
                 LogWarning("The music you want to play is already playing");
                 return false;
             }
+
+            if (CombFilteringPreventer.TryGetValue(id, out bool isPreventing) && isPreventing)
+            {
+                LogWarning($"One of the plays of AudioID:{id} has been rejected due to the concern about sound quality. " +
+                    $"Please avoid playing the same sound repeatedly in a very short period of time (e.g., playing it every other frame). " +
+                    $"Check [BroAudio > Global Setting] for more information, or change the Haas Effect setting.");
+                return false;
+            }
+
             return true;
         }
-		#endregion
-	}
+        #endregion
+    }
 }
 
 // by 咪 2022

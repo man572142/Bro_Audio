@@ -9,7 +9,6 @@ namespace MiProduction.BroAudio.Core
     {
         private const float DefaultFadeOutTime = 1f;
 
-        private Dictionary<int, bool> _preventPlayback = new Dictionary<int, bool>();
         private Coroutine _stopCoroutine;
 
         public override bool IsPlaying { get; protected set; }
@@ -48,22 +47,10 @@ namespace MiProduction.BroAudio.Core
         private IEnumerator PlayOnce(int id, BroAudioClip clip, float delay, float preventTime)
         {
             yield return new WaitForSeconds(delay);
-            if(_preventPlayback.TryGetValue(id,out bool isPreventing))
-            {
-                if(isPreventing)
-                    yield break;
-            }
-            else if(preventTime > 0)
-            {
-                _preventPlayback.Add(id, true);
-            }
 
             ClipVolume = clip.Volume;
             IsPlaying = true;
             AudioSource.PlayOneShot(clip.AudioClip);
-
-            if (preventTime > 0)
-                StartCoroutine(PreventPlaybackControl(id, preventTime));
 
             yield return new WaitForSeconds(clip.AudioClip.length);
             IsPlaying = false;
@@ -77,14 +64,6 @@ namespace MiProduction.BroAudio.Core
             AudioSource.PlayClipAtPoint(clip.AudioClip, pos);
             yield return new WaitForSeconds(clip.AudioClip.length);
             IsPlaying = false;
-        }
-
-
-        IEnumerator PreventPlaybackControl(int id, float time)
-        {
-            _preventPlayback[id] = true;
-            yield return new WaitForSeconds(time);
-            _preventPlayback[id] = false;
         }
     }
 

@@ -14,7 +14,7 @@ namespace MiProduction.BroAudio.Core
         private Coroutine _stopControlCoroutine;
         private BroAudioClip _currentClip;
 
-        public int CurrentMusicID { get; private set; } = -1;
+        public int CurrentPlayingID { get; private set; } = -1;
         public override bool IsPlaying { get; protected set; }
         public override bool IsStoping { get; protected set; }
         public override bool IsFadingOut { get; protected set; }
@@ -27,7 +27,7 @@ namespace MiProduction.BroAudio.Core
 
         public void Play(int id,BroAudioClip clip, bool isLoop, float fadeInTime = -1f, float fadeOutTime = -1f, Action onFinishFadeIn = null, Action onFinishPlaying = null)
         {
-            CurrentMusicID = id;
+            CurrentPlayingID = id;
             _currentClip = clip;
             _currentPlayCoroutine = StartCoroutine(PlayControl(clip,isLoop, fadeInTime, fadeOutTime, onFinishFadeIn, onFinishPlaying));
         }
@@ -94,7 +94,7 @@ namespace MiProduction.BroAudio.Core
 
         private IEnumerator StopControl(float fadeOutTime, Action onFinishPlaying)
         {
-            if (CurrentMusicID <= 0 || !IsPlaying)
+            if (CurrentPlayingID <= 0 || !IsPlaying)
             {
                 EndPlaying();
                 onFinishPlaying?.Invoke();
@@ -124,7 +124,7 @@ namespace MiProduction.BroAudio.Core
 
         private void EndPlaying()
         {
-            CurrentMusicID = -1;
+            CurrentPlayingID = -1;
             _currentPlayCoroutine.Stop(this);
             ClipVolume = 0f;    
             AudioSource.Stop();

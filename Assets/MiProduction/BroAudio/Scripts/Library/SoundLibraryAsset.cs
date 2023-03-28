@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Library.Core
+namespace MiProduction.BroAudio.Asset.Core
 {
 	
-	public abstract class SoundLibraryAsset : AudioLibraryAsset<SoundLibrary>
+	public abstract class SoundLibraryAsset : AudioAsset<SoundLibrary>
 	{
 
 	}

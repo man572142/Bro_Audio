@@ -7,10 +7,10 @@ namespace MiProduction.BroAudio
     public static class BroAudio
     {
         #region SFX
-        // *使用TEnum會用到Boxing/Unboxing，有些微的效能開銷(但非常小)
+        // *使用TEnum會用到Boxing/Unboxing，有些微的效能開銷
 
         /// <summary>
-        /// 播放音效 (會使用到Boxing/Unboxing，建議可以將Enum轉為int做為ID使用，節省一點效能開銷)
+        /// 播放音效 (建議可將Enum轉為int做為ID使用，節省效能開銷)
         /// </summary>
         /// <typeparam name="TEnum">任何音效的Enum</typeparam>
         /// <param name="sound"></param>
@@ -20,7 +20,7 @@ namespace MiProduction.BroAudio
         }
 
         /// <summary>
-        /// 播放音效 (會使用到Boxing/Unboxing，建議可以將Enum轉為int做為ID使用，節省一點效能開銷)
+        /// 播放音效 (建議可將Enum轉為int做為ID使用，節省效能開銷)
         /// </summary>
         /// <typeparam name="TEnum">任何音效的Enum</typeparam>
         /// <param name="sound"></param>
@@ -31,7 +31,7 @@ namespace MiProduction.BroAudio
         }
 
         /// <summary>
-        /// 於場景中的指定地點播放 (會使用到Boxing/Unboxing，建議可以將Enum轉為int做為ID使用，節省一點效能開銷)
+        /// 於場景中的指定地點播放 (建議可將Enum轉為int做為ID使用，節省效能開銷)
         /// </summary>
         /// <typeparam name="TEnum">任何音效的Enum</typeparam>
         /// <param name="sound"></param>
@@ -65,7 +65,7 @@ namespace MiProduction.BroAudio
         #region Music
 
         /// <summary>
-        /// 播放音樂(立即播放與停止) (會使用到Boxing/Unboxing，建議可以將Enum轉為int做為ID使用，節省一點效能開銷)
+        /// 播放音樂 (建議可將Enum轉為int做為ID使用，節省效能開銷)
         /// </summary>
         /// <typeparam name="TEnum"></typeparam>
         /// <param name="music"></param>
@@ -75,7 +75,7 @@ namespace MiProduction.BroAudio
         }
 
         /// <summary>
-        /// 播放音樂 (會使用到Boxing/Unboxing，建議可以將Enum轉為int做為ID使用，節省一點效能開銷)
+        /// 播放音樂 (建議可將Enum轉為int做為ID使用，節省效能開銷)
         /// </summary>
         /// <typeparam name="TEnum"></typeparam>
         /// <param name="music"></param>
@@ -87,7 +87,7 @@ namespace MiProduction.BroAudio
         }
 
         /// <summary>
-        /// 播放音樂(立即播放與停止)
+        /// 播放音樂
         /// </summary>
         /// <param name="musicID"></param>
         public static IAudioPlayer PlayMusic(int musicID) => PlayMusic(musicID, Transition.Immediate);

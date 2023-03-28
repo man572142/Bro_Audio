@@ -2,7 +2,7 @@ using MiProduction.Extension;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MiProduction.BroAudio.Library.Core;
+using MiProduction.BroAudio.Asset.Core;
 using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Core
@@ -85,9 +85,9 @@ namespace MiProduction.BroAudio.Core
 				{
 					continue;
 				}
-				for (int s = 0; s < soundAsset.Sets.Length; s++)
+				for (int s = 0; s < soundAsset.Libraries.Length; s++)
 				{
-					var soundLibrary = soundAsset.Sets[s];
+					var soundLibrary = soundAsset.Libraries[s];
 					if (_soundBank.ContainsKey(soundLibrary.ID))
 					{
 						LogError($"Sound :{soundLibrary.EnumName} is duplicated !");
@@ -109,10 +109,10 @@ namespace MiProduction.BroAudio.Core
 				return;
 			}
 
-			for (int m = 0; m < _mainMusicAsset.Sets.Length; m++)
+			for (int m = 0; m < _mainMusicAsset.Libraries.Length; m++)
 			{
 
-				var musicLibrary = _mainMusicAsset.Sets[m];
+				var musicLibrary = _mainMusicAsset.Libraries[m];
 				if (_musicBank.ContainsKey(musicLibrary.ID))
 				{
 					LogError($"Music :{musicLibrary.EnumName} is duplicated !");

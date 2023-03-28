@@ -6,7 +6,7 @@ using System.IO;
 using System;
 
 using UnityEditor;
-using MiProduction.BroAudio.Library.Core;
+using MiProduction.BroAudio.Asset.Core;
 
 namespace MiProduction.BroAudio
 {

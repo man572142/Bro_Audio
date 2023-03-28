@@ -12,26 +12,26 @@ namespace MiProduction.BroAudio
 		public static readonly Vector2 WindowSize = new Vector2(250f, 100f);
 
 		public Action<string> OnConfirm;
-		public List<string> CurrentLibrariesName = null;
+		public List<string> UsedAssetsName = null;
 
 		private string _libraryName = string.Empty;
 		private GUIStyleHelper _guiStyleHelper = GUIStyleHelper.Instance;
 		
 
-		public static void ShowWindow(List<string> currentLibrariesName,Action<string> onConfirm)
+		public static void ShowWindow(List<string> usedAssetName,Action<string> onConfirm)
 		{
 
 			EditorWindow window = GetWindow(typeof(LibraryNameEditorWindow));
 			window.minSize = WindowSize;
 			window.maxSize = WindowSize;
-			window.titleContent = new GUIContent("New Library");
+			window.titleContent = new GUIContent("New Asset");
 			window.Show();
 
 			var instance = window as LibraryNameEditorWindow;
 			if (instance != null)
 			{
 				instance.OnConfirm = onConfirm;
-				instance.CurrentLibrariesName = currentLibrariesName;
+				instance.UsedAssetsName = usedAssetName;
 			}
 		}
 
@@ -60,7 +60,7 @@ namespace MiProduction.BroAudio
 				switch (code)
 				{
 					case Utility.ValidationErrorCode.IsNullOrEmpty:
-						EditorGUILayout.HelpBox("Please Enter Library Name", MessageType.Info);
+						EditorGUILayout.HelpBox("Please Enter Asset Name", MessageType.Info);
 						return false;
 					case Utility.ValidationErrorCode.StartWithNumber:
 						EditorGUILayout.HelpBox("Name can't start with a number!", MessageType.Error);
@@ -72,7 +72,7 @@ namespace MiProduction.BroAudio
 			}
 			else
 			{
-				if (CurrentLibrariesName.Contains(_libraryName))
+				if (UsedAssetsName.Contains(_libraryName))
 				{
 					EditorGUILayout.HelpBox("Name already exists!", MessageType.Error);
 					return false;

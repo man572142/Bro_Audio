@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MiProduction.BroAudio;
-using MiProduction.BroAudio.Library;
+using MiProduction.BroAudio.Asset;
 
 public class Sample : MonoBehaviour
 {

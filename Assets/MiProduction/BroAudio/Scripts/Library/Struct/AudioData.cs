@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Library
+namespace MiProduction.BroAudio.Asset
 {
 	public struct AudioData
 	{

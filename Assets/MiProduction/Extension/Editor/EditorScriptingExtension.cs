@@ -12,7 +12,7 @@ namespace MiProduction.Extension
 		/// <param name="drawer"></param>
 		/// <param name="position"></param>
 		/// <returns></returns>
-		public static Rect GetRectAndIterateLine(IEditorDrawer drawer, Rect position)
+		public static Rect GetRectAndIterateLine(IEditorDrawLineCounter drawer, Rect position)
 		{
 			Rect newRect = new Rect(position.x, position.y + drawer.SingleLineSpace * drawer.DrawLineCount, position.width, EditorGUIUtility.singleLineHeight);
 			drawer.DrawLineCount++;
@@ -133,18 +133,18 @@ namespace MiProduction.Extension
 			return newProperty != null;
 		}
 
-		public static bool TryGetArrayPropertyElementAtIndex(this SerializedProperty sourceProperty,string arrayPropertyPath,int index,out SerializedProperty result)
-		{
-			result = null;
-			SerializedProperty arrayProp = sourceProperty.FindPropertyRelative(arrayPropertyPath);
-			if(arrayProp != null && arrayProp.isArray && arrayProp.arraySize > 0)
-			{
-				result = arrayProp.GetArrayElementAtIndex(index >= 0 ? index : 0);
-				return true;
-			}
-			return false;
+		//public static bool TryGetArrayPropertyElementAtIndex(this SerializedProperty sourceProperty,string arrayPropertyPath,int index,out SerializedProperty result)
+		//{
+		//	result = null;
+		//	SerializedProperty arrayProp = sourceProperty.FindPropertyRelative(arrayPropertyPath);
+		//	if(arrayProp != null && arrayProp.isArray && arrayProp.arraySize > 0)
+		//	{
+		//		result = arrayProp.GetArrayElementAtIndex(index >= 0 ? index : 0);
+		//		return true;
+		//	}
+		//	return false;
 			
-		}
+		//}
 	}
 
 }

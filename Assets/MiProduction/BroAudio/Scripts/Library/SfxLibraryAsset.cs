@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Library.Core
+namespace MiProduction.BroAudio.Asset.Core
 {
 	[CreateAssetMenu(fileName = "SoundLibrary", menuName = "MiProduction/BroAudio/Library/Sound")]
 	public class SfxLibraryAsset : SoundLibraryAsset

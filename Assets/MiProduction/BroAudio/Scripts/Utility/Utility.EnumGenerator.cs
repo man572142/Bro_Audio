@@ -4,8 +4,8 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using MiProduction.BroAudio.Library.Core;
-using MiProduction.BroAudio.Library;
+using MiProduction.BroAudio.Asset.Core;
+using MiProduction.BroAudio.Asset;
 
 namespace MiProduction.BroAudio
 {
@@ -13,7 +13,7 @@ namespace MiProduction.BroAudio
 	{
 		private const string _nameSpace = "MiProduction.BroAudio.Library";
 
-		public static void GenerateEnum(IAudioLibraryAsset asset, IEnumerable<string> currentLibraryGUIDs)
+		public static void GenerateEnum(IAudioAsset asset)
 		{
 			string enumsFullPath = GetFullPath(EnumsPath);
 			if (!Directory.Exists(enumsFullPath))
@@ -21,10 +21,10 @@ namespace MiProduction.BroAudio
 				Directory.CreateDirectory(enumsFullPath);
 			}
 			
-			string fullFilePath = GetFullFilePath(EnumsPath,asset.LibraryName + ".cs");
+			string fullFilePath = GetFullFilePath(EnumsPath,asset.AssetName + ".cs");
 
 			IEnumerable<AudioData> datasToWrite = asset.AllAudioData;
-			WriteEnumTextFile(asset.LibraryName, fullFilePath, datasToWrite);
+			WriteEnumTextFile(asset.AssetName, fullFilePath, datasToWrite);
 
 			AssetDatabase.Refresh();
 		}

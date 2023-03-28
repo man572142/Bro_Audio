@@ -8,13 +8,6 @@ namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
-		public static Color MusicColor = new Color(0f, 0.1f, 0.3f, 0.3f);
-		public static Color UIColor = new Color(0f, 0.5f, 0.2f, 0.3f);
-		public static Color AmbienceColor = new Color(0.1f, 0.5f, 0.5f, 0.3f);
-		public static Color SFXColor = new Color(0.7f, 0.2f, 0.2f, 0.3f);
-		public static Color VoiceoverColor = new Color(0.8f, 0.6f, 0f, 0.3f);
-
-
 		public enum ValidationErrorCode
 		{
 			NoError,
@@ -158,39 +151,20 @@ namespace MiProduction.BroAudio
 			return true;
 		}
 
-		//public static UnityEngine.Object CreateLibrary(this AudioType audioType)
-		//{
-		//	switch (audioType)
-		//	{
-		//		case AudioType.Music:
-		//			return new Library.Core.MusicLibraryAsset();
-		//		case AudioType.UI:
-		//			return new Library.Core.UISoundLibraryAsset();
-		//		case AudioType.Ambience:
-		//			return new Library.Core.AmbienceLibraryAsset();
-		//		case AudioType.SFX:
-		//			return new Library.Core.SfxLibraryAsset();
-		//		case AudioType.VoiceOver:
-		//			return new Library.Core.VoiceOverLibraryAsset();
-		//		default:
-		//			return null;
-		//	}
-		//}
-
-		public static string GetLibraryTypeName(this AudioType audioType)
+		public static string GetAssetTypeName(this AudioType audioType)
 		{
 			switch (audioType)
 			{
 				case AudioType.Music:
-					return nameof(Library.Core.MusicLibraryAsset);
+					return nameof(Asset.Core.MusicLibraryAsset);
 				case AudioType.UI:
-					return nameof(Library.Core.UISoundLibraryAsset);
+					return nameof(Asset.Core.UISoundLibraryAsset);
 				case AudioType.Ambience:
-					return nameof(Library.Core.AmbienceLibraryAsset);
+					return nameof(Asset.Core.AmbienceLibraryAsset);
 				case AudioType.SFX:
-					return nameof(Library.Core.SfxLibraryAsset);
+					return nameof(Asset.Core.SfxLibraryAsset);
 				case AudioType.VoiceOver:
-					return nameof(Library.Core.VoiceOverLibraryAsset);
+					return nameof(Asset.Core.VoiceOverLibraryAsset);
 				default:
 					return null;
 			}
@@ -201,15 +175,15 @@ namespace MiProduction.BroAudio
 			switch (audioType)
 			{
 				case AudioType.Music:
-					return MusicColor;
+					return BroAudioGUISetting.MusicColor;
 				case AudioType.UI:
-					return UIColor;
+					return BroAudioGUISetting.UIColor;
 				case AudioType.Ambience:
-					return AmbienceColor;
+					return BroAudioGUISetting.AmbienceColor;
 				case AudioType.SFX:
-					return SFXColor;
+					return BroAudioGUISetting.SFXColor;
 				case AudioType.VoiceOver:
-					return VoiceoverColor;
+					return BroAudioGUISetting.VoiceoverColor;
 				default:
 					return Color.white;
 			}

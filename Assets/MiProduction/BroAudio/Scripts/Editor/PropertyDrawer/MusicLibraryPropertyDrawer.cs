@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Library.Core
+namespace MiProduction.BroAudio.Asset.Core
 {
 	[CustomPropertyDrawer(typeof(MusicLibrary))]
 	public class MusicLibraryPropertyDrawer : AudioLibraryPropertyDrawer
 	{
+		protected override int BasePropertiesLineCount => 3;
+
+		protected override int ClipPropertiesLineCount => 4;
 
 		protected override void DrawAdditionalBaseProperties(Rect position, SerializedProperty property)
 		{

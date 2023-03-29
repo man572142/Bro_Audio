@@ -258,40 +258,71 @@ namespace MiProduction.BroAudio
 			
 				EditorGUILayout.BeginHorizontal();
 				{
-					DrawLibraryStateAndUpdater();
+					if (TryGetCurrentAssetEditor(out var editor))
+					{	
+						bool disableUpdate = false;
+						DrawLibraryStateMessage(editor, out disableUpdate);
+						if (!disableUpdate)
+						{
+							DrawPendingUpdatesMessage(editor, out disableUpdate);
+						}
+
+						EditorGUI.BeginDisabledGroup(disableUpdate);
+						{
+							DrawUpdateButton();
+						}
+						EditorGUI.EndDisabledGroup();
+					}
 				}
 				EditorGUILayout.EndHorizontal();
 			}
 			EditorGUILayout.EndVertical();
-		}
 
-		private void DrawLibraryStateAndUpdater()
-		{
-			if (TryGetCurrentAssetEditor(out var editor))
+
+			void DrawLibraryStateMessage(AudioAssetEditor editor, out bool disableUpdate)
+			{
+				LibraryState state = editor.GetLibraryState(out string dataName);
+				string assetName = editor.Asset.AssetName.ToBold().SetColor(Color.white);
+				dataName = dataName.ToBold().SetColor(Color.white);
+				switch (state)
+				{
+					case LibraryState.HasEmptyName:
+						
+						EditorScriptingExtension.RichTextHelpBox($"There are some empty name in asset: {assetName}!", MessageType.Error);
+						break;
+					case LibraryState.HasDuplicateName:
+						EditorScriptingExtension.RichTextHelpBox($"Name:{dataName} is duplicated in asset: {assetName} !", MessageType.Error);
+						break;
+					case LibraryState.HasInvalidName:
+						EditorScriptingExtension.RichTextHelpBox($"Name:{dataName} in asset: {assetName} has invalid word !", MessageType.Error);
+						break;
+				}
+				disableUpdate = state != LibraryState.Fine;
+			}
+
+			void DrawPendingUpdatesMessage(AudioAssetEditor editor, out bool disableUpdate)
 			{
 				string assetName = editor.Asset.AssetName.ToBold().SetColor(Color.white);
-				bool hasPendingUpdates = _pendingUpdatesController.HasPendingUpdates;
-				if (hasPendingUpdates)
+				if (_pendingUpdatesController.HasPendingUpdates)
 				{
-					GUIContent content = new GUIContent($"There are some pending updates in asset: {assetName}", EditorGUIUtility.IconContent("Warning@2x").image);
-					EditorGUILayout.LabelField(content, GUIStyleHelper.Instance.RichTextHelpBox);
+					EditorScriptingExtension.RichTextHelpBox($"There are some pending updates in asset: {assetName}", MessageType.Warning);
+					disableUpdate = false;
 				}
 				else
 				{
-					GUIContent content = new GUIContent($"No pending updates in asset: {assetName}", EditorGUIUtility.IconContent("ToggleGroup Icon").image);
-					EditorGUILayout.LabelField(content, GUIStyleHelper.Instance.RichTextHelpBox);
+					EditorScriptingExtension.RichTextHelpBox($"No pending updates in asset: {assetName}", "ToggleGroup Icon");
+					disableUpdate = true;
 				}
+			}
 
-				EditorGUI.BeginDisabledGroup(!hasPendingUpdates);
+			void DrawUpdateButton()
+			{
+				Vector2 size = BroAudioGUISetting.UpdateButtonSize;
+				if (GUILayout.Button("Update", GUILayout.Width(size.x), GUILayout.Height(size.y)))
 				{
-					Vector2 size = BroAudioGUISetting.UpdateButtonSize;
-					if (GUILayout.Button("Update", GUILayout.Width(size.x), GUILayout.Height(size.y)))
-					{
-						// TODO : add warning if the editor is compiling
-						_pendingUpdatesController.CommitAll();
-					}
+					// TODO : add warning if the editor is compiling
+					_pendingUpdatesController.CommitAll();
 				}
-				EditorGUI.EndDisabledGroup();
 			}
 		}
 
@@ -305,7 +336,6 @@ namespace MiProduction.BroAudio
 					EditorGUILayout.Space(10f);
 					if (_assetReorderableList.count > 0)
 					{
-						DrawLibraryState(editor);
 						_settingScrollPos = EditorGUILayout.BeginScrollView(_settingScrollPos);
 						{
 							editor.OnInspectorGUI();
@@ -324,25 +354,6 @@ namespace MiProduction.BroAudio
 				
 			}
 			EditorGUILayout.EndVertical();
-		}
-
-		private void DrawLibraryState(AudioAssetEditor editor)
-		{
-			LibraryState state = editor.GetLibraryState(out string dataName);
-			dataName = dataName.ToBold().SetColor(Color.white);
-			switch (state)
-			{ 
-				case LibraryState.HasEmptyName:
-					EditorGUILayout.HelpBox("There are some library's name is empty !", MessageType.Error);
-					break;
-				case LibraryState.HasDuplicateName:
-					GUIContent content = new GUIContent($"Name:{dataName} is duplicated !", EditorGUIUtility.IconContent("console.erroricon").image);
-					EditorGUILayout.LabelField(content,GUIStyleHelper.Instance.RichTextHelpBox);
-					break;
-				case LibraryState.HasInvalidName:
-					EditorGUILayout.HelpBox($"Name:{dataName} has invalid word !", MessageType.Error);
-					break;
-			}
 		}
 	}
 }

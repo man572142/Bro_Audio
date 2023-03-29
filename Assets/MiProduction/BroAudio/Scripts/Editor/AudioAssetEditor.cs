@@ -31,7 +31,8 @@ namespace MiProduction.BroAudio.Asset.Core
 
 			_currentAudioDatas = GetLatestAudioDatas();
 			UpdateNameList();
-		}
+            CheckLibrariesState();
+        }
 
 		private void UpdateNameList()
 		{
@@ -52,18 +53,22 @@ namespace MiProduction.BroAudio.Asset.Core
 
             if (EditorGUI.EndChangeCheck())
 			{
-                if (CompareWithPrevious() && CompareWithAll())
-                {
-                    PendingUpdates.CheckChanges(this);
-                }
-            }
-        }
+				CheckLibrariesState();
+			}
+		}
 
-        public bool IsDirty()
+		private void CheckLibrariesState()
+		{
+			if (CompareWithPrevious() && CompareWithAll())
+			{
+				PendingUpdates?.CheckChanges(this);
+			}
+		}
+
+		public bool IsDirty()
         {
             if(_currentAudioDatas.Count() != _lastUpdateNameList.Count)
 			{
-                Debug.Log("Count doesn't match");
                 return true;
 			}
 

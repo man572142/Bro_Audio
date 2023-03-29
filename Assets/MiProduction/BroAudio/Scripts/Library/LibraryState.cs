@@ -10,7 +10,6 @@ namespace MiProduction.BroAudio.Asset.Core
 		HasEmptyName,
 		HasDuplicateName,
 		HasInvalidName,
-		NeedToUpdate,
 	}
 
 }

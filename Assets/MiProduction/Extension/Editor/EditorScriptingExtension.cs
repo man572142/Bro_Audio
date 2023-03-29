@@ -133,18 +133,46 @@ namespace MiProduction.Extension
 			return newProperty != null;
 		}
 
-		//public static bool TryGetArrayPropertyElementAtIndex(this SerializedProperty sourceProperty,string arrayPropertyPath,int index,out SerializedProperty result)
-		//{
-		//	result = null;
-		//	SerializedProperty arrayProp = sourceProperty.FindPropertyRelative(arrayPropertyPath);
-		//	if(arrayProp != null && arrayProp.isArray && arrayProp.arraySize > 0)
-		//	{
-		//		result = arrayProp.GetArrayElementAtIndex(index >= 0 ? index : 0);
-		//		return true;
-		//	}
-		//	return false;
-			
-		//}
+		/// <summary>
+		/// 支援RichText的HelpBox
+		/// </summary>
+		/// <param name="message">訊息內容</param>
+		/// <param name="messageType">訊息類型</param>
+		public static void RichTextHelpBox(string message, MessageType messageType)
+		{
+			string icon = string.Empty;
+			switch (messageType)
+			{
+				case MessageType.Info:
+					icon = "d_console.infoicon";
+					break;
+				case MessageType.Warning:
+					icon = "d_console.warnicon";
+					break;
+				case MessageType.Error:
+					icon = "d_console.erroricon";
+					break;
+				default:
+					icon = string.Empty;
+					break;
+			}
+
+			RichTextHelpBox(message, icon);
+		}
+
+		/// <summary>
+		/// 支援RichText及自訂icon的HelpBox
+		/// </summary>
+		/// <param name="message">訊息內容</param>
+		/// <param name="icon">Unity內建Icon名稱</param>
+		public static void RichTextHelpBox(string message, string icon)
+		{
+			GUIStyle richTextHelpBox = new GUIStyle(EditorStyles.helpBox);
+			richTextHelpBox.richText = true;
+
+			GUIContent content = string.IsNullOrEmpty(icon)? new GUIContent(message) : new GUIContent(message, EditorGUIUtility.IconContent(icon).image);
+			EditorGUILayout.LabelField(content, richTextHelpBox);
+		}
 	}
 
 }

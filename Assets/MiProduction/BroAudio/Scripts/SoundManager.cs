@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MiProduction.BroAudio.Asset.Core;
+using UnityEngine.Audio;
 using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Core
@@ -35,14 +36,15 @@ namespace MiProduction.BroAudio.Core
 
         public static SoundManager Instance = null;
 
-        [Header("Player")]
-        [SerializeField] SoundPlayer _sfxPlayer = null;
-        [SerializeField] SoundPlayer _uiPlayer = null;
-        [SerializeField] SoundPlayer _voicePlayer = null;
-        [SerializeField] SoundPlayer _ambiencePlayer = null;
+        public const int MusicPlayersCount = 2;
 
-        [SerializeField] MusicPlayer[] _musicPlayers = null;
+        [Header("Player")]
+        [SerializeField] AudioPlayer _audioPlayerPrefab = null;
+        private ObjectPool<AudioPlayer> _audioPlayerPool = null;
+
         private MusicPlayer _currMusicPlayer;
+
+        [SerializeField] AudioMixer _broAudioMixer = null;
 
         [Header("Fading Setting")]
         [SerializeField] Ease _fadeInEase = Ease.InCubic;
@@ -67,12 +69,22 @@ namespace MiProduction.BroAudio.Core
 
         private void Awake()
 		{
-            if (_musicPlayers == null || _musicPlayers.Length < 2)
-            {
-                LogError($"Please add at least 2 MusicPlayer to {nameof(SoundManager)}");
-            }
+            string nullRefLog = $"Please asign {{0}} in {nameof(SoundManager)}.prefab";
+            if(_broAudioMixer == null)
+			{
+                LogError(string.Format(nullRefLog,"BroAudioMixer"));
+                return;
+			}
+            else if(_audioPlayerPrefab == null)
+			{
+                LogError(string.Format(nullRefLog,"AudioPlayer.prefab"));
+                return;
+			}
 
-            InitSoundBank();
+            AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups("Track");
+            _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,5, mixerGroups);
+
+			InitSoundBank();
 			InitMusicBank();
 		}
 
@@ -123,7 +135,6 @@ namespace MiProduction.BroAudio.Core
 					_musicBank.Add(musicLibrary.ID, musicLibrary);
 				}
 			}
-			_currMusicPlayer = _musicPlayers[0];
 		} 
 		#endregion
 
@@ -134,9 +145,21 @@ namespace MiProduction.BroAudio.Core
             if (!IsPlayable(id))
                 return null;
 
+            if (_currMusicPlayer == null)
+            {
+                if(TryGetPlayerWithType<MusicPlayer>(out var musicPlayer))
+				{
+                    _currMusicPlayer = musicPlayer;
+                }
+                else
+				{
+                    return null;
+				}
+            }
+
             BroAudioClip clip = _musicBank[id].Clip;
             bool isLoop = _musicBank[id].Loop;
-
+            
             switch (transition)
             {
                 case Transition.Immediate:
@@ -154,33 +177,19 @@ namespace MiProduction.BroAudio.Core
                     _currMusicPlayer.Stop(fadeTime, () => _currMusicPlayer.Play(id,clip,isLoop, 0f));
                     break;
                 case Transition.CrossFade:
-                    if (GetAvailableMusicPlayer(out MusicPlayer otherPlayer))
+                    if (TryGetPlayerWithType<MusicPlayer>(out var otherPlayer))
                     {
-                        _currMusicPlayer.Stop(fadeTime, () => _currMusicPlayer = otherPlayer);
+                        _currMusicPlayer.Stop(fadeTime, () =>
+                        {
+                            _audioPlayerPool.Recycle(_currMusicPlayer);
+                            _currMusicPlayer = otherPlayer;
+                        });
                         otherPlayer.Play(id,clip,isLoop, fadeTime);
-                    }
-                    else
-                    {
-                        LogError("No playable music player for another music!");
                     }
                     break;
             }
             StartCoroutine(PreventCombFiltering(id));
             return _currMusicPlayer;
-        }
-
-        private bool GetAvailableMusicPlayer(out MusicPlayer musicPlayer)
-        {
-            musicPlayer = null;
-            foreach (MusicPlayer player in _musicPlayers)
-            {
-                if (!player.IsPlaying && player != _currMusicPlayer)
-                {
-                    musicPlayer = player;
-                    return true;
-                }
-            }
-            return false;
         }
 
         public void StopMusic(float fadeTime)
@@ -200,10 +209,9 @@ namespace MiProduction.BroAudio.Core
 
         public IAudioPlayer PlaySound(int id, float preventTime)
         {
-            if(IsPlayable(id) && TryGetPlayer(id,out AudioPlayer audioPlayer))
+            if(IsPlayable(id) && TryGetPlayerWithType<SoundPlayer>(out var soundPlayer))
             {
-                SoundPlayer soundPlayer = audioPlayer as SoundPlayer;
-                soundPlayer?.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, preventTime);
+                soundPlayer.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, preventTime);
                 StartCoroutine(PreventCombFiltering(id));
                 return soundPlayer;
             }
@@ -212,10 +220,9 @@ namespace MiProduction.BroAudio.Core
 
         public IAudioPlayer PlaySound(int id, Vector3 position)
         {
-            if(IsPlayable(id) && TryGetPlayer(id, out AudioPlayer audioPlayer))
+            if(IsPlayable(id) && TryGetPlayerWithType<SoundPlayer>(out var soundPlayer))
             {
-                SoundPlayer soundPlayer = audioPlayer as SoundPlayer;
-                soundPlayer?.PlayAtPoint( _soundBank[id].Clip, _soundBank[id].Delay, position);
+                soundPlayer.PlayAtPoint(id,_soundBank[id].Clip, _soundBank[id].Delay, position);
                 StartCoroutine(PreventCombFiltering(id));
                 return soundPlayer;
             }
@@ -225,44 +232,6 @@ namespace MiProduction.BroAudio.Core
         #endregion
 
         #region PlayerControl
-        private bool TryGetPlayer(int id, out AudioPlayer player)
-        {
-            AudioType audioType = GetAudioType(id);
-            return TryGetPlayer(audioType, out player);
-        }
-
-        private bool TryGetPlayer(AudioType audioType, out AudioPlayer player)
-        {
-            player = null;
-            switch (audioType)
-            {
-                case AudioType.UI:
-                    player = _uiPlayer;
-                    break;
-                case AudioType.SFX:
-                    player = _sfxPlayer;
-                    break;
-                case AudioType.VoiceOver:
-                    player = _voicePlayer;
-                    break;
-                case AudioType.Ambience:
-                    player = _ambiencePlayer;
-                    break;
-                case AudioType.Music:
-                    player = _currMusicPlayer;
-                    break;
-                default:
-                    LogWarning($"{audioType} is not suppose to play in any AudioPlayer");
-                    return false;
-            }
-
-            if (player == null)
-            {
-                LogError($"The AudioPlayer for <b>{audioType}</b> is null");
-            }
-            return true;
-        }
-
         public void SetVolume(float vol, float fadeTime, AudioType audioType)
 		{
 			if (audioType == AudioType.All)
@@ -275,21 +244,25 @@ namespace MiProduction.BroAudio.Core
 			}
 
 			void SetPlayerVolume(AudioType target)
-			{
-				if (TryGetPlayer(target, out var player))
+            {
+                if (_audioPlayerPool.TryGetObject(x => GetAudioType(x.ID) == target, out var player))
 				{
-					player.SetVolume(vol, fadeTime);
+                    player.SetVolume(vol,fadeTime);
 				}
 			}
 		}
 
-		public void SetVolume(float vol, float fadeTime, int id)
+		public void SetVolume(float vol, float fadeTime,int id)
 		{
-			if (TryGetPlayer(id, out var player))
+            if (_audioPlayerPool.TryGetObject(x => x.ID == id, out var player))
 			{
-				player.SetVolume(vol, fadeTime);
+                player.SetVolume(vol, fadeTime);
+            }
+            else
+			{
+                LogWarning($"Set volume is failed. AudioID:{id} is not playing.");
 			}
-		}
+        }
 
 		public void StopPlaying(float fadeTime, AudioType audioType)
 		{
@@ -304,21 +277,31 @@ namespace MiProduction.BroAudio.Core
 
 			void Stop(AudioType target)
 			{
-				if (TryGetPlayer(target, out var player))
-				{
-					player.Stop(fadeTime);
-				}
-			}
-		}
+                if (_audioPlayerPool.TryGetObject(x => GetAudioType(x.ID) == target, out var player))
+                {
+                    player.Stop(fadeTime);
+                }
+            }
+        }
 
 		public void StopPlaying(float fadeTime, int id)
 		{
-			if (TryGetPlayer(id, out var player))
-			{
-				player.Stop(fadeTime);
-			}
-		}
+            if (_audioPlayerPool.TryGetObject(x => x.ID == id, out var player))
+            {
+                player.Stop(fadeTime);
+            }
+            else
+            {
+                LogWarning($"Stop playing is failed. AudioID:{id} is not playing.");
+            }
+        }
         #endregion
+
+        private bool TryGetPlayerWithType<T>(out T player) where T : AudioPlayer
+        {
+            player = _audioPlayerPool.Extract() as T;
+            return player != null;
+        }
 
         private IEnumerator PreventCombFiltering(int id)
         {
@@ -348,7 +331,7 @@ namespace MiProduction.BroAudio.Core
                 LogError($"AudioID:{id} is invalid");
                 return false;
             }
-            else if (audioType == AudioType.Music && id == _currMusicPlayer.CurrentPlayingID)
+            else if (audioType == AudioType.Music &&_currMusicPlayer != null && id == _currMusicPlayer.ID)
             {
                 LogWarning("The music you want to play is already playing");
                 return false;

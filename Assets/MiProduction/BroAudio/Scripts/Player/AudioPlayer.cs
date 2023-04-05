@@ -10,14 +10,16 @@ using static MiProduction.BroAudio.Utility;
 namespace MiProduction.BroAudio.Core
 {
     [RequireComponent(typeof(AudioSource))]
-	public abstract partial class AudioPlayer : MonoBehaviour,IAudioPlayer
+	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>
 	{
+        public event Action<AudioPlayer> OnRecycle;
 
         [SerializeField] protected AudioSource AudioSource = null;
         [SerializeField] protected AudioMixer AudioMixer;
         private string _volParaName = string.Empty;
 
         private Coroutine _subVolumeControl;
+        
 
         // ClipVolume : 播放Clip的音量(0~1)，依不同的Clip有不同設定，而FadeIn/FadeOut也只作用在此值
         // TrackVolume : 音軌的音量(0~1)，也可算是此Player的音量，作用相當於混音的Fader
@@ -71,14 +73,23 @@ namespace MiProduction.BroAudio.Core
             }
         }
 
-        public abstract bool IsPlaying { get; protected set; }
-        public abstract bool IsStoping { get; protected set; }
-        public abstract bool IsFadingOut { get; protected set; }
-        public abstract bool IsFadingIn { get; protected set; }
+        public AudioMixerGroup AudioTrack
+		{
+            get => AudioSource.outputAudioMixerGroup;
+			set
+			{
+                _volParaName = value.name;
+                AudioSource.outputAudioMixerGroup = value;
+			}
+		}
 
-        public abstract void Stop(float fadeTime);
+        public bool IsPlaying { get; protected set; }
+        public bool IsStoping { get; protected set; }
+        public bool IsFadingOut { get; protected set; }
+        public bool IsFadingIn { get; protected set; }
+		public int ID { get; protected set; }
 
-        protected virtual void Awake()
+		protected virtual void Awake()
         {
             if (AudioSource == null)
             {
@@ -88,16 +99,36 @@ namespace MiProduction.BroAudio.Core
             {
                 AudioMixer = AudioSource.outputAudioMixerGroup.audioMixer;
             }
-            _volParaName = AudioSource.outputAudioMixerGroup.name;
 
             OnStandOut += StandOutHandler;
             OnLowPassOthers += LowPassHandler;
+            OnRecycle += ResetValue;
         }
 
-        public IAudioPlayer SetVolume(float vol,float fadeTime)
+        public virtual void Stop(float fadeOutTime)
+		{
+
+		}
+
+		private void ResetValue(AudioPlayer player)
+		{
+            ID = -1;
+            _subVolumeControl.StopIn(this);
+            _clipVolume = 1f;
+            _trackVolume = 1f;
+            _mixerDecibelVolume = -1f;
+            _volParaName = string.Empty;
+        }
+
+        protected void Recycle()
+		{
+            OnRecycle?.Invoke(this);
+        }
+
+		public IAudioPlayer SetVolume(float vol,float fadeTime)
         {
             // 只動TrackVolume
-            _subVolumeControl.Stop(this);
+            _subVolumeControl.StopIn(this);
             _subVolumeControl = StartCoroutine(SetTrackVolume(vol, fadeTime));
             return this;
         }
@@ -136,13 +167,16 @@ namespace MiProduction.BroAudio.Core
 		private void OnDestroy()
 		{
             OnStandOut -= StandOutHandler;
-		}
-	}
+            OnLowPassOthers += LowPassHandler;
+        }
+
+    }
 
 	#region Stands Out
 	[RequireComponent(typeof(AudioSource))]
-    public abstract partial class AudioPlayer : MonoBehaviour, IAudioPlayer
+    public partial class AudioPlayer : MonoBehaviour, IAudioPlayer,IRecyclable<AudioPlayer>
     {
+        // All Audio Player will subscribe this static event
         private static event Action<float, float, AudioPlayer> OnStandOut;
 
         public IAudioPlayer StandsOut(float standoutRatio, float fadeTime = 0.5f)
@@ -187,7 +221,7 @@ namespace MiProduction.BroAudio.Core
 
     #region LowPass Other
     [RequireComponent(typeof(AudioSource))]
-    public abstract partial class AudioPlayer : MonoBehaviour, IAudioPlayer
+    public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IRecyclable<AudioPlayer>
     {
         public const string LowPassExposedName = "_LowPass";
         public const float DefaultLowPassFrequence = 300f;

@@ -14,11 +14,6 @@ namespace MiProduction.BroAudio.Core
         private Coroutine _stopControlCoroutine;
         private BroAudioClip _currentClip;
 
-        public int CurrentPlayingID { get; private set; } = -1;
-        public override bool IsPlaying { get; protected set; }
-        public override bool IsStoping { get; protected set; }
-        public override bool IsFadingOut { get; protected set; }
-        public override bool IsFadingIn { get; protected set; }
 
         private void Start()
         {
@@ -27,7 +22,7 @@ namespace MiProduction.BroAudio.Core
 
         public void Play(int id,BroAudioClip clip, bool isLoop, float fadeInTime = -1f, float fadeOutTime = -1f, Action onFinishFadeIn = null, Action onFinishPlaying = null)
         {
-            CurrentPlayingID = id;
+            ID = id;
             _currentClip = clip;
             _currentPlayCoroutine = StartCoroutine(PlayControl(clip,isLoop, fadeInTime, fadeOutTime, onFinishFadeIn, onFinishPlaying));
         }
@@ -82,7 +77,7 @@ namespace MiProduction.BroAudio.Core
             Stop(fadeTime);
         }
 
-        public void Stop(float fadeOutTime = -1, Action onFinishPlaying = null)
+        public void Stop(float fadeOutTime, Action onFinishPlaying)
         {
             if(IsStoping)
             {
@@ -94,7 +89,7 @@ namespace MiProduction.BroAudio.Core
 
         private IEnumerator StopControl(float fadeOutTime, Action onFinishPlaying)
         {
-            if (CurrentPlayingID <= 0 || !IsPlaying)
+            if (ID <= 0 || !IsPlaying)
             {
                 EndPlaying();
                 onFinishPlaying?.Invoke();
@@ -113,7 +108,7 @@ namespace MiProduction.BroAudio.Core
                 }
                 else
                 {
-                    _currentPlayCoroutine.Stop(this);
+                    _currentPlayCoroutine.StopIn(this);
                     yield return StartCoroutine(Fade(fadeOutTime, 0f));
                 }
             }
@@ -124,8 +119,8 @@ namespace MiProduction.BroAudio.Core
 
         private void EndPlaying()
         {
-            CurrentPlayingID = -1;
-            _currentPlayCoroutine.Stop(this);
+            ID = -1;
+            _currentPlayCoroutine.StopIn(this);
             ClipVolume = 0f;    
             AudioSource.Stop();
             AudioSource.clip = null;

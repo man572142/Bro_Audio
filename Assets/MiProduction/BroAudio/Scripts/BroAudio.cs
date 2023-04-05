@@ -144,7 +144,7 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <param name="vol">過渡到指定音量的時間</param>
         /// <param name="id">設定的聲音ID (相同聲音類型的都會被設定)</param>
-        public static void SetVolume(float vol, int id) => SetVolume(vol, 1f, id);
+        //public static void SetVolume(float vol, int id) => SetVolume(vol, 1f, id);
 
         /// <summary>
         /// 設定音量
@@ -160,7 +160,7 @@ namespace MiProduction.BroAudio
         /// <param name="vol">0~1的音量值</param>
         /// <param name="fadeTime">過渡到指定音量的時間</param>
         /// <param name="id">設定的聲音ID (相同聲音類型的都會被設定)</param>
-        public static void SetVolume(float vol, float fadeTime, int id) => SoundManager.Instance.SetVolume(vol, fadeTime, id);
+        //public static void SetVolume(float vol, float fadeTime, int id) => SoundManager.Instance.SetVolume(vol, fadeTime, id);
 
         #endregion
 

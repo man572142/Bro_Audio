@@ -171,7 +171,7 @@ namespace MiProduction.BroAudio.Asset
 			//CurrentSelectedClip = clipProp;
 			if (addedIndex > 0)
 			{
-				BroAudioClip.ResetAllSerializedProperties(clipProp);
+                SerializedBroAudioClip.ResetAllSerializedProperties(clipProp);
 			}
 			RecordOriginValue(clipProp);
 			//_clipTransportDict.Add(clipProp.propertyPath,new Transport(clipProp));

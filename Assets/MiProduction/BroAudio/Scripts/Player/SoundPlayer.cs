@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MiProduction.Extension;
+using System;
 
 namespace MiProduction.BroAudio.Core
 {
@@ -10,11 +11,7 @@ namespace MiProduction.BroAudio.Core
         private const float DefaultFadeOutTime = 1f;
 
         private Coroutine _stopCoroutine;
-
-        public override bool IsPlaying { get; protected set; }
-        public override bool IsStoping { get; protected set; }
-        public override bool IsFadingOut { get; protected set; }
-        public override bool IsFadingIn { get; protected set; }
+        private Coroutine _recycleCoroutine;
 
         private void Start()
         {
@@ -23,13 +20,15 @@ namespace MiProduction.BroAudio.Core
 
 		public void Play(int id, BroAudioClip clip, float delay, float preventTime)
 		{
-			_stopCoroutine.Stop(this);
-			StartCoroutine(PlayOnce(id, clip, delay, preventTime));
+            ID = id;
+			_stopCoroutine.StopIn(this);
+			StartCoroutine(PlayOnce(clip, delay, preventTime));
 		}
 
-		public void PlayAtPoint(BroAudioClip clip, float delay, Vector3 pos)
+		public void PlayAtPoint(int id,BroAudioClip clip, float delay, Vector3 pos)
 		{
-			_stopCoroutine.Stop(this);
+            ID = id;
+			_stopCoroutine.StopIn(this);
 			StartCoroutine(PlayInScene(clip, delay, pos));
 		}
 
@@ -44,8 +43,10 @@ namespace MiProduction.BroAudio.Core
         }
 
 
-        private IEnumerator PlayOnce(int id, BroAudioClip clip, float delay, float preventTime)
+        private IEnumerator PlayOnce(BroAudioClip clip, float delay, float preventTime)
         {
+            _recycleCoroutine.StopIn(this);
+
             yield return new WaitForSeconds(delay);
 
             ClipVolume = clip.Volume;
@@ -54,6 +55,9 @@ namespace MiProduction.BroAudio.Core
 
             yield return new WaitForSeconds(clip.AudioClip.length);
             IsPlaying = false;
+
+            // TODO: 播完馬上回收，多了pool的Add跟Remove好像有點浪費，看來還是得找個地方Cache
+            Recycle();
         }
 
         private IEnumerator PlayInScene(BroAudioClip clip, float delay, Vector3 pos)
@@ -66,5 +70,4 @@ namespace MiProduction.BroAudio.Core
             IsPlaying = false;
         }
     }
-
 }

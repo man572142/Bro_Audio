@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.Data
 {
 	[System.Serializable]
 	public class BroAudioClip

@@ -4,9 +4,10 @@ using UnityEngine;
 using UnityEditor;
 using MiProduction.Extension;
 using static MiProduction.Extension.EditorScriptingExtension;
-using static MiProduction.BroAudio.BroAudioGUISetting;
+using static MiProduction.BroAudio.AssetEditor.BroAudioGUISetting;
+using MiProduction.BroAudio.Data;
 
-namespace MiProduction.BroAudio.Asset.Core
+namespace MiProduction.BroAudio.AssetEditor
 {
 	public abstract class AudioLibraryPropertyDrawer : PropertyDrawer, IEditorDrawLineCounter
 	{

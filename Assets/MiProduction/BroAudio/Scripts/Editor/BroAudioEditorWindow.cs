@@ -6,10 +6,9 @@ using UnityEditorInternal;
 using static MiProduction.BroAudio.Utility;
 using System;
 using System.Linq;
-using MiProduction.BroAudio.Asset.Core;
 using MiProduction.Extension;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.AssetEditor
 {
 	public class BroAudioEditorWindow : EditorWindow
 	{

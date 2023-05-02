@@ -1,9 +1,9 @@
-using MiProduction.Extension;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MiProduction.BroAudio.Asset.Core;
 using UnityEngine.Audio;
+using MiProduction.BroAudio.Data;
+using MiProduction.Extension;
 using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Core
@@ -42,7 +42,7 @@ namespace MiProduction.BroAudio.Core
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
         private ObjectPool<AudioPlayer> _audioPlayerPool = null;
 
-        private MusicPlayer _currMusicPlayer;
+        private StreamingPlayer _currMusicPlayer;
 
         [SerializeField] AudioMixer _broAudioMixer = null;
 
@@ -135,19 +135,18 @@ namespace MiProduction.BroAudio.Core
 					_musicBank.Add(musicLibrary.ID, musicLibrary);
 				}
 			}
-		} 
+		}
 		#endregion
 
-		#region 音樂
-
-		public IAudioPlayer PlayMusic(int id,Transition transition,float fadeTime = -1)
+		#region Play
+		public IAudioPlayer PlayMusic(int id,Transition transition, float fadeTime, float preventTime)
         {
-            if (!IsPlayable(id))
+            if (!IsPlayable(id,_musicBank))
                 return null;
 
             if (_currMusicPlayer == null)
             {
-                if(TryGetPlayerWithType<MusicPlayer>(out var musicPlayer))
+                if(TryGetPlayerWithType<StreamingPlayer>(out var musicPlayer))
 				{
                     _currMusicPlayer = musicPlayer;
                 }
@@ -177,7 +176,7 @@ namespace MiProduction.BroAudio.Core
                     _currMusicPlayer.Stop(fadeTime, () => _currMusicPlayer.Play(id,clip,isLoop, 0f));
                     break;
                 case Transition.CrossFade:
-                    if (TryGetPlayerWithType<MusicPlayer>(out var otherPlayer))
+                    if (TryGetPlayerWithType<StreamingPlayer>(out var otherPlayer))
                     {
                         _currMusicPlayer.Stop(fadeTime, () =>
                         {
@@ -188,50 +187,51 @@ namespace MiProduction.BroAudio.Core
                     }
                     break;
             }
-            StartCoroutine(PreventCombFiltering(id));
+            StartCoroutine(PreventCombFiltering(id,preventTime));
             return _currMusicPlayer;
         }
 
-        public void StopMusic(float fadeTime)
-		{
-            _currMusicPlayer.Stop(fadeTime);
-		}
-
-        private void SetMusicVolume(float vol,float fadeTime)
-		{
-            _currMusicPlayer.SetVolume(vol,fadeTime);
-		}
-
-
-        #endregion
-
-        #region 音效
-
-        public IAudioPlayer PlaySound(int id, float preventTime)
+        public IAudioPlayer Play(int id,float preventTime)
         {
-            if(IsPlayable(id) && TryGetPlayerWithType<SoundPlayer>(out var soundPlayer))
+            AudioType audioType = GetAudioType(id);
+            if (audioType == AudioType.Music || audioType == AudioType.Ambience)
+			{
+                return PlayMusic(id, Transition.Immediate,-1f,preventTime);
+            }
+
+            if (IsPlayable(id,_soundBank) && TryGetPlayerWithType<AudioPlayer>(out var player))
             {
-                soundPlayer.Play(id, _soundBank[id].Clip, _soundBank[id].Delay, preventTime);
-                StartCoroutine(PreventCombFiltering(id));
-                return soundPlayer;
+				player.Play(id, _soundBank[id].Clip,false,_soundBank[id].Delay);
+                StartCoroutine(PreventCombFiltering(id,preventTime));
+                return player;
+			}
+			return null;
+		}
+
+		public IAudioPlayer PlayOneShot(int id, float preventTime)
+        {
+            if(IsPlayable(id,_soundBank)&& TryGetPlayerWithType<OneShotPlayer>(out var player))
+            {
+                player.PlayOneShot(id, _soundBank[id].Clip, _soundBank[id].Delay);
+                StartCoroutine(PreventCombFiltering(id,preventTime));
+                return player;
             }
             return null;
         }
 
-        public IAudioPlayer PlaySound(int id, Vector3 position)
+        public IAudioPlayer PlayAtPoint(int id, Vector3 position, float preventTime)
         {
-            if(IsPlayable(id) && TryGetPlayerWithType<SoundPlayer>(out var soundPlayer))
+            if(IsPlayable(id,_soundBank) && TryGetPlayerWithType<OneShotPlayer>(out var player))
             {
-                soundPlayer.PlayAtPoint(id,_soundBank[id].Clip, _soundBank[id].Delay, position);
-                StartCoroutine(PreventCombFiltering(id));
-                return soundPlayer;
+                player.PlayAtPoint(id,_soundBank[id].Clip, _soundBank[id].Delay, position);
+                StartCoroutine(PreventCombFiltering(id,preventTime));
+                return player;
             }
             return null;
         }
-
         #endregion
 
-        #region PlayerControl
+        #region Volume
         public void SetVolume(float vol, float fadeTime, AudioType audioType)
 		{
 			if (audioType == AudioType.All)
@@ -263,7 +263,9 @@ namespace MiProduction.BroAudio.Core
                 LogWarning($"Set volume is failed. AudioID:{id} is not playing.");
 			}
         }
+		#endregion
 
+		#region Stop
 		public void StopPlaying(float fadeTime, AudioType audioType)
 		{
 			if (audioType == AudioType.All)
@@ -303,15 +305,15 @@ namespace MiProduction.BroAudio.Core
             return player != null;
         }
 
-        private IEnumerator PreventCombFiltering(int id)
+        private IEnumerator PreventCombFiltering(int id,float preventTime)
         {
             CombFilteringPreventer[id] = true;
-            yield return new WaitForSeconds(AudioExtension.HaasEffectInSecond);
+            yield return new WaitForSeconds(preventTime);
             CombFilteringPreventer[id] = false;
         }
 
         #region NullChecker
-        private bool IsPlayable(int id)
+        private bool IsPlayable<T>(int id, IDictionary<int, T> bank) where T : IAudioLibrary
         {
             if (id == 0)
             {
@@ -319,7 +321,7 @@ namespace MiProduction.BroAudio.Core
                 return false;
             }
 
-            if (!_musicBank.ContainsKey(id) && !_soundBank.ContainsKey(id))
+            if (!bank.ContainsKey(id))
             {
                 LogError($"AudioID:{id} may not exist ,please check [BroAudio > Library Manager]");
                 return false;
@@ -347,8 +349,8 @@ namespace MiProduction.BroAudio.Core
 
             return true;
         }
-        #endregion
-    }
+		#endregion
+	}
 }
 
 // by 咪 2022

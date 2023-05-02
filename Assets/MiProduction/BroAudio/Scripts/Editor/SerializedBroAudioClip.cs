@@ -1,12 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using MiProduction.Extension;
-using System;
-using System.IO;
+using MiProduction.BroAudio.Data;
 
-namespace MiProduction.BroAudio.Asset.Core
+namespace MiProduction.BroAudio.AssetEditor
 {
     public class SerializedBroAudioClip : BroAudioClip, IChangesTrackable
     {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Asset.Core
+namespace MiProduction.BroAudio.AssetEditor
 {
-	[CustomPropertyDrawer(typeof(SoundLibrary))]
+	[CustomPropertyDrawer(typeof(Data.SoundLibrary))]
 	public class SoundLibraryPropertyDrawer : AudioLibraryPropertyDrawer
 	{
 		protected override int BasePropertiesLineCount => 3;

@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Asset.Core
+namespace MiProduction.BroAudio.Data
 {
 	[CreateAssetMenu(fileName = "UISoundLibrary", menuName = "MiProduction/BroAudio/Library/UI")]
 	public class UISoundLibraryAsset : SoundLibraryAsset

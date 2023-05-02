@@ -6,8 +6,9 @@ using UnityEditor;
 using UnityEngine;
 using static MiProduction.BroAudio.Utility;
 using static MiProduction.Extension.LoopExtension;
+using MiProduction.BroAudio.Data;
 
-namespace MiProduction.BroAudio.Asset.Core
+namespace MiProduction.BroAudio.AssetEditor
 {
     [CustomEditor(typeof(AudioAsset<>), true)]
     public class AudioAssetEditor : Editor,IChangesTrackable

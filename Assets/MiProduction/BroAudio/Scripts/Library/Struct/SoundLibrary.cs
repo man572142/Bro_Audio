@@ -1,5 +1,5 @@
 
-namespace MiProduction.BroAudio.Asset.Core
+namespace MiProduction.BroAudio.Data
 {
     [System.Serializable]
     public struct SoundLibrary : IAudioLibrary

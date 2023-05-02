@@ -1,4 +1,4 @@
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.Data
 {
     public interface IAudioLibrary
     {

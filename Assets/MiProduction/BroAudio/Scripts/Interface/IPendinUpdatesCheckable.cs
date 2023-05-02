@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MiProduction.BroAudio.Asset.Core
+namespace MiProduction.BroAudio.AssetEditor
 {
 	public interface IPendinUpdatesCheckable
 	{

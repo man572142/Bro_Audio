@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static MiProduction.Extension.LoopExtension;
+using MiProduction.BroAudio.Data;
+using MiProduction.BroAudio.AssetEditor;
 
 namespace MiProduction.BroAudio
 {
@@ -156,15 +158,15 @@ namespace MiProduction.BroAudio
 			switch (audioType)
 			{
 				case AudioType.Music:
-					return nameof(Asset.Core.MusicLibraryAsset);
+					return nameof(MusicLibraryAsset);
 				case AudioType.UI:
-					return nameof(Asset.Core.UISoundLibraryAsset);
+					return nameof(UISoundLibraryAsset);
 				case AudioType.Ambience:
-					return nameof(Asset.Core.AmbienceLibraryAsset);
+					return nameof(AmbienceLibraryAsset);
 				case AudioType.SFX:
-					return nameof(Asset.Core.SfxLibraryAsset);
+					return nameof(SfxLibraryAsset);
 				case AudioType.VoiceOver:
-					return nameof(Asset.Core.VoiceOverLibraryAsset);
+					return nameof(VoiceOverLibraryAsset);
 				default:
 					return null;
 			}

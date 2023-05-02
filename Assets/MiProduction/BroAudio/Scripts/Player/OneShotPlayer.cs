@@ -3,26 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using MiProduction.Extension;
 using System;
+using MiProduction.BroAudio.Data;
 
 namespace MiProduction.BroAudio.Core
 {
-    public class SoundPlayer : AudioPlayer
+    public class OneShotPlayer : AudioPlayer
     {
         private const float DefaultFadeOutTime = 1f;
 
         private Coroutine _stopCoroutine;
         private Coroutine _recycleCoroutine;
 
-        private void Start()
+        protected override void Start()
         {
             ClipVolume = 1f;
+            base.Start();
         }
 
-		public void Play(int id, BroAudioClip clip, float delay, float preventTime)
+		public void PlayOneShot(int id, BroAudioClip clip, float delay)
 		{
             ID = id;
 			_stopCoroutine.StopIn(this);
-			StartCoroutine(PlayOnce(clip, delay, preventTime));
+			StartCoroutine(PlayOneShot(clip, delay));
 		}
 
 		public void PlayAtPoint(int id,BroAudioClip clip, float delay, Vector3 pos)
@@ -43,10 +45,8 @@ namespace MiProduction.BroAudio.Core
         }
 
 
-        private IEnumerator PlayOnce(BroAudioClip clip, float delay, float preventTime)
+        private IEnumerator PlayOneShot(BroAudioClip clip, float delay)
         {
-            _recycleCoroutine.StopIn(this);
-
             yield return new WaitForSeconds(delay);
 
             ClipVolume = clip.Volume;

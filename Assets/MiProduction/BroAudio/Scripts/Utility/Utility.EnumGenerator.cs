@@ -1,17 +1,15 @@
 using UnityEditor;
 using System.IO;
 using System;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using MiProduction.BroAudio.Asset.Core;
-using MiProduction.BroAudio.Asset;
+using MiProduction.BroAudio.Data;
+using MiProduction.BroAudio.AssetEditor;
 
 namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
-		private const string _nameSpace = "MiProduction.BroAudio.Library";
+		private const string _nameSpace = "MiProduction.BroAudio";
 
 		public static void GenerateEnum(IAudioAsset asset)
 		{

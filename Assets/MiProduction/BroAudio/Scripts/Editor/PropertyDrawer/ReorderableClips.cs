@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 using MiProduction.Extension;
-using MiProduction.BroAudio.Asset.Core;
+using MiProduction.BroAudio.Data;
 
-namespace MiProduction.BroAudio.Asset
+namespace MiProduction.BroAudio.AssetEditor
 {
 	public class ReorderableClips
 	{

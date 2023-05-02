@@ -5,7 +5,7 @@ using UnityEditor;
 using System.IO;
 using static MiProduction.BroAudio.Utility;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.AssetEditor
 {
 	[InitializeOnLoad]
 	public class BroAudioInitializer

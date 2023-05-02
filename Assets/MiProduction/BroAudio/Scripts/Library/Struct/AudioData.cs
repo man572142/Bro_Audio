@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-namespace MiProduction.BroAudio.Asset
+namespace MiProduction.BroAudio.Data
 {
 	public struct AudioData
 	{

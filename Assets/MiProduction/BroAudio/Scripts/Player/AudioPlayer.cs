@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using MiProduction.Extension;
+using MiProduction.BroAudio.Data;
 using static MiProduction.Extension.AudioExtension;
 using static MiProduction.BroAudio.Utility;
 
@@ -19,7 +20,9 @@ namespace MiProduction.BroAudio.Core
         private string _volParaName = string.Empty;
 
         private Coroutine _subVolumeControl;
-        
+        private Coroutine _currentPlayCoroutine;
+        private Coroutine _stopControlCoroutine;
+        private BroAudioClip _currentClip;
 
         // ClipVolume : 播放Clip的音量(0~1)，依不同的Clip有不同設定，而FadeIn/FadeOut也只作用在此值
         // TrackVolume : 音軌的音量(0~1)，也可算是此Player的音量，作用相當於混音的Fader
@@ -105,24 +108,31 @@ namespace MiProduction.BroAudio.Core
             OnRecycle += ResetValue;
         }
 
-        public virtual void Stop(float fadeOutTime)
+        protected virtual void Start()
 		{
 
 		}
 
-		private void ResetValue(AudioPlayer player)
-		{
-            ID = -1;
-            _subVolumeControl.StopIn(this);
-            _clipVolume = 1f;
-            _trackVolume = 1f;
-            _mixerDecibelVolume = -1f;
-            _volParaName = string.Empty;
+		public virtual void Play(int id,BroAudioClip clip, bool isLoop = false, float delay = 0f, float fadeInTime = -1f, float fadeOutTime = -1f, Action onFinishFadeIn = null, Action onFinishPlaying = null)
+        {
+            ID = id;
+            _currentClip = clip;
+            _currentPlayCoroutine = StartCoroutine(PlayControl(clip, isLoop, delay, fadeInTime, fadeOutTime, onFinishFadeIn, onFinishPlaying));
         }
 
-        protected void Recycle()
+        public virtual void Stop(float fadeOutTime)
 		{
-            OnRecycle?.Invoke(this);
+            Stop(fadeOutTime);
+		}
+
+        public void Stop(float fadeOutTime, Action onFinishStopping)
+        {
+            if (IsStoping)
+            {
+                LogWarning("The music player is already processing StopMusic !");
+                return;
+            }
+            _stopControlCoroutine = StartCoroutine(StopControl(fadeOutTime, onFinishStopping));
         }
 
 		public IAudioPlayer SetVolume(float vol,float fadeTime)
@@ -164,7 +174,111 @@ namespace MiProduction.BroAudio.Core
             yield break;
         }
 
-		private void OnDestroy()
+        private IEnumerator PlayControl(BroAudioClip clip, bool isLoop,float delay, float fadeInTime, float fadeOutTime, Action onFinishFadeIn, Action onFinishPlaying)
+        {
+            yield return new WaitForSeconds(delay);
+
+            AudioSource.clip = clip.AudioClip;
+            AudioSource.time = clip.StartPosition;
+            float endTime = AudioSource.clip.length - clip.EndPosition;
+            AudioSource.loop = isLoop;
+            AudioSource.Play();
+            IsPlaying = true;
+
+            do
+            {
+                #region FadeIn
+                fadeInTime = fadeInTime < 0 ? clip.FadeIn : fadeInTime;
+                if (fadeInTime > 0)
+                {
+                    IsFadingIn = true;
+                    yield return StartCoroutine(Fade(fadeInTime, clip.Volume));
+                    onFinishFadeIn?.Invoke();
+                    IsFadingIn = false;
+                }
+                else
+                {
+                    ClipVolume = clip.Volume;
+                }
+                #endregion
+
+                #region FadeOut
+                fadeOutTime = fadeOutTime < 0 ? clip.FadeOut : fadeOutTime;
+                if (fadeOutTime > 0)
+                {
+                    yield return new WaitUntil(() => (endTime - AudioSource.time) <= fadeOutTime);
+                    IsFadingOut = true;
+                    yield return StartCoroutine(Fade(fadeOutTime, 0f));
+                    IsFadingOut = false;
+                }
+                else
+                {
+                    yield return new WaitUntil(() => endTime <= AudioSource.time);
+                }
+                #endregion
+            } while (isLoop);
+
+            EndPlaying();
+            onFinishPlaying?.Invoke();
+        }
+
+        private IEnumerator StopControl(float fadeOutTime, Action onFinishStopping)
+        {
+            if (ID <= 0 || !IsPlaying)
+            {
+                EndPlaying();
+                onFinishStopping?.Invoke();
+                yield break;
+            }
+
+            IsStoping = true;
+            fadeOutTime = fadeOutTime < 0 ? _currentClip.FadeOut : fadeOutTime;
+            if (fadeOutTime > 0)
+            {
+                if (IsFadingOut)
+                {
+                    // 目前設計成:如果原有的聲音已經在FadeOut了，就等它FadeOut不強制停止
+                    AudioSource.loop = false;
+                    yield return new WaitUntil(() => AudioSource.clip.length == AudioSource.time);
+                }
+                else
+                {
+                    _currentPlayCoroutine.StopIn(this);
+                    yield return StartCoroutine(Fade(fadeOutTime, 0f));
+                }
+            }
+            EndPlaying();
+            onFinishStopping?.Invoke();
+        }
+
+        private void EndPlaying()
+        {
+            ID = -1;
+            _currentPlayCoroutine.StopIn(this);
+            ClipVolume = 0f;
+            AudioSource.Stop();
+            AudioSource.clip = null;
+            AudioSource.loop = false;
+            IsPlaying = false;
+            IsStoping = false;
+        }
+
+        private void ResetValue(AudioPlayer player)
+        {
+            ID = -1;
+            _subVolumeControl.StopIn(this);
+            _clipVolume = 1f;
+            _trackVolume = 1f;
+            _mixerDecibelVolume = -1f;
+            _volParaName = string.Empty;
+        }
+
+        protected void Recycle()
+        {
+            OnRecycle?.Invoke(this);
+        }
+
+        private void OnDestroy()
 		{
             OnStandOut -= StandOutHandler;
             OnLowPassOthers += LowPassHandler;

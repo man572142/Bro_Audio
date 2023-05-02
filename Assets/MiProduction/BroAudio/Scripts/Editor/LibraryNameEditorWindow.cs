@@ -5,7 +5,7 @@ using UnityEditor;
 using System;
 using MiProduction.Extension;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.AssetEditor
 {
 	public class LibraryNameEditorWindow : EditorWindow
 	{

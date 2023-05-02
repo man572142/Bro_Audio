@@ -5,7 +5,7 @@ using MiProduction.Extension;
 using UnityEditor;
 using UnityEngine;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.Data
 {
 	public class ClipEditingHelper
 	{

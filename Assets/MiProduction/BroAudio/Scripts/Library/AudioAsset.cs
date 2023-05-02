@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using UnityEditor;
 
-namespace MiProduction.BroAudio.Asset.Core
+namespace MiProduction.BroAudio.Data
 {
     public abstract class AudioAsset<T> : ScriptableObject, IAudioAsset where T : IAudioLibrary
     {

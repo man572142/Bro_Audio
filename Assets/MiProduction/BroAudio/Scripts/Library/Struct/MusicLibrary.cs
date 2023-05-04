@@ -5,22 +5,20 @@ using UnityEngine;
 namespace MiProduction.BroAudio.Data
 {
     [System.Serializable]
-    public struct MusicLibrary : IAudioLibrary
+    public struct MusicLibrary : IAudioEntity,IAudioLibraryEditorProperty
     {
-        public string Name;
-        public int ID;
+        [field: SerializeField] public string Name { get; set; }
+        [field: SerializeField] public int ID { get; set; }
+
         public BroAudioClip[] Clips;
 		public bool Loop;
 
         #region Properties Setting
-        public bool IsShowClipPreview;
-        public MulticlipsPlayMode MulticlipsPlayMode;
+        [field: SerializeField] public bool IsShowClipPreview { get; set; }
+        [field: SerializeField] public MulticlipsPlayMode MulticlipsPlayMode { get; set; }
         #endregion
 
         private BroAudioClip _clip;
-
-        public string EnumName => Name;
-
         public BroAudioClip Clip
         {
             get
@@ -32,8 +30,6 @@ namespace MiProduction.BroAudio.Data
                 return _clip;
             }
         }
-
-        int IAudioLibrary.ID => ID;
 
 		public bool Validate(int index)
         {

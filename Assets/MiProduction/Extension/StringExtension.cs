@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace MiProduction.Extension
@@ -21,6 +23,33 @@ namespace MiProduction.Extension
 		{
 			return $"<size={size}>{text}</size>";
 		}
-	}
 
+		public static char ToLower(this char word)
+		{
+			if(word >= 65 && word <= 90)
+			{
+				return (char)(word + 32);
+			}
+			else if(word >= 97 && word <= 122)
+			{
+				return word;
+			}
+
+			return Char.ToLower(word);
+		}
+
+		public static char ToUpper(this char word)
+		{
+			if (word >= 65 && word <= 90)
+			{
+				return word;
+			}
+			else if (word >= 97 && word <= 122)
+			{
+				return (char)(word - 32);
+			}
+
+			return Char.ToUpper(word);
+		}
+	}
 }

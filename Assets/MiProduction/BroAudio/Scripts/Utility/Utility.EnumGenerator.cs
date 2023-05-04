@@ -21,7 +21,7 @@ namespace MiProduction.BroAudio
 			
 			string fullFilePath = GetFullFilePath(EnumsPath,asset.AssetName + ".cs");
 
-			IEnumerable<AudioData> datasToWrite = asset.AllAudioData;
+			IEnumerable<IAudioEntity> datasToWrite = asset.GetAllAudioLibrary();
 			WriteEnumTextFile(asset.AssetName, fullFilePath, datasToWrite);
 
 			AssetDatabase.Refresh();
@@ -34,7 +34,7 @@ namespace MiProduction.BroAudio
 			File.Delete(fullFilePath + ".meta");
 		}
 
-		private static void WriteEnumTextFile(string libraryName,string fullFilePath, IEnumerable<AudioData> datasToWrite)
+		private static void WriteEnumTextFile(string libraryName,string fullFilePath, IEnumerable<IAudioEntity> datasToWrite)
 		{
 			using (StreamWriter streamWriter = new StreamWriter(fullFilePath))
 			{

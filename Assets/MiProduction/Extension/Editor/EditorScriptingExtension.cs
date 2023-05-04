@@ -173,6 +173,15 @@ namespace MiProduction.Extension
 			GUIContent content = string.IsNullOrEmpty(icon)? new GUIContent(message) : new GUIContent(message, EditorGUIUtility.IconContent(icon).image);
 			EditorGUILayout.LabelField(content, richTextHelpBox);
 		}
-	}
 
+		/// <summary>
+		/// 取得Property自動生成BackingField的名稱
+		/// </summary>
+		/// <param name="propertyName"></param>
+		/// <returns></returns>
+		public static string GetBackingFieldName(string propertyName)
+		{
+			return $"<{propertyName}>k__BackingField";
+		}
+	}
 }

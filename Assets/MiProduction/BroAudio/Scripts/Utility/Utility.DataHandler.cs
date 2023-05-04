@@ -1,31 +1,75 @@
-using System.Collections;
-using System.Collections.Generic;
-using System;
 using UnityEditor;
 using UnityEngine;
-using MiProduction.BroAudio.AssetEditor;
 using MiProduction.BroAudio.Data;
+using MiProduction.BroAudio.Core;
 
 namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
-		public static void DeleteAsset(string assetGUID)
+		public static void DeleteAssetRelativeData(string assetPath)
 		{
-			DeleteJsonDataByAsset(assetGUID);
-			if(TryGetAsset(assetGUID, out var asset))
+			bool hasDeleted = DeleteJsonDataByAsset(AssetDatabase.AssetPathToGUID(assetPath));
+			if(hasDeleted && TryGetAssetByPath(assetPath, out var asset))
 			{
 				DeleteEnumFile(asset.AssetName);
+				ScriptableObject scriptableObject = asset as ScriptableObject;
+				RemoveDeletedAssetFromSoundManager(scriptableObject);
 			}
 		}
 
-		public static bool TryGetAsset(string assetGUID,out IAudioAsset asset)
+		public static void AddToSoundManager(ScriptableObject asset)
 		{
-			asset = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(assetGUID) , typeof(ScriptableObject)) as IAudioAsset;
-			return asset != null;
+			string assetPath = AssetDatabase.GetAssetPath(Resources.Load(nameof(SoundManager)));
+			using (var editScope = new EditPrefabAssetScope(assetPath))
+			{
+				if(editScope.PrefabRoot.TryGetComponent<SoundManager>(out var soundManager))
+				{
+					soundManager.AddAsset(asset);
+				}
+				editScope.PrefabRoot.transform.position = Vector3.one;
+			}
+		}
+
+		public static void RemoveDeletedAssetFromSoundManager(ScriptableObject asset)
+		{
+			string assetPath = AssetDatabase.GetAssetPath(Resources.Load(nameof(SoundManager)));
+			using (var editScope = new EditPrefabAssetScope(assetPath))
+			{
+				if (editScope.PrefabRoot.TryGetComponent<SoundManager>(out var soundManager))
+				{
+					soundManager.RemoveDeletedAsset(asset);
+				}
+			}
+			//TryLoadSoundMangerPrefabRoot((SoundManager soundManager) =>
+			//{
+			//	soundManager.RemoveDeletedAsset(asset);
+			//});
+		}
+
+		private static void TryLoadSoundMangerPrefabRoot(System.Action<SoundManager> onLoadSucess)
+		{
+			string assetPath = AssetDatabase.GetAssetPath(Resources.Load(nameof(SoundManager)));
+			GameObject prefab = AssetDatabase.LoadAssetAtPath(assetPath,typeof(GameObject)) as GameObject;
+			Debug.Log(assetPath);
+			Debug.Log($"prefab is null?{prefab == null}");
+			if (prefab != null && prefab.TryGetComponent<SoundManager>(out var soundManager))
+			{
+				onLoadSucess?.Invoke(soundManager);
+			}
+			prefab.transform.position = Vector3.one;
 		}
 
 
-		
+		public static bool TryGetAssetByGUID(string assetGUID,out IAudioAsset asset)
+		{
+			return TryGetAssetByPath(AssetDatabase.GUIDToAssetPath(assetGUID) ,out asset);
+		}
+
+		public static bool TryGetAssetByPath(string assetPath, out IAudioAsset asset)
+		{
+			asset = AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject)) as IAudioAsset;
+			return asset != null;
+		}
 	}
 }

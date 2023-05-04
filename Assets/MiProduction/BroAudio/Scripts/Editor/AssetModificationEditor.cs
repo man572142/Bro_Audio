@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
 
 namespace MiProduction.BroAudio.AssetEditor
@@ -9,11 +6,11 @@ namespace MiProduction.BroAudio.AssetEditor
 	{
 		public static AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions option)
 		{
-			string guid = AssetDatabase.AssetPathToGUID(assetPath);
-			Utility.DeleteAsset(guid);
+			Utility.DeleteAssetRelativeData(assetPath);
+			var editorWindow = EditorWindow.GetWindow(typeof(BroAudioEditorWindow)) as BroAudioEditorWindow;
+			editorWindow.RemoveAssetEditor(AssetDatabase.AssetPathToGUID(assetPath));
 
 			return AssetDeleteResult.DidNotDelete;
 		}
 	}
-
 }

@@ -50,13 +50,9 @@ namespace MiProduction.BroAudio.Core
         [SerializeField] Ease _fadeInEase = Ease.InCubic;
         [SerializeField] Ease _fadeOutEase = Ease.OutSine;
 
-        // 音效
         [Header("Library")]
-        [SerializeField] SoundLibraryAsset[] _allSoundAssets = null;
+        [SerializeField] private List<ScriptableObject> _soundAssets = new List<ScriptableObject>();
         private Dictionary<int, SoundLibrary> _soundBank = new Dictionary<int, SoundLibrary>();
-
-        // 音樂
-        [SerializeField] MusicLibraryAsset _mainMusicAsset = null;
         private Dictionary<int, MusicLibrary> _musicBank = new Dictionary<int, MusicLibrary>();
 
         // 防止Haas Effect產生的Comb Filtering效應
@@ -85,55 +81,46 @@ namespace MiProduction.BroAudio.Core
             _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,5, mixerGroups);
 
 			InitSoundBank();
-			InitMusicBank();
 		}
 
 		#region InitBank
 		private void InitSoundBank()
 		{
-			foreach (var soundAsset in _allSoundAssets)
+			foreach (var scriptableObj in _soundAssets)
 			{
-				if (soundAsset == null)
-				{
-					continue;
-				}
-				for (int s = 0; s < soundAsset.Libraries.Length; s++)
-				{
-					var soundLibrary = soundAsset.Libraries[s];
-					if (_soundBank.ContainsKey(soundLibrary.ID))
-					{
-						LogError($"Sound :{soundLibrary.EnumName} is duplicated !");
-						return;
-					}
-					if (soundLibrary.Validate(s))
-					{
-						_soundBank.Add(soundLibrary.ID, soundLibrary);
-					}
-				}
-			}
-		}
+                IAudioAsset asset = scriptableObj as IAudioAsset;
+                if (asset == null)
+                    continue;
 
-		private void InitMusicBank()
-		{
-			if (_mainMusicAsset == null)
-			{
-				LogError($"There isn't any music asset in the {nameof(SoundManager)}!");
-				return;
-			}
-
-			for (int m = 0; m < _mainMusicAsset.Libraries.Length; m++)
-			{
-
-				var musicLibrary = _mainMusicAsset.Libraries[m];
-				if (_musicBank.ContainsKey(musicLibrary.ID))
+                List<IAudioEntity> dataList = System.Linq.Enumerable.ToList(asset.GetAllAudioLibrary());
+				for (int s = 0; s < dataList.Count; s++)
 				{
-					LogError($"Music :{musicLibrary.EnumName} is duplicated !");
-					return;
-				}
-				if (musicLibrary.Validate(m))
-				{
-					_musicBank.Add(musicLibrary.ID, musicLibrary);
-				}
+					var library = dataList[s];
+					if (!library.Validate(s))
+                        continue;
+
+                    switch (asset.AudioType)
+                    {
+                        case AudioType.Music:
+                        case AudioType.Ambience:
+                            if (!_musicBank.ContainsKey(library.ID))
+                            {
+                                _musicBank.Add(library.ID, (MusicLibrary)library);
+                            }
+                            break;
+                        case AudioType.UI:
+                        case AudioType.SFX:
+                        case AudioType.VoiceOver:
+                            if (!_soundBank.ContainsKey(library.ID))
+                            {
+                                _soundBank.Add(library.ID, (SoundLibrary)library);
+                            }
+                            break;
+                        default:
+                            LogError($"Audio:{library.Name} can't add to sound bank because its invalid AudioType:{asset.AudioType}.");
+                            break;
+                    }
+                }
 			}
 		}
 		#endregion
@@ -313,7 +300,7 @@ namespace MiProduction.BroAudio.Core
         }
 
         #region NullChecker
-        private bool IsPlayable<T>(int id, IDictionary<int, T> bank) where T : IAudioLibrary
+        private bool IsPlayable<T>(int id, IDictionary<int, T> bank) where T : IAudioEntity
         {
             if (id == 0)
             {
@@ -349,8 +336,29 @@ namespace MiProduction.BroAudio.Core
 
             return true;
         }
-		#endregion
-	}
+        #endregion
+
+#if UNITY_EDITOR
+        public void AddAsset(ScriptableObject asset)
+        {
+            if(!_soundAssets.Contains(asset))
+			{
+                _soundAssets.Add(asset);
+            }
+        }
+
+        public void RemoveDeletedAsset(ScriptableObject asset)
+		{
+            for(int i = _soundAssets.Count - 1; i >= 0; i--)
+			{
+                if(_soundAssets[i] == asset)
+				{
+                    _soundAssets.RemoveAt(i);
+				}
+			}
+		}
+#endif
+    }
 }
 
 // by 咪 2022

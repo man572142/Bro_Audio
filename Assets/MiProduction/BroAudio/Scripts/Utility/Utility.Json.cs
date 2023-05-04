@@ -59,15 +59,8 @@ namespace MiProduction.BroAudio
 			}
 			else
 			{
-				//BroAudioEditorWindow.ShowWindow();
-				//FindJsonData();
-
-				Debug.Log("NoData");
-
-
+				LogError("NoData!!");
 				return null;
-				//File.WriteAllText(JsonFileDir.FilePath, string.Empty);
-				//return new List<AudioData>();
 			}
 		}
 
@@ -80,20 +73,28 @@ namespace MiProduction.BroAudio
 			}
 		}
 
-		private static void DeleteJsonDataByAsset(string assetGUID)
+		private static bool DeleteJsonDataByAsset(string assetGUID)
 		{
 			var currentLibraryGUID = GetGUIDListFromJson();
-
-			int dataCount = currentLibraryGUID != null? currentLibraryGUID.Count :0 ;
-			for (int i = dataCount - 1; i >= 0 ; i--)
+			if(currentLibraryGUID == null)
+			{
+				return false;
+			}
+			
+			bool hasRemoved = false;
+			for (int i = currentLibraryGUID.Count - 1; i >= 0 ; i--)
 			{
 				if(currentLibraryGUID[i] == assetGUID)
 				{
 					currentLibraryGUID.RemoveAt(i);
+					hasRemoved = true;
 				}
 			}
-
-			WriteJsonToFile(currentLibraryGUID);
+			if(hasRemoved)
+			{
+				WriteJsonToFile(currentLibraryGUID);
+			}
+			return hasRemoved;
 		}
 
 		

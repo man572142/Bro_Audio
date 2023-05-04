@@ -1,14 +1,9 @@
 namespace MiProduction.BroAudio.Data
 {
-    public interface IAudioLibrary
+    public interface IAudioEntity
     {
         public bool Validate(int index);
-
         public int ID { get; }
-        public string EnumName { get; }
-
-        public BroAudioClip Clip { get; }
-
+        public string Name { get; }
     }
-
 }

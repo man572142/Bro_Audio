@@ -32,7 +32,6 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		protected abstract void DrawAdditionalBaseProperties(Rect position, SerializedProperty property);
 		protected abstract void DrawAdditionalClipProperties(Rect position, SerializedProperty property);
-		
 
 		public Rect GetRectAndIterateLine(Rect position)
 		{
@@ -68,7 +67,7 @@ namespace MiProduction.BroAudio.AssetEditor
 
 			EditorGUIUtility.wideMode = true;
 			DrawLineCount = 0;
-			SerializedProperty nameProp = property.FindPropertyRelative("Name");
+			SerializedProperty nameProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IAudioEntity.Name)));
 
 			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProp.stringValue);
 			if (property.isExpanded)
@@ -84,7 +83,7 @@ namespace MiProduction.BroAudio.AssetEditor
 					DrawClipProperties(position, currClipList, audioClip);
 					DrawAdditionalClipProperties(position, property);
 
-					SerializedProperty isShowClipProp = property.FindPropertyRelative("IsShowClipPreview");
+					SerializedProperty isShowClipProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IAudioLibraryEditorProperty.IsShowClipPreview)));
 					isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
 					bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
 					if (isShowPreview)
@@ -108,7 +107,7 @@ namespace MiProduction.BroAudio.AssetEditor
 					bool isShowClipProp =
 						clipList.CurrentSelectedClip != null &&
 						clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.OriginAudioClip), out AudioClip audioClip);
-					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative("IsShowClipPreview").boolValue;
+					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(GetBackingFieldName(nameof(IAudioLibraryEditorProperty.IsShowClipPreview))).boolValue;
 
 					if(isShowClipProp)
 					{

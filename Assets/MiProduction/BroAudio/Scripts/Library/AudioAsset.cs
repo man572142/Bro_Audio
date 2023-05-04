@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace MiProduction.BroAudio.Data
 {
-    public abstract class AudioAsset<T> : ScriptableObject, IAudioAsset where T : IAudioLibrary
+    public abstract class AudioAsset<T> : ScriptableObject, IAudioAsset where T : IAudioEntity
     {
 
         public T[] Libraries;
@@ -35,18 +35,17 @@ namespace MiProduction.BroAudio.Data
 			}
         }
 
-		public IEnumerable<AudioData> AllAudioData
-		{
-			get
-			{
-				if (Libraries == null)
-					Libraries = new T[0];
+        public int LibrariesLength => Libraries.Length;
 
-				foreach (var data in Libraries)
-				{
-					yield return new AudioData(data.ID, data.EnumName);
-				}
-			}
-		}
+        public IEnumerable<IAudioEntity> GetAllAudioLibrary()
+		{
+            if (Libraries == null)
+                Libraries = new T[0];
+
+            foreach (var data in Libraries)
+            {
+                yield return data;
+            }
+        }
 	}
 }

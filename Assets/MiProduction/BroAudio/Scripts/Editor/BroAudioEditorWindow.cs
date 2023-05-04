@@ -53,6 +53,16 @@ namespace MiProduction.BroAudio.AssetEditor
 			window.Show();
 		}
 
+		public void RemoveAssetEditor(string guid)
+		{
+			if (_assetEditorDict.TryGetValue(guid, out var editor))
+			{
+				DestroyImmediate(editor);
+			}
+			_assetEditorDict.Remove(guid);
+			_allAssetGUIDs.Remove(guid);
+		}
+
 		private void OnEnable()
 		{
 			_allAssetGUIDs = GetGUIDListFromJson();
@@ -131,10 +141,10 @@ namespace MiProduction.BroAudio.AssetEditor
 
 			void OnRemove(ReorderableList list)
 			{
-				DeleteAsset(_allAssetGUIDs[list.index]);
-				AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(_allAssetGUIDs[list.index]));
-				_allAssetGUIDs.RemoveAt(list.index);
+				string path = AssetDatabase.GUIDToAssetPath(_allAssetGUIDs[list.index]);
+				AssetDatabase.DeleteAsset(path);
 				AssetDatabase.Refresh();
+				// AssetModificationEditor will do the rest
 			}
 
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -200,6 +210,7 @@ namespace MiProduction.BroAudio.AssetEditor
 
 			var newAsset = ScriptableObject.CreateInstance(audioType.GetAssetTypeName());
 			AssetDatabase.CreateAsset(newAsset, path);
+			AddToSoundManager(newAsset);
 			AssetDatabase.SaveAssets();
 
 			string guid = AssetDatabase.AssetPathToGUID(path);
@@ -207,7 +218,7 @@ namespace MiProduction.BroAudio.AssetEditor
 			_allAssetGUIDs.Add(guid);
 			_assetEditorDict.Add(guid, CreateAssetEditor(guid,libraryName));
 
-			WriteJsonToFile(_allAssetGUIDs);
+			WriteJsonToFile(_allAssetGUIDs);	
 		}
 
 		private bool TryGetCurrentAssetEditor(out AudioAssetEditor editor)

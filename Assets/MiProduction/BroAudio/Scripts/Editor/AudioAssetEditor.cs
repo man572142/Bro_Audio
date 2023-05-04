@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using static MiProduction.BroAudio.Utility;
 using static MiProduction.Extension.LoopExtension;
+using static MiProduction.Extension.EditorScriptingExtension;
 using MiProduction.BroAudio.Data;
 
 namespace MiProduction.BroAudio.AssetEditor
@@ -14,7 +15,7 @@ namespace MiProduction.BroAudio.AssetEditor
     public class AudioAssetEditor : Editor,IChangesTrackable
     {
         private SerializedProperty _librariesProp = null;
-        private IEnumerable<AudioData> _currentAudioDatas = null;
+        private IEnumerable<IAudioEntity> _currentAudioDatas = null;
         private List<string> _lastUpdateNameList = null;
 
         public bool IsCommitingChanges { get; private set; }
@@ -30,7 +31,7 @@ namespace MiProduction.BroAudio.AssetEditor
 			_librariesProp = serializedObject.FindProperty("Libraries");
 			Asset = target as IAudioAsset;
 
-			_currentAudioDatas = GetLatestAudioDatas();
+			_currentAudioDatas = Asset.GetAllAudioLibrary();
 			UpdateNameList();
             CheckLibrariesState();
         }
@@ -74,7 +75,7 @@ namespace MiProduction.BroAudio.AssetEditor
 			}
 
             List<int> idList = new List<int>();
-            foreach (AudioData data in _currentAudioDatas)
+            foreach (IAudioEntity data in _currentAudioDatas)
             {
                 if (data.ID == 0 || idList.Contains(data.ID))
                 {
@@ -83,7 +84,7 @@ namespace MiProduction.BroAudio.AssetEditor
                 idList.Add(data.ID);
             }
 
-            foreach(AudioData data in _currentAudioDatas)
+            foreach(IAudioEntity data in _currentAudioDatas)
 			{
                 if(!_lastUpdateNameList.Contains(data.Name))
 				{
@@ -113,7 +114,7 @@ namespace MiProduction.BroAudio.AssetEditor
                 for(int i = 0; i < _librariesProp.arraySize;i++)
 				{
                     SerializedProperty element = _librariesProp.GetArrayElementAtIndex(i);
-                    SerializedProperty elementID = element.FindPropertyRelative("ID");
+                    SerializedProperty elementID = element.FindPropertyRelative(GetBackingFieldName(nameof(IAudioEntity.ID)));
 
                     if(elementID.intValue > 0)
 					{
@@ -124,8 +125,8 @@ namespace MiProduction.BroAudio.AssetEditor
                 for (int i = 0; i < _librariesProp.arraySize; i++)
                 {
                     SerializedProperty element = _librariesProp.GetArrayElementAtIndex(i);
-                    SerializedProperty elementName = element.FindPropertyRelative("Name");
-                    SerializedProperty elementID = element.FindPropertyRelative("ID");
+                    SerializedProperty elementName = element.FindPropertyRelative(GetBackingFieldName(nameof(IAudioEntity.Name)));
+                    SerializedProperty elementID = element.FindPropertyRelative(GetBackingFieldName(nameof(IAudioEntity.ID)));
 
                     elementName.stringValue = elementName.stringValue.Replace(" ", string.Empty);
                     elementID.intValue = GetUniqueID(usedIDList);
@@ -164,8 +165,8 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		private bool CompareWithPrevious()
 		{
-            AudioData previousData = default;
-            foreach (AudioData data in _currentAudioDatas)
+            IAudioEntity previousData = null;
+            foreach (IAudioEntity data in _currentAudioDatas)
             {
                 _libraryStateOutput = data.Name;
                 if (string.IsNullOrEmpty(data.Name))
@@ -173,7 +174,7 @@ namespace MiProduction.BroAudio.AssetEditor
                     _libraryState = LibraryState.HasEmptyName;
                     return false;
                 }
-                else if (data.Name.Equals(previousData.Name))
+                else if (previousData != null && data.Name.Equals(previousData.Name))
                 {
                     _libraryState = LibraryState.HasDuplicateName;
                     return false;
@@ -193,7 +194,7 @@ namespace MiProduction.BroAudio.AssetEditor
         private bool CompareWithAll()
 		{
             List<string> nameList = new List<string>();
-            foreach (AudioData data in _currentAudioDatas)
+            foreach (IAudioEntity data in _currentAudioDatas)
             {
                 if (nameList.Contains(data.Name))
                 {
@@ -206,12 +207,6 @@ namespace MiProduction.BroAudio.AssetEditor
             _libraryState = LibraryState.Fine;
             _libraryStateOutput = string.Empty;
             return true;
-        }
-
-
-        private IEnumerable<AudioData> GetLatestAudioDatas()
-		{
-            return Asset.AllAudioData;
         }
 
 	}

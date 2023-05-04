@@ -4,8 +4,7 @@ using UnityEngine;
 
 namespace MiProduction.BroAudio.Data
 {
-	[CreateAssetMenu(fileName = "AmbienceLibrary", menuName = "MiProduction/BroAudio/Library/Ambience")]
-	public class AmbienceLibraryAsset : AudioAsset<Data.MusicLibrary>
+	public class AmbienceLibraryAsset : AudioAsset<MusicLibrary>
 	{
 		public override AudioType AudioType => AudioType.Ambience;
 	}

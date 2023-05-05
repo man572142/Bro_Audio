@@ -7,6 +7,7 @@ using static MiProduction.BroAudio.Utility;
 using System;
 using System.Linq;
 using MiProduction.Extension;
+using MiProduction.BroAudio.EditorSetting;
 
 namespace MiProduction.BroAudio.AssetEditor
 {

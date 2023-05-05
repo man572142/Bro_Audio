@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using MiProduction.Extension;
 using MiProduction.BroAudio.Data;
+using MiProduction.BroAudio.EditorSetting;
 
 namespace MiProduction.BroAudio.AssetEditor
 {
@@ -14,8 +15,6 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		private SerializedProperty _playModeProp;
 		private IEditorDrawLineCounter _editorDrawer;
-
-		//private Dictionary<string, Transport> _clipTransportDict = new Dictionary<string, Transport>();
 
 		public bool IsMulticlips => _reorderableList.count > 1;
 		public bool HasAnyClip => _reorderableList.count > 0;
@@ -56,11 +55,6 @@ namespace MiProduction.BroAudio.AssetEditor
 			_reorderableList = CreateReorderabeList(audioSetProperty);
 			UpdatePlayMode();
 			_editorDrawer = editorDrawer;
-			
-			//if (CurrentSelectedClip != null)
-			//{
-			//	RecordOriginValue(CurrentSelectedClip);
-			//}
 		}
 
 		public void DrawReorderableList(Rect position)
@@ -160,7 +154,6 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		private void OnRemove(ReorderableList list)
 		{
-			//_clipTransportDict.Remove(CurrentSelectedClip.propertyPath);
 			ReorderableList.defaultBehaviours.DoRemoveButton(list);
 			UpdatePlayMode();
 		}
@@ -171,7 +164,6 @@ namespace MiProduction.BroAudio.AssetEditor
 			var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
 			SerializedBroAudioClip.ResetAllSerializedProperties(clipProp);
 
-			//RecordOriginValue(clipProp);
 			UpdatePlayMode();
 		}
 
@@ -180,18 +172,7 @@ namespace MiProduction.BroAudio.AssetEditor
 			//CurrentSelectedClip = _reorderableList.serializedProperty.GetArrayElementAtIndex(list.index);
 		}
 
-		//public IChangesTrackable GetCurrentSelectedClipChanges()
-		//{
-		//	return _clipTransportDict[CurrentSelectedClip.propertyPath];
-		//}
 		#endregion
 
-		//private void RecordOriginValue(SerializedProperty clipProp)
-		//{
-		//	if(clipProp != null)
-		//	{
-		//		_clipTransportDict.Add(clipProp.propertyPath, new Transport(clipProp));
-		//	}
-		//}
 	} 
 }

@@ -53,6 +53,16 @@ namespace MiProduction.Extension
 			}
 		}
 
+		public GUIStyle MiddleCenterRichText
+		{
+			get
+			{
+				GUIStyle result = MiddleCenterText;
+				result.richText = true;
+				return result;
+			}
+		}
+
 		public GUIStyle DefaultDarkBackground
 		{
 			get

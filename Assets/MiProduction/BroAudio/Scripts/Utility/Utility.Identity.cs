@@ -1,10 +1,8 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using static MiProduction.Extension.LoopExtension;
 using MiProduction.BroAudio.Data;
-using MiProduction.BroAudio.AssetEditor;
+using MiProduction.BroAudio.EditorSetting;
 
 namespace MiProduction.BroAudio
 {

@@ -41,23 +41,6 @@ namespace MiProduction.BroAudio
 					soundManager.RemoveDeletedAsset(asset);
 				}
 			}
-			//TryLoadSoundMangerPrefabRoot((SoundManager soundManager) =>
-			//{
-			//	soundManager.RemoveDeletedAsset(asset);
-			//});
-		}
-
-		private static void TryLoadSoundMangerPrefabRoot(System.Action<SoundManager> onLoadSucess)
-		{
-			string assetPath = AssetDatabase.GetAssetPath(Resources.Load(nameof(SoundManager)));
-			GameObject prefab = AssetDatabase.LoadAssetAtPath(assetPath,typeof(GameObject)) as GameObject;
-			Debug.Log(assetPath);
-			Debug.Log($"prefab is null?{prefab == null}");
-			if (prefab != null && prefab.TryGetComponent<SoundManager>(out var soundManager))
-			{
-				onLoadSucess?.Invoke(soundManager);
-			}
-			prefab.transform.position = Vector3.one;
 		}
 
 

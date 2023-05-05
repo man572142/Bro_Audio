@@ -46,7 +46,7 @@ namespace MiProduction.BroAudio
         /// 播放音效
         /// </summary>
         /// <param name="soundID"></param>
-        public static IAudioPlayer Play(int soundID) => SoundManager.Instance.Play(soundID,AudioExtension.HaasEffectInSecond);
+        public static IAudioPlayer Play(int soundID) => SoundManager.Instance.Play(soundID,AudioExtension.HaasEffectInSeconds);
 
         /// <summary>
         /// 播放音效
@@ -60,7 +60,7 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <param name="soundID"></param>
         /// <param name="position">播放的座標</param>
-        public static IAudioPlayer Play(int soundID, Vector3 position) => SoundManager.Instance.PlayAtPoint(soundID, position,AudioExtension.HaasEffectInSecond);
+        public static IAudioPlayer Play(int soundID, Vector3 position) => SoundManager.Instance.PlayAtPoint(soundID, position,AudioExtension.HaasEffectInSeconds);
 
         /// <summary>
         /// 於場景中的指定地點播放
@@ -97,14 +97,14 @@ namespace MiProduction.BroAudio
         /// 播放音樂
         /// </summary>
         /// <param name="musicID"></param>
-        public static IAudioPlayer PlayMusic(int musicID) => PlayMusic(musicID, Transition.Immediate,AudioExtension.HaasEffectInSecond);
+        public static IAudioPlayer PlayMusic(int musicID) => PlayMusic(musicID, Transition.Immediate,AudioExtension.HaasEffectInSeconds);
 
         /// <summary>
         /// 播放音樂
         /// </summary>
         /// <param name="musicID">可直接將Enum轉為ID</param>
         /// <param name="transition">音樂過渡類型</param>
-        public static IAudioPlayer PlayMusic(int musicID, Transition transition) => SoundManager.Instance.PlayMusic(musicID, transition, AudioExtension.HaasEffectInSecond);
+        public static IAudioPlayer PlayMusic(int musicID, Transition transition) => SoundManager.Instance.PlayMusic(musicID, transition, AudioExtension.HaasEffectInSeconds);
 
 
         /// <summary>

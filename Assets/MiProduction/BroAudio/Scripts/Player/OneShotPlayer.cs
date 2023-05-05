@@ -9,10 +9,7 @@ namespace MiProduction.BroAudio.Core
 {
     public class OneShotPlayer : AudioPlayer
     {
-        private const float DefaultFadeOutTime = 1f;
-
         private Coroutine _stopCoroutine;
-        private Coroutine _recycleCoroutine;
 
         protected override void Start()
         {
@@ -23,6 +20,7 @@ namespace MiProduction.BroAudio.Core
 		public void PlayOneShot(int id, BroAudioClip clip, float delay)
 		{
             ID = id;
+            CurrentClip = clip;
 			_stopCoroutine.StopIn(this);
 			StartCoroutine(PlayOneShot(clip, delay));
 		}
@@ -30,18 +28,15 @@ namespace MiProduction.BroAudio.Core
 		public void PlayAtPoint(int id,BroAudioClip clip, float delay, Vector3 pos)
 		{
             ID = id;
-			_stopCoroutine.StopIn(this);
+            CurrentClip = clip;
+            _stopCoroutine.StopIn(this);
 			StartCoroutine(PlayInScene(clip, delay, pos));
 		}
 
-		public override void Stop(float fadeOutTime)
+		public override void Stop()
         {
             // 因為PlayOneShot沒辦法停，因此這裡是把音軌Mute掉
-            if(fadeOutTime < 0)
-			{
-                fadeOutTime = DefaultFadeOutTime;
-			}
-            _stopCoroutine = StartCoroutine(Fade(fadeOutTime,0f));
+            _stopCoroutine = StartCoroutine(Fade(CurrentClip.FadeOut,0f));
         }
 
 
@@ -65,9 +60,11 @@ namespace MiProduction.BroAudio.Core
             yield return new WaitForSeconds(delay);
             IsPlaying = true;
             ClipVolume = clip.Volume;
+            // TODO: 把Player移到目標地點，設定pan，以發揮AudioPlayerObjectPool的作用
             AudioSource.PlayClipAtPoint(clip.AudioClip, pos);
             yield return new WaitForSeconds(clip.AudioClip.length);
             IsPlaying = false;
+            Recycle();
         }
     }
 }

@@ -7,10 +7,12 @@ namespace MiProduction.BroAudio.Core
 	public class AudioPlayerObjectPool : ObjectPool<AudioPlayer>
 	{
 		private ObjectPool<AudioMixerGroup> _audioTrackPool = null;
+		private Transform _parent = null;
 
-		public AudioPlayerObjectPool(AudioPlayer baseObject, int maxInternalPoolSize,AudioMixerGroup[] audioMixerGroups) : base(baseObject, maxInternalPoolSize)
+		public AudioPlayerObjectPool(AudioPlayer baseObject, Transform parent, int maxInternalPoolSize,AudioMixerGroup[] audioMixerGroups) : base(baseObject, maxInternalPoolSize)
 		{
 			_audioTrackPool = new AudioTrackObjectPool(audioMixerGroups);
+			_parent = parent;
 		}
 
 		public override AudioPlayer Extract()
@@ -28,7 +30,7 @@ namespace MiProduction.BroAudio.Core
 
 		protected override AudioPlayer CreateObject()
 		{
-			AudioPlayer newPlayer = GameObject.Instantiate(BaseObject, BaseObject.transform.parent);
+			AudioPlayer newPlayer = GameObject.Instantiate(BaseObject, _parent);
 			newPlayer.AudioTrack = _audioTrackPool.Extract();
 			newPlayer.OnRecycle += Recycle;
 			return newPlayer;

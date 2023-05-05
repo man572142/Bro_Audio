@@ -21,7 +21,7 @@ namespace MiProduction.BroAudio.Data
         {
 			get
 			{
-                if(_clip.IsNull())
+                if(_clip == null || _clip.IsNull())
 				{
                     _clip = Clips.PickNewOne(MulticlipsPlayMode, ID);
                 }

@@ -11,7 +11,6 @@ namespace MiProduction.BroAudio.AssetEditor
 	public class ReorderableClips
 	{
 		private ReorderableList _reorderableList;
-		private MulticlipsPlayMode _currPlayMode;
 
 		private SerializedProperty _playModeProp;
 		private IEditorDrawLineCounter _editorDrawer;
@@ -55,7 +54,7 @@ namespace MiProduction.BroAudio.AssetEditor
 			string playModePropName = EditorScriptingExtension.GetBackingFieldName(nameof(IAudioLibraryEditorProperty.MulticlipsPlayMode));
 			_playModeProp = audioSetProperty.FindPropertyRelative(playModePropName);
 			_reorderableList = CreateReorderabeList(audioSetProperty);
-			_currPlayMode = GetCurrentPlayMode(_playModeProp);
+			UpdatePlayMode();
 			_editorDrawer = editorDrawer;
 			
 			if (CurrentSelectedClip != null)
@@ -82,17 +81,17 @@ namespace MiProduction.BroAudio.AssetEditor
 			return list;
 		}
 
-		private MulticlipsPlayMode GetCurrentPlayMode(SerializedProperty playModeProp)
+		private MulticlipsPlayMode UpdatePlayMode()
 		{
 			if (!IsMulticlips)
 			{
-				playModeProp.enumValueIndex = 0;
+				_playModeProp.enumValueIndex = 0;
 			}
-			else if (IsMulticlips && playModeProp.enumValueIndex == 0)
+			else if (IsMulticlips && _playModeProp.enumValueIndex == 0)
 			{
-				playModeProp.enumValueIndex = 1;
+				_playModeProp.enumValueIndex = 1;
 			}
-			return (MulticlipsPlayMode)playModeProp.enumValueIndex;
+			return (MulticlipsPlayMode)_playModeProp.enumValueIndex;
 		}
 
 		#region ReorderableList Callback
@@ -104,9 +103,10 @@ namespace MiProduction.BroAudio.AssetEditor
 				EditorGUI.LabelField(newRects[0], "Clips");
 				if (IsMulticlips)
 				{
-					_playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(newRects[1], _currPlayMode);
-					_currPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
-					switch (_currPlayMode)
+					MulticlipsPlayMode currentPlayMode =(MulticlipsPlayMode)_playModeProp.enumValueIndex;
+					_playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(newRects[1], currentPlayMode);
+					currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+					switch (currentPlayMode)
 					{
 						case MulticlipsPlayMode.Sequence:
 							EditorGUI.LabelField(newRects[ratio.Length - 1], "Index");
@@ -128,8 +128,8 @@ namespace MiProduction.BroAudio.AssetEditor
 			EditorScriptingExtension.SplitRectHorizontal(rect, 0.9f, 15f, out Rect clipRect, out Rect valueRect);
 			EditorGUI.PropertyField(clipRect, audioClipProp, new GUIContent(""));
 
-
-			switch (_currPlayMode)
+			MulticlipsPlayMode currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+			switch (currentPlayMode)
 			{
 				case MulticlipsPlayMode.Single:
 					break;
@@ -162,20 +162,17 @@ namespace MiProduction.BroAudio.AssetEditor
 		{
 			_clipTransportDict.Remove(CurrentSelectedClip.propertyPath);
 			ReorderableList.defaultBehaviours.DoRemoveButton(list);
+			UpdatePlayMode();
 		}
 
 		private void OnAdd(ReorderableList list)
 		{
 			ReorderableList.defaultBehaviours.DoAddButton(list);
-			int addedIndex = list.count - 1;
-			var clipProp = list.serializedProperty.GetArrayElementAtIndex(addedIndex);
-			//CurrentSelectedClip = clipProp;
-			if (addedIndex > 0)
-			{
-                SerializedBroAudioClip.ResetAllSerializedProperties(clipProp);
-			}
+			var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
+			SerializedBroAudioClip.ResetAllSerializedProperties(clipProp);
+
 			RecordOriginValue(clipProp);
-			//_clipTransportDict.Add(clipProp.propertyPath,new Transport(clipProp));
+			UpdatePlayMode();
 		}
 
 		private void OnSelect(ReorderableList list)

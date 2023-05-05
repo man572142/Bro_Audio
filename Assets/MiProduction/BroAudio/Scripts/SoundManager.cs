@@ -78,7 +78,7 @@ namespace MiProduction.BroAudio.Core
 			}
 
             AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups("Track");
-            _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,5, mixerGroups);
+            _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,transform,5, mixerGroups);
 
 			InitSoundBank();
 		}
@@ -126,7 +126,7 @@ namespace MiProduction.BroAudio.Core
 		#endregion
 
 		#region Play
-		public IAudioPlayer PlayMusic(int id,Transition transition, float fadeTime, float preventTime)
+		public IAudioPlayer PlayMusic(int id,Transition transition, float preventTime)
         {
             if (!IsPlayable(id,_musicBank))
                 return null;
@@ -144,33 +144,33 @@ namespace MiProduction.BroAudio.Core
             }
 
             BroAudioClip clip = _musicBank[id].Clip;
-            bool isLoop = _musicBank[id].Loop;
-            
+            PlaybackPreference pref = new PlaybackPreference(_musicBank[id].Loop);
+
             switch (transition)
             {
                 case Transition.Immediate:
-                    _currMusicPlayer.Stop(0f);
-                    _currMusicPlayer.Play(id,clip,isLoop ,0f);
+                    _currMusicPlayer.Stop();
+                    _currMusicPlayer.Play(id,clip, pref);
                     break;
                 case Transition.FadeOutThenFadeIn:
-                    _currMusicPlayer.Stop(fadeTime, () => _currMusicPlayer.Play(id,clip,isLoop, fadeTime));
+                    _currMusicPlayer.Stop(() => _currMusicPlayer.Play(id,clip,pref));
                     break;
                 case Transition.OnlyFadeInNew:
-                    _currMusicPlayer.Stop(0f);
-                    _currMusicPlayer.Play(id,clip,isLoop, fadeTime);
+                    _currMusicPlayer.Stop();
+                    _currMusicPlayer.Play(id,clip,pref);
                     break;
                 case Transition.OnlyFadeOutCurrent:
-                    _currMusicPlayer.Stop(fadeTime, () => _currMusicPlayer.Play(id,clip,isLoop, 0f));
+                    _currMusicPlayer.Stop(() => _currMusicPlayer.Play(id,clip,pref));
                     break;
                 case Transition.CrossFade:
                     if (TryGetPlayerWithType<StreamingPlayer>(out var otherPlayer))
                     {
-                        _currMusicPlayer.Stop(fadeTime, () =>
+                        _currMusicPlayer.Stop(() =>
                         {
                             _audioPlayerPool.Recycle(_currMusicPlayer);
                             _currMusicPlayer = otherPlayer;
                         });
-                        otherPlayer.Play(id,clip,isLoop, fadeTime);
+                        otherPlayer.Play(id,clip,pref);
                     }
                     break;
             }
@@ -183,12 +183,13 @@ namespace MiProduction.BroAudio.Core
             AudioType audioType = GetAudioType(id);
             if (audioType == AudioType.Music || audioType == AudioType.Ambience)
 			{
-                return PlayMusic(id, Transition.Immediate,-1f,preventTime);
+                return PlayMusic(id, Transition.Immediate,preventTime);
             }
 
             if (IsPlayable(id,_soundBank) && TryGetPlayerWithType<AudioPlayer>(out var player))
             {
-				player.Play(id, _soundBank[id].Clip,false,_soundBank[id].Delay);
+                PlaybackPreference setting = new PlaybackPreference(_soundBank[id].Delay);
+                player.Play(id, _soundBank[id].Clip,setting);
                 StartCoroutine(PreventCombFiltering(id,preventTime));
                 return player;
 			}
@@ -253,7 +254,7 @@ namespace MiProduction.BroAudio.Core
 		#endregion
 
 		#region Stop
-		public void StopPlaying(float fadeTime, AudioType audioType)
+		public void StopPlaying(AudioType audioType)
 		{
 			if (audioType == AudioType.All)
 			{
@@ -268,16 +269,16 @@ namespace MiProduction.BroAudio.Core
 			{
                 if (_audioPlayerPool.TryGetObject(x => GetAudioType(x.ID) == target, out var player))
                 {
-                    player.Stop(fadeTime);
+                    player.Stop();
                 }
             }
         }
 
-		public void StopPlaying(float fadeTime, int id)
+		public void StopPlaying(int id)
 		{
             if (_audioPlayerPool.TryGetObject(x => x.ID == id, out var player))
             {
-                player.Stop(fadeTime);
+                player.Stop();
             }
             else
             {

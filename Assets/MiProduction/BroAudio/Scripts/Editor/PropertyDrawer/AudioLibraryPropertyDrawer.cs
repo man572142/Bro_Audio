@@ -191,9 +191,8 @@ namespace MiProduction.BroAudio.AssetEditor
 			clipViewRect.height = ClipPreviewHeight;
 			SplitRectHorizontal(clipViewRect, 0.1f, 15f, out Rect playbackRect, out Rect waveformRect);
 
-			SerializedProperty startPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition));
 			DrawWaveformPreview(waveformRect);
-			DrawPlaybackButton(startPosProp.floatValue, playbackRect);
+			DrawPlaybackButton(playbackRect);
 			DrawClipPlaybackLine(waveformRect);
 
 			void DrawWaveformPreview(Rect waveformRect)
@@ -206,7 +205,7 @@ namespace MiProduction.BroAudio.AssetEditor
 				EditorGUI.DrawRect(waveformRect, WaveformMaskColor);
 			}
 
-			void DrawPlaybackButton(float startPos, Rect clipViewRect)
+			void DrawPlaybackButton(Rect clipViewRect)
 			{
 				SplitRectVertical(clipViewRect, 0.5f, 15f, out Rect playRect, out Rect stopRect);
 				// 保持在正方形
@@ -218,8 +217,13 @@ namespace MiProduction.BroAudio.AssetEditor
 
 				if (GUI.Button(playRect, EditorGUIUtility.IconContent("d_PlayButton")))
 				{
+					float startPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue;
+					float endPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue;
 					EditorPlayAudioClip.StopAllClips();
 					EditorPlayAudioClip.PlayClip(audioClip, Mathf.RoundToInt(AudioSettings.outputSampleRate * startPos));
+
+					float duration = audioClip.length - startPos - endPos;
+					AsyncTaskExtension.DelayDoAction(duration, EditorPlayAudioClip.StopAllClips);
 				}
 				if (GUI.Button(stopRect, EditorGUIUtility.IconContent("d_PreMatQuad")))
 				{

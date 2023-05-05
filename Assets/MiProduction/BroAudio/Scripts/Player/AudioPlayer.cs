@@ -17,12 +17,13 @@ namespace MiProduction.BroAudio.Core
 
         [SerializeField] protected AudioSource AudioSource = null;
         [SerializeField] protected AudioMixer AudioMixer;
-        private string _volParaName = string.Empty;
 
+        protected Coroutine PlayControlCoroutine;
+        protected Coroutine StopControlCoroutine;
+        protected BroAudioClip CurrentClip;
+
+        private string _volParaName = string.Empty;
         private Coroutine _subVolumeControl;
-        private Coroutine _currentPlayCoroutine;
-        private Coroutine _stopControlCoroutine;
-        private BroAudioClip _currentClip;
 
         // ClipVolume : 播放Clip的音量(0~1)，依不同的Clip有不同設定，而FadeIn/FadeOut也只作用在此值
         // TrackVolume : 音軌的音量(0~1)，也可算是此Player的音量，作用相當於混音的Fader
@@ -113,26 +114,26 @@ namespace MiProduction.BroAudio.Core
 
 		}
 
-		public virtual void Play(int id,BroAudioClip clip, bool isLoop = false, float delay = 0f, float fadeInTime = -1f, float fadeOutTime = -1f, Action onFinishFadeIn = null, Action onFinishPlaying = null)
+		public virtual void Play(int id,BroAudioClip clip, PlaybackPreference pref, Action onFinishPlaying = null)
         {
             ID = id;
-            _currentClip = clip;
-            _currentPlayCoroutine = StartCoroutine(PlayControl(clip, isLoop, delay, fadeInTime, fadeOutTime, onFinishFadeIn, onFinishPlaying));
+            CurrentClip = clip;
+            PlayControlCoroutine = StartCoroutine(PlayControl(clip, pref, onFinishPlaying));
         }
 
-        public virtual void Stop(float fadeOutTime)
+        public virtual void Stop()
 		{
-            Stop(fadeOutTime);
+            Stop(null);
 		}
 
-        public void Stop(float fadeOutTime, Action onFinishStopping)
+        public virtual void Stop(Action onFinishStopping)
         {
             if (IsStoping)
             {
                 LogWarning("The music player is already processing StopMusic !");
                 return;
             }
-            _stopControlCoroutine = StartCoroutine(StopControl(fadeOutTime, onFinishStopping));
+            StopControlCoroutine = StartCoroutine(StopControl(onFinishStopping));
         }
 
 		public IAudioPlayer SetVolume(float vol,float fadeTime)
@@ -174,26 +175,25 @@ namespace MiProduction.BroAudio.Core
             yield break;
         }
 
-        private IEnumerator PlayControl(BroAudioClip clip, bool isLoop,float delay, float fadeInTime, float fadeOutTime, Action onFinishFadeIn, Action onFinishPlaying)
+        private IEnumerator PlayControl(BroAudioClip clip, PlaybackPreference setting, Action onFinishPlaying)
         {
-            yield return new WaitForSeconds(delay);
+            yield return new WaitForSeconds(setting.Delay);
+            ClipVolume = 0f;
 
             AudioSource.clip = clip.AudioClip;
             AudioSource.time = clip.StartPosition;
             float endTime = AudioSource.clip.length - clip.EndPosition;
-            AudioSource.loop = isLoop;
+            AudioSource.loop = setting.IsLoop;
             AudioSource.Play();
             IsPlaying = true;
 
             do
             {
                 #region FadeIn
-                fadeInTime = fadeInTime < 0 ? clip.FadeIn : fadeInTime;
-                if (fadeInTime > 0)
+                if (clip.FadeIn > 0)
                 {
                     IsFadingIn = true;
-                    yield return StartCoroutine(Fade(fadeInTime, clip.Volume));
-                    onFinishFadeIn?.Invoke();
+                    yield return StartCoroutine(Fade(clip.FadeIn, clip.Volume));
                     IsFadingIn = false;
                 }
                 else
@@ -203,12 +203,11 @@ namespace MiProduction.BroAudio.Core
                 #endregion
 
                 #region FadeOut
-                fadeOutTime = fadeOutTime < 0 ? clip.FadeOut : fadeOutTime;
-                if (fadeOutTime > 0)
+                if (clip.FadeOut > 0)
                 {
-                    yield return new WaitUntil(() => (endTime - AudioSource.time) <= fadeOutTime);
+                    yield return new WaitUntil(() => (endTime - AudioSource.time) <= clip.FadeOut);
                     IsFadingOut = true;
-                    yield return StartCoroutine(Fade(fadeOutTime, 0f));
+                    yield return StartCoroutine(Fade(clip.FadeOut, 0f));
                     IsFadingOut = false;
                 }
                 else
@@ -216,13 +215,13 @@ namespace MiProduction.BroAudio.Core
                     yield return new WaitUntil(() => endTime <= AudioSource.time);
                 }
                 #endregion
-            } while (isLoop);
+            } while (setting.IsLoop);
 
             EndPlaying();
             onFinishPlaying?.Invoke();
         }
 
-        private IEnumerator StopControl(float fadeOutTime, Action onFinishStopping)
+        private IEnumerator StopControl(Action onFinishStopping)
         {
             if (ID <= 0 || !IsPlaying)
             {
@@ -232,8 +231,7 @@ namespace MiProduction.BroAudio.Core
             }
 
             IsStoping = true;
-            fadeOutTime = fadeOutTime < 0 ? _currentClip.FadeOut : fadeOutTime;
-            if (fadeOutTime > 0)
+            if (CurrentClip.FadeOut > 0)
             {
                 if (IsFadingOut)
                 {
@@ -243,8 +241,8 @@ namespace MiProduction.BroAudio.Core
                 }
                 else
                 {
-                    _currentPlayCoroutine.StopIn(this);
-                    yield return StartCoroutine(Fade(fadeOutTime, 0f));
+                    PlayControlCoroutine.StopIn(this);
+                    yield return StartCoroutine(Fade(CurrentClip.FadeOut, 0f));
                 }
             }
             EndPlaying();
@@ -254,13 +252,14 @@ namespace MiProduction.BroAudio.Core
         private void EndPlaying()
         {
             ID = -1;
-            _currentPlayCoroutine.StopIn(this);
+            PlayControlCoroutine.StopIn(this);
             ClipVolume = 0f;
             AudioSource.Stop();
             AudioSource.clip = null;
             AudioSource.loop = false;
             IsPlaying = false;
             IsStoping = false;
+            Recycle();
         }
 
         private void ResetValue(AudioPlayer player)

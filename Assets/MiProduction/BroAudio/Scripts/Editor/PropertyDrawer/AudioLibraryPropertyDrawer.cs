@@ -153,13 +153,13 @@ namespace MiProduction.BroAudio.AssetEditor
 
 			DrawVolumeField(position, volumeProp);
 
-			EditorGUI.BeginChangeCheck();
+			//EditorGUI.BeginChangeCheck();
 			DrawPlaybackPositionField(position, startPosProp, endPosProp, fadeInProp, fadeOutProp);
 			DrawFadingField(position, startPosProp, endPosProp, fadeInProp, fadeOutProp);
-		    if(EditorGUI.EndChangeCheck())
-			{
-				_editorWindow.PendingUpdatesController.CheckChanges(reorderableClips.GetCurrentSelectedClipChanges());
-			}
+		 //   if(EditorGUI.EndChangeCheck())
+			//{
+			//	_editorWindow.PendingUpdatesController.CheckChanges(reorderableClips.GetCurrentSelectedClipChanges());
+			//}
 
 			void DrawVolumeField(Rect position, SerializedProperty volumeProp)
 			{

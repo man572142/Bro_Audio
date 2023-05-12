@@ -3,7 +3,7 @@ using UnityEditor;
 using System;
 using System.Reflection;
 
-#if UNITY_EDITOR && UNITY_2020_3_OR_NEWER
+#if UNITY_EDITOR
 public static class EditorPlayAudioClip
 {
     public static void PlayClip(AudioClip clip, int startSample = 0, bool loop = false)

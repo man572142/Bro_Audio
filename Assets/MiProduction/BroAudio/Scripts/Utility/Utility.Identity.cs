@@ -130,7 +130,7 @@ namespace MiProduction.BroAudio
 		{
 			if (id <= 0)
 			{
-				//本來就會有0,不用警告
+				LogWarning($"There is a sound missing .please check element {index} in {name}");
 				return false;
 			}
 

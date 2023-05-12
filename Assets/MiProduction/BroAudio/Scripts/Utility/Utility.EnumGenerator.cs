@@ -21,7 +21,7 @@ namespace MiProduction.BroAudio
 			
 			string fullFilePath = GetFullFilePath(EnumsPath,asset.AssetName + ".cs");
 
-			IEnumerable<IAudioEntity> datasToWrite = asset.GetAllAudioLibrary();
+			IEnumerable<IAudioEntity> datasToWrite = asset.GetAllAudioEntities();
 			WriteEnumTextFile(asset.AssetName, fullFilePath, datasToWrite);
 
 			AssetDatabase.Refresh();

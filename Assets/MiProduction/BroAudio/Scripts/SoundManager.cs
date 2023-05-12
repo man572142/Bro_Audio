@@ -92,7 +92,7 @@ namespace MiProduction.BroAudio.Core
                 if (asset == null)
                     continue;
 
-                List<IAudioEntity> dataList = System.Linq.Enumerable.ToList(asset.GetAllAudioLibrary());
+                List<IAudioEntity> dataList = System.Linq.Enumerable.ToList(asset.GetAllAudioEntities());
 				for (int s = 0; s < dataList.Count; s++)
 				{
 					var library = dataList[s];
@@ -303,9 +303,9 @@ namespace MiProduction.BroAudio.Core
         #region NullChecker
         private bool IsPlayable<T>(int id, IDictionary<int, T> bank) where T : IAudioEntity
         {
-            if (id == 0)
+            if (id <= 0)
             {
-                LogError("AudioID is 0 (None). No Sound will play");
+                LogError("The sound is missing or it has never been assigned. No Sound will play");
                 return false;
             }
 

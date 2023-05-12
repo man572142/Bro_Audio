@@ -8,112 +8,56 @@ namespace MiProduction.BroAudio
     public static class BroAudio
     {
         #region SFX
-        // *使用TEnum會用到Boxing/Unboxing，有些微的效能開銷
-
         /// <summary>
-        /// 播放音效 (建議可將Enum轉為int做為ID使用，節省效能開銷)
+        /// 播放音效
         /// </summary>
-        /// <typeparam name="TEnum">任何音效的Enum</typeparam>
-        /// <param name="sound"></param>
-        public static IAudioPlayer Play<TEnum>(TEnum sound) where TEnum : Enum
-        {
-            return Play(sound, 0.1f);
-        }
-
-        /// <summary>
-        /// 播放音效 (建議可將Enum轉為int做為ID使用，節省效能開銷)
-        /// </summary>
-        /// <typeparam name="TEnum">任何音效的Enum</typeparam>
-        /// <param name="sound"></param>
-        /// <param name="preventTime">限制該時間內不能再播放</param>
-        public static IAudioPlayer Play<TEnum>(TEnum sound, float preventTime) where TEnum : Enum
-        {
-            return Play((int)(ValueType)sound, preventTime);
-        }
-
-        /// <summary>
-        /// 於場景中的指定地點播放 (建議可將Enum轉為int做為ID使用，節省效能開銷)
-        /// </summary>
-        /// <typeparam name="TEnum">任何音效的Enum</typeparam>
-        /// <param name="sound"></param>
-        /// <param name="position">播放的座標</param>
-        public static IAudioPlayer Play<TEnum>(TEnum sound, Vector3 position) where TEnum : Enum
-        {
-            return Play((int)(ValueType)sound, position);
-        }
+        /// <param name="id"></param>
+        public static IAudioPlayer Play(AudioID id) => SoundManager.Instance.Play(id, AudioExtension.HaasEffectInSeconds);
 
         /// <summary>
         /// 播放音效
         /// </summary>
-        /// <param name="soundID"></param>
-        public static IAudioPlayer Play(int soundID) => SoundManager.Instance.Play(soundID,AudioExtension.HaasEffectInSeconds);
-
-        /// <summary>
-        /// 播放音效
-        /// </summary>
-        /// <param name="soundID"></param>
+        /// <param name="id"></param>
         /// <param name="preventTime">限制該時間內不能再播放</param>
-        public static IAudioPlayer Play(int soundID, float preventTime) => SoundManager.Instance.Play(soundID, preventTime);
+        public static IAudioPlayer Play(AudioID id, float preventTime) => SoundManager.Instance.Play(id, preventTime);
 
         /// <summary>
         /// 於場景中的指定地點播放
         /// </summary>
-        /// <param name="soundID"></param>
+        /// <param name="id"></param>
         /// <param name="position">播放的座標</param>
-        public static IAudioPlayer Play(int soundID, Vector3 position) => SoundManager.Instance.PlayAtPoint(soundID, position,AudioExtension.HaasEffectInSeconds);
+        public static IAudioPlayer Play(AudioID id, Vector3 position) => SoundManager.Instance.PlayAtPoint(id, position,AudioExtension.HaasEffectInSeconds);
 
         /// <summary>
         /// 於場景中的指定地點播放
         /// </summary>
-        /// <param name="soundID"></param>
+        /// <param name="id"></param>
         /// <param name="position">播放的座標</param>
-        public static IAudioPlayer Play(int soundID, Vector3 position,float preventTime) => SoundManager.Instance.PlayAtPoint(soundID, position, preventTime);
+        public static IAudioPlayer Play(AudioID id, Vector3 position,float preventTime) => SoundManager.Instance.PlayAtPoint(id, position, preventTime);
         #endregion
 
         #region Music
-
-        /// <summary>
-        /// 播放音樂 (建議可將Enum轉為int做為ID使用，節省效能開銷)
-        /// </summary>
-        /// <typeparam name="TEnum"></typeparam>
-        /// <param name="music"></param>
-        public static IAudioPlayer PlayMusic<TEnum>(TEnum music) where TEnum : Enum
-        {
-            return PlayMusic(music, Transition.Immediate);
-        }
-
-        /// <summary>
-        /// 播放音樂 (建議可將Enum轉為int做為ID使用，節省效能開銷)
-        /// </summary>
-        /// <typeparam name="TEnum"></typeparam>
-        /// <param name="music"></param>
-        /// <param name="transition">音樂過渡類型</param>
-        public static IAudioPlayer PlayMusic<TEnum>(TEnum music, Transition transition) where TEnum : Enum
-        {
-            return PlayMusic((int)(ValueType)music, transition);
-        }
-
         /// <summary>
         /// 播放音樂
         /// </summary>
-        /// <param name="musicID"></param>
-        public static IAudioPlayer PlayMusic(int musicID) => PlayMusic(musicID, Transition.Immediate,AudioExtension.HaasEffectInSeconds);
+        /// <param name="id"></param>
+        public static IAudioPlayer PlayMusic(AudioID id) => PlayMusic(id, Transition.Immediate,AudioExtension.HaasEffectInSeconds);
 
         /// <summary>
         /// 播放音樂
         /// </summary>
         /// <param name="musicID">可直接將Enum轉為ID</param>
         /// <param name="transition">音樂過渡類型</param>
-        public static IAudioPlayer PlayMusic(int musicID, Transition transition) => SoundManager.Instance.PlayMusic(musicID, transition, AudioExtension.HaasEffectInSeconds);
+        public static IAudioPlayer PlayMusic(AudioID id, Transition transition) => SoundManager.Instance.PlayMusic(id, transition, AudioExtension.HaasEffectInSeconds);
 
 
         /// <summary>
         /// 播放音樂
         /// </summary>
-        /// <param name="musicID">可直接將Enum轉為ID</param>
+        /// <param name="id">可直接將Enum轉為ID</param>
         /// <param name="transition">音樂過渡類型</param>
         /// <param name="preventTime">限制該時間內不能再播放</param>
-        public static IAudioPlayer PlayMusic(int musicID, Transition transition, float preventTime) => SoundManager.Instance.PlayMusic(musicID, transition,preventTime);
+        public static IAudioPlayer PlayMusic(AudioID id, Transition transition, float preventTime) => SoundManager.Instance.PlayMusic(id, transition,preventTime);
         #endregion
 
         #region Stop
@@ -128,7 +72,7 @@ namespace MiProduction.BroAudio
         /// 停止播放
         /// </summary>
         /// <param name="id">停止的聲音ID (相同聲音類型的也都會停止)</param>
-        public static void Stop(int id) => Stop(-1f, id);
+        public static void Stop(AudioID id) => Stop(-1f, id);
 
         /// <summary>
         /// 停止播放
@@ -141,7 +85,7 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <param name="fadeTime">自定FadeOut時間長度</param>
         /// <param name="id">停止的聲音ID (相同聲音類型的也都會停止)</param>
-        public static void Stop(float fadeTime, int id) => SoundManager.Instance.StopPlaying(id);
+        public static void Stop(float fadeTime,AudioID id) => SoundManager.Instance.StopPlaying(id);
 
         #endregion
 
@@ -177,7 +121,6 @@ namespace MiProduction.BroAudio
         //public static void SetVolume(float vol, float fadeTime, int id) => SoundManager.Instance.SetVolume(vol, fadeTime, id);
 
         #endregion
-
     }
 }
 

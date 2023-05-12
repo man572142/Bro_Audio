@@ -37,7 +37,7 @@ namespace MiProduction.BroAudio.Data
 
         public int LibrariesLength => Libraries.Length;
 
-        public IEnumerable<IAudioEntity> GetAllAudioLibrary()
+        public IEnumerable<IAudioEntity> GetAllAudioEntities()
 		{
             if (Libraries == null)
                 Libraries = new T[0];

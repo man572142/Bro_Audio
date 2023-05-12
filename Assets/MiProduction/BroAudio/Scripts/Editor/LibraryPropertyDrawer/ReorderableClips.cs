@@ -50,8 +50,7 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		public ReorderableClips(SerializedProperty audioSetProperty,IEditorDrawLineCounter editorDrawer)
 		{
-			string playModePropName = EditorScriptingExtension.GetBackingFieldName(nameof(IAudioLibraryEditorProperty.MulticlipsPlayMode));
-			_playModeProp = audioSetProperty.FindPropertyRelative(playModePropName);
+			_playModeProp = audioSetProperty.FindPropertyRelative(nameof(AudioLibrary.MulticlipsPlayMode));
 			_reorderableList = CreateReorderabeList(audioSetProperty);
 			UpdatePlayMode();
 			_editorDrawer = editorDrawer;
@@ -64,7 +63,7 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		private ReorderableList CreateReorderabeList(SerializedProperty audioSetProperty)
 		{
-			SerializedProperty clipsProp = audioSetProperty.FindPropertyRelative("Clips");
+			SerializedProperty clipsProp = audioSetProperty.FindPropertyRelative(nameof(AudioLibrary.Clips));
 			var list = new ReorderableList(clipsProp.serializedObject, clipsProp);
 			list.drawHeaderCallback = OnDrawHeader;
 			list.drawElementCallback = OnDrawElement;
@@ -91,14 +90,16 @@ namespace MiProduction.BroAudio.AssetEditor
 		#region ReorderableList Callback
 		private void OnDrawHeader(Rect rect)
 		{
-			float[] ratio = { 0.2f, 0.5f, 0.18f, 0.12f };
+			float[] ratio = { 0.3f, 0.4f, 0.18f, 0.12f };
 			if (EditorScriptingExtension.TrySplitRectHorizontal(rect, ratio, 15f, out Rect[] newRects))
 			{
 				EditorGUI.LabelField(newRects[0], "Clips");
 				if (IsMulticlips)
 				{
+					GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
+					popupStyle.alignment = TextAnchor.MiddleLeft;
 					MulticlipsPlayMode currentPlayMode =(MulticlipsPlayMode)_playModeProp.enumValueIndex;
-					_playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(newRects[1], currentPlayMode);
+					_playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(newRects[1], currentPlayMode, popupStyle);
 					currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
 					switch (currentPlayMode)
 					{
@@ -109,7 +110,7 @@ namespace MiProduction.BroAudio.AssetEditor
 							EditorGUI.LabelField(newRects[ratio.Length - 1], "Weight");
 							break;
 					}
-					EditorGUI.LabelField(newRects[1].DissolveHorizontal(0.4f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.Instance.RichText);
+					EditorGUI.LabelField(newRects[1].DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.Instance.MiddleCenterRichText);
 				}
 				_editorDrawer.DrawLineCount++;
 			}
@@ -162,7 +163,7 @@ namespace MiProduction.BroAudio.AssetEditor
 		{
 			ReorderableList.defaultBehaviours.DoAddButton(list);
 			var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
-			SerializedBroAudioClip.ResetAllSerializedProperties(clipProp);
+			Utility.ResetBroAudioClipSerializedProperties(clipProp);
 
 			UpdatePlayMode();
 		}

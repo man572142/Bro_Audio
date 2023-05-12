@@ -118,7 +118,7 @@ namespace MiProduction.Extension
 		/// <returns></returns>
 		public static Rect DissolveHorizontal(this Rect origin,float dissolveRatio)
 		{
-			return new Rect(origin.xMin + dissolveRatio * origin.width, origin.y, dissolveRatio * origin.width, origin.height);
+			return new Rect(origin.xMin + dissolveRatio * origin.width, origin.y, (1 - dissolveRatio) * origin.width, origin.height);
 		}
 
 		public static bool TryGetPropertyObject<T>(this SerializedProperty sourceProperty, string propertyPath, out T newProperty) where T : class
@@ -179,9 +179,28 @@ namespace MiProduction.Extension
 		/// </summary>
 		/// <param name="propertyName"></param>
 		/// <returns></returns>
-		public static string GetBackingFieldName(string propertyName)
+		public static string GetAutoBackingFieldName(string propertyName)
 		{
 			return $"<{propertyName}>k__BackingField";
+		}
+
+		/// <summary>
+		/// 取得Porperty的Field名稱(命名規則:_camelCase)
+		/// </summary>
+		/// <param name="propertyName"></param>
+		/// <returns></returns>
+		public static string GetFieldName(string propertyName)
+		{
+			if(!string.IsNullOrEmpty(propertyName) && propertyName.Length > 0)
+			{
+				if (char.IsUpper(propertyName[0]))
+				{
+					propertyName = propertyName.Replace(propertyName[0], propertyName[0].ToLower());
+				}
+				return $"_{propertyName}";
+
+			}
+			return propertyName;
 		}
 	}
 }

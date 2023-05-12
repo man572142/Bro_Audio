@@ -21,12 +21,12 @@ namespace MiProduction.BroAudio.AssetEditor
 			else if(coreDataFiles.Length == 0)
 			{
 				LogError("Can't find the core file [BroAudioData.json],please relocate it!");
-				BroAudioEditorWindow.ShowWindow();
+				//LibraryManagerWindow.ShowWindow();
+				// TODO: Open Global Setting
 			}
 
 			string coreDataFilePath = coreDataFiles[0];
 			string json = File.ReadAllText(coreDataFilePath);
-
 			
 			if (string.IsNullOrEmpty(json))
 			{
@@ -39,10 +39,6 @@ namespace MiProduction.BroAudio.AssetEditor
 				if (!string.IsNullOrEmpty(data.RootPath))
 				{
 					RootPath = data.RootPath;
-				}
-				if(!string.IsNullOrEmpty(data.EnumsPath))
-				{
-					EnumsPath = data.EnumsPath;
 				}
 			}
 		}

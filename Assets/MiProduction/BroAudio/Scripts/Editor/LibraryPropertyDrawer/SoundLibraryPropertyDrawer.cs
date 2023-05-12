@@ -2,10 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using MiProduction.BroAudio.Data;
 
 namespace MiProduction.BroAudio.AssetEditor
 {
-	[CustomPropertyDrawer(typeof(Data.SoundLibrary))]
+	[CustomPropertyDrawer(typeof(SoundLibrary))]
 	public class SoundLibraryPropertyDrawer : AudioLibraryPropertyDrawer
 	{
 		protected override int BasePropertiesLineCount => 3;
@@ -14,7 +15,7 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		protected override void DrawAdditionalBaseProperties(Rect position, SerializedProperty property)
 		{
-			SerializedProperty delayProperty = property.FindPropertyRelative("Delay");
+			SerializedProperty delayProperty = property.FindPropertyRelative(nameof(SoundLibrary.Delay));
 			delayProperty.floatValue = EditorGUI.FloatField(GetRectAndIterateLine(position), "Delay", delayProperty.floatValue);
 		}
 

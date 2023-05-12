@@ -13,28 +13,24 @@ namespace MiProduction.BroAudio
 		public struct SerializedCoreData
 		{
 			public string RootPath;
-			public string EnumsPath;
 			public List<string> GUIDs;
 
-			public SerializedCoreData(string rootPath,string enumsPath,List<string> guids)
+			public SerializedCoreData(string rootPath,List<string> guids)
 			{
 				RootPath = rootPath;
-				EnumsPath = enumsPath;
 				GUIDs = guids;
 			}
 
 			public SerializedCoreData(List<string> guids)
 			{
 				RootPath = Utility.RootPath;
-				EnumsPath = Utility.EnumsPath;
 				GUIDs = guids;
 			}
 		}
 
-
 		public static void WriteJsonToFile(List<string> allLibraryGUID)
 		{
-			SerializedCoreData serializedData = new SerializedCoreData(RootPath,EnumsPath,allLibraryGUID);
+			SerializedCoreData serializedData = new SerializedCoreData(RootPath,allLibraryGUID);
 			File.WriteAllText(GetFilePath(RootPath,CoreDataFileName), JsonUtility.ToJson(serializedData, true));
 			AssetDatabase.Refresh();
 		}
@@ -59,17 +55,9 @@ namespace MiProduction.BroAudio
 			}
 			else
 			{
+				// TODO: CREATE CORE DATA
 				LogError("NoData!!");
 				return null;
-			}
-		}
-
-		private static void FindJsonData()
-		{
-			string[] assets = AssetDatabase.FindAssets("BroAudioData");
-			foreach(string guid in assets)
-			{
-				string path = AssetDatabase.GUIDToAssetPath(guid);
 			}
 		}
 
@@ -96,8 +84,5 @@ namespace MiProduction.BroAudio
 			}
 			return hasRemoved;
 		}
-
-		
 	}
-
 }

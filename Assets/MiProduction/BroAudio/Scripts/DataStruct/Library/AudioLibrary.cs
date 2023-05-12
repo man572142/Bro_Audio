@@ -1,29 +1,28 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MiProduction.BroAudio.Data
 {
     [System.Serializable]
-    public struct MusicLibrary : IAudioEntity,IAudioLibraryEditorProperty
+    public abstract class AudioLibrary : IAudioEntity
     {
         [field: SerializeField] public string Name { get; set; }
         [field: SerializeField] public int ID { get; set; }
 
         public BroAudioClip[] Clips;
-		public bool Loop;
 
         #region Properties Setting
-        [field: SerializeField] public bool IsShowClipPreview { get; set; }
-        [field: SerializeField] public MulticlipsPlayMode MulticlipsPlayMode { get; set; }
+        public bool IsShowClipPreview;
+        public MulticlipsPlayMode MulticlipsPlayMode;
         #endregion
+
+        protected abstract string DisplayName { get; }
 
         private BroAudioClip _clip;
         public BroAudioClip Clip
         {
             get
             {
-                if (_clip.IsNull())
+                if (_clip == null || _clip.IsNull())
                 {
                     _clip = Clips.PickNewOne(MulticlipsPlayMode, ID);
                 }
@@ -31,9 +30,9 @@ namespace MiProduction.BroAudio.Data
             }
         }
 
-		public bool Validate(int index)
+        public bool Validate(int index)
         {
-            return Utility.Validate(nameof(MusicLibrary), index, Clips,ID);
+            return Utility.Validate(DisplayName, index, Clips, ID);
         }
-	}
+    }
 }

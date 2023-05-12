@@ -2,10 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using MiProduction.BroAudio.Data;
 
 namespace MiProduction.BroAudio.AssetEditor
 {
-	[CustomPropertyDrawer(typeof(Data.MusicLibrary))]
+	[CustomPropertyDrawer(typeof(MusicLibrary))]
 	public class MusicLibraryPropertyDrawer : AudioLibraryPropertyDrawer
 	{
 		protected override int BasePropertiesLineCount => 3;
@@ -14,7 +15,7 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		protected override void DrawAdditionalBaseProperties(Rect position, SerializedProperty property)
 		{
-			SerializedProperty loopProperty = property.FindPropertyRelative("Loop");
+			SerializedProperty loopProperty = property.FindPropertyRelative(nameof(MusicLibrary.Loop));
 			loopProperty.boolValue = EditorGUI.Toggle(GetRectAndIterateLine(position),"Loop", loopProperty.boolValue);
 		}
 

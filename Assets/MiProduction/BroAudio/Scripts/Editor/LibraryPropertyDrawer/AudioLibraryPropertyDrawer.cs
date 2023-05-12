@@ -13,12 +13,11 @@ namespace MiProduction.BroAudio.AssetEditor
 	{
 		protected const float ClipPreviewHeight = 100f;
 
-		public GUIStyleHelper GUIStyle = GUIStyleHelper.Instance;
-
+		private bool _hasOpenedLibraryManager = false;
 		private Dictionary<string, ReorderableClips> _reorderableClipsDict = new Dictionary<string, ReorderableClips>();
-		private BroAudioEditorWindow _editorWindow = null;
+		private LibraryManagerWindow _editorWindow = null;
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper(ClipPreviewHeight);
-
+		
 		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public int DrawLineCount { get; set; }
 		public bool IsEnable { get; private set; } = false;
@@ -35,9 +34,15 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		private void Enable()
 		{
-			_editorWindow = EditorWindow.GetWindow(typeof(BroAudioEditorWindow)) as BroAudioEditorWindow;
-			_editorWindow.OnCloseEditorWindow += Disable;
-			_editorWindow.OnSelectAsset += Disable;
+			_hasOpenedLibraryManager = EditorWindow.HasOpenInstances<LibraryManagerWindow>();
+
+			if(_hasOpenedLibraryManager)
+			{
+				_editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
+				_editorWindow.OnCloseLibraryManagerWindow += Disable;
+				_editorWindow.OnSelectAsset += Disable;
+			}
+
 			IsEnable = true;
 		}
 
@@ -45,9 +50,13 @@ namespace MiProduction.BroAudio.AssetEditor
 		{
 			_reorderableClipsDict.Clear();
 
-			_editorWindow.OnCloseEditorWindow -= Disable;
-			_editorWindow.OnSelectAsset -= Disable;
-			_editorWindow = null;
+			if(_editorWindow)
+			{
+				_editorWindow.OnCloseLibraryManagerWindow -= Disable;
+				_editorWindow.OnSelectAsset -= Disable;
+				_editorWindow = null;
+			}
+			
 			IsEnable = false;
 		}
 
@@ -55,14 +64,18 @@ namespace MiProduction.BroAudio.AssetEditor
 		#region Unity Entry Overrider
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			if(!IsEnable)
+			if (!IsEnable)
 			{
 				Enable();
 			}
-
+			else if(!_hasOpenedLibraryManager)
+			{
+				return;
+			}
+			
 			EditorGUIUtility.wideMode = true;
 			DrawLineCount = 0;
-			SerializedProperty nameProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IAudioEntity.Name)));
+			SerializedProperty nameProp = property.FindPropertyRelative(GetAutoBackingFieldName(nameof(IAudioEntity.Name)));
 
 			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProp.stringValue);
 			if (property.isExpanded)
@@ -78,7 +91,7 @@ namespace MiProduction.BroAudio.AssetEditor
 					DrawClipProperties(position, currClipList, audioClip);
 					DrawAdditionalClipProperties(position, property);
 
-					SerializedProperty isShowClipProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IAudioLibraryEditorProperty.IsShowClipPreview)));
+					SerializedProperty isShowClipProp = property.FindPropertyRelative(nameof(AudioLibrary.IsShowClipPreview));
 					isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
 					bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
 					if (isShowPreview)
@@ -104,7 +117,7 @@ namespace MiProduction.BroAudio.AssetEditor
 					bool isShowClipProp =
 						clipList.CurrentSelectedClip != null &&
 						clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.OriginAudioClip), out AudioClip audioClip);
-					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(GetBackingFieldName(nameof(IAudioLibraryEditorProperty.IsShowClipPreview))).boolValue;
+					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(nameof(AudioLibrary.IsShowClipPreview)).boolValue;
 
 					if(isShowClipProp)
 					{

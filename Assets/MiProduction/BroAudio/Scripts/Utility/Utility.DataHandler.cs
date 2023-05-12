@@ -12,7 +12,7 @@ namespace MiProduction.BroAudio
 			bool hasDeleted = DeleteJsonDataByAsset(AssetDatabase.AssetPathToGUID(assetPath));
 			if(hasDeleted && TryGetAssetByPath(assetPath, out var asset))
 			{
-				DeleteEnumFile(asset.AssetName);
+				//DeleteEnumFile(asset.AssetName);
 				ScriptableObject scriptableObject = asset as ScriptableObject;
 				RemoveDeletedAssetFromSoundManager(scriptableObject);
 			}

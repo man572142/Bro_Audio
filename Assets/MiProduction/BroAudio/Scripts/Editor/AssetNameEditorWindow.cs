@@ -7,7 +7,7 @@ using MiProduction.Extension;
 
 namespace MiProduction.BroAudio.AssetEditor
 {
-	public class LibraryNameEditorWindow : EditorWindow
+	public class AssetNameEditorWindow : EditorWindow
 	{
 		public static readonly Vector2 WindowSize = new Vector2(250f, 100f);
 
@@ -21,13 +21,13 @@ namespace MiProduction.BroAudio.AssetEditor
 		public static void ShowWindow(List<string> usedAssetName,Action<string> onConfirm)
 		{
 
-			EditorWindow window = GetWindow(typeof(LibraryNameEditorWindow));
+			EditorWindow window = GetWindow(typeof(AssetNameEditorWindow));
 			window.minSize = WindowSize;
 			window.maxSize = WindowSize;
 			window.titleContent = new GUIContent("New Asset");
 			window.Show();
 
-			var instance = window as LibraryNameEditorWindow;
+			var instance = window as AssetNameEditorWindow;
 			if (instance != null)
 			{
 				instance.OnConfirm = onConfirm;

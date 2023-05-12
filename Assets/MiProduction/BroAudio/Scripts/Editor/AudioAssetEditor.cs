@@ -8,204 +8,175 @@ using static MiProduction.BroAudio.Utility;
 using static MiProduction.Extension.LoopExtension;
 using static MiProduction.Extension.EditorScriptingExtension;
 using MiProduction.BroAudio.Data;
+using UnityEditorInternal;
 
 namespace MiProduction.BroAudio.AssetEditor
 {
     [CustomEditor(typeof(AudioAsset<>), true)]
-    public class AudioAssetEditor : Editor,IChangesTrackable
+    public class AudioAssetEditor : Editor
     {
+		private bool _hasOpenedLibraryManager = false;
         private SerializedProperty _librariesProp = null;
-        private IEnumerable<IAudioEntity> _currentAudioDatas = null;
-        private List<string> _lastUpdateNameList = null;
+        private ReorderableList _reorderableList = null;
 
-        public bool IsCommitingChanges { get; private set; }
-        public IPendinUpdatesCheckable PendingUpdates { get; set; }
-        public IAudioAsset Asset { get; private set; }
-		public int ChangedID { get; set; }
+		private string _libraryStateOutput = string.Empty;
+		private LibraryState _libraryState = LibraryState.Fine;
 
-        private string _libraryStateOutput = string.Empty;
-        private LibraryState _libraryState = LibraryState.Fine;
+		private IEnumerable<IAudioEntity> _currentAudioDatas = null;
+
+		private IEntityIDContainer _idContainer = null;
+		public IAudioAsset Asset { get; private set; }
 
 		private void OnEnable()
 		{
-			_librariesProp = serializedObject.FindProperty("Libraries");
+			_librariesProp = serializedObject.FindProperty(nameof(AudioAsset<IAudioEntity>.Libraries));
 			Asset = target as IAudioAsset;
-
 			_currentAudioDatas = Asset.GetAllAudioEntities();
-			UpdateNameList();
-            CheckLibrariesState();
-        }
+			_hasOpenedLibraryManager = EditorWindow.HasOpenInstances<LibraryManagerWindow>();
 
-		private void UpdateNameList()
+			InitReorderableList();
+			CheckLibrariesState();
+		}
+
+		private void OnDisable()
 		{
-			_lastUpdateNameList = _currentAudioDatas.Select(x => x.Name).ToList();
+			_hasOpenedLibraryManager = false;
+		}
+
+		private void InitReorderableList()
+		{
+			if (Asset != null)
+			{
+				_reorderableList = new ReorderableList(_librariesProp.serializedObject, _librariesProp)
+				{
+					drawHeaderCallback = OnDrawHeader,
+					onAddCallback = OnAdd,
+					onRemoveCallback = OnRemove,
+					drawElementCallback = OnDrawElement,
+					elementHeightCallback = OnGetPropertyHeight,
+				};
+			}
+
+			void OnDrawHeader(Rect rect)
+			{
+				EditorGUI.LabelField(rect, new GUIContent("Libraries"));
+			}
+
+			void OnAdd(ReorderableList list)
+			{
+				ReorderableList.defaultBehaviours.DoAddButton(list);
+				SerializedProperty newElement = _librariesProp.GetArrayElementAtIndex(list.count - 1);
+
+				ResetLibrarySerializedProperties(newElement);
+				newElement.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.ID))).intValue = _idContainer.GetUniqueID(Asset.AudioType);
+				newElement.serializedObject.ApplyModifiedProperties();
+			}
+
+			void OnRemove(ReorderableList list)
+			{
+				SerializedProperty removedElement = _librariesProp.GetArrayElementAtIndex(list.index);
+				int removedID = removedElement.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.ID))).intValue;
+				_idContainer.RemoveID(Asset.AudioType, removedID);
+				ReorderableList.defaultBehaviours.DoRemoveButton(list);
+			}
+
+			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
+			{
+				SerializedProperty elementProp = _librariesProp.GetArrayElementAtIndex(index);
+				EditorGUI.PropertyField(rect, elementProp);
+				elementProp.serializedObject.ApplyModifiedProperties();
+			}
+
+			float OnGetPropertyHeight(int index)
+			{
+				return EditorGUI.GetPropertyHeight(_librariesProp.GetArrayElementAtIndex(index));
+			}
 		}
 
 		public override void OnInspectorGUI()
         {
-            if (IsCommitingChanges)
-            {
-                return;
-            }
+            if(!_hasOpenedLibraryManager)
+			{
+				LibraryManagerWindow.OpenFromAssetFile(Asset.AssetGUID);
+			}
+		}
 
-            // TODO: ONLY DRAW IN EDITOR WINDOW
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(_librariesProp, new GUIContent("Libraries"), true);
-            //serializedObject.ApplyModifiedProperties();
-
-            if (EditorGUI.EndChangeCheck())
+		public void DrawLibraries()
+		{
+			EditorGUI.BeginChangeCheck();
+			_reorderableList.DoLayoutList();
+			if (EditorGUI.EndChangeCheck())
 			{
 				CheckLibrariesState();
 			}
+		}
+
+		public void SetIDAccessor(IEntityIDContainer idAccessor)
+		{
+			_idContainer = idAccessor;
+		}
+
+
+		public LibraryState GetLibraryState(out string output)
+		{
+			output = _libraryStateOutput;
+			return _libraryState;
 		}
 
 		private void CheckLibrariesState()
 		{
 			if (CompareWithPrevious() && CompareWithAll())
 			{
-				PendingUpdates?.CheckChanges(this);
+				//PendingUpdates?.CheckChanges(this);
 			}
-		}
-
-		public bool IsDirty()
-        {
-            if(_currentAudioDatas.Count() != _lastUpdateNameList.Count)
-			{
-                return true;
-			}
-
-            List<int> idList = new List<int>();
-            foreach (IAudioEntity data in _currentAudioDatas)
-            {
-                if (data.ID == 0 || idList.Contains(data.ID))
-                {
-                    return true;
-                }
-                idList.Add(data.ID);
-            }
-
-            foreach(IAudioEntity data in _currentAudioDatas)
-			{
-                if(!_lastUpdateNameList.Contains(data.Name))
-				{
-                    return true;
-				}
-			}
-            return false;
-        }
-
-        public void DiscardChanges()
-        {
-
-            throw new NotImplementedException();
-        }
-
-        public void CommitChanges()
-		{
-            IsCommitingChanges = true;
-            GenerateAndAssignID();
-            GenerateEnum(Asset);
-            UpdateNameList();
-            IsCommitingChanges = false;
-
-            void GenerateAndAssignID()
-            {
-                List<int> usedIDList = new List<int>();
-                for(int i = 0; i < _librariesProp.arraySize;i++)
-				{
-                    SerializedProperty element = _librariesProp.GetArrayElementAtIndex(i);
-                    SerializedProperty elementID = element.FindPropertyRelative(GetBackingFieldName(nameof(IAudioEntity.ID)));
-
-                    if(elementID.intValue > 0)
-					{
-                        usedIDList.Add(elementID.intValue);
-					}
-                }
-
-                for (int i = 0; i < _librariesProp.arraySize; i++)
-                {
-                    SerializedProperty element = _librariesProp.GetArrayElementAtIndex(i);
-                    SerializedProperty elementName = element.FindPropertyRelative(GetBackingFieldName(nameof(IAudioEntity.Name)));
-                    SerializedProperty elementID = element.FindPropertyRelative(GetBackingFieldName(nameof(IAudioEntity.ID)));
-
-                    elementName.stringValue = elementName.stringValue.Replace(" ", string.Empty);
-                    elementID.intValue = GetUniqueID(usedIDList);
-                }
-                serializedObject.ApplyModifiedProperties();
-            }
-
-            int GetUniqueID(IEnumerable<int> idList)
-            {
-                int id = 0;
-
-                int min = Asset.AudioType.ToConstantID();
-                int max = Asset.AudioType.ToNext().ToConstantID();
-
-                Loop(() =>
-                {
-                    id = UnityEngine.Random.Range(min,max);
-                    if (idList == null || !idList.Contains(id))
-                    {
-                        return Statement.Break;
-                    }
-                    return Statement.Continue;
-                });
-                return id;
-            }
-        }
-
-        public LibraryState GetLibraryState(out string output)
-		{
-            output = _libraryStateOutput;
-            return _libraryState;
 		}
 
 
 		private bool CompareWithPrevious()
 		{
-            IAudioEntity previousData = null;
-            foreach (IAudioEntity data in _currentAudioDatas)
-            {
-                _libraryStateOutput = data.Name;
-                if (string.IsNullOrEmpty(data.Name))
-                {
-                    _libraryState = LibraryState.HasEmptyName;
-                    return false;
-                }
-                else if (previousData != null && data.Name.Equals(previousData.Name))
-                {
-                    _libraryState = LibraryState.HasDuplicateName;
-                    return false;
-                }
-                else if (IsInvalidName(data.Name, out var errorCode))
-                {
-                    _libraryState = LibraryState.HasInvalidName;
-                    return false;
-                }
-                previousData = data;
-            }
-            _libraryState = LibraryState.Fine;
-            _libraryStateOutput = string.Empty;
-            return true;
-        }
+			IAudioEntity previousData = null;
+			foreach (IAudioEntity data in _currentAudioDatas)
+			{
+				_libraryStateOutput = data.Name;
+				if (string.IsNullOrEmpty(data.Name))
+				{
+					_libraryState = LibraryState.HasEmptyName;
+					return false;
+				}
+				else if (previousData != null && data.Name.Equals(previousData.Name))
+				{
+					_libraryState = LibraryState.HasDuplicateName;
+					return false;
+				}
+				else if (IsInvalidName(data.Name, out var errorCode))
+				{
+					_libraryState = LibraryState.HasInvalidName;
+					return false;
+				}
+				previousData = data;
+			}
+			_libraryState = LibraryState.Fine;
+			_libraryStateOutput = string.Empty;
+			return true;
+		}
 
-        private bool CompareWithAll()
+		private bool CompareWithAll()
 		{
-            List<string> nameList = new List<string>();
-            foreach (IAudioEntity data in _currentAudioDatas)
-            {
-                if (nameList.Contains(data.Name))
-                {
-                    _libraryStateOutput = data.Name;
-                    _libraryState = LibraryState.HasDuplicateName;
-                    return false;
-                }
-                nameList.Add(data.Name);
-            }
-            _libraryState = LibraryState.Fine;
-            _libraryStateOutput = string.Empty;
-            return true;
-        }
+			List<string> nameList = new List<string>();
+			foreach (IAudioEntity data in _currentAudioDatas)
+			{
+				if (nameList.Contains(data.Name))
+				{
+					_libraryStateOutput = data.Name;
+					_libraryState = LibraryState.HasDuplicateName;
+					return false;
+				}
+				nameList.Add(data.Name);
+			}
+			_libraryState = LibraryState.Fine;
+			_libraryStateOutput = string.Empty;
+			return true;
+		}
 
 	}
 }

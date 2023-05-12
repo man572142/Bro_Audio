@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
-using static MiProduction.BroAudio.Utility;
 using System;
 using System.Linq;
 using MiProduction.Extension;
 using MiProduction.BroAudio.EditorSetting;
+using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.AssetEditor
 {
-	public class BroAudioEditorWindow : EditorWindow
+	public class LibraryManagerWindow : EditorWindow
 	{
 		private class VerticalGapDrawingHelper : IEditorDrawLineCounter
 		{
@@ -26,11 +26,12 @@ namespace MiProduction.BroAudio.AssetEditor
 			}
 		}
 
-		public event Action OnCloseEditorWindow;
+		public event Action OnCloseLibraryManagerWindow;
 		public event Action OnSelectAsset;
 
 		private List<string> _allAssetGUIDs = null;
 		private ReorderableList _assetReorderableList = null;
+		private int _currSelectedAssetIndex = -1;
 		private GenericMenu _assetOption = null;
 
 		private Dictionary<string, AudioAssetEditor> _assetEditorDict = new Dictionary<string, AudioAssetEditor>();
@@ -40,18 +41,33 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		private GUIStyle _assetNameTitleStyle = null;
 		private VerticalGapDrawingHelper _gapDrawer = new VerticalGapDrawingHelper();
+		private IDEditor.EntityIDController _entityIdController = new IDEditor.EntityIDController();
 
-		private PendingUpdatesController _pendingUpdatesController = null;
-
-		public IPendinUpdatesCheckable PendingUpdatesController => _pendingUpdatesController;
 
 		[MenuItem("BroAudio/Library Manager")]
-		public static void ShowWindow()
+		public static LibraryManagerWindow ShowWindow()
 		{
-			EditorWindow window = GetWindow(typeof(BroAudioEditorWindow));
+			EditorWindow window = GetWindow(typeof(LibraryManagerWindow));
 			window.minSize = BroAudioGUISetting.MinWindowSize;
 			window.titleContent = new GUIContent("BroAudio Library Manager");
 			window.Show();
+			return window as LibraryManagerWindow;
+		}
+
+		public static void OpenFromAssetFile(string guid)
+		{
+			LibraryManagerWindow window = ShowWindow();
+			window.SelectAsset(guid);
+		}
+
+		public void SelectAsset(string guid)
+		{
+			int index = _allAssetGUIDs.IndexOf(guid);
+			if(index >= 0)
+			{
+				_assetReorderableList.index = index;
+				OnSelect(_assetReorderableList);
+			}
 		}
 
 		public void RemoveAssetEditor(string guid)
@@ -67,7 +83,6 @@ namespace MiProduction.BroAudio.AssetEditor
 		private void OnEnable()
 		{
 			_allAssetGUIDs = GetGUIDListFromJson();
-			_pendingUpdatesController = new PendingUpdatesController();
 
 			InitGUIStyle();
 
@@ -76,12 +91,10 @@ namespace MiProduction.BroAudio.AssetEditor
 			InitReorderableList();
 		}
 
+
 		private void OnDisable()
 		{
-			_pendingUpdatesController.DiscardAll();
-			_pendingUpdatesController = null;
-
-			OnCloseEditorWindow?.Invoke();
+			OnCloseLibraryManagerWindow?.Invoke();
 			foreach (AudioAssetEditor editor in _assetEditorDict.Values)
 			{
 				DestroyImmediate(editor);
@@ -102,7 +115,8 @@ namespace MiProduction.BroAudio.AssetEditor
 			{
 				if (!string.IsNullOrEmpty(guid) && !_assetEditorDict.ContainsKey(guid))
 				{
-					_assetEditorDict.Add(guid, CreateAssetEditor(guid));
+					AudioAssetEditor editor = CreateAssetEditor(guid);
+					_assetEditorDict.Add(guid, editor);
 				}
 			}
 		}
@@ -113,12 +127,17 @@ namespace MiProduction.BroAudio.AssetEditor
 			AudioAssetEditor editor = Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject))) as AudioAssetEditor;
 			if(string.IsNullOrEmpty(editor.Asset.AssetName))
 			{
-				// TODO: 把這裡的string 改nameof
-				editor.serializedObject.FindProperty("_assetName").stringValue = assetName;
-				editor.serializedObject.FindProperty("_assetGUID").stringValue = guid;
+				string assetNamePropertyPath = EditorScriptingExtension.GetAutoBackingFieldName(nameof(Data.IAudioAsset.AssetName));
+				editor.serializedObject.FindProperty(assetNamePropertyPath).stringValue = assetName;
+
+				string assetGUIDPropertyPath = EditorScriptingExtension.GetFieldName(nameof(Data.IAudioAsset.AssetGUID));
+				editor.serializedObject.FindProperty(assetGUIDPropertyPath).stringValue = guid;
+
 				editor.serializedObject.ApplyModifiedPropertiesWithoutUndo();
 			}
-			editor.PendingUpdates = _pendingUpdatesController;
+
+			_entityIdController.AddByAsset(editor.Asset);
+			editor.SetIDAccessor(_entityIdController);
 			return editor;
 		}
 
@@ -154,28 +173,24 @@ namespace MiProduction.BroAudio.AssetEditor
 				if(_assetEditorDict.TryGetValue(_allAssetGUIDs[index],out var editor))
 				{
 					if(editor.Asset == null)
-					{
-						Debug.Log("No Asset?");
 						return;
-					}
-					Rect labelRect = rect;
-					labelRect.width *= 0.7f;
+
+					EditorScriptingExtension.SplitRectHorizontal(rect, 0.7f, 0f, out Rect labelRect, out Rect audioTypeRect);
+
 					EditorGUI.LabelField(labelRect, editor.Asset.AssetName);
 
-					Rect audioTypeRect = rect;
-					audioTypeRect.width *= 0.3f;
-					audioTypeRect.x = labelRect.xMax;
 					EditorGUI.DrawRect(audioTypeRect, GetAudioTypeColor(editor.Asset.AudioType));
 					EditorGUI.LabelField(audioTypeRect, editor.Asset.AudioType.ToString(), GUIStyleHelper.Instance.MiddleCenterText);
 				}
 			}
+		}
 
-			void OnSelect(ReorderableList list)
+		private void OnSelect(ReorderableList list)
+		{
+			if (list.index != _currSelectedAssetIndex)
 			{
-				// TODO: could be ignored if the selected library doesn't change;
-				_pendingUpdatesController.DiscardAll();
-			
 				OnSelectAsset?.Invoke();
+				_currSelectedAssetIndex = list.index;
 			}
 		}
 
@@ -202,13 +217,13 @@ namespace MiProduction.BroAudio.AssetEditor
 		{
 			// In the following case. List has better performance than IEnumerable , even with a ToList() method.
 			List<string> assetNames = _assetEditorDict.Values.Select(x => x.Asset.AssetName).ToList();
-			LibraryNameEditorWindow.ShowWindow(assetNames, (assetName)=> OnCreateAsset(assetName,audioType));
+			AssetNameEditorWindow.ShowWindow(assetNames, (assetName)=> OnCreateAsset(assetName,audioType));
 		}
 
 		private void OnCreateAsset(string libraryName, AudioType audioType)
 		{
 			string fileName = libraryName + ".asset";
-			string path = GetFilePath(LibraryPath, fileName);
+			string path = GetFilePath(AssetPath, fileName);
 
 			var newAsset = ScriptableObject.CreateInstance(audioType.GetAssetTypeName());
 			AssetDatabase.CreateAsset(newAsset, path);
@@ -267,31 +282,19 @@ namespace MiProduction.BroAudio.AssetEditor
 					_assetReorderableList.DoLayoutList();
 				}
 				EditorGUILayout.EndScrollView();
-			
+
 				EditorGUILayout.BeginHorizontal();
 				{
 					if (TryGetCurrentAssetEditor(out var editor))
-					{	
-						bool disableUpdate = false;
-						DrawLibraryStateMessage(editor, out disableUpdate);
-						if (!disableUpdate)
-						{
-							DrawPendingUpdatesMessage(editor, out disableUpdate);
-						}
-
-						EditorGUI.BeginDisabledGroup(disableUpdate);
-						{
-							DrawUpdateButton();
-						}
-						EditorGUI.EndDisabledGroup();
+					{
+						DrawLibraryStateMessage(editor);
 					}
 				}
 				EditorGUILayout.EndHorizontal();
 			}
 			EditorGUILayout.EndVertical();
 
-
-			void DrawLibraryStateMessage(AudioAssetEditor editor, out bool disableUpdate)
+			void DrawLibraryStateMessage(AudioAssetEditor editor)
 			{
 				LibraryState state = editor.GetLibraryState(out string dataName);
 				string assetName = editor.Asset.AssetName.ToBold().SetColor(Color.white);
@@ -299,7 +302,6 @@ namespace MiProduction.BroAudio.AssetEditor
 				switch (state)
 				{
 					case LibraryState.HasEmptyName:
-						
 						EditorScriptingExtension.RichTextHelpBox($"There are some empty name in asset: {assetName}!", MessageType.Error);
 						break;
 					case LibraryState.HasDuplicateName:
@@ -308,32 +310,9 @@ namespace MiProduction.BroAudio.AssetEditor
 					case LibraryState.HasInvalidName:
 						EditorScriptingExtension.RichTextHelpBox($"Name:{dataName} in asset: {assetName} has invalid word !", MessageType.Error);
 						break;
-				}
-				disableUpdate = state != LibraryState.Fine;
-			}
-
-			void DrawPendingUpdatesMessage(AudioAssetEditor editor, out bool disableUpdate)
-			{
-				string assetName = editor.Asset.AssetName.ToBold().SetColor(Color.white);
-				if (_pendingUpdatesController.HasPendingUpdates)
-				{
-					EditorScriptingExtension.RichTextHelpBox($"There are some pending updates in asset: {assetName}", MessageType.Warning);
-					disableUpdate = false;
-				}
-				else
-				{
-					EditorScriptingExtension.RichTextHelpBox($"No pending updates in asset: {assetName}", "ToggleGroup Icon");
-					disableUpdate = true;
-				}
-			}
-
-			void DrawUpdateButton()
-			{
-				Vector2 size = BroAudioGUISetting.UpdateButtonSize;
-				if (GUILayout.Button("Update", GUILayout.Width(size.x), GUILayout.Height(size.y)))
-				{
-					// TODO : add warning if the editor is compiling
-					_pendingUpdatesController.CommitAll();
+					case LibraryState.Fine:
+						EditorScriptingExtension.RichTextHelpBox($"Everything works great!", "Toggle Icon");
+						break;
 				}
 			}
 		}
@@ -350,7 +329,7 @@ namespace MiProduction.BroAudio.AssetEditor
 					{
 						_settingScrollPos = EditorGUILayout.BeginScrollView(_settingScrollPos);
 						{
-							editor.OnInspectorGUI();
+							editor.DrawLibraries();
 						}
 						EditorGUILayout.EndScrollView();
 					}

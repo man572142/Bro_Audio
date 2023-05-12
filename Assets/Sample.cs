@@ -4,6 +4,10 @@ using MiProduction.BroAudio;
 
 public class Sample : MonoBehaviour
 {
+    [SerializeField] AudioID _soundTrack;
+    [SerializeField] AudioID _sfx;
+    [SerializeField] AudioID _sfx2;
+
     void Start()
     {
         StartCoroutine(Test());

@@ -14,11 +14,9 @@ namespace MiProduction.BroAudio.Data
         public T[] Libraries;
 
 		public abstract AudioType AudioType { get; }
+        [field: SerializeField] public string AssetName { get; set; }
 
-        [SerializeField] private string _assetName = string.Empty;
-        public string AssetName { get => _assetName;  set => _assetName = value; }
-
-        [SerializeField] private string _assetGUID = string.Empty;
+        [SerializeField] private string _assetGUID;
         public string AssetGUID
         {
             get
@@ -34,8 +32,6 @@ namespace MiProduction.BroAudio.Data
                 _assetGUID = value;
 			}
         }
-
-        public int LibrariesLength => Libraries.Length;
 
         public IEnumerable<IAudioEntity> GetAllAudioEntities()
 		{

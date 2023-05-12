@@ -113,6 +113,7 @@ namespace MiProduction.BroAudio.AssetEditor
 			AudioAssetEditor editor = Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject))) as AudioAssetEditor;
 			if(string.IsNullOrEmpty(editor.Asset.AssetName))
 			{
+				// TODO: 把這裡的string 改nameof
 				editor.serializedObject.FindProperty("_assetName").stringValue = assetName;
 				editor.serializedObject.FindProperty("_assetGUID").stringValue = guid;
 				editor.serializedObject.ApplyModifiedPropertiesWithoutUndo();
@@ -217,7 +218,7 @@ namespace MiProduction.BroAudio.AssetEditor
 			string guid = AssetDatabase.AssetPathToGUID(path);
 
 			_allAssetGUIDs.Add(guid);
-			_assetEditorDict.Add(guid, CreateAssetEditor(guid,libraryName));
+			_assetEditorDict.Add(guid, CreateAssetEditor(guid, libraryName));
 
 			WriteJsonToFile(_allAssetGUIDs);	
 		}

@@ -7,6 +7,6 @@ namespace MiProduction.BroAudio.Data
         public AudioType AudioType { get; }
         public string AssetGUID { get; set; }
         public string AssetName { get; }
-        public IEnumerable<IAudioEntity> GetAllAudioLibrary();
+        public IEnumerable<IAudioEntity> GetAllAudioEntities();
     }
 }

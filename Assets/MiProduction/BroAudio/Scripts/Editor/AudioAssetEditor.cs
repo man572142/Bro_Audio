@@ -31,7 +31,7 @@ namespace MiProduction.BroAudio.AssetEditor
 			_librariesProp = serializedObject.FindProperty("Libraries");
 			Asset = target as IAudioAsset;
 
-			_currentAudioDatas = Asset.GetAllAudioLibrary();
+			_currentAudioDatas = Asset.GetAllAudioEntities();
 			UpdateNameList();
             CheckLibrariesState();
         }
@@ -132,8 +132,6 @@ namespace MiProduction.BroAudio.AssetEditor
                     elementID.intValue = GetUniqueID(usedIDList);
                 }
                 serializedObject.ApplyModifiedProperties();
-                // 這個時機點要調整到Compile結束
-                //Log("All enums and IDs have been generated and assigned successfully!".SetColor(Color.green));
             }
 
             int GetUniqueID(IEnumerable<int> idList)

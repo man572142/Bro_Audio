@@ -1,7 +1,7 @@
 using MiProduction.Extension;
 using UnityEngine.Audio;
 
-namespace MiProduction.BroAudio.Core
+namespace MiProduction.BroAudio.Runtime
 {
 	public class AudioTrackObjectPool : ObjectPool<AudioMixerGroup>
 	{

@@ -22,12 +22,12 @@ public class Sample : MonoBehaviour
         yield return new WaitForSeconds(5f);
         
         // 在1秒內慢慢將音量降至50%
-        BroAudio.SetVolume(0.5f,1f ,AudioType.UI);
+        BroAudio.SetVolume(0.5f,1f ,BroAudioType.UI);
         yield return new WaitForSeconds(1f);
 
         // 持續播放5秒
         yield return new WaitForSeconds(5f);
         // 結束播放
-        BroAudio.Stop(AudioType.UI);
+        BroAudio.Stop(BroAudioType.UI);
 	}        
 }

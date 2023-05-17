@@ -6,6 +6,6 @@ namespace MiProduction.BroAudio.Data
 {
 	public class SfxLibraryAsset : SoundLibraryAsset
 	{
-		public override AudioType AudioType => AudioType.SFX;
+		public override BroAudioType AudioType => BroAudioType.SFX;
 	} 
 }

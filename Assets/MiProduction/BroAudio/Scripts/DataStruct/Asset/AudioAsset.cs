@@ -1,19 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MiProduction.BroAudio;
-using System;
-using System.Linq;
 using UnityEditor;
 
 namespace MiProduction.BroAudio.Data
 {
-    public abstract class AudioAsset<T> : ScriptableObject, IAudioAsset where T : IAudioEntity
+    public abstract class AudioAsset<T> : ScriptableObject, IAudioAsset where T : IAudioLibrary
     {
 
         public T[] Libraries;
 
-		public abstract AudioType AudioType { get; }
+		public abstract BroAudioType AudioType { get; }
         [field: SerializeField] public string AssetName { get; set; }
 
         [SerializeField] private string _assetGUID;
@@ -33,7 +30,7 @@ namespace MiProduction.BroAudio.Data
 			}
         }
 
-        public IEnumerable<IAudioEntity> GetAllAudioEntities()
+        public IEnumerable<IAudioLibrary> GetAllAudioLibraries()
 		{
             if (Libraries == null)
                 Libraries = new T[0];

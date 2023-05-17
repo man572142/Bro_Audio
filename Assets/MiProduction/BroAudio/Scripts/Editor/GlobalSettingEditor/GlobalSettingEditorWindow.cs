@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEditor;
 using MiProduction.Extension;
 using static MiProduction.BroAudio.Utility;
-using static MiProduction.BroAudio.EditorSetting.BroAudioGUISetting;
+using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
 
-namespace MiProduction.BroAudio.EditorSetting
+namespace MiProduction.BroAudio.Editor.Setting
 {
 	public class GlobalSettingEditorWindow : MiEditorWindow
 	{

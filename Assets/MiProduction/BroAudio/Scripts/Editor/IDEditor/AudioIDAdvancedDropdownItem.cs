@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.IDEditor
+namespace MiProduction.BroAudio.Editor
 {
 	public class AudioIDAdvancedDropdownItem : AdvancedDropdownItem
 	{

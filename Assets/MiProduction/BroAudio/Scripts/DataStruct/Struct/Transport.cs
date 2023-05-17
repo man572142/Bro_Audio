@@ -1,4 +1,4 @@
-namespace MiProduction.BroAudio.ClipEditor 
+namespace MiProduction.BroAudio.Editor 
 {
 	public struct Transport
 	{

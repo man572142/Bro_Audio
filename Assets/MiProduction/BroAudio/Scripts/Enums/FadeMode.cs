@@ -1,7 +1,10 @@
-public enum FadeMode
+namespace MiProduction.BroAudio
 {
-    None,
-    Immediate,
-    Fade,
-    Cross
+	public enum FadeMode
+	{
+		None,
+		Immediate,
+		Fade,
+		Cross
+	} 
 }

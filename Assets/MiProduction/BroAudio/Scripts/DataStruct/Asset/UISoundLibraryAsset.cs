@@ -4,6 +4,6 @@ namespace MiProduction.BroAudio.Data
 {
 	public class UISoundLibraryAsset : SoundLibraryAsset
 	{
-		public override AudioType AudioType => AudioType.UI;
+		public override BroAudioType AudioType => BroAudioType.UI;
 	} 
 }

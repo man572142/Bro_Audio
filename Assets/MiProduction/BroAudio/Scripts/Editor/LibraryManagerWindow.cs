@@ -6,11 +6,11 @@ using UnityEditorInternal;
 using System;
 using System.Linq;
 using MiProduction.Extension;
-using MiProduction.BroAudio.EditorSetting;
+using MiProduction.BroAudio.Editor.Setting;
 using static MiProduction.BroAudio.Utility;
-using static MiProduction.BroAudio.EditorSetting.BroAudioGUISetting;
+using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
 
-namespace MiProduction.BroAudio.AssetEditor
+namespace MiProduction.BroAudio.Editor
 {
 	public class LibraryManagerWindow : EditorWindow
 	{
@@ -42,7 +42,7 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		private GUIStyle _assetNameTitleStyle = null;
 		private VerticalGapDrawingHelper _gapDrawer = new VerticalGapDrawingHelper();
-		private IDEditor.EntityIDController _entityIdController = new IDEditor.EntityIDController();
+		private LibraryIDController _libraryIdController = new LibraryIDController();
 
 
 		[MenuItem(LibraryManagerMenuPath, false,LibraryManagerMenuIndex)]
@@ -125,7 +125,7 @@ namespace MiProduction.BroAudio.AssetEditor
 		private AudioAssetEditor CreateAssetEditor(string guid , string assetName = "")
 		{
 			string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-			AudioAssetEditor editor = Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject))) as AudioAssetEditor;
+			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject))) as AudioAssetEditor;
 			if(string.IsNullOrEmpty(editor.Asset.AssetName))
 			{
 				string assetNamePropertyPath = EditorScriptingExtension.GetAutoBackingFieldName(nameof(Data.IAudioAsset.AssetName));
@@ -137,8 +137,8 @@ namespace MiProduction.BroAudio.AssetEditor
 				editor.serializedObject.ApplyModifiedPropertiesWithoutUndo();
 			}
 
-			_entityIdController.AddByAsset(editor.Asset);
-			editor.SetIDAccessor(_entityIdController);
+			_libraryIdController.AddByAsset(editor.Asset);
+			editor.SetIDAccessor(_libraryIdController);
 			return editor;
 		}
 
@@ -199,9 +199,9 @@ namespace MiProduction.BroAudio.AssetEditor
 		{
 			_assetOption = new GenericMenu();
 
-			LoopAllAudioType((AudioType audioType) =>
+			LoopAllAudioType((BroAudioType audioType) =>
 			{
-				if (audioType == AudioType.None)
+				if (audioType == BroAudioType.None)
 				{
 					_assetOption.AddItem(new GUIContent("Choose an AudioType to create an asset"), false, null);
 					_assetOption.AddSeparator("");
@@ -214,14 +214,14 @@ namespace MiProduction.BroAudio.AssetEditor
 		} 
 		#endregion
 
-		private void OnCreateAssetAskName(AudioType audioType)
+		private void OnCreateAssetAskName(BroAudioType audioType)
 		{
 			// In the following case. List has better performance than IEnumerable , even with a ToList() method.
 			List<string> assetNames = _assetEditorDict.Values.Select(x => x.Asset.AssetName).ToList();
 			AssetNameEditorWindow.ShowWindow(assetNames, (assetName)=> OnCreateAsset(assetName,audioType));
 		}
 
-		private void OnCreateAsset(string libraryName, AudioType audioType)
+		private void OnCreateAsset(string libraryName, BroAudioType audioType)
 		{
 			if(string.IsNullOrEmpty(AssetOutputPath))
 			{

@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace MiProduction.BroAudio.AssetEditor
+namespace MiProduction.BroAudio.Editor
 {
 	public enum LibraryState
 	{
@@ -11,5 +7,4 @@ namespace MiProduction.BroAudio.AssetEditor
 		HasDuplicateName,
 		HasInvalidName,
 	}
-
 }

@@ -1,9 +1,10 @@
 using UnityEngine;
 
+
 namespace MiProduction.BroAudio.Data
 {
     [System.Serializable]
-    public abstract class AudioLibrary : IAudioEntity
+    public abstract class AudioLibrary : IAudioLibrary
     {
         [field: SerializeField] public string Name { get; set; }
         [field: SerializeField] public int ID { get; set; }

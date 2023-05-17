@@ -1,4 +1,4 @@
-namespace MiProduction.BroAudio.AssetEditor
+namespace MiProduction.BroAudio.Editor
 {
 	public interface IChangesTrackable
 	{

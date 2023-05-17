@@ -5,9 +5,8 @@ using UnityEditor;
 using MiProduction.Extension;
 using static MiProduction.Extension.EditorScriptingExtension;
 using MiProduction.BroAudio.Data;
-using MiProduction.BroAudio.ClipEditor;
 
-namespace MiProduction.BroAudio.AssetEditor
+namespace MiProduction.BroAudio.Editor
 {
 	public abstract class AudioLibraryPropertyDrawer : MiPropertyDrawer
 	{
@@ -62,7 +61,7 @@ namespace MiProduction.BroAudio.AssetEditor
 				return;
 			}
 			
-			SerializedProperty nameProp = property.FindPropertyRelative(GetAutoBackingFieldName(nameof(IAudioEntity.Name)));
+			SerializedProperty nameProp = property.FindPropertyRelative(GetAutoBackingFieldName(nameof(IAudioLibrary.Name)));
 
 			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProp.stringValue);
 			if (property.isExpanded)

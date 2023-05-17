@@ -2,10 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MiProduction.Extension;
-using System;
 using MiProduction.BroAudio.Data;
 
-namespace MiProduction.BroAudio.Core
+namespace MiProduction.BroAudio.Runtime
 {
     public class OneShotPlayer : AudioPlayer
     {

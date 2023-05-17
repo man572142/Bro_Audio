@@ -6,6 +6,6 @@ namespace MiProduction.BroAudio.Data
 {
 	public class VoiceOverLibraryAsset : SoundLibraryAsset
 	{
-		public override AudioType AudioType => AudioType.VoiceOver;
+		public override BroAudioType AudioType => BroAudioType.VoiceOver;
 	} 
 }

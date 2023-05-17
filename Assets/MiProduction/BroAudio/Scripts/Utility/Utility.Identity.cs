@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using static MiProduction.Extension.LoopExtension;
 using MiProduction.BroAudio.Data;
-using MiProduction.BroAudio.EditorSetting;
+using MiProduction.BroAudio.Editor.Setting;
 
 namespace MiProduction.BroAudio
 {
@@ -17,17 +17,17 @@ namespace MiProduction.BroAudio
 		}
 
 		// 最後一個enum = ALL加1再右移一位
-		public static readonly int LastAudioType = ((int)AudioType.All + 1) >> 1;
+		public static readonly int LastAudioType = ((int)BroAudioType.All + 1) >> 1;
 		public const int IdMultiplier = 100; // 用到1000會超出int上限，若有需要則必須改用long
 
 
-		public static int ToConstantID(this AudioType audioType)
+		public static int ToConstantID(this BroAudioType audioType)
 		{
-			if (audioType == AudioType.None)
+			if (audioType == BroAudioType.None)
 			{
 				return 0;
 			}
-			else if (audioType == AudioType.All)
+			else if (audioType == BroAudioType.All)
 			{
 				return int.MaxValue;
 			}
@@ -46,7 +46,7 @@ namespace MiProduction.BroAudio
 			return result;
 		}
 
-		public static AudioType ToNext(this AudioType current)
+		public static BroAudioType ToNext(this BroAudioType current)
 		{
 			if(current == 0)
 			{
@@ -56,17 +56,17 @@ namespace MiProduction.BroAudio
 			int next = (int)current << 1;
 			if(next > LastAudioType)
 			{
-				return AudioType.All;
+				return BroAudioType.All;
 			}
-			return (AudioType)next;
+			return (BroAudioType)next;
 		}
 
-		public static AudioType GetAudioType(int id)
+		public static BroAudioType GetAudioType(int id)
 		{
-			AudioType resultType = AudioType.None;
-			AudioType nextType = resultType.ToNext();
+			BroAudioType resultType = BroAudioType.None;
+			BroAudioType nextType = resultType.ToNext();
 
-			While(_ => nextType <= (AudioType)LastAudioType, () =>
+			While(_ => nextType <= (BroAudioType)LastAudioType, () =>
 			{
 				if (id >= resultType.ToConstantID() && id < nextType.ToConstantID())
 				{
@@ -83,10 +83,10 @@ namespace MiProduction.BroAudio
 		/// <summary>
 		/// 每輪迴圈以callback回傳AudioType
 		/// </summary>
-		public static void LoopAllAudioType(Action<AudioType> loopCallback)
+		public static void LoopAllAudioType(Action<BroAudioType> loopCallback)
 		{
-			AudioType currentType = AudioType.None;
-			While(_ => currentType <= (AudioType)LastAudioType, () =>
+			BroAudioType currentType = BroAudioType.None;
+			While(_ => currentType <= (BroAudioType)LastAudioType, () =>
 			{
 				loopCallback?.Invoke(currentType);
 				currentType = currentType.ToNext();
@@ -151,38 +151,38 @@ namespace MiProduction.BroAudio
 			return true;
 		}
 
-		public static Type GetAssetType(this AudioType audioType)
+		public static Type GetAssetType(this BroAudioType audioType)
 		{
 			switch (audioType)
 			{
-				case AudioType.Music:
+				case BroAudioType.Music:
 					return typeof(MusicLibraryAsset);
-				case AudioType.UI:
+				case BroAudioType.UI:
 					return typeof(UISoundLibraryAsset);
-				case AudioType.Ambience:
+				case BroAudioType.Ambience:
 					return typeof(AmbienceLibraryAsset);
-				case AudioType.SFX:
+				case BroAudioType.SFX:
 					return typeof(SfxLibraryAsset);
-				case AudioType.VoiceOver:
+				case BroAudioType.VoiceOver:
 					return typeof(VoiceOverLibraryAsset);
 				default:
 					return null;
 			}
 		}
 
-		public static Color GetAudioTypeColor(AudioType audioType)
+		public static Color GetAudioTypeColor(BroAudioType audioType)
 		{
 			switch (audioType)
 			{
-				case AudioType.Music:
+				case BroAudioType.Music:
 					return BroAudioGUISetting.DarkBlue;
-				case AudioType.UI:
+				case BroAudioType.UI:
 					return BroAudioGUISetting.GrassGreen;
-				case AudioType.Ambience:
+				case BroAudioType.Ambience:
 					return BroAudioGUISetting.LakeGreen;
-				case AudioType.SFX:
+				case BroAudioType.SFX:
 					return BroAudioGUISetting.SoftRed;
-				case AudioType.VoiceOver:
+				case BroAudioType.VoiceOver:
 					return BroAudioGUISetting.Bronze;
 				default:
 					return Color.white;

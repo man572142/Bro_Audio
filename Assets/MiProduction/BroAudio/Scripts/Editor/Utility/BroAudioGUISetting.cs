@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.EditorSetting
+namespace MiProduction.BroAudio.Editor.Setting
 {
 	public static class BroAudioGUISetting
 	{

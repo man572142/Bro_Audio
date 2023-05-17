@@ -1,6 +1,6 @@
 namespace MiProduction.BroAudio.Data
 {
-    public interface IAudioEntity
+    public interface IAudioLibrary
     {
         public bool Validate(int index);
         public int ID { get; }

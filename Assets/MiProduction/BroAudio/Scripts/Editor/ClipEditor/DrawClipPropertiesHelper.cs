@@ -1,10 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 using static MiProduction.Extension.EditorScriptingExtension;
-using static MiProduction.BroAudio.EditorSetting.BroAudioGUISetting;
+using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
 
-
-namespace MiProduction.BroAudio.ClipEditor
+namespace MiProduction.BroAudio.Editor
 {
 	public class DrawClipPropertiesHelper
 	{

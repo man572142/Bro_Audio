@@ -8,7 +8,7 @@ using MiProduction.BroAudio.Data;
 using static MiProduction.Extension.AudioExtension;
 using static MiProduction.BroAudio.Utility;
 
-namespace MiProduction.BroAudio.Core
+namespace MiProduction.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
 	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>

@@ -9,11 +9,11 @@ using static MiProduction.Extension.EditorScriptingExtension;
 using MiProduction.BroAudio.Data;
 using UnityEditorInternal;
 
-namespace MiProduction.BroAudio.AssetEditor
+namespace MiProduction.BroAudio.Editor
 {
     [CustomEditor(typeof(AudioAsset<>), true)]
-    public class AudioAssetEditor : Editor
-    {
+    public class AudioAssetEditor : UnityEditor.Editor
+	{
 		private bool _hasOpenedLibraryManager = false;
         private SerializedProperty _librariesProp = null;
         private ReorderableList _reorderableList = null;
@@ -21,16 +21,16 @@ namespace MiProduction.BroAudio.AssetEditor
 		private string _libraryStateOutput = string.Empty;
 		private LibraryState _libraryState = LibraryState.Fine;
 
-		private IEnumerable<IAudioEntity> _currentAudioDatas = null;
+		private IEnumerable<IAudioLibrary> _currentAudioDatas = null;
 
-		private IEntityIDContainer _idContainer = null;
+		private ILibraryIDContainer _idContainer = null;
 		public IAudioAsset Asset { get; private set; }
 
 		private void OnEnable()
 		{
-			_librariesProp = serializedObject.FindProperty(nameof(AudioAsset<IAudioEntity>.Libraries));
+			_librariesProp = serializedObject.FindProperty(nameof(AudioAsset<IAudioLibrary>.Libraries));
 			Asset = target as IAudioAsset;
-			_currentAudioDatas = Asset.GetAllAudioEntities();
+			_currentAudioDatas = Asset.GetAllAudioLibraries();
 			_hasOpenedLibraryManager = EditorWindow.HasOpenInstances<LibraryManagerWindow>();
 
 			InitReorderableList();
@@ -110,7 +110,7 @@ namespace MiProduction.BroAudio.AssetEditor
 			}
 		}
 
-		public void SetIDAccessor(IEntityIDContainer idAccessor)
+		public void SetIDAccessor(ILibraryIDContainer idAccessor)
 		{
 			_idContainer = idAccessor;
 		}
@@ -133,8 +133,8 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		private bool CompareWithPrevious()
 		{
-			IAudioEntity previousData = null;
-			foreach (IAudioEntity data in _currentAudioDatas)
+			IAudioLibrary previousData = null;
+			foreach (IAudioLibrary data in _currentAudioDatas)
 			{
 				_libraryStateOutput = data.Name;
 				if (string.IsNullOrEmpty(data.Name))
@@ -162,7 +162,7 @@ namespace MiProduction.BroAudio.AssetEditor
 		private bool CompareWithAll()
 		{
 			List<string> nameList = new List<string>();
-			foreach (IAudioEntity data in _currentAudioDatas)
+			foreach (IAudioLibrary data in _currentAudioDatas)
 			{
 				if (nameList.Contains(data.Name))
 				{

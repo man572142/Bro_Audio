@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using MiProduction.BroAudio.Data;
 
-namespace MiProduction.BroAudio.AssetEditor
+namespace MiProduction.BroAudio.Editor
 {
 	[CustomPropertyDrawer(typeof(SoundLibrary))]
 	public class SoundLibraryPropertyDrawer : AudioLibraryPropertyDrawer

@@ -6,11 +6,11 @@ using UnityEngine;
 using MiProduction.BroAudio;
 using static MiProduction.Extension.LoopExtension;
 
-namespace MiProduction.BroAudio.IDEditor
+namespace MiProduction.BroAudio.Editor
 {
-	public class EntityIDController : IEntityIDContainer
+	public class LibraryIDController : ILibraryIDContainer
 	{
-		private Dictionary<AudioType, List<int>> _idController = new Dictionary<AudioType, List<int>>();
+		private Dictionary<BroAudioType, List<int>> _idController = new Dictionary<BroAudioType, List<int>>();
 
 		public void AddByAsset(IAudioAsset asset)
 		{
@@ -19,10 +19,10 @@ namespace MiProduction.BroAudio.IDEditor
 				_idController.Add(asset.AudioType, new List<int>());
 			}
 
-			_idController[asset.AudioType].AddRange(asset.GetAllAudioEntities().Select(x => x.ID));
+			_idController[asset.AudioType].AddRange(asset.GetAllAudioLibraries().Select(x => x.ID));
 		}
 
-		public int GetUniqueID(AudioType audioType)
+		public int GetUniqueID(BroAudioType audioType)
 		{
 			int id = 0;
 			int min = audioType.ToConstantID();
@@ -49,7 +49,7 @@ namespace MiProduction.BroAudio.IDEditor
 			}
 		}
 
-		public bool RemoveID(AudioType audioType, int id)
+		public bool RemoveID(BroAudioType audioType, int id)
 		{
 			if (_idController.TryGetValue(audioType, out var idList))
 			{

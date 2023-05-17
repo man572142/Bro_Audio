@@ -3,9 +3,9 @@ using UnityEditor;
 using MiProduction.Extension;
 using System;
 using System.IO;
-using static MiProduction.BroAudio.EditorSetting.BroAudioGUISetting;
+using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
 
-namespace MiProduction.BroAudio.ClipEditor
+namespace MiProduction.BroAudio.Editor
 {
 	public class ClipEditorWindow : MiEditorWindow
 	{

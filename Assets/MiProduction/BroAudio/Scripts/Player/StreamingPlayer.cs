@@ -1,5 +1,5 @@
 
-namespace MiProduction.BroAudio.Core
+namespace MiProduction.BroAudio.Runtime
 {
     public class StreamingPlayer : AudioPlayer
     {

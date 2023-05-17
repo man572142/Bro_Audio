@@ -2,7 +2,7 @@ using UnityEngine.Audio;
 using UnityEngine;
 using MiProduction.Extension;
 
-namespace MiProduction.BroAudio.Core
+namespace MiProduction.BroAudio.Runtime
 {
 	public class AudioPlayerObjectPool : ObjectPool<AudioPlayer>
 	{

@@ -1,5 +1,5 @@
 using UnityEngine;
-using MiProduction.BroAudio.Core;
+using MiProduction.BroAudio.Runtime;
 using MiProduction.Extension;
 using System;
 
@@ -68,7 +68,7 @@ namespace MiProduction.BroAudio
         /// 停止播放
         /// </summary>
         /// <param name="audioType">停止的聲音類型</param>
-        public static void Stop(AudioType audioType) => Stop(-1f, audioType);
+        public static void Stop(BroAudioType audioType) => Stop(-1f, audioType);
 
         /// <summary>
         /// 停止播放
@@ -80,7 +80,7 @@ namespace MiProduction.BroAudio
         /// 停止播放
         /// </summary>
         /// <param name="audioType">停止的聲音類型</param>
-        public static void Stop(float fadeTime, AudioType audioType) => SoundManager.Instance.StopPlaying(audioType);
+        public static void Stop(float fadeTime, BroAudioType audioType) => SoundManager.Instance.StopPlaying(audioType);
 
         /// <summary>
         /// 停止播放
@@ -97,7 +97,7 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <param name="vol">過渡到指定音量的時間</param>
         /// <param name="type">設定的聲音類型</param>
-        public static void SetVolume(float vol, AudioType type) => SetVolume(vol, 1f, type);
+        public static void SetVolume(float vol, BroAudioType type) => SetVolume(vol, 1f, type);
 
         /// <summary>
         /// 設定音量
@@ -112,7 +112,7 @@ namespace MiProduction.BroAudio
         /// <param name="vol">0~1的音量值</param>
         /// <param name="fadeTime">過渡到指定音量的時間</param>
         /// <param name="type">設定的聲音類型</param>
-        public static void SetVolume(float vol, float fadeTime, AudioType audioType) => SoundManager.Instance.SetVolume(vol, fadeTime, audioType);
+        public static void SetVolume(float vol, float fadeTime, BroAudioType audioType) => SoundManager.Instance.SetVolume(vol, fadeTime, audioType);
 
         /// <summary>
         /// 設定音量

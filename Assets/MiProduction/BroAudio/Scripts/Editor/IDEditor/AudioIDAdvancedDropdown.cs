@@ -6,7 +6,7 @@ using static MiProduction.BroAudio.Utility;
 using UnityEditor;
 using MiProduction.BroAudio.Data;
 
-namespace MiProduction.BroAudio.IDEditor
+namespace MiProduction.BroAudio.Editor
 {
 	public class AudioIDAdvancedDropdown : AdvancedDropdown
 	{
@@ -30,10 +30,10 @@ namespace MiProduction.BroAudio.IDEditor
 				if (asset != null)
 				{
 					var item = new AdvancedDropdownItem(asset.AssetName);
-					foreach (var entity in asset.GetAllAudioEntities())
+					foreach (var library in asset.GetAllAudioLibraries())
 					{
 
-						item.AddChild(new AudioIDAdvancedDropdownItem(entity.Name, entity.ID, asset as ScriptableObject));
+						item.AddChild(new AudioIDAdvancedDropdownItem(library.Name, library.ID, asset as ScriptableObject));
 					}
 					root.AddChild(item);
 				}

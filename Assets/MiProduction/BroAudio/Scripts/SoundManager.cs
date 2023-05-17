@@ -6,7 +6,7 @@ using MiProduction.BroAudio.Data;
 using MiProduction.Extension;
 using static MiProduction.BroAudio.Utility;
 
-namespace MiProduction.BroAudio.Core
+namespace MiProduction.BroAudio.Runtime
 {
     [DisallowMultipleComponent]
     public class SoundManager : MonoBehaviour
@@ -92,7 +92,7 @@ namespace MiProduction.BroAudio.Core
                 if (asset == null)
                     continue;
 
-                List<IAudioEntity> dataList = System.Linq.Enumerable.ToList(asset.GetAllAudioEntities());
+                List<IAudioLibrary> dataList = System.Linq.Enumerable.ToList(asset.GetAllAudioLibraries());
 				for (int s = 0; s < dataList.Count; s++)
 				{
 					var library = dataList[s];
@@ -101,16 +101,16 @@ namespace MiProduction.BroAudio.Core
 
                     switch (asset.AudioType)
                     {
-                        case AudioType.Music:
-                        case AudioType.Ambience:
+                        case BroAudioType.Music:
+                        case BroAudioType.Ambience:
                             if (!_musicBank.ContainsKey(library.ID))
                             {
                                 _musicBank.Add(library.ID, (MusicLibrary)library);
                             }
                             break;
-                        case AudioType.UI:
-                        case AudioType.SFX:
-                        case AudioType.VoiceOver:
+                        case BroAudioType.UI:
+                        case BroAudioType.SFX:
+                        case BroAudioType.VoiceOver:
                             if (!_soundBank.ContainsKey(library.ID))
                             {
                                 _soundBank.Add(library.ID, (SoundLibrary)library);
@@ -180,8 +180,8 @@ namespace MiProduction.BroAudio.Core
 
         public IAudioPlayer Play(int id,float preventTime)
         {
-            AudioType audioType = GetAudioType(id);
-            if (audioType == AudioType.Music || audioType == AudioType.Ambience)
+            BroAudioType audioType = GetAudioType(id);
+            if (audioType == BroAudioType.Music || audioType == BroAudioType.Ambience)
 			{
                 return PlayMusic(id, Transition.Immediate,preventTime);
             }
@@ -220,9 +220,9 @@ namespace MiProduction.BroAudio.Core
         #endregion
 
         #region Volume
-        public void SetVolume(float vol, float fadeTime, AudioType audioType)
+        public void SetVolume(float vol, float fadeTime, BroAudioType audioType)
 		{
-			if (audioType == AudioType.All)
+			if (audioType == BroAudioType.All)
 			{
 				LoopAllAudioType((loopAudioType) => SetPlayerVolume(loopAudioType));
 			}
@@ -231,7 +231,7 @@ namespace MiProduction.BroAudio.Core
 				SetPlayerVolume(audioType);
 			}
 
-			void SetPlayerVolume(AudioType target)
+			void SetPlayerVolume(BroAudioType target)
             {
                 if (_audioPlayerPool.TryGetObject(x => GetAudioType(x.ID) == target, out var player))
 				{
@@ -254,9 +254,9 @@ namespace MiProduction.BroAudio.Core
 		#endregion
 
 		#region Stop
-		public void StopPlaying(AudioType audioType)
+		public void StopPlaying(BroAudioType audioType)
 		{
-			if (audioType == AudioType.All)
+			if (audioType == BroAudioType.All)
 			{
 				LoopAllAudioType((loopAudioType) => Stop(loopAudioType));
 			}
@@ -265,7 +265,7 @@ namespace MiProduction.BroAudio.Core
 				Stop(audioType);
 			}
 
-			void Stop(AudioType target)
+			void Stop(BroAudioType target)
 			{
                 if (_audioPlayerPool.TryGetObject(x => GetAudioType(x.ID) == target, out var player))
                 {
@@ -301,7 +301,7 @@ namespace MiProduction.BroAudio.Core
         }
 
         #region NullChecker
-        private bool IsPlayable<T>(int id, IDictionary<int, T> bank) where T : IAudioEntity
+        private bool IsPlayable<T>(int id, IDictionary<int, T> bank) where T : IAudioLibrary
         {
             if (id <= 0)
             {
@@ -315,13 +315,13 @@ namespace MiProduction.BroAudio.Core
                 return false;
             }
 
-            AudioType audioType = GetAudioType(id);
-            if (audioType == AudioType.All)
+            BroAudioType audioType = GetAudioType(id);
+            if (audioType == BroAudioType.All)
             {
                 LogError($"AudioID:{id} is invalid");
                 return false;
             }
-            else if (audioType == AudioType.Music &&_currMusicPlayer != null && id == _currMusicPlayer.ID)
+            else if (audioType == BroAudioType.Music &&_currMusicPlayer != null && id == _currMusicPlayer.ID)
             {
                 LogWarning("The music you want to play is already playing");
                 return false;

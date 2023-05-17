@@ -6,7 +6,7 @@ using MiProduction.Extension;
 using UnityEditor.IMGUI.Controls;
 using MiProduction.BroAudio.Data;
 
-namespace MiProduction.BroAudio.IDEditor
+namespace MiProduction.BroAudio.Editor
 {
 	[CustomPropertyDrawer(typeof(AudioID))]
 	public class AudioIDPropertyDrawer : PropertyDrawer
@@ -39,11 +39,11 @@ namespace MiProduction.BroAudio.IDEditor
 
 			if (audioAsset != null)
 			{
-				foreach (var entity in audioAsset.GetAllAudioEntities())
+				foreach (var library in audioAsset.GetAllAudioLibraries())
 				{
-					if (entity.ID == idProp.intValue)
+					if (library.ID == idProp.intValue)
 					{
-						_idName = entity.Name;
+						_idName = library.Name;
 						return;
 					}
 				}

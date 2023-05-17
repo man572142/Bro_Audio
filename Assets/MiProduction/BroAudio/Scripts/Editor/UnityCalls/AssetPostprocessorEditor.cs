@@ -1,5 +1,5 @@
 using UnityEditor;
-using MiProduction.BroAudio.ClipEditor;
+using MiProduction.BroAudio.Editor;
 
 public class AssetPostprocessorEditor : AssetPostprocessor
 {

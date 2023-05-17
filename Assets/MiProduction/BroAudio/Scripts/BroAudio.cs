@@ -7,6 +7,8 @@ namespace MiProduction.BroAudio
 { 
     public static class BroAudio
     {
+        public const string ProjectName = nameof(BroAudio);
+
         #region SFX
         /// <summary>
         /// ¼½©ñ­µ®Ä

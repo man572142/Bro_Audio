@@ -3,10 +3,11 @@ using UnityEditor;
 using MiProduction.Extension;
 using System;
 using System.IO;
+using static MiProduction.BroAudio.EditorSetting.BroAudioGUISetting;
 
 namespace MiProduction.BroAudio.ClipEditor
 {
-	public class ClipEditorWindow : EditorWindow, IEditorDrawLineCounter
+	public class ClipEditorWindow : MiEditorWindow
 	{
 		public const string SaveFilePanelTitle = "Save as a new file";
 		public const string ConfirmOverwriteTitle = "Confirm overwrite";
@@ -28,8 +29,7 @@ namespace MiProduction.BroAudio.ClipEditor
 		private bool _isReverse = false;
 
 		private string _currSavingFilePath = null;
-		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 5f;
-		public int DrawLineCount { get; set; }
+		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 5f;
 
 		public bool HasEdited
 		{
@@ -77,18 +77,13 @@ namespace MiProduction.BroAudio.ClipEditor
 			}
 		}
 
-		[MenuItem("BroAudio/Clip Editor")]
+		[MenuItem(ClipEditorMenuPath,false,ClipEditorMenuIndex)]
 		public static void ShowWindow()
 		{
 			EditorWindow window = GetWindow(typeof(ClipEditorWindow));
 			window.minSize = new Vector2(640f,360f);
 			window.titleContent = new GUIContent("BroAudio Clip Editor");
 			window.Show();
-		}
-
-		public Rect GetRectAndIterateLine(Rect position)
-		{
-			return EditorScriptingExtension.GetRectAndIterateLine(this, position);
 		}
 
 		private void OnEnable()
@@ -102,10 +97,9 @@ namespace MiProduction.BroAudio.ClipEditor
 			OnChangeAudioClip -= ResetSetting;
 		}
 
-		private void OnGUI()
+		protected override void OnGUI()
 		{
-			EditorGUIUtility.wideMode = true;
-			DrawLineCount = 0;
+			base.OnGUI();
 			
 			Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
 
@@ -181,11 +175,6 @@ namespace MiProduction.BroAudio.ClipEditor
 			_transport.FadeOut = newFading.FadeOut;
 		}
 
-		private void DrawEmptyLine(int count)
-		{
-			DrawLineCount += count;
-		}
-
 		private int GetLineCountByPixels(float pixels)
 		{
 			return Mathf.RoundToInt(pixels / SingleLineSpace);
@@ -223,7 +212,6 @@ namespace MiProduction.BroAudio.ClipEditor
 				}
 			}
 		}
-
 		private void SaveClip(string savePath)
 		{
 			using (AudioClipEditingHelper helper = new AudioClipEditingHelper(TargetClip))
@@ -283,5 +271,4 @@ namespace MiProduction.BroAudio.ClipEditor
 			_isReverse = false;
 		}
 	}
-
 }

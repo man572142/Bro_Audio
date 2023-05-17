@@ -33,6 +33,7 @@ namespace MiProduction.Extension
 			}
 		}
 
+        // TODO: add to global setting
         public const float HaasEffectInSeconds = 0.04f;
 
         public const float MinDecibelVolume = -80f;

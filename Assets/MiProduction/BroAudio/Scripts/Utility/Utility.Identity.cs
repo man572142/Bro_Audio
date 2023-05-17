@@ -151,20 +151,20 @@ namespace MiProduction.BroAudio
 			return true;
 		}
 
-		public static string GetAssetTypeName(this AudioType audioType)
+		public static Type GetAssetType(this AudioType audioType)
 		{
 			switch (audioType)
 			{
 				case AudioType.Music:
-					return nameof(MusicLibraryAsset);
+					return typeof(MusicLibraryAsset);
 				case AudioType.UI:
-					return nameof(UISoundLibraryAsset);
+					return typeof(UISoundLibraryAsset);
 				case AudioType.Ambience:
-					return nameof(AmbienceLibraryAsset);
+					return typeof(AmbienceLibraryAsset);
 				case AudioType.SFX:
-					return nameof(SfxLibraryAsset);
+					return typeof(SfxLibraryAsset);
 				case AudioType.VoiceOver:
-					return nameof(VoiceOverLibraryAsset);
+					return typeof(VoiceOverLibraryAsset);
 				default:
 					return null;
 			}
@@ -175,15 +175,15 @@ namespace MiProduction.BroAudio
 			switch (audioType)
 			{
 				case AudioType.Music:
-					return BroAudioGUISetting.MusicColor;
+					return BroAudioGUISetting.DarkBlue;
 				case AudioType.UI:
-					return BroAudioGUISetting.UIColor;
+					return BroAudioGUISetting.GrassGreen;
 				case AudioType.Ambience:
-					return BroAudioGUISetting.AmbienceColor;
+					return BroAudioGUISetting.LakeGreen;
 				case AudioType.SFX:
-					return BroAudioGUISetting.SFXColor;
+					return BroAudioGUISetting.SoftRed;
 				case AudioType.VoiceOver:
-					return BroAudioGUISetting.VoiceoverColor;
+					return BroAudioGUISetting.Bronze;
 				default:
 					return Color.white;
 			}

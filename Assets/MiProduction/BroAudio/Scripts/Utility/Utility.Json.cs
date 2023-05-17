@@ -12,57 +12,77 @@ namespace MiProduction.BroAudio
 		[Serializable]
 		public struct SerializedCoreData
 		{
-			public string RootPath;
+			public string AssetOutputPath;
 			public List<string> GUIDs;
 
-			public SerializedCoreData(string rootPath,List<string> guids)
+			public SerializedCoreData(string assetOutputPath,List<string> guids)
 			{
-				RootPath = rootPath;
-				GUIDs = guids;
-			}
-
-			public SerializedCoreData(List<string> guids)
-			{
-				RootPath = Utility.RootPath;
+				AssetOutputPath = assetOutputPath;
 				GUIDs = guids;
 			}
 		}
 
-		public static void WriteJsonToFile(List<string> allLibraryGUID)
+		public static void WriteGuidToCoreData(List<string> allLibraryGUID)
 		{
-			SerializedCoreData serializedData = new SerializedCoreData(RootPath,allLibraryGUID);
-			File.WriteAllText(GetFilePath(RootPath,CoreDataFileName), JsonUtility.ToJson(serializedData, true));
-			AssetDatabase.Refresh();
+			var coreFile = Resources.Load<TextAsset>(CoreDataResourcesPath);
+			if(coreFile != null)
+			{
+				string path = AssetDatabase.GetAssetPath(coreFile);
+				SerializedCoreData serializedData = new SerializedCoreData(AssetOutputPath, allLibraryGUID);
+				File.WriteAllText(path, JsonUtility.ToJson(serializedData, true));
+				AssetDatabase.Refresh();
+			}
+		}
+
+		public static void WriteAssetOutputPathToCoreData()
+		{
+			var coreFile = Resources.Load<TextAsset>(CoreDataResourcesPath);
+			SerializedCoreData coreData;
+			if(!string.IsNullOrEmpty(coreFile.text))
+			{
+				coreData = JsonUtility.FromJson<SerializedCoreData>(coreFile.text);
+				coreData.AssetOutputPath = AssetOutputPath;
+				string path = AssetDatabase.GetAssetPath(coreFile);
+				File.WriteAllText(path, JsonUtility.ToJson(coreData, true));
+				AssetDatabase.Refresh();
+			}
 		}
 
 		public static void CreateDefaultCoreData()
 		{
-			WriteJsonToFile(null);
+			WriteGuidToCoreData(new List<string>());
 		}
 
 		public static List<string> GetGUIDListFromJson()
 		{
-			string coreDataFilePath = GetFilePath(RootPath, CoreDataFileName);
-			if (File.Exists(coreDataFilePath))
+			if(TryGetCoreData(out SerializedCoreData coreData))
 			{
-				string json = File.ReadAllText(coreDataFilePath);
-				if(string.IsNullOrEmpty(json))
+				return coreData.GUIDs;
+			}
+			return null;
+		}
+
+		public static bool TryGetCoreData(out SerializedCoreData coreData)
+		{
+			coreData = default;
+			TextAsset textAsset = Resources.Load<TextAsset>(CoreDataResourcesPath);
+			if(textAsset != null)
+			{
+				string json = textAsset.text;
+				if (!string.IsNullOrEmpty(json))
 				{
-					return new List<string>();
+					coreData = JsonUtility.FromJson<SerializedCoreData>(json);
+					return true;
 				}
-				SerializedCoreData data = JsonUtility.FromJson<SerializedCoreData>(json);
-				return data.GUIDs;
 			}
-			else
-			{
-				// TODO: CREATE CORE DATA
-				LogError("NoData!!");
-				return null;
-			}
+			
+			LogError("Can't find core data! please place [BroAudioData.json] in Resources folder or reinstall BroAudio");
+			return false;
 		}
 
 		private static bool DeleteJsonDataByAsset(string assetGUID)
 		{
+			// TODO: 這裡做了兩次Resources.Load
 			var currentLibraryGUID = GetGUIDListFromJson();
 			if(currentLibraryGUID == null)
 			{
@@ -80,7 +100,7 @@ namespace MiProduction.BroAudio
 			}
 			if(hasRemoved)
 			{
-				WriteJsonToFile(currentLibraryGUID);
+				WriteGuidToCoreData(currentLibraryGUID);
 			}
 			return hasRemoved;
 		}

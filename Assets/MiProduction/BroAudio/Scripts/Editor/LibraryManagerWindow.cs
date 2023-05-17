@@ -8,6 +8,7 @@ using System.Linq;
 using MiProduction.Extension;
 using MiProduction.BroAudio.EditorSetting;
 using static MiProduction.BroAudio.Utility;
+using static MiProduction.BroAudio.EditorSetting.BroAudioGUISetting;
 
 namespace MiProduction.BroAudio.AssetEditor
 {
@@ -44,7 +45,7 @@ namespace MiProduction.BroAudio.AssetEditor
 		private IDEditor.EntityIDController _entityIdController = new IDEditor.EntityIDController();
 
 
-		[MenuItem("BroAudio/Library Manager")]
+		[MenuItem(LibraryManagerMenuPath, false,LibraryManagerMenuIndex)]
 		public static LibraryManagerWindow ShowWindow()
 		{
 			EditorWindow window = GetWindow(typeof(LibraryManagerWindow));
@@ -222,10 +223,15 @@ namespace MiProduction.BroAudio.AssetEditor
 
 		private void OnCreateAsset(string libraryName, AudioType audioType)
 		{
-			string fileName = libraryName + ".asset";
-			string path = GetFilePath(AssetPath, fileName);
+			if(string.IsNullOrEmpty(AssetOutputPath))
+			{
+				return;
+			}
 
-			var newAsset = ScriptableObject.CreateInstance(audioType.GetAssetTypeName());
+			string fileName = libraryName + ".asset";
+			string path = GetFilePath(AssetOutputPath, fileName);
+
+			var newAsset = ScriptableObject.CreateInstance(audioType.GetAssetType());
 			AssetDatabase.CreateAsset(newAsset, path);
 			AddToSoundManager(newAsset);
 			AssetDatabase.SaveAssets();
@@ -235,7 +241,7 @@ namespace MiProduction.BroAudio.AssetEditor
 			_allAssetGUIDs.Add(guid);
 			_assetEditorDict.Add(guid, CreateAssetEditor(guid, libraryName));
 
-			WriteJsonToFile(_allAssetGUIDs);	
+			WriteGuidToCoreData(_allAssetGUIDs);	
 		}
 
 		private bool TryGetCurrentAssetEditor(out AudioAssetEditor editor)
@@ -256,7 +262,7 @@ namespace MiProduction.BroAudio.AssetEditor
 		{
 			_gapDrawer.DrawLineCount = 0;
 
-			EditorGUILayout.LabelField("BroAudio".ToBold().SetColor(BroAudioGUISetting.MainTitleColor).SetSize(30), GUIStyleHelper.Instance.RichText);
+			EditorGUILayout.LabelField(BroAudio.ProjectName.ToBold().SetColor(BroAudioGUISetting.MainTitleColor).SetSize(30), GUIStyleHelper.Instance.RichText);
 			EditorGUILayout.Space(20f);
 
 			EditorGUILayout.BeginHorizontal();

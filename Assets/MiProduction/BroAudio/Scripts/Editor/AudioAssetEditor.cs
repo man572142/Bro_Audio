@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using static MiProduction.BroAudio.Utility;
-using static MiProduction.Extension.LoopExtension;
 using static MiProduction.Extension.EditorScriptingExtension;
 using MiProduction.BroAudio.Data;
 using UnityEditorInternal;

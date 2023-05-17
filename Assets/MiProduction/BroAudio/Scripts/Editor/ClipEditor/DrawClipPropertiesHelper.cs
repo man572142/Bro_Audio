@@ -79,7 +79,7 @@ namespace MiProduction.BroAudio.ClipEditor
 				{
 					GUI.DrawTexture(waveformRect, waveformTexture);
 				}
-				EditorGUI.DrawRect(waveformRect, WaveformMaskColor);
+				EditorGUI.DrawRect(waveformRect, ShadowMaskColor);
 			}
 
 			void DrawPlaybackButton(Rect clipViewRect)

@@ -7,39 +7,33 @@ namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
-		private const string _defaultRootPath = "Assets/MiProduction/BroAudio";
-		private const string _defaultLocalAssetPath = "AudioAssets";
-		public const string CoreDataFileName = "BroAudioData.json";
+		private const string _defaultAssetOutputPath = "Assets/MiProduction/BroAudio/AudioAssets";
+		public const string CoreDataResourcesPath = "Editor/BroAudioData";
 
 		public static readonly string UnityAssetsRootPath = Application.dataPath.Replace("/Assets", string.Empty);
 
-		private static string _rootPath = _defaultRootPath;
-		public static string RootPath 
+
+		private static string _assetOutputPath = string.Empty;
+		public static string AssetOutputPath
 		{
-			get => _rootPath;
-			set
+			get
 			{
-				if(!string.IsNullOrEmpty(_rootPath))
+				if(string.IsNullOrEmpty(_assetOutputPath) && TryGetCoreData(out SerializedCoreData coreData))
 				{
-					_rootPath = value.ToUnitySeparator();
+					if(string.IsNullOrWhiteSpace(coreData.AssetOutputPath))
+					{
+						_assetOutputPath = _defaultAssetOutputPath;
+					}
+					else
+					{
+						_assetOutputPath = coreData.AssetOutputPath;
+					}
 				}
+				return _assetOutputPath;
 			}
+			set => _assetOutputPath = value;
 		}
 
-		private static string _AssetLocalPath = _defaultLocalAssetPath;
-		public static string AssetPath
-		{
-			get => _AssetLocalPath.WithRootPath().EnsureDirectoryExists();
-			set
-			{
-				if(!string.IsNullOrEmpty(value))
-				{
-					_AssetLocalPath = value.Substring(RootPath.Length + 1);
-				}
-			}
-		}
-
-		public static string WithRootPath(this string localPath) => Combine(RootPath, localPath);
 		public static string GetFullPath(string path) => Combine(UnityAssetsRootPath,path);
 		public static string GetFilePath(string path,string fileName) => Combine(path,fileName);
 		public static string GetFullFilePath(string path,string fileName) => Combine(UnityAssetsRootPath, path, fileName);

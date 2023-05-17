@@ -9,7 +9,7 @@ using MiProduction.BroAudio.ClipEditor;
 
 namespace MiProduction.BroAudio.AssetEditor
 {
-	public abstract class AudioLibraryPropertyDrawer : PropertyDrawer, IEditorDrawLineCounter
+	public abstract class AudioLibraryPropertyDrawer : MiPropertyDrawer
 	{
 		protected const float ClipPreviewHeight = 100f;
 
@@ -18,42 +18,34 @@ namespace MiProduction.BroAudio.AssetEditor
 		private LibraryManagerWindow _editorWindow = null;
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper(ClipPreviewHeight);
 		
-		public float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
-		public int DrawLineCount { get; set; }
-		public bool IsEnable { get; private set; } = false;
+		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		protected abstract int BasePropertiesLineCount { get; }
 		protected abstract int ClipPropertiesLineCount { get; }
 
 		protected abstract void DrawAdditionalBaseProperties(Rect position, SerializedProperty property);
 		protected abstract void DrawAdditionalClipProperties(Rect position, SerializedProperty property);
 
-		public Rect GetRectAndIterateLine(Rect position)
+		protected override void OnEnable()
 		{
-			return EditorScriptingExtension.GetRectAndIterateLine(this, position);
-		}
-
-		private void Enable()
-		{
+			base.OnEnable();
 			_hasOpenedLibraryManager = EditorWindow.HasOpenInstances<LibraryManagerWindow>();
 
 			if(_hasOpenedLibraryManager)
 			{
 				_editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
-				_editorWindow.OnCloseLibraryManagerWindow += Disable;
-				_editorWindow.OnSelectAsset += Disable;
+				_editorWindow.OnCloseLibraryManagerWindow += OnDisable;
+				_editorWindow.OnSelectAsset += OnDisable;
 			}
-
-			IsEnable = true;
 		}
 
-		private void Disable()
+		private void OnDisable()
 		{
 			_reorderableClipsDict.Clear();
 
 			if(_editorWindow)
 			{
-				_editorWindow.OnCloseLibraryManagerWindow -= Disable;
-				_editorWindow.OnSelectAsset -= Disable;
+				_editorWindow.OnCloseLibraryManagerWindow -= OnDisable;
+				_editorWindow.OnSelectAsset -= OnDisable;
 				_editorWindow = null;
 			}
 			
@@ -64,17 +56,12 @@ namespace MiProduction.BroAudio.AssetEditor
 		#region Unity Entry Overrider
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			if (!IsEnable)
-			{
-				Enable();
-			}
-			else if(!_hasOpenedLibraryManager)
+			base.OnGUI(position,property,label);
+			if(!_hasOpenedLibraryManager)
 			{
 				return;
 			}
 			
-			EditorGUIUtility.wideMode = true;
-			DrawLineCount = 0;
 			SerializedProperty nameProp = property.FindPropertyRelative(GetAutoBackingFieldName(nameof(IAudioEntity.Name)));
 
 			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProp.stringValue);

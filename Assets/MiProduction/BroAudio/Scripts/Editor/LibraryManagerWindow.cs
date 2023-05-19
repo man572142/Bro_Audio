@@ -249,7 +249,7 @@ namespace MiProduction.BroAudio.Editor
 			editor = null;
 			if (_allAssetGUIDs.Count > 0)
 			{
-				int index = _assetReorderableList.index > 0 ? _assetReorderableList.index : 0;
+				int index = Mathf.Clamp(_assetReorderableList.index, 0, _allAssetGUIDs.Count - 1);
 				if (_assetEditorDict.TryGetValue(_allAssetGUIDs[index], out editor))
 				{
 					return true;

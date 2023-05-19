@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 680bf00f28c5cb040b3225278702641a, type: 3}
+  m_Name: UI
+  m_EditorClassIdentifier: 
+  Libraries:
+  - <Name>k__BackingField: Click
+    <ID>k__BackingField: 5320
+    Clips:
+    - OriginAudioClip: {fileID: 8300000, guid: 36f6e5db9298cdc47895ea46bafd83da, type: 3}
+      EditedAudioClip: {fileID: 0}
+      Volume: 1
+      StartPosition: 0.24
+      EndPosition: 0.67
+      FadeIn: 0.09
+      FadeOut: 3.05
+      Weight: 0
+    IsShowClipPreview: 0
+    MulticlipsPlayMode: 0
+    Delay: 0
+  - <Name>k__BackingField: Cancel
+    <ID>k__BackingField: 3503
+    Clips:
+    - OriginAudioClip: {fileID: 8300000, guid: f01906fd2e3f38c4ab44de31b889d57b, type: 3}
+      EditedAudioClip: {fileID: 0}
+      Volume: 1
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    - OriginAudioClip: {fileID: 8300000, guid: cad3c8da4d192fd43913ed2e261c91a7, type: 3}
+      EditedAudioClip: {fileID: 0}
+      Volume: 1
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    - OriginAudioClip: {fileID: 8300000, guid: 1d85fdfce9bcf4e46bfd67d8dea85f7e, type: 3}
+      EditedAudioClip: {fileID: 0}
+      Volume: 1
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    IsShowClipPreview: 1
+    MulticlipsPlayMode: 1
+    Delay: 0
+  <AssetName>k__BackingField: UI
+  _assetGUID: fdd980c906855ec4a96a0c04ad363d7a

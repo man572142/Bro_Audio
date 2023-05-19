@@ -6,8 +6,8 @@ public class AssetModificationEditor : UnityEditor.AssetModificationProcessor
 {
 	public static AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions option)
 	{
-		Utility.DeleteAssetRelativeData(assetPath);
-		if (EditorWindow.HasOpenInstances<LibraryManagerWindow>())
+		bool hasDelete = Utility.DeleteAssetRelativeData(assetPath);
+		if (hasDelete && EditorWindow.HasOpenInstances<LibraryManagerWindow>())
 		{
 			var editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
 			editorWindow.RemoveAssetEditor(AssetDatabase.AssetPathToGUID(assetPath));

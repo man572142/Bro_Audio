@@ -134,6 +134,12 @@ namespace MiProduction.BroAudio
 				return false;
 			}
 
+			if(clips == null || clips.Length == 0)
+			{
+				LogError($"{name} has no audio clips, please assign or delete the library.");
+				return false;
+			}
+
 			foreach (BroAudioClip clipData in clips)
 			{
 				if (clipData.AudioClip == null)

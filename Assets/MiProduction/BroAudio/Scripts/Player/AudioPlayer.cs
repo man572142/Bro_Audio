@@ -82,8 +82,16 @@ namespace MiProduction.BroAudio.Runtime
             get => AudioSource.outputAudioMixerGroup;
 			set
 			{
-                _volParaName = value.name;
-                AudioSource.outputAudioMixerGroup = value;
+                if(value != null)
+				{
+                    _volParaName = value.name;
+                    AudioSource.outputAudioMixerGroup = value;
+                }
+                else
+				{
+                    _volParaName = string.Empty;
+                    AudioSource.outputAudioMixerGroup = null;
+                }
 			}
 		}
 
@@ -269,7 +277,6 @@ namespace MiProduction.BroAudio.Runtime
             _clipVolume = 1f;
             _trackVolume = 1f;
             _mixerDecibelVolume = -1f;
-            _volParaName = string.Empty;
         }
 
         protected void Recycle()

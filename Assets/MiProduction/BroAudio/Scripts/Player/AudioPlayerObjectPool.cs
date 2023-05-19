@@ -25,20 +25,20 @@ namespace MiProduction.BroAudio.Runtime
 		public override void Recycle(AudioPlayer player)
 		{
 			_audioTrackPool.Recycle(player.AudioTrack);
+			player.AudioTrack = null;
 			base.Recycle(player);
 		}
 
 		protected override AudioPlayer CreateObject()
 		{
 			AudioPlayer newPlayer = GameObject.Instantiate(BaseObject, _parent);
-			newPlayer.AudioTrack = _audioTrackPool.Extract();
 			newPlayer.OnRecycle += Recycle;
 			return newPlayer;
 		}
 
 		protected override void DestroyObject(AudioPlayer instance)
 		{
-			GameObject.Destroy(instance);
+			GameObject.Destroy(instance.gameObject);
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace MiProduction.BroAudio.Runtime
 		{
 			if (_usedTrackCount >= _audioMixerGroups.Length)
 			{
-				Utility.LogError("Audio voices is not enough !");
+				Utility.LogWarning("You have reached the limit of audio voices count. The sound may not be audible until another voices become available!");
 				return null;
 			}
 

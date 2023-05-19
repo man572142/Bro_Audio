@@ -7,7 +7,7 @@ namespace MiProduction.BroAudio
 {
 	public static partial class Utility
 	{
-		public static void DeleteAssetRelativeData(string assetPath)
+		public static bool DeleteAssetRelativeData(string assetPath)
 		{
 			bool hasDeleted = DeleteJsonDataByAsset(AssetDatabase.AssetPathToGUID(assetPath));
 			if(hasDeleted && TryGetAssetByPath(assetPath, out var asset))
@@ -16,6 +16,7 @@ namespace MiProduction.BroAudio
 				ScriptableObject scriptableObject = asset as ScriptableObject;
 				RemoveDeletedAssetFromSoundManager(scriptableObject);
 			}
+			return hasDeleted;
 		}
 
 		public static void AddToSoundManager(ScriptableObject asset)

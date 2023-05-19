@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a8c0a979f92ae74f8e57de68f441a5a, type: 3}
+  m_Name: VO
+  m_EditorClassIdentifier: 
+  Libraries:
+  - <Name>k__BackingField: Man
+    <ID>k__BackingField: 799302696
+    Clips:
+    - OriginAudioClip: {fileID: 8300000, guid: 24302d986d3af6c4dbf3895d9deb3649, type: 3}
+      EditedAudioClip: {fileID: 0}
+      Volume: 1
+      StartPosition: 3.75
+      EndPosition: 0.5
+      FadeIn: 0.15
+      FadeOut: 0.29
+      Weight: 0
+    IsShowClipPreview: 1
+    MulticlipsPlayMode: 0
+    Delay: 0
+  - <Name>k__BackingField: HollowKnight
+    <ID>k__BackingField: 474540284
+    Clips:
+    - OriginAudioClip: {fileID: 8300000, guid: 138057753561787459cddb97dd2e52bc, type: 3}
+      EditedAudioClip: {fileID: 0}
+      Volume: 1
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 8
+    - OriginAudioClip: {fileID: 8300000, guid: ef1b1a7680b07b9438370bf81f0dcf9e, type: 3}
+      EditedAudioClip: {fileID: 0}
+      Volume: 1
+      StartPosition: 0
+      EndPosition: 1.33
+      FadeIn: 0
+      FadeOut: 0.21
+      Weight: 2
+    IsShowClipPreview: 1
+    MulticlipsPlayMode: 2
+    Delay: 0
+  <AssetName>k__BackingField: VO
+  _assetGUID: faedde79407627d42b84d36a636792d4

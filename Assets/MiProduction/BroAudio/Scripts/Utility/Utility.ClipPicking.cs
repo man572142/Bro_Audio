@@ -15,7 +15,7 @@ namespace MiProduction.BroAudio
 			if (clips == null || clips.Length <= 0)
 			{
 				LogError("There is no AudioClip in asset");
-				return default;
+				return null;
 			}
 			else if (clips.Length == 1)
 			{

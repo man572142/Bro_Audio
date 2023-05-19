@@ -18,18 +18,7 @@ namespace MiProduction.BroAudio.Data
 
         protected abstract string DisplayName { get; }
 
-        private BroAudioClip _clip;
-        public BroAudioClip Clip
-        {
-            get
-            {
-                if (_clip == null || _clip.IsNull())
-                {
-                    _clip = Clips.PickNewOne(MulticlipsPlayMode, ID);
-                }
-                return _clip;
-            }
-        }
+        public BroAudioClip Clip => Clips.PickNewOne(MulticlipsPlayMode, ID);
 
         public bool Validate(int index)
         {

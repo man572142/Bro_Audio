@@ -3,9 +3,9 @@ using UnityEngine;
 using MiProduction.BroAudio.Data;
 using MiProduction.BroAudio.Runtime;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.Editor
 {
-	public static partial class Utility
+	public static partial class BroEditorUtility
 	{
 		public static bool DeleteAssetRelativeData(string assetPath)
 		{

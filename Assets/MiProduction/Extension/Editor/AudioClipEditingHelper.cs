@@ -102,6 +102,7 @@ namespace MiProduction.Extension
 			int fadeSample = Mathf.RoundToInt(fadeTime * _originalClip.frequency * _originalClip.channels);
 			int endSample = startSample + fadeSample;
 
+			// TODO: Accept more ease type
 			float volFactor = isFadeIn ? 0f : 1f;
 			float volIncrement = 1f / fadeSample;
 			if (!isFadeIn)

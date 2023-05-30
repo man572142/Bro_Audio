@@ -1,8 +1,6 @@
 using System;
-using UnityEngine;
 using static MiProduction.Extension.LoopExtension;
 using MiProduction.BroAudio.Data;
-using MiProduction.BroAudio.Editor.Setting;
 
 namespace MiProduction.BroAudio
 {
@@ -173,25 +171,6 @@ namespace MiProduction.BroAudio
 					return typeof(VoiceOverLibraryAsset);
 				default:
 					return null;
-			}
-		}
-
-		public static Color GetAudioTypeColor(BroAudioType audioType)
-		{
-			switch (audioType)
-			{
-				case BroAudioType.Music:
-					return BroAudioGUISetting.DarkBlue;
-				case BroAudioType.UI:
-					return BroAudioGUISetting.GrassGreen;
-				case BroAudioType.Ambience:
-					return BroAudioGUISetting.LakeGreen;
-				case BroAudioType.SFX:
-					return BroAudioGUISetting.SoftRed;
-				case BroAudioType.VoiceOver:
-					return BroAudioGUISetting.Bronze;
-				default:
-					return Color.white;
 			}
 		}
 	}

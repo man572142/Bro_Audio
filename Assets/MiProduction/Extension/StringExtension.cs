@@ -14,6 +14,11 @@ namespace MiProduction.Extension
 			return $"<color=#{colorString}>{text}</color>";
 		}
 
+		public static string ToWhiteBold(this string text)
+		{
+			return text.ToBold().SetColor(Color.white);
+		}
+
 		public static string ToBold(this string text)
 		{
 			return $"<b>{text}</b>";

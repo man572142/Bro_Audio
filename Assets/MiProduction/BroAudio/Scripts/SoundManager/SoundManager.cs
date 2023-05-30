@@ -5,11 +5,12 @@ using UnityEngine.Audio;
 using MiProduction.BroAudio.Data;
 using MiProduction.Extension;
 using static MiProduction.BroAudio.Utility;
+using System.Linq;
 
 namespace MiProduction.BroAudio.Runtime
 {
     [DisallowMultipleComponent]
-    public class SoundManager : MonoBehaviour
+    public partial class SoundManager : MonoBehaviour
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
@@ -36,13 +37,11 @@ namespace MiProduction.BroAudio.Runtime
 
         public static SoundManager Instance = null;
 
-        public const int MusicPlayersCount = 2;
-
         [Header("Player")]
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
         private ObjectPool<AudioPlayer> _audioPlayerPool = null;
 
-        private StreamingPlayer _currMusicPlayer;
+        private AudioPlayer _currMusicPlayer;
 
         [SerializeField] AudioMixer _broAudioMixer = null;
 
@@ -57,21 +56,20 @@ namespace MiProduction.BroAudio.Runtime
 
         // 防止Haas Effect產生的Comb Filtering效應
         // TODO: 如果是每次播放都在不同聲道就不用
-        public Dictionary<int, bool> CombFilteringPreventer = new Dictionary<int, bool>();
+        private Dictionary<int, bool> _combFilteringPreventer = new Dictionary<int, bool>();
 
         public static Ease FadeInEase { get => Instance._fadeInEase; }
         public static Ease FadeOutEase { get => Instance._fadeOutEase; }
 
-
-        private void Awake()
+		private void Awake()
 		{
-            string nullRefLog = $"Please asign {{0}} in {nameof(SoundManager)}.prefab";
-            if(_broAudioMixer == null)
+            string nullRefLog = $"Please assign {{0}} in {nameof(SoundManager)}.prefab";
+            if(!_broAudioMixer)
 			{
                 LogError(string.Format(nullRefLog,"BroAudioMixer"));
                 return;
 			}
-            else if(_audioPlayerPrefab == null)
+            else if(!_audioPlayerPrefab)
 			{
                 LogError(string.Format(nullRefLog,"AudioPlayer.prefab"));
                 return;
@@ -80,11 +78,12 @@ namespace MiProduction.BroAudio.Runtime
             AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups("Track");
             _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,transform,5, mixerGroups);
 
-			InitSoundBank();
+            InitAuxTrack();
+			InitBank();
 		}
 
 		#region InitBank
-		private void InitSoundBank()
+		private void InitBank()
 		{
 			foreach (var scriptableObj in _soundAssets)
 			{
@@ -92,7 +91,7 @@ namespace MiProduction.BroAudio.Runtime
                 if (asset == null)
                     continue;
 
-                List<IAudioLibrary> dataList = System.Linq.Enumerable.ToList(asset.GetAllAudioLibraries());
+                List<IAudioLibrary> dataList = asset.GetAllAudioLibraries().ToList();
 				for (int s = 0; s < dataList.Count; s++)
 				{
 					var library = dataList[s];
@@ -133,7 +132,7 @@ namespace MiProduction.BroAudio.Runtime
 
             if (_currMusicPlayer == null)
             {
-                if(TryGetPlayerWithType<StreamingPlayer>(out var musicPlayer))
+                if(TryGetPlayerWithType<AudioPlayer>(out var musicPlayer))
 				{
                     _currMusicPlayer = musicPlayer;
                 }
@@ -163,7 +162,7 @@ namespace MiProduction.BroAudio.Runtime
                     _currMusicPlayer.Stop(() => _currMusicPlayer.Play(id,clip,pref));
                     break;
                 case Transition.CrossFade:
-                    if (TryGetPlayerWithType<StreamingPlayer>(out var otherPlayer))
+                    if (TryGetPlayerWithType<AudioPlayer>(out var otherPlayer))
                     {
                         _currMusicPlayer.Stop(() =>
                         {
@@ -196,27 +195,27 @@ namespace MiProduction.BroAudio.Runtime
 			return null;
 		}
 
-		public IAudioPlayer PlayOneShot(int id, float preventTime)
-        {
-            if(IsPlayable(id,_soundBank)&& TryGetPlayerWithType<OneShotPlayer>(out var player))
-            {
-                player.PlayOneShot(id, _soundBank[id].Clip, _soundBank[id].Delay);
-                StartCoroutine(PreventCombFiltering(id,preventTime));
-                return player;
-            }
-            return null;
-        }
+		//public IAudioPlayer PlayOneShot(int id, float preventTime)
+  //      {
+  //          if(IsPlayable(id,_soundBank)&& TryGetPlayerWithType<OneShotPlayer>(out var player))
+  //          {
+  //              player.PlayOneShot(id, _soundBank[id].Clip, _soundBank[id].Delay);
+  //              StartCoroutine(PreventCombFiltering(id,preventTime));
+  //              return player;
+  //          }
+  //          return null;
+  //      }
 
-        public IAudioPlayer PlayAtPoint(int id, Vector3 position, float preventTime)
-        {
-            if(IsPlayable(id,_soundBank) && TryGetPlayerWithType<OneShotPlayer>(out var player))
-            {
-                player.PlayAtPoint(id,_soundBank[id].Clip, _soundBank[id].Delay, position);
-                StartCoroutine(PreventCombFiltering(id,preventTime));
-                return player;
-            }
-            return null;
-        }
+  //      public IAudioPlayer PlayAtPoint(int id, Vector3 position, float preventTime)
+  //      {
+  //          if(IsPlayable(id,_soundBank) && TryGetPlayerWithType<OneShotPlayer>(out var player))
+  //          {
+  //              player.PlayAtPoint(id,_soundBank[id].Clip, _soundBank[id].Delay, position);
+  //              StartCoroutine(PreventCombFiltering(id,preventTime));
+  //              return player;
+  //          }
+  //          return null;
+  //      }
         #endregion
 
         #region Volume
@@ -248,7 +247,7 @@ namespace MiProduction.BroAudio.Runtime
             }
             else
 			{
-                LogWarning($"Set volume is failed. AudioID:{id} is not playing.");
+                LogWarning($"Set volume is failed. Audio:{id.ToName().ToWhiteBold()} is not playing.");
 			}
         }
 		#endregion
@@ -282,22 +281,24 @@ namespace MiProduction.BroAudio.Runtime
             }
             else
             {
-                LogWarning($"Stop playing is failed. AudioID:{id} is not playing.");
+                LogWarning($"Stop playing is failed. Audio:{id.ToName().ToWhiteBold()} is not playing.");
             }
         }
         #endregion
 
         private bool TryGetPlayerWithType<T>(out T player) where T : AudioPlayer
         {
-            player = _audioPlayerPool.Extract() as T;
+            var origin = _audioPlayerPool.Extract();
+            player = origin as T;
+
             return player != null;
         }
 
         private IEnumerator PreventCombFiltering(int id,float preventTime)
         {
-            CombFilteringPreventer[id] = true;
+            _combFilteringPreventer[id] = true;
             yield return new WaitForSeconds(preventTime);
-            CombFilteringPreventer[id] = false;
+            _combFilteringPreventer[id] = false;
         }
 
         #region NullChecker
@@ -318,7 +319,7 @@ namespace MiProduction.BroAudio.Runtime
             BroAudioType audioType = GetAudioType(id);
             if (audioType == BroAudioType.All)
             {
-                LogError($"AudioID:{id} is invalid");
+                LogError($"Audio:{id.ToName().ToWhiteBold()} is invalid");
                 return false;
             }
             else if (audioType == BroAudioType.Music &&_currMusicPlayer != null && id == _currMusicPlayer.ID)
@@ -327,9 +328,9 @@ namespace MiProduction.BroAudio.Runtime
                 return false;
             }
 
-            if (CombFilteringPreventer.TryGetValue(id, out bool isPreventing) && isPreventing)
+            if (_combFilteringPreventer.TryGetValue(id, out bool isPreventing) && isPreventing)
             {
-                LogWarning($"One of the plays of AudioID:{id} has been rejected due to the concern about sound quality. " +
+                LogWarning($"One of the plays of Audio:{id.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
                     $"Please avoid playing the same sound repeatedly in a very short period of time (e.g., playing it every other frame). " +
                     $"Check [BroAudio > Global Setting] for more information, or change the Haas Effect setting.");
                 return false;
@@ -338,6 +339,26 @@ namespace MiProduction.BroAudio.Runtime
             return true;
         }
         #endregion
+
+        public string GetNameByID(int id)
+		{
+            if(!Application.isPlaying)
+			{
+                LogError($"The method {"GetNameByID".ToWhiteBold()} is {"Runtime Only".ToBold().SetColor(Color.green)}");
+                return null;
+			}
+
+            string result = null;
+            if(_soundBank.TryGetValue(id,out var soundLibrary))
+			{
+                result = soundLibrary.Name;
+			}
+            else if(_musicBank.TryGetValue(id,out var musicLibrary))
+			{
+                result = musicLibrary.Name;
+			}
+            return result;
+        }
 
 #if UNITY_EDITOR
         public void AddAsset(ScriptableObject asset)

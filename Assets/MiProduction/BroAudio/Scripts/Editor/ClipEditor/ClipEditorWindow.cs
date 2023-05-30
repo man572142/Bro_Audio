@@ -4,7 +4,6 @@ using MiProduction.Extension;
 using System;
 using System.IO;
 using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
-
 namespace MiProduction.BroAudio.Editor
 {
 	public class ClipEditorWindow : MiEditorWindow
@@ -195,7 +194,7 @@ namespace MiProduction.BroAudio.Editor
 			if (GUI.Button(saveButton, new GUIContent("Save")))
 			{
 				string path = AssetDatabase.GetAssetPath(TargetClip);
-				string fullFilePath = Utility.GetFullPath(path);
+				string fullFilePath = BroEditorUtility.GetFullPath(path);
 
 				if (File.Exists(fullFilePath) && EditorUtility.DisplayDialog(ConfirmOverwriteTitle,ConfirmOverwriteMessage,"Yes","No"))
 				{

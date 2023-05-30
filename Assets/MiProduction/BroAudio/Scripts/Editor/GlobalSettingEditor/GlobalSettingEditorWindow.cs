@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using MiProduction.Extension;
 using static MiProduction.BroAudio.Utility;
+using static MiProduction.BroAudio.Editor.BroEditorUtility;
 using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
 
 namespace MiProduction.BroAudio.Editor.Setting
@@ -93,7 +94,7 @@ namespace MiProduction.BroAudio.Editor.Setting
 				{
 					openPath = Application.dataPath;
 				}
-				string newPath = EditorUtility.OpenFolderPanel(AssetOutputPathPanelTtile,openPath , "");
+				string newPath = UnityEditor.EditorUtility.OpenFolderPanel(AssetOutputPathPanelTtile,openPath , "");
 				if (!string.IsNullOrEmpty(newPath))
 				{
 					if (IsInProjectFolder(newPath))

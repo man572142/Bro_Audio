@@ -11,6 +11,7 @@ namespace MiProduction.BroAudio.Data
         public T[] Libraries;
 
 		public abstract BroAudioType AudioType { get; }
+#if UNITY_EDITOR
         [field: SerializeField] public string AssetName { get; set; }
 
         [SerializeField] private string _assetGUID;
@@ -29,6 +30,7 @@ namespace MiProduction.BroAudio.Data
                 _assetGUID = value;
 			}
         }
+#endif
 
         public IEnumerable<IAudioLibrary> GetAllAudioLibraries()
 		{

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static AudioConstant;
 
 namespace MiProduction.Extension
 {
@@ -35,14 +36,6 @@ namespace MiProduction.Extension
 
         // TODO: add to global setting
         public const float HaasEffectInSeconds = 0.04f;
-
-        public const float MinDecibelVolume = -80f;
-        public const float MaxDecibelVolume = 0f;
-        public const float MaxBoostDecibelVolume = 20f;
-
-        public const float MinVolume = 0.0001f;
-        public const float MaxVolume = 1f;
-        public const float MaxBoostVolume = 10f;
 
         public static float ToDecibel(this float vol)
         {  

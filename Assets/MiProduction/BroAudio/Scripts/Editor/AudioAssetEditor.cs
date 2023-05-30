@@ -1,13 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEditorInternal;
 using UnityEditor;
 using UnityEngine;
 using static MiProduction.BroAudio.Utility;
+using static MiProduction.BroAudio.Editor.BroEditorUtility;
 using static MiProduction.Extension.EditorScriptingExtension;
 using MiProduction.BroAudio.Data;
-using UnityEditorInternal;
 
 namespace MiProduction.BroAudio.Editor
 {

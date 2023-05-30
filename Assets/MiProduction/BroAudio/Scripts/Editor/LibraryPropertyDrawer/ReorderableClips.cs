@@ -163,7 +163,7 @@ namespace MiProduction.BroAudio.Editor
 		{
 			ReorderableList.defaultBehaviours.DoAddButton(list);
 			var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
-			Utility.ResetBroAudioClipSerializedProperties(clipProp);
+			BroEditorUtility.ResetBroAudioClipSerializedProperties(clipProp);
 
 			UpdatePlayMode();
 		}

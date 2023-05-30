@@ -28,14 +28,14 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <param name="id"></param>
         /// <param name="position">播放的座標</param>
-        public static IAudioPlayer Play(AudioID id, Vector3 position) => SoundManager.Instance.PlayAtPoint(id, position,AudioExtension.HaasEffectInSeconds);
+        //public static IAudioPlayer Play(AudioID id, Vector3 position) => SoundManager.Instance.PlayAtPoint(id, position,AudioExtension.HaasEffectInSeconds);
 
         /// <summary>
         /// 於場景中的指定地點播放
         /// </summary>
         /// <param name="id"></param>
         /// <param name="position">播放的座標</param>
-        public static IAudioPlayer Play(AudioID id, Vector3 position,float preventTime) => SoundManager.Instance.PlayAtPoint(id, position, preventTime);
+        //public static IAudioPlayer Play(AudioID id, Vector3 position,float preventTime) => SoundManager.Instance.PlayAtPoint(id, position, preventTime);
         #endregion
 
         #region Music

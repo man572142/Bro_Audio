@@ -5,6 +5,7 @@ using UnityEditor;
 using MiProduction.Extension;
 using UnityEditor.IMGUI.Controls;
 using MiProduction.BroAudio.Data;
+using MiProduction.BroAudio.Editor.Setting;
 
 namespace MiProduction.BroAudio.Editor
 {
@@ -76,7 +77,7 @@ namespace MiProduction.BroAudio.Editor
 			if (audioAsset != null && idProp.intValue > 0)
 			{
 				Rect audioTypeRect = EditorScriptingExtension.DissolveHorizontal(idRect, 0.7f);
-				EditorGUI.DrawRect(audioTypeRect, Utility.GetAudioTypeColor(audioAsset.AudioType));
+				EditorGUI.DrawRect(audioTypeRect, BroAudioGUISetting.GetAudioTypeColor(audioAsset.AudioType));
 				EditorGUI.LabelField(audioTypeRect, audioAsset.AudioType.ToString(), GUIStyleHelper.Instance.MiddleCenterText);
 			}
 

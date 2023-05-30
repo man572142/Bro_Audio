@@ -1,6 +1,8 @@
 using System.Collections;
 using UnityEngine;
 using MiProduction.BroAudio;
+using UnityEngine.Audio;
+using UnityEngine.UI;
 
 public class Sample : MonoBehaviour
 {
@@ -9,67 +11,63 @@ public class Sample : MonoBehaviour
     [SerializeField] AudioID _uiClick;
     [SerializeField] AudioID _uiCancel;
     [SerializeField] AudioID _voiceOver;
+    [SerializeField] AudioMixer _broMixer = null;
+
+    [SerializeField] Text _log = null;
 
     void Start()
     {
-        //StartCoroutine(Test());
     }
 
 	public void PlayMusicA()
 	{
-		if(_music1 > 0)
-		{
-            BroAudio.PlayMusic(_music1, Transition.Immediate);
-		}
-	}
+        BroAudio.PlayMusic(_music1, Transition.Immediate);
+    }
 
     public void PlayMusicB()
     {
-        if (_music2 > 0)
-        {
-            BroAudio.PlayMusic(_music2, Transition.CrossFade);
-        }
+        BroAudio.PlayMusic(_music2, Transition.CrossFade);
     }
 
     public void PlayUI()
 	{
-        if(_uiClick > 0)
-		{
-            BroAudio.Play(_uiClick);
-		}
-	}
+        BroAudio.Play(_uiClick).DuckOthers(0.3f, 0.1f);
+    }
 
     public void PlayUICancel()
 	{
-        if (_uiCancel > 0)
-        {
-            BroAudio.Play(_uiCancel);
-        }
+        BroAudio.Play(_uiCancel);
     }
 
     public void PlayVO()
 	{
-        if (_voiceOver > 0)
-        {
-            BroAudio.Play(_voiceOver);
-        }
+        BroAudio.Play(_voiceOver);
     }
 
     private IEnumerator Test()
 	{
-        Debug.Log("Test");
-        // 開始播放
-        //BroAudio.PlaySound((int)Cat.Meow);
-        // 5秒後
-        yield return new WaitForSeconds(5f);
+        _broMixer.SetFloat("Track1_Send", -25f);
+        _broMixer.SetFloat("Track2_Send", -80f);
         
-        // 在1秒內慢慢將音量降至50%
-        BroAudio.SetVolume(0.5f,1f ,BroAudioType.UI);
-        yield return new WaitForSeconds(1f);
+        
 
-        // 持續播放5秒
-        yield return new WaitForSeconds(5f);
-        // 結束播放
-        BroAudio.Stop(BroAudioType.UI);
-	}        
+        if(_broMixer.GetFloat("Track2_Send", out float level))
+		{
+            
+
+            while (level < 0f)
+			{
+                level += Time.deltaTime * 5f;
+                _broMixer.SetFloat("Track2_Send",level);
+                if (_log && _broMixer.GetFloat("Track2_Send", out float logLevel))
+                {
+                    _log.text = logLevel.ToString();
+                }
+
+                yield return null;
+			}
+		}
+
+        _broMixer.SetFloat("Track1_Send", 0f);
+    }        
 }

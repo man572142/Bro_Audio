@@ -4,10 +4,11 @@ using UnityEngine;
 using System.IO;
 using System;
 using UnityEditor;
+using static MiProduction.BroAudio.Utility;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.Editor
 {
-	public static partial class Utility
+	public static partial class BroEditorUtility
 	{
 		[Serializable]
 		public struct SerializedCoreData

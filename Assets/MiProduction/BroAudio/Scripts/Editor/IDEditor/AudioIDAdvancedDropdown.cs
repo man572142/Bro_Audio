@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor.IMGUI.Controls;
 using System;
 using System.Collections.Generic;
-using static MiProduction.BroAudio.Utility;
+using static MiProduction.BroAudio.Editor.BroEditorUtility;
 using UnityEditor;
 using MiProduction.BroAudio.Data;
 

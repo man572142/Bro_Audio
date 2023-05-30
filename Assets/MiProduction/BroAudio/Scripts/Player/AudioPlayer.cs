@@ -6,14 +6,25 @@ using UnityEngine.Audio;
 using MiProduction.Extension;
 using MiProduction.BroAudio.Data;
 using static MiProduction.Extension.AudioExtension;
+using static MiProduction.Extension.AnimationExtension;
 using static MiProduction.BroAudio.Utility;
+using System.Threading.Tasks;
 
 namespace MiProduction.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
 	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>
 	{
+        protected enum Fader
+		{
+            Clip,
+            Track,
+            MixerDecibel,
+		}
+
         public event Action<AudioPlayer> OnRecycle;
+
+        private const string ExclusiveModeParaName = "_Send";
 
         [SerializeField] protected AudioSource AudioSource = null;
         [SerializeField] protected AudioMixer AudioMixer;
@@ -23,7 +34,7 @@ namespace MiProduction.BroAudio.Runtime
         protected BroAudioClip CurrentClip;
 
         private string _volParaName = string.Empty;
-        private Coroutine _subVolumeControl;
+        private Coroutine _trackVolumeControl;
 
         // ClipVolume : 播放Clip的音量(0~1)，依不同的Clip有不同設定，而FadeIn/FadeOut也只作用在此值
         // TrackVolume : 音軌的音量(0~1)，也可算是此Player的音量，作用相當於混音的Fader
@@ -62,10 +73,6 @@ namespace MiProduction.BroAudio.Runtime
                     {
                         _mixerDecibelVolume = currentVol;
                     }
-                    else
-                    {
-                        LogError("Can't get exposed parameter in audio mixer,AudioMixerGroup's name and ExposedParameter's name should be the same");
-                    }
                 }
                 
                 return _mixerDecibelVolume;
@@ -82,17 +89,9 @@ namespace MiProduction.BroAudio.Runtime
             get => AudioSource.outputAudioMixerGroup;
 			set
 			{
-                if(value != null)
-				{
-                    _volParaName = value.name;
-                    AudioSource.outputAudioMixerGroup = value;
-                }
-                else
-				{
-                    _volParaName = string.Empty;
-                    AudioSource.outputAudioMixerGroup = null;
-                }
-			}
+                _volParaName = value != null ? value.name : string.Empty;
+                AudioSource.outputAudioMixerGroup = value;
+            }
 		}
 
         public bool IsPlaying { get; protected set; }
@@ -109,24 +108,36 @@ namespace MiProduction.BroAudio.Runtime
             }
             if (AudioMixer == null)
             {
+                //TODO: should warn the user . don't do auto assigning because outputAudioMixerGroup is null at the time
                 AudioMixer = AudioSource.outputAudioMixerGroup.audioMixer;
             }
-
-            OnStandOut += StandOutHandler;
-            OnLowPassOthers += LowPassHandler;
+            
             OnRecycle += ResetValue;
+            OnStopTweakingMainTrack += StopTweakingMainTrack;
         }
 
-        protected virtual void Start()
+		protected virtual void Start()
 		{
 
 		}
 
-		public virtual void Play(int id,BroAudioClip clip, PlaybackPreference pref, Action onFinishPlaying = null)
+        protected virtual void OnDestroy()
+        {
+            OnRecycle -= ResetValue;
+            OnStopTweakingMainTrack -= StopTweakingMainTrack;
+        }
+
+        public virtual void Play(int id,BroAudioClip clip, PlaybackPreference pref, Action onFinishPlaying = null)
         {
             ID = id;
             CurrentClip = clip;
-            PlayControlCoroutine = StartCoroutine(PlayControl(clip, pref, onFinishPlaying));
+            // Reset the Track's volume to default
+            ClipVolume = 0f;
+            // Delay 1ms to allow the chaining method to execute first
+            AsyncTaskExtension.DelayDoAction(AsyncTaskExtension.MillisecondInSeconds, () =>
+            {
+                 PlayControlCoroutine = StartCoroutine(PlayControl(clip, pref, onFinishPlaying));
+            });
         }
 
         public virtual void Stop()
@@ -138,7 +149,7 @@ namespace MiProduction.BroAudio.Runtime
         {
             if (IsStoping)
             {
-                LogWarning("The music player is already processing StopMusic !");
+                LogWarning("The AudioPlayer is already processing Stop.");
                 return;
             }
             StopControlCoroutine = StartCoroutine(StopControl(onFinishStopping));
@@ -147,61 +158,70 @@ namespace MiProduction.BroAudio.Runtime
 		public IAudioPlayer SetVolume(float vol,float fadeTime)
         {
             // 只動TrackVolume
-            _subVolumeControl.StopIn(this);
-            _subVolumeControl = StartCoroutine(SetTrackVolume(vol, fadeTime));
+            _trackVolumeControl.StopIn(this);
+            _trackVolumeControl = StartCoroutine(Fade(vol, fadeTime,Fader.Track));
             return this;
         }
 
-        private IEnumerator SetTrackVolume(float target, float fadeTime)
+
+        protected IEnumerator Fade(float targetVol,float duration,Fader fader)
         {
-            float start = TrackVolume;
-            float t = 0f;
-            while (t < 1f)
-            {
-                TrackVolume = Mathf.Lerp(start, target, t);
-                t += Time.deltaTime / fadeTime;
-                yield return null;
+            Func<float> GetVol = null;
+            Action<float> SetVol = null;
+
+			switch (fader)
+			{
+				case Fader.Clip:
+                    GetVol = () => ClipVolume;
+                    SetVol = (vol) => ClipVolume = vol; 
+					break;
+				case Fader.Track:
+                    GetVol = () => TrackVolume;
+                    SetVol = (vol) => TrackVolume = vol;
+					break;
+				case Fader.MixerDecibel:
+					break;
+			}
+
+			float startVol = GetVol();
+            Ease ease = startVol < targetVol ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
+
+            IEnumerable<float> volumes = GetLerpValuesPerFrame(startVol, targetVol, duration, ease);
+            if(volumes != null)
+			{
+                foreach(float vol in volumes)
+				{
+                    SetVol(vol);
+                    yield return null;
+				}
+			}
+		}
+
+		private IEnumerator PlayControl(BroAudioClip clip, PlaybackPreference setting, Action onFinishPlaying)
+        {
+            if(setting.Delay > 0)
+			{
+                yield return new WaitForSeconds(setting.Delay);
             }
-            TrackVolume = target;
-        }
-
-
-        protected IEnumerator Fade(float duration, float targetVolume)
-        {
-            float currentTime = 0;
-            float currentVol = ClipVolume;
-            float targetValue = Mathf.Clamp(targetVolume, MinVolume, MaxVolume);
-            Ease ease = currentVol < targetValue ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
-            float newVol = 0f;
-            while (currentTime < duration)
-            {
-                currentTime += Time.deltaTime;
-                newVol = Mathf.Lerp(currentVol, targetValue, (currentTime / duration).SetEase(ease));
-                ClipVolume = newVol;
-                yield return null;
-            }
-            yield break;
-        }
-
-        private IEnumerator PlayControl(BroAudioClip clip, PlaybackPreference setting, Action onFinishPlaying)
-        {
-            yield return new WaitForSeconds(setting.Delay);
+            //Don't Remove this ! It needs to reset the Exclusive track if there is a chain method. The same line in Play() only reset the Track .They are both necessary
             ClipVolume = 0f;
 
             AudioSource.clip = clip.AudioClip;
-            AudioSource.time = clip.StartPosition;
             float endTime = AudioSource.clip.length - clip.EndPosition;
-            AudioSource.loop = setting.IsLoop;
-            AudioSource.Play();
             IsPlaying = true;
+            Fader fader = Fader.Clip;
 
             do
             {
+                AudioSource.Stop();
+                AudioSource.time = clip.StartPosition;
+                AudioSource.Play();
+
                 #region FadeIn
                 if (clip.FadeIn > 0)
                 {
                     IsFadingIn = true;
-                    yield return StartCoroutine(Fade(clip.FadeIn, clip.Volume));
+                    yield return StartCoroutine(Fade(clip.Volume, clip.FadeIn, fader));
                     IsFadingIn = false;
                 }
                 else
@@ -215,7 +235,7 @@ namespace MiProduction.BroAudio.Runtime
                 {
                     yield return new WaitUntil(() => (endTime - AudioSource.time) <= clip.FadeOut);
                     IsFadingOut = true;
-                    yield return StartCoroutine(Fade(clip.FadeOut, 0f));
+                    yield return StartCoroutine(Fade(0f, clip.FadeOut, fader));
                     IsFadingOut = false;
                 }
                 else
@@ -233,7 +253,6 @@ namespace MiProduction.BroAudio.Runtime
         {
             if (ID <= 0 || !IsPlaying)
             {
-                EndPlaying();
                 onFinishStopping?.Invoke();
                 yield break;
             }
@@ -250,7 +269,7 @@ namespace MiProduction.BroAudio.Runtime
                 else
                 {
                     PlayControlCoroutine.StopIn(this);
-                    yield return StartCoroutine(Fade(CurrentClip.FadeOut, 0f));
+                    yield return StartCoroutine(Fade(0f, CurrentClip.FadeOut,Fader.Clip));
                 }
             }
             EndPlaying();
@@ -270,10 +289,23 @@ namespace MiProduction.BroAudio.Runtime
             Recycle();
         }
 
+        private void SetToExclusiveMode()
+		{
+            if(!string.IsNullOrEmpty(_volParaName))
+			{
+                _volParaName += ExclusiveModeParaName;
+            }
+            else
+			{
+                // TODO : add log
+                Debug.LogError("");
+			}
+		}
+
         private void ResetValue(AudioPlayer player)
         {
             ID = -1;
-            _subVolumeControl.StopIn(this);
+            _trackVolumeControl.StopIn(this);
             _clipVolume = 1f;
             _trackVolume = 1f;
             _mixerDecibelVolume = -1f;
@@ -283,83 +315,5 @@ namespace MiProduction.BroAudio.Runtime
         {
             OnRecycle?.Invoke(this);
         }
-
-        private void OnDestroy()
-		{
-            OnStandOut -= StandOutHandler;
-            OnLowPassOthers += LowPassHandler;
-        }
-
-    }
-
-	#region Stands Out
-	[RequireComponent(typeof(AudioSource))]
-    public partial class AudioPlayer : MonoBehaviour, IAudioPlayer,IRecyclable<AudioPlayer>
-    {
-        // All Audio Player will subscribe this static event
-        private static event Action<float, float, AudioPlayer> OnStandOut;
-
-        public IAudioPlayer StandsOut(float standoutRatio, float fadeTime = 0.5f)
-        {
-            if (standoutRatio < 0 || standoutRatio > 1)
-            {
-                LogError("Stand out volume ratio should be between 0 and 1");
-                return null;
-            }
-
-            OnStandOut?.Invoke(standoutRatio, fadeTime, this);
-            return this;
-        }
-
-        private void StandOutHandler(float standoutRatio, float fadeTime, AudioPlayer standoutPlayer)
-        {
-            // 要再控制Coroutine?
-            if (standoutPlayer == this)
-            {
-                StartCoroutine(StandsOutControl(standoutRatio, fadeTime, standoutPlayer));
-            }
-            else
-            {
-                StartCoroutine(StandsOutControl(1 - standoutRatio, fadeTime, standoutPlayer));
-            }
-        }
-
-        private IEnumerator StandsOutControl(float vol, float fadeTime, AudioPlayer standoutPlayer)
-        {
-            float origin = TrackVolume;
-
-            SetVolume(vol, fadeTime);
-
-            yield return _subVolumeControl;
-            yield return new WaitWhile(() => standoutPlayer.IsPlaying);
-
-            SetVolume(origin, fadeTime);
-        }
-    }
-    #endregion
-
-
-    #region LowPass Other
-    [RequireComponent(typeof(AudioSource))]
-    public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IRecyclable<AudioPlayer>
-    {
-        public const string LowPassExposedName = "_LowPass";
-        public const float DefaultLowPassFrequence = 300f;
-        private static event Action<float,float,AudioPlayer> OnLowPassOthers;
-
-        public IAudioPlayer LowPassOthers(float freq,float fadeTime)
-        {
-            OnLowPassOthers?.Invoke(freq,fadeTime,this);
-            return this;
-        }
-
-        public void LowPassHandler(float freq, float fadeTime,AudioPlayer player)
-		{
-            if(player != this)
-			{
-                AudioMixer.SetFloat(_volParaName + LowPassExposedName, freq < 0? DefaultLowPassFrequence: freq);
-            }
-		}
-    }
-    #endregion
+	}
 }

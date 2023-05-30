@@ -35,7 +35,7 @@ namespace MiProduction.BroAudio.Runtime
 		public override void Stop()
         {
             // 因為PlayOneShot沒辦法停，因此這裡是把音軌Mute掉
-            _stopCoroutine = StartCoroutine(Fade(CurrentClip.FadeOut,0f));
+            _stopCoroutine = StartCoroutine(Fade(0f, CurrentClip.FadeOut,Fader.Clip));
         }
 
 

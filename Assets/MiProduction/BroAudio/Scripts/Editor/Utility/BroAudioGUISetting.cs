@@ -32,5 +32,24 @@ namespace MiProduction.BroAudio.Editor.Setting
 		public static Color Bronze => new Color(0.8f, 0.6f, 0f, 0.3f);
 
 		public static Color UnityDefaultEditorColor => new Color(0.247f,0.247f,0.247f);
+
+		public static Color GetAudioTypeColor(BroAudioType audioType)
+		{
+			switch (audioType)
+			{
+				case BroAudioType.Music:
+					return DarkBlue;
+				case BroAudioType.UI:
+					return GrassGreen;
+				case BroAudioType.Ambience:
+					return LakeGreen;
+				case BroAudioType.SFX:
+					return SoftRed;
+				case BroAudioType.VoiceOver:
+					return Bronze;
+				default:
+					return Color.white;
+			}
+		}
 	}
 }

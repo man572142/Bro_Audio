@@ -1,14 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
 using MiProduction.BroAudio.Data;
 using static MiProduction.Extension.EditorScriptingExtension;
 
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.Editor
 {
-	public static partial class Utility
-	{
+	public static partial class BroEditorUtility
+    {
         public static void ResetBroAudioClipSerializedProperties(SerializedProperty property)
         {
             property.FindPropertyRelative(nameof(BroAudioClip.OriginAudioClip)).objectReferenceValue = null;

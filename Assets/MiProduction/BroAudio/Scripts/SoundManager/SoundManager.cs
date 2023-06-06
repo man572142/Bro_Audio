@@ -164,11 +164,8 @@ namespace MiProduction.BroAudio.Runtime
                 case Transition.CrossFade:
                     if (TryGetPlayerWithType<AudioPlayer>(out var otherPlayer))
                     {
-                        _currMusicPlayer.Stop(() =>
-                        {
-                            _audioPlayerPool.Recycle(_currMusicPlayer);
-                            _currMusicPlayer = otherPlayer;
-                        });
+                        _currMusicPlayer.Stop();
+                        _currMusicPlayer = otherPlayer;
                         otherPlayer.Play(id,clip,pref);
                     }
                     break;

@@ -98,7 +98,7 @@ namespace MiProduction.BroAudio.Runtime
 					break;
 			}
 
-			_mainTrackTweaking.StopIn(this);
+			this.SafeStopCoroutine(_mainTrackTweaking);
 			_mainTrackTweaking = StartCoroutine(SetTrackParameter(targetValue, fadeTime, ease, paraName));
 			return _mainTrackTweaking;
 		}

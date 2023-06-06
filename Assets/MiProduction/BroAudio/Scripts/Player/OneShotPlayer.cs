@@ -8,8 +8,6 @@ namespace MiProduction.BroAudio.Runtime
 {
     public class OneShotPlayer : AudioPlayer
     {
-        private Coroutine _stopCoroutine;
-
         protected override void Start()
         {
             ClipVolume = 1f;
@@ -20,22 +18,22 @@ namespace MiProduction.BroAudio.Runtime
 		{
             ID = id;
             CurrentClip = clip;
-			_stopCoroutine.StopIn(this);
-			StartCoroutine(PlayOneShot(clip, delay));
+
+            this.StartCoroutineAndReassign(PlayOneShot(clip, delay),ref PlaybackControlCoroutine);
 		}
 
 		public void PlayAtPoint(int id,BroAudioClip clip, float delay, Vector3 pos)
 		{
             ID = id;
             CurrentClip = clip;
-            _stopCoroutine.StopIn(this);
-			StartCoroutine(PlayInScene(clip, delay, pos));
-		}
+            this.StartCoroutineAndReassign(PlayInScene(clip, delay, pos), ref PlaybackControlCoroutine);
+
+        }
 
 		public override void Stop()
         {
             // 因為PlayOneShot沒辦法停，因此這裡是把音軌Mute掉
-            _stopCoroutine = StartCoroutine(Fade(0f, CurrentClip.FadeOut,Fader.Clip));
+            this.StartCoroutineAndReassign(Fade(0f, CurrentClip.FadeOut, VolumeControl.Clip), ref PlaybackControlCoroutine);
         }
 
 

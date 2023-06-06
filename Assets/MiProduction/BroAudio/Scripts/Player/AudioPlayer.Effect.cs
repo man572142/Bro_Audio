@@ -24,7 +24,7 @@ namespace MiProduction.BroAudio.Runtime
 
         private void StopTweakingMainTrack()
         {
-            _mainTrackTweaking.StopIn(this);
+            this.SafeStopCoroutine(_mainTrackTweaking);
         }
 
         /// <summary>

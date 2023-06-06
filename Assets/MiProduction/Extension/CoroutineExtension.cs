@@ -7,7 +7,7 @@ namespace MiProduction.Extension
 {
     public static class CoroutineExtension
     {
-        public static void StopIn(this Coroutine coroutine, MonoBehaviour source)
+        public static void SafeStopCoroutine(this MonoBehaviour source, Coroutine coroutine)
         {
             if (coroutine != null)
             {
@@ -15,5 +15,11 @@ namespace MiProduction.Extension
             }
         }
 
+        public static Coroutine StartCoroutineAndReassign(this MonoBehaviour source, IEnumerator enumerator, ref Coroutine coroutine)
+        {
+            source.SafeStopCoroutine(coroutine);
+            coroutine = source.StartCoroutine(enumerator);
+            return coroutine;
+        }
     } 
 }

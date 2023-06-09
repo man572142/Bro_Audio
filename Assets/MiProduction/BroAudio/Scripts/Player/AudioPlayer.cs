@@ -7,7 +7,6 @@ using MiProduction.Extension;
 using MiProduction.BroAudio.Data;
 using static MiProduction.Extension.AudioExtension;
 using static MiProduction.Extension.AnimationExtension;
-using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Runtime
 {
@@ -20,8 +19,20 @@ namespace MiProduction.BroAudio.Runtime
             Track,
             MixerDecibel,
 		}
+
+        protected enum Command
+        {
+            None,
+            Play,
+            Stop,
+        }
         public event Action<AudioPlayer> OnRecycle;
 
+        public const float UseClipFadeSetting = -1f;
+        public const float Immediate = 0f;
+        public const float DefaultClipVolume = 0f;
+        public const float DefaultTrackVolume = 1f;
+        public const float DefaultMixerDecibelVolume = int.MinValue;
         private const string ExclusiveModeParaName = "_Send";
 
         [SerializeField] protected AudioSource AudioSource = null;
@@ -33,6 +44,7 @@ namespace MiProduction.BroAudio.Runtime
         protected Coroutine RecycleCoroutine;
 
         protected BroAudioClip CurrentClip;
+        protected Command LatestCommand = Command.None;
 
         private string _volParaName = string.Empty;
         
@@ -41,7 +53,7 @@ namespace MiProduction.BroAudio.Runtime
         // TrackVolume : 音軌的音量(0~1)，也可算是此Player的音量，作用相當於混音的Fader
         // MixerDecibelVolume 實際在AudioMixer上的分貝數
 
-        private float _clipVolume = 1f;
+        private float _clipVolume = DefaultClipVolume;
         public float ClipVolume
         {
             get => _clipVolume;
@@ -52,7 +64,7 @@ namespace MiProduction.BroAudio.Runtime
             }
         }
 
-        private float _trackVolume = 1f;
+        private float _trackVolume = DefaultTrackVolume;
         public float TrackVolume
         {
             get => _trackVolume;
@@ -63,12 +75,12 @@ namespace MiProduction.BroAudio.Runtime
             }
         }
         
-        private float _mixerDecibelVolume = -1;
+        private float _mixerDecibelVolume = DefaultMixerDecibelVolume;
         public float MixerDecibelVolume
         {
             get
             {
-                if(_mixerDecibelVolume < 0)
+                if(_mixerDecibelVolume == DefaultMixerDecibelVolume)
                 {
                     if (AudioMixer.GetFloat(_volParaName, out float currentVol))
                     {
@@ -97,7 +109,7 @@ namespace MiProduction.BroAudio.Runtime
 		}
 
         public bool IsPlaying { get; protected set; }
-        public bool IsStoping { get; protected set; }
+        public bool IsStopping { get; protected set; }
         public bool IsFadingOut { get; protected set; }
         public bool IsFadingIn { get; protected set; }
 		public int ID { get; protected set; }
@@ -114,54 +126,16 @@ namespace MiProduction.BroAudio.Runtime
                 AudioMixer = AudioSource.outputAudioMixerGroup.audioMixer;
             }
             
-            OnRecycle += ResetValue;
             OnStopTweakingMainTrack += StopTweakingMainTrack;
         }
 
 		protected virtual void Start()
 		{
-
 		}
 
         protected virtual void OnDestroy()
         {
-            OnRecycle -= ResetValue;
             OnStopTweakingMainTrack -= StopTweakingMainTrack;
-        }
-
-        public virtual void Play(int id,BroAudioClip clip, PlaybackPreference pref, Action onFinishPlaying = null)
-        {
-            ID = id;
-            CurrentClip = clip;
-            // Reset the volume of the AudioTrack that has been assigned on this Player
-            ClipVolume = 0f;
-
-            IsStoping = false;
-            this.SafeStopCoroutine(RecycleCoroutine);
-
-            // Delay 1ms to allow the chaining method to execute before playing
-            AsyncTaskExtension.DelayDoAction(AsyncTaskExtension.MillisecondInSeconds, () =>
-            {
-                // TODO: 如果已經IsPlaying，則重播?
-                this.SafeStopCoroutine(FadeControlCoroutine);
-                this.StartCoroutineAndReassign(PlayControl(clip, pref, onFinishPlaying),ref PlaybackControlCoroutine);
-            });
-        }
-
-        public virtual void Stop()
-		{
-            Stop(null);
-		}
-
-        public virtual void Stop(Action onFinishStopping)
-        {
-			if (IsStoping)
-			{
-                // TODO: 除非想要立即停止
-				return;
-			}
-            this.SafeStopCoroutine(FadeControlCoroutine);
-            this.StartCoroutineAndReassign(StopControl(onFinishStopping), ref PlaybackControlCoroutine);
         }
 
 		public IAudioPlayer SetVolume(float vol,float fadeTime)
@@ -171,7 +145,6 @@ namespace MiProduction.BroAudio.Runtime
             TrackVolumeControlCoroutine = StartCoroutine(Fade(vol, fadeTime,VolumeControl.Track));
             return this;
         }
-
 
         protected IEnumerator Fade(float targetVol,float duration,VolumeControl fader)
         {
@@ -206,7 +179,38 @@ namespace MiProduction.BroAudio.Runtime
 			}
 		}
 
-		private IEnumerator PlayControl(BroAudioClip clip, PlaybackPreference setting, Action onFinishPlaying)
+        public virtual void Play(int id, BroAudioClip clip, PlaybackPreference pref)
+        {
+            LatestCommand = Command.Play;
+            ID = id;
+            CurrentClip = clip;
+            // Reset the volume of the AudioTrack that has been assigned on this Player
+            ClipVolume = 0f;
+
+            IsStopping = false;
+            this.SafeStopCoroutine(RecycleCoroutine);
+
+            ExecuteAfterChainingMethod(() => 
+            {
+                if(LatestCommand == Command.Play)
+                {
+                    this.SafeStopCoroutine(FadeControlCoroutine);
+                    this.StartCoroutineAndReassign(PlayControl(clip, pref), ref PlaybackControlCoroutine);
+                }
+                else
+                {
+                    EndPlaying();
+                }
+            });
+        }
+
+        private void ExecuteAfterChainingMethod(Action action)
+        {
+            AsyncTaskExtension.DelayDoAction(AsyncTaskExtension.MillisecondInSeconds,action);
+        }
+
+
+        private IEnumerator PlayControl(BroAudioClip clip, PlaybackPreference setting)
         {
             if(setting.Delay > 0)
 			{
@@ -227,10 +231,10 @@ namespace MiProduction.BroAudio.Runtime
                 IsPlaying = true;
 
                 #region FadeIn
-                if (clip.FadeIn > 0)
+                if (HasFading(clip.FadeIn,setting.FadeIn,out float fadeIn))
                 {
                     IsFadingIn = true;
-                    yield return this.StartCoroutineAndReassign(Fade(clip.Volume, clip.FadeIn, fader), ref FadeControlCoroutine);
+                    yield return this.StartCoroutineAndReassign(Fade(clip.Volume, fadeIn, fader), ref FadeControlCoroutine);
                     IsFadingIn = false;
                 }
                 else
@@ -240,25 +244,40 @@ namespace MiProduction.BroAudio.Runtime
                 #endregion
 
                 #region FadeOut
-                if (clip.FadeOut > 0)
+                if (HasFading(clip.FadeOut,setting.FadeOut,out float fadeOut))
                 {
                     yield return new WaitUntil(() => (endTime - AudioSource.time) <= clip.FadeOut);
                     IsFadingOut = true;
-                    yield return this.StartCoroutineAndReassign(Fade(0f, clip.FadeOut, fader),ref FadeControlCoroutine) ;
+                    yield return this.StartCoroutineAndReassign(Fade(0f, fadeOut, fader),ref FadeControlCoroutine) ;
                     IsFadingOut = false;
                 }
                 else
                 {
-                    yield return new WaitUntil(() => endTime <= AudioSource.time);
+                    yield return new WaitUntil(() => AudioSource.time >= endTime);
                 }
                 #endregion
             } while (setting.IsLoop);
 
             EndPlaying();
-            onFinishPlaying?.Invoke();
         }
 
-        private IEnumerator StopControl(Action onFinishStopping)
+        public virtual void Stop(float fadeOut,Action onFinishStopping)
+        {
+            if (IsStopping && fadeOut != Immediate)
+            {
+                return;
+            }
+            LatestCommand = Command.Stop;
+            this.SafeStopCoroutine(FadeControlCoroutine);
+            this.StartCoroutineAndReassign(StopControl(onFinishStopping, fadeOut), ref PlaybackControlCoroutine);
+        }
+		#region Stop Overloads
+		public virtual void Stop() => Stop(UseClipFadeSetting);
+        public virtual void Stop(float fadeOut) => Stop(fadeOut, null);
+        public virtual void Stop(Action onFinishStopping) => Stop(UseClipFadeSetting, onFinishStopping);
+		#endregion
+
+		private IEnumerator StopControl(Action onFinishStopping,float overrideFade)
         {
             if (ID <= 0 || !IsPlaying)
             {
@@ -266,35 +285,49 @@ namespace MiProduction.BroAudio.Runtime
                 yield break;
             }
 
-            IsStoping = true;
-            if (CurrentClip.FadeOut > 0)
+            IsStopping = true;
+            if (HasFading(CurrentClip.FadeOut,overrideFade,out float fadeTime))
             {
                 if (IsFadingOut)
                 {
-                    // 目前設計成:如果原有的聲音已經在FadeOut了，就等它FadeOut不強制停止
-                    AudioSource.loop = false;
-                    yield return new WaitUntil(() => AudioSource.clip.length == AudioSource.time);
+                    // 如果已經在FadeOut了(也就是剛剛的Play已快結束)，就等它FadeOut不強制停止
+                    float endTime = AudioSource.clip.length - CurrentClip.EndPosition;
+                    yield return new WaitUntil(() => AudioSource.time >= endTime);
                 }
                 else
                 {
-                    yield return this.StartCoroutineAndReassign(Fade(0f, CurrentClip.FadeOut, VolumeControl.Clip), ref FadeControlCoroutine);
+                    yield return this.StartCoroutineAndReassign(Fade(0f, fadeTime, VolumeControl.Clip), ref FadeControlCoroutine);
                 }
             }
             EndPlaying();
             onFinishStopping?.Invoke();
         }
 
+        private bool HasFading(float clipFade,float overrideFade,out float fadeTime)
+		{
+            fadeTime = clipFade;
+            if(overrideFade != UseClipFadeSetting)
+			{
+                fadeTime = overrideFade;
+			}
+            return fadeTime > Immediate;
+		}
+
         private void EndPlaying()
         {
             ID = -1;
-            //StopAllTransportControl();
-            ClipVolume = 0f;
+            _clipVolume = DefaultClipVolume;
+            _trackVolume = DefaultTrackVolume;
+            _mixerDecibelVolume = DefaultMixerDecibelVolume;
+
             AudioSource.Stop();
             AudioSource.clip = null;
-            AudioSource.loop = false;
+            CurrentClip = null;
             IsPlaying = false;
-            IsStoping = false;
+            IsStopping = false;
+            LatestCommand = Command.None;
             this.StartCoroutineAndReassign(Recycle(),ref RecycleCoroutine);
+            this.SafeStopCoroutine(TrackVolumeControlCoroutine);
         }
 
         private void SetToExclusiveMode()
@@ -310,18 +343,10 @@ namespace MiProduction.BroAudio.Runtime
 			}
 		}
 
-        private void ResetValue(AudioPlayer player)
-        {
-            ID = -1;
-            this.SafeStopCoroutine(TrackVolumeControlCoroutine);
-            _clipVolume = 1f;
-            _trackVolume = 1f;
-            _mixerDecibelVolume = -1f;
-        }
-
         protected IEnumerator Recycle()
         {
             yield return null;
+            MixerDecibelVolume = AudioConstant.MinDecibelVolume;
             OnRecycle?.Invoke(this);
         }
 	}

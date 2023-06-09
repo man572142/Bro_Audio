@@ -1762,22 +1762,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _music1:
-    ID: 64
-    SourceAsset: {fileID: 11400000, guid: 400e62090b78cdd459172c46644e2558, type: 2}
+    ID: 90
+    SourceAsset: {fileID: 11400000, guid: 5d00903d941fff940921056feda97925, type: 2}
   _music2:
-    ID: 3988
-    SourceAsset: {fileID: 11400000, guid: b32e9f2f39a4cdd40aeff4c7255bed96, type: 2}
+    ID: 15
+    SourceAsset: {fileID: 11400000, guid: 5d00903d941fff940921056feda97925, type: 2}
   _uiClick:
-    ID: 3988
-    SourceAsset: {fileID: 11400000, guid: b32e9f2f39a4cdd40aeff4c7255bed96, type: 2}
+    ID: -1
+    SourceAsset: {fileID: 0}
   _uiCancel:
     ID: -1
     SourceAsset: {fileID: 0}
   _voiceOver:
     ID: -1
     SourceAsset: {fileID: 0}
-  _broMixer: {fileID: 24100000, guid: fbb1400fd876dd84dbdbfeb7add01ba9, type: 2}
-  _log: {fileID: 786270579}
 --- !u!4 &1317931363
 Transform:
   m_ObjectHideFlags: 0

@@ -41,8 +41,6 @@ namespace MiProduction.BroAudio.Runtime
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
         private ObjectPool<AudioPlayer> _audioPlayerPool = null;
 
-        private AudioPlayer _currMusicPlayer;
-
         [SerializeField] AudioMixer _broAudioMixer = null;
 
         [Header("Fading Setting")]
@@ -124,97 +122,6 @@ namespace MiProduction.BroAudio.Runtime
 		}
 		#endregion
 
-		#region Play
-		public IAudioPlayer PlayMusic(int id,Transition transition, float preventTime)
-        {
-            if (!IsPlayable(id,_musicBank))
-                return null;
-
-            if (_currMusicPlayer == null)
-            {
-                if(TryGetPlayerWithType<AudioPlayer>(out var musicPlayer))
-				{
-                    _currMusicPlayer = musicPlayer;
-                }
-                else
-				{
-                    return null;
-				}
-            }
-
-            BroAudioClip clip = _musicBank[id].Clip;
-            PlaybackPreference pref = new PlaybackPreference(_musicBank[id].Loop);
-
-            switch (transition)
-            {
-                case Transition.Immediate:
-                    _currMusicPlayer.Stop();
-                    _currMusicPlayer.Play(id,clip, pref);
-                    break;
-                case Transition.FadeOutThenFadeIn:
-                    _currMusicPlayer.Stop(() => _currMusicPlayer.Play(id,clip,pref));
-                    break;
-                case Transition.OnlyFadeInNew:
-                    _currMusicPlayer.Stop();
-                    _currMusicPlayer.Play(id,clip,pref);
-                    break;
-                case Transition.OnlyFadeOutCurrent:
-                    _currMusicPlayer.Stop(() => _currMusicPlayer.Play(id,clip,pref));
-                    break;
-                case Transition.CrossFade:
-                    if (TryGetPlayerWithType<AudioPlayer>(out var otherPlayer))
-                    {
-                        _currMusicPlayer.Stop();
-                        _currMusicPlayer = otherPlayer;
-                        otherPlayer.Play(id,clip,pref);
-                    }
-                    break;
-            }
-            StartCoroutine(PreventCombFiltering(id,preventTime));
-            return _currMusicPlayer;
-        }
-
-        public IAudioPlayer Play(int id,float preventTime)
-        {
-            BroAudioType audioType = GetAudioType(id);
-            if (audioType == BroAudioType.Music || audioType == BroAudioType.Ambience)
-			{
-                return PlayMusic(id, Transition.Immediate,preventTime);
-            }
-
-            if (IsPlayable(id,_soundBank) && TryGetPlayerWithType<AudioPlayer>(out var player))
-            {
-                PlaybackPreference setting = new PlaybackPreference(_soundBank[id].Delay);
-                player.Play(id, _soundBank[id].Clip,setting);
-                StartCoroutine(PreventCombFiltering(id,preventTime));
-                return player;
-			}
-			return null;
-		}
-
-		//public IAudioPlayer PlayOneShot(int id, float preventTime)
-  //      {
-  //          if(IsPlayable(id,_soundBank)&& TryGetPlayerWithType<OneShotPlayer>(out var player))
-  //          {
-  //              player.PlayOneShot(id, _soundBank[id].Clip, _soundBank[id].Delay);
-  //              StartCoroutine(PreventCombFiltering(id,preventTime));
-  //              return player;
-  //          }
-  //          return null;
-  //      }
-
-  //      public IAudioPlayer PlayAtPoint(int id, Vector3 position, float preventTime)
-  //      {
-  //          if(IsPlayable(id,_soundBank) && TryGetPlayerWithType<OneShotPlayer>(out var player))
-  //          {
-  //              player.PlayAtPoint(id,_soundBank[id].Clip, _soundBank[id].Delay, position);
-  //              StartCoroutine(PreventCombFiltering(id,preventTime));
-  //              return player;
-  //          }
-  //          return null;
-  //      }
-        #endregion
-
         #region Volume
         public void SetVolume(float vol, float fadeTime, BroAudioType audioType)
 		{
@@ -283,11 +190,22 @@ namespace MiProduction.BroAudio.Runtime
         }
         #endregion
 
-        private bool TryGetPlayerWithType<T>(out T player) where T : AudioPlayer
+        private bool TryGetPlayer(out AudioPlayer player)
         {
-            var origin = _audioPlayerPool.Extract();
-            player = origin as T;
+            player = _audioPlayerPool.Extract();
+            return player != null;
+        }
 
+        private bool TryGetPlayerWithType<T>(out T player) where T : AudioPlayerDecorator,new()
+        {
+            player = null;
+            var origin = _audioPlayerPool.Extract();
+
+            if(origin != null)
+			{
+                player = new T();
+                player.Init(origin);
+			}
             return player != null;
         }
 
@@ -319,11 +237,11 @@ namespace MiProduction.BroAudio.Runtime
                 LogError($"Audio:{id.ToName().ToWhiteBold()} is invalid");
                 return false;
             }
-            else if (audioType == BroAudioType.Music &&_currMusicPlayer != null && id == _currMusicPlayer.ID)
-            {
-                LogWarning("The music you want to play is already playing");
-                return false;
-            }
+            //else if (audioType == BroAudioType.Music &&_currMusicPlayer != null && id == _currMusicPlayer.ID)
+            //{
+            //    LogWarning("The music you want to play is already playing");
+            //    return false;
+            //}
 
             if (_combFilteringPreventer.TryGetValue(id, out bool isPreventing) && isPreventing)
             {

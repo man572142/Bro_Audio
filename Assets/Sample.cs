@@ -3,6 +3,7 @@ using UnityEngine;
 using MiProduction.BroAudio;
 using UnityEngine.Audio;
 using UnityEngine.UI;
+using System;
 
 public class Sample : MonoBehaviour
 {
@@ -11,21 +12,52 @@ public class Sample : MonoBehaviour
     [SerializeField] AudioID _uiClick;
     [SerializeField] AudioID _uiCancel;
     [SerializeField] AudioID _voiceOver;
-    [SerializeField] AudioMixer _broMixer = null;
-
-    [SerializeField] Text _log = null;
 
     void Start()
     {
+        StartCoroutine(PlayTest());
+    }
+
+    private IEnumerator PlayTest()
+    {
+        PlayMusicA();
+        yield return new WaitForSeconds(2f);
+
+        PlayMusicB();
+        yield return new WaitForSeconds(2f);
+
+        PlayMusicA();
+        yield return new WaitForSeconds(2f);
+
+        PlayMusicB();
+        yield return new WaitForSeconds(2f);
+
+        PlayMusicA();
+        yield return new WaitForSeconds(2f);
+        PlayMusicB();
+
+        yield return new WaitForSeconds(2f);
+
+        PlayMusicA();
+        yield return new WaitForSeconds(2f);
+
+        PlayMusicB();
+        yield return new WaitForSeconds(2f);
+
+        PlayMusicA();
+        yield return new WaitForSeconds(2f);
     }
 
 	public void PlayMusicA()
 	{
-        BroAudio.PlayMusic(_music1, Transition.Immediate);
+        Debug.Log("A Default");
+        BroAudio.PlayMusic(_music1, Transition.Default);
     }
 
-    public void PlayMusicB()
+
+	public void PlayMusicB()
     {
+        Debug.Log("B CrossFade");
         BroAudio.PlayMusic(_music2, Transition.CrossFade);
     }
 
@@ -43,31 +75,4 @@ public class Sample : MonoBehaviour
 	{
         BroAudio.Play(_voiceOver);
     }
-
-    private IEnumerator Test()
-	{
-        _broMixer.SetFloat("Track1_Send", -25f);
-        _broMixer.SetFloat("Track2_Send", -80f);
-        
-        
-
-        if(_broMixer.GetFloat("Track2_Send", out float level))
-		{
-            
-
-            while (level < 0f)
-			{
-                level += Time.deltaTime * 5f;
-                _broMixer.SetFloat("Track2_Send",level);
-                if (_log && _broMixer.GetFloat("Track2_Send", out float logLevel))
-                {
-                    _log.text = logLevel.ToString();
-                }
-
-                yield return null;
-			}
-		}
-
-        _broMixer.SetFloat("Track1_Send", 0f);
-    }        
 }

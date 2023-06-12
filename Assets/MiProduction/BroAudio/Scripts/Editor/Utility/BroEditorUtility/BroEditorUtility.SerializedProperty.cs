@@ -10,8 +10,7 @@ namespace MiProduction.BroAudio.Editor
     {
         public static void ResetBroAudioClipSerializedProperties(SerializedProperty property)
         {
-            property.FindPropertyRelative(nameof(BroAudioClip.OriginAudioClip)).objectReferenceValue = null;
-            property.FindPropertyRelative(nameof(BroAudioClip.EditedAudioClip)).objectReferenceValue = null;
+            property.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = null;
             property.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = 1f;
             property.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue = 0f;
             property.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue = 0f;

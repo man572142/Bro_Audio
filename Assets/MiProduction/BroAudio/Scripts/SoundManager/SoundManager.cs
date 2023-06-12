@@ -37,6 +37,8 @@ namespace MiProduction.BroAudio.Runtime
 
         public static SoundManager Instance = null;
 
+        private const int DefaultPlayerPoolSize = 5;
+
         [Header("Player")]
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
         private ObjectPool<AudioPlayer> _audioPlayerPool = null;
@@ -49,8 +51,7 @@ namespace MiProduction.BroAudio.Runtime
 
         [Header("Library")]
         [SerializeField] private List<ScriptableObject> _soundAssets = new List<ScriptableObject>();
-        private Dictionary<int, SoundLibrary> _soundBank = new Dictionary<int, SoundLibrary>();
-        private Dictionary<int, MusicLibrary> _musicBank = new Dictionary<int, MusicLibrary>();
+        private Dictionary<int, IAudioLibrary> _audioBank = new Dictionary<int, IAudioLibrary>();
 
         // 防止Haas Effect產生的Comb Filtering效應
         // TODO: 如果是每次播放都在不同聲道就不用
@@ -74,7 +75,7 @@ namespace MiProduction.BroAudio.Runtime
 			}
 
             AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups("Track");
-            _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,transform,5, mixerGroups);
+            _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,transform, DefaultPlayerPoolSize, mixerGroups);
 
             InitAuxTrack();
 			InitBank();
@@ -90,32 +91,15 @@ namespace MiProduction.BroAudio.Runtime
                     continue;
 
                 List<IAudioLibrary> dataList = asset.GetAllAudioLibraries().ToList();
-				for (int s = 0; s < dataList.Count; s++)
+				for (int i = 0; i < dataList.Count; i++)
 				{
-					var library = dataList[s];
-					if (!library.Validate(s))
+					var library = dataList[i];
+					if (!library.Validate(i))
                         continue;
 
-                    switch (asset.AudioType)
+                    if (!_audioBank.ContainsKey(library.ID))
                     {
-                        case BroAudioType.Music:
-                        case BroAudioType.Ambience:
-                            if (!_musicBank.ContainsKey(library.ID))
-                            {
-                                _musicBank.Add(library.ID, (MusicLibrary)library);
-                            }
-                            break;
-                        case BroAudioType.UI:
-                        case BroAudioType.SFX:
-                        case BroAudioType.VoiceOver:
-                            if (!_soundBank.ContainsKey(library.ID))
-                            {
-                                _soundBank.Add(library.ID, (SoundLibrary)library);
-                            }
-                            break;
-                        default:
-                            LogError($"Audio:{library.Name} can't add to sound bank because its invalid AudioType:{asset.AudioType}.");
-                            break;
+                        _audioBank.Add(library.ID, library);
                     }
                 }
 			}
@@ -190,22 +174,9 @@ namespace MiProduction.BroAudio.Runtime
         }
         #endregion
 
-        private bool TryGetPlayer(out AudioPlayer player)
+        private bool TryGetNewAudioPlayer(out AudioPlayer player)
         {
             player = _audioPlayerPool.Extract();
-            return player != null;
-        }
-
-        private bool TryGetPlayerWithType<T>(out T player) where T : AudioPlayerDecorator,new()
-        {
-            player = null;
-            var origin = _audioPlayerPool.Extract();
-
-            if(origin != null)
-			{
-                player = new T();
-                player.Init(origin);
-			}
             return player != null;
         }
 
@@ -217,7 +188,7 @@ namespace MiProduction.BroAudio.Runtime
         }
 
         #region NullChecker
-        private bool IsPlayable<T>(int id, IDictionary<int, T> bank) where T : IAudioLibrary
+        private bool IsPlayable(int id)
         {
             if (id <= 0)
             {
@@ -225,23 +196,18 @@ namespace MiProduction.BroAudio.Runtime
                 return false;
             }
 
-            if (!bank.ContainsKey(id))
+            if (!_audioBank.ContainsKey(id))
             {
                 LogError($"AudioID:{id} may not exist ,please check [BroAudio > Library Manager]");
                 return false;
             }
 
             BroAudioType audioType = GetAudioType(id);
-            if (audioType == BroAudioType.All)
+            if (audioType == BroAudioType.All || audioType == BroAudioType.None)
             {
                 LogError($"Audio:{id.ToName().ToWhiteBold()} is invalid");
                 return false;
             }
-            //else if (audioType == BroAudioType.Music &&_currMusicPlayer != null && id == _currMusicPlayer.ID)
-            //{
-            //    LogWarning("The music you want to play is already playing");
-            //    return false;
-            //}
 
             if (_combFilteringPreventer.TryGetValue(id, out bool isPreventing) && isPreventing)
             {
@@ -263,14 +229,10 @@ namespace MiProduction.BroAudio.Runtime
                 return null;
 			}
 
-            string result = null;
-            if(_soundBank.TryGetValue(id,out var soundLibrary))
+            string result = string.Empty;
+            if(_audioBank.TryGetValue(id,out var audioLibrary))
 			{
-                result = soundLibrary.Name;
-			}
-            else if(_musicBank.TryGetValue(id,out var musicLibrary))
-			{
-                result = musicLibrary.Name;
+                result = audioLibrary.Name;
 			}
             return result;
         }

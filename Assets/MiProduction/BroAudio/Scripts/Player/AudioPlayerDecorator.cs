@@ -1,6 +1,4 @@
 ﻿using System;
-using MiProduction.BroAudio.Data;
-using static MiProduction.BroAudio.Runtime.AudioPlayer;
 
 namespace MiProduction.BroAudio.Runtime
 {
@@ -14,40 +12,47 @@ namespace MiProduction.BroAudio.Runtime
 		{
 			Player = player;
 		}
-		
-		public void Init(AudioPlayer player)
-		{
-			Player = player;
-		}
 
-		public event Action<AudioPlayer> OnRecycle
+		public event Action<AudioPlayer> OnPlayerRecycle
 		{
 			add => Player.OnRecycle += value;
 			remove => Player.OnRecycle -= value;
+		}
+		
+		public virtual void Init(AudioPlayer player)
+		{
+			Player = player;
+			OnPlayerRecycle += Dispose;
+		}
+
+		protected virtual void Dispose(AudioPlayer player)
+		{
+			OnPlayerRecycle -= Dispose;
 		}
 
 		public int ID => Player.ID;
 		public bool IsPlaying => Player.IsPlaying;
 
-		public IAudioPlayer DuckOthers(float othersVol, float fadeTime = 0.5f) => Player.DuckOthers(othersVol, fadeTime);
-		public IAudioPlayer HighPassOthers(float freq, float fadeTime = 0.5f) => Player.HighPassOthers(freq, fadeTime);
-		public IAudioPlayer LowPassOthers(float freq, float fadeTime = 0.5f) => Player.LowPassOthers(freq, fadeTime);
-		public IAudioPlayer SetVolume(float vol, float fadeTime = 0.5f) => Player.SetVolume(vol, fadeTime);
+		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Player.SetVolume(vol, fadeTime);
+		IMusicPlayer IMusicDecoratable.AsMusic() => Player.AsMusic();
+		IPlayerExclusive IExclusiveDecoratable.AsExclusive() => Player.AsExclusive();
+		IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => Player;
 
-		public virtual void Play(int id,BroAudioClip clip, PlaybackPreference pref)
-		{
-			Player.Play(id,clip,pref);
-		}
+		//public virtual void Play(int id,BroAudioClip clip, PlaybackPreference pref)
+		//{
+		//	Player.Play(id,clip,pref);
+		//}
 
-		public virtual void Stop(float fadeOut,Action onFinishStopping)
-		{
-			Player.Stop(fadeOut,onFinishStopping);
-		}
-		#region Stop Overloads
-		public virtual void Stop() => Stop(UseClipFadeSetting);
-		public virtual void Stop(float fadeOut) => Stop(fadeOut, null);
-		public virtual void Stop(Action onFinishStopping) => Stop(UseClipFadeSetting,onFinishStopping);
-		#endregion
+		//public virtual void Stop(float fadeOut,Action onFinishStopping)
+		//{
+		//	Player.Stop(fadeOut,onFinishStopping);
+		//}
+		//#region Stop Overloads
+		//public virtual void Stop() => Stop(UseClipFadeSetting);
+		//public virtual void Stop(float fadeOut) => Stop(fadeOut, null);
+		//public virtual void Stop(Action onFinishStopping) => Stop(UseClipFadeSetting,onFinishStopping);
+		//#endregion
+
 
 	}
 }

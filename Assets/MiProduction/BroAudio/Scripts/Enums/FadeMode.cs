@@ -1,4 +1,4 @@
-namespace MiProduction.BroAudio
+namespace MiProduction.BroAudio.Runtime
 {
 	public enum FadeMode
 	{

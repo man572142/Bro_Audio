@@ -18,6 +18,9 @@ namespace MiProduction.BroAudio
 		public static readonly int LastAudioType = ((int)BroAudioType.All + 1) >> 1;
 		public const int IdMultiplier = 100; // 用到1000會超出int上限，若有需要則必須改用long
 
+		public const BroAudioType PersistentType = BroAudioType.Music | BroAudioType.Ambience;
+		public const BroAudioType OneShotType = BroAudioType.SFX | BroAudioType.UI | BroAudioType.VoiceOver;
+
 
 		public static int ToConstantID(this BroAudioType audioType)
 		{
@@ -126,6 +129,7 @@ namespace MiProduction.BroAudio
 
 		public static bool Validate(string name, int index, BroAudioClip[] clips, int id)
 		{
+			// TODO: this is obsolete!
 			if (id <= 0)
 			{
 				LogWarning($"There is a sound missing .please check element {index} in {name}");

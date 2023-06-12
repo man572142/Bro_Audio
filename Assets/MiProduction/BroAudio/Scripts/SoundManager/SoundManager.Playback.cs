@@ -2,9 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MiProduction.BroAudio.Data;
-using MiProduction.Extension;
 using static MiProduction.BroAudio.Utility;
-using System;
 
 namespace MiProduction.BroAudio.Runtime
 {
@@ -13,20 +11,37 @@ namespace MiProduction.BroAudio.Runtime
         public IAudioPlayer Play(int id, float preventTime)
         {
             BroAudioType audioType = GetAudioType(id);
-            if (audioType == BroAudioType.Music || audioType == BroAudioType.Ambience)
+            bool isMusicLibrary = PersistentType.HasFlag(audioType);
+
+            if (IsPlayable(id) && TryGetPlayer(id,out var player))
             {
-                return PlayMusic(id, Transition.Immediate, AudioPlayer.UseClipFadeSetting, preventTime);
+                var lib = _audioBank[id];
+                var pref = isMusicLibrary ? new PlaybackPreference(lib.CastTo<MusicLibrary>().Loop, 0f)
+                    : new PlaybackPreference(false, lib.CastTo<SoundLibrary>().Delay);
+
+                player.Play(id, lib.CastTo<AudioLibrary>().Clip, pref);
+
+                StartCoroutine(PreventCombFiltering(id, preventTime));
+                return player as IAudioPlayer;
             }
 
-            if (IsPlayable(id, _soundBank) && TryGetPlayer(out var player))
-            {
-                PlaybackPreference setting = new PlaybackPreference(_soundBank[id].Delay);
-                player.Play(id, _soundBank[id].Clip, setting);
-                StartCoroutine(PreventCombFiltering(id, preventTime));
-                return player;
-            }
             return null;
+
+            bool TryGetPlayer(int id,out IPlaybackControllable audioPlayer)
+			{
+                audioPlayer = null;
+                if (AudioPlayer.ResumablePlayers == null || !AudioPlayer.ResumablePlayers.TryGetValue(id,out audioPlayer))
+				{
+                    if (TryGetNewAudioPlayer(out AudioPlayer newPlayer))
+                    {
+                        audioPlayer = newPlayer;
+                    }
+                }
+                
+                return audioPlayer != null;
+            }
         }
+
 
         //public IAudioPlayer PlayOneShot(int id, float preventTime)
         //      {
@@ -51,7 +66,4 @@ namespace MiProduction.BroAudio.Runtime
         //      }
     }
 }
-
-// by «} 2022
-// https://github.com/man572142/Bro_Audio.git
 

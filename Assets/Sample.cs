@@ -1,9 +1,6 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using MiProduction.BroAudio;
-using UnityEngine.Audio;
-using UnityEngine.UI;
-using System;
 
 public class Sample : MonoBehaviour
 {
@@ -15,55 +12,67 @@ public class Sample : MonoBehaviour
 
     void Start()
     {
+
         StartCoroutine(PlayTest());
     }
 
     private IEnumerator PlayTest()
     {
-        PlayMusicA();
-        yield return new WaitForSeconds(2f);
+        var player = BroAudio.Play(_music1)
+            .AsMusic().SetTransition(Transition.CrossFade,3f).SetVolume(0.5f)
+            .GetPlaybackControl();
 
-        PlayMusicB();
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(5f);
 
-        PlayMusicA();
-        yield return new WaitForSeconds(2f);
+        Debug.Log("B Default");
+        BroAudio.Play(_music2)
+            .AsMusic().SetTransition(Transition.Default, StopMode.Mute, 3f);
 
-        PlayMusicB();
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(5f);
 
-        PlayMusicA();
-        yield return new WaitForSeconds(2f);
-        PlayMusicB();
+		Debug.Log("VoiceOver");
+		BroAudio.Play(_voiceOver).AsExclusive().LowPassOthers();
 
-        yield return new WaitForSeconds(2f);
+		yield return new WaitForSeconds(3f);
+		Debug.Log("VoiceOver");
+		BroAudio.Play(_voiceOver).AsExclusive().DuckOthers(0.3f);
 
-        PlayMusicA();
-        yield return new WaitForSeconds(2f);
+		yield return new WaitForSeconds(3f);
+		Debug.Log("VoiceOver");
+		BroAudio.Play(_voiceOver).AsExclusive().HighPassOthers();
 
-        PlayMusicB();
-        yield return new WaitForSeconds(2f);
 
-        PlayMusicA();
-        yield return new WaitForSeconds(2f);
+		Debug.Log("A OnlyFadeOut");
+        BroAudio.Play(_music1).AsMusic().SetTransition(Transition.OnlyFadeOut);
+
+        yield return new WaitForSeconds(8f);
+
+        Debug.Log("B OnlyFadeIn");
+        BroAudio.Play(_music2)
+            .AsMusic().SetTransition(Transition.OnlyFadeIn, StopMode.Pause, 3f);
+
+        yield return new WaitForSeconds(8f);
+
+        Debug.Log("A Immediate");
+        BroAudio.Play(_music1).AsMusic().SetTransition(Transition.Immediate).SetVolume(0.5f);
     }
 
 	public void PlayMusicA()
 	{
         Debug.Log("A Default");
-        BroAudio.PlayMusic(_music1, Transition.Default);
+        BroAudio.Play(_music1);
     }
 
 
 	public void PlayMusicB()
     {
         Debug.Log("B CrossFade");
-        BroAudio.PlayMusic(_music2, Transition.CrossFade);
+        BroAudio.Play(_music2);
     }
 
     public void PlayUI()
 	{
-        BroAudio.Play(_uiClick).DuckOthers(0.3f, 0.1f);
+        BroAudio.Play(_uiClick).AsExclusive().DuckOthers(0.3f, 0.1f);
     }
 
     public void PlayUICancel()

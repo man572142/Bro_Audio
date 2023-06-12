@@ -1774,8 +1774,8 @@ MonoBehaviour:
     ID: -1
     SourceAsset: {fileID: 0}
   _voiceOver:
-    ID: -1
-    SourceAsset: {fileID: 0}
+    ID: 1302944423
+    SourceAsset: {fileID: 11400000, guid: 01ff27197e28a5c4796132102c175ba9, type: 2}
 --- !u!4 &1317931363
 Transform:
   m_ObjectHideFlags: 0

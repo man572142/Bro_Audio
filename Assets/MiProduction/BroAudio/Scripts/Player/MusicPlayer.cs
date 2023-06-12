@@ -5,14 +5,13 @@ using UnityEngine;
 
 namespace MiProduction.BroAudio.Runtime
 {
-	public class MusicPlayer : AudioPlayerDecorator
+	public class MusicPlayer : AudioPlayerDecorator , IMusicPlayer
 	{
-		public enum Mode
-		{
-			Normal,
-			Resume,
-			Replay,
-		}
+		public static IPlaybackControllable CurrentPlayer = null;
+
+		private Transition _transition = default;
+		private StopMode _stopMode = default;
+		private float _overrideFade = AudioPlayer.UseLibraryManagerSetting;
 
 		public bool IsBaseNull => !Player;
 		public bool IsPlayingVirtually => IsPlaying && Player.MixerDecibelVolume <= AudioConstant.MinDecibelVolume;
@@ -23,21 +22,57 @@ namespace MiProduction.BroAudio.Runtime
 		{
 		}
 
-		public void Mute(float fadeTime = 0.5f)
+		public override void Init(AudioPlayer player)
 		{
-			Player.SetVolume(0f, fadeTime);
+			base.Init(player);
+
+			player.DecoratePlaybackPreference += DecoratePlayback;
 		}
 
-		public void Resume(float fadeTime = 0.5f)
+		protected override void Dispose(AudioPlayer player)
 		{
-			Player.SetVolume(1f,fadeTime);
+			player.DecoratePlaybackPreference -= DecoratePlayback;
 
+			_transition = default;
+			_stopMode = default;
+			_overrideFade = AudioPlayer.UseLibraryManagerSetting;
 		}
 
-		public void Replay()
+		private void DecoratePlayback(PlaybackPreference pref)
 		{
+			pref.SetFadeTime(_transition, _overrideFade);
 
+			switch (_transition)
+			{
+				case Transition.Immediate:
+				case Transition.OnlyFadeIn:
+				case Transition.CrossFade:
+					StopCurrentMusic();
+					break;
+				case Transition.Default:
+				case Transition.OnlyFadeOut:
+					pref.HaveToWaitForPrevious = true;
+					StopCurrentMusic(() => pref.HaveToWaitForPrevious = false);
+					break;
+			}
+			CurrentPlayer = Player;
 		}
 
+		private void StopCurrentMusic(Action onFinished = null)
+		{
+			if (CurrentPlayer != null)
+			{
+				float fadeOut = _transition == Transition.Immediate || _transition == Transition.OnlyFadeIn ? 0f : _overrideFade;
+				CurrentPlayer.Stop(fadeOut, _stopMode, onFinished);
+			}
+		}
+
+		IMusicPlayer IMusicPlayer.SetTransition(Transition transition,StopMode stopMode,float overrideFade)
+		{
+			_transition = transition;
+			_stopMode = stopMode;
+			_overrideFade = overrideFade;
+			return this;
+		}
 	}
 }

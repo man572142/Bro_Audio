@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using MiProduction.BroAudio.Runtime;
 using MiProduction.Extension;
 using System;
@@ -7,103 +7,104 @@ namespace MiProduction.BroAudio
 { 
     public static class BroAudio
     {
+        // TODO : æŠŠé€™å€‹åˆªæ‰
         public const string ProjectName = nameof(BroAudio);
 
         #region SFX
         /// <summary>
-        /// ¼½©ñ­µ®Ä
+        /// æ’­æ”¾éŸ³æ•ˆ
         /// </summary>
         /// <param name="id"></param>
         public static IAudioPlayer Play(AudioID id) 
             => SoundManager.Instance.Play(id, AudioExtension.HaasEffectInSeconds);
 
         /// <summary>
-        /// ¼½©ñ­µ®Ä
+        /// æ’­æ”¾éŸ³æ•ˆ
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="preventTime">­­¨î¸Ó®É¶¡¤º¤£¯à¦A¼½©ñ</param>
+        /// <param name="preventTime">é™åˆ¶è©²æ™‚é–“å…§ä¸èƒ½å†æ’­æ”¾</param>
         public static IAudioPlayer Play(AudioID id, float preventTime) 
             => SoundManager.Instance.Play(id, preventTime);
 
         /// <summary>
-        /// ©ó³õ´º¤¤ªº«ü©w¦aÂI¼½©ñ
+        /// æ–¼å ´æ™¯ä¸­çš„æŒ‡å®šåœ°é»æ’­æ”¾
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="position">¼½©ñªº®y¼Ğ</param>
+        /// <param name="position">æ’­æ”¾çš„åº§æ¨™</param>
         //public static IAudioPlayer Play(AudioID id, Vector3 position)
         //  => SoundManager.Instance.PlayAtPoint(id, position,AudioExtension.HaasEffectInSeconds);
 
         /// <summary>
-        /// ©ó³õ´º¤¤ªº«ü©w¦aÂI¼½©ñ
+        /// æ–¼å ´æ™¯ä¸­çš„æŒ‡å®šåœ°é»æ’­æ”¾
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="position">¼½©ñªº®y¼Ğ</param>
+        /// <param name="position">æ’­æ”¾çš„åº§æ¨™</param>
         //public static IAudioPlayer Play(AudioID id, Vector3 position,float preventTime)
         //  => SoundManager.Instance.PlayAtPoint(id, position, preventTime);
         #endregion
 
-        #region Music
-        /// <summary>
-        /// ¼½©ñ­µ¼Ö
-        /// </summary>
-        /// <param name="id"></param>
-        public static IAudioPlayer PlayMusic(AudioID id) 
-            => PlayMusic(id, Transition.Default);
+        //#region Music
+        ///// <summary>
+        ///// æ’­æ”¾éŸ³æ¨‚
+        ///// </summary>
+        ///// <param name="id"></param>
+        //public static IAudioPlayer PlayMusic(AudioID id) 
+        //    => PlayMusic(id, Transition.Default);
 
-        /// <summary>
-        /// ¼½©ñ­µ¼Ö
-        /// </summary>
-        /// <param name="musicID">¥iª½±µ±NEnumÂà¬°ID</param>
-        /// <param name="transition">­µ¼Ö¹L´çÃş«¬</param>
-        public static IAudioPlayer PlayMusic(AudioID id, Transition transition) 
-            => PlayMusic(id, transition, AudioPlayer.UseClipFadeSetting);
+        ///// <summary>
+        ///// æ’­æ”¾éŸ³æ¨‚
+        ///// </summary>
+        ///// <param name="musicID">å¯ç›´æ¥å°‡Enumè½‰ç‚ºID</param>
+        ///// <param name="transition">éŸ³æ¨‚éæ¸¡é¡å‹</param>
+        //public static IAudioPlayer PlayMusic(AudioID id, Transition transition) 
+        //    => PlayMusic(id, transition, AudioPlayer.UseClipFadeSetting);
 
-        /// <summary>
-        /// ¼½©ñ­µ¼Ö
-        /// </summary>
-        /// <param name="id">¥iª½±µ±NEnumÂà¬°ID</param>
-        /// <param name="transition">­µ¼Ö¹L´çÃş«¬</param>
-        /// <param name="fadeTime">­­¨î¸Ó®É¶¡¤º¤£¯à¦A¼½©ñ</param>
-        public static IAudioPlayer PlayMusic(AudioID id, Transition transition, float fadeTime) 
-            => SoundManager.Instance.PlayMusic(id, transition,fadeTime,AudioExtension.HaasEffectInSeconds);
-        #endregion
+        ///// <summary>
+        ///// æ’­æ”¾éŸ³æ¨‚
+        ///// </summary>
+        ///// <param name="id">å¯ç›´æ¥å°‡Enumè½‰ç‚ºID</param>
+        ///// <param name="transition">éŸ³æ¨‚éæ¸¡é¡å‹</param>
+        ///// <param name="fadeTime">é™åˆ¶è©²æ™‚é–“å…§ä¸èƒ½å†æ’­æ”¾</param>
+        //public static IAudioPlayer PlayMusic(AudioID id, Transition transition, float fadeTime) 
+        //    => SoundManager.Instance.PlayMusic(id, transition,fadeTime,AudioExtension.HaasEffectInSeconds);
+        //#endregion
 
         #region Stop
         /// <summary>
-        /// °±¤î¼½©ñ
+        /// åœæ­¢æ’­æ”¾
         /// </summary>
-        /// <param name="audioType">°±¤îªºÁn­µÃş«¬</param>
+        /// <param name="audioType">åœæ­¢çš„è²éŸ³é¡å‹</param>
         public static void Stop(BroAudioType audioType) 
             => SoundManager.Instance.StopPlaying(audioType);
 
         /// <summary>
-        /// °±¤î¼½©ñ
+        /// åœæ­¢æ’­æ”¾
         /// </summary>
-        /// <param name="fadeTime">¦Û©wFadeOut®É¶¡ªø«×</param>
-        /// <param name="id">°±¤îªºÁn­µID (¬Û¦PÁn­µÃş«¬ªº¤]³£·|°±¤î)</param>
+        /// <param name="fadeTime">è‡ªå®šFadeOutæ™‚é–“é•·åº¦</param>
+        /// <param name="id">åœæ­¢çš„è²éŸ³ID (ç›¸åŒè²éŸ³é¡å‹çš„ä¹Ÿéƒ½æœƒåœæ­¢)</param>
         public static void Stop(AudioID id) 
             => SoundManager.Instance.StopPlaying(id);
         #endregion
 
         #region Volume
         /// <summary>
-        /// ³]©w­µ¶q
+        /// è¨­å®šéŸ³é‡
         /// </summary>
-        /// <param name="vol">¹L´ç¨ì«ü©w­µ¶qªº®É¶¡</param>
-        /// <param name="type">³]©wªºÁn­µÃş«¬</param>
+        /// <param name="vol">éæ¸¡åˆ°æŒ‡å®šéŸ³é‡çš„æ™‚é–“</param>
+        /// <param name="type">è¨­å®šçš„è²éŸ³é¡å‹</param>
         public static void SetVolume(float vol, BroAudioType type) => SetVolume(vol,type, 1f);
 
         /// <summary>
-        /// ³]©w­µ¶q
+        /// è¨­å®šéŸ³é‡
         /// </summary>
-        /// <param name="vol">0~1ªº­µ¶q­È</param>
-        /// <param name="fadeTime">¹L´ç¨ì«ü©w­µ¶qªº®É¶¡</param>
-        /// <param name="type">³]©wªºÁn­µÃş«¬</param>
+        /// <param name="vol">0~1çš„éŸ³é‡å€¼</param>
+        /// <param name="fadeTime">éæ¸¡åˆ°æŒ‡å®šéŸ³é‡çš„æ™‚é–“</param>
+        /// <param name="type">è¨­å®šçš„è²éŸ³é¡å‹</param>
         public static void SetVolume(float vol, BroAudioType audioType, float fadeTime) 
             => SoundManager.Instance.SetVolume(vol, fadeTime, audioType);
         #endregion
     }
 }
 
-// by «} 2022
+// by å’ª 2022
 // https://github.com/man572142/Bro_Audio.git

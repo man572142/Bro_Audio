@@ -119,7 +119,7 @@ namespace MiProduction.BroAudio.Editor
 		private void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
 		{
 			SerializedProperty clipProp = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
-			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.OriginAudioClip));
+			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
 			EditorScriptingExtension.SplitRectHorizontal(rect, 0.9f, 15f, out Rect clipRect, out Rect valueRect);
 			EditorGUI.PropertyField(clipRect, audioClipProp, new GUIContent(""));
 
@@ -144,7 +144,7 @@ namespace MiProduction.BroAudio.Editor
 		private void OnDrawFooter(Rect rect)
 		{
 			ReorderableList.defaultBehaviours.DrawFooter(rect, _reorderableList);
-			if (CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.OriginAudioClip), out AudioClip audioClip))
+			if (CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
 			{
 				Rect labelRect = new Rect(rect);
 				labelRect.y += 5f;

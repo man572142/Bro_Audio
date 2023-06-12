@@ -47,5 +47,4 @@ MonoBehaviour:
   _broAudioMixer: {fileID: 24100000, guid: fbb1400fd876dd84dbdbfeb7add01ba9, type: 2}
   _fadeInEase: 2
   _fadeOutEase: 11
-  _soundAssets:
-  - {fileID: 11400000, guid: 5d00903d941fff940921056feda97925, type: 2}
+  _soundAssets: []

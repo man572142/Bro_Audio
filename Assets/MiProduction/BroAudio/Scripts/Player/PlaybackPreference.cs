@@ -2,37 +2,20 @@ using static MiProduction.BroAudio.Runtime.AudioPlayer;
 
 namespace MiProduction.BroAudio.Runtime
 {
-	public struct PlaybackPreference
+	public class PlaybackPreference
 	{
-		public readonly bool IsLoop;
-		public readonly float Delay;
+		public readonly bool IsLoop = false;
+		public readonly float Delay = 0f;
 
-		public float FadeIn;
-		public float FadeOut;
+		public float FadeIn = UseLibraryManagerSetting;
+		public float FadeOut = UseLibraryManagerSetting;
+
+		public bool HaveToWaitForPrevious = false;
 
 		public PlaybackPreference(bool isLoop, float delay)
 		{
 			IsLoop = isLoop;
 			Delay = delay;
-
-			FadeIn = UseClipFadeSetting;
-			FadeOut = UseClipFadeSetting;
-		}
-
-		public PlaybackPreference(bool isLoop)
-		{
-			IsLoop = isLoop;
-			Delay = 0f;
-			FadeIn = UseClipFadeSetting;
-			FadeOut = UseClipFadeSetting;
-		}
-
-		public PlaybackPreference(float delay)
-		{
-			IsLoop = false;
-			Delay = delay;
-			FadeIn = UseClipFadeSetting;
-			FadeOut = UseClipFadeSetting;
 		}
 
 		public void SetFadeTime(Transition transition,float fadeTime)
@@ -44,26 +27,18 @@ namespace MiProduction.BroAudio.Runtime
 					FadeOut = 0f;
 					break;
 				case Transition.OnlyFadeIn:
-					SetIfOverride(fadeTime, ref FadeIn);
+					FadeIn = fadeTime;
 					FadeOut = 0f;
 					break;
 				case Transition.OnlyFadeOut:
 					FadeIn = 0f;
-					SetIfOverride(fadeTime, ref FadeOut);
+					FadeOut = fadeTime;
 					break;
 				case Transition.Default:
 				case Transition.CrossFade:
-					SetIfOverride(fadeTime, ref FadeIn);
-					SetIfOverride(fadeTime, ref FadeOut);
+					FadeIn = fadeTime;
+					FadeOut = fadeTime;
 					break;
-			}
-
-			void SetIfOverride(float overrideTime,ref float fade)
-			{
-				if(overrideTime != UseClipFadeSetting)
-				{
-					fade = overrideTime;
-				}
 			}
 		}
 

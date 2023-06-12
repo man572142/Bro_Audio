@@ -72,7 +72,7 @@ namespace MiProduction.BroAudio.Editor
 				#region Clip Properties
 				ReorderableClips currClipList = DrawReorderableClipsList(position, property);
 				SerializedProperty currSelectClip = currClipList.CurrentSelectedClip;
-				if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.OriginAudioClip),out AudioClip audioClip))
+				if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip),out AudioClip audioClip))
 				{
 					DrawClipProperties(position, currClipList, audioClip);
 					DrawAdditionalClipProperties(position, property);
@@ -102,7 +102,7 @@ namespace MiProduction.BroAudio.Editor
 					height += clipList.Height;
 					bool isShowClipProp =
 						clipList.CurrentSelectedClip != null &&
-						clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.OriginAudioClip), out AudioClip audioClip);
+						clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip);
 					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(nameof(AudioLibrary.IsShowClipPreview)).boolValue;
 
 					if(isShowClipProp)

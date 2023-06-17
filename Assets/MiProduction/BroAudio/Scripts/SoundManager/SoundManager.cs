@@ -6,6 +6,7 @@ using MiProduction.BroAudio.Data;
 using MiProduction.Extension;
 using static MiProduction.BroAudio.Utility;
 using System.Linq;
+using System;
 
 namespace MiProduction.BroAudio.Runtime
 {
@@ -107,71 +108,55 @@ namespace MiProduction.BroAudio.Runtime
 		#endregion
 
         #region Volume
-        public void SetVolume(float vol, float fadeTime, BroAudioType audioType)
+        public void SetVolume(float vol, BroAudioType audioType, float fadeTime)
 		{
 			if (audioType == BroAudioType.All)
 			{
-				LoopAllAudioType((loopAudioType) => SetPlayerVolume(loopAudioType));
+                SetSystemVolume(vol,fadeTime);
 			}
 			else
 			{
-				SetPlayerVolume(audioType);
-			}
-
-			void SetPlayerVolume(BroAudioType target)
-            {
-                if (_audioPlayerPool.TryGetObject(x => GetAudioType(x.ID) == target, out var player))
-				{
-                    player.SetVolume(vol,fadeTime);
-				}
+				SetPlayerVolume(x => audioType.HasFlag(GetAudioType(x.ID)) , vol, fadeTime);
 			}
 		}
 
-		public void SetVolume(float vol, float fadeTime,int id)
+		public void SetVolume(float vol, int id, float fadeTime)
 		{
-            if (_audioPlayerPool.TryGetObject(x => x.ID == id, out var player))
-			{
+            SetPlayerVolume(x => x.ID == id, vol, fadeTime);
+        }
+
+        private void SetPlayerVolume(Predicate<AudioPlayer> predicate,float vol,float fadeTime)
+        {
+            if (_audioPlayerPool.TryGetObject(predicate, out var player))
+            {
                 player.SetVolume(vol, fadeTime);
             }
-            else
-			{
-                LogWarning($"Set volume is failed. Audio:{id.ToName().ToWhiteBold()} is not playing.");
-			}
+        }
+
+        public void SetSystemVolume(float vol , float fadeTime)
+		{
+            var effect = new EffectParameter()
+            {
+                Value = vol.ToDecibel(),
+                FadeTime = fadeTime,
+                Type = EffectType.Volume
+            };
+
+            SetMainGroupTrackParameter(effect, null);
         }
 		#endregion
 
-		#region Stop
-		public void StopPlaying(BroAudioType audioType)
+		#region Effect
+        public void SetEffect(EffectParameter effect)
 		{
-			if (audioType == BroAudioType.All)
-			{
-				LoopAllAudioType((loopAudioType) => Stop(loopAudioType));
-			}
-			else
-			{
-				Stop(audioType);
-			}
-
-			void Stop(BroAudioType target)
-			{
-                if (_audioPlayerPool.TryGetObject(x => GetAudioType(x.ID) == target, out var player))
-                {
-                    player.Stop();
-                }
-            }
+            SetMainGroupTrackParameter(effect, null);
         }
 
-		public void StopPlaying(int id)
-		{
-            if (_audioPlayerPool.TryGetObject(x => x.ID == id, out var player))
-            {
-                player.Stop();
-            }
-            else
-            {
-                LogWarning($"Stop playing is failed. Audio:{id.ToName().ToWhiteBold()} is not playing.");
-            }
+        public void SetEffect(EffectParameter effect, BroAudioType audioType)
+        {
+            SetMainGroupTrackParameter(effect, null);
         }
+
         #endregion
 
         private bool TryGetNewAudioPlayer(out AudioPlayer player)

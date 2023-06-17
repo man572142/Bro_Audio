@@ -24,7 +24,7 @@ namespace MiProduction.BroAudio.Editor.Setting
 		private const string AssetOutputPathPanelTtile = "Select BroAudio auto-generated asset file's output folder";
 		private const string CoreDataMissingText = "Core data is missing! please relocate the Root Path to where [BroAudioData.json] is located";
 
-		private readonly string _titleText = BroAudio.ProjectName.ToBold().SetSize(30).SetColor(BroAudioGUISetting.MainTitleColor);
+		private readonly string _titleText = nameof(BroAudio).ToBold().SetSize(30).SetColor(BroAudioGUISetting.MainTitleColor);
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 

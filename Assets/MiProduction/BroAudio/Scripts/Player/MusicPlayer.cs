@@ -65,6 +65,10 @@ namespace MiProduction.BroAudio.Runtime
 				float fadeOut = _transition == Transition.Immediate || _transition == Transition.OnlyFadeIn ? 0f : _overrideFade;
 				CurrentPlayer.Stop(fadeOut, _stopMode, onFinished);
 			}
+			else
+			{
+				onFinished?.Invoke();
+			}
 		}
 
 		IMusicPlayer IMusicPlayer.SetTransition(Transition transition,StopMode stopMode,float overrideFade)

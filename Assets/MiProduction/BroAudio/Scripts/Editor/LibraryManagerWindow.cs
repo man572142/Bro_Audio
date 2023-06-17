@@ -263,7 +263,7 @@ namespace MiProduction.BroAudio.Editor
 		{
 			_gapDrawer.DrawLineCount = 0;
 
-			EditorGUILayout.LabelField(BroAudio.ProjectName.ToBold().SetColor(BroAudioGUISetting.MainTitleColor).SetSize(30), GUIStyleHelper.Instance.RichText);
+			EditorGUILayout.LabelField(nameof(BroAudio).ToBold().SetColor(MainTitleColor).SetSize(30), GUIStyleHelper.Instance.RichText);
 			EditorGUILayout.Space(20f);
 
 			EditorGUILayout.BeginHorizontal();

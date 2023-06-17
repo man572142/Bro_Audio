@@ -1,8 +1,6 @@
-using System;
-
 namespace MiProduction.BroAudio
 {
-	[Flags]
+	[System.Flags]
 	public enum BroAudioType
 	{
 		None = 0,

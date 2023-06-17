@@ -7,10 +7,7 @@ namespace MiProduction.BroAudio
 { 
     public static class BroAudio
     {
-        // TODO : 把這個刪掉
-        public const string ProjectName = nameof(BroAudio);
-
-        #region SFX
+        #region Play
         /// <summary>
         /// 播放音效
         /// </summary>
@@ -43,32 +40,6 @@ namespace MiProduction.BroAudio
         //  => SoundManager.Instance.PlayAtPoint(id, position, preventTime);
         #endregion
 
-        //#region Music
-        ///// <summary>
-        ///// 播放音樂
-        ///// </summary>
-        ///// <param name="id"></param>
-        //public static IAudioPlayer PlayMusic(AudioID id) 
-        //    => PlayMusic(id, Transition.Default);
-
-        ///// <summary>
-        ///// 播放音樂
-        ///// </summary>
-        ///// <param name="musicID">可直接將Enum轉為ID</param>
-        ///// <param name="transition">音樂過渡類型</param>
-        //public static IAudioPlayer PlayMusic(AudioID id, Transition transition) 
-        //    => PlayMusic(id, transition, AudioPlayer.UseClipFadeSetting);
-
-        ///// <summary>
-        ///// 播放音樂
-        ///// </summary>
-        ///// <param name="id">可直接將Enum轉為ID</param>
-        ///// <param name="transition">音樂過渡類型</param>
-        ///// <param name="fadeTime">限制該時間內不能再播放</param>
-        //public static IAudioPlayer PlayMusic(AudioID id, Transition transition, float fadeTime) 
-        //    => SoundManager.Instance.PlayMusic(id, transition,fadeTime,AudioExtension.HaasEffectInSeconds);
-        //#endregion
-
         #region Stop
         /// <summary>
         /// 停止播放
@@ -90,9 +61,17 @@ namespace MiProduction.BroAudio
         /// <summary>
         /// 設定音量
         /// </summary>
-        /// <param name="vol">過渡到指定音量的時間</param>
+        /// <param name="vol">0~1的音量值</param>
+        public static void SetVolume(float vol)
+            => SetVolume(vol, BroAudioType.All);
+
+        /// <summary>
+        /// 設定音量
+        /// </summary>
+        /// <param name="vol">0~1的音量值</param>
         /// <param name="type">設定的聲音類型</param>
-        public static void SetVolume(float vol, BroAudioType type) => SetVolume(vol,type, 1f);
+        public static void SetVolume(float vol, BroAudioType type) 
+            => SetVolume(vol,type, BroRecommeneded.FadeTime_Quick);
 
         /// <summary>
         /// 設定音量
@@ -101,8 +80,31 @@ namespace MiProduction.BroAudio
         /// <param name="fadeTime">過渡到指定音量的時間</param>
         /// <param name="type">設定的聲音類型</param>
         public static void SetVolume(float vol, BroAudioType audioType, float fadeTime) 
-            => SoundManager.Instance.SetVolume(vol, fadeTime, audioType);
+            => SoundManager.Instance.SetVolume(vol, audioType, fadeTime);
+
+        /// <summary>
+        /// 設定音量
+        /// </summary>
+        /// <param name="vol">0~1的音量值</param>
+        /// <param name="id">指定的AudioID</param>
+        public static void SetVolume(float vol, int id) 
+            => SetVolume(vol,id, BroRecommeneded.FadeTime_Quick);
+
+        /// <summary>
+        /// 設定音量
+        /// </summary>
+        /// <param name="vol">0~1的音量值</param>
+        /// <param name="id">指定的AudioID</param>
+        /// <param name="fadeTime">過渡到指定音量的時間</param>
+        public static void SetVolume(float vol, int id, float fadeTime) 
+            => SoundManager.Instance.SetVolume(vol, id, fadeTime);
         #endregion
+
+        public static void SetEffect(EffectParameter effect) 
+            => SoundManager.Instance.SetEffect(effect);
+
+        public static void SetEffect(EffectParameter effect, BroAudioType audioType)
+            => SoundManager.Instance.SetEffect(effect, audioType);
     }
 }
 

@@ -19,7 +19,7 @@ namespace MiProduction.BroAudio.Editor
 
 		protected override AdvancedDropdownItem BuildRoot()
 		{
-			var root = new AdvancedDropdownItem(BroAudio.ProjectName);
+			var root = new AdvancedDropdownItem(nameof(BroAudio));
 
 			List<string> guids = GetGUIDListFromJson();
 			foreach (string guid in guids)

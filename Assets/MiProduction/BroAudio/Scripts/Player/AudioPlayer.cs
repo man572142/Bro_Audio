@@ -23,12 +23,11 @@ namespace MiProduction.BroAudio.Runtime
         // TODO : Don't use instance
         protected BroAudioClip CurrentClip;
 
-        private Command _latestCommand = Command.None;
         private StopMode _stopMode = default;
         private Coroutine _playbackControlCoroutine;
-        private Coroutine _fadeControlCoroutine;
         private Coroutine _trackVolumeControlCoroutine;
         private Coroutine _recycleCoroutine;
+        private bool _isReadyToPlay = false;
 
         public AudioMixerGroup AudioTrack
 		{
@@ -88,19 +87,17 @@ namespace MiProduction.BroAudio.Runtime
 
         public void Play(int id, BroAudioClip clip, PlaybackPreference pref)
         {
-            _latestCommand = Command.Play;
             ID = id;
             CurrentClip = clip;
-
+            _isReadyToPlay = true;
             IsStopping = false;
             this.SafeStopCoroutine(_recycleCoroutine);
 
-            ExecuteAfterChainingMethod(() => 
+            AsyncTaskExtension.ExecuteAfterChainingMethod(() => 
             {
-                if(_latestCommand == Command.Play)
+                if(_isReadyToPlay)
                 {
                     DecoratePlaybackPreference?.Invoke(pref);
-                    this.SafeStopCoroutine(_fadeControlCoroutine);
                     this.StartCoroutineAndReassign(PlayControl(clip, pref), ref _playbackControlCoroutine);
                 }
                 else
@@ -108,11 +105,6 @@ namespace MiProduction.BroAudio.Runtime
                     EndPlaying();
                 }
             });
-
-            void ExecuteAfterChainingMethod(Action action)
-            {
-                AsyncTaskExtension.DelayDoAction(AsyncTaskExtension.MillisecondInSeconds, action);
-            }
         }
 
         private IEnumerator PlayControl(BroAudioClip clip, PlaybackPreference pref)
@@ -122,7 +114,7 @@ namespace MiProduction.BroAudio.Runtime
                 yield return new WaitUntil(() => pref.HaveToWaitForPrevious == false);
 			}
 
-            if(pref.Delay > 0)
+            if (pref.Delay > 0)
 			{
                 yield return new WaitForSeconds(pref.Delay);
             }
@@ -131,7 +123,6 @@ namespace MiProduction.BroAudio.Runtime
             float endTime = AudioSource.clip.length - clip.EndPosition;
             VolumeControl fader = VolumeControl.Clip;
             ClipVolume = 0f;
-            IsPlaying = true;
             RemoveFromResumablePlayer();
 
             do
@@ -145,7 +136,6 @@ namespace MiProduction.BroAudio.Runtime
                         AudioSource.UnPause();
                         break;
                     case StopMode.Mute:
-                        //TODO: 應該回到原本音量而不是1
                         this.SetVolume(TrackVolumeBeforeMute);
                         if (!AudioSource.isPlaying)
                         {
@@ -159,7 +149,7 @@ namespace MiProduction.BroAudio.Runtime
                 if (HasFading(clip.FadeIn, pref.FadeIn, out float fadeIn))
 				{
 					IsFadingIn = true;
-					yield return this.StartCoroutineAndReassign(Fade(clip.Volume, fadeIn, fader), ref _fadeControlCoroutine);
+					yield return Fade(clip.Volume, fadeIn, fader);
 					IsFadingIn = false;
 				}
 				else
@@ -173,7 +163,7 @@ namespace MiProduction.BroAudio.Runtime
 				{
                     yield return new WaitUntil(() => (endTime - AudioSource.time) <= clip.FadeOut);
 					IsFadingOut = true;
-					yield return this.StartCoroutineAndReassign(Fade(0f, fadeOut, fader), ref _fadeControlCoroutine);
+					yield return Fade(0f, fadeOut, fader);
 					IsFadingOut = false;
 				}
 				else
@@ -209,9 +199,8 @@ namespace MiProduction.BroAudio.Runtime
             {
                 return;
             }
-            _latestCommand = (Command)(stopMode + (int)Command.Stop);
+            _isReadyToPlay = false;
             _stopMode = stopMode;
-            this.SafeStopCoroutine(_fadeControlCoroutine);
             this.StartCoroutineAndReassign(StopControl(overrideFade, onFinished, stopMode), ref _playbackControlCoroutine);
         }
 
@@ -219,16 +208,14 @@ namespace MiProduction.BroAudio.Runtime
         {
             if (ID <= 0 || !IsPlaying)
             {
-                // TODO:與AudioSource的IsPlaying區別
                 onFinished?.Invoke();
                 yield break;
             }
 
-            IsStopping = true;
-
 			#region FadeOut
 			if (HasFading(CurrentClip.FadeOut,overrideFade,out float fadeTime))
             {
+                IsStopping = true;
                 if (IsFadingOut)
                 {
                     // 如果已經在FadeOut了(也就是剛剛的Play已快結束)，就等它FadeOut不強制停止
@@ -237,7 +224,7 @@ namespace MiProduction.BroAudio.Runtime
                 }
                 else
                 {
-                    yield return this.StartCoroutineAndReassign(Fade(0f, fadeTime, VolumeControl.Clip), ref _fadeControlCoroutine);
+                    yield return Fade(0f, fadeTime, VolumeControl.Clip);
                 }
             }
 			#endregion
@@ -257,7 +244,7 @@ namespace MiProduction.BroAudio.Runtime
                     AddResumablePlayer();
                     break;
 			}
-            ResetPlaybackState();
+            IsStopping = false;
             onFinished?.Invoke();
 		}
 
@@ -284,7 +271,7 @@ namespace MiProduction.BroAudio.Runtime
 
         private void EndPlaying()
 		{
-			ID = -1;
+            ID = -1;
 			_clipVolume = DefaultClipVolume;
 			_trackVolume = DefaultTrackVolume;
 			_mixerDecibelVolume = DefaultMixerDecibelVolume;
@@ -294,30 +281,32 @@ namespace MiProduction.BroAudio.Runtime
             AudioSource.Stop();
 			AudioSource.clip = null;
 			CurrentClip = null;
-			ResetPlaybackState();
 			this.StartCoroutineAndReassign(Recycle(), ref _recycleCoroutine);
 			this.SafeStopCoroutine(_trackVolumeControlCoroutine);
-            RemoveFromResumablePlayer();
+            RemoveFromResumablePlayer(); 
         }
 
-		private void ResetPlaybackState()
+		public void SetExclusiveMode(bool isOn)
 		{
-			IsPlaying = false;
-			IsStopping = false;
-			_latestCommand = Command.None;
-		}
+            bool isTrackName = false;
+            if(AudioTrack == null || string.IsNullOrEmpty(VolumeParaName))
+			{
+                return;
+			}
+            else
+			{
+                isTrackName = VolumeParaName.Equals(AudioTrack.name);
+            }
 
-		public void SetToExclusiveMode()
-		{
-            if(!string.IsNullOrEmpty(VolumeParaName))
+            if(isOn && isTrackName)
 			{
                 VolumeParaName += ExclusiveModeParaName;
             }
-            else
+            else if (!isOn && !isTrackName)
 			{
-                // TODO : add log
-                Debug.LogError("");
-			}
+                int startIndex = VolumeParaName.Length - ExclusiveModeParaName.Length + 1;
+                VolumeParaName = VolumeParaName.Remove(startIndex, ExclusiveModeParaName.Length);
+            }
 		}
 
         protected IEnumerator Recycle()

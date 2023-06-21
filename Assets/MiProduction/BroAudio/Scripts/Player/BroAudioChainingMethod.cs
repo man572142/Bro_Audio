@@ -1,4 +1,4 @@
-﻿using static MiProduction.BroAudio.BroRecommeneded;
+﻿using static MiProduction.BroAudio.BroAdvice;
 
 namespace MiProduction.BroAudio
 {
@@ -8,20 +8,20 @@ namespace MiProduction.BroAudio
 			=> player?.SetVolume(vol, fadeTime);
 		public static IAudioPlayer SetVolume(this IMusicPlayer player, float vol, float fadeTime = FadeTime_Quick) 
 			=> player?.SetVolume(vol, fadeTime);
-		public static IAudioPlayer SetVolume(this IPlayerExclusive player, float vol, float fadeTime = FadeTime_Quick) 
+		public static IAudioPlayer SetVolume(this IPlayerEffect player, float vol, float fadeTime = FadeTime_Quick) 
 			=> player?.SetVolume(vol, fadeTime);
 
 		public static IPlaybackControllable GetPlaybackControl(this IMusicPlayer player)
 			=> player?.GetPlaybackControl();
 		public static IPlaybackControllable GetPlaybackControl(this IAudioPlayer player)
 			=> player?.GetPlaybackControl();
-		public static IPlaybackControllable GetPlaybackControl(this IPlayerExclusive player)
+		public static IPlaybackControllable GetPlaybackControl(this IPlayerEffect player)
 			=> player?.GetPlaybackControl();
 
 
 		public static IMusicPlayer AsMusic(this IAudioPlayer player) 
 			=> player?.AsMusic();
-		public static IMusicPlayer AsMusic(this IPlayerExclusive player)
+		public static IMusicPlayer AsMusic(this IPlayerEffect player)
 			=> player?.AsMusic();
 		public static IMusicPlayer SetTransition(this IMusicPlayer player, Transition transition) 
 			=> player?.SetTransition(transition, Runtime.AudioPlayer.UseLibraryManagerSetting);
@@ -33,10 +33,10 @@ namespace MiProduction.BroAudio
 			=> player?.SetTransition(transition, stopMode, overrideFade);
 
 
-		public static IPlayerExclusive AsExclusive(this IAudioPlayer player) 
-			=> player?.AsExclusive();
-		public static IPlayerExclusive AsExclusive(this IMusicPlayer player)
-			=> player?.AsExclusive();
+		public static IPlayerEffect WithEffect(this IAudioPlayer player) 
+			=> player?.WithEffect();
+		public static IPlayerEffect WithEffect(this IMusicPlayer player)
+			=> player?.WithEffect();
 
 		/// <summary>
 		/// 除了此Player以外的其他Player都降至指定的音量，直到播放完畢為止
@@ -44,8 +44,8 @@ namespace MiProduction.BroAudio
 		/// <param name="othersVol">值須介於0~1之間</param>
 		/// <param name="fadeTime"></param>
 		/// <returns></returns>
-		public static IPlayerExclusive DuckOthers(this IPlayerExclusive player, float othersVol, float fadeTime = FadeTime_Quick) 
-			=> player?.DuckOthers(othersVol,fadeTime);
+		public static IPlayerEffect QuietOthers(this IPlayerEffect player, float othersVol, float fadeTime = FadeTime_Quick) 
+			=> player?.QuietOthers(othersVol,fadeTime);
 
 		/// <summary>
 		/// 除了此Player以外的Player都使用低通效果器，直到播放完畢為止
@@ -53,7 +53,7 @@ namespace MiProduction.BroAudio
 		/// <param name="freq"></param>
 		/// <param name="fadeTime"></param>
 		/// <returns></returns>
-		public static IPlayerExclusive LowPassOthers(this IPlayerExclusive player, float freq = LowPassFrequence, float fadeTime = FadeTime_Quick) 
+		public static IPlayerEffect LowPassOthers(this IPlayerEffect player, float freq = LowPassFrequence, float fadeTime = FadeTime_Quick) 
 			=> player?.LowPassOthers(freq,fadeTime);
 
 		/// <summary>
@@ -62,7 +62,7 @@ namespace MiProduction.BroAudio
 		/// <param name="freq"></param>
 		/// <param name="fadeTime"></param>
 		/// <returns></returns>
-		public static IPlayerExclusive HighPassOthers(this IPlayerExclusive player, float freq = HighPassFrequence, float fadeTime = FadeTime_Quick) 
+		public static IPlayerEffect HighPassOthers(this IPlayerEffect player, float freq = HighPassFrequence, float fadeTime = FadeTime_Quick) 
 			=> player?.HighPassOthers(freq,fadeTime);
 
 	}

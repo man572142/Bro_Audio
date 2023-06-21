@@ -7,11 +7,11 @@ public static class AudioConstant
     /// <summary>
     /// The full (or default) volume in dB.
     /// </summary>
-    public const float MaxDecibelVolume = 0f;
+    public const float FullDecibelVolume = 0f;
     /// <summary>
     /// The maximum volume that Unity AudioMixer can reach in dB.
     /// </summary>
-    public const float MaxBoostDecibelVolume = 20f;
+    public const float MaxDecibelVolume = 20f;
 
 
     /// <summary>
@@ -22,12 +22,12 @@ public static class AudioConstant
     /// <summary>
     /// The normalized full (or default) volume
     /// </summary>
-    public const float MaxVolume = 1f;
+    public const float FullVolume = 1f;
 
     /// <summary>
     /// The normalized maximum volume that Unity AudioMixer can reach
     /// </summary>
-    public const float MaxBoostVolume = 10f;
+    public const float MaxVolume = 10f;
 
 
     /// <summary>

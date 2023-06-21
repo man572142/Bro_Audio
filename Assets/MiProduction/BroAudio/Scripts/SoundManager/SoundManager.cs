@@ -42,7 +42,7 @@ namespace MiProduction.BroAudio.Runtime
 
         [Header("Player")]
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
-        private ObjectPool<AudioPlayer> _audioPlayerPool = null;
+        private AudioPlayerObjectPool _audioPlayerPool = null;
 
         [SerializeField] AudioMixer _broAudioMixer = null;
 
@@ -53,6 +53,9 @@ namespace MiProduction.BroAudio.Runtime
         [Header("Library")]
         [SerializeField] private List<ScriptableObject> _soundAssets = new List<ScriptableObject>();
         private Dictionary<int, IAudioLibrary> _audioBank = new Dictionary<int, IAudioLibrary>();
+
+        private Dictionary<BroAudioType, bool> _effectStateDict = new Dictionary<BroAudioType, bool>();
+        private EffectAutomationHelper _automationHelper = null;
 
         // 防止Haas Effect產生的Comb Filtering效應
         // TODO: 如果是每次播放都在不同聲道就不用
@@ -71,16 +74,16 @@ namespace MiProduction.BroAudio.Runtime
 			}
             else if(!_audioPlayerPrefab)
 			{
-                LogError(string.Format(nullRefLog,"AudioPlayer.prefab"));
+                LogError(string.Format(nullRefLog,"AudioPlayer"));
                 return;
 			}
 
             AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups("Track");
             _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,transform, DefaultPlayerPoolSize, mixerGroups);
 
-            InitAuxTrack();
 			InitBank();
-		}
+            _automationHelper = new EffectAutomationHelper(this, _broAudioMixer);
+        }
 
 		#region InitBank
 		private void InitBank()
@@ -102,6 +105,12 @@ namespace MiProduction.BroAudio.Runtime
                     {
                         _audioBank.Add(library.ID, library);
                     }
+
+                    var audioType = GetAudioType(library.ID);
+                    if(!_effectStateDict.ContainsKey(audioType))
+					{
+                        _effectStateDict.Add(audioType, false);
+					}
                 }
 			}
 		}
@@ -142,19 +151,72 @@ namespace MiProduction.BroAudio.Runtime
                 Type = EffectType.Volume
             };
 
-            SetMainGroupTrackParameter(effect, null);
+            //SetEffectTrackParameter(effect, null);
+            // todo: 待處理
         }
 		#endregion
 
 		#region Effect
-        public void SetEffect(EffectParameter effect)
+        public IAutoResetWaitable SetEffect(EffectParameter effect)
 		{
-            SetMainGroupTrackParameter(effect, null);
+            bool isOn = effect.Type != EffectType.None;
+            _effectStateDict[BroAudioType.All] = isOn;
+
+            if (_audioPlayerPool.TryGetInUseAudioPlayers(out var players))
+            {
+                foreach(var player in players)
+				{
+					SetPlayerEffect(isOn, player);
+				}
+			}
+            
+            return SetEffectTrackParameter(effect);        
         }
 
-        public void SetEffect(EffectParameter effect, BroAudioType audioType)
+		public IAutoResetWaitable SetEffect(BroAudioType audioType, EffectParameter effect)
         {
-            SetMainGroupTrackParameter(effect, null);
+            LoopAllAudioType((key) => 
+            { 
+                if(_effectStateDict.ContainsKey(key))
+                {
+                    _effectStateDict[key] = audioType.HasFlag(key);
+                }
+            });
+
+            if(_audioPlayerPool.TryGetInUseAudioPlayers(out var players))
+			{
+                foreach (var player in players)
+                {
+                    bool isOn = audioType.HasFlag(GetAudioType(player.ID));
+                    SetPlayerEffect(isOn, player);
+                }
+            }
+
+            return SetEffectTrackParameter(effect);
+        }
+
+        private void SetPlayerEffect(bool isOn, AudioPlayer player)
+        {
+            player.SetEffectMode(isOn);
+            if (isOn)
+            {
+                _automationHelper.OnResetEffect += DisableEffect;
+            }
+
+            void DisableEffect()
+            {
+                _automationHelper.OnResetEffect -= DisableEffect;
+                if (player)
+                {
+                    player.SetEffectMode(false);
+                }
+            }
+        }
+
+        public IAutoResetWaitable SetEffectTrackParameter(EffectParameter effect)
+		{
+            _automationHelper.SetEffectTrackParameter(effect);
+            return _automationHelper;
         }
 
         #endregion

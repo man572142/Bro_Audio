@@ -71,7 +71,7 @@ namespace MiProduction.BroAudio
         /// <param name="vol">0~1的音量值</param>
         /// <param name="type">設定的聲音類型</param>
         public static void SetVolume(float vol, BroAudioType type) 
-            => SetVolume(vol,type, BroRecommeneded.FadeTime_Quick);
+            => SetVolume(vol,type, BroAdvice.FadeTime_Quick);
 
         /// <summary>
         /// 設定音量
@@ -88,7 +88,7 @@ namespace MiProduction.BroAudio
         /// <param name="vol">0~1的音量值</param>
         /// <param name="id">指定的AudioID</param>
         public static void SetVolume(float vol, int id) 
-            => SetVolume(vol,id, BroRecommeneded.FadeTime_Quick);
+            => SetVolume(vol,id, BroAdvice.FadeTime_Quick);
 
         /// <summary>
         /// 設定音量
@@ -100,11 +100,11 @@ namespace MiProduction.BroAudio
             => SoundManager.Instance.SetVolume(vol, id, fadeTime);
         #endregion
 
-        public static void SetEffect(EffectParameter effect) 
+        public static IAutoResetWaitable SetEffect(EffectParameter effect) 
             => SoundManager.Instance.SetEffect(effect);
 
-        public static void SetEffect(EffectParameter effect, BroAudioType audioType)
-            => SoundManager.Instance.SetEffect(effect, audioType);
+        public static IAutoResetWaitable SetEffect(EffectParameter effect, BroAudioType audioType)
+            => SoundManager.Instance.SetEffect(audioType,effect);
     }
 }
 

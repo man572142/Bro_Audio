@@ -18,76 +18,81 @@ public class Sample : MonoBehaviour
 
 	private IEnumerator PlayTest()
     {
-		BroAudio.SetVolume(0.7f);
-
-        var effect = new EffectParameter(EffectType.LowPass);
-		var notUI = BroAudioType.All ^ BroAudioType.UI;
-		BroAudio.SetEffect(effect, notUI);
-
         BroAudio.Play(_music1).AsMusic();
-        yield return new WaitForSeconds(20f);
+        yield return new WaitForSeconds(2f);
 
-        BroAudio.Play(_music2)
-            .AsMusic().SetTransition(Transition.Default, StopMode.Mute, 2f);
-		yield return new WaitForSeconds(3f);
+		var effect = new EffectParameter(EffectType.LowPass);
+		effect.FadeTime = 0f;
+		effect.FadingEase = MiProduction.Extension.Ease.OutCubic;
+		var notUI = BroAudioType.All ^ BroAudioType.UI;
 
-		BroAudio.Play(_voiceOver).AsExclusive().LowPassOthers();
-		yield return new WaitForSeconds(6.826f);
-
-		Debug.Log("DUCK");
-		BroAudio.Play(_voiceOver).AsExclusive().DuckOthers(0.3f);
-		yield return new WaitForSeconds(1f);
-
-		Debug.Log("DUCK");
-		BroAudio.Play(_voiceOver).AsExclusive().DuckOthers(0.2f);
-		yield return new WaitForSeconds(1f);
-
-		Debug.Log("DUCK");
-		BroAudio.Play(_voiceOver).AsExclusive().DuckOthers(0.1f);
-		yield return new WaitForSeconds(1f);
-
-		Debug.Log("A CrossFade");
-		BroAudio.Play(_music1).AsMusic().SetTransition(Transition.CrossFade);
-		yield return new WaitForSeconds(3.27f);
-
-		BroAudio.Play(_voiceOver).AsExclusive().HighPassOthers();
-		yield return new WaitForSeconds(7.75f);
-
-		BroAudio.Play(_voiceOver).AsExclusive().LowPassOthers();
-		yield return new WaitForSeconds(6.826f);
-
-		Debug.Log("DUCK");
-		BroAudio.Play(_voiceOver).AsExclusive().DuckOthers(0.3f);
-
-		Debug.Log("B Default");
-		BroAudio.Play(_music2)
-			.AsMusic().SetTransition(Transition.Default);
-		yield return new WaitForSeconds(3.27f);
-
-		BroAudio.Play(_voiceOver).AsExclusive().HighPassOthers();
-		yield return new WaitForSeconds(6.826f);
-
-		Debug.Log("DUCK");
-		BroAudio.Play(_voiceOver).AsExclusive().DuckOthers(0.3f);
-		yield return new WaitForSeconds(3.27f);
-
-		BroAudio.Play(_voiceOver).AsExclusive().HighPassOthers();
-
+		BroAudio.SetEffect(effect, notUI).ForSeconds(5f);
 		yield return new WaitForSeconds(5f);
 
-		Debug.Log("A OnlyFadeOut");
-		BroAudio.Play(_music1).AsMusic().SetTransition(Transition.OnlyFadeOut);
-
-		yield return new WaitForSeconds(8f);
-
-		Debug.Log("B OnlyFadeIn");
 		BroAudio.Play(_music2)
-			.AsMusic().SetTransition(Transition.OnlyFadeIn, StopMode.Pause, 3f);
+			.AsMusic().SetTransition(Transition.Default, StopMode.Mute, 2f);
+		yield return new WaitForSeconds(3f);
 
-		yield return new WaitForSeconds(8f);
+		effect.Type = EffectType.None;
+		BroAudio.SetEffect(effect);
 
-		Debug.Log("A Immediate");
-		BroAudio.Play(_music1).AsMusic().SetTransition(Transition.Immediate).SetVolume(0.5f);
+		//BroAudio.Play(_voiceOver).WithEffect().LowPassOthers();
+		//yield return new WaitForSeconds(6.826f);
+
+		//Debug.Log("DUCK");
+		//BroAudio.Play(_voiceOver).WithEffect().QuietOthers(0.3f);
+		//yield return new WaitForSeconds(1f);
+
+		//Debug.Log("DUCK");
+		//BroAudio.Play(_voiceOver).WithEffect().QuietOthers(0.2f);
+		//yield return new WaitForSeconds(1f);
+
+		//Debug.Log("DUCK");
+		//BroAudio.Play(_voiceOver).WithEffect().QuietOthers(0.1f);
+		//yield return new WaitForSeconds(1f);
+
+		//Debug.Log("A CrossFade");
+		//BroAudio.Play(_music1).AsMusic().SetTransition(Transition.CrossFade);
+		//yield return new WaitForSeconds(3.27f);
+
+		//BroAudio.Play(_voiceOver).WithEffect().HighPassOthers();
+		//yield return new WaitForSeconds(7.75f);
+
+		//BroAudio.Play(_voiceOver).WithEffect().LowPassOthers();
+		//yield return new WaitForSeconds(6.826f);
+
+		//Debug.Log("DUCK");
+		//BroAudio.Play(_voiceOver).WithEffect().QuietOthers(0.3f);
+
+		//Debug.Log("B Default");
+		//BroAudio.Play(_music2)
+		//	.AsMusic().SetTransition(Transition.Default);
+		//yield return new WaitForSeconds(3.27f);
+
+		//BroAudio.Play(_voiceOver).WithEffect().HighPassOthers();
+		//yield return new WaitForSeconds(6.826f);
+
+		//Debug.Log("DUCK");
+		//BroAudio.Play(_voiceOver).WithEffect().QuietOthers(0.3f);
+		//yield return new WaitForSeconds(3.27f);
+
+		//BroAudio.Play(_voiceOver).WithEffect().HighPassOthers();
+
+		//yield return new WaitForSeconds(5f);
+
+		//Debug.Log("A OnlyFadeOut");
+		//BroAudio.Play(_music1).AsMusic().SetTransition(Transition.OnlyFadeOut);
+
+		//yield return new WaitForSeconds(8f);
+
+		//Debug.Log("B OnlyFadeIn");
+		//BroAudio.Play(_music2)
+		//	.AsMusic().SetTransition(Transition.OnlyFadeIn, StopMode.Pause, 3f);
+
+		//yield return new WaitForSeconds(8f);
+
+		//Debug.Log("A Immediate");
+		//BroAudio.Play(_music1).AsMusic().SetTransition(Transition.Immediate).SetVolume(0.5f);
 	}
 
 
@@ -106,7 +111,7 @@ public class Sample : MonoBehaviour
 
     public void PlayUI()
 	{
-        BroAudio.Play(_uiClick).AsExclusive().DuckOthers(0.3f, 0.1f);
+        BroAudio.Play(_uiClick);
     }
 
     public void PlayUICancel()

@@ -35,7 +35,7 @@ namespace MiProduction.BroAudio.Runtime
 
 		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Player.SetVolume(vol, fadeTime);
 		IMusicPlayer IMusicDecoratable.AsMusic() => Player.AsMusic();
-		IPlayerExclusive IExclusiveDecoratable.AsExclusive() => Player.AsExclusive();
+		IPlayerEffect IEffectDecoratable.WithEffect() => Player.WithEffect();
 		IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => Player;
 
 		//public virtual void Play(int id,BroAudioClip clip, PlaybackPreference pref)

@@ -44,22 +44,22 @@ namespace MiProduction.Extension
 
         public static float ToNormalizeVolume(this float dB,bool allowBoost = false)
         {
-            float maxVol = allowBoost ? MaxBoostDecibelVolume : MaxDecibelVolume;
+            float maxVol = allowBoost ? MaxDecibelVolume : FullDecibelVolume;
             if(dB >= maxVol)
             {
-                return allowBoost ? MaxBoostVolume : MaxVolume;
+                return allowBoost ? MaxVolume : FullVolume;
             }
             return Mathf.Pow(10, dB.ClampDecibel(allowBoost) / 20f);
         }
 
         public static float ClampNormalize(this float vol, bool allowBoost = false)
         {
-            return Mathf.Clamp(vol, MinVolume, allowBoost? MaxBoostVolume : MaxVolume);
+            return Mathf.Clamp(vol, MinVolume, allowBoost? MaxVolume : FullVolume);
         }
 
         public static float ClampDecibel(this float dB, bool allowBoost = false)
         {
-            return Mathf.Clamp(dB,MinDecibelVolume,allowBoost? MaxBoostDecibelVolume : MaxDecibelVolume);
+            return Mathf.Clamp(dB,MinDecibelVolume,allowBoost? MaxDecibelVolume : FullDecibelVolume);
         }
 
         public static bool TryGetSampleData(this AudioClip originClip,out float[] sampleArray, float startPosInSecond = 0f, float endPosInSecond = 0f)
@@ -97,5 +97,15 @@ namespace MiProduction.Extension
 		{
             return new AudioClipSetting(audioClip);
 		}
+
+        public static bool IsValidFrequence(float freq)
+        {
+            if (freq < MinFrequence || freq > MaxFrequence)
+            {
+                Debug.LogWarning($"The given frequence should be in {MinFrequence}Hz ~ {MaxFrequence}Hz.");
+                return false;
+            }
+            return true;
+        }
     }
 }

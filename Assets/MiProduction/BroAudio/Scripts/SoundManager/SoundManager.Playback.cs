@@ -13,6 +13,7 @@ namespace MiProduction.BroAudio.Runtime
         {
             BroAudioType audioType = GetAudioType(id);
             bool isPersistentType = PersistentType.HasFlag(audioType);
+            _effectStateDict.TryGetValue(audioType, out bool isUsingEffect);
 
             if (IsPlayable(id) && TryGetPlayer(id,out var player))
             {
@@ -20,15 +21,16 @@ namespace MiProduction.BroAudio.Runtime
                 var pref = isPersistentType ? new PlaybackPreference(lib.CastTo<MusicLibrary>().Loop, 0f)
                     : new PlaybackPreference(false, lib.CastTo<SoundLibrary>().Delay);
 
+                player.SetEffectMode(isUsingEffect);
                 player.Play(id, lib.CastTo<AudioLibrary>().Clip, pref);
 
                 StartCoroutine(PreventCombFiltering(id, preventTime));
-                return player as IAudioPlayer;
+                return player;
             }
 
             return null;
 
-            bool TryGetPlayer(int id,out IPlaybackControllable audioPlayer)
+            bool TryGetPlayer(int id,out AudioPlayer audioPlayer)
 			{
                 audioPlayer = null;
                 if (AudioPlayer.ResumablePlayers == null || !AudioPlayer.ResumablePlayers.TryGetValue(id,out audioPlayer))

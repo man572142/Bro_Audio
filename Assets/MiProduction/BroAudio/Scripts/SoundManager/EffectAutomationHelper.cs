@@ -21,8 +21,6 @@ namespace MiProduction.BroAudio.Runtime
 		public const string LowPassExposedName = EffectTrackName + "_LowPass";
 		public const string HighPassExposedName = EffectTrackName + "_HighPass";
 
-		public event Action OnResetEffect;
-
 		private readonly MonoBehaviour _mono = null;
 		private readonly AudioMixer _mixer = null;
 		private readonly YieldInstructionWrapper _yieldWrapper = new YieldInstructionWrapper();
@@ -34,24 +32,46 @@ namespace MiProduction.BroAudio.Runtime
 			_mixer = mixer;
 		}
 
-		public void ForSeconds(float seconds)
-		=> _yieldWrapper.SetInstruction(new WaitForSeconds(seconds));
-		public void Until(Coroutine coroutine)
-			=> _yieldWrapper.SetInstruction(coroutine);
-		public void Until(Func<bool> predicate)
-			=> _yieldWrapper.SetInstruction(new WaitUntil(predicate));
-		public void Until(IEnumerator enumerator)
-			=> _yieldWrapper.SetInstruction(enumerator);
-		public void While(Func<bool> predicate)
-			=> _yieldWrapper.SetInstruction(new WaitWhile(predicate));
+		public WaitForSeconds ForSeconds(float seconds)
+		{
+			var forSeconds = new WaitForSeconds(seconds);
+			_yieldWrapper.SetInstruction(forSeconds);
+			return forSeconds;
+		}
 
-		public void SetEffectTrackParameter(EffectParameter effect)
+		public Coroutine Until(Coroutine coroutine)
+		{
+			_yieldWrapper.SetInstruction(coroutine);
+			return coroutine;
+		}
+
+		public WaitUntil Until(Func<bool> predicate)
+		{
+			var wait = new WaitUntil(predicate);
+			_yieldWrapper.SetInstruction(wait);
+			return wait;
+		}
+
+		public IEnumerator Until(IEnumerator enumerator)
+		{
+			_yieldWrapper.SetInstruction(enumerator);
+			return enumerator;
+		}
+
+		public WaitWhile While(Func<bool> predicate)
+		{
+			var wait = new WaitWhile(predicate);
+			_yieldWrapper.SetInstruction(wait);
+			return wait;
+		}
+
+		public void SetEffectTrackParameter(EffectParameter effect,Action onReset)
 		{
 			_trackTweakingDict ??= new Dictionary<EffectType, Tweaker>();
 
 			if (effect.Type == EffectType.None)
 			{
-				ResetAllEffect(effect.FadeTime, effect.FadingEase);
+				ResetAllEffect(effect.FadeTime, effect.FadingEase,onReset);
 				return;
 			}
 
@@ -73,12 +93,12 @@ namespace MiProduction.BroAudio.Runtime
 
 			tweaker ??= new Tweaker();
 			tweaker.OriginValue = originValue;
-			tweaker.Coroutine = _mono.StartCoroutine(TweakTrackParameter(effect, originValue));
+			tweaker.Coroutine = _mono.StartCoroutine(TweakTrackParameter(effect, originValue,onReset));
 			tweaker.IsTweaking = true;
 			_trackTweakingDict[effect.Type] = tweaker;
 		}
 
-		private IEnumerator TweakTrackParameter(EffectParameter effect, float originValue)
+		private IEnumerator TweakTrackParameter(EffectParameter effect, float originValue,Action onReset)
 		{
 			string paraName = GetEffectParameterName(effect.Type);
 
@@ -87,11 +107,7 @@ namespace MiProduction.BroAudio.Runtime
 			if (_yieldWrapper.HasYieldInstruction())
 			{
 				yield return _yieldWrapper.Execute();
-				yield return Tweak(effect.Value, originValue, effect.FadeTime, effect.FadingEase, paraName, OnResetEffect);
-			}
-			else
-			{
-				// TODO: ²M±¼OnResetEffect?
+				yield return Tweak(effect.Value, originValue, effect.FadeTime, effect.FadingEase, paraName, onReset);
 			}
 
 			_trackTweakingDict[effect.Type].IsTweaking = false;
@@ -121,7 +137,7 @@ namespace MiProduction.BroAudio.Runtime
 			return true;
 		}
 
-		private void ResetAllEffect(float fadeTime, Ease ease)
+		private void ResetAllEffect(float fadeTime, Ease ease,Action onReset)
 		{
 			foreach (var pair in _trackTweakingDict)
 			{
@@ -131,7 +147,7 @@ namespace MiProduction.BroAudio.Runtime
 				{
 					string paraName = GetEffectParameterName(effectType);
 					_mono.SafeStopCoroutine(tweaker.Coroutine);
-					tweaker.Coroutine = _mono.StartCoroutine(Tweak(current, tweaker.OriginValue, fadeTime, ease, paraName, OnResetEffect));
+					tweaker.Coroutine = _mono.StartCoroutine(Tweak(current, tweaker.OriginValue, fadeTime, ease, paraName, onReset));
 					tweaker.IsTweaking = true;
 					tweaker.OriginValue = GetEffectDefaultValue(effectType);
 				}

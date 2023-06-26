@@ -59,23 +59,5 @@ namespace MiProduction.Extension
 				Pool.Add(obj);
 			}
 		}
-
-		public T GetObject(Predicate<T> predicate)
-		{
-			foreach (var obj in Pool)
-			{
-				if (predicate.Invoke(obj))
-				{
-					return obj;
-				}
-			}
-			return null;
-		}
-
-		public bool TryGetObject(Predicate<T> predicate, out T obj)
-		{
-			obj = GetObject(predicate);
-			return obj != null;
-		}
 	}
 }

@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using MiProduction.BroAudio.Data;
 using static MiProduction.BroAudio.Utility;
@@ -8,20 +7,31 @@ namespace MiProduction.BroAudio.Runtime
 {
     public partial class SoundManager : MonoBehaviour
     {
+        private class AudioTypePreference
+		{
+            public float Volume = AudioConstant.FullVolume;
+            public bool IsUsingEffect = false;
+		}
+
 		#region Play
 		public IAudioPlayer Play(int id, float preventTime)
         {
             BroAudioType audioType = GetAudioType(id);
             bool isPersistentType = PersistentType.HasFlag(audioType);
-            _effectStateDict.TryGetValue(audioType, out bool isUsingEffect);
+            ;
 
             if (IsPlayable(id) && TryGetPlayer(id,out var player))
             {
+                if (_auidoTypePref.TryGetValue(audioType, out var audioTypePref))
+                {
+                    player.SetEffectMode(audioTypePref.IsUsingEffect);
+                    player.SetVolume(audioTypePref.Volume, 0f);
+                }
+
                 var lib = _audioBank[id];
                 var pref = isPersistentType ? new PlaybackPreference(lib.CastTo<MusicLibrary>().Loop, 0f)
                     : new PlaybackPreference(false, lib.CastTo<SoundLibrary>().Delay);
 
-                player.SetEffectMode(isUsingEffect);
                 player.Play(id, lib.CastTo<AudioLibrary>().Clip, pref);
 
                 StartCoroutine(PreventCombFiltering(id, preventTime));
@@ -70,31 +80,28 @@ namespace MiProduction.BroAudio.Runtime
 		#endregion
 
 		#region Stop
-		public void StopPlaying(BroAudioType audioType)
+		public void Stop(BroAudioType targetType)
         {
-            if (audioType == BroAudioType.All)
+            ForeachAudioType((audioType) => 
             {
-                LoopAllAudioType((loopAudioType) => Stop(loopAudioType));
-            }
-            else
-            {
-                Stop(audioType);
-            }
+                StopPlayer(x => targetType.HasFlag(GetAudioType(x.ID)));           
+            });
+        }
 
-            void Stop(BroAudioType target)
+        public void Stop(int id)
+        {
+            StopPlayer(x => x.ID == id);
+        }
+
+        private void StopPlayer(Predicate<AudioPlayer> predicate)
+        {
+            var players = _audioPlayerPool.GetInUseAudioPlayers();
+            foreach (var player in players)
             {
-                if (_audioPlayerPool.TryGetObject(x => target.HasFlag(GetAudioType(x.ID)), out var player))
+                if (predicate.Invoke(player))
                 {
                     player.Stop();
                 }
-            }
-        }
-
-        public void StopPlaying(int id)
-        {
-            if (_audioPlayerPool.TryGetObject(x => x.ID == id, out var player))
-            {
-                player.Stop();
             }
         }
         #endregion

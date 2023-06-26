@@ -84,7 +84,7 @@ namespace MiProduction.BroAudio
 		/// <summary>
 		/// 每輪迴圈以callback回傳AudioType
 		/// </summary>
-		public static void LoopAllAudioType(Action<BroAudioType> loopCallback)
+		public static void ForeachAudioType(Action<BroAudioType> loopCallback)
 		{
 			BroAudioType currentType = BroAudioType.None;
 			While(_ => currentType <= (BroAudioType)LastAudioType, () =>
@@ -97,7 +97,6 @@ namespace MiProduction.BroAudio
 
 		public static bool IsInvalidName(string name,out ValidationErrorCode errorCode)
 		{
-			
 			if (String.IsNullOrWhiteSpace(name))
 			{
 				errorCode = ValidationErrorCode.IsNullOrEmpty;

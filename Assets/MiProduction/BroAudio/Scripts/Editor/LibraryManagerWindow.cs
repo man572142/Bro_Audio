@@ -200,7 +200,7 @@ namespace MiProduction.BroAudio.Editor
 		{
 			_assetOption = new GenericMenu();
 
-			LoopAllAudioType((BroAudioType audioType) =>
+			ForeachAudioType((BroAudioType audioType) =>
 			{
 				if (audioType == BroAudioType.None)
 				{

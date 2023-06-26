@@ -80,9 +80,16 @@ namespace MiProduction.BroAudio.Runtime
 
         IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime)
         {
-            // ¥u°ÊTrackVolume
             this.SafeStopCoroutine(_trackVolumeControlCoroutine);
-            _trackVolumeControlCoroutine = StartCoroutine(Fade(vol, fadeTime, VolumeControl.Track));
+            if(fadeTime > 0)
+			{
+                _trackVolumeControlCoroutine = StartCoroutine(Fade(vol, fadeTime, VolumeControl.Track));
+            }
+            else
+			{
+                TrackVolume = vol;
+			}
+
             return this;
         }
 
@@ -104,6 +111,12 @@ namespace MiProduction.BroAudio.Runtime
                 case VolumeControl.MixerDecibel:
                     break;
             }
+
+            if(duration <= 0)
+			{
+                SetVol(targetVol);
+                yield break;
+			}
 
             float startVol = GetVol();
             Ease ease = startVol < targetVol ? SoundManager.FadeInEase : SoundManager.FadeOutEase;

@@ -1,14 +1,15 @@
 using System;
 using System.Collections;
+using UnityEngine;
 
 namespace MiProduction.BroAudio.Runtime
 {
 	public interface IAutoResetWaitable
 	{
-		void Until(Func<bool> predicate);
-		void Until(IEnumerator enumerator);
-		void While(Func<bool> predicate);
-		void ForSeconds(float seconds);
+		WaitUntil Until(Func<bool> predicate);
+		Coroutine Until(Coroutine coroutine);
+		IEnumerator Until(IEnumerator enumerator);
+		WaitWhile While(Func<bool> predicate);
+		WaitForSeconds ForSeconds(float seconds);
 	}
-
 }

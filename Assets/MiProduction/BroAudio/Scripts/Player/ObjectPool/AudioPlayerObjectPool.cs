@@ -68,11 +68,5 @@ namespace MiProduction.BroAudio.Runtime
 				}
 			}	
 		}
-
-		public bool TryGetInUseAudioPlayers(out IEnumerable<AudioPlayer> players)
-		{
-			players = GetInUseAudioPlayers();
-			return players != null;
-		}
 	}
 }

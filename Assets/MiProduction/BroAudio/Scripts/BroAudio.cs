@@ -46,7 +46,7 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <param name="audioType">停止的聲音類型</param>
         public static void Stop(BroAudioType audioType) 
-            => SoundManager.Instance.StopPlaying(audioType);
+            => SoundManager.Instance.Stop(audioType);
 
         /// <summary>
         /// 停止播放
@@ -54,7 +54,7 @@ namespace MiProduction.BroAudio
         /// <param name="fadeTime">自定FadeOut時間長度</param>
         /// <param name="id">停止的聲音ID (相同聲音類型的也都會停止)</param>
         public static void Stop(AudioID id) 
-            => SoundManager.Instance.StopPlaying(id);
+            => SoundManager.Instance.Stop(id);
         #endregion
 
         #region Volume

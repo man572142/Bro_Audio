@@ -54,7 +54,7 @@ namespace MiProduction.BroAudio.Runtime
         [SerializeField] private List<ScriptableObject> _soundAssets = new List<ScriptableObject>();
         private Dictionary<int, IAudioLibrary> _audioBank = new Dictionary<int, IAudioLibrary>();
 
-        private Dictionary<BroAudioType, AudioTypePreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePreference>();
+        private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
 
         // 防止Haas Effect產生的Comb Filtering效應
@@ -109,7 +109,7 @@ namespace MiProduction.BroAudio.Runtime
                     var audioType = GetAudioType(library.ID);
                     if(!_auidoTypePref.ContainsKey(audioType))
 					{
-                        _auidoTypePref.Add(audioType, new AudioTypePreference());
+                        _auidoTypePref.Add(audioType, new AudioTypePlaybackPreference());
 					}
                 }
 			}
@@ -119,32 +119,25 @@ namespace MiProduction.BroAudio.Runtime
         #region Volume
         public void SetVolume(float vol, BroAudioType targetType, float fadeTime)
 		{
-            ForeachAudioType((audioType) => 
+            GetPlaybackPrefByType(targetType, pref => pref.Volume = vol);
+            GetCurrentPlayers(player => 
             { 
-                if(targetType.HasFlag(audioType))
+                if(targetType.HasFlag(GetAudioType(player.ID)))
 				{
-                    _auidoTypePref[audioType].Volume = vol;
-                }       
+                    player.SetVolume(vol, fadeTime);
+                }
             });
-
-            SetInUsePlayerVolume(x => targetType.HasFlag(GetAudioType(x.ID)), vol, fadeTime);
         }
 
 		public void SetVolume(float vol, int id, float fadeTime)
 		{
-            SetInUsePlayerVolume(x => x.ID == id, vol, fadeTime);
-        }
-
-        private void SetInUsePlayerVolume(Predicate<AudioPlayer> predicate,float vol,float fadeTime)
-        {
-            var players = _audioPlayerPool.GetInUseAudioPlayers();
-            foreach(var player in players)
-			{
-                if (predicate.Invoke(player))
-				{
+            GetCurrentPlayers(player =>
+            {
+                if (player.ID == id)
+                {
                     player.SetVolume(vol, fadeTime);
                 }
-			}
+            });
         }
 		#endregion
 
@@ -159,36 +152,44 @@ namespace MiProduction.BroAudio.Runtime
 			bool isOn = effect.Type != EffectType.None;
 			SetPlayersEffect(targetType, isOn);
 
-			return SetEffectTrackParameter(effect,() => SetPlayersEffect(targetType,false));
-		}
+            _automationHelper.SetEffectTrackParameter(effect, () => SetPlayersEffect(targetType, false));
+            return _automationHelper;
+        }
 
         private void SetPlayersEffect(BroAudioType targetType, bool isOn)
         {
+            GetPlaybackPrefByType(targetType, pref => pref.IsUsingEffect = isOn);
+            GetCurrentPlayers(player => 
+            {
+                if(targetType.HasFlag(GetAudioType(player.ID)))
+				{
+                    player.SetEffectMode(isOn);
+				}
+            });
+        }
+        #endregion
+
+        private void GetPlaybackPrefByType(BroAudioType targetType, Action<AudioTypePlaybackPreference> onGetPref)
+        {
+            // For those which may be played in the future.
             ForeachAudioType((audioType) =>
             {
-                if (_auidoTypePref.ContainsKey(audioType) && targetType.HasFlag(audioType))
+                if (targetType.HasFlag(audioType) && _auidoTypePref.TryGetValue(audioType,out var pref))
                 {
-                    _auidoTypePref[audioType].IsUsingEffect = isOn;
+                    onGetPref.Invoke(pref);
                 }
             });
+        }
 
+        private void GetCurrentPlayers(Action<AudioPlayer> onGetPlayer)
+        {
+            // For those which are currently playing.
             var players = _audioPlayerPool.GetInUseAudioPlayers();
             foreach (var player in players)
             {
-                var audioType = GetAudioType(player.ID);
-                if (targetType.HasFlag(audioType))
-                {
-                    player.SetEffectMode(isOn);
-                }
+                onGetPlayer.Invoke(player);
             }
         }
-
-        public IAutoResetWaitable SetEffectTrackParameter(EffectParameter effect,Action onReset = null)
-		{
-            _automationHelper.SetEffectTrackParameter(effect, onReset);
-            return _automationHelper;
-        }
-        #endregion
 
         private bool TryGetNewAudioPlayer(out AudioPlayer player)
         {

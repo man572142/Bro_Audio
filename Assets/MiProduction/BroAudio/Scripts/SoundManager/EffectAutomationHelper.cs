@@ -5,6 +5,7 @@ using MiProduction.Extension;
 using UnityEngine;
 using UnityEngine.Audio;
 using static MiProduction.BroAudio.Utility;
+using static MiProduction.Extension.CoroutineExtension;
 
 namespace MiProduction.BroAudio.Runtime
 {
@@ -13,9 +14,88 @@ namespace MiProduction.BroAudio.Runtime
 		private class Tweaker
 		{
 			public Coroutine Coroutine;
-			public bool IsTweaking;
+			public List<ITweakingWaitable> WaitableList;
 			public float OriginValue;
+
+			public bool TryGetLastWaitable(out ITweakingWaitable waitable)
+			{
+				if (WaitableList != null && WaitableList.Count > 0)
+				{
+					waitable = WaitableList[WaitableList.Count - 1];
+					return true;
+				}
+				waitable = default;
+				return false;
+			}
+
+			public void RemoveLastWaitable()
+			{
+				if (WaitableList != null && WaitableList.Count > 0)
+				{
+					WaitableList.RemoveAt(WaitableList.Count - 1);
+				}
+			}
 		}
+
+		public interface ITweakingWaitable
+		{
+			public EffectParameter Effect { get; }
+			public bool IsFinished();
+			public IEnumerator GetYieldInstruction();
+		}
+
+		private class TweakingWaitable : ITweakingWaitable
+		{
+			public EffectParameter Effect { get; set; }
+			public TweakingWaitable(EffectParameter effect) => Effect = effect;
+			public IEnumerator GetYieldInstruction() => null;
+			public bool IsFinished() => false;
+		}
+
+		private abstract class TweakingWaitableDecorator : ITweakingWaitable
+		{
+			protected ITweakingWaitable Base;
+			public void AttachTo(ITweakingWaitable waitable) => Base = waitable;
+
+			public EffectParameter Effect => Base.Effect; 
+			public abstract IEnumerator GetYieldInstruction();
+			public abstract bool IsFinished();
+		}
+
+		private class TweakAndWaitSeconds : TweakingWaitableDecorator
+		{
+			public readonly float EndTime;
+			private WaitUntil _waitUntil = null;
+
+			public TweakAndWaitSeconds(float seconds)
+			{
+				EndTime = Time.time + seconds;
+			}
+
+			public override bool IsFinished() => Time.time >= EndTime;
+
+			public override IEnumerator GetYieldInstruction()
+			{
+				_waitUntil ??= new WaitUntil(IsFinished);
+				yield return _waitUntil;
+			}
+		}
+
+		private class TweakAndWaitUntil : TweakingWaitableDecorator
+		{
+			public readonly IEnumerator Enumerator;
+			public readonly Func<bool> Condition;
+
+			public TweakAndWaitUntil(IEnumerator enumerator, Func<bool> condition)
+			{
+				Enumerator = enumerator;
+				Condition = condition;
+			}
+
+			public override IEnumerator GetYieldInstruction() => Enumerator;
+			public override bool IsFinished() => Condition();
+		}
+
 
 		public const string EffectTrackName = "Effect";
 		public const string LowPassExposedName = EffectTrackName + "_LowPass";
@@ -23,8 +103,9 @@ namespace MiProduction.BroAudio.Runtime
 
 		private readonly MonoBehaviour _mono = null;
 		private readonly AudioMixer _mixer = null;
-		private readonly YieldInstructionWrapper _yieldWrapper = new YieldInstructionWrapper();
-		private Dictionary<EffectType, Tweaker> _trackTweakingDict = null;
+		private Dictionary<EffectType,Tweaker> _tweakerDict = new Dictionary<EffectType, Tweaker>();
+		private EffectType _latestEffect = default;
+
 
 		public EffectAutomationHelper(MonoBehaviour mono, AudioMixer mixer)
 		{
@@ -34,89 +115,120 @@ namespace MiProduction.BroAudio.Runtime
 
 		public WaitForSeconds ForSeconds(float seconds)
 		{
-			var forSeconds = new WaitForSeconds(seconds);
-			_yieldWrapper.SetInstruction(forSeconds);
-			return forSeconds;
+			var decoration = new TweakAndWaitSeconds(seconds);
+			DecorateTweakingWaitable(decoration);
+			return new WaitForSeconds(seconds);
 		}
 
-		public Coroutine Until(Coroutine coroutine)
+		public WaitUntil Until(Func<bool> condition)
 		{
-			_yieldWrapper.SetInstruction(coroutine);
-			return coroutine;
+			var instruction = new WaitUntil(condition);
+			var decoration = new TweakAndWaitUntil(instruction,condition);
+			DecorateTweakingWaitable(decoration);
+			return instruction;
 		}
 
-		public WaitUntil Until(Func<bool> predicate)
+		public WaitWhile While(Func<bool> condition)
 		{
-			var wait = new WaitUntil(predicate);
-			_yieldWrapper.SetInstruction(wait);
-			return wait;
+			var instruction = new WaitWhile(condition);
+			var decoration = new TweakAndWaitUntil(instruction, InvertCondition);
+			DecorateTweakingWaitable(decoration);
+			return instruction;
+
+			bool InvertCondition() => !condition();
 		}
 
-		public IEnumerator Until(IEnumerator enumerator)
+
+		private void DecorateTweakingWaitable(TweakingWaitableDecorator decoration)
 		{
-			_yieldWrapper.SetInstruction(enumerator);
-			return enumerator;
+			EffectType effectType = _latestEffect;
+			if (effectType == EffectType.None)
+			{
+				LogWarning("AutoResetWaitable on EffectType.None is currently not supported.");
+			}
+			else if (_tweakerDict.TryGetValue(effectType,out var tweaker))
+			{
+				int lastIndex = tweaker.WaitableList.Count - 1;
+				var current = tweaker.WaitableList[lastIndex];
+				if(current is TweakingWaitable)
+				{
+					decoration.AttachTo(current);
+					tweaker.WaitableList[lastIndex] = decoration;
+				}
+				else
+				{
+					LogError($"The latest waitable isn't the base type:{nameof(TweakingWaitable)}");
+				}
+			}
 		}
 
-		public WaitWhile While(Func<bool> predicate)
+		public void SetEffectTrackParameter(EffectParameter effect, Action onFinished)
 		{
-			var wait = new WaitWhile(predicate);
-			_yieldWrapper.SetInstruction(wait);
-			return wait;
-		}
-
-		public void SetEffectTrackParameter(EffectParameter effect,Action onReset)
-		{
-			_trackTweakingDict ??= new Dictionary<EffectType, Tweaker>();
+			_latestEffect = effect.Type;
 
 			if (effect.Type == EffectType.None)
 			{
-				ResetAllEffect(effect.FadeTime, effect.FadingEase,onReset);
+				ResetAllEffect(effect.FadeTime, effect.FadingEase, onFinished);
 				return;
 			}
 
-			float originValue = -1f;
-			if (_trackTweakingDict.TryGetValue(effect.Type, out var tweaker))
+			if (!_tweakerDict.TryGetValue(effect.Type, out var tweaker))
 			{
-				originValue = tweaker.IsTweaking ? tweaker.OriginValue : -1f;
-				_mono.SafeStopCoroutine(tweaker.Coroutine);
-			}
-			else
-			{
-				_trackTweakingDict.Add(effect.Type, null);
+				tweaker = new Tweaker();
+				tweaker.OriginValue = GetEffectDefaultValue(effect.Type);
+				_tweakerDict.Add(effect.Type, tweaker);
 			}
 
-			if (originValue == -1 && !TryGetCurrentEffectValue(effect.Type, out originValue))
-			{
-				return;
-			}
+			tweaker.WaitableList ??= new List<ITweakingWaitable>();
+			tweaker.WaitableList.Add(new TweakingWaitable(effect));
 
-			tweaker ??= new Tweaker();
-			tweaker.OriginValue = originValue;
-			tweaker.Coroutine = _mono.StartCoroutine(TweakTrackParameter(effect, originValue,onReset));
-			tweaker.IsTweaking = true;
-			_trackTweakingDict[effect.Type] = tweaker;
+			_mono.StartCoroutineAndReassign(TweakTrackParameter(tweaker, onFinished), ref tweaker.Coroutine);
 		}
 
-		private IEnumerator TweakTrackParameter(EffectParameter effect, float originValue,Action onReset)
+		private IEnumerator TweakTrackParameter(Tweaker tweaker,Action onFinished)
 		{
-			string paraName = GetEffectParameterName(effect.Type);
-
-			yield return Tweak(originValue, effect.Value, effect.FadeTime, effect.FadingEase, paraName);
-
-			if (_yieldWrapper.HasYieldInstruction())
+			while (tweaker.WaitableList.Count > 0)
 			{
-				yield return _yieldWrapper.Execute();
-				yield return Tweak(effect.Value, originValue, effect.FadeTime, effect.FadingEase, paraName, onReset);
+				int lastIndex = tweaker.WaitableList.Count - 1;
+				var effect = tweaker.WaitableList[lastIndex].Effect;
+
+				string paraName = GetEffectParameterName(effect.Type);
+				float currentValue = GetCurrentValue(effect.Type);
+
+				yield return Tweak(currentValue, effect.Value, effect.FadeTime, effect.FadingEase, paraName);
+
+				var waitable = tweaker.WaitableList[lastIndex];
+				if (waitable.GetYieldInstruction() == null)
+				{
+					// means the effect is set permanently
+					tweaker.OriginValue = effect.Value;
+					tweaker.WaitableList.Clear();
+					break;
+				}
+				else if (!waitable.IsFinished())
+				{
+					yield return waitable.GetYieldInstruction();
+				}
+
+				if(tweaker.WaitableList.Count == 1)
+				{
+					// auto reset to origin after last waitable
+					yield return Tweak(GetCurrentValue(effect.Type), tweaker.OriginValue, effect.FadeTime, effect.FadingEase, paraName);
+				}
+
+				tweaker.WaitableList.RemoveAt(lastIndex);
 			}
 
-			_trackTweakingDict[effect.Type].IsTweaking = false;
+			onFinished?.Invoke();
 		}
 
 		private IEnumerator Tweak(float from, float to, float fadeTime, Ease ease, string paraName, Action onTweakingFinshed = null)
 		{
+			if(from == to)
+			{
+				yield break;
+			}
 			var values = AnimationExtension.GetLerpValuesPerFrame(from, to, fadeTime, ease);
-
 			foreach (float value in values)
 			{
 				_mixer.SetFloat(paraName, value);
@@ -126,7 +238,7 @@ namespace MiProduction.BroAudio.Runtime
 			onTweakingFinshed?.Invoke();
 		}
 
-		private bool TryGetCurrentEffectValue(EffectType effectType, out float value)
+		private bool TryGetCurrentValue(EffectType effectType, out float value)
 		{
 			string paraName = GetEffectParameterName(effectType);
 			if (!_mixer.GetFloat(paraName, out value))
@@ -137,19 +249,28 @@ namespace MiProduction.BroAudio.Runtime
 			return true;
 		}
 
+		private float GetCurrentValue(EffectType effectType)
+		{
+			if(TryGetCurrentValue(effectType , out var result))
+			{
+				return result;
+			}
+			return default;
+		}
+
 		private void ResetAllEffect(float fadeTime, Ease ease,Action onReset)
 		{
-			foreach (var pair in _trackTweakingDict)
+			foreach (var pair in _tweakerDict)
 			{
 				Tweaker tweaker = pair.Value;
 				EffectType effectType = pair.Key;
-				if (TryGetCurrentEffectValue(effectType, out float current))
+				if (TryGetCurrentValue(effectType, out float current))
 				{
 					string paraName = GetEffectParameterName(effectType);
 					_mono.SafeStopCoroutine(tweaker.Coroutine);
 					tweaker.Coroutine = _mono.StartCoroutine(Tweak(current, tweaker.OriginValue, fadeTime, ease, paraName, onReset));
-					tweaker.IsTweaking = true;
 					tweaker.OriginValue = GetEffectDefaultValue(effectType);
+					tweaker.WaitableList.Clear();
 				}
 			}
 		}

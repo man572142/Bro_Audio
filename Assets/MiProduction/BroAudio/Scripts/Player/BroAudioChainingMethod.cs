@@ -19,10 +19,10 @@ namespace MiProduction.BroAudio
 			=> player?.GetPlaybackControl();
 
 
-		public static IMusicPlayer AsMusic(this IAudioPlayer player) 
-			=> player?.AsMusic();
-		public static IMusicPlayer AsMusic(this IPlayerEffect player)
-			=> player?.AsMusic();
+		public static IMusicPlayer AsBGM(this IAudioPlayer player) 
+			=> player?.AsBGM();
+		public static IMusicPlayer AsBGM(this IPlayerEffect player)
+			=> player?.AsBGM();
 		public static IMusicPlayer SetTransition(this IMusicPlayer player, Transition transition) 
 			=> player?.SetTransition(transition, Runtime.AudioPlayer.UseLibraryManagerSetting);
 		public static IMusicPlayer SetTransition(this IMusicPlayer player, Transition transition, float overrideFade)
@@ -33,10 +33,10 @@ namespace MiProduction.BroAudio
 			=> player?.SetTransition(transition, stopMode, overrideFade);
 
 
-		public static IPlayerEffect WithEffect(this IAudioPlayer player) 
-			=> player?.WithEffect();
-		public static IPlayerEffect WithEffect(this IMusicPlayer player)
-			=> player?.WithEffect();
+		public static IPlayerEffect AsInvader(this IAudioPlayer player) 
+			=> player?.AsInvader();
+		public static IPlayerEffect AsInvader(this IMusicPlayer player)
+			=> player?.AsInvader();
 
 		/// <summary>
 		/// 除了此Player以外的其他Player都降至指定的音量，直到播放完畢為止

@@ -7,8 +7,9 @@ namespace MiProduction.BroAudio.Runtime
 {
     public partial class SoundManager : MonoBehaviour
     {
-        private class AudioTypePreference
+        private class AudioTypePlaybackPreference
 		{
+            //TODO: 跟另一個PlaybackPref整合?
             public float Volume = AudioConstant.FullVolume;
             public bool IsUsingEffect = false;
 		}
@@ -18,7 +19,6 @@ namespace MiProduction.BroAudio.Runtime
         {
             BroAudioType audioType = GetAudioType(id);
             bool isPersistentType = PersistentType.HasFlag(audioType);
-            ;
 
             if (IsPlayable(id) && TryGetPlayer(id,out var player))
             {

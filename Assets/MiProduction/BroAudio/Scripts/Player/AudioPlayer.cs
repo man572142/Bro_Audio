@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using MiProduction.BroAudio.Data;
-using MiProduction.Extension;
 using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Runtime
@@ -25,7 +24,7 @@ namespace MiProduction.BroAudio.Runtime
         // TODO : Don't use instance
         private BroAudioClip CurrentClip;
         private List<AudioPlayerDecorator> _decorators = null;
-        private string _effectParaName = null;
+        private string _sendParaName = null;
         private bool _isUsingEffect = false;
 
         public bool IsPlaying => AudioSource.isPlaying;
@@ -39,13 +38,13 @@ namespace MiProduction.BroAudio.Runtime
             private set 
             {
                 _isUsingEffect = value;
-                if (_isUsingEffect && AudioTrack && string.IsNullOrEmpty(_effectParaName))
+                if (_isUsingEffect && AudioTrack && string.IsNullOrEmpty(_sendParaName))
                 {
-                    _effectParaName = AudioTrack.name + SendParaName;
+                    _sendParaName = AudioTrack.name + SendParaName;
                 }
             } 
         }
-        public string VolumeParaName => IsUsingEffect ? _effectParaName : AudioTrack.name;
+        public string VolumeParaName => IsUsingEffect ? _sendParaName : AudioTrack.name;
         public AudioMixerGroup AudioTrack 
         {
             get => AudioSource.outputAudioMixerGroup;
@@ -76,20 +75,20 @@ namespace MiProduction.BroAudio.Runtime
 
         private void ChangeChannel()
 		{
-            float effectVol = IsUsingEffect ? AudioConstant.FullDecibelVolume : AudioConstant.MinDecibelVolume;
-            float mainVol = IsUsingEffect ? AudioConstant.MinDecibelVolume : AudioConstant.FullDecibelVolume;
+            float sendVol = IsUsingEffect ? MixerDecibelVolume : AudioConstant.MinDecibelVolume;
+            float mainVol = IsUsingEffect ? AudioConstant.MinDecibelVolume : MixerDecibelVolume;
 
-            AudioMixer.SetFloat(_effectParaName, effectVol);
+            AudioMixer.SetFloat(_sendParaName, sendVol);
             AudioMixer.SetFloat(AudioTrack.name, mainVol);
         }
 
         IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => this;
 
-        IMusicPlayer IMusicDecoratable.AsMusic()
+        IMusicPlayer IMusicDecoratable.AsBGM()
         {
             return GetDecorator<MusicPlayer>();
         }
-        IPlayerEffect IEffectDecoratable.WithEffect()
+        IPlayerEffect IEffectDecoratable.AsInvader()
         {
             return GetDecorator<AudioPlayerEffect>();
         }

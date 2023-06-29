@@ -7,9 +7,7 @@ namespace MiProduction.BroAudio.Runtime
 	public interface IAutoResetWaitable
 	{
 		WaitUntil Until(Func<bool> predicate);
-		Coroutine Until(Coroutine coroutine);
-		IEnumerator Until(IEnumerator enumerator);
-		WaitWhile While(Func<bool> predicate);
+		WaitWhile While(Func<bool> condition);
 		WaitForSeconds ForSeconds(float seconds);
 	}
 }

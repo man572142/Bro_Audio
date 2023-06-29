@@ -14,17 +14,13 @@ namespace MiProduction.BroAudio.Runtime
 				return this;
 			}
 
-			Player.SetEffectMode(true);
-
-			float targetVolInDb = AudioExtension.ToDecibel(othersVol);
-			EffectParameter parameter = new EffectParameter()
+			EffectParameter effect = new EffectParameter(EffectType.Volume)
 			{
-				Value = targetVolInDb,
+				Value = othersVol,
 				FadeTime = fadeTime,
-				Type = EffectType.Volume
 			};
 
-			SoundManager.Instance.SetEffectTrackParameter(parameter).While(PlayerIsPlaying);
+			SetAllEffectExceptMyself(effect);
 			return this;
 		}
 
@@ -35,16 +31,13 @@ namespace MiProduction.BroAudio.Runtime
                 return this;
             }
 
-            Player.SetEffectMode(true);
-
-            EffectParameter parameter = new EffectParameter()
+            EffectParameter effect = new EffectParameter(EffectType.LowPass)
             {
                 Value = freq,
                 FadeTime = fadeTime,
-                Type = EffectType.LowPass
             };
 
-            SoundManager.Instance.SetEffectTrackParameter(parameter).While(PlayerIsPlaying);
+            SetAllEffectExceptMyself(effect);
             return this;
         }
 
@@ -55,17 +48,21 @@ namespace MiProduction.BroAudio.Runtime
                 return this;
             }
 
-            Player.SetEffectMode(true);
-
-            EffectParameter parameter = new EffectParameter()
+            EffectParameter effect = new EffectParameter(EffectType.HighPass)
             {
                 Value = freq,
                 FadeTime = fadeTime,
-                Type = EffectType.HighPass
             };
 
-            SoundManager.Instance.SetEffectTrackParameter(parameter).While(PlayerIsPlaying);
+            SetAllEffectExceptMyself(effect);
             return this;
+        }
+
+        private void SetAllEffectExceptMyself(EffectParameter effect)
+        {
+            // set effect for all except this plyer itself
+            SoundManager.Instance.SetEffect(BroAudioType.All, effect).While(PlayerIsPlaying);
+            Player.SetEffectMode(false);
         }
 
         private bool PlayerIsPlaying()

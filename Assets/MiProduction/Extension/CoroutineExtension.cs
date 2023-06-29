@@ -9,10 +9,15 @@ namespace MiProduction.Extension
     {
         public static void SafeStopCoroutine(this MonoBehaviour source, Coroutine coroutine)
         {
-            if (coroutine != null)
+            if (coroutine != null && source)
             {
                 source.StopCoroutine(coroutine);
             }
+        }
+
+        public static void SafeStop(this Coroutine coroutine, MonoBehaviour source)
+		{
+            source.SafeStopCoroutine(coroutine);
         }
 
         public static Coroutine StartCoroutineAndReassign(this MonoBehaviour source, IEnumerator enumerator, ref Coroutine coroutine)
@@ -20,6 +25,17 @@ namespace MiProduction.Extension
             source.SafeStopCoroutine(coroutine);
             coroutine = source.StartCoroutine(enumerator);
             return coroutine;
+        }
+
+
+        public static IEnumerator GetEnumerator(this YieldInstruction instruction)
+        {
+            return Enumerator();
+
+            IEnumerator Enumerator()
+            {
+                yield return instruction;
+            }
         }
     } 
 }

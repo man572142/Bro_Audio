@@ -5,8 +5,9 @@ namespace MiProduction.BroAudio
 	public struct EffectParameter
 	{
 		private float _value;
-		public float FadeTime;
+
 		public EffectType Type;
+		public float FadeTime;
 		public Ease FadingEase;
 
 		public float Value
@@ -14,6 +15,12 @@ namespace MiProduction.BroAudio
 			get => _value;
 			set
 			{
+				if(Type == EffectType.None)
+				{
+					Utility.LogError("EffectParameter's EffectType must be set before the Value");
+					return;
+				}
+
 				if(Type == EffectType.Volume)
 				{
 					if (value <= 1f && value >= 0f)

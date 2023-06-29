@@ -34,8 +34,8 @@ namespace MiProduction.BroAudio.Runtime
 		public bool IsPlaying => Player.IsPlaying;
 
 		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Player.SetVolume(vol, fadeTime);
-		IMusicPlayer IMusicDecoratable.AsMusic() => Player.AsMusic();
-		IPlayerEffect IEffectDecoratable.WithEffect() => Player.WithEffect();
+		IMusicPlayer IMusicDecoratable.AsBGM() => Player.AsBGM();
+		IPlayerEffect IEffectDecoratable.AsInvader() => Player.AsInvader();
 		IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => Player;
 
 		//public virtual void Play(int id,BroAudioClip clip, PlaybackPreference pref)

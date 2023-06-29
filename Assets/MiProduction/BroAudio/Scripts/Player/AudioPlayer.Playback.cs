@@ -134,6 +134,7 @@ namespace MiProduction.BroAudio.Runtime
             {
                 return;
             }
+
             _isReadyToPlay = false;
             _stopMode = stopMode;
             this.StartCoroutineAndReassign(StopControl(overrideFade, onFinished, stopMode), ref _playbackControlCoroutine);

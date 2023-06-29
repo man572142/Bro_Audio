@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using MiProduction.BroAudio;
+using MiProduction.Extension;
 using System;
 
 public class Sample : MonoBehaviour
@@ -18,23 +19,32 @@ public class Sample : MonoBehaviour
 
 	private IEnumerator PlayTest()
     {
-        BroAudio.Play(_music1).AsMusic();
+		Debug.Log("Play _music1");
+        BroAudio.Play(_music1).AsBGM();
         yield return new WaitForSeconds(2f);
 
+		Debug.Log("Set effect lowPass");
 		var effect = new EffectParameter(EffectType.LowPass);
-		effect.FadeTime = 0f;
-		effect.FadingEase = MiProduction.Extension.Ease.OutCubic;
-		var notUI = BroAudioType.All ^ BroAudioType.UI;
+		effect.FadeTime = 2f;
+		effect.FadingEase = Ease.OutCubic;
+		effect.Value = 800f;
+		var xorUI = BroAudioType.All ^ BroAudioType.UI;
+		BroAudio.SetEffect(effect, xorUI).ForSeconds(15f);
+		yield return new WaitForSeconds(2f);
 
-		BroAudio.SetEffect(effect, notUI).ForSeconds(5f);
-		yield return new WaitForSeconds(5f);
+		Debug.Log("Play _voiceOver as invader");
+		BroAudio.Play(_voiceOver)
+			.AsInvader().QuietOthers(0.3f,BroAdvice.FadeTime_Smooth);
 
-		BroAudio.Play(_music2)
-			.AsMusic().SetTransition(Transition.Default, StopMode.Mute, 2f);
 		yield return new WaitForSeconds(3f);
 
-		effect.Type = EffectType.None;
-		BroAudio.SetEffect(effect);
+		Debug.Log("Play _music2");
+		BroAudio.Play(_music2)
+			.AsBGM().SetTransition(Transition.Default, StopMode.Mute, 2f);
+
+		//Debug.Log("Set effect none");
+		//effect.Type = EffectType.None;
+		//BroAudio.SetEffect(effect);
 
 		//BroAudio.Play(_voiceOver).WithEffect().LowPassOthers();
 		//yield return new WaitForSeconds(6.826f);

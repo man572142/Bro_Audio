@@ -45,13 +45,15 @@ namespace MiProduction.BroAudio.Editor
 		private VerticalGapDrawingHelper _gapDrawer = new VerticalGapDrawingHelper();
 		private LibraryIDController _libraryIdController = new LibraryIDController();
 
+		private Gradient gradient = new Gradient();
+
 
 		[MenuItem(LibraryManagerMenuPath, false,LibraryManagerMenuIndex)]
 		public static LibraryManagerWindow ShowWindow()
 		{
 			EditorWindow window = GetWindow(typeof(LibraryManagerWindow));
 			window.minSize = BroAudioGUISetting.MinWindowSize;
-			window.titleContent = new GUIContent("BroAudio Library Manager");
+			window.titleContent = new GUIContent("Library Manager");
 			window.Show();
 			return window as LibraryManagerWindow;
 		}
@@ -70,6 +72,11 @@ namespace MiProduction.BroAudio.Editor
 				_assetReorderableList.index = index;
 				OnSelect(_assetReorderableList);
 			}
+		}
+
+		private void OnLostFocus()
+		{
+			EditorPlayAudioClip.StopAllClips();
 		}
 
 		public void RemoveAssetEditor(string guid)
@@ -263,22 +270,31 @@ namespace MiProduction.BroAudio.Editor
 		{
 			_gapDrawer.DrawLineCount = 0;
 
-			EditorGUILayout.LabelField(nameof(BroAudio).ToBold().SetColor(MainTitleColor).SetSize(30), GUIStyleHelper.Instance.RichText);
-			EditorGUILayout.Space(20f);
+			//DrawASCIITitle();
+			
 
 			EditorGUILayout.BeginHorizontal();
 			{
-				EditorGUILayout.Space(_gapDrawer.GetSpace());
+                
+                EditorGUILayout.Space(_gapDrawer.GetSpace());
 				EditorScriptingExtension.SplitRectHorizontal(position, 0.3f, _gapDrawer.GetSpace(), out Rect assetListRect, out Rect librariesRect);
 
-				DrawAssetList(assetListRect);
+				EditorGUILayout.BeginVertical();
+				{
+                    EditorGUILayout.LabelField(nameof(BroAudio).ToBold().SetColor(MainTitleColor).SetSize(30), GUIStyleHelper.Instance.RichText);
+                    EditorGUILayout.Space(10f);
+                    DrawAssetList(assetListRect);
+                }
+				EditorGUILayout.EndVertical();
+				
 				EditorGUILayout.Space(_gapDrawer.GetSpace());
-				librariesRect.width -= _gapDrawer.GetTotalSpace() ;
+				librariesRect.width -= _gapDrawer.GetTotalSpace();
 				DrawLibrariesList(librariesRect);
 			}
 			EditorGUILayout.EndHorizontal();
 		}
 
+		
 
 		private void DrawAssetList(Rect rect)
 		{
@@ -353,5 +369,51 @@ namespace MiProduction.BroAudio.Editor
 			}
 			EditorGUILayout.EndVertical();
 		}
-	}
+
+        private void DrawASCIITitle()
+        {
+			
+            GUIStyle style = new GUIStyle(GUI.skin.label);
+            style.font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
+			style.richText = true;
+
+			string ascii =
+							"########  ########   #######     ###    ##     ## ########  ####  #######  " +
+							"##     ## ##     ## ##     ##   ## ##   ##     ## ##     ##  ##  ##     ## " +
+							"##     ## ##     ## ##     ##  ##   ##  ##     ## ##     ##  ##  ##     ## " +
+							"########  ########  ##     ## ##     ## ##     ## ##     ##  ##  ##     ## " +
+							"##     ## ##   ##   ##     ## ######### ##     ## ##     ##  ##  ##     ## " +
+							"##     ## ##    ##  ##     ## ##     ## ##     ## ##     ##  ##  ##     ## " +
+							"########  ##     ##  #######  ##     ##  #######  ########  ####  #######  ";
+
+			int oneLineLength = "########  ########   #######     ###    ##     ## ########  ####  #######  ".Length;
+
+			int lineCount = 5;
+			int currentLine = 0;
+
+			string line = string.Empty;
+
+			for (int i = 0; i < ascii.Length; i++)
+			{
+				if(ascii[i] == ' ')
+				{
+					line += "_";
+                }
+				else
+				{
+                    line += ascii[i];
+                }
+				
+				if (i != 0 && (i + 1) % oneLineLength == 0)
+				{
+					float evalute = currentLine / (float)lineCount;
+					Color color = gradient.Evaluate(evalute);
+					EditorGUILayout.LabelField(line.SetColor(color), style, GUILayout.Height(EditorGUIUtility.singleLineHeight *0.5f));
+					line = string.Empty;
+					currentLine++;
+				}
+			}
+			gradient = EditorGUILayout.GradientField(gradient, GUILayout.Width(500f));
+		}
+    }
 }

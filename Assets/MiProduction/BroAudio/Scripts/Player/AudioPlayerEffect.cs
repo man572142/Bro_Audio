@@ -62,7 +62,7 @@ namespace MiProduction.BroAudio.Runtime
         {
             // set effect for all except this plyer itself
             SoundManager.Instance.SetEffect(BroAudioType.All, effect).While(PlayerIsPlaying);
-            Player.SetEffectMode(false);
+            Player.SetEffect(effect.Type,SetEffectMode.Remove);
         }
 
         private bool PlayerIsPlaying()

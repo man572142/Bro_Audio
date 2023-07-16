@@ -50,7 +50,7 @@ namespace MiProduction.BroAudio.Editor
 
 		public ReorderableClips(SerializedProperty audioSetProperty,IEditorDrawLineCounter editorDrawer)
 		{
-			_playModeProp = audioSetProperty.FindPropertyRelative(nameof(AudioLibrary.MulticlipsPlayMode));
+			_playModeProp = audioSetProperty.FindPropertyRelative(AudioLibrary.NameOf_MulticlipsPlayMode);
 			_reorderableList = CreateReorderabeList(audioSetProperty);
 			UpdatePlayMode();
 			_editorDrawer = editorDrawer;

@@ -32,23 +32,16 @@ namespace MiProduction.BroAudio.Runtime
         public bool IsFadingOut { get; private set; }
         public bool IsFadingIn { get; private set; }
         public int ID { get; private set; }
-        public bool IsUsingEffect 
-        { 
-            get => _isUsingEffect;
-            private set 
-            {
-                _isUsingEffect = value;
-                if (_isUsingEffect && AudioTrack && string.IsNullOrEmpty(_sendParaName))
-                {
-                    _sendParaName = AudioTrack.name + SendParaName;
-                }
-            } 
-        }
-        public string VolumeParaName => IsUsingEffect ? _sendParaName : AudioTrack.name;
+        public EffectType CurrentActiveEffects { get; private set; } = EffectType.None;
+        public string VolumeParaName => _isUsingEffect ? _sendParaName : AudioTrack.name;
         public AudioMixerGroup AudioTrack 
         {
             get => AudioSource.outputAudioMixerGroup;
-            set => AudioSource.outputAudioMixerGroup = value;
+            set
+			{
+                AudioSource.outputAudioMixerGroup = value;
+                _sendParaName = value == null ? null : AudioSource.outputAudioMixerGroup.name + SendParaName;
+            }
         }
 
         protected virtual void Awake()
@@ -63,26 +56,39 @@ namespace MiProduction.BroAudio.Runtime
             }
         }
 
-		public void SetEffectMode(bool isOn)
-		{     
-            bool hasChanged = IsUsingEffect != isOn;       
-            IsUsingEffect = isOn;
-            if (IsPlaying && hasChanged)
+		public void SetEffect(EffectType effect,SetEffectMode mode)
+		{ 
+			switch (mode)
 			{
-                ChangeChannel();
-            }
-        }
+				case SetEffectMode.Add:
+                    CurrentActiveEffects |= effect;
+                    break;
+				case SetEffectMode.Remove:
+                    CurrentActiveEffects &= ~effect;
+                    break;
+				case SetEffectMode.Override:
+                    CurrentActiveEffects = effect;
+                    break;
+			}
 
-        private void ChangeChannel()
+            bool newState = CurrentActiveEffects != EffectType.None;
+			if (_isUsingEffect != newState)
+			{
+				_isUsingEffect = newState;
+				ChangeChannel();
+			}
+		}
+
+		private void ChangeChannel()
 		{
-            float sendVol = IsUsingEffect ? MixerDecibelVolume : AudioConstant.MinDecibelVolume;
-            float mainVol = IsUsingEffect ? AudioConstant.MinDecibelVolume : MixerDecibelVolume;
+			float sendVol = _isUsingEffect ? MixerDecibelVolume : AudioConstant.MinDecibelVolume;
+			float mainVol = _isUsingEffect ? AudioConstant.MinDecibelVolume : MixerDecibelVolume;
 
-            AudioMixer.SetFloat(_sendParaName, sendVol);
-            AudioMixer.SetFloat(AudioTrack.name, mainVol);
-        }
+			AudioMixer.SetFloat(_sendParaName, sendVol);
+			AudioMixer.SetFloat(AudioTrack.name, mainVol);
+		}
 
-        IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => this;
+		IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => this;
 
         IMusicPlayer IMusicDecoratable.AsBGM()
         {

@@ -1,4 +1,7 @@
 {
     "AssetOutputPath": "Assets/MiProduction/BroAudio/AudioAssets",
-    "GUIDs": []
+    "GUIDs": [
+        "5d00903d941fff940921056feda97925",
+        "d52edcf0a5ea9ce469a144f89a07aeec"
+    ]
 }

@@ -14,6 +14,8 @@ namespace MiProduction.BroAudio.Runtime
 	{
         public static Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
+        public event Action<int,BroAudioClip,PlaybackPreference> OnFinishingStarted = null;
+
         private StopMode _stopMode = default;
         private Coroutine _playbackControlCoroutine;
         private Coroutine _trackVolumeControlCoroutine;
@@ -22,6 +24,7 @@ namespace MiProduction.BroAudio.Runtime
 
         public void Play(int id, BroAudioClip clip, PlaybackPreference pref)
         {
+            // 如果正在播放，突然有新的Play指令進來，而且id不同，就阻擋並Log
             ID = id;
             CurrentClip = clip;
             _isReadyToPlay = true;
@@ -55,13 +58,12 @@ namespace MiProduction.BroAudio.Runtime
             }
 
             AudioSource.clip = clip.AudioClip;
-            float endTime = AudioSource.clip.length - clip.EndPosition;
             VolumeControl fader = VolumeControl.Clip;
             ClipVolume = 0f;
             RemoveFromResumablePlayer();
 
             do
-			{
+            {
                 switch (_stopMode)
                 {
                     case StopMode.Stop:
@@ -82,31 +84,34 @@ namespace MiProduction.BroAudio.Runtime
 
                 #region FadeIn
                 if (HasFading(clip.FadeIn, pref.FadeIn, out float fadeIn))
-				{
-					IsFadingIn = true;
-					yield return Fade(clip.Volume, fadeIn, fader);
-					IsFadingIn = false;
-				}
-				else
-				{
-					ClipVolume = clip.Volume;
-				}
-				#endregion
-
-				#region FadeOut
-				if (HasFading(clip.FadeOut, pref.FadeOut, out float fadeOut))
-				{
-                    yield return new WaitUntil(() => (endTime - AudioSource.time) <= clip.FadeOut);
-					IsFadingOut = true;
-					yield return Fade(0f, fadeOut, fader);
-					IsFadingOut = false;
-				}
-				else
-				{
-					yield return new WaitUntil(() => AudioSource.time >= endTime);
-				}
+                {
+                    IsFadingIn = true;
+                    yield return Fade(clip.Volume, fadeIn, fader);
+                    IsFadingIn = false;
+                }
+                else
+                {
+                    ClipVolume = clip.Volume;
+                }
                 #endregion
-			} while (pref.IsLoop);
+
+                float endTime = AudioSource.clip.length - clip.EndPosition;
+                #region FadeOut
+                if (HasFading(clip.FadeOut, pref.FadeOut, out float fadeOut))
+                {
+                    yield return new WaitUntil(() => (endTime - AudioSource.time) <= fadeOut);
+                    IsFadingOut = true;
+                    StartToFinish(clip, pref);
+                    yield return Fade(0f, fadeOut, fader);
+                    IsFadingOut = false;
+                }
+                else
+                {
+                    yield return new WaitUntil(() => AudioSource.time >= endTime);
+                    StartToFinish(clip, pref);
+                }
+                #endregion
+            } while (pref.IsLoop);
 
             EndPlaying();
 
@@ -118,8 +123,14 @@ namespace MiProduction.BroAudio.Runtime
 			}
 		}
 
-		#region Stop Overloads
-		public virtual void Stop() 
+        private void StartToFinish(BroAudioClip clip, PlaybackPreference pref)
+        {
+            OnFinishingStarted?.Invoke(ID, clip, pref);
+            OnFinishingStarted = null;
+        }
+
+        #region Stop Overloads
+        public virtual void Stop() 
             => Stop(UseLibraryManagerSetting);
         public virtual void Stop(float fadeOut) 
             => Stop(fadeOut, null);
@@ -137,10 +148,10 @@ namespace MiProduction.BroAudio.Runtime
 
             _isReadyToPlay = false;
             _stopMode = stopMode;
-            this.StartCoroutineAndReassign(StopControl(overrideFade, onFinished, stopMode), ref _playbackControlCoroutine);
+            this.StartCoroutineAndReassign(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);
         }
 
-		private IEnumerator StopControl(float overrideFade, Action onFinished,StopMode stopMode)
+		private IEnumerator StopControl(float overrideFade, StopMode stopMode, Action onFinished)
         {
             if (ID <= 0 || !IsPlaying)
             {

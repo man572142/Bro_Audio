@@ -16,7 +16,9 @@ namespace MiProduction.BroAudio.Runtime
 		public bool IsBaseNull => !Player;
 		public bool IsPlayingVirtually => IsPlaying && Player.MixerDecibelVolume <= AudioConstant.MinDecibelVolume;
 
-		public MusicPlayer() { }
+		public MusicPlayer()
+		{
+		}
 
 		public MusicPlayer(AudioPlayer audioPlayer) : base(audioPlayer)
 		{
@@ -38,45 +40,42 @@ namespace MiProduction.BroAudio.Runtime
 			_overrideFade = AudioPlayer.UseLibraryManagerSetting;
 		}
 
-		private void DecoratePlayback(PlaybackPreference pref)
-		{
-			pref.SetFadeTime(_transition, _overrideFade);
-
-			switch (_transition)
-			{
-				case Transition.Immediate:
-				case Transition.OnlyFadeIn:
-				case Transition.CrossFade:
-					StopCurrentMusic();
-					break;
-				case Transition.Default:
-				case Transition.OnlyFadeOut:
-					pref.HaveToWaitForPrevious = true;
-					StopCurrentMusic(() => pref.HaveToWaitForPrevious = false);
-					break;
-			}
-			CurrentPlayer = Player;
-		}
-
-		private void StopCurrentMusic(Action onFinished = null)
-		{
-			if (CurrentPlayer != null)
-			{
-				float fadeOut = _transition == Transition.Immediate || _transition == Transition.OnlyFadeIn ? 0f : _overrideFade;
-				CurrentPlayer.Stop(fadeOut, _stopMode, onFinished);
-			}
-			else
-			{
-				onFinished?.Invoke();
-			}
-		}
-
-		IMusicPlayer IMusicPlayer.SetTransition(Transition transition,StopMode stopMode,float overrideFade)
+		IMusicPlayer IMusicPlayer.SetTransition(Transition transition, StopMode stopMode, float overrideFade)
 		{
 			_transition = transition;
 			_stopMode = stopMode;
 			_overrideFade = overrideFade;
 			return this;
+		}
+
+		private void DecoratePlayback(PlaybackPreference pref)
+		{
+			if(CurrentPlayer != null)
+			{
+				pref.SetFadeTime(_transition, _overrideFade);
+				switch (_transition)
+				{
+					case Transition.Immediate:
+					case Transition.OnlyFadeIn:
+					case Transition.CrossFade:
+						StopCurrentMusic();
+						break;
+					case Transition.Default:
+					case Transition.OnlyFadeOut:
+						pref.HaveToWaitForPrevious = true;
+						StopCurrentMusic(() => pref.HaveToWaitForPrevious = false);
+						break;
+				}
+			}
+			
+			CurrentPlayer = Player;
+		}
+
+		private void StopCurrentMusic(Action onFinished = null)
+		{
+			bool noFadeOut = _transition == Transition.Immediate || _transition == Transition.OnlyFadeIn;
+			float fadeOut =  noFadeOut? 0f : _overrideFade;
+			CurrentPlayer.Stop(fadeOut, _stopMode, onFinished);
 		}
 	}
 }

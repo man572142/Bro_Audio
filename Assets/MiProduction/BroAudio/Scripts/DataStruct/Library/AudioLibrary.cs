@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using MiProduction.Extension;
 
 namespace MiProduction.BroAudio.Data
 {
@@ -10,19 +10,20 @@ namespace MiProduction.BroAudio.Data
         [field: SerializeField] public int ID { get; set; }
 
         public BroAudioClip[] Clips;
-
-        #region Properties Setting
-        public bool IsShowClipPreview;
-        public MulticlipsPlayMode MulticlipsPlayMode;
-        #endregion
-
-        protected abstract string DisplayName { get; }
-
         public BroAudioClip Clip => Clips.PickNewOne(MulticlipsPlayMode, ID);
+
+        [SerializeField] private MulticlipsPlayMode MulticlipsPlayMode;
 
         public bool Validate(int index)
         {
-            return Utility.Validate(DisplayName, index, Clips, ID);
+            return Utility.Validate(Name.ToWhiteBold(), index, Clips, ID);
         }
+
+#if UNITY_EDITOR
+        [SerializeField] private bool IsShowClipPreview;
+        
+        public static string NameOf_IsShowClipPreview => nameof(IsShowClipPreview);
+        public static string NameOf_MulticlipsPlayMode => nameof(MulticlipsPlayMode);
+#endif
     }
 }

@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace MiProduction.Extension
 {
@@ -201,6 +202,74 @@ namespace MiProduction.Extension
 
 			}
 			return propertyName;
+		}
+
+		public static void DrawToggleGroup(Rect totalPosition, GUIContent label,SerializedProperty[] toggles, bool isAllowSwitchOff = true, int toggleCountPerLine  = 4)
+		{
+			if (toggles == null)
+			{
+				return;
+			}
+
+			Rect suffixRect = EditorGUI.PrefixLabel(totalPosition, label);
+			float space = suffixRect.width / toggleCountPerLine;
+			Rect toggleRect = new Rect(suffixRect);
+			toggleRect.width = space;
+
+			SerializedProperty currentActiveToggle = null;
+			foreach(var toggle in toggles)
+			{
+				if(toggle.boolValue)
+				{
+					currentActiveToggle = toggle;
+				}
+			}
+
+			for(int i = 0; i < toggles.Length;i++)
+			{
+				var toggle = toggles[i];
+				if (EditorGUI.ToggleLeft(toggleRect, toggle.displayName, toggle.boolValue))
+				{
+					if(toggle != currentActiveToggle)
+					{
+						if(currentActiveToggle != null)
+						{
+							currentActiveToggle.boolValue = false;
+						}
+						currentActiveToggle = toggle;
+					}
+					toggle.boolValue = true;
+				}
+				else if (!isAllowSwitchOff && currentActiveToggle == null)
+				{
+					toggles[0].boolValue = true;
+				}
+				else
+				{
+					toggle.boolValue = false;
+				}
+
+				
+				toggleRect.x += space;
+				toggleRect.y += (i / toggleCountPerLine) * EditorGUIUtility.singleLineHeight;
+			}
+		}
+
+		public static void DrawBeautifulLabel(Vector2 startPosition,Vector2 charSize,string text,int oneLineLength, GUIStyle style)
+		{
+			Rect rect = new Rect(startPosition, charSize);
+			for(int i = 0; i < text.Length; i++)
+			{
+				EditorGUI.LabelField(rect, text[i].ToString(), style);
+				rect.x += charSize.x;
+				if((i + 1) % oneLineLength == 0)
+				{
+					rect.y += charSize.y;
+					rect.x = startPosition.x;
+				}
+            }
+
+			
 		}
 	}
 }

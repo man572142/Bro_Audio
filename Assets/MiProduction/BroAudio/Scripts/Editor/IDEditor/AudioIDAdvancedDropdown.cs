@@ -10,17 +10,21 @@ namespace MiProduction.BroAudio.Editor
 {
 	public class AudioIDAdvancedDropdown : AdvancedDropdown
 	{
+		private const int MinimumLinesCount = 10;
+
 		private Action<int, string, ScriptableObject> _onSelectItem = null;
 
 		public AudioIDAdvancedDropdown(AdvancedDropdownState state, Action<int, string, ScriptableObject> onSelectItem) : base(state)
 		{
 			_onSelectItem = onSelectItem;
+			minimumSize = new Vector2(0f, EditorGUIUtility.singleLineHeight * MinimumLinesCount);
 		}
 
 		protected override AdvancedDropdownItem BuildRoot()
 		{
 			var root = new AdvancedDropdownItem(nameof(BroAudio));
 
+			int childCount = 0;
 			List<string> guids = GetGUIDListFromJson();
 			foreach (string guid in guids)
 			{
@@ -36,6 +40,7 @@ namespace MiProduction.BroAudio.Editor
 						item.AddChild(new AudioIDAdvancedDropdownItem(library.Name, library.ID, asset as ScriptableObject));
 					}
 					root.AddChild(item);
+					childCount++;
 				}
 			}
 

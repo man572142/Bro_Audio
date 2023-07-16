@@ -1,10 +1,13 @@
+using MiProduction.BroAudio.Data;
 using static MiProduction.BroAudio.Runtime.AudioPlayer;
+using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Runtime
 {
 	public class PlaybackPreference
 	{
 		public readonly bool IsLoop = false;
+		public readonly bool IsSeamlessLoop = false;
 		public readonly float Delay = 0f;
 
 		public float FadeIn = UseLibraryManagerSetting;
@@ -12,10 +15,35 @@ namespace MiProduction.BroAudio.Runtime
 
 		public bool HaveToWaitForPrevious = false;
 
-		public PlaybackPreference(bool isLoop, float delay)
+		public PlaybackPreference(IAudioLibrary library,float fadeOut)
 		{
-			IsLoop = isLoop;
-			Delay = delay;
+			BroAudioType audioType = GetAudioType(library.ID);
+
+			if(PersistentType.HasFlag(audioType))
+			{
+				var persistentLib = library.CastTo<PersistentAudioLibrary>();
+				IsLoop = persistentLib.Loop ;
+				if (persistentLib.SeamlessLoop)
+				{
+                    if (persistentLib.TransitionTime >= 0)
+					{
+                        //HACK: 這樣會讓第一次播放失去自己的FadeIn
+                        FadeIn = persistentLib.TransitionTime;
+                        FadeOut = persistentLib.TransitionTime;
+						IsSeamlessLoop = persistentLib.TransitionTime != 0;
+						IsLoop = !IsSeamlessLoop;
+                    }
+					else if(persistentLib.TransitionTime < 0)
+					{
+						IsSeamlessLoop = fadeOut > 0;
+						IsLoop = !IsSeamlessLoop;
+					}
+				}
+			}
+			else if(OneShotType.HasFlag(audioType))
+			{
+				Delay = library.CastTo<OneShotAudioLibrary>().Delay;
+			}
 		}
 
 		public void SetFadeTime(Transition transition,float fadeTime)
@@ -40,11 +68,6 @@ namespace MiProduction.BroAudio.Runtime
 					FadeOut = fadeTime;
 					break;
 			}
-		}
-
-		public static PlaybackPreference GetEmptyPreference()
-		{
-			return new PlaybackPreference(false,0f);
 		}
 	}
 }

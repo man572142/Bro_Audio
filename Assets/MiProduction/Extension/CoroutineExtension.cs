@@ -15,11 +15,6 @@ namespace MiProduction.Extension
             }
         }
 
-        public static void SafeStop(this Coroutine coroutine, MonoBehaviour source)
-		{
-            source.SafeStopCoroutine(coroutine);
-        }
-
         public static Coroutine StartCoroutineAndReassign(this MonoBehaviour source, IEnumerator enumerator, ref Coroutine coroutine)
         {
             source.SafeStopCoroutine(coroutine);

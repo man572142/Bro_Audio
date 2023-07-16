@@ -64,7 +64,9 @@ namespace MiProduction.BroAudio.Runtime
         public static Ease FadeInEase { get => Instance._fadeInEase; }
         public static Ease FadeOutEase { get => Instance._fadeOutEase; }
 
-		private void Awake()
+        public IReadOnlyDictionary<BroAudioType, AudioTypePlaybackPreference> AudioTypePref => _auidoTypePref;
+
+        private void Awake()
 		{
             string nullRefLog = $"Please assign {{0}} in {nameof(SoundManager)}.prefab";
             if(!_broAudioMixer)
@@ -149,27 +151,42 @@ namespace MiProduction.BroAudio.Runtime
 
         public IAutoResetWaitable SetEffect(BroAudioType targetType, EffectParameter effect)
 		{
-			bool isOn = effect.Type != EffectType.None;
-			SetPlayersEffect(targetType, isOn);
-
-            _automationHelper.SetEffectTrackParameter(effect, () => SetPlayersEffect(targetType, false));
+			SetEffectMode mode = effect.Type == default ? SetEffectMode.Override : SetEffectMode.Add;
+			SetPlayersEffect(targetType, effect.Type, mode);
+            
+            _automationHelper.SetEffectTrackParameter(effect, (resetType) => SetPlayersEffect(targetType, resetType,SetEffectMode.Remove));
             return _automationHelper;
         }
 
-        private void SetPlayersEffect(BroAudioType targetType, bool isOn)
+        private void SetPlayersEffect(BroAudioType targetType, EffectType effectType,SetEffectMode mode)
         {
-            GetPlaybackPrefByType(targetType, pref => pref.IsUsingEffect = isOn);
-            GetCurrentPlayers(player => 
-            {
-                if(targetType.HasFlag(GetAudioType(player.ID)))
+			GetPlaybackPrefByType(targetType, pref =>
+			{
+                switch (mode)
 				{
-                    player.SetEffectMode(isOn);
-				}
-            });
-        }
-        #endregion
+					case SetEffectMode.Add:
+                        pref.EffectType |= effectType;
+						break;
+					case SetEffectMode.Remove:
+						pref.EffectType &= ~effectType;
+						break;
+					case SetEffectMode.Override:
+						pref.EffectType = effectType;
+						break;
+				}				
+			});
 
-        private void GetPlaybackPrefByType(BroAudioType targetType, Action<AudioTypePlaybackPreference> onGetPref)
+			GetCurrentPlayers(player =>
+			{
+                if (targetType.HasFlag(GetAudioType(player.ID)))
+				{
+					player.SetEffect(effectType, mode);
+				}
+			});
+		}
+		#endregion
+
+		private void GetPlaybackPrefByType(BroAudioType targetType, Action<AudioTypePlaybackPreference> onGetPref)
         {
             // For those which may be played in the future.
             ForeachAudioType((audioType) =>
@@ -195,6 +212,11 @@ namespace MiProduction.BroAudio.Runtime
         {
             player = _audioPlayerPool.Extract();
             return player != null;
+        }
+
+        private AudioPlayer GetNewAudioPlayer()
+		{
+            return _audioPlayerPool.Extract();
         }
 
         private IEnumerator PreventCombFiltering(int id,float preventTime)
@@ -253,6 +275,6 @@ namespace MiProduction.BroAudio.Runtime
 			}
             return result;
         }
-    }
+	}
 }
 

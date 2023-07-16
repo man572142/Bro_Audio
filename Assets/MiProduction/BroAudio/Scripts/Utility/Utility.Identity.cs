@@ -66,7 +66,7 @@ namespace MiProduction.BroAudio
 		{
 			BroAudioType resultType = BroAudioType.None;
 			BroAudioType nextType = resultType.ToNext();
-
+			// 換回一般While以減少效能開銷 
 			While(_ => nextType <= (BroAudioType)LastAudioType, () =>
 			{
 				if (id >= resultType.ToConstantID() && id < nextType.ToConstantID())

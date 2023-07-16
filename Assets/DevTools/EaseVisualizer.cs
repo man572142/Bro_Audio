@@ -7,7 +7,6 @@ public class EaseVisualizer : MonoBehaviour
 {
 	[SerializeField] RectTransform _background = null;
     [SerializeField] RectTransform _dotImage = null;
-    bool isStart = false;
 
 	const float _duration = 5f;
 	public void SetY(float value)

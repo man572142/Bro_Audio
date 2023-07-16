@@ -13,6 +13,7 @@ namespace MiProduction.BroAudio
 
 		public static T CastTo<T>(this IAudioLibrary library) where T : IAudioLibrary
 		{
+			// TODO: 還是有可能ERROR
 			return (T)library;
 		}
 

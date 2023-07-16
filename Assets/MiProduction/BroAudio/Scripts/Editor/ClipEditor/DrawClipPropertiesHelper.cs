@@ -61,7 +61,7 @@ namespace MiProduction.BroAudio.Editor
 			FadeValues[1] = newValue.FadeOut;
 		}
 
-		public void DrawClipPreview(Rect position, float startPos, float endPos, AudioClip audioClip)
+		public void DrawClipPreview(Rect position, Transport transport, AudioClip audioClip)
 		{
 			Rect clipViewRect = position;
 			clipViewRect.height = ClipPreviewHeight;
@@ -94,9 +94,9 @@ namespace MiProduction.BroAudio.Editor
 				if (GUI.Button(playRect, EditorGUIUtility.IconContent("d_PlayButton")))
 				{
 					EditorPlayAudioClip.StopAllClips();
-					EditorPlayAudioClip.PlayClip(audioClip, Mathf.RoundToInt(AudioSettings.outputSampleRate * startPos));
+					EditorPlayAudioClip.PlayClip(audioClip, Mathf.RoundToInt(AudioSettings.outputSampleRate * transport.StartPosition));
 
-					float duration = audioClip.length - startPos - endPos;
+					float duration = audioClip.length - transport.StartPosition - transport.EndPosition;
 					AsyncTaskExtension.DelayDoAction(duration, EditorPlayAudioClip.StopAllClips);
 				}
 				if (GUI.Button(stopRect, EditorGUIUtility.IconContent("d_PreMatQuad")))

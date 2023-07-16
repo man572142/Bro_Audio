@@ -9,8 +9,8 @@ using static MiProduction.Extension.CoroutineExtension;
 
 namespace MiProduction.BroAudio.Runtime
 {
-	public class EffectAutomationHelper : IAutoResetWaitable
-	{
+	public class EffectAutomationHelper : CoroutineBehaviour,IAutoResetWaitable
+    {
 		private class Tweaker
 		{
 			public Coroutine Coroutine;
@@ -101,15 +101,13 @@ namespace MiProduction.BroAudio.Runtime
 		public const string LowPassExposedName = EffectTrackName + "_LowPass";
 		public const string HighPassExposedName = EffectTrackName + "_HighPass";
 
-		private readonly MonoBehaviour _mono = null;
 		private readonly AudioMixer _mixer = null;
 		private Dictionary<EffectType,Tweaker> _tweakerDict = new Dictionary<EffectType, Tweaker>();
 		private EffectType _latestEffect = default;
 
 
-		public EffectAutomationHelper(MonoBehaviour mono, AudioMixer mixer)
+		public EffectAutomationHelper(MonoBehaviour mono, AudioMixer mixer) : base(mono)
 		{
-			_mono = mono;
 			_mixer = mixer;
 		}
 
@@ -162,13 +160,13 @@ namespace MiProduction.BroAudio.Runtime
 			}
 		}
 
-		public void SetEffectTrackParameter(EffectParameter effect, Action onFinished)
+		public void SetEffectTrackParameter(EffectParameter effect, Action<EffectType> OnReset)
 		{
 			_latestEffect = effect.Type;
 
 			if (effect.Type == EffectType.None)
 			{
-				ResetAllEffect(effect.FadeTime, effect.FadingEase, onFinished);
+				ResetAllEffect(effect.FadeTime, effect.FadingEase, OnReset);
 				return;
 			}
 
@@ -182,7 +180,15 @@ namespace MiProduction.BroAudio.Runtime
 			tweaker.WaitableList ??= new List<ITweakingWaitable>();
 			tweaker.WaitableList.Add(new TweakingWaitable(effect));
 
-			_mono.StartCoroutineAndReassign(TweakTrackParameter(tweaker, onFinished), ref tweaker.Coroutine);
+			StartCoroutineAndReassign(TweakTrackParameter(tweaker, OnTweakingFinished), ref tweaker.Coroutine);
+
+			void OnTweakingFinished()
+			{
+				if(tweaker.OriginValue == GetEffectDefaultValue(effect.Type))
+				{
+					OnReset?.Invoke(effect.Type);
+				}
+			}
 		}
 
 		private IEnumerator TweakTrackParameter(Tweaker tweaker,Action onFinished)
@@ -200,7 +206,6 @@ namespace MiProduction.BroAudio.Runtime
 				var waitable = tweaker.WaitableList[lastIndex];
 				if (waitable.GetYieldInstruction() == null)
 				{
-					// means the effect is set permanently
 					tweaker.OriginValue = effect.Value;
 					tweaker.WaitableList.Clear();
 					break;
@@ -258,8 +263,9 @@ namespace MiProduction.BroAudio.Runtime
 			return default;
 		}
 
-		private void ResetAllEffect(float fadeTime, Ease ease,Action onReset)
+		private void ResetAllEffect(float fadeTime, Ease ease,Action<EffectType> OnResetFinished)
 		{
+			int tweakingCount = 0;
 			foreach (var pair in _tweakerDict)
 			{
 				Tweaker tweaker = pair.Value;
@@ -267,10 +273,20 @@ namespace MiProduction.BroAudio.Runtime
 				if (TryGetCurrentValue(effectType, out float current))
 				{
 					string paraName = GetEffectParameterName(effectType);
-					_mono.SafeStopCoroutine(tweaker.Coroutine);
-					tweaker.Coroutine = _mono.StartCoroutine(Tweak(current, tweaker.OriginValue, fadeTime, ease, paraName, onReset));
+					SafeStopCoroutine(tweaker.Coroutine);
+					tweaker.Coroutine = StartCoroutine(Tweak(current, tweaker.OriginValue, fadeTime, ease, paraName,OnTweakingFinished));
 					tweaker.OriginValue = GetEffectDefaultValue(effectType);
 					tweaker.WaitableList.Clear();
+					tweakingCount++;
+				}
+			}
+
+			void OnTweakingFinished()
+			{
+				tweakingCount--;
+				if(tweakingCount <= 0)
+				{
+					OnResetFinished?.Invoke(EffectType.All);
 				}
 			}
 		}

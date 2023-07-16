@@ -24,16 +24,16 @@ namespace MiProduction.BroAudio.Editor
         {
             property.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.Name))).stringValue = string.Empty;
             property.FindPropertyRelative(nameof(AudioLibrary.Clips)).arraySize = 0;
-            property.FindPropertyRelative(nameof(AudioLibrary.IsShowClipPreview)).boolValue = false;
-            property.FindPropertyRelative(nameof(AudioLibrary.MulticlipsPlayMode)).enumValueIndex = 0;
+            property.FindPropertyRelative(AudioLibrary.NameOf_IsShowClipPreview).boolValue = false;
+            property.FindPropertyRelative(AudioLibrary.NameOf_MulticlipsPlayMode).enumValueIndex = 0;
 
-            var delayProp = property.FindPropertyRelative(nameof(SoundLibrary.Delay));
+            var delayProp = property.FindPropertyRelative(nameof(OneShotAudioLibrary.Delay));
             if(delayProp != null)
 			{
                 delayProp.floatValue = 0f;
 			}
 
-            var loopPorp = property.FindPropertyRelative(nameof(MusicLibrary.Loop));
+            var loopPorp = property.FindPropertyRelative(nameof(PersistentAudioLibrary.Loop));
             if(loopPorp != null)
 			{
                 loopPorp.boolValue = false;

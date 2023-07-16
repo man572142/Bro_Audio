@@ -19,5 +19,4 @@ namespace MiProduction.BroAudio.Data
 		public bool IsNull() => AudioClip == null;
 		
 	}
-
 }

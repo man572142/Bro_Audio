@@ -155,7 +155,7 @@ namespace MiProduction.BroAudio.Editor
 		{
 			Rect previewRect = GetRectAndIterateLine(drawPosition);
 			_clipPropHelper.SetPreviewHeight(height);
-			_clipPropHelper.DrawClipPreview(previewRect, _transport.StartPosition, _transport.EndPosition, TargetClip);
+			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip);
 			DrawEmptyLine(GetLineCountByPixels(height));
 		}
 		private void DrawPlaybackPositionField(Rect drawPosition)

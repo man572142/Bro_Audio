@@ -1,11 +1,14 @@
 namespace MiProduction.BroAudio
 {
+	[System.Flags]
 	public enum EffectType
 	{
-		None,
+		None = 0,
 
-		Volume,
-		LowPass,
-		HighPass,
+		Volume = 1,
+		LowPass = 2,
+		HighPass = 4,
+
+		All = Volume | LowPass | HighPass,
 	}
 }

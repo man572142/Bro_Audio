@@ -36,6 +36,7 @@ namespace MiProduction.Extension
 
         // TODO: add to global setting
         public const float HaasEffectInSeconds = 0.04f;
+        private const float SecondsPerMinute = 60;
 
         public static float ToDecibel(this float vol)
         {  
@@ -107,5 +108,14 @@ namespace MiProduction.Extension
             }
             return true;
         }
+
+        public static float TempoToTime(float bpm,int beats)
+		{
+            if(bpm == 0)
+			{
+                return 0;
+			}
+            return SecondsPerMinute / bpm * beats;
+		}
     }
 }

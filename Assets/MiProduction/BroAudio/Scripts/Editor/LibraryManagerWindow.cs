@@ -113,8 +113,7 @@ namespace MiProduction.BroAudio.Editor
 		#region Init
 		private void InitGUIStyle()
 		{
-			_assetNameTitleStyle = GUIStyleHelper.Instance.MiddleCenterText;
-			_assetNameTitleStyle.richText = true;
+			_assetNameTitleStyle = GUIStyleHelper.Instance.UpperCenterStyle;
 		}
 
 		private void InitEditorDictionary()
@@ -274,8 +273,7 @@ namespace MiProduction.BroAudio.Editor
 			
 
 			EditorGUILayout.BeginHorizontal();
-			{
-                
+			{                
                 EditorGUILayout.Space(_gapDrawer.GetSpace());
 				EditorScriptingExtension.SplitRectHorizontal(position, 0.3f, _gapDrawer.GetSpace(), out Rect assetListRect, out Rect librariesRect);
 

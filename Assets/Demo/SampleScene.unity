@@ -2098,9 +2098,9 @@ MonoBehaviour:
   _musicB:
     ID: 36
     SourceAsset: {fileID: 11400000, guid: 5d00903d941fff940921056feda97925, type: 2}
-  _seamlessMusic:
-    ID: 41
-    SourceAsset: {fileID: 11400000, guid: 5d00903d941fff940921056feda97925, type: 2}
+  _seamlessAmb:
+    ID: 971824
+    SourceAsset: {fileID: 11400000, guid: f70c288605a288c4699ee26414a692d9, type: 2}
   _uiClick:
     ID: 574156190
     SourceAsset: {fileID: 11400000, guid: d52edcf0a5ea9ce469a144f89a07aeec, type: 2}

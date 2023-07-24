@@ -6,6 +6,7 @@ using MiProduction.Extension;
 using static MiProduction.BroAudio.Utility;
 using static MiProduction.BroAudio.Editor.BroEditorUtility;
 using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
+using System.Linq;
 
 namespace MiProduction.BroAudio.Editor.Setting
 {
@@ -76,6 +77,8 @@ namespace MiProduction.BroAudio.Editor.Setting
 
 			DrawEmptyLine(1);
 			DrawAssetOutputPath(drawPosition);
+
+			DrawEaseOption(drawPosition);
 		}
 
 		private void DrawAssetOutputPath(Rect drawPosition)
@@ -114,6 +117,20 @@ namespace MiProduction.BroAudio.Editor.Setting
 			browserIconRect.x = rect.xMax - EditorGUIUtility.singleLineHeight;
 			GUI.DrawTexture(browserIconRect, EditorGUIUtility.IconContent(BrowserIcon).image);
 			EditorGUI.DrawRect(browserIconRect, BroAudioGUISetting.ShadowMaskColor);
+		}
+
+
+		private void DrawEaseOption(Rect drawPosition)
+		{
+			Keyframe[] keyframes = new Keyframe[2];
+			keyframes[0] = new Keyframe(0, 0);
+			keyframes[1] = new Keyframe(1, 1);
+
+			keyframes[0].outTangent = 1f;
+			keyframes[1].inTangent = 1f;
+			var curve = new AnimationCurve(keyframes);
+
+			EditorGUI.CurveField(GetRectAndIterateLine(drawPosition), new AnimationCurve(keyframes));
 		}
 	}
 

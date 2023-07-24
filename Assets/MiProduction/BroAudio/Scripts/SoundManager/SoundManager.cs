@@ -49,6 +49,8 @@ namespace MiProduction.BroAudio.Runtime
         [Header("Fading Setting")]
         [SerializeField] Ease _fadeInEase = Ease.InCubic;
         [SerializeField] Ease _fadeOutEase = Ease.OutSine;
+        [SerializeField] Ease _seamlessFadeInEase = Ease.OutCubic;
+        [SerializeField] Ease _seamlessFadeOutEase = Ease.InSine;
 
         [Header("Library")]
         [SerializeField] private List<ScriptableObject> _soundAssets = new List<ScriptableObject>();
@@ -61,8 +63,10 @@ namespace MiProduction.BroAudio.Runtime
         // TODO: 如果是每次播放都在不同聲道就不用
         private Dictionary<int, bool> _combFilteringPreventer = new Dictionary<int, bool>();
 
-        public static Ease FadeInEase { get => Instance._fadeInEase; }
-        public static Ease FadeOutEase { get => Instance._fadeOutEase; }
+        public static Ease FadeInEase => Instance._fadeInEase;
+        public static Ease FadeOutEase => Instance._fadeOutEase;
+        public static Ease SeamlessFadeIn => Instance._seamlessFadeInEase;
+        public static Ease SeamlessFadeOut => Instance._seamlessFadeOutEase;
 
         public IReadOnlyDictionary<BroAudioType, AudioTypePlaybackPreference> AudioTypePref => _auidoTypePref;
 

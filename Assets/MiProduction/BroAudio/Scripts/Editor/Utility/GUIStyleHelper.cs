@@ -25,6 +25,7 @@ namespace MiProduction.Extension
 		private GUIStyle _defaultDarkBackground;
 		private GUIStyle _fieldStyle;
 		private GUIStyle _richTextHelpbox;
+		private GUIStyle _upperCenterStyle;
 
 		public GUIStyle MiddleCenterText
 		{
@@ -97,6 +98,19 @@ namespace MiProduction.Extension
 					_richTextHelpbox.richText = true;
 				}
 				return _richTextHelpbox;
+			}
+		}
+
+		public GUIStyle UpperCenterStyle
+		{
+			get
+			{
+				if(_upperCenterStyle == null)
+				{
+					_upperCenterStyle = new GUIStyle();
+					_upperCenterStyle.alignment = TextAnchor.UpperCenter;
+				}
+				return _upperCenterStyle;
 			}
 		}
 	}

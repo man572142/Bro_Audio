@@ -58,7 +58,7 @@ namespace MiProduction.BroAudio.Editor
 
 			void OnDrawHeader(Rect rect)
 			{
-				EditorGUI.LabelField(rect, new GUIContent("Libraries"));
+				EditorGUI.LabelField(rect, new GUIContent($"Libraries of " + Asset.AssetName));
 			}
 
 			void OnAdd(ReorderableList list)

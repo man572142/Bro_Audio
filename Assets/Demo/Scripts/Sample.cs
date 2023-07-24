@@ -11,7 +11,7 @@ public class Sample : MonoBehaviour
 
     [SerializeField] AudioID _musicA;
     [SerializeField] AudioID _musicB;
-	[SerializeField] AudioID _seamlessMusic;
+	[SerializeField] AudioID _seamlessAmb;
     [SerializeField] AudioID _uiClick;
     [SerializeField] AudioID _voiceOver;
 
@@ -22,7 +22,7 @@ public class Sample : MonoBehaviour
 
 	void Start()
     {
-		BroAudio.Play(_seamlessMusic);
+		BroAudio.Play(_seamlessAmb);
 		//StartCoroutine(PlayTest());
     }
 

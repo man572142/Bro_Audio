@@ -15,7 +15,7 @@ namespace MiProduction.Extension
 
 		protected virtual bool IsAvailable()
 		{
-			if (Instance == null)
+			if (Instance != null)
 			{
 				return true;
 			}

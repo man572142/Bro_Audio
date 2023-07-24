@@ -1,4 +1,5 @@
 using MiProduction.BroAudio.Data;
+using MiProduction.Extension;
 using static MiProduction.BroAudio.Runtime.AudioPlayer;
 using static MiProduction.BroAudio.Utility;
 
@@ -12,6 +13,9 @@ namespace MiProduction.BroAudio.Runtime
 
 		public float FadeIn = UseLibraryManagerSetting;
 		public float FadeOut = UseLibraryManagerSetting;
+
+		public Ease FadeInEase = Ease.Linear;
+		public Ease FadeOutEase = Ease.Linear;
 
 		public bool HaveToWaitForPrevious = false;
 
@@ -44,6 +48,9 @@ namespace MiProduction.BroAudio.Runtime
 			{
 				Delay = library.CastTo<OneShotAudioLibrary>().Delay;
 			}
+
+			FadeInEase = IsSeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
+			FadeOutEase = IsSeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
 		}
 
 		public void SetFadeTime(Transition transition,float fadeTime)

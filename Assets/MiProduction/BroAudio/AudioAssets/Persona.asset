@@ -18,13 +18,13 @@ MonoBehaviour:
     Clips:
     - AudioClip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
       Volume: 1
-      StartPosition: 0
-      EndPosition: 0
-      FadeIn: 0
-      FadeOut: 0
+      StartPosition: 15.8
+      EndPosition: 256.82
+      FadeIn: 3
+      FadeOut: 3
       Weight: 0
     MulticlipsPlayMode: 0
-    IsShowClipPreview: 0
+    IsShowClipPreview: 1
     Loop: 0
     SeamlessLoop: 0
     TransitionTime: -1
@@ -51,24 +51,5 @@ MonoBehaviour:
     TransitionTempo:
       BPM: 0
       Beats: 0
-  - <Name>k__BackingField: EndlessChill
-    <ID>k__BackingField: 41
-    Clips:
-    - AudioClip: {fileID: 8300000, guid: 4b55b743fac55204abecc70b86b4c7e5, type: 3}
-      Volume: 1
-      StartPosition: 0
-      EndPosition: 0
-      FadeIn: 0
-      FadeOut: 0
-      Weight: 0
-    MulticlipsPlayMode: 0
-    IsShowClipPreview: 0
-    Loop: 0
-    SeamlessLoop: 1
-    TransitionTime: 0.85714287
-    SeamlessTransitionType: 2
-    TransitionTempo:
-      BPM: 70
-      Beats: 1
   <AssetName>k__BackingField: Persona
   _assetGUID: 5d00903d941fff940921056feda97925

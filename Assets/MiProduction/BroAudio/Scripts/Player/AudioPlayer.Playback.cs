@@ -24,7 +24,6 @@ namespace MiProduction.BroAudio.Runtime
 
         public void Play(int id, BroAudioClip clip, PlaybackPreference pref)
         {
-            // 如果正在播放，突然有新的Play指令進來，而且id不同，就阻擋並Log
             ID = id;
             CurrentClip = clip;
             _isReadyToPlay = true;
@@ -86,7 +85,7 @@ namespace MiProduction.BroAudio.Runtime
                 if (HasFading(clip.FadeIn, pref.FadeIn, out float fadeIn))
                 {
                     IsFadingIn = true;
-                    yield return Fade(clip.Volume, fadeIn, fader);
+                    yield return Fade(clip.Volume, fadeIn, fader,pref.FadeInEase);
                     IsFadingIn = false;
                 }
                 else
@@ -102,7 +101,7 @@ namespace MiProduction.BroAudio.Runtime
                     yield return new WaitUntil(() => (endTime - AudioSource.time) <= fadeOut);
                     IsFadingOut = true;
                     StartToFinish(clip, pref);
-                    yield return Fade(0f, fadeOut, fader);
+                    yield return Fade(0f, fadeOut, fader,pref.FadeOutEase);
                     IsFadingOut = false;
                 }
                 else
@@ -171,7 +170,7 @@ namespace MiProduction.BroAudio.Runtime
                 }
                 else
                 {
-                    yield return Fade(0f, fadeTime, VolumeControl.Clip);
+                    yield return Fade(0f, fadeTime, VolumeControl.Clip,SoundManager.FadeOutEase);
                 }
             }
 			#endregion

@@ -83,7 +83,8 @@ namespace MiProduction.BroAudio.Runtime
             this.SafeStopCoroutine(_trackVolumeControlCoroutine);
             if(fadeTime > 0)
 			{
-                _trackVolumeControlCoroutine = StartCoroutine(Fade(vol, fadeTime, VolumeControl.Track));
+                Ease ease = TrackVolume < vol ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
+                _trackVolumeControlCoroutine = StartCoroutine(Fade(vol, fadeTime, VolumeControl.Track, ease));
             }
             else
 			{
@@ -93,7 +94,7 @@ namespace MiProduction.BroAudio.Runtime
             return this;
         }
 
-        private IEnumerator Fade(float targetVol, float duration, VolumeControl fader)
+        private IEnumerator Fade(float targetVol, float duration, VolumeControl fader,Ease ease)
         {
             Func<float> GetVol = null;
             Action<float> SetVol = null;
@@ -119,7 +120,7 @@ namespace MiProduction.BroAudio.Runtime
 			}
 
             float startVol = GetVol();
-            Ease ease = startVol < targetVol ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
+            //Ease ease = startVol < targetVol ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
 
             IEnumerable<float> volumes = GetLerpValuesPerFrame(startVol, targetVol, duration, ease);
             if (volumes != null)

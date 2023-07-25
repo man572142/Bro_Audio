@@ -17,8 +17,7 @@ namespace MiProduction.BroAudio.Data
 		public int Weight;
 
 #if UNITY_EDITOR
-		public bool AllowBoost;
-
+		public bool SnapToFullVolume = true;
 #endif
 
 		public bool IsNull() => AudioClip == null;

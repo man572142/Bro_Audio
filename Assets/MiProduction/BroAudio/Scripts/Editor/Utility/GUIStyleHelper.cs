@@ -26,6 +26,7 @@ namespace MiProduction.Extension
 		private GUIStyle _fieldStyle;
 		private GUIStyle _richTextHelpbox;
 		private GUIStyle _upperCenterStyle;
+		private GUIStyle _middleRightStyle;
 
 		public GUIStyle MiddleCenterText
 		{
@@ -38,6 +39,19 @@ namespace MiProduction.Extension
 					_middleCenterStyle.normal.textColor = Color.white;
 				}
 				return _middleCenterStyle;
+			}
+		}
+
+		public GUIStyle MiddleRightText
+		{
+			get
+			{
+				if (_middleRightStyle == null)
+				{
+					_middleRightStyle = new GUIStyle(MiddleCenterText);
+					_middleRightStyle.alignment = TextAnchor.MiddleRight;
+				}
+				return _middleRightStyle;
 			}
 		}
 
@@ -58,7 +72,7 @@ namespace MiProduction.Extension
 		{
 			get
 			{
-				GUIStyle result = MiddleCenterText;
+				GUIStyle result = new GUIStyle(MiddleCenterText);
 				result.richText = true;
 				return result;
 			}

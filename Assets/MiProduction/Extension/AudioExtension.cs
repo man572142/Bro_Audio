@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static AudioConstant;
+using static MiProduction.Extension.AudioConstant;
 
 namespace MiProduction.Extension
 {
@@ -38,9 +38,9 @@ namespace MiProduction.Extension
         public const float HaasEffectInSeconds = 0.04f;
         private const float SecondsPerMinute = 60;
 
-        public static float ToDecibel(this float vol)
+        public static float ToDecibel(this float vol,bool allowBoost = false)
         {  
-            return Mathf.Log10(vol.ClampNormalize(true)) * 20f;
+            return Mathf.Log10(vol.ClampNormalize(allowBoost)) * 20f;
         }
 
         public static float ToNormalizeVolume(this float dB,bool allowBoost = false)

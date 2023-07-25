@@ -29,7 +29,7 @@ namespace MiProduction.BroAudio.Runtime
         public float TrackVolumeBeforeMute { get; private set; } = DefaultTrackVolume;
 
         /// <summary>
-        /// 播放Clip的音量(0~1)，依不同的Clip有不同設定，而FadeIn/FadeOut也只作用在此值
+        /// 播放Clip的音量，依不同的Clip有不同設定，而FadeIn/FadeOut也只作用在此值
         /// </summary>
         public float ClipVolume
         {
@@ -37,12 +37,13 @@ namespace MiProduction.BroAudio.Runtime
             private set
             {
                 _clipVolume = value;
-                MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
+                MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel(true);
+                Debug.Log($"clip:{_clipVolume} track:{_trackVolume} mixer:{MixerDecibelVolume}");
             }
         }
 
         /// <summary>
-        /// 音軌的音量(0~1)，也可算是此Player的音量，作用相當於混音的Fader
+        /// 音軌的音量，也可算是此Player的音量，作用相當於混音的Fader
         /// </summary>
         public float TrackVolume
         {
@@ -50,7 +51,7 @@ namespace MiProduction.BroAudio.Runtime
             private set
             {
                 _trackVolume = value;
-                MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
+                MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel(true);
             }
         }
 
@@ -73,7 +74,7 @@ namespace MiProduction.BroAudio.Runtime
             }
             private set
             {
-                _mixerDecibelVolume = value.ClampDecibel();
+                _mixerDecibelVolume = value.ClampDecibel(true);
                 AudioMixer.SetFloat(VolumeParaName, _mixerDecibelVolume);
             }
         }

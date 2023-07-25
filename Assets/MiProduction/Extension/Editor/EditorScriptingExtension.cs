@@ -255,45 +255,24 @@ namespace MiProduction.Extension
 			}
 		}
 
-		public static float DrawLogarithmicVolumeSlider_Horizontal(Rect position,GUIContent label, float currentValue, float leftValue, float rightValue,bool drawVU)
+		public static float DrawLogarithmicSlider_Horizontal(Rect position,float currentValue, float leftValue, float rightValue)
 		{
+			const float min = 0.0001f;
 			if (leftValue <= 0f)
 			{
-				const float min = 0.0001f;
-				Debug.LogWarning($"The left value of the LogarithmicSlider should be greater than 0. It has been set to the default value of {min}");
+				//Debug.LogWarning($"The left value of the LogarithmicSlider should be greater than 0. It has been set to the default value of {min}");
 				leftValue = Mathf.Max(min, leftValue);
 			}
 
-			Rect suffixRect = EditorGUI.PrefixLabel(position, label);
+			currentValue = currentValue == 0 ? leftValue : currentValue;
+			float logValue = Mathf.Log10(currentValue);
+			float logLeftValue = Mathf.Log10(leftValue);
+			float logRightValue = Mathf.Log10(rightValue);
 
-			float logValue = Mathf.Log10(currentValue) * 20;
-			float logLeftValue = Mathf.Log10(leftValue) * 20f;
-			float logRightValue = Mathf.Log10(rightValue) * 20f;
+			float logResult = GUI.HorizontalSlider(position, logValue, logLeftValue, logRightValue);
 
-			SplitRectHorizontal(suffixRect, 0.7f, 10f, out Rect sliderRect, out Rect valueRect);
-			if(drawVU)
-			{
-				DrawVUMeter(sliderRect, new Color(0.05f, 0.05f, 0.05f, 0.7f));
-			}
-			
-			float logResult = GUI.HorizontalSlider(sliderRect, logValue, logLeftValue, logRightValue);
-			float result = Mathf.Pow(10, logResult / 20f);
-
-			SplitRectHorizontal(valueRect, 0.4f, 5f, out Rect fieldRect, out Rect valueLabelRect);
-			result = EditorGUI.FloatField(fieldRect, result);
-
-			string plusSymbol = logResult > 0 ? "+" : string.Empty;
-			string volText = plusSymbol + logResult.ToString("0.##") + "dB";
-			EditorGUI.LabelField(valueLabelRect, volText);
-
-			return result;
+			return Mathf.Pow(10,logResult);
 		}
-
-		public static void DrawVUMeter(Rect position,Color maskColor)
-		{
-			position.height *= 0.5f;
-			EditorGUI.DrawTextureTransparent(position, EditorGUIUtility.IconContent("d_VUMeterTextureHorizontal").image);
-			EditorGUI.DrawRect(position, maskColor);
-		}
+		
 	}
 }

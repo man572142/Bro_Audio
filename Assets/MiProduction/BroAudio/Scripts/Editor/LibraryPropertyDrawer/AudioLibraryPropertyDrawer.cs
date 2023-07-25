@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using MiProduction.Extension;
-using static MiProduction.Extension.EditorScriptingExtension;
 using MiProduction.BroAudio.Data;
+using MiProduction.BroAudio.Editor.Setting;
+using System;
+using static MiProduction.Extension.EditorScriptingExtension;
+using static MiProduction.Extension.AudioConstant;
+
 
 namespace MiProduction.BroAudio.Editor
 {
@@ -13,6 +17,7 @@ namespace MiProduction.BroAudio.Editor
 		protected const float ClipPreviewHeight = 100f;
 		private const int _basePropertiesLineCount = 2;
 		private const int _clipPropertiesLineCount = 4;
+		private const float _fullVolumeSnappingThreshold = 0.1f;
 
 		private GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume));
 
@@ -139,6 +144,7 @@ namespace MiProduction.BroAudio.Editor
 			SerializedProperty endPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition));
 			SerializedProperty fadeInProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.FadeIn));
 			SerializedProperty fadeOutProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.FadeOut));
+			SerializedProperty snapVolProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.SnapToFullVolume));
 
 			transport = new Transport();
 			transport.StartPosition = startPosProp.floatValue;
@@ -150,12 +156,10 @@ namespace MiProduction.BroAudio.Editor
 			_clipPropHelper.SetCurrentTransport(transport);
 
 			Rect volRect = GetRectAndIterateLine(position);
-
-			//volRect.width *= 0.8f;
-			//volumeProp.floatValue = _clipPropHelper.DrawVolumeField(volRect, nameof(BroAudioClip.Volume), volumeProp.floatValue,new RangeFloat(0f,1f));
-
-			volRect.width *= 0.9f;
-			volumeProp.floatValue = DrawLogarithmicVolumeSlider_Horizontal(volRect, _volumeLabel, volumeProp.floatValue, AudioConstant.MinVolume, AudioConstant.MaxVolume,true);
+			volumeProp.floatValue = DrawVolumeSlider(volRect, _volumeLabel, volumeProp.floatValue,snapVolProp.boolValue, () => 
+			{
+				snapVolProp.boolValue = !snapVolProp.boolValue;
+			});
 
 			Rect playbackRect = GetRectAndIterateLine(position);
 			playbackRect.width *= 0.8f;
@@ -170,7 +174,91 @@ namespace MiProduction.BroAudio.Editor
 			fadeOutProp.floatValue = newFading.FadeOut;
 		}
 
-        private void DrawClipPreview(Rect position, SerializedProperty property, Transport transport, AudioClip audioClip)
+		private float DrawVolumeSlider(Rect position, GUIContent label, float currentValue,bool isSnap,Action onSwitchBoostMode)
+		{
+			float sliderFullScale = FullVolume / (FullDecibelVolume - MinDecibelVolume / DecibelVoulumeFullScale);
+
+			Rect suffixRect = EditorGUI.PrefixLabel(position, label);
+			if (TrySplitRectHorizontal(suffixRect, new float[] { 0.7f, 0.1f, 0.2f }, 10f, out Rect[] rects))
+			{
+				Rect sliderRect = rects[0];
+				Rect fieldRect = rects[1];
+				Rect dbLabelRect = rects[2];
+
+				DrawVUMeter(sliderRect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
+
+				if (isSnap && Mathf.Abs(currentValue - FullVolume) <= _fullVolumeSnappingThreshold)
+				{
+					currentValue = FullVolume;
+				}
+				float sliderValue = ConvertToSliderValue(currentValue);
+				sliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
+				
+				currentValue = EditorGUI.FloatField(fieldRect, ConvertToNomalizedVolume(sliderValue));
+
+				DrawDecibelValueLabel(dbLabelRect, currentValue);
+				DrawFullVolumeSnapPoint(sliderRect, isSnap, onSwitchBoostMode);
+			}
+			return currentValue;
+
+			void DrawDecibelValueLabel(Rect position, float value)
+			{
+				value = Mathf.Log10(value) * 20f;
+				string plusSymbol = value > 0 ? "+" : string.Empty;
+				string volText = plusSymbol + value.ToString("0.##") + "dB";
+				EditorGUI.LabelField(position, volText);
+			}
+
+			void DrawVUMeter(Rect vuRect, Color maskColor)
+			{
+				vuRect.height *= 0.5f;
+				EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent("d_VUMeterTextureHorizontal").image);
+				EditorGUI.DrawRect(vuRect, maskColor);
+			}
+
+			void DrawFullVolumeSnapPoint(Rect sliderPosition,bool isSnap, Action onSwitchSnapMode)
+			{
+				Rect rect = new Rect(sliderPosition);
+				rect.width = 30f;
+				// add 1 pixel for precise location
+				rect.x = sliderPosition.x + sliderPosition.width * (FullVolume / sliderFullScale) - (rect.width * 0.5f) + 1f;
+				rect.y -= position.height;
+				var icon = EditorGUIUtility.IconContent("SignalAsset Icon");
+				EditorGUI.BeginDisabledGroup(!isSnap);
+				{
+					GUI.Label(rect, icon);
+				}
+				EditorGUI.EndDisabledGroup();
+				if (GUI.Button(rect, "", EditorStyles.label))
+				{
+					onSwitchSnapMode?.Invoke();
+				}
+			}
+
+			float ConvertToSliderValue(float vol)
+			{
+				if(vol > FullVolume)
+				{
+					float db = vol.ToDecibel(true);
+					return (db - MinDecibelVolume) / DecibelVoulumeFullScale * sliderFullScale;
+				}
+				return vol;
+				
+			}
+
+			float ConvertToNomalizedVolume(float sliderValue)
+			{
+				if(sliderValue > FullVolume)
+				{
+					float db = MinDecibelVolume + (sliderValue / sliderFullScale) * DecibelVoulumeFullScale;
+					return db.ToNormalizeVolume(true);
+				}
+				return sliderValue;
+			}
+		}
+
+
+		private void DrawClipPreview(Rect position, SerializedProperty property, Transport transport, AudioClip audioClip)
         {
             SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioLibrary.NameOf_IsShowClipPreview);
             isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");

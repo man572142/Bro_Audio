@@ -13,25 +13,6 @@ MonoBehaviour:
   m_Name: Persona
   m_EditorClassIdentifier: 
   Libraries:
-  - <Name>k__BackingField: PlasticLove
-    <ID>k__BackingField: 76
-    Clips:
-    - AudioClip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
-      Volume: 1
-      StartPosition: 15.8
-      EndPosition: 256.82
-      FadeIn: 3
-      FadeOut: 3
-      Weight: 0
-    MulticlipsPlayMode: 0
-    IsShowClipPreview: 1
-    Loop: 0
-    SeamlessLoop: 0
-    TransitionTime: -1
-    SeamlessTransitionType: 0
-    TransitionTempo:
-      BPM: 100
-      Beats: 4
   - <Name>k__BackingField: Chill
     <ID>k__BackingField: 36
     Clips:
@@ -42,6 +23,7 @@ MonoBehaviour:
       FadeIn: 0
       FadeOut: 0
       Weight: 0
+      AllowBoost: 0
     MulticlipsPlayMode: 0
     IsShowClipPreview: 0
     Loop: 0
@@ -51,5 +33,25 @@ MonoBehaviour:
     TransitionTempo:
       BPM: 0
       Beats: 0
+  - <Name>k__BackingField: PlasticLove
+    <ID>k__BackingField: 76
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
+      Volume: 10
+      StartPosition: 15.8
+      EndPosition: 256.82
+      FadeIn: 3
+      FadeOut: 3
+      Weight: 0
+      AllowBoost: 1
+    MulticlipsPlayMode: 0
+    IsShowClipPreview: 0
+    Loop: 0
+    SeamlessLoop: 0
+    TransitionTime: -1
+    SeamlessTransitionType: 0
+    TransitionTempo:
+      BPM: 100
+      Beats: 4
   <AssetName>k__BackingField: Persona
   _assetGUID: 5d00903d941fff940921056feda97925

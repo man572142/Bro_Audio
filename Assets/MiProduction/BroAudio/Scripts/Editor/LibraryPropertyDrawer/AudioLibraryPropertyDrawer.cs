@@ -14,6 +14,8 @@ namespace MiProduction.BroAudio.Editor
 		private const int _basePropertiesLineCount = 2;
 		private const int _clipPropertiesLineCount = 4;
 
+		private GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume));
+
 		private bool _hasOpenedLibraryManager = false;
 		private Dictionary<string, ReorderableClips> _reorderableClipsDict = new Dictionary<string, ReorderableClips>();
 		private LibraryManagerWindow _editorWindow = null;
@@ -148,14 +150,21 @@ namespace MiProduction.BroAudio.Editor
 			_clipPropHelper.SetCurrentTransport(transport);
 
 			Rect volRect = GetRectAndIterateLine(position);
-			volumeProp.floatValue = _clipPropHelper.DrawVolumeField(volRect, nameof(BroAudioClip.Volume), volumeProp.floatValue,new RangeFloat(0f,1f));
+
+			//volRect.width *= 0.8f;
+			//volumeProp.floatValue = _clipPropHelper.DrawVolumeField(volRect, nameof(BroAudioClip.Volume), volumeProp.floatValue,new RangeFloat(0f,1f));
+
+			volRect.width *= 0.9f;
+			volumeProp.floatValue = DrawLogarithmicVolumeSlider_Horizontal(volRect, _volumeLabel, volumeProp.floatValue, AudioConstant.MinVolume, AudioConstant.MaxVolume,true);
 
 			Rect playbackRect = GetRectAndIterateLine(position);
+			playbackRect.width *= 0.8f;
 			_clipPropHelper.DrawPlaybackPositionField(playbackRect, transport, out var newPos);
 			startPosProp.floatValue = newPos.StartPosition;
 			endPosProp.floatValue = newPos.EndPosition;
 
 			Rect fadingRect = GetRectAndIterateLine(position);
+			fadingRect.width *= 0.8f;
 			_clipPropHelper.DrawFadingField(fadingRect, transport,out var newFading);
 			fadeInProp.floatValue = newFading.FadeIn;
 			fadeOutProp.floatValue = newFading.FadeOut;

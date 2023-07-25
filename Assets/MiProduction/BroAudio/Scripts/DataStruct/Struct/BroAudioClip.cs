@@ -8,13 +8,18 @@ namespace MiProduction.BroAudio.Data
 	public class BroAudioClip
 	{
 		public AudioClip AudioClip;
-		[Range(0f, 1f)] public float Volume;
+		public float Volume;
 		public float StartPosition;
 		public float EndPosition;
 		public float FadeIn;
 		public float FadeOut;
 
 		public int Weight;
+
+#if UNITY_EDITOR
+		public bool AllowBoost;
+
+#endif
 
 		public bool IsNull() => AudioClip == null;
 		

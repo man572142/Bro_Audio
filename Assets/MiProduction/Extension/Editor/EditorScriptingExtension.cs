@@ -255,21 +255,45 @@ namespace MiProduction.Extension
 			}
 		}
 
-		public static void DrawBeautifulLabel(Vector2 startPosition,Vector2 charSize,string text,int oneLineLength, GUIStyle style)
+		public static float DrawLogarithmicVolumeSlider_Horizontal(Rect position,GUIContent label, float currentValue, float leftValue, float rightValue,bool drawVU)
 		{
-			Rect rect = new Rect(startPosition, charSize);
-			for(int i = 0; i < text.Length; i++)
+			if (leftValue <= 0f)
 			{
-				EditorGUI.LabelField(rect, text[i].ToString(), style);
-				rect.x += charSize.x;
-				if((i + 1) % oneLineLength == 0)
-				{
-					rect.y += charSize.y;
-					rect.x = startPosition.x;
-				}
-            }
+				const float min = 0.0001f;
+				Debug.LogWarning($"The left value of the LogarithmicSlider should be greater than 0. It has been set to the default value of {min}");
+				leftValue = Mathf.Max(min, leftValue);
+			}
 
+			Rect suffixRect = EditorGUI.PrefixLabel(position, label);
+
+			float logValue = Mathf.Log10(currentValue) * 20;
+			float logLeftValue = Mathf.Log10(leftValue) * 20f;
+			float logRightValue = Mathf.Log10(rightValue) * 20f;
+
+			SplitRectHorizontal(suffixRect, 0.7f, 10f, out Rect sliderRect, out Rect valueRect);
+			if(drawVU)
+			{
+				DrawVUMeter(sliderRect, new Color(0.05f, 0.05f, 0.05f, 0.7f));
+			}
 			
+			float logResult = GUI.HorizontalSlider(sliderRect, logValue, logLeftValue, logRightValue);
+			float result = Mathf.Pow(10, logResult / 20f);
+
+			SplitRectHorizontal(valueRect, 0.4f, 5f, out Rect fieldRect, out Rect valueLabelRect);
+			result = EditorGUI.FloatField(fieldRect, result);
+
+			string plusSymbol = logResult > 0 ? "+" : string.Empty;
+			string volText = plusSymbol + logResult.ToString("0.##") + "dB";
+			EditorGUI.LabelField(valueLabelRect, volText);
+
+			return result;
+		}
+
+		public static void DrawVUMeter(Rect position,Color maskColor)
+		{
+			position.height *= 0.5f;
+			EditorGUI.DrawTextureTransparent(position, EditorGUIUtility.IconContent("d_VUMeterTextureHorizontal").image);
+			EditorGUI.DrawRect(position, maskColor);
 		}
 	}
 }

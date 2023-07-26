@@ -185,7 +185,10 @@ namespace MiProduction.BroAudio.Editor
 				Rect fieldRect = rects[1];
 				Rect dbLabelRect = rects[2];
 
-				DrawVUMeter(sliderRect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
+				if(BroEditorUtility.GlobalSetting.ShowVUColorOnVolumeSlider)
+				{
+                    DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
+                }
 
 				if (isSnap && Mathf.Abs(currentValue - FullVolume) <= _fullVolumeSnappingThreshold)
 				{

@@ -187,7 +187,7 @@ namespace MiProduction.BroAudio.Editor
 
 					EditorGUI.LabelField(labelRect, editor.Asset.AssetName);
 
-					EditorGUI.DrawRect(audioTypeRect, GetAudioTypeColor(editor.Asset.AudioType));
+					EditorGUI.DrawRect(audioTypeRect, GlobalSetting.GetAudioTypeColor(editor.Asset.AudioType));
 					EditorGUI.LabelField(audioTypeRect, editor.Asset.AudioType.ToString(), GUIStyleHelper.Instance.MiddleCenterText);
 				}
 			}

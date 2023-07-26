@@ -38,7 +38,6 @@ namespace MiProduction.BroAudio.Runtime
             {
                 _clipVolume = value;
                 MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel(true);
-                Debug.Log($"clip:{_clipVolume} track:{_trackVolume} mixer:{MixerDecibelVolume}");
             }
         }
 

@@ -8,17 +8,14 @@ namespace MiProduction.BroAudio.Runtime
 {
 	public partial class SoundManager : MonoBehaviour
 	{
-		public const string GlobalSettingPath = "BroAudioGlobalSetting";
-
 		private GlobalSetting _setting = null;
 		public GlobalSetting Setting
 		{
 			get
 			{
-				_setting ??= Resources.Load<GlobalSetting>(GlobalSettingPath);
+				_setting ??= Resources.Load<GlobalSetting>(GlobalSetting.FileName);
 				if(!_setting)
 				{
-					// 如果抓不到，將採用預設值
 					_setting = new GlobalSetting();
 					Utility.LogWarning("Can't load BroAudioGlobalSetting.asset, all setting values will be as default. " +
 						"If your setting file is missing. Please open BroAudio/Setting to recreate it and put it under any [Resource] folder");

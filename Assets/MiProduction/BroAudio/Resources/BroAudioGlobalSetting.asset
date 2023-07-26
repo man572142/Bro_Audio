@@ -12,9 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64cab1494eb378e4a8acf946c91c668a, type: 3}
   m_Name: BroAudioGlobalSetting
   m_EditorClassIdentifier: 
-  HassEffectInSeconds: 0.04
-  DefaultFadeIn: 2
-  DefaultFadeOut: 11
-  SeamlessFadeIn: 8
-  SeamlessFadeOut: 11
+  HaasEffectInSeconds: 0.04
+  DefaultFadeInEase: 2
+  DefaultFadeOutEase: 11
+  SeamlessFadeInEase: 8
+  SeamlessFadeOutEase: 11
   DefaultAudioPlayerPoolSize: 5
+  ShowAudioTypeOnAudioID: 1
+  MusicColor: {r: 0, g: 0.101960786, b: 0.29803923, a: 0.29803923}
+  UIColor: {r: 0, g: 0.5019608, b: 0.2, a: 0.29803923}
+  AmbienceColor: {r: 0.101960786, g: 0.5019608, b: 0.5019608, a: 0.29803923}
+  SFXColor: {r: 0.69803923, g: 0.2, b: 0.2, a: 0.29803923}
+  VoiceOverColor: {r: 0.8, g: 0.6, b: 0, a: 0.29803923}
+  ShowVUColorOnVolumeSlider: 1

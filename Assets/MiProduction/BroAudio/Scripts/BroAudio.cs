@@ -13,7 +13,7 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <param name="id"></param>
         public static IAudioPlayer Play(AudioID id) 
-            => SoundManager.Instance.Play(id, AudioExtension.HaasEffectInSeconds);
+            => SoundManager.Instance.Play(id, SoundManager.HaasEffectInSeconds);
 
         /// <summary>
         /// 播放音效
@@ -108,5 +108,5 @@ namespace MiProduction.BroAudio
     }
 }
 
-// by 咪 2022
+// by 咪 2023
 // https://github.com/man572142/Bro_Audio.git

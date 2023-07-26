@@ -38,19 +38,11 @@ namespace MiProduction.BroAudio.Runtime
 
         public static SoundManager Instance = null;
 
-        private const int DefaultPlayerPoolSize = 5;
-
         [Header("Player")]
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
         private AudioPlayerObjectPool _audioPlayerPool = null;
 
         [SerializeField] AudioMixer _broAudioMixer = null;
-
-        [Header("Fading Setting")]
-        [SerializeField] Ease _fadeInEase = Ease.InCubic;
-        [SerializeField] Ease _fadeOutEase = Ease.OutSine;
-        [SerializeField] Ease _seamlessFadeInEase = Ease.OutCubic;
-        [SerializeField] Ease _seamlessFadeOutEase = Ease.InSine;
 
         [Header("Library")]
         [SerializeField] private List<ScriptableObject> _soundAssets = new List<ScriptableObject>();
@@ -63,15 +55,12 @@ namespace MiProduction.BroAudio.Runtime
         // TODO: 如果是每次播放都在不同聲道就不用
         private Dictionary<int, bool> _combFilteringPreventer = new Dictionary<int, bool>();
 
-        public static Ease FadeInEase => Instance._fadeInEase;
-        public static Ease FadeOutEase => Instance._fadeOutEase;
-        public static Ease SeamlessFadeIn => Instance._seamlessFadeInEase;
-        public static Ease SeamlessFadeOut => Instance._seamlessFadeOutEase;
-
         public IReadOnlyDictionary<BroAudioType, AudioTypePlaybackPreference> AudioTypePref => _auidoTypePref;
 
         private void Awake()
 		{
+            InitSetting();
+
             string nullRefLog = $"Please assign {{0}} in {nameof(SoundManager)}.prefab";
             if(!_broAudioMixer)
 			{
@@ -85,7 +74,7 @@ namespace MiProduction.BroAudio.Runtime
 			}
 
             AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups("Track");
-            _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,transform, DefaultPlayerPoolSize, mixerGroups);
+            _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,transform,Setting.DefaultAudioPlayerPoolSize, mixerGroups);
 
 			InitBank();
             _automationHelper = new EffectAutomationHelper(this, _broAudioMixer);
@@ -255,8 +244,7 @@ namespace MiProduction.BroAudio.Runtime
             if (_combFilteringPreventer.TryGetValue(id, out bool isPreventing) && isPreventing)
             {
                 LogWarning($"One of the plays of Audio:{id.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
-                    $"Please avoid playing the same sound repeatedly in a very short period of time (e.g., playing it every other frame). " +
-                    $"Check [BroAudio > Global Setting] for more information, or change the Haas Effect setting.");
+                    $"Check [BroAudio > Global Setting] for more information, or change the setting.");
                 return false;
             }
 

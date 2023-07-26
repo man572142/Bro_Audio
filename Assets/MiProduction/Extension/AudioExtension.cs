@@ -34,9 +34,7 @@ namespace MiProduction.Extension
 			}
 		}
 
-        // TODO: add to global setting
-        public const float HaasEffectInSeconds = 0.04f;
-        private const float SecondsPerMinute = 60;
+        private const float SecondsPerMinute = 60f;
 
         public static float ToDecibel(this float vol,bool allowBoost = false)
         {  

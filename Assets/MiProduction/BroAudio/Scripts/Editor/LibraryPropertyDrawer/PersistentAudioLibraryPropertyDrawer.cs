@@ -20,8 +20,12 @@ namespace MiProduction.BroAudio.Editor
 		private float[] _seamlessSettingRectRatio = new float[] { 0.2f, 0.25f, 0.2f, 0.2f ,0.15f};
 
 		// The number should match the amount of EditorGUI elements that being draw in this script.
-		protected override int AdditionalBasePropertiesLineCount => 2;
-		protected override int AdditionalClipPropertiesLineCount => 0;
+		protected override int GetAdditionalBaseProtiesLineCount(SerializedProperty property)
+		{
+			var seamlessToggleProp = property.FindPropertyRelative(nameof(PersistentAudioLibrary.SeamlessLoop));
+			return seamlessToggleProp.boolValue ? 2 : 1;
+		}
+		protected override int GetAdditionalClipPropertiesLineCount(SerializedProperty property) => 0;
 
 		protected override void DrawAdditionalBaseProperties(Rect position, SerializedProperty property)
 		{
@@ -48,7 +52,7 @@ namespace MiProduction.BroAudio.Editor
 			EditorGUI.LabelField(rects[drawIndex], "Transition By");
 			drawIndex++;
 
-			var seamlessTypeProp = property.FindPropertyRelative(PersistentAudioLibrary.NameOf_SeamlessType);
+			var seamlessTypeProp = property.FindPropertyRelative(NameOf_SeamlessType);
 			SeamlessType currentType = (SeamlessType)seamlessTypeProp.enumValueIndex;
 			currentType = (SeamlessType)EditorGUI.EnumPopup(rects[drawIndex], currentType);
 			seamlessTypeProp.enumValueIndex = (int)currentType;

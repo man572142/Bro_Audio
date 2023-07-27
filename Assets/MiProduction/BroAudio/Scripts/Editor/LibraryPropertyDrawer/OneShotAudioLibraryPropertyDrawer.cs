@@ -10,8 +10,8 @@ namespace MiProduction.BroAudio.Editor
 	public class OneShotAudioLibraryPropertyDrawer : AudioLibraryPropertyDrawer
 	{
 		// The number should match the amount of EditorGUI elements that being draw in this script.
-		protected override int AdditionalBasePropertiesLineCount => 1;
-		protected override int AdditionalClipPropertiesLineCount => 0;
+		protected override int GetAdditionalBaseProtiesLineCount(SerializedProperty property) => 1;
+		protected override int GetAdditionalClipPropertiesLineCount(SerializedProperty property) => 0;
 
 		protected override void DrawAdditionalBaseProperties(Rect position, SerializedProperty property)
 		{

@@ -27,7 +27,7 @@ namespace MiProduction.BroAudio.Runtime
 
 		protected override void DestroyObject(AudioMixerGroup track)
 		{
-			// TODO: ???
+			// max pool size equals to track count. there is no track will be destroy.
 		}
 	}
 }

@@ -28,11 +28,8 @@ namespace MiProduction.BroAudio.Editor
 		
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 
-		protected abstract int AdditionalBasePropertiesLineCount { get; }
-		protected abstract int AdditionalClipPropertiesLineCount { get; }
-		protected int BasePropertiesLineCount => _basePropertiesLineCount + AdditionalBasePropertiesLineCount;
-		protected int ClipPropertiesLineCount => _clipPropertiesLineCount + AdditionalClipPropertiesLineCount;
-
+		protected abstract int GetAdditionalBaseProtiesLineCount(SerializedProperty property);
+		protected abstract int GetAdditionalClipPropertiesLineCount(SerializedProperty property);
 		protected abstract void DrawAdditionalBaseProperties(Rect position, SerializedProperty property);
 		protected abstract void DrawAdditionalClipProperties(Rect position, SerializedProperty property);
 
@@ -110,17 +107,17 @@ namespace MiProduction.BroAudio.Editor
 
 					if(isShowClipProp)
 					{
-						height += ClipPropertiesLineCount * SingleLineSpace;
+						height += (_clipPropertiesLineCount + GetAdditionalClipPropertiesLineCount(property)) * SingleLineSpace;
 					}
 					if(isShowClipPreview)
 					{
 						height += ClipPreviewHeight;
 					}
 				}
-				height += BasePropertiesLineCount * SingleLineSpace;
+				height += (_basePropertiesLineCount + GetAdditionalBaseProtiesLineCount(property)) * SingleLineSpace;
 			}
 			return height;
-		} 
+		}
 		#endregion
 
 		private ReorderableClips DrawReorderableClipsList(Rect position, SerializedProperty property)

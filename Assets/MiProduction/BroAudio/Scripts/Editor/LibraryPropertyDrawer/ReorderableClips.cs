@@ -38,6 +38,10 @@ namespace MiProduction.BroAudio.Editor
 						_currSelectedClip = _reorderableList.serializedProperty.GetArrayElementAtIndex(_reorderableList.index);
 						_currSelectedClipIndex = _reorderableList.index;
 					}
+					else if (_currSelectedClip == null)
+					{
+						_currSelectedClip = _reorderableList.serializedProperty.GetArrayElementAtIndex(_reorderableList.index);
+					}
 				}
 				else
 				{

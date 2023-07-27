@@ -12,9 +12,4 @@ public static class AsyncTaskExtension
 		await Task.Delay((int)ms);
 		action.Invoke();
 	}
-
-	public static void ExecuteAfterChainingMethod(Action action)
-	{
-		DelayDoAction(MillisecondInSeconds, action);
-	}
 }

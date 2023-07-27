@@ -14,6 +14,8 @@ namespace MiProduction.BroAudio.Data
 
         [SerializeField] private MulticlipsPlayMode MulticlipsPlayMode;
 
+        public abstract BroAudioType PossibleFlags { get; }
+
         public bool Validate(int index)
         {
             return Utility.Validate(Name.ToWhiteBold(), index, Clips, ID);

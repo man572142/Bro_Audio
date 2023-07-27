@@ -59,8 +59,6 @@ namespace MiProduction.BroAudio.Runtime
 
         private void Awake()
 		{
-            InitSetting();
-
             string nullRefLog = $"Please assign {{0}} in {nameof(SoundManager)}.prefab";
             if(!_broAudioMixer)
 			{

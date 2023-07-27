@@ -6,7 +6,7 @@ namespace MiProduction.BroAudio
 {
     public interface IPlaybackControllable
     {
-        void Play(int id, BroAudioClip clip, PlaybackPreference pref);
+        void Play(int id, BroAudioClip clip, PlaybackPreference pref,bool waitForChainingMethod = true);
 
         void Stop();
 		void Stop(float fadeOut);

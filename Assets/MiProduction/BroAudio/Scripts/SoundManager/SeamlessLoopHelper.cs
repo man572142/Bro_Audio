@@ -20,10 +20,10 @@ namespace MiProduction.BroAudio.Runtime
 
 		public void SetPlayer(AudioPlayer player)
 		{
-			player.OnFinishingStarted += OnFinishingStarted;
+			player.OnFinishingOneRound += OnFinishingOneRound;
 		}
 
-		private void OnFinishingStarted(int id, BroAudioClip clip, PlaybackPreference pref)
+		private void OnFinishingOneRound(int id, BroAudioClip clip, PlaybackPreference pref)
 		{
 			var newPlayer = _getPlayerFunc?.Invoke();
 			_playerWrapper.UpdateInstance(newPlayer);
@@ -34,8 +34,9 @@ namespace MiProduction.BroAudio.Runtime
 				newPlayer.SetEffect(audioTypePref.EffectType, SetEffectMode.Override);
 				newPlayer.SetVolume(audioTypePref.Volume, 0f);
 			}
-			newPlayer.Play(id, clip, pref);
-			newPlayer.OnFinishingStarted += OnFinishingStarted;
+
+			newPlayer.Play(id, clip, pref,false);
+			newPlayer.OnFinishingOneRound += OnFinishingOneRound;
 		}
 	}
 }

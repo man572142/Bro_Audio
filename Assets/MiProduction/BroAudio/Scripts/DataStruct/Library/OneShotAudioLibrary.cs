@@ -6,5 +6,7 @@ namespace MiProduction.BroAudio.Data
     public class OneShotAudioLibrary : AudioLibrary
     {
         public float Delay;
+
+		public override BroAudioType PossibleFlags => BroAudioType.UI | BroAudioType.SFX | BroAudioType.VoiceOver;
 	}
 }

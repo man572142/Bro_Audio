@@ -14,7 +14,7 @@ namespace MiProduction.BroAudio.Runtime
 	{
         public static Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
-        public event Action<int,BroAudioClip,PlaybackPreference> OnFinishingStarted = null;
+        public event Action<int,BroAudioClip,PlaybackPreference> OnFinishingOneRound = null;
 
         private StopMode _stopMode = default;
         private Coroutine _playbackControlCoroutine;
@@ -22,7 +22,7 @@ namespace MiProduction.BroAudio.Runtime
         private Coroutine _recycleCoroutine;
         private bool _isReadyToPlay = false;
 
-        public void Play(int id, BroAudioClip clip, PlaybackPreference pref)
+        public void Play(int id, BroAudioClip clip, PlaybackPreference pref,bool waitForChainingMethod = true)
         {
             ID = id;
             CurrentClip = clip;
@@ -30,23 +30,40 @@ namespace MiProduction.BroAudio.Runtime
             IsStopping = false;
             this.SafeStopCoroutine(_recycleCoroutine);
 
-            AsyncTaskExtension.ExecuteAfterChainingMethod(() => 
+            if(waitForChainingMethod)
+			{
+				ExecuteAfterChainingMethod(() =>
+                {
+                    if (_isReadyToPlay)
+					{
+						DecoratePlaybackPreference?.Invoke(pref);
+						StartPlaying(clip, pref);
+					}
+					else
+                    {
+                        EndPlaying();
+                    }
+                });
+            }
+            else
+			{
+                StartPlaying(clip, pref);
+            }
+
+			void StartPlaying(BroAudioClip clip, PlaybackPreference pref)
+			{
+				this.StartCoroutineAndReassign(PlayControl(clip, pref), ref _playbackControlCoroutine);
+			}
+
+            void ExecuteAfterChainingMethod(Action action)
             {
-                if(_isReadyToPlay)
-                {
-                    DecoratePlaybackPreference?.Invoke(pref);
-                    this.StartCoroutineAndReassign(PlayControl(clip, pref), ref _playbackControlCoroutine);
-                }
-                else
-                {
-                    EndPlaying();
-                }
-            });
+                AsyncTaskExtension.DelayDoAction(AsyncTaskExtension.MillisecondInSeconds, action);
+            }
         }
 
         private IEnumerator PlayControl(BroAudioClip clip, PlaybackPreference pref)
         {
-            if(pref.HaveToWaitForPrevious)
+            if (pref.HaveToWaitForPrevious)
 			{
                 yield return new WaitUntil(() => pref.HaveToWaitForPrevious == false);
 			}
@@ -85,6 +102,7 @@ namespace MiProduction.BroAudio.Runtime
                 if (HasFading(clip.FadeIn, pref.FadeIn, out float fadeIn))
                 {
                     IsFadingIn = true;
+                    //FadeIn start from here
                     yield return Fade(clip.Volume, fadeIn, fader,pref.FadeInEase);
                     IsFadingIn = false;
                 }
@@ -94,23 +112,29 @@ namespace MiProduction.BroAudio.Runtime
                 }
                 #endregion
 
-                float endTime = AudioSource.clip.length - clip.EndPosition;
+                if(pref.IsSeamlessLoop)
+				{
+                    pref.ApplySeamlessFade();
+				}
+
                 #region FadeOut
+                float endTime = AudioSource.clip.length - clip.EndPosition;
                 if (HasFading(clip.FadeOut, pref.FadeOut, out float fadeOut))
                 {
                     yield return new WaitUntil(() => (endTime - AudioSource.time) <= fadeOut);
                     IsFadingOut = true;
-                    StartToFinish(clip, pref);
+                    OnFinishOneRound(clip, pref);
+                    //FadeOut start from here
                     yield return Fade(0f, fadeOut, fader,pref.FadeOutEase);
                     IsFadingOut = false;
                 }
                 else
                 {
                     yield return new WaitUntil(() => AudioSource.time >= endTime);
-                    StartToFinish(clip, pref);
+                    OnFinishOneRound(clip, pref);
                 }
                 #endregion
-            } while (pref.IsLoop);
+            } while (pref.IsNormalLoop);
 
             EndPlaying();
 
@@ -122,23 +146,23 @@ namespace MiProduction.BroAudio.Runtime
 			}
 		}
 
-        private void StartToFinish(BroAudioClip clip, PlaybackPreference pref)
+        private void OnFinishOneRound(BroAudioClip clip, PlaybackPreference pref)
         {
-            OnFinishingStarted?.Invoke(ID, clip, pref);
-            OnFinishingStarted = null;
+            OnFinishingOneRound?.Invoke(ID, clip, pref);
+            OnFinishingOneRound = null;
         }
 
         #region Stop Overloads
-        public virtual void Stop() 
+        public void Stop() 
             => Stop(UseLibraryManagerSetting);
-        public virtual void Stop(float fadeOut) 
+        public void Stop(float fadeOut) 
             => Stop(fadeOut, null);
-        public virtual void Stop(Action onFinishStopping) 
+        public void Stop(Action onFinishStopping) 
             => Stop(UseLibraryManagerSetting, onFinishStopping);
-        public virtual void Stop(float fadeOut, Action onFinished) 
+        public void Stop(float fadeOut, Action onFinished) 
             => Stop(fadeOut, default, onFinished);
         #endregion
-        public virtual void Stop(float overrideFade, StopMode stopMode,Action onFinished)
+        public void Stop(float overrideFade, StopMode stopMode,Action onFinished)
         {
             if (IsStopping && overrideFade != Immediate)
             {

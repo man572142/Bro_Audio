@@ -30,11 +30,5 @@ namespace MiProduction.BroAudio.Runtime
 		public static Ease SeamlessFadeOut => Instance.Setting.SeamlessFadeOutEase;
 
 		public static float HaasEffectInSeconds => Instance.Setting.HaasEffectInSeconds;
-
-		public void InitSetting()
-		{
-			Debug.Log(Setting.HaasEffectInSeconds);
-		}
 	}
-
 }

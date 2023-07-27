@@ -13,8 +13,17 @@ namespace MiProduction.BroAudio
 
 		public static T CastTo<T>(this IAudioLibrary library) where T : IAudioLibrary
 		{
-			// TODO: 還是有可能ERROR
-			return (T)library;
+			BroAudioType audioType = GetAudioType(library.ID);
+			AudioLibrary audioLibrary = library as AudioLibrary;
+			if(audioLibrary.PossibleFlags.HasFlag(audioType))
+			{
+				return (T)library;
+			}
+			else
+			{
+				LogError($"The library of {library.Name} can't cast to {typeof(T)}");
+				return default;
+			}
 		}
 
 		public static T DecorateWith<T>(this AudioPlayer origin) where T : AudioPlayerDecorator, new()

@@ -16,7 +16,6 @@ namespace MiProduction.BroAudio
 
 		public void UpdateInstance(AudioPlayer newInstance)
 		{
-			Debug.Log($"UpdateInstance id:{newInstance.ID} old:{Instance.ID}");
 			Instance.OnRecycle -= OnRecycle;
 			Instance = newInstance;
 			newInstance.OnRecycle += OnRecycle;
@@ -24,7 +23,6 @@ namespace MiProduction.BroAudio
 
 		private void OnRecycle(AudioPlayer player)
 		{
-			Debug.Log("OnRecycle");
 			Instance.OnRecycle -= OnRecycle;
 			Instance = null;
 		}

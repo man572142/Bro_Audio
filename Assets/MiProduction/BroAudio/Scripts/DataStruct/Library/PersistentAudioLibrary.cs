@@ -7,6 +7,8 @@ namespace MiProduction.BroAudio.Data
     [System.Serializable]
     public class PersistentAudioLibrary : AudioLibrary
     {
+        public override BroAudioType PossibleFlags => BroAudioType.Music | BroAudioType.Ambience;
+
         public bool Loop;
         public bool SeamlessLoop;
         public float TransitionTime;

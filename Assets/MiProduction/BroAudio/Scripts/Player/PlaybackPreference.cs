@@ -7,17 +7,18 @@ namespace MiProduction.BroAudio.Runtime
 {
 	public class PlaybackPreference
 	{
-		public readonly bool IsLoop = false;
+		public readonly bool IsNormalLoop = false;
 		public readonly bool IsSeamlessLoop = false;
 		public readonly float Delay = 0f;
 
-		public float FadeIn = UseLibraryManagerSetting;
-		public float FadeOut = UseLibraryManagerSetting;
+		public readonly Ease FadeInEase = Ease.Linear;
+		public readonly Ease FadeOutEase = Ease.Linear;
 
-		public Ease FadeInEase = Ease.Linear;
-		public Ease FadeOutEase = Ease.Linear;
+		private float _seamlessTransitionTime = UseLibraryManagerSetting;
 
-		public bool HaveToWaitForPrevious = false;
+		public float FadeIn { get; private set; } = UseLibraryManagerSetting;
+		public float FadeOut { get; private set; } = UseLibraryManagerSetting;
+		public bool HaveToWaitForPrevious { get; set; }
 
 		public PlaybackPreference(IAudioLibrary library,float fadeOut)
 		{
@@ -26,23 +27,9 @@ namespace MiProduction.BroAudio.Runtime
 			if(PersistentType.HasFlag(audioType))
 			{
 				var persistentLib = library.CastTo<PersistentAudioLibrary>();
-				IsLoop = persistentLib.Loop ;
-				if (persistentLib.SeamlessLoop)
-				{
-                    if (persistentLib.TransitionTime >= 0)
-					{
-                        //HACK: 這樣會讓第一次播放失去自己的FadeIn
-                        FadeIn = persistentLib.TransitionTime;
-                        FadeOut = persistentLib.TransitionTime;
-						IsSeamlessLoop = persistentLib.TransitionTime != 0;
-						IsLoop = !IsSeamlessLoop;
-                    }
-					else if(persistentLib.TransitionTime < 0)
-					{
-						IsSeamlessLoop = fadeOut > 0;
-						IsLoop = !IsSeamlessLoop;
-					}
-				}
+				_seamlessTransitionTime = persistentLib.TransitionTime;
+				IsSeamlessLoop = persistentLib.SeamlessLoop && (persistentLib.TransitionTime >= 0 || fadeOut > 0);
+				IsNormalLoop = IsSeamlessLoop ? false : persistentLib.Loop;
 			}
 			else if(OneShotType.HasFlag(audioType))
 			{
@@ -75,6 +62,12 @@ namespace MiProduction.BroAudio.Runtime
 					FadeOut = fadeTime;
 					break;
 			}
+		}
+
+		public void ApplySeamlessFade()
+		{
+			FadeIn = _seamlessTransitionTime;
+			FadeOut = _seamlessTransitionTime;
 		}
 	}
 }

@@ -16,9 +16,9 @@ namespace MiProduction.BroAudio.Data
 
         public abstract BroAudioType PossibleFlags { get; }
 
-        public bool Validate(int index)
+        public bool Validate()
         {
-            return Utility.Validate(Name.ToWhiteBold(), index, Clips, ID);
+            return Utility.Validate(Name.ToWhiteBold(), Clips, ID);
         }
 
 #if UNITY_EDITOR

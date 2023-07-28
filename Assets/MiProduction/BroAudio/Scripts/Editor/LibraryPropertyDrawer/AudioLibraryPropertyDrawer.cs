@@ -17,7 +17,8 @@ namespace MiProduction.BroAudio.Editor
 		protected const float ClipPreviewHeight = 100f;
 		private const int _basePropertiesLineCount = 2;
 		private const int _clipPropertiesLineCount = 4;
-		private const float _fullVolumeSnappingThreshold = 0.1f;
+		private const float _lowVolumeSnappingThreshold = 0.05f;
+		private const float _highVolumeSnappingThreshold = 0.2f;
 
 		private GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume));
 
@@ -182,22 +183,23 @@ namespace MiProduction.BroAudio.Editor
 				Rect fieldRect = rects[1];
 				Rect dbLabelRect = rects[2];
 
-				if(BroEditorUtility.GlobalSetting.ShowVUColorOnVolumeSlider)
+				if (BroEditorUtility.GlobalSetting.ShowVUColorOnVolumeSlider)
 				{
-                    DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
-                }
+					DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
+				}
 
-				if (isSnap && Mathf.Abs(currentValue - FullVolume) <= _fullVolumeSnappingThreshold)
+				if(isSnap && CanSnap(currentValue))
 				{
 					currentValue = FullVolume;
 				}
+
 				float sliderValue = ConvertToSliderValue(currentValue);
 				sliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
-				
+
 				currentValue = EditorGUI.FloatField(fieldRect, ConvertToNomalizedVolume(sliderValue));
 
 				DrawDecibelValueLabel(dbLabelRect, currentValue);
-				DrawFullVolumeSnapPoint(sliderRect, isSnap, onSwitchBoostMode);
+				DrawFullVolumeSnapPoint(sliderRect, onSwitchBoostMode);
 			}
 			return currentValue;
 
@@ -216,7 +218,7 @@ namespace MiProduction.BroAudio.Editor
 				EditorGUI.DrawRect(vuRect, maskColor);
 			}
 
-			void DrawFullVolumeSnapPoint(Rect sliderPosition,bool isSnap, Action onSwitchSnapMode)
+			void DrawFullVolumeSnapPoint(Rect sliderPosition, Action onSwitchSnapMode)
 			{
 				Rect rect = new Rect(sliderPosition);
 				rect.width = 30f;
@@ -254,6 +256,14 @@ namespace MiProduction.BroAudio.Editor
 					return db.ToNormalizeVolume(true);
 				}
 				return sliderValue;
+			}
+
+			bool CanSnap(float value)
+			{
+				float difference = value - FullVolume;
+				bool isInLowVolumeSnappingRange = difference < 0f && difference * -1f <= _lowVolumeSnappingThreshold;
+				bool isInHighVolumeSnappingRange = difference > 0f && difference <= _highVolumeSnappingThreshold;
+				return isInLowVolumeSnappingRange || isInHighVolumeSnappingRange;
 			}
 		}
 

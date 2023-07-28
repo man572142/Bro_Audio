@@ -63,7 +63,7 @@ namespace MiProduction.BroAudio.Runtime
             {
                 if(_mixerDecibelVolume == DefaultMixerDecibelVolume)
                 {
-                    if (AudioMixer.GetFloat(VolumeParaName, out float currentVol))
+                    if (_audioMixer.GetFloat(VolumeParaName, out float currentVol))
                     {
                         _mixerDecibelVolume = currentVol;
                     }
@@ -74,7 +74,7 @@ namespace MiProduction.BroAudio.Runtime
             private set
             {
                 _mixerDecibelVolume = value.ClampDecibel(true);
-                AudioMixer.SetFloat(VolumeParaName, _mixerDecibelVolume);
+                _audioMixer.SetFloat(VolumeParaName, _mixerDecibelVolume);
             }
         }
 

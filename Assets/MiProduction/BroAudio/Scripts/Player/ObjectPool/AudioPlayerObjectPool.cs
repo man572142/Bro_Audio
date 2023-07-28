@@ -20,6 +20,7 @@ namespace MiProduction.BroAudio.Runtime
 		public override AudioPlayer Extract()
 		{
 			AudioPlayer player = base.Extract();
+			player.SetMixer(SoundManager.Instance.Mixer);
 			player.AudioTrack = _audioTrackPool.Extract();
 
 			_inUsePlayers ??= new List<AudioPlayer>();

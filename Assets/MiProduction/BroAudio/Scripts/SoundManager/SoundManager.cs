@@ -5,6 +5,7 @@ using UnityEngine.Audio;
 using MiProduction.BroAudio.Data;
 using MiProduction.Extension;
 using static MiProduction.BroAudio.Utility;
+using static MiProduction.Extension.CoroutineExtension;
 using System.Linq;
 using System;
 
@@ -38,7 +39,9 @@ namespace MiProduction.BroAudio.Runtime
 
         public static SoundManager Instance = null;
 
-        [Header("Player")]
+        private const string MasterTrackExposedParameter = "Master";
+        private const string GenericTrackExposedParameter = "Track";
+
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
         private AudioPlayerObjectPool _audioPlayerPool = null;
 
@@ -55,7 +58,10 @@ namespace MiProduction.BroAudio.Runtime
         // TODO: 如果是每次播放都在不同聲道就不用
         private Dictionary<int, bool> _combFilteringPreventer = new Dictionary<int, bool>();
 
+        private Coroutine _masterVolumeCoroutine;
+
         public IReadOnlyDictionary<BroAudioType, AudioTypePlaybackPreference> AudioTypePref => _auidoTypePref;
+        public AudioMixer Mixer => _broAudioMixer;
 
         private void Awake()
 		{
@@ -71,7 +77,7 @@ namespace MiProduction.BroAudio.Runtime
                 return;
 			}
 
-            AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups("Track");
+            AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups(GenericTrackExposedParameter);
             _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,transform,Setting.DefaultAudioPlayerPoolSize, mixerGroups);
 
 			InitBank();
@@ -91,7 +97,7 @@ namespace MiProduction.BroAudio.Runtime
 				for (int i = 0; i < dataList.Count; i++)
 				{
 					var library = dataList[i];
-					if (!library.Validate(i))
+					if (!library.Validate())
                         continue;
 
                     if (!_audioBank.ContainsKey(library.ID))
@@ -112,6 +118,17 @@ namespace MiProduction.BroAudio.Runtime
         #region Volume
         public void SetVolume(float vol, BroAudioType targetType, float fadeTime)
 		{
+            if(targetType == BroAudioType.All)
+			{
+                SetMasterVolume(vol,fadeTime);
+                return;
+			}
+            else if (targetType == BroAudioType.None)
+			{
+                LogWarning($"SetVolume with {targetType} is meaningless");
+                return;
+			}
+
             GetPlaybackPrefByType(targetType, pref => pref.Volume = vol);
             GetCurrentPlayers(player => 
             { 
@@ -120,6 +137,32 @@ namespace MiProduction.BroAudio.Runtime
                     player.SetVolume(vol, fadeTime);
                 }
             });
+        }
+
+		private void SetMasterVolume(float targetVol, float fadeTime)
+		{
+            targetVol = targetVol.ToDecibel();
+            if(_broAudioMixer.GetFloat(MasterTrackExposedParameter,out float currentVol))
+			{
+				if (currentVol == targetVol)
+				{
+					return;
+				}
+
+				Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
+				var volumes = AnimationExtension.GetLerpValuesPerFrame(currentVol, targetVol, fadeTime, ease);
+
+				this.StartCoroutineAndReassign(SetMasterVolume(volumes),ref _masterVolumeCoroutine);
+			}
+
+            IEnumerator SetMasterVolume(IEnumerable<float> volumes)
+            {
+                foreach (var vol in volumes)
+                {
+                    _broAudioMixer.SetFloat(MasterTrackExposedParameter, vol);
+                    yield return null;
+                }
+            }
         }
 
 		public void SetVolume(float vol, int id, float fadeTime)
@@ -195,7 +238,7 @@ namespace MiProduction.BroAudio.Runtime
             var players = _audioPlayerPool.GetInUseAudioPlayers();
             foreach (var player in players)
             {
-                onGetPlayer.Invoke(player);
+                onGetPlayer?.Invoke(player);
             }
         }
 

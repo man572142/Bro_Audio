@@ -126,12 +126,11 @@ namespace MiProduction.BroAudio
 			return (word >= 65 && word <= 90) || (word >= 97 && word <= 122);
 		}
 
-		public static bool Validate(string name, int index, BroAudioClip[] clips, int id)
+		public static bool Validate(string name, BroAudioClip[] clips, int id)
 		{
-			// TODO: this is obsolete!
 			if (id <= 0)
 			{
-				LogWarning($"There is a sound missing .please check element {index} in {name}");
+				LogWarning($"There is a missing or unassigned AudioID.");
 				return false;
 			}
 
@@ -141,17 +140,18 @@ namespace MiProduction.BroAudio
 				return false;
 			}
 
-			foreach (BroAudioClip clipData in clips)
+			for(int i = 0; i < clips.Length;i++)
 			{
+				var clipData = clips[i];
 				if (clipData.AudioClip == null)
 				{
-					LogError($"Audio clip has not been assigned! please check element {index} in {name}.");
+					LogError($"Audio clip has not been assigned! please check {name} in Library Manager.");
 					return false;
 				}
 				float controlLength = (clipData.FadeIn > 0f ? clipData.FadeIn : 0f) + (clipData.FadeOut > 0f ? clipData.FadeOut : 0f) + clipData.StartPosition;
 				if (controlLength > clipData.AudioClip.length)
 				{
-					LogError($"Time control value should not greater than clip's length! please check element {index} in {name}.");
+					LogError($"Time control value should not greater than clip's length! please check clips element:{i} in {name}.");
 					return false;
 				}
 			}

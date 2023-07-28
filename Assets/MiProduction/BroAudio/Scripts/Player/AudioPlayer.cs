@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.Audio;
 using MiProduction.BroAudio.Data;
 using MiProduction.Extension;
-using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Runtime
 {
@@ -20,10 +19,9 @@ namespace MiProduction.BroAudio.Runtime
         public event Action<PlaybackPreference> DecoratePlaybackPreference;
 
         [SerializeField] private AudioSource AudioSource = null;
-        [SerializeField] private AudioMixer AudioMixer;
+        private AudioMixer _audioMixer;
 
-        // TODO : Don't use instance
-        private BroAudioClip CurrentClip;
+        private IBroAudioClip CurrentClip;
         private List<AudioPlayerDecorator> _decorators = null;
         private string _sendParaName = null;
         private bool _isUsingEffect = false;
@@ -51,11 +49,12 @@ namespace MiProduction.BroAudio.Runtime
             {
                 AudioSource = GetComponent<AudioSource>();
             }
-            if (AudioMixer == null)
-            {
-                LogError($"Please assign BroAudioMixer in the {nameof(AudioPlayer)}.prefab !");
-            }
         }
+
+        public void SetMixer(AudioMixer mixer)
+		{
+            _audioMixer = mixer;
+		}
 
 		public void SetEffect(EffectType effect,SetEffectMode mode)
 		{ 
@@ -85,8 +84,8 @@ namespace MiProduction.BroAudio.Runtime
 			float sendVol = _isUsingEffect ? MixerDecibelVolume : AudioConstant.MinDecibelVolume;
 			float mainVol = _isUsingEffect ? AudioConstant.MinDecibelVolume : MixerDecibelVolume;
 
-			AudioMixer.SetFloat(_sendParaName, sendVol);
-			AudioMixer.SetFloat(AudioTrack.name, mainVol);
+			_audioMixer.SetFloat(_sendParaName, sendVol);
+			_audioMixer.SetFloat(AudioTrack.name, mainVol);
 		}
 
 		IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => this;
@@ -130,6 +129,7 @@ namespace MiProduction.BroAudio.Runtime
         {
             yield return null;
             MixerDecibelVolume = AudioConstant.MinDecibelVolume;
+            _audioMixer = null;
             OnRecycle?.Invoke(this);
         }
 	}

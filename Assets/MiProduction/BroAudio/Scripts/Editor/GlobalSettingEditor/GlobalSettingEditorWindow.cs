@@ -7,6 +7,7 @@ using static MiProduction.BroAudio.Utility;
 using static MiProduction.BroAudio.Editor.BroEditorUtility;
 using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static MiProduction.Extension.EditorScriptingExtension;
+using static MiProduction.BroAudio.BroLog;
 
 namespace MiProduction.BroAudio.Editor.Setting
 {

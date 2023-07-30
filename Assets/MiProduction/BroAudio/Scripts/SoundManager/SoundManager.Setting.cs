@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MiProduction.BroAudio.Data;
 using MiProduction.Extension;
 using UnityEngine;
+using static MiProduction.BroAudio.BroLog;
 
 namespace MiProduction.BroAudio.Runtime
 {
@@ -17,7 +18,7 @@ namespace MiProduction.BroAudio.Runtime
 				if(!_setting)
 				{
 					_setting = new GlobalSetting();
-					Utility.LogWarning("Can't load BroAudioGlobalSetting.asset, all setting values will be as default. " +
+					LogWarning("Can't load BroAudioGlobalSetting.asset, all setting values will be as default. " +
 						"If your setting file is missing. Please open BroAudio/Setting to recreate it and put it under any [Resource] folder");
 				}
 				return _setting;

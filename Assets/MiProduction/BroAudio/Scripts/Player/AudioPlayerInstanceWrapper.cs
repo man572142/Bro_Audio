@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using MiProduction.BroAudio.Runtime;
 using UnityEngine;
 using MiProduction.Extension;
-using System;
+using static MiProduction.BroAudio.BroLog;
 
 namespace MiProduction.BroAudio
 {
@@ -41,7 +41,7 @@ namespace MiProduction.BroAudio
 
 		protected override void LogInstanceIsNull()
 		{
-			Utility.LogError("The audio player that you are refering to has been recycled");
+			LogError("The audio player that you are refering to has been recycled");
 		}
 	}
 }

@@ -1,4 +1,5 @@
 using MiProduction.Extension;
+using static MiProduction.BroAudio.BroLog;
 
 namespace MiProduction.BroAudio
 {
@@ -17,7 +18,7 @@ namespace MiProduction.BroAudio
 			{
 				if(Type == EffectType.None)
 				{
-					Utility.LogError("EffectParameter's EffectType must be set before the Value");
+					LogError("EffectParameter's EffectType must be set before the Value");
 					return;
 				}
 
@@ -29,7 +30,7 @@ namespace MiProduction.BroAudio
 					}
 					else
 					{
-						Utility.LogWarning("The value of a volume type EffectParameter should be less than 1 and greater than 0!");
+						LogWarning("The value of a volume type EffectParameter should be less than 1 and greater than 0!");
 					}
 				}
 				else if (Type == EffectType.LowPass || Type == EffectType.HighPass)

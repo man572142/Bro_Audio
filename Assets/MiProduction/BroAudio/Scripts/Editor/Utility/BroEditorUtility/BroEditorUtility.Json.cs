@@ -4,7 +4,7 @@ using UnityEngine;
 using System.IO;
 using System;
 using UnityEditor;
-using static MiProduction.BroAudio.Utility;
+using static MiProduction.BroAudio.BroLog;
 
 namespace MiProduction.BroAudio.Editor
 {

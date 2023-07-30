@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
-using static MiProduction.BroAudio.Utility;
+using static MiProduction.BroAudio.BroLog;
 
 namespace MiProduction.BroAudio.Editor
 {

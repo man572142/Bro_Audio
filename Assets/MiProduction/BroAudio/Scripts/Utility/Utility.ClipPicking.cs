@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using MiProduction.BroAudio.Data;
+using static MiProduction.BroAudio.BroLog;
 
 namespace MiProduction.BroAudio
 {

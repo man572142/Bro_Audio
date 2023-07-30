@@ -1,5 +1,6 @@
 using MiProduction.Extension;
 using UnityEngine.Audio;
+using static MiProduction.BroAudio.BroLog;
 
 namespace MiProduction.BroAudio.Runtime
 {
@@ -16,7 +17,7 @@ namespace MiProduction.BroAudio.Runtime
 		{
 			if (_usedTrackCount >= _audioMixerGroups.Length)
 			{
-				Utility.LogWarning("You have reached the limit of audio voices count. The sound may not be audible until another voices become available!");
+				LogWarning("You have reached the limit of audio voices count. The sound may not be audible until another voices become available!");
 				return null;
 			}
 

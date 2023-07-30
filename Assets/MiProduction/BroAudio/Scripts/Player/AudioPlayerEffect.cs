@@ -1,6 +1,6 @@
 using MiProduction.Extension;
 using UnityEngine;
-using static MiProduction.BroAudio.Utility;
+using static MiProduction.BroAudio.BroLog;
 
 namespace MiProduction.BroAudio.Runtime
 {

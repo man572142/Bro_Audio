@@ -1,3 +1,4 @@
+using UnityEngine;
 using MiProduction.BroAudio.Data;
 using MiProduction.Extension;
 using static MiProduction.BroAudio.Runtime.AudioPlayer;
@@ -5,30 +6,52 @@ using static MiProduction.BroAudio.Utility;
 
 namespace MiProduction.BroAudio.Runtime
 {
-	public class PlaybackPreference
+	public struct PlaybackPreference
 	{
-		public readonly bool IsNormalLoop = false;
-		public readonly bool IsSeamlessLoop = false;
-		public readonly float Delay = 0f;
+		public readonly bool IsNormalLoop;
+		public readonly bool IsSeamlessLoop;
+		public readonly float Delay;
 
-		public readonly Ease FadeInEase = Ease.Linear;
-		public readonly Ease FadeOutEase = Ease.Linear;
+		public readonly Vector3 Position;
+		public readonly Transform FollowTarget;
 
-		private float _seamlessTransitionTime = UseLibraryManagerSetting;
+		public readonly Ease FadeInEase;
+		public readonly Ease FadeOutEase;
+		public readonly float SeamlessTransitionTime;
 
-		public float FadeIn { get; private set; } = UseLibraryManagerSetting;
-		public float FadeOut { get; private set; } = UseLibraryManagerSetting;
-		public bool HaveToWaitForPrevious { get; set; }
+		public float FadeIn { get; private set; }
+		public float FadeOut { get; private set; }
+		public bool HaveToWaitForPrevious { get; private set; }
 
-		public PlaybackPreference(IAudioLibrary library,float fadeOut)
+		public PlaybackPreference(IAudioLibrary library,Vector3 position) : this(library)
 		{
-			BroAudioType audioType = GetAudioType(library.ID);
+			Position = position;
+		}
+
+		public PlaybackPreference(IAudioLibrary library, Transform followTarget) : this(library)
+		{
+			FollowTarget = followTarget;
+		}
+
+		public PlaybackPreference(IAudioLibrary library)
+		{
+			FadeIn = UseLibraryManagerSetting;
+			FadeOut = UseLibraryManagerSetting;
+			SeamlessTransitionTime = UseLibraryManagerSetting;
+			IsSeamlessLoop = false;
+			IsNormalLoop = false;
+			HaveToWaitForPrevious = false;
+			Delay = default;
+			Position = Vector3.negativeInfinity;
+			FollowTarget = null;
+
+            BroAudioType audioType = GetAudioType(library.ID);
 
 			if(PersistentType.HasFlag(audioType))
 			{
 				var persistentLib = library.CastTo<PersistentAudioLibrary>();
-				_seamlessTransitionTime = persistentLib.TransitionTime;
-				IsSeamlessLoop = persistentLib.SeamlessLoop && (persistentLib.TransitionTime >= 0 || fadeOut > 0);
+				SeamlessTransitionTime = persistentLib.TransitionTime;
+                IsSeamlessLoop = persistentLib.SeamlessLoop ;
 				IsNormalLoop = IsSeamlessLoop ? false : persistentLib.Loop;
 			}
 			else if(OneShotType.HasFlag(audioType))
@@ -39,6 +62,7 @@ namespace MiProduction.BroAudio.Runtime
 			FadeInEase = IsSeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
 			FadeOutEase = IsSeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
 		}
+
 
 		public void SetFadeTime(Transition transition,float fadeTime)
 		{
@@ -66,8 +90,25 @@ namespace MiProduction.BroAudio.Runtime
 
 		public void ApplySeamlessFade()
 		{
-			FadeIn = _seamlessTransitionTime;
-			FadeOut = _seamlessTransitionTime;
+			FadeIn = SeamlessTransitionTime;
+			FadeOut = SeamlessTransitionTime;
+		}
+
+		public void WaitForPrevious(bool enable)
+		{
+			HaveToWaitForPrevious = enable;
+		}
+
+		public bool HasPosition(out Vector3 position)
+		{
+			position = Position;
+			return !Position.Equals(Vector3.negativeInfinity);
+		}
+
+		public bool HasFollowTarget(out Transform followTarget)
+		{
+			followTarget = FollowTarget;
+			return FollowTarget != null;
 		}
 	}
 }

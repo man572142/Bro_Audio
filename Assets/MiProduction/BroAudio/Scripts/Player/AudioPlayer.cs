@@ -14,9 +14,10 @@ namespace MiProduction.BroAudio.Runtime
         public const float UseLibraryManagerSetting = -1f;
         public const float Immediate = 0f;
         public const string SendParaName = "_Send";
+        public const float SpatialBlend_2D = 0f;
+        public const float SpatialBlend_3D = 1f;
 
         public event Action<AudioPlayer> OnRecycle;
-        public event Action<PlaybackPreference> DecoratePlaybackPreference;
 
         [SerializeField] private AudioSource AudioSource = null;
         private AudioMixer _audioMixer;
@@ -56,7 +57,31 @@ namespace MiProduction.BroAudio.Runtime
             _audioMixer = mixer;
 		}
 
-		public void SetEffect(EffectType effect,SetEffectMode mode)
+        private void SetSpatial(PlaybackPreference pref)
+        {
+            if(pref.HasFollowTarget(out var followTarget) && transform.parent != followTarget)
+			{
+                transform.SetParent(followTarget,false);
+                AudioSource.spatialBlend = SpatialBlend_3D;
+            }
+            else if (pref.HasPosition(out var position))
+			{
+                transform.position = position;
+                AudioSource.spatialBlend = SpatialBlend_3D;
+            }
+        }
+
+        public void ResetSpatial()
+        {
+            AudioSource.spatialBlend = SpatialBlend_2D;
+            if(transform.parent != SoundManager.Instance)
+			{
+                transform.SetParent(SoundManager.Instance.transform);
+			}
+            transform.position = Vector3.zero;
+        }
+
+        public void SetEffect(EffectType effect,SetEffectMode mode)
 		{ 
 			switch (mode)
 			{
@@ -129,7 +154,6 @@ namespace MiProduction.BroAudio.Runtime
         {
             yield return null;
             MixerDecibelVolume = AudioConstant.MinDecibelVolume;
-            _audioMixer = null;
             OnRecycle?.Invoke(this);
         }
 	}

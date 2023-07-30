@@ -132,5 +132,13 @@ namespace MiProduction.BroAudio.Runtime
                 }
             }
         }
+
+        private void ResetVolume()
+        {
+            _clipVolume = DefaultClipVolume;
+            _trackVolume = DefaultTrackVolume;
+            _mixerDecibelVolume = DefaultMixerDecibelVolume;
+            TrackVolumeBeforeMute = DefaultTrackVolume;
+        }
     }
 }

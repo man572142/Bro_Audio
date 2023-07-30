@@ -45,10 +45,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _audioPlayerPrefab: {fileID: 6105327489893945761, guid: 0e38aee583c6cf742b55a07d23ff515a, type: 3}
   _broAudioMixer: {fileID: 24100000, guid: fbb1400fd876dd84dbdbfeb7add01ba9, type: 2}
-  _fadeInEase: 2
-  _fadeOutEase: 11
-  _seamlessFadeInEase: 8
-  _seamlessFadeOutEase: 11
   _soundAssets:
   - {fileID: 11400000, guid: 5d00903d941fff940921056feda97925, type: 2}
   - {fileID: 11400000, guid: d52edcf0a5ea9ce469a144f89a07aeec, type: 2}

@@ -2,10 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Audio;
 using MiProduction.Extension;
 using MiProduction.BroAudio.Data;
-using static MiProduction.Extension.AnimationExtension;
+using UnityEngine.UIElements;
 
 namespace MiProduction.BroAudio.Runtime
 {
@@ -15,6 +14,7 @@ namespace MiProduction.BroAudio.Runtime
         public static Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
         public event Action<int,BroAudioClip,PlaybackPreference> OnFinishingOneRound = null;
+        public event Func<PlaybackPreference,PlaybackPreference> DecoratePlaybackPreference;
 
         private StopMode _stopMode = default;
         private Coroutine _playbackControlCoroutine;
@@ -28,6 +28,7 @@ namespace MiProduction.BroAudio.Runtime
             CurrentClip = clip;
             _isReadyToPlay = true;
             IsStopping = false;
+            SetSpatial(pref);
             this.SafeStopCoroutine(_recycleCoroutine);
 
             if(waitForChainingMethod)
@@ -36,7 +37,7 @@ namespace MiProduction.BroAudio.Runtime
                 {
                     if (_isReadyToPlay)
 					{
-						DecoratePlaybackPreference?.Invoke(pref);
+						DecoratePref(ref pref);
 						StartPlaying(clip, pref);
 					}
 					else
@@ -59,7 +60,17 @@ namespace MiProduction.BroAudio.Runtime
             {
                 AsyncTaskExtension.DelayDoAction(AsyncTaskExtension.MillisecondInSeconds, action);
             }
-        }
+
+			PlaybackPreference DecoratePref(ref PlaybackPreference pref)
+			{
+                if(DecoratePlaybackPreference != null)
+				{
+                    pref = DecoratePlaybackPreference.Invoke(pref);
+                }
+				
+				return pref;
+			}
+		}
 
         private IEnumerator PlayControl(BroAudioClip clip, PlaybackPreference pref)
         {
@@ -240,20 +251,19 @@ namespace MiProduction.BroAudio.Runtime
         }
 
         private void EndPlaying()
-		{
+        {
             ID = -1;
-			_clipVolume = DefaultClipVolume;
-			_trackVolume = DefaultTrackVolume;
-			_mixerDecibelVolume = DefaultMixerDecibelVolume;
             _stopMode = default;
-            TrackVolumeBeforeMute = DefaultTrackVolume;
+            ResetVolume();
 
             AudioSource.Stop();
-			AudioSource.clip = null;
-			CurrentClip = null;
-			this.StartCoroutineAndReassign(Recycle(), ref _recycleCoroutine);
-			this.SafeStopCoroutine(_trackVolumeControlCoroutine);
-            RemoveFromResumablePlayer(); 
+            AudioSource.clip = null;
+            CurrentClip = null;
+            ResetSpatial();
+
+            this.StartCoroutineAndReassign(Recycle(), ref _recycleCoroutine);
+            this.SafeStopCoroutine(_trackVolumeControlCoroutine);
+            RemoveFromResumablePlayer();
         }
-	}
+    }
 }

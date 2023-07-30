@@ -1,5 +1,4 @@
 using MiProduction.BroAudio.Data;
-using MiProduction.Extension;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,6 +25,11 @@ namespace MiProduction.BroAudio.Runtime
 		private void OnFinishingOneRound(int id, BroAudioClip clip, PlaybackPreference pref)
 		{
 			var newPlayer = _getPlayerFunc?.Invoke();
+			if(newPlayer == null)
+			{
+				return;
+			}
+
 			_playerWrapper.UpdateInstance(newPlayer);
 
 			var audioType = Utility.GetAudioType(id);

@@ -19,69 +19,68 @@ namespace MiProduction.BroAudio.Runtime
         public Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
         #region Play
-        public IAudioPlayer Play(int id, float preventTime)
+        public IAudioPlayer Play(int id)
+        {
+            if (IsPlayable(id,out var library) && TryGetPlayer(id, out var player))
+            {
+                var pref = new PlaybackPreference(library);
+                return PlayerToPlay(id, player, pref);
+            }
+            return null;
+        }
+
+        public IAudioPlayer Play(int id, Vector3 position)
+        {
+            if (IsPlayable(id,out var library) && TryGetPlayer(id, out var player))
+            {
+                var pref = new PlaybackPreference(library,position);
+                return PlayerToPlay(id, player,pref);
+            }
+            return null;
+        }
+
+        public IAudioPlayer Play(int id, Transform followTarget)
+        {
+            if (IsPlayable(id,out var library) && TryGetPlayer(id, out var player))
+            {
+                var pref = new PlaybackPreference(library,followTarget);
+                return PlayerToPlay(id, player,pref);
+            }
+            return null;
+        }
+
+		private IAudioPlayer PlayerToPlay(int id, AudioPlayer player,PlaybackPreference pref)
         {
             BroAudioType audioType = GetAudioType(id);
-
-            if (IsPlayable(id) && TryGetPlayer(id, out var player))
+            if (_auidoTypePref.TryGetValue(audioType, out var audioTypePref))
             {
-                if (_auidoTypePref.TryGetValue(audioType, out var audioTypePref))
-                {
-                    player.SetEffect(audioTypePref.EffectType, SetEffectMode.Override);
-                    player.SetVolume(audioTypePref.Volume, 0f);
-                }
-
-                var library = _audioBank[id];
-                var clip = library.CastTo<AudioLibrary>().Clip;
-                var pref = new PlaybackPreference(library, clip.FadeOut);
-                player.Play(id, clip,pref );
-
-                AudioPlayerInstanceWrapper wrapper = new AudioPlayerInstanceWrapper(player);
-
-                if (pref.IsSeamlessLoop)
-                {
-                    var seamlessLoopHelper = new SeamlessLoopHelper(wrapper, GetNewAudioPlayer);
-                    seamlessLoopHelper.SetPlayer(player);
-                }
-
-                StartCoroutine(PreventCombFiltering(id, preventTime));
-
-                return wrapper;
+                player.SetEffect(audioTypePref.EffectType, SetEffectMode.Override);
+                player.SetVolume(audioTypePref.Volume, 0f);
             }
 
-            return null;
+            var library = _audioBank[id];
+            var clip = library.CastTo<AudioLibrary>().Clip;
+            player.Play(id, clip, pref);
 
-            bool TryGetPlayer(int id, out AudioPlayer audioPlayer)
+            AudioPlayerInstanceWrapper wrapper = new AudioPlayerInstanceWrapper(player);
+
+            if (pref.IsSeamlessLoop)
             {
-                audioPlayer = null;
-                if (AudioPlayer.ResumablePlayers == null || !AudioPlayer.ResumablePlayers.TryGetValue(id, out audioPlayer))
-                {
-                    if (TryGetNewAudioPlayer(out AudioPlayer newPlayer))
-                    {
-                        audioPlayer = newPlayer;
-                    }
-                }
-
-                return audioPlayer != null;
+                var seamlessLoopHelper = new SeamlessLoopHelper(wrapper, GetNewAudioPlayer);
+                seamlessLoopHelper.SetPlayer(player);
             }
+
+            StartCoroutine(PreventCombFiltering(id, HaasEffectInSeconds));
+
+            return wrapper;
         }
+
 
         //public IAudioPlayer PlayOneShot(int id, float preventTime)
         //      {
         //          if(IsPlayable(id,_soundBank)&& TryGetPlayerWithType<OneShotPlayer>(out var player))
         //          {
         //              player.PlayOneShot(id, _soundBank[id].Clip, _soundBank[id].Delay);
-        //              StartCoroutine(PreventCombFiltering(id,preventTime));
-        //              return player;
-        //          }
-        //          return null;
-        //      }
-
-        //      public IAudioPlayer PlayAtPoint(int id, Vector3 position, float preventTime)
-        //      {
-        //          if(IsPlayable(id,_soundBank) && TryGetPlayerWithType<OneShotPlayer>(out var player))
-        //          {
-        //              player.PlayAtPoint(id,_soundBank[id].Clip, _soundBank[id].Delay, position);
         //              StartCoroutine(PreventCombFiltering(id,preventTime));
         //              return player;
         //          }

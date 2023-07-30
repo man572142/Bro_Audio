@@ -243,6 +243,21 @@ namespace MiProduction.BroAudio.Runtime
             }
         }
 
+        private bool TryGetPlayer(int id, out AudioPlayer audioPlayer)
+        {
+            audioPlayer = null;
+            // TODO:Resumable 應該要放在SoundManager
+            if (AudioPlayer.ResumablePlayers == null || !AudioPlayer.ResumablePlayers.TryGetValue(id, out audioPlayer))
+            {
+                if (TryGetNewAudioPlayer(out AudioPlayer newPlayer))
+                {
+                    audioPlayer = newPlayer;
+                }
+            }
+
+            return audioPlayer != null;
+        }
+
         private bool TryGetNewAudioPlayer(out AudioPlayer player)
         {
             player = _audioPlayerPool.Extract();
@@ -262,15 +277,16 @@ namespace MiProduction.BroAudio.Runtime
         }
 
         #region NullChecker
-        private bool IsPlayable(int id)
+        private bool IsPlayable(int id,out IAudioLibrary library)
         {
+            library = null;
             if (id <= 0)
             {
                 LogError("The sound is missing or it has never been assigned. No Sound will play");
                 return false;
             }
 
-            if (!_audioBank.ContainsKey(id))
+            if (!_audioBank.TryGetValue(id,out library))
             {
                 LogError($"AudioID:{id} may not exist ,please check [BroAudio > Library Manager]");
                 return false;

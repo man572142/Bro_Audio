@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using MiProduction.BroAudio.Runtime;
-using MiProduction.Extension;
-using System;
 
 namespace MiProduction.BroAudio
 { 
@@ -13,31 +11,23 @@ namespace MiProduction.BroAudio
         /// </summary>
         /// <param name="id"></param>
         public static IAudioPlayer Play(AudioID id) 
-            => SoundManager.Instance.Play(id, SoundManager.HaasEffectInSeconds);
-
-        /// <summary>
-        /// 播放音效
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="preventTime">限制該時間內不能再播放</param>
-        public static IAudioPlayer Play(AudioID id, float preventTime) 
-            => SoundManager.Instance.Play(id, preventTime);
+            => SoundManager.Instance.Play(id);
 
         /// <summary>
         /// 於場景中的指定地點播放
         /// </summary>
         /// <param name="id"></param>
         /// <param name="position">播放的座標</param>
-        //public static IAudioPlayer Play(AudioID id, Vector3 position)
-        //  => SoundManager.Instance.PlayAtPoint(id, position,AudioExtension.HaasEffectInSeconds);
+        public static IAudioPlayer Play(AudioID id, Vector3 position)
+          => SoundManager.Instance.Play(id, position);
 
         /// <summary>
         /// 於場景中的指定地點播放
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="position">播放的座標</param>
-        //public static IAudioPlayer Play(AudioID id, Vector3 position,float preventTime)
-        //  => SoundManager.Instance.PlayAtPoint(id, position, preventTime);
+        /// <param name="followTarget">跟隨的目標</param>
+        public static IAudioPlayer Play(AudioID id, Transform followTarget)
+          => SoundManager.Instance.Play(id, followTarget);
         #endregion
 
         #region Stop

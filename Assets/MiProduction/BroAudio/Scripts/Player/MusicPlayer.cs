@@ -49,7 +49,7 @@ namespace MiProduction.BroAudio.Runtime
 			return this;
 		}
 
-		private void DecoratePlayback(PlaybackPreference pref)
+		private PlaybackPreference DecoratePlayback(PlaybackPreference pref)
 		{
 			if(CurrentPlayer != null)
 			{
@@ -63,13 +63,14 @@ namespace MiProduction.BroAudio.Runtime
 						break;
 					case Transition.Default:
 					case Transition.OnlyFadeOut:
-						pref.HaveToWaitForPrevious = true;
-						StopCurrentMusic(() => pref.HaveToWaitForPrevious = false);
+						pref.WaitForPrevious(true);
+						StopCurrentMusic(() => pref.WaitForPrevious(false));
 						break;
 				}
 			}
 			
 			CurrentPlayer = Player;
+			return pref;
 		}
 
 		private void StopCurrentMusic(Action onFinished = null)

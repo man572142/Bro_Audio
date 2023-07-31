@@ -19,6 +19,7 @@ namespace MiProduction.BroAudio.Editor
 		private const int _clipPropertiesLineCount = 4;
 		private const float _lowVolumeSnappingThreshold = 0.05f;
 		private const float _highVolumeSnappingThreshold = 0.2f;
+		private const string _dbValueStringFormat = "0.##";
 
 		private GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume));
 
@@ -194,9 +195,11 @@ namespace MiProduction.BroAudio.Editor
 				}
 
 				float sliderValue = ConvertToSliderValue(currentValue);
-				sliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
+				float newSliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);		
+				bool hasSliderChanged = sliderValue != newSliderValue;
 
-				currentValue = EditorGUI.FloatField(fieldRect, ConvertToNomalizedVolume(sliderValue));
+				float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged? ConvertToNomalizedVolume(newSliderValue) : currentValue);
+				currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
 
 				DrawDecibelValueLabel(dbLabelRect, currentValue);
 				DrawFullVolumeSnapPoint(sliderRect, onSwitchBoostMode);
@@ -207,7 +210,7 @@ namespace MiProduction.BroAudio.Editor
 			{
 				value = Mathf.Log10(value) * 20f;
 				string plusSymbol = value > 0 ? "+" : string.Empty;
-				string volText = plusSymbol + value.ToString("0.##") + "dB";
+				string volText = plusSymbol + value.ToString(_dbValueStringFormat) + "dB";
 				EditorGUI.LabelField(position, volText);
 			}
 
@@ -222,8 +225,7 @@ namespace MiProduction.BroAudio.Editor
 			{
 				Rect rect = new Rect(sliderPosition);
 				rect.width = 30f;
-				// add 1 pixel for precise location
-				rect.x = sliderPosition.x + sliderPosition.width * (FullVolume / sliderFullScale) - (rect.width * 0.5f) + 1f;
+				rect.x = sliderPosition.x + sliderPosition.width * (FullVolume / sliderFullScale) - (rect.width * 0.5f) + 1f; // add 1 pixel for more precise position
 				rect.y -= position.height;
 				var icon = EditorGUIUtility.IconContent("SignalAsset Icon");
 				EditorGUI.BeginDisabledGroup(!isSnap);

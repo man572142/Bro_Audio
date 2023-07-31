@@ -21,7 +21,7 @@ namespace MiProduction.BroAudio.Runtime
         #region Play
         public IAudioPlayer Play(int id)
         {
-            if (IsPlayable(id,out var library) && TryGetPlayer(id, out var player))
+            if (IsPlayable(id,out var library) && TryGetAvailablePlayer(id, out var player))
             {
                 var pref = new PlaybackPreference(library);
                 return PlayerToPlay(id, player, pref);
@@ -31,7 +31,7 @@ namespace MiProduction.BroAudio.Runtime
 
         public IAudioPlayer Play(int id, Vector3 position)
         {
-            if (IsPlayable(id,out var library) && TryGetPlayer(id, out var player))
+            if (IsPlayable(id,out var library) && TryGetAvailablePlayer(id, out var player))
             {
                 var pref = new PlaybackPreference(library,position);
                 return PlayerToPlay(id, player,pref);
@@ -41,7 +41,7 @@ namespace MiProduction.BroAudio.Runtime
 
         public IAudioPlayer Play(int id, Transform followTarget)
         {
-            if (IsPlayable(id,out var library) && TryGetPlayer(id, out var player))
+            if (IsPlayable(id,out var library) && TryGetAvailablePlayer(id, out var player))
             {
                 var pref = new PlaybackPreference(library,followTarget);
                 return PlayerToPlay(id, player,pref);
@@ -92,29 +92,55 @@ namespace MiProduction.BroAudio.Runtime
         #region Stop
         public void Stop(BroAudioType targetType)
         {
-            ForeachAudioType((audioType) => 
-            {
-                StopPlayer(x => targetType.HasFlag(GetAudioType(x.ID)));           
-            });
+            Stop(targetType,AudioPlayer.UseLibraryManagerSetting);
         }
 
         public void Stop(int id)
+		{
+            Stop(id, AudioPlayer.UseLibraryManagerSetting);
+		}
+
+        public void Stop(int id,float fadeTime)
         {
-            StopPlayer(x => x.ID == id);
+            StopPlayer(fadeTime,x => x.ID == id);
         }
 
-        private void StopPlayer(Predicate<AudioPlayer> predicate)
+        public void Stop(BroAudioType targetType,float fadeTime)
+		{
+            ForeachAudioType((audioType) =>
+            {
+                StopPlayer(fadeTime,x => targetType.HasFlag(GetAudioType(x.ID)));
+            });
+        }            
+
+        private void StopPlayer(float fadeTime,Predicate<AudioPlayer> predicate)
         {
             var players = _audioPlayerPool.GetInUseAudioPlayers();
             foreach (var player in players)
             {
                 if (predicate.Invoke(player))
                 {
-                    player.Stop();
+                    player.Stop(fadeTime);
                 }
             }
         }
         #endregion
+
+        public void Pause(int id)
+		{
+            Pause(id, AudioPlayer.UseLibraryManagerSetting);
+		}
+
+        public void Pause(int id,float fadeTime)
+		{
+            GetCurrentInUsePlayers((player) =>
+            {
+                if (player.ID == id)
+                {
+                    player.Stop(fadeTime, StopMode.Pause,null);
+                }
+            });
+        }
     }
 }
 

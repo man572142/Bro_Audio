@@ -254,7 +254,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: No music is selected
+  m_Text: Click the cassette tape to change sides
 --- !u!222 &163361941
 CanvasRenderer:
   m_ObjectHideFlags: 0

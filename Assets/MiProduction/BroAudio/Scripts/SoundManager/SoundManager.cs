@@ -131,7 +131,7 @@ namespace MiProduction.BroAudio.Runtime
 			}
 
             GetPlaybackPrefByType(targetType, pref => pref.Volume = vol);
-            GetCurrentPlayers(player => 
+            GetCurrentInUsePlayers(player => 
             { 
                 if(targetType.HasFlag(GetAudioType(player.ID)))
 				{
@@ -168,7 +168,7 @@ namespace MiProduction.BroAudio.Runtime
 
 		public void SetVolume(float vol, int id, float fadeTime)
 		{
-            GetCurrentPlayers(player =>
+            GetCurrentInUsePlayers(player =>
             {
                 if (player.ID == id)
                 {
@@ -211,7 +211,7 @@ namespace MiProduction.BroAudio.Runtime
 				}				
 			});
 
-			GetCurrentPlayers(player =>
+			GetCurrentInUsePlayers(player =>
 			{
                 if (targetType.HasFlag(GetAudioType(player.ID)))
 				{
@@ -233,7 +233,7 @@ namespace MiProduction.BroAudio.Runtime
             });
         }
 
-        private void GetCurrentPlayers(Action<AudioPlayer> onGetPlayer)
+        private void GetCurrentInUsePlayers(Action<AudioPlayer> onGetPlayer)
         {
             // For those which are currently playing.
             var players = _audioPlayerPool.GetInUseAudioPlayers();
@@ -243,10 +243,9 @@ namespace MiProduction.BroAudio.Runtime
             }
         }
 
-        private bool TryGetPlayer(int id, out AudioPlayer audioPlayer)
+        private bool TryGetAvailablePlayer(int id, out AudioPlayer audioPlayer)
         {
             audioPlayer = null;
-            // TODO:Resumable 應該要放在SoundManager
             if (AudioPlayer.ResumablePlayers == null || !AudioPlayer.ResumablePlayers.TryGetValue(id, out audioPlayer))
             {
                 if (TryGetNewAudioPlayer(out AudioPlayer newPlayer))

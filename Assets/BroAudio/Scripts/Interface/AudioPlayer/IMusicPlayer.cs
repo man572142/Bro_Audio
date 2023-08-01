@@ -1,7 +1,7 @@
 using System;
-using MiProduction.BroAudio.Runtime;
+using Ami.BroAudio.Runtime;
 
-namespace MiProduction.BroAudio
+namespace Ami.BroAudio
 {
     public interface IMusicPlayer : IEffectDecoratable,IVolumeSettable,IPlaybackControlGettable
     {

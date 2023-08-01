@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
-using MiProduction.BroAudio;
+using Ami.BroAudio;
 using System;
 
 public class Sample : MonoBehaviour

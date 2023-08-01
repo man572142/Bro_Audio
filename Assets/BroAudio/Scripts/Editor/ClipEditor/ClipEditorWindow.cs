@@ -1,10 +1,10 @@
 using UnityEngine;
 using UnityEditor;
-using MiProduction.Extension;
+using Ami.Extension;
 using System;
 using System.IO;
-using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
-namespace MiProduction.BroAudio.Editor
+using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
+namespace Ami.BroAudio.Editor
 {
 	public class ClipEditorWindow : MiEditorWindow
 	{

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
-using MiProduction.Extension;
-using MiProduction.BroAudio.Data;
-using MiProduction.BroAudio.Editor.Setting;
+using Ami.Extension;
+using Ami.BroAudio.Data;
+using Ami.BroAudio.Editor.Setting;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	public class ReorderableClips
 	{

@@ -1,10 +1,10 @@
 using UnityEngine;
-using MiProduction.BroAudio.Data;
-using MiProduction.Extension;
-using static MiProduction.BroAudio.Runtime.AudioPlayer;
-using static MiProduction.BroAudio.Utility;
+using Ami.BroAudio.Data;
+using Ami.Extension;
+using static Ami.BroAudio.Runtime.AudioPlayer;
+using static Ami.BroAudio.Utility;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
 	public struct PlaybackPreference
 	{

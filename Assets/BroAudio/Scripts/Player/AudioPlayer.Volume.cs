@@ -1,11 +1,11 @@
 using UnityEngine;
-using MiProduction.Extension;
+using Ami.Extension;
 using System.Collections;
 using System;
 using System.Collections.Generic;
-using static MiProduction.Extension.AnimationExtension;
+using static Ami.Extension.AnimationExtension;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
 	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>,IPlaybackControllable

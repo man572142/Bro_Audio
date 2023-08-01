@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using MiProduction.BroAudio.Data;
+using Ami.BroAudio.Data;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	[CustomPropertyDrawer(typeof(OneShotAudioLibrary))]
 	public class OneShotAudioLibraryPropertyDrawer : AudioLibraryPropertyDrawer

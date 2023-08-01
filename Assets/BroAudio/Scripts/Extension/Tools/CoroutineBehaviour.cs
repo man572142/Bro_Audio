@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Internal;
 
-namespace MiProduction.Extension
+namespace Ami.Extension
 {
 	public class CoroutineBehaviour
 	{

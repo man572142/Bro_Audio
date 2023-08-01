@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace MiProduction.Extension
+namespace Ami.Extension
 {
 	public abstract class MiPropertyDrawer : PropertyDrawer, IEditorDrawLineCounter
 	{

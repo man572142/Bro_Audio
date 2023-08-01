@@ -3,10 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
-using MiProduction.BroAudio.Data;
-using MiProduction.Extension;
+using Ami.BroAudio.Data;
+using Ami.Extension;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
 	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>,IPlaybackControllable

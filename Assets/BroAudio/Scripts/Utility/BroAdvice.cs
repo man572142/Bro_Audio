@@ -1,6 +1,6 @@
-using MiProduction.Extension;
+using Ami.Extension;
 
-namespace MiProduction.BroAudio
+namespace Ami.BroAudio
 {
 	public static class BroAdvice
 	{

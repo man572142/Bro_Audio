@@ -1,4 +1,4 @@
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	public enum LibraryState
 	{

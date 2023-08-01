@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using MiProduction.BroAudio.Data;
-using static MiProduction.Extension.EditorScriptingExtension;
+using Ami.BroAudio.Data;
+using static Ami.Extension.EditorScriptingExtension;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility
     {

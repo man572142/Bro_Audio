@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MiProduction.BroAudio.Demo
+namespace Ami.BroAudio.Demo
 {
 	public class Mixer : MonoBehaviour
 	{

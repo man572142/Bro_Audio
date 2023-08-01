@@ -2,15 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
-using MiProduction.BroAudio.Data;
-using MiProduction.Extension;
-using static MiProduction.BroAudio.Utility;
-using static MiProduction.Extension.CoroutineExtension;
-using static MiProduction.BroAudio.BroLog;
+using Ami.BroAudio.Data;
+using Ami.Extension;
+using static Ami.BroAudio.Utility;
+using static Ami.Extension.CoroutineExtension;
+using static Ami.BroAudio.BroLog;
 using System.Linq;
 using System;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
     [DisallowMultipleComponent]
     public partial class SoundManager : MonoBehaviour

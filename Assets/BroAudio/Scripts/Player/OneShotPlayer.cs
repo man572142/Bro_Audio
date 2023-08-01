@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MiProduction.Extension;
-using MiProduction.BroAudio.Data;
+using Ami.Extension;
+using Ami.BroAudio.Data;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
     public class OneShotPlayer : AudioPlayerDecorator
     {

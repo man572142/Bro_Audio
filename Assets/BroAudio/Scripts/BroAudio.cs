@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
-using MiProduction.BroAudio.Runtime;
+using Ami.BroAudio.Runtime;
 
-namespace MiProduction.BroAudio
+namespace Ami.BroAudio
 { 
     public static class BroAudio
     {

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using MiProduction.BroAudio.Data;
-using MiProduction.BroAudio.Runtime;
-using static MiProduction.BroAudio.BroLog;
+using Ami.BroAudio.Data;
+using Ami.BroAudio.Runtime;
+using static Ami.BroAudio.BroLog;
 
-namespace MiProduction.BroAudio
+namespace Ami.BroAudio
 {
 	public static partial class Utility
 	{

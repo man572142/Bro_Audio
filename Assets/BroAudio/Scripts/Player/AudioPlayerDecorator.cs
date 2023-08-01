@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
 	public abstract class AudioPlayerDecorator : IAudioPlayer
 	{

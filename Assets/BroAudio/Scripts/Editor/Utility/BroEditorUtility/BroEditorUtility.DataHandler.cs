@@ -1,9 +1,9 @@
 using UnityEditor;
 using UnityEngine;
-using MiProduction.BroAudio.Data;
-using MiProduction.BroAudio.Runtime;
+using Ami.BroAudio.Data;
+using Ami.BroAudio.Runtime;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility
 	{

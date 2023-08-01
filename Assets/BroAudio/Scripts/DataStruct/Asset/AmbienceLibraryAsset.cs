@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Data
+namespace Ami.BroAudio.Data
 {
 	public class AmbienceLibraryAsset : AudioAsset<PersistentAudioLibrary>
 	{

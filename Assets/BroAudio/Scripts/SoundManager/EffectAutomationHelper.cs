@@ -1,12 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using MiProduction.Extension;
+using Ami.Extension;
 using UnityEngine;
 using UnityEngine.Audio;
-using static MiProduction.BroAudio.BroLog;
+using static Ami.BroAudio.BroLog;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
 	public class EffectAutomationHelper : CoroutineBehaviour,IAutoResetWaitable
     {

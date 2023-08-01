@@ -1,9 +1,9 @@
 using UnityEngine.Audio;
 using UnityEngine;
-using MiProduction.Extension;
+using Ami.Extension;
 using System.Collections.Generic;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
 	public class AudioPlayerObjectPool : ObjectPool<AudioPlayer>
 	{

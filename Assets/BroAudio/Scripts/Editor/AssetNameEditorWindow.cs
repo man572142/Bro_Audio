@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System;
-using MiProduction.Extension;
+using Ami.Extension;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	public class AssetNameEditorWindow : EditorWindow
 	{

@@ -1,8 +1,8 @@
-using MiProduction.Extension;
+using Ami.Extension;
 using UnityEngine;
-using static MiProduction.BroAudio.BroLog;
+using static Ami.BroAudio.BroLog;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
 	public class AudioPlayerEffect : AudioPlayerDecorator , IPlayerEffect
 	{

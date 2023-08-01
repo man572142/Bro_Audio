@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.Extension
+namespace Ami.Extension
 {
 	public static class AnimationExtension
 	{

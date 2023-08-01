@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace MiProduction.Extension
+namespace Ami.Extension
 {
 	public class GUIStyleHelper
 	{

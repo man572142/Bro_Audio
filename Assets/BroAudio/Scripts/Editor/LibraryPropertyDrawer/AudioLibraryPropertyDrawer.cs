@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using MiProduction.Extension;
-using MiProduction.BroAudio.Data;
-using MiProduction.BroAudio.Editor.Setting;
+using Ami.Extension;
+using Ami.BroAudio.Data;
+using Ami.BroAudio.Editor.Setting;
 using System;
-using static MiProduction.Extension.EditorScriptingExtension;
-using static MiProduction.Extension.AudioConstant;
+using static Ami.Extension.EditorScriptingExtension;
+using static Ami.Extension.AudioConstant;
 
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	public abstract class AudioLibraryPropertyDrawer : MiPropertyDrawer
 	{

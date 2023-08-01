@@ -1,6 +1,6 @@
-using MiProduction.BroAudio.Data;
+using Ami.BroAudio.Data;
 
-namespace MiProduction.BroAudio.Editor 
+namespace Ami.BroAudio.Editor 
 {
 	public struct Transport
 	{

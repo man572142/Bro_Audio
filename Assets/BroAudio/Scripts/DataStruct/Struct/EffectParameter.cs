@@ -1,7 +1,7 @@
-using MiProduction.Extension;
-using static MiProduction.BroAudio.BroLog;
+using Ami.Extension;
+using static Ami.BroAudio.BroLog;
 
-namespace MiProduction.BroAudio
+namespace Ami.BroAudio
 {
 	public struct EffectParameter
 	{

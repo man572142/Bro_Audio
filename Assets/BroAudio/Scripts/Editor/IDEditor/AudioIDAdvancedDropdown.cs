@@ -2,11 +2,11 @@ using UnityEngine;
 using UnityEditor.IMGUI.Controls;
 using System;
 using System.Collections.Generic;
-using static MiProduction.BroAudio.Editor.BroEditorUtility;
+using static Ami.BroAudio.Editor.BroEditorUtility;
 using UnityEditor;
-using MiProduction.BroAudio.Data;
+using Ami.BroAudio.Data;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	public class AudioIDAdvancedDropdown : AdvancedDropdown
 	{

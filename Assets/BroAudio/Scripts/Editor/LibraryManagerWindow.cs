@@ -5,13 +5,13 @@ using UnityEditor;
 using UnityEditorInternal;
 using System;
 using System.Linq;
-using MiProduction.Extension;
-using MiProduction.BroAudio.Editor.Setting;
-using static MiProduction.BroAudio.Utility;
-using static MiProduction.BroAudio.Editor.BroEditorUtility;
-using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
+using Ami.Extension;
+using Ami.BroAudio.Editor.Setting;
+using static Ami.BroAudio.Utility;
+using static Ami.BroAudio.Editor.BroEditorUtility;
+using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	public class LibraryManagerWindow : EditorWindow
 	{

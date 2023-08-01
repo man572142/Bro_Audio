@@ -1,11 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MiProduction.Extension;
-using UnityEditor;
-using Codice.CM.Interfaces;
+using Ami.Extension;
 
-namespace MiProduction.BroAudio.Data
+namespace Ami.BroAudio.Data
 {
 	[CreateAssetMenu(menuName = "BroAudio(DevOnly)/Create Global Setting Asset File", fileName = "BroAudioGlobalSetting")]
 	public class GlobalSetting : ScriptableObject

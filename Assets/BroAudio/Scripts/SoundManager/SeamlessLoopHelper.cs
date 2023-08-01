@@ -1,10 +1,10 @@
-using MiProduction.BroAudio.Data;
+using Ami.BroAudio.Data;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
 	public class SeamlessLoopHelper
 	{

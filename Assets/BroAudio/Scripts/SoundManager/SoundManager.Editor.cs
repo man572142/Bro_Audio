@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
     public partial class SoundManager : MonoBehaviour
     {

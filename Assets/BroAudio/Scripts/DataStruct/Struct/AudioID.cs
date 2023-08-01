@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MiProduction.BroAudio
+namespace Ami.BroAudio
 {
 	[System.Serializable]
 	public struct AudioID

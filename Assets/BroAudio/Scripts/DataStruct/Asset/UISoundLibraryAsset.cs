@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Data
+namespace Ami.BroAudio.Data
 {
 	public class UISoundLibraryAsset : SoundLibraryAsset
 	{

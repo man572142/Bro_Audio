@@ -1,9 +1,9 @@
 using System;
-using static MiProduction.Extension.LoopExtension;
-using static MiProduction.BroAudio.BroLog;
-using MiProduction.BroAudio.Data;
+using static Ami.Extension.LoopExtension;
+using static Ami.BroAudio.BroLog;
+using Ami.BroAudio.Data;
 
-namespace MiProduction.BroAudio
+namespace Ami.BroAudio
 {
 	public static partial class Utility
 	{

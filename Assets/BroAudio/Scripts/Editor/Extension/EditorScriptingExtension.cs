@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace MiProduction.Extension
+namespace Ami.Extension
 {
 	public static class EditorScriptingExtension
 	{

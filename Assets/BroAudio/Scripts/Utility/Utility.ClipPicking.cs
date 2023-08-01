@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using MiProduction.BroAudio.Data;
-using static MiProduction.BroAudio.BroLog;
+using Ami.BroAudio.Data;
+using static Ami.BroAudio.BroLog;
 
-namespace MiProduction.BroAudio
+namespace Ami.BroAudio
 {
 	public static partial class Utility
 	{

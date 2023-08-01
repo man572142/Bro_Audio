@@ -2,13 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using MiProduction.BroAudio.Data;
-using static MiProduction.Extension.EditorScriptingExtension;
-using static MiProduction.BroAudio.Data.PersistentAudioLibrary;
-using MiProduction.Extension;
-using MiProduction.BroAudio.Runtime;
+using Ami.BroAudio.Data;
+using static Ami.Extension.EditorScriptingExtension;
+using static Ami.BroAudio.Data.PersistentAudioLibrary;
+using Ami.Extension;
+using Ami.BroAudio.Runtime;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	[CustomPropertyDrawer(typeof(PersistentAudioLibrary))]
 	public class PersistentAudioLibraryPropertyDrawer : AudioLibraryPropertyDrawer

@@ -4,9 +4,9 @@ using UnityEngine;
 using System.IO;
 using System;
 using UnityEditor;
-using static MiProduction.BroAudio.BroLog;
+using static Ami.BroAudio.BroLog;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility
 	{

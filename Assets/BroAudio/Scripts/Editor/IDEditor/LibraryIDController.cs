@@ -1,12 +1,12 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using MiProduction.BroAudio.Data;
+using Ami.BroAudio.Data;
 using UnityEngine;
-using MiProduction.BroAudio;
-using static MiProduction.Extension.LoopExtension;
+using Ami.BroAudio;
+using static Ami.Extension.LoopExtension;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	public class LibraryIDController : ILibraryIDContainer
 	{

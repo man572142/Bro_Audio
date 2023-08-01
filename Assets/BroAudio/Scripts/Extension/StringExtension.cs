@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace MiProduction.Extension
+namespace Ami.Extension
 {
 	public static class StringExtension
 	{

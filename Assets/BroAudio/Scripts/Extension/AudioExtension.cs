@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static MiProduction.Extension.AudioConstant;
+using static Ami.Extension.AudioConstant;
 
-namespace MiProduction.Extension
+namespace Ami.Extension
 {
     public static class AudioExtension
     {

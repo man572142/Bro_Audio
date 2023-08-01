@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
-using MiProduction.BroAudio.Data;
-using MiProduction.Extension;
+using Ami.BroAudio.Data;
+using Ami.Extension;
 using UnityEngine;
-using static MiProduction.BroAudio.BroLog;
+using static Ami.BroAudio.BroLog;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
 	public partial class SoundManager : MonoBehaviour
 	{

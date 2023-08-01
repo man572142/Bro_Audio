@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 
 
-namespace MiProduction.BroAudio.Extension
+namespace Ami.Extension
 {
 	public static class AsyncTaskExtension
 	{

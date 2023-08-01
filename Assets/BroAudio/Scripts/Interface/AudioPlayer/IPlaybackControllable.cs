@@ -1,8 +1,8 @@
 using System;
-using MiProduction.BroAudio.Data;
-using MiProduction.BroAudio.Runtime;
+using Ami.BroAudio.Data;
+using Ami.BroAudio.Runtime;
 
-namespace MiProduction.BroAudio
+namespace Ami.BroAudio
 {
     public interface IPlaybackControllable
     {

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using MiProduction.Extension;
+using Ami.Extension;
 using UnityEditor.IMGUI.Controls;
-using MiProduction.BroAudio.Data;
+using Ami.BroAudio.Data;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	[CustomPropertyDrawer(typeof(AudioID))]
 	public class AudioIDPropertyDrawer : PropertyDrawer

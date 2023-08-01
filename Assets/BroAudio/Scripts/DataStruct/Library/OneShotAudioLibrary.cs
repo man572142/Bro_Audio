@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Data
+namespace Ami.BroAudio.Data
 {
     [System.Serializable]
     public class OneShotAudioLibrary : AudioLibrary

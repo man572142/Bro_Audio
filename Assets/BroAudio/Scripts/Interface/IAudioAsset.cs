@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MiProduction.BroAudio.Data
+namespace Ami.BroAudio.Data
 {
     public interface IAudioAsset
     {

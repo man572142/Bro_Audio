@@ -1,6 +1,6 @@
-﻿using static MiProduction.BroAudio.BroAdvice;
+﻿using static Ami.BroAudio.BroAdvice;
 
-namespace MiProduction.BroAudio
+namespace Ami.BroAudio
 {
 	public static class BroAudioChainingMethod
 	{

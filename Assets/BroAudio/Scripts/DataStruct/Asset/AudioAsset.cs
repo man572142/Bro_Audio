@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace MiProduction.BroAudio.Data
+namespace Ami.BroAudio.Data
 {
     public abstract class AudioAsset<T> : ScriptableObject, IAudioAsset where T : IAudioLibrary
     {

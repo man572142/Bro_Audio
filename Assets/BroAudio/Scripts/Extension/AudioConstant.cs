@@ -1,4 +1,4 @@
-namespace MiProduction.Extension
+namespace Ami.Extension
 {
 	public static class AudioConstant
 	{

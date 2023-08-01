@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MiProduction.Extension;
+using Ami.Extension;
 
-namespace MiProduction.BroAudio.Runtime
+namespace Ami.BroAudio.Runtime
 {
 	public class MusicPlayer : AudioPlayerDecorator , IMusicPlayer
 	{

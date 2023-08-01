@@ -2,13 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
-using static MiProduction.BroAudio.BroLog;
+using static Ami.BroAudio.BroLog;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility
 	{
-		private const string _defaultAssetOutputPath = "Assets/MiProduction/BroAudio/AudioAssets";
+		private const string _defaultAssetOutputPath = "Assets/Ami/BroAudio/AudioAssets";
 		public const string CoreDataResourcesPath = "Editor/BroAudioData";
 
 		public static readonly string UnityAssetsRootPath = Application.dataPath.Replace("/Assets", string.Empty);

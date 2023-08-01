@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using UnityEditorInternal;
 using UnityEditor;
 using UnityEngine;
-using static MiProduction.BroAudio.Utility;
-using static MiProduction.BroAudio.Editor.BroEditorUtility;
-using static MiProduction.Extension.EditorScriptingExtension;
-using MiProduction.BroAudio.Data;
+using static Ami.BroAudio.Utility;
+using static Ami.BroAudio.Editor.BroEditorUtility;
+using static Ami.Extension.EditorScriptingExtension;
+using Ami.BroAudio.Data;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
     [CustomEditor(typeof(AudioAsset<>), true)]
     public class AudioAssetEditor : UnityEditor.Editor

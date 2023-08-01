@@ -2,14 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using MiProduction.Extension;
-using static MiProduction.BroAudio.Utility;
-using static MiProduction.BroAudio.Editor.BroEditorUtility;
-using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
-using static MiProduction.Extension.EditorScriptingExtension;
-using static MiProduction.BroAudio.BroLog;
+using Ami.Extension;
+using static Ami.BroAudio.Utility;
+using static Ami.BroAudio.Editor.BroEditorUtility;
+using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
+using static Ami.Extension.EditorScriptingExtension;
+using static Ami.BroAudio.BroLog;
 
-namespace MiProduction.BroAudio.Editor.Setting
+namespace Ami.BroAudio.Editor.Setting
 {
 	public class GlobalSettingEditorWindow : MiEditorWindow
 	{

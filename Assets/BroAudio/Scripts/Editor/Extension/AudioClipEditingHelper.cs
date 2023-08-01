@@ -1,8 +1,8 @@
 using System;
 using UnityEngine;
-using static MiProduction.Extension.AudioExtension;
+using static Ami.Extension.AudioExtension;
 
-namespace MiProduction.Extension
+namespace Ami.Extension
 {
 	public class AudioClipEditingHelper : IDisposable
 	{

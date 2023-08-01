@@ -1,12 +1,12 @@
-using MiProduction.BroAudio.Data;
-using MiProduction.BroAudio.Editor.Setting;
+using Ami.BroAudio.Data;
+using Ami.BroAudio.Editor.Setting;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace MiProduction.BroAudio.Editor
+namespace Ami.BroAudio.Editor
 {
     public static partial class BroEditorUtility
     {

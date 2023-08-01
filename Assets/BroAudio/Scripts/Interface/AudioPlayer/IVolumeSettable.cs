@@ -1,4 +1,4 @@
-namespace MiProduction.BroAudio
+namespace Ami.BroAudio
 {
     public interface IVolumeSettable
     {

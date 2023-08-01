@@ -1,7 +1,7 @@
 using UnityEngine;
-using MiProduction.Extension;
+using Ami.Extension;
 
-namespace MiProduction.BroAudio.Data
+namespace Ami.BroAudio.Data
 {
     [System.Serializable]
     public abstract class AudioLibrary : IAudioLibrary

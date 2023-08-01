@@ -1,8 +1,8 @@
 {
-    "name": "MiProduction.EditorExtension",
+    "name": "BroAudioEditor",
     "rootNamespace": "",
     "references": [
-        "GUID:58473f43d728a59409d9b19f6af982e7"
+        "GUID:111d4e39aeddad44898002abada9c174"
     ],
     "includePlatforms": [
         "Editor"

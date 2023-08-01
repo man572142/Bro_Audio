@@ -17,13 +17,13 @@ MonoBehaviour:
     <ID>k__BackingField: 85158283
     Clips:
     - AudioClip: {fileID: 8300000, guid: ef1b1a7680b07b9438370bf81f0dcf9e, type: 3}
-      Volume: 0.5
-      StartPosition: 1.9
+      Volume: 1
+      StartPosition: 1.89
       EndPosition: 0
-      FadeIn: 0
-      FadeOut: 0
+      FadeIn: 0.09
+      FadeOut: 0.24
       Weight: 0
-      SnapToFullVolume: 0
+      SnapToFullVolume: 1
     MulticlipsPlayMode: 0
     IsShowClipPreview: 1
     Delay: 0

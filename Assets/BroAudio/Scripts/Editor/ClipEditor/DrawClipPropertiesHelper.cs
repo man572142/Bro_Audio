@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using static MiProduction.Extension.EditorScriptingExtension;
 using static MiProduction.BroAudio.Editor.Setting.BroAudioGUISetting;
+using MiProduction.BroAudio.Extension;
 
 namespace MiProduction.BroAudio.Editor
 {

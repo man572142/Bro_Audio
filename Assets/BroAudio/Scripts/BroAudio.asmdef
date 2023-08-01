@@ -1,14 +1,8 @@
 {
-    "name": "MiProduction.BroAudioEditor",
+    "name": "BroAudio",
     "rootNamespace": "",
-    "references": [
-        "GUID:58473f43d728a59409d9b19f6af982e7",
-        "GUID:4c228865b8179db499ac392cf9119015",
-        "GUID:111d4e39aeddad44898002abada9c174"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

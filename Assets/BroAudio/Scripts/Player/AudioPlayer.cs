@@ -33,7 +33,22 @@ namespace Ami.BroAudio.Runtime
         public bool IsFadingIn { get; private set; }
         public int ID { get; private set; }
         public EffectType CurrentActiveEffects { get; private set; } = EffectType.None;
-        public string VolumeParaName => _isUsingEffect ? _sendParaName : AudioTrack.name;
+        public string VolumeParaName 
+        {
+            get
+			{
+                if(_isUsingEffect)
+				{
+                    return _sendParaName;
+				}
+                else if(AudioTrack)
+				{
+                    return AudioTrack.name;
+                }
+                return string.Empty;
+			}
+        }
+
         public AudioMixerGroup AudioTrack 
         {
             get => AudioSource.outputAudioMixerGroup;

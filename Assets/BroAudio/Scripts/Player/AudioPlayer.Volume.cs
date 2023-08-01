@@ -73,7 +73,10 @@ namespace Ami.BroAudio.Runtime
             private set
             {
                 _mixerDecibelVolume = value.ClampDecibel(true);
-                _audioMixer.SetFloat(VolumeParaName, _mixerDecibelVolume);
+                if(!string.IsNullOrEmpty(VolumeParaName))
+				{
+                    _audioMixer.SetFloat(VolumeParaName, _mixerDecibelVolume);
+                }
             }
         }
 

@@ -38,7 +38,7 @@ namespace Ami.BroAudio.Editor.Setting
 				"It may cause some quality loss or unexpected behavior due to the nature of Comb Filtering (or Hass Effect). " +
 				"You can set it to 0 to ignore this feature, or any other shorter value as needed.";
 		private const string GitURL = "https://github.com/man572142/Bro_Audio";
-		private const string CopyrightText = "Copyright 2022-2023 CheHsiang Weng.";
+		private const string CopyrightText = "Copyright 2022-2023 CheHsiang Weng (Ami).";
 		private const string AllRightsReserved = "All rights reserved.";
 
         private readonly string _titleText = nameof(BroAudio).ToBold().SetSize(30).SetColor(MainTitleColor);

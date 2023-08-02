@@ -137,28 +137,45 @@ namespace Ami.Extension
 		/// <summary>
 		/// 支援RichText的HelpBox
 		/// </summary>
+		/// <param name="position">繪製位置</param>
+		/// <param name="message">訊息內容</param>
+		/// <param name="messageType">訊息類型</param>
+		public static void RichTextHelpBox(Rect position,string message, MessageType messageType)
+		{
+			RichTextHelpBox(position,message, GetIconName(messageType));
+		}
+
+		/// <summary>
+		/// 支援RichText的HelpBox
+		/// </summary>
 		/// <param name="message">訊息內容</param>
 		/// <param name="messageType">訊息類型</param>
 		public static void RichTextHelpBox(string message, MessageType messageType)
 		{
-			string icon = string.Empty;
-			switch (messageType)
-			{
-				case MessageType.Info:
-					icon = "d_console.infoicon";
-					break;
-				case MessageType.Warning:
-					icon = "d_console.warnicon";
-					break;
-				case MessageType.Error:
-					icon = "d_console.erroricon";
-					break;
-				default:
-					icon = string.Empty;
-					break;
-			}
+			RichTextHelpBox(message, GetIconName(messageType));
+		}
 
-			RichTextHelpBox(message, icon);
+		private static string GetIconName(MessageType messageType)
+		{
+			return messageType switch
+			{
+				MessageType.Info => "d_console.infoicon",
+				MessageType.Warning => "d_console.warnicon",
+				MessageType.Error => "d_console.erroricon",
+				_ => string.Empty,
+			};
+		}
+
+		/// <summary>
+		/// 支援RichText及自訂icon的HelpBox
+		/// </summary>
+		/// <param name="position">繪製位置</param>
+		/// <param name="message">訊息內容</param>
+		/// <param name="icon">Unity內建Icon名稱</param>
+		public static void RichTextHelpBox(Rect position,string message, string icon)
+		{
+			GUIContent content = GetRichTextContent(message, icon);
+			EditorGUI.LabelField(position, content, GUIStyleHelper.Instance.RichTextHelpBox);
 		}
 
 		/// <summary>
@@ -168,11 +185,13 @@ namespace Ami.Extension
 		/// <param name="icon">Unity內建Icon名稱</param>
 		public static void RichTextHelpBox(string message, string icon)
 		{
-			GUIStyle richTextHelpBox = new GUIStyle(EditorStyles.helpBox);
-			richTextHelpBox.richText = true;
+			GUIContent content = GetRichTextContent(message, icon);
+			EditorGUILayout.LabelField(content, GUIStyleHelper.Instance.RichTextHelpBox);
+		}
 
-			GUIContent content = string.IsNullOrEmpty(icon)? new GUIContent(message) : new GUIContent(message, EditorGUIUtility.IconContent(icon).image);
-			EditorGUILayout.LabelField(content, richTextHelpBox);
+		private static GUIContent GetRichTextContent(string message, string icon)
+		{
+			return string.IsNullOrEmpty(icon) ? new GUIContent(message) : new GUIContent(message, EditorGUIUtility.IconContent(icon).image);
 		}
 
 		/// <summary>

@@ -8,6 +8,9 @@ using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.BroAudio.BroLog;
+using System.IO;
+using UnityEngine.Audio;
+using System;
 
 namespace Ami.BroAudio.Editor.Setting
 {
@@ -28,23 +31,37 @@ namespace Ami.BroAudio.Editor.Setting
 		}
 
 		public const string SettingFileName = "BroAudioGlobalSetting";
-		private const string SettingText = "Setting";
+		public const string SettingText = "Setting";
 		public const float Gap = 50f;
-		private const string BrowserIcon = "FolderOpened Icon";
-		private const string AssetOutputPathPanelTtile = "Select BroAudio auto-generated asset file's output folder";
-		private const string SettingFileMissingText = "Setting asset file is missing! please relocate the file to any [Resource] folder or recreate a new one";
-		private const string HaasEffectInfoText =
+		public const string BrowserIcon = "FolderOpened Icon";
+		public const string AssetOutputPathPanelTtile = "Select BroAudio auto-generated asset file's output folder";
+		public const string SettingFileMissingText = "Setting asset file is missing! please relocate the file to any [Resource/Editor] folder or recreate a new one";
+		public const string HaasEffectLabel = "Time to prevent Comb Filtering (Haas Effect)";
+		public const string HaasEffectTooltipText =
 				"If the same sound is played repeatedly in a very short period of time (e.g. playing it every other frame). " +
 				"It may cause some quality loss or unexpected behavior due to the nature of Comb Filtering (or Hass Effect). " +
-				"You can set it to 0 to ignore this feature, or any other shorter value as needed.";
-		private const string GitURL = "https://github.com/man572142/Bro_Audio";
-		private const string CopyrightText = "Copyright 2022-2023 CheHsiang Weng (Ami).";
-		private const string AllRightsReserved = "All rights reserved.";
+				"\n\nYou can set it to 0 to ignore this feature, or any other shorter value as needed.";
+		public const string GitURL = "https://github.com/man572142/Bro_Audio";
+		public const string CopyrightText = "Copyright 2022-2023 CheHsiang Weng (Ami).";
+		public const string AllRightsReserved = "All rights reserved.";
+		public const string VoicesAndTracksNotMatchWarning =
+			"The BroAudioMixer's tracks count is less than the Real Audio Voices count! " +
+			"You can download the {0} to replace the old one for supporting more voices, or set it back to 32 (Unity's default setting) in {1}";
+		public const string BroAudioMixer64Name = "64 tracks ver. of BroAuioMixer.asset";
+		public const string ProjectSettingsMenuItemPath = "Edit/Project Settings";
+		public const string AudioSettingPath = "Project/Audio";
+		public const string ProjectAudioSettingFileName = "AudioManager.asset";
+		public const string ProjectSettingsFolderName = "ProjectSettings";
+		public const string VoiceCountPropertyName = "m_RealVoiceCount";
+		public const int UnityDefaultAudioVoicesCount = 32;
 
-        private readonly string _titleText = nameof(BroAudio).ToBold().SetSize(30).SetColor(MainTitleColor);
+		private readonly string _titleText = nameof(BroAudio).ToBold().SetSize(30).SetColor(MainTitleColor);
 
 		private GUIContent[] _tabs = null;
 		private Tab _currentSelectTab = Tab.Audio;
+		private int _currentProjectSettingVoiceCount = -1;
+		private int _currentMixerTracksCount = -1;
+		private GUIContent _haasEffectGUIContent = null;
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 
@@ -78,6 +95,19 @@ namespace Ami.BroAudio.Editor.Setting
 		private void OnEnable()
 		{
 			InitTabs();
+			InitGUIContents();
+		}
+
+		private void InitGUIContents()
+		{
+			_haasEffectGUIContent ??= new GUIContent();
+			_haasEffectGUIContent.text = HaasEffectLabel;
+			_haasEffectGUIContent.tooltip = HaasEffectTooltipText;
+		}
+
+		private void OnDisable()
+		{
+			_currentProjectSettingVoiceCount = -1;
 		}
 
 		private void InitTabs()
@@ -99,6 +129,7 @@ namespace Ami.BroAudio.Editor.Setting
 			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), _titleText, GUIStyleHelper.Instance.MiddleCenterRichText);
 
 			DrawEmptyLine(1);
+
 			switch (Message)
 			{
 				case OpenMessage.SettingAssetFileMissing:
@@ -128,44 +159,48 @@ namespace Ami.BroAudio.Editor.Setting
 
 			EditorGUI.indentLevel++;
 			EditorGUI.DrawRect(tabBackgroundRect, UnityDefaultEditorColor);
-			switch (_currentSelectTab)
+
+			if (GlobalSetting != null)
 			{
-				case Tab.Audio:
-					DrawAudioSetting(drawPosition);
-					break;
-				case Tab.GUI:
-					DrawGUISetting(drawPosition);
-					break;
-				case Tab.Info:
-					DrawInfo(drawPosition);
-					break;
+				switch (_currentSelectTab)
+				{
+					case Tab.Audio:
+						DrawAudioSetting(drawPosition);
+						break;
+					case Tab.GUI:
+						DrawGUISetting(drawPosition);
+						break;
+					case Tab.Info:
+						DrawInfo(drawPosition);
+						break;
+				}
 			}
 		}
+
+		private void DrawTabs(Rect drawPosition)
+		{
+			Rect tabRect = GetRectAndIterateLine(drawPosition);
+			tabRect.height = EditorGUIUtility.singleLineHeight * 2f;
+			_currentSelectTab = (Tab)GUI.Toolbar(tabRect, (int)_currentSelectTab, _tabs);
+		}
+
 		private void DrawAudioSetting(Rect drawPosition)
 		{
-			Rect haasRect = GetRectAndIterateLine(drawPosition);
-			EditorGUI.LabelField(haasRect, "Time to prevent Comb Filtering (Haas Effect)");
+			DrawHaasEffectSetting(drawPosition);
+			DrawEmptyLine(1);
 
-			haasRect.width *= 0.5f;
-			haasRect.x += 150f;
-			GlobalSetting.HaasEffectInSeconds =
-				EditorGUI.FloatField(haasRect, " ", GlobalSetting.HaasEffectInSeconds);
-
-			Rect haasInfoRect = GetRectAndIterateLine(drawPosition);
-			haasInfoRect.height *= 3f;
-			EditorGUI.HelpBox(haasInfoRect, HaasEffectInfoText, MessageType.Info);
-
-			DrawEmptyLine(2);
 			DrawDefaultEasing(drawPosition);
 			DrawSeamlessLoopEasing(drawPosition);
+			DrawEmptyLine(1);
+			DrawAudioProjectSettings(drawPosition);
 
 			void DrawDefaultEasing(Rect drawPosition)
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Default Easing".ToWhiteBold(), GUIStyleHelper.Instance.RichText);
 				EditorGUI.indentLevel++;
-                GlobalSetting.DefaultFadeInEase =
+				GlobalSetting.DefaultFadeInEase =
 					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", GlobalSetting.DefaultFadeInEase);
-                GlobalSetting.DefaultFadeOutEase =
+				GlobalSetting.DefaultFadeOutEase =
 					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", GlobalSetting.DefaultFadeOutEase);
 				EditorGUI.indentLevel--;
 			}
@@ -174,12 +209,115 @@ namespace Ami.BroAudio.Editor.Setting
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Seamless Loop Easing".ToWhiteBold(), GUIStyleHelper.Instance.RichText);
 				EditorGUI.indentLevel++;
-                GlobalSetting.SeamlessFadeInEase =
+				GlobalSetting.SeamlessFadeInEase =
 					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", GlobalSetting.SeamlessFadeInEase);
-                GlobalSetting.SeamlessFadeOutEase =
+				GlobalSetting.SeamlessFadeOutEase =
 					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", GlobalSetting.SeamlessFadeOutEase);
 				EditorGUI.indentLevel--;
 			}
+
+			void DrawHaasEffectSetting(Rect drawPosition)
+			{
+				Rect haasRect = GetRectAndIterateLine(drawPosition);
+				EditorGUI.LabelField(haasRect, _haasEffectGUIContent);
+
+				haasRect.width *= 0.5f;
+				haasRect.x += 150f;
+				GlobalSetting.HaasEffectInSeconds = EditorGUI.FloatField(haasRect, " ", GlobalSetting.HaasEffectInSeconds);
+			}
+
+			void DrawAudioProjectSettings(Rect drawPosition)
+			{
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Project Settings".ToWhiteBold(), GUIStyleHelper.Instance.RichText);
+
+				if (HasValidProjectSettingVoiceCount())
+				{
+					EditorGUI.BeginDisabledGroup(true);
+					{
+						Rect voiceRect = GetRectAndIterateLine(drawPosition);
+						EditorGUI.LabelField(voiceRect, "Max Real Voices");
+						voiceRect.x += 150f;
+						voiceRect.width = 100f;
+						EditorGUI.IntField(voiceRect, _currentProjectSettingVoiceCount);
+					}
+					EditorGUI.EndDisabledGroup();
+				}
+
+				if (HasValidMixerTracksCount() && _currentMixerTracksCount < _currentProjectSettingVoiceCount)
+				{
+					Rect warningBoxRect = GetRectAndIterateLine(drawPosition);
+					warningBoxRect.height *= 3;
+					Color linkBlue = EditorStyles.linkLabel.normal.textColor;
+					string text = string.Format(VoicesAndTracksNotMatchWarning, BroAudioMixer64Name.SetColor(linkBlue), ProjectSettingsMenuItemPath.SetColor(linkBlue));
+					RichTextHelpBox(warningBoxRect, text, MessageType.Warning);
+					if (GUI.Button(warningBoxRect, GUIContent.none, GUIStyle.none))
+					{
+						SettingsService.OpenProjectSettings(AudioSettingPath);
+					}
+					EditorGUIUtility.AddCursorRect(warningBoxRect, MouseCursor.Link);
+				}
+			}
+		}
+
+		private bool HasValidProjectSettingVoiceCount()
+		{
+			if (_currentProjectSettingVoiceCount < 0)
+			{
+				_currentProjectSettingVoiceCount = 0; // if it's still 0 after the following search. then just skip for the rest of the time.
+
+				string path = GetFullFilePath(ProjectSettingsFolderName, ProjectAudioSettingFileName);
+				if (!File.Exists(path))
+				{
+					return false;
+				}
+
+				using (StreamReader stream = new StreamReader(path))
+				{
+					while (!stream.EndOfStream)
+					{
+						string lineText = stream.ReadLine();
+						if (!lineText.Contains(VoiceCountPropertyName))
+						{
+							continue;
+						}
+
+						string value = string.Empty;
+						for (int i = 0; i < lineText.Length; i++)
+						{
+							if (char.IsNumber(lineText[i]))
+							{
+								value += lineText[i];
+							}
+						}
+
+						if (!string.IsNullOrWhiteSpace(value))
+						{
+							_currentProjectSettingVoiceCount = int.Parse(value);
+						}
+					}
+				}
+			}
+			return _currentProjectSettingVoiceCount > 0;
+		}
+
+		private bool HasValidMixerTracksCount()
+		{
+			if(_currentMixerTracksCount < 0)
+			{
+				_currentMixerTracksCount = 0; // if it's still 0 after the following search. then just skip for the rest of the time.
+				string[] mixerGUIDs = AssetDatabase.FindAssets(Runtime.SoundManager.MixerName);
+				if (mixerGUIDs != null && mixerGUIDs.Length > 0)
+				{
+					var mixer = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(mixerGUIDs[0]), typeof(AudioMixer)) as AudioMixer;
+					if (mixer)
+					{
+						var tracks = mixer.FindMatchingGroups(Runtime.SoundManager.GenericTrackNamePrefix);
+						_currentMixerTracksCount = tracks != null ? tracks.Length : 0;
+					}
+				}
+			}
+
+			return _currentMixerTracksCount > 0;
 		}
 
 		private void DrawGUISetting(Rect drawPosition)
@@ -226,29 +364,29 @@ namespace Ami.BroAudio.Editor.Setting
                 }
 				GUI.HorizontalSlider(sliderRect, 1f, 0f, 1.25f);
 			}
-		}
 
-		private void SetAudioTypeLabelColor(Rect fieldRect, BroAudioType audioType)
-		{
-			switch (audioType)
+			void SetAudioTypeLabelColor(Rect fieldRect, BroAudioType audioType)
 			{
-				case BroAudioType.Music:
-                    GlobalSetting.MusicColor = EditorGUI.ColorField(fieldRect,audioType.ToString(), GlobalSetting.MusicColor);
-					break;
-				case BroAudioType.UI:
-                    GlobalSetting.UIColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.UIColor);
-                    break;
-				case BroAudioType.Ambience:
-                    GlobalSetting.AmbienceColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.AmbienceColor);
-                    break;
-				case BroAudioType.SFX:
-                    GlobalSetting.SFXColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.SFXColor);
-                    break;
-				case BroAudioType.VoiceOver:
-                    GlobalSetting.VoiceOverColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.VoiceOverColor);
-                    break;
-				default:
-					break;
+				switch (audioType)
+				{
+					case BroAudioType.Music:
+						GlobalSetting.MusicColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.MusicColor);
+						break;
+					case BroAudioType.UI:
+						GlobalSetting.UIColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.UIColor);
+						break;
+					case BroAudioType.Ambience:
+						GlobalSetting.AmbienceColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.AmbienceColor);
+						break;
+					case BroAudioType.SFX:
+						GlobalSetting.SFXColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.SFXColor);
+						break;
+					case BroAudioType.VoiceOver:
+						GlobalSetting.VoiceOverColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.VoiceOverColor);
+						break;
+					default:
+						break;
+				}
 			}
 		}
 
@@ -261,24 +399,18 @@ namespace Ami.BroAudio.Editor.Setting
 			DrawEmptyLine(1);
 			var linkStyle = new GUIStyle(EditorStyles.linkLabel);
 			linkStyle.alignment = TextAnchor.MiddleCenter;
-            if (GUI.Button(GetRectAndIterateLine(drawPosition), GitURL, linkStyle))
+			Rect linkRect = GetRectAndIterateLine(drawPosition);
+			if (GUI.Button(linkRect, GitURL, linkStyle))
 			{
 				Application.OpenURL(GitURL);
 			}
+			EditorGUIUtility.AddCursorRect(linkRect, MouseCursor.Link);
 
-            DrawEmptyLine(1);
+			DrawEmptyLine(1);
             if (GUI.Button(GetRectAndIterateLine(drawPosition),"Reset To Factory Settings"))
 			{
 				GlobalSetting.ResetToFactorySettings();
 			}
-		}
-
-
-		private void DrawTabs(Rect drawPosition)
-		{
-			Rect tabRect = GetRectAndIterateLine(drawPosition);
-			tabRect.height = EditorGUIUtility.singleLineHeight * 2f;
-			_currentSelectTab = (Tab)GUI.Toolbar(tabRect, (int)_currentSelectTab, _tabs);
 		}
 
 		private void DrawAssetOutputPath(Rect drawPosition)
@@ -302,12 +434,8 @@ namespace Ami.BroAudio.Editor.Setting
 				{
 					if (IsInProjectFolder(newPath))
 					{
-						AssetOutputPath = newPath.Remove(0, UnityAssetsRootPath.Length + 1);
+						AssetOutputPath = newPath.Remove(0, UnityProjectRootPath.Length + 1);
 						WriteAssetOutputPathToCoreData();
-					}
-					else
-					{
-						LogError("You cannot set path outside of Unity project's root folder!");
 					}
 				}
 			}
@@ -318,20 +446,5 @@ namespace Ami.BroAudio.Editor.Setting
 			GUI.DrawTexture(browserIconRect, EditorGUIUtility.IconContent(BrowserIcon).image);
 			EditorGUI.DrawRect(browserIconRect, BroAudioGUISetting.ShadowMaskColor);
 		}
-
-
-		private void DrawEaseOption(Rect drawPosition)
-		{
-			Keyframe[] keyframes = new Keyframe[2];
-			keyframes[0] = new Keyframe(0, 0);
-			keyframes[1] = new Keyframe(1, 1);
-
-			keyframes[0].outTangent = 1f;
-			keyframes[1].inTangent = 1f;
-			var curve = new AnimationCurve(keyframes);
-
-			EditorGUI.CurveField(GetRectAndIterateLine(drawPosition), new AnimationCurve(keyframes));
-		}
 	}
-
 }

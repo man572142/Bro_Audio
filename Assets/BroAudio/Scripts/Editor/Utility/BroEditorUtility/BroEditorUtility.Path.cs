@@ -8,10 +8,10 @@ namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility
 	{
-		private const string _defaultAssetOutputPath = "Assets/Ami/BroAudio/AudioAssets";
+		private const string _defaultAssetOutputPath = "Assets/BroAudio/AudioAssets";
 		public const string CoreDataResourcesPath = "Editor/BroAudioData";
 
-		public static readonly string UnityAssetsRootPath = Application.dataPath.Replace("/Assets", string.Empty);
+		public static readonly string UnityProjectRootPath = Application.dataPath.Replace("/Assets", string.Empty);
 
 
 		private static string _assetOutputPath = string.Empty;
@@ -35,9 +35,9 @@ namespace Ami.BroAudio.Editor
 			set => _assetOutputPath = value;
 		}
 
-		public static string GetFullPath(string path) => Combine(UnityAssetsRootPath,path);
+		public static string GetFullPath(string path) => Combine(UnityProjectRootPath,path);
 		public static string GetFilePath(string path,string fileName) => Combine(path,fileName);
-		public static string GetFullFilePath(string path,string fileName) => Combine(UnityAssetsRootPath, path, fileName);
+		public static string GetFullFilePath(string path,string fileName) => Combine(UnityProjectRootPath, path, fileName);
 
 		public static string EnsureDirectoryExists(this string path)
 		{
@@ -50,7 +50,7 @@ namespace Ami.BroAudio.Editor
 
 		public static bool IsInProjectFolder(string path)
 		{
-			if (!path.Contains(UnityAssetsRootPath))
+			if (!path.Contains(Application.dataPath))
 			{
 				LogError("The path must be under Assets folder or its sub-folder");
 				return false;

@@ -17,7 +17,7 @@ namespace Ami.BroAudio.Editor
             {
                 if(!_setting)
                 {
-                    _setting = Resources.Load<GlobalSetting>(GlobalSetting.FileName);
+                    _setting = Resources.Load<GlobalSetting>(GlobalSetting.FilePath);
                     if (!_setting)
                     {
                         GlobalSettingEditorWindow.ShowWindowWithMessage(GlobalSettingEditorWindow.OpenMessage.SettingAssetFileMissing);

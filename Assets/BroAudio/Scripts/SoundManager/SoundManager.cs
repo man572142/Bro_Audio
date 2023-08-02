@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Runtime
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            GameObject prefab = Instantiate(Resources.Load("SoundManager")) as GameObject;
+            GameObject prefab = Instantiate(Resources.Load(nameof(SoundManager))) as GameObject;
 
             if (prefab == null)
             {
@@ -40,8 +40,10 @@ namespace Ami.BroAudio.Runtime
 
         public static SoundManager Instance = null;
 
-        private const string MasterTrackExposedParameter = "Master";
-        private const string GenericTrackExposedParameter = "Track";
+        public const string MasterTrackName = "Master";
+        public const string GenericTrackNamePrefix = "Track";
+        public const string MixerName = "BroAudioMixer";
+        public const string AudioPlayerPrefabName = "AudioPlayer";
 
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
         private AudioPlayerObjectPool _audioPlayerPool = null;
@@ -69,16 +71,16 @@ namespace Ami.BroAudio.Runtime
             string nullRefLog = $"Please assign {{0}} in {nameof(SoundManager)}.prefab";
             if(!_broAudioMixer)
 			{
-                LogError(string.Format(nullRefLog,"BroAudioMixer"));
+                LogError(string.Format(nullRefLog, MixerName));
                 return;
 			}
             else if(!_audioPlayerPrefab)
 			{
-                LogError(string.Format(nullRefLog,"AudioPlayer"));
+                LogError(string.Format(nullRefLog, AudioPlayerPrefabName));
                 return;
 			}
 
-            AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups(GenericTrackExposedParameter);
+            AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups(GenericTrackNamePrefix);
             _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,transform,Setting.DefaultAudioPlayerPoolSize, mixerGroups);
 
 			InitBank();
@@ -143,7 +145,7 @@ namespace Ami.BroAudio.Runtime
 		private void SetMasterVolume(float targetVol, float fadeTime)
 		{
             targetVol = targetVol.ToDecibel();
-            if(_broAudioMixer.GetFloat(MasterTrackExposedParameter,out float currentVol))
+            if(_broAudioMixer.GetFloat(MasterTrackName,out float currentVol))
 			{
 				if (currentVol == targetVol)
 				{
@@ -160,7 +162,7 @@ namespace Ami.BroAudio.Runtime
             {
                 foreach (var vol in volumes)
                 {
-                    _broAudioMixer.SetFloat(MasterTrackExposedParameter, vol);
+                    _broAudioMixer.SetFloat(MasterTrackName, vol);
                     yield return null;
                 }
             }

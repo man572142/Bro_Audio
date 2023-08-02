@@ -29,7 +29,7 @@ namespace Ami.BroAudio.Data
 			public const bool ShowVUColorOnVolumeSlider = true;
 		}
 
-		public const string FileName = "BroAudioGlobalSetting";
+		public const string FilePath = "Editor/BroAudioGlobalSetting";
 
 		public float HaasEffectInSeconds = FactorySettings.HaasEffectInSeconds;
 		public Ease DefaultFadeInEase = FactorySettings.DefaultFadeInEase;

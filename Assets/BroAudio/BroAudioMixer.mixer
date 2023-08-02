@@ -488,36 +488,6 @@ AudioMixerGroupController:
   m_Mute: 0
   m_Solo: 0
   m_BypassEffects: 0
---- !u!244 &-2344413570364419266
-AudioMixerEffectController:
-  m_ObjectHideFlags: 3
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_EffectID: ca50e3e134eed72488f70ffe0f874bbe
-  m_EffectName: Chorus
-  m_MixLevel: 6f72edde5661aec4094e1790e995a782
-  m_Parameters:
-  - m_ParameterName: Dry mix
-    m_GUID: 453f2303b7ea8114f9532f0a6ea32553
-  - m_ParameterName: Wet mix tap 1
-    m_GUID: be618d00918c48a4fa38986f03379ff5
-  - m_ParameterName: Wet mix tap 2
-    m_GUID: 4f83146a2e9d3f64fbb5b30439ce0275
-  - m_ParameterName: Wet mix tap 3
-    m_GUID: f685aa2e1f5a2844b93e244189030818
-  - m_ParameterName: Delay
-    m_GUID: 62bd6f8cffbcea7458d7ce7cc7ed24b4
-  - m_ParameterName: Rate
-    m_GUID: 5e5e09d2c29b1194f9866a9027dda5ce
-  - m_ParameterName: Depth
-    m_GUID: 1dd5cecbaaf78db46b753933f7529ed5
-  - m_ParameterName: Feedback
-    m_GUID: bcab4c7706db12f48ba39fa28a16ff20
-  m_SendTarget: {fileID: 0}
-  m_EnableWetMix: 0
-  m_Bypass: 1
 --- !u!244 &-2277328117115643138
 AudioMixerEffectController:
   m_ObjectHideFlags: 3
@@ -1433,22 +1403,6 @@ AudioMixerEffectController:
   m_SendTarget: {fileID: 0}
   m_EnableWetMix: 0
   m_Bypass: 0
---- !u!244 &2179273635663094711
-AudioMixerEffectController:
-  m_ObjectHideFlags: 3
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_EffectID: cafc8460dcb3d0641b429fd9b028bfb2
-  m_EffectName: Distortion
-  m_MixLevel: a3b8ff3e08960854fa080b31fd56f629
-  m_Parameters:
-  - m_ParameterName: Level
-    m_GUID: facf2e4ca91756f48b302f6055f802fa
-  m_SendTarget: {fileID: 0}
-  m_EnableWetMix: 0
-  m_Bypass: 1
 --- !u!244 &2320538800557462805
 AudioMixerEffectController:
   m_ObjectHideFlags: 3
@@ -1903,8 +1857,6 @@ AudioMixerGroupController:
   - {fileID: 561843358803274949}
   - {fileID: 1643354209615730796}
   - {fileID: -5879888661477976653}
-  - {fileID: 2179273635663094711}
-  - {fileID: -2344413570364419266}
   - {fileID: 5046927424409369958}
   m_UserColorIndex: 1
   m_Mute: 0

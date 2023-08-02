@@ -27,6 +27,7 @@ namespace Ami.Extension
 		private GUIStyle _richTextHelpbox;
 		private GUIStyle _upperCenterStyle;
 		private GUIStyle _middleRightStyle;
+		private GUIStyle _richTextHelpBox;
 
 		public GUIStyle MiddleCenterText
 		{
@@ -125,6 +126,19 @@ namespace Ami.Extension
 					_upperCenterStyle.alignment = TextAnchor.UpperCenter;
 				}
 				return _upperCenterStyle;
+			}
+		}
+
+		public GUIStyle RichTextHelpBoxStyle
+		{
+			get
+			{
+				if(_richTextHelpbox == null)
+				{
+					_richTextHelpbox = new GUIStyle(EditorStyles.helpBox);
+					_richTextHelpbox.richText = true;
+				}
+				return _richTextHelpbox;
 			}
 		}
 	}

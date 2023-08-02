@@ -14,7 +14,7 @@ namespace Ami.BroAudio.Runtime
 		{
 			get
 			{
-				_setting ??= Resources.Load<GlobalSetting>(GlobalSetting.FileName);
+				_setting ??= Resources.Load<GlobalSetting>(GlobalSetting.FilePath);
 				if(!_setting)
 				{
 					_setting = new GlobalSetting();

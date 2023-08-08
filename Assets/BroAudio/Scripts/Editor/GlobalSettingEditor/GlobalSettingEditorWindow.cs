@@ -7,10 +7,12 @@ using static Ami.BroAudio.Utility;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.Extension.EditorScriptingExtension;
+using static Ami.BroAudio.BroName;
 using static Ami.BroAudio.BroLog;
 using System.IO;
 using UnityEngine.Audio;
 using System;
+using System.Linq;
 
 namespace Ami.BroAudio.Editor.Setting
 {
@@ -34,39 +36,50 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string SettingText = "Setting";
 		public const float Gap = 50f;
 		public const string BrowserIcon = "FolderOpened Icon";
-		public const string AssetOutputPathPanelTtile = "Select BroAudio auto-generated asset file's output folder";
-		public const string SettingFileMissingText = "Setting asset file is missing! please relocate the file to any [Resource/Editor] folder or recreate a new one";
+		
 		public const string HaasEffectLabel = "Time to prevent Comb Filtering (Haas Effect)";
-		public const string HaasEffectTooltipText =
-				"If the same sound is played repeatedly in a very short period of time (e.g. playing it every other frame). " +
-				"It may cause some quality loss or unexpected behavior due to the nature of Comb Filtering (or Hass Effect). " +
-				"\n\nYou can set it to 0 to ignore this feature, or any other shorter value as needed.";
+		public const string ResetSettingButtonText = "Reset To Factory Settings";
+		public const string AutoMatchTracksButtonText = "Auto-adding tracks to match audio voices.";
+		public const string AssetOutputPathLabel = "Asset Output Path";
+		public const string VUColorToggleLabel = "Show VU color on volume slider";
+		public const string ShowAudioTypeToggleLabel = "Show audioType on AudioID";
+		public const string AudioTypeColorLabel = "Audio Type Color";
 		public const string GitURL = "https://github.com/man572142/Bro_Audio";
-		public const string CopyrightText = "Copyright 2022-2023 CheHsiang Weng (Ami).";
-		public const string AllRightsReserved = "All rights reserved.";
-		public const string VoicesAndTracksNotMatchWarning =
-			"The BroAudioMixer's tracks count is less than the Real Audio Voices count! " +
-			"You can download the {0} to replace the old one for supporting more voices, or set it back to 32 (Unity's default setting) in {1}";
-		public const string BroAudioMixer64Name = "64 tracks ver. of BroAuioMixer.asset";
-		public const string ProjectSettingsMenuItemPath = "Edit/Project Settings";
-		public const string AudioSettingPath = "Project/Audio";
-		public const string ProjectAudioSettingFileName = "AudioManager.asset";
-		public const string ProjectSettingsFolderName = "ProjectSettings";
-		public const string VoiceCountPropertyName = "m_RealVoiceCount";
-		public const int UnityDefaultAudioVoicesCount = 32;
+		
+		public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
+		public const string ProjectSettings = "Project Settings";
+		public const string RealVoicesParameterName = "Max Real Voices";
 
 		private readonly string _titleText = nameof(BroAudio).ToBold().SetSize(30).SetColor(MainTitleColor);
 
 		private GUIContent[] _tabs = null;
 		private Tab _currentSelectTab = Tab.Audio;
-		private int _currentProjectSettingVoiceCount = -1;
+		private int _currProjectSettingVoiceCount = -1;
 		private int _currentMixerTracksCount = -1;
 		private GUIContent _haasEffectGUIContent = null;
+		private GUIContent _audioVoicesGUIContent = null;
+		private BroInstructionHelper _instruction = new BroInstructionHelper();
+		private AudioMixerGroup _duplicateTrackSource = null;
+		private AudioMixer _mixer = null;
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
-
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
-
+		
+		private AudioMixer AudioMixer
+		{
+			get
+			{
+				if (!_mixer)
+				{
+					string[] mixerGUIDs = AssetDatabase.FindAssets(MixerName);
+					if (mixerGUIDs != null && mixerGUIDs.Length > 0)
+					{
+						_mixer = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(mixerGUIDs[0]), typeof(AudioMixer)) as AudioMixer;
+					}
+				}
+				return _mixer;
+			}
+		}
 
 		[MenuItem(GlobalSettingMenuPath,false,GlobalSettingMenuIndex)]
 		public static GlobalSettingEditorWindow ShowWindow()
@@ -94,20 +107,33 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void OnEnable()
 		{
+			_instruction.Init();
 			InitTabs();
 			InitGUIContents();
 		}
+
+		
 
 		private void InitGUIContents()
 		{
 			_haasEffectGUIContent ??= new GUIContent();
 			_haasEffectGUIContent.text = HaasEffectLabel;
-			_haasEffectGUIContent.tooltip = HaasEffectTooltipText;
+			_haasEffectGUIContent.tooltip = _instruction.GetText(Instruction.HaasEffectTooltip);
+
+			_audioVoicesGUIContent ??= new GUIContent();
+			_audioVoicesGUIContent.text = RealVoicesParameterName;
+			_audioVoicesGUIContent.tooltip = _instruction.GetText(Instruction.AudioVoicesToolTip);
 		}
 
 		private void OnDisable()
 		{
-			_currentProjectSettingVoiceCount = -1;
+			ResetTracksAndAudioVoices();
+		}
+
+		private void ResetTracksAndAudioVoices()
+		{
+			_currProjectSettingVoiceCount = -1;
+			_currentMixerTracksCount = -1;
 		}
 
 		private void InitTabs()
@@ -135,7 +161,7 @@ namespace Ami.BroAudio.Editor.Setting
 				case OpenMessage.SettingAssetFileMissing:
 					Rect errorRect = GetRectAndIterateLine(drawPosition);
 					errorRect.height *= 2;
-					EditorGUI.HelpBox(errorRect, SettingFileMissingText, MessageType.Error);
+					EditorGUI.HelpBox(errorRect, _instruction.GetText(Instruction.SettingFileMissing), MessageType.Error);
 					break;
 				case OpenMessage.None:
 
@@ -228,76 +254,79 @@ namespace Ami.BroAudio.Editor.Setting
 
 			void DrawAudioProjectSettings(Rect drawPosition)
 			{
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Project Settings".ToWhiteBold(), GUIStyleHelper.Instance.RichText);
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), ProjectSettings.ToWhiteBold(), GUIStyleHelper.Instance.RichText);
 
 				if (HasValidProjectSettingVoiceCount())
 				{
 					EditorGUI.BeginDisabledGroup(true);
 					{
 						Rect voiceRect = GetRectAndIterateLine(drawPosition);
-						EditorGUI.LabelField(voiceRect, "Max Real Voices");
+						EditorGUI.LabelField(voiceRect, _audioVoicesGUIContent);
 						voiceRect.x += 150f;
 						voiceRect.width = 100f;
-						EditorGUI.IntField(voiceRect, _currentProjectSettingVoiceCount);
+						EditorGUI.IntField(voiceRect, _currProjectSettingVoiceCount);
 					}
 					EditorGUI.EndDisabledGroup();
 				}
 
-				if (HasValidMixerTracksCount() && _currentMixerTracksCount < _currentProjectSettingVoiceCount)
+				if (HasValidMixerTracksCount() && _currentMixerTracksCount < _currProjectSettingVoiceCount)
 				{
 					Rect warningBoxRect = GetRectAndIterateLine(drawPosition);
 					warningBoxRect.height *= 3;
 					Color linkBlue = EditorStyles.linkLabel.normal.textColor;
-					string text = string.Format(VoicesAndTracksNotMatchWarning, BroAudioMixer64Name.SetColor(linkBlue), ProjectSettingsMenuItemPath.SetColor(linkBlue));
+					string text = string.Format(_instruction.GetText(Instruction.TracksAndVoicesNotMatchWarning), MixerName.ToWhiteBold(), RealVoicesParameterName.ToWhiteBold(), ProjectSettingsMenuItemPath.SetColor(linkBlue));
 					RichTextHelpBox(warningBoxRect, text, MessageType.Warning);
 					if (GUI.Button(warningBoxRect, GUIContent.none, GUIStyle.none))
 					{
 						SettingsService.OpenProjectSettings(AudioSettingPath);
 					}
 					EditorGUIUtility.AddCursorRect(warningBoxRect, MouseCursor.Link);
+
+					Rect autoMatchBtnRect = GetRectAndIterateLine(drawPosition);
+					autoMatchBtnRect.y += EditorGUIUtility.singleLineHeight * 2f;
+					autoMatchBtnRect.height *= 2f;
+					if (GUI.Button(autoMatchBtnRect, AutoMatchTracksButtonText) 
+						&& EditorUtility.DisplayDialog("Confirmation", _instruction.GetText(Instruction.AddTracksConfirmationDialog), "OK", "Cancel"))
+					{
+						AutoMatchAudioVoices();
+					}
 				}
+			}
+		}
+
+		private void AutoMatchAudioVoices()
+		{
+			AudioMixerGroup mainTrack = AudioMixer.FindMatchingGroups(MainTrackName)?.FirstOrDefault();
+			if (mainTrack == default || _currentMixerTracksCount == default)
+			{
+				LogError("Can't get the Main track or other BroAudio track");
+				return;
+			}
+
+			if(_duplicateTrackSource)
+			{
+				for(int i = _currentMixerTracksCount +1 ; i <= _currProjectSettingVoiceCount; i++)
+				{
+					string trackName = $"{GenericTrackName}{i}";
+					BroAudioReflection.DuplicateBroAudioTrack(AudioMixer, mainTrack, _duplicateTrackSource, trackName);
+				}
+				// reset it to restart the checking
+				ResetTracksAndAudioVoices();
+			}
+			else
+			{
+				LogError("No valid track for duplicating");
 			}
 		}
 
 		private bool HasValidProjectSettingVoiceCount()
 		{
-			if (_currentProjectSettingVoiceCount < 0)
+			if (_currProjectSettingVoiceCount < 0)
 			{
-				_currentProjectSettingVoiceCount = 0; // if it's still 0 after the following search. then just skip for the rest of the time.
-
-				string path = GetFullFilePath(ProjectSettingsFolderName, ProjectAudioSettingFileName);
-				if (!File.Exists(path))
-				{
-					return false;
-				}
-
-				using (StreamReader stream = new StreamReader(path))
-				{
-					while (!stream.EndOfStream)
-					{
-						string lineText = stream.ReadLine();
-						if (!lineText.Contains(VoiceCountPropertyName))
-						{
-							continue;
-						}
-
-						string value = string.Empty;
-						for (int i = 0; i < lineText.Length; i++)
-						{
-							if (char.IsNumber(lineText[i]))
-							{
-								value += lineText[i];
-							}
-						}
-
-						if (!string.IsNullOrWhiteSpace(value))
-						{
-							_currentProjectSettingVoiceCount = int.Parse(value);
-						}
-					}
-				}
+				_currProjectSettingVoiceCount = 0; // if it's still 0 after the following search. then just skip for the rest of the time.
+				_currProjectSettingVoiceCount = GetProjectSettingRealAudioVoices();
 			}
-			return _currentProjectSettingVoiceCount > 0;
+			return _currProjectSettingVoiceCount > 0;
 		}
 
 		private bool HasValidMixerTracksCount()
@@ -305,15 +334,11 @@ namespace Ami.BroAudio.Editor.Setting
 			if(_currentMixerTracksCount < 0)
 			{
 				_currentMixerTracksCount = 0; // if it's still 0 after the following search. then just skip for the rest of the time.
-				string[] mixerGUIDs = AssetDatabase.FindAssets(Runtime.SoundManager.MixerName);
-				if (mixerGUIDs != null && mixerGUIDs.Length > 0)
+				if (AudioMixer)
 				{
-					var mixer = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(mixerGUIDs[0]), typeof(AudioMixer)) as AudioMixer;
-					if (mixer)
-					{
-						var tracks = mixer.FindMatchingGroups(Runtime.SoundManager.GenericTrackNamePrefix);
-						_currentMixerTracksCount = tracks != null ? tracks.Length : 0;
-					}
+					var tracks = AudioMixer.FindMatchingGroups(GenericTrackName);
+					_currentMixerTracksCount = tracks != null ? tracks.Length : 0;
+					_duplicateTrackSource = tracks != null ? tracks.Last() : null;
 				}
 			}
 
@@ -322,14 +347,14 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawGUISetting(Rect drawPosition)
 		{
-			GlobalSetting.ShowVUColorOnVolumeSlider = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), "Show VU color on volume slider", GlobalSetting.ShowVUColorOnVolumeSlider);
+			GlobalSetting.ShowVUColorOnVolumeSlider = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), VUColorToggleLabel, GlobalSetting.ShowVUColorOnVolumeSlider);
 			DemonstrateSlider(drawPosition);
 
-			GlobalSetting.ShowAudioTypeOnAudioID = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), "Show audioType on AudioID", GlobalSetting.ShowAudioTypeOnAudioID);
+			GlobalSetting.ShowAudioTypeOnAudioID = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), ShowAudioTypeToggleLabel, GlobalSetting.ShowAudioTypeOnAudioID);
 
 			if (GlobalSetting.ShowAudioTypeOnAudioID)
 			{
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Audio Type Color".ToWhiteBold(), GUIStyleHelper.Instance.RichText);
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeColorLabel.ToWhiteBold(), GUIStyleHelper.Instance.RichText);
 				EditorGUI.indentLevel++;
 				Rect colorRect = GetRectAndIterateLine(drawPosition);
 				colorRect.xMax -= 20f;
@@ -393,8 +418,7 @@ namespace Ami.BroAudio.Editor.Setting
 		private void DrawInfo(Rect drawPosition)
 		{
             DrawEmptyLine(2);
-            EditorGUI.SelectableLabel(GetRectAndIterateLine(drawPosition), CopyrightText, GUIStyleHelper.Instance.MiddleCenterText);
-            EditorGUI.SelectableLabel(GetRectAndIterateLine(drawPosition), AllRightsReserved, GUIStyleHelper.Instance.MiddleCenterText);
+            EditorGUI.SelectableLabel(GetRectAndIterateLine(drawPosition), _instruction.GetText(Instruction.Copyright), GUIStyleHelper.Instance.MiddleCenterText);
 
 			DrawEmptyLine(1);
 			var linkStyle = new GUIStyle(EditorStyles.linkLabel);
@@ -407,7 +431,7 @@ namespace Ami.BroAudio.Editor.Setting
 			EditorGUIUtility.AddCursorRect(linkRect, MouseCursor.Link);
 
 			DrawEmptyLine(1);
-            if (GUI.Button(GetRectAndIterateLine(drawPosition),"Reset To Factory Settings"))
+            if (GUI.Button(GetRectAndIterateLine(drawPosition),ResetSettingButtonText))
 			{
 				GlobalSetting.ResetToFactorySettings();
 			}
@@ -415,7 +439,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawAssetOutputPath(Rect drawPosition)
 		{
-			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Asset Output Path", GUIStyleHelper.Instance.MiddleCenterRichText);
+			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AssetOutputPathLabel, GUIStyleHelper.Instance.MiddleCenterRichText);
 
 			GUIStyle style = EditorStyles.objectField;
 			style.alignment = TextAnchor.MiddleCenter;
@@ -425,11 +449,11 @@ namespace Ami.BroAudio.Editor.Setting
 			if (GUI.Button(rect, new GUIContent(AssetOutputPath), style))
 			{
 				string openPath = AssetOutputPath;
-				if (!System.IO.Directory.Exists(GetFullPath(openPath)))
+				if (!Directory.Exists(GetFullPath(openPath)))
 				{
 					openPath = Application.dataPath;
 				}
-				string newPath = UnityEditor.EditorUtility.OpenFolderPanel(AssetOutputPathPanelTtile,openPath , "");
+				string newPath = EditorUtility.OpenFolderPanel(_instruction.GetText(Instruction.AssetOutputPathPanelTtile),openPath , "");
 				if (!string.IsNullOrEmpty(newPath))
 				{
 					if (IsInProjectFolder(newPath))

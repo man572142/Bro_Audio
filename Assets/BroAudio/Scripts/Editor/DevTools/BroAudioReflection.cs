@@ -1,44 +1,30 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.Audio;
-using System.Linq;
 using static Ami.Extension.ReflectionExtension;
+using static Ami.BroAudio.BroLog;
 
 namespace Ami.Extension
 {
 	public static class BroAudioReflection
 	{
-		public const string LogTitle = "[BroAudio_DevTool]";
-		public const string MainTrackName = "Main";
-		public const string GenericTrackName = "Track";
+		public const string SendExposeParameterSuffix = "_Send";
 		public const string DefaultSnapshot = "Snapshot";
 		public const string SendEffectParameter = "Send";
 		public const string AttenuationEffectParameter = "Attenuation";
-		public const float MinDecibelVolume = -80f;
-		public const string SendTargetParameter = "sendTarget";
+
+		public const string SendTargetProperty = "sendTarget";
 		public const string ColorIndexParameter = "userColorIndex";
-		public const string WetMixParameter = "enableWetMix";
+		public const string WetMixProperty = "enableWetMix";
 
-		public static AudioMixerGroup DuplicateBroAudioMixerGroup(AudioMixer mixer)
+		public static AudioMixerGroup DuplicateBroAudioTrack(AudioMixer mixer, AudioMixerGroup mainTrack, AudioMixerGroup sourceTrack, string trackName)
 		{
-			// Using [DuplicateGroupRecurse] method on AudioMixerController will cause some unexpected result. (at least i can't solve)
-			// It's safer to create a new one and copy the setting manually.
-
-			AudioMixerGroup mainTrack = mixer.FindMatchingGroups(MainTrackName)?.FirstOrDefault();
-			AudioMixerGroup[] tracks = mixer.FindMatchingGroups(GenericTrackName);
-			int tracksCount = tracks.Length;
-			if(mainTrack == default || tracks == default)
-			{
-				Debug.LogError($"{LogTitle} Create new mixer group is failed");
-				return null;
-			}
+			// Using [DuplicateGroupRecurse] method on AudioMixerController will cause some unexpected result.
+			// Create a new one and copy the setting manually might be better.
 
 			AudioClassReflectionHelper reflection = new AudioClassReflectionHelper();
-			string trackName = GenericTrackName + $"{tracksCount + 1}";
 
 			AudioMixerGroup newGroup = ExecuteMethod("CreateNewGroup", new object[] { trackName, false }, reflection.MixerClass, mixer) as AudioMixerGroup;
 			if (newGroup != null)
@@ -46,13 +32,34 @@ namespace Ami.Extension
 				ExecuteMethod("AddChildToParent", new object[] { newGroup, mainTrack }, reflection.MixerClass, mixer);
 				ExecuteMethod("AddGroupToCurrentView", new object[] { newGroup }, reflection.MixerClass, mixer);
 				ExecuteMethod("OnSubAssetChanged", null, reflection.MixerClass, mixer);
-
-				SetValueForVolume(mixer, reflection, newGroup);
-
-				CopyColorIndex(tracks.Last(), newGroup, reflection);
-				CopySendEffect(tracks.Last(), newGroup, reflection);
+				CopyMixerGroupSetting(sourceTrack, newGroup, trackName, reflection);
 			}
 			return newGroup;
+		}
+
+		private static void CopyMixerGroupSetting(AudioMixerGroup source, AudioMixerGroup target, string trackName, AudioClassReflectionHelper reflection)
+		{
+			CopyColorIndex(source, target, reflection);
+			SetValueForVolume(target.audioMixer, reflection, target);
+
+			if (TryGetGUIDForVolume(reflection.MixerGroupClass, target, out GUID volGUID))
+			{
+				object volParaPath = CreateParameterPathInstance("AudioGroupParameterPath", target, volGUID);
+				CustomParameterExposer.AddExposedParameter(trackName, volParaPath, volGUID, target.audioMixer, reflection);
+			}
+
+			object effect = CopySendEffect(source, target, reflection);
+			if (TryGetGUIDForMixLevel(reflection.EffectClass, effect, out GUID effectGUID))
+			{
+				object effectParaPath = CreateParameterPathInstance("AudioEffectParameterPath", target, effect, effectGUID);
+				CustomParameterExposer.AddExposedParameter(trackName + SendExposeParameterSuffix, effectParaPath, effectGUID, target.audioMixer, reflection);
+			}
+		}
+
+		private static object CreateParameterPathInstance(string className, params object[] parameters)
+		{
+			Type type = AudioClassReflectionHelper.GetUnityAudioEditorClass(className);
+			return CreateNewObjectWithReflection(type, parameters);
 		}
 
 		private static void CopyColorIndex(AudioMixerGroup sourceGroup, AudioMixerGroup targetGroup, AudioClassReflectionHelper reflection)
@@ -61,26 +68,28 @@ namespace Ami.Extension
 			SetProperty(ColorIndexParameter, reflection.MixerGroupClass, targetGroup, colorIndex);
 		}
 
-		public static void CopySendEffect(AudioMixerGroup sourceGroup, AudioMixerGroup targetGroup, AudioClassReflectionHelper reflection)
+		private static object CopySendEffect(AudioMixerGroup sourceGroup, AudioMixerGroup targetGroup, AudioClassReflectionHelper reflection)
 		{
 			if (TryGetEffect(sourceGroup, SendEffectParameter, reflection,out object sourceSendEffect))
 			{
-				var sendTarget = GetProperty<object>(SendTargetParameter, reflection.EffectClass, sourceSendEffect);
+				var sendTarget = GetProperty<object>(SendTargetProperty, reflection.EffectClass, sourceSendEffect);
 				var clonedEffect = ExecuteMethod("CopyEffect", new object[] { sourceSendEffect }, reflection.MixerClass, sourceGroup.audioMixer);
-				SetSendTarget(clonedEffect, sendTarget, reflection.EffectClass);
-				EnableSendWetMix(clonedEffect, reflection.EffectClass);
+				SetProperty(SendTargetProperty, reflection.EffectClass, clonedEffect, sendTarget);
+				SetProperty(WetMixProperty, reflection.EffectClass, clonedEffect, true);
 				ExecuteMethod("InsertEffect", new object[] { clonedEffect, 0 }, reflection.MixerGroupClass, targetGroup);
+				return clonedEffect;
 			}
+			return null;
 		}
 
 		private static bool TryGetEffect(AudioMixerGroup mixerGroup,string targetEffectName ,AudioClassReflectionHelper reflection,out object result)
 		{
 			result = null;
-			object[] effects = GetAllEffects(reflection.MixerGroupClass, mixerGroup);
+			object[] effects = GetProperty<object[]>("effects", reflection.MixerGroupClass, mixerGroup);
 
 			foreach (var effect in effects)
 			{
-				string effectName = GetEffectName(reflection.EffectClass, effect);
+				string effectName = GetProperty<string>("effectName", reflection.EffectClass, effect);
 				if (effectName == targetEffectName)
 				{
 					result = effect;
@@ -89,42 +98,36 @@ namespace Ami.Extension
 			return result != null;
 		}
 
-		private static void EnableSendWetMix(object sendEffect,Type effectClass)
-		{
-			SetProperty(WetMixParameter, effectClass, sendEffect, true);
-		}
-
-		private static void SetSendTarget(object sendEffect, object value,Type effectClass)
-		{
-			SetProperty(SendTargetParameter, effectClass, sendEffect, value);
-		}
-
-		private static object[] GetAllEffects(Type mixerGroupClass, AudioMixerGroup mixerGroup)
-		{
-			return GetProperty<object[]>("effects", mixerGroupClass, mixerGroup);
-		}
-
-		private static string GetEffectName(Type effectClass, object effect)
-		{
-			return GetProperty<string>("effectName", effectClass, effect);
-		}
-
 		private static void SetValueForVolume(AudioMixer mixer, AudioClassReflectionHelper reflection, AudioMixerGroup newGroup)
 		{
 			var snapshot = mixer.FindSnapshot(DefaultSnapshot);
-			ExecuteMethod("SetValueForVolume", new object[] { mixer, snapshot, MinDecibelVolume }, reflection.MixerGroupClass, newGroup);
+			ExecuteMethod("SetValueForVolume", new object[] { mixer, snapshot, AudioConstant.MinDecibelVolume }, reflection.MixerGroupClass, newGroup);
 		}
 
-		private static void SetValueForMixLevel(Type effectClass, object effect, AudioMixer mixer, float value)
+		private static bool TryGetGUIDForVolume(Type mixerGroupClass,AudioMixerGroup mixerGroup,out GUID guid)
 		{
-			var snapshot = mixer.FindSnapshot(DefaultSnapshot);
-			ExecuteMethod("SetValueForMixLevel", new object[] { mixer, snapshot, value }, effectClass, effect);
+			guid = default;
+			object obj = ExecuteMethod("GetGUIDForVolume", ReflectionExtension.Void, mixerGroupClass, mixerGroup);
+			return TryConvertGUID(obj, ref guid);
+		}
+		private static bool TryGetGUIDForMixLevel(Type effectClass, object effect, out GUID guid)
+		{
+			guid = default;
+			object obj = ExecuteMethod("GetGUIDForMixLevel", ReflectionExtension.Void, effectClass, effect);
+			return TryConvertGUID(obj, ref guid);
 		}
 
-		private static void SetValueForParameter(Type effectClass, object effect, AudioMixer mixer, string parameterName,float value)
+		private static bool TryConvertGUID(object obj, ref GUID guid)
 		{
-			var snapshot = mixer.FindSnapshot(DefaultSnapshot);
-			ExecuteMethod("SetValueForParameter", new object[] { mixer, snapshot, parameterName,value }, effectClass, effect);
+			try
+			{
+				guid = (GUID)obj;
+			}
+			catch (InvalidCastException)
+			{
+				LogError($"Cast GUID failed! object :{obj}");
+			}
+			return guid != default && !guid.Empty();
 		}
-	} 
+	}
 }

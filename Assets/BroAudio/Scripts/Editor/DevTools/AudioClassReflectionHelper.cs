@@ -64,5 +64,11 @@ namespace Ami.Extension
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
 			return unityEditorAssembly?.GetType($"UnityEditor.Audio.{className}");
 		}
+
+		public static Type GetUnityEditorClass(string className)
+		{
+			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
+			return unityEditorAssembly?.GetType($"UnityEditor.{className}");
+		}
 	}
 }

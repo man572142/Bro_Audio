@@ -247,7 +247,7 @@ namespace Ami.BroAudio.Runtime
 			string paraName = GetEffectParameterName(effectType);
 			if (!_mixer.GetFloat(paraName, out value))
 			{
-				LogError($"Can't get exposed parameter[{paraName}] Please re-import BroAudioMixer");
+				LogError($"Can't get exposed parameter[{paraName}] Please re-import {BroName.MixerName}");
 				return false;
 			}
 			return true;

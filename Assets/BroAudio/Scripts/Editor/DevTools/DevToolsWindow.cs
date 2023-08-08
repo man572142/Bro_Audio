@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.Audio;
 using System.Linq;
+using static Ami.BroAudio.BroLog;
+using static Ami.BroAudio.BroName;
 
 namespace Ami.Extension
 {
@@ -14,15 +16,11 @@ namespace Ami.Extension
 		public const string Confirm = "Yes";
 		public const string Cancel = "No";
 
-		public const string Function_CreateNewAudioMixerGroup = "Create New Audio Mixer Group with BroAuio Settings";
-		public const string Function_ExposeSendLevel = "Expose All Send Effect Mix Level";
-		public const string Function_EnableSendWetMix = "Enable All Send Wet Mix";
-		public const string Function_SetSendLevel = "Set All Send Wet Mix Level";
-
+		public const string Function_CreateNewAudioMixerGroup = "Create New BroAuio Track";
 
 		private AudioMixer _targetMixer = null;
 
-		[MenuItem("BroAudio/Dev Only")]
+		//[MenuItem("BroAudio/Dev Only")]
 		public static void ShowWindow()
 		{
 			EditorWindow window = GetWindow(typeof(DevToolsWindow));
@@ -46,31 +44,33 @@ namespace Ami.Extension
 			}
 
 			var buttonHeight = GUILayout.Height(EditorGUIUtility.singleLineHeight * 2f);
-			DuplicateTrackAndCopySetting(buttonHeight);
+			DuplicateOneTrackAndCopySetting(buttonHeight);
 
 			EditorGUILayout.Space();
-
-			if(GUILayout.Button("Test", buttonHeight))
-			{
-				
-			}
 		}
 
-		private void DuplicateTrackAndCopySetting(GUILayoutOption buttonHeight)
+		private void DuplicateOneTrackAndCopySetting(GUILayoutOption buttonHeight)
 		{
 			if (GUILayout.Button(Function_CreateNewAudioMixerGroup, buttonHeight) && DisplayDialog(Function_CreateNewAudioMixerGroup))
 			{
-				 _targetMixer.FindMatchingGroups(BroAudioReflection.GenericTrackName);
+				AudioMixerGroup mainTrack = _targetMixer.FindMatchingGroups(MainTrackName)?.FirstOrDefault();
+				AudioMixerGroup[] tracks = _targetMixer.FindMatchingGroups(GenericTrackName);
+				int tracksCount = tracks.Length;
+				if (mainTrack == default || tracks == default)
+				{
+					LogError($"Can't get the Main track or other BroAudio track");
+					return;
+				}
 
-				var newGroup = BroAudioReflection.DuplicateBroAudioMixerGroup(_targetMixer);
+				string trackName = $"{GenericTrackName}{tracksCount + 1}";
+				BroAudioReflection.DuplicateBroAudioTrack(_targetMixer,mainTrack,tracks.Last(), trackName);
 			}
 		}
+
 
 		private bool DisplayDialog(string functionName)
 		{
 			return EditorUtility.DisplayDialog(DialogTitle, string.Format(DialogMessage, functionName), Confirm, Cancel);
 		}
-
 	}
-
 }

@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e3d9656167abb84bbe211433938026f, type: 3}
+  m_Name: BroInstruction
+  m_EditorClassIdentifier: 
+  SettingFileMissingText: Setting asset file is missing! please relocate the file
+    to any [Resource/Editor] folder or recreate a new one
+  AssetOutputPathPanelTtile: Select BroAudio auto-generated asset file's output folder
+  HaasEffectTooltipText: "If the same sound is played repeatedly in a very short
+    period of time (e.g. playing it every other frame). It may cause some quality
+    loss or unexpected behavior due to the nature of Comb Filtering (or Hass Effect).
+    \n\nYou can set it to 0 to ignore this feature, or any other shorter value as
+    needed."
+  TracksAndVoicesNotMatchWarning: The {0}'s tracks count is less than the {1} of
+    your current Project Settings! You should add more tracks by clicking the button
+    below, or set it back to 32 (Unity's default setting) in {2}
+  AddTracksConfirmationDialog: 'This action cannot be undone!  Please check the following
+    condition before you proceed.
+
+
+    1. Back up the BroAudioMixer.asset file
+    if you''ve modified it for your own needs
+
+    2. The process will duplicate
+    the last track of the BroAudioMixer. Make sure it''s at its original setting.'
+  AudioVoicesToolTip: Max Real Voices will determine how many sounds can be heard
+    at the same time by Unity's Audio Engine. The track count of BroAudioMixer should
+    match this setting to effectively control all the voices.
+  Copyright: 'Copyright 2022-2023 CheHsiang Weng (Ami).
+
+    All rights reserved.'
+  ClipEditorConfirmationDialog: Changes will be saved to the file permanently, and
+    they cannot be undone. Would you like to proceed?

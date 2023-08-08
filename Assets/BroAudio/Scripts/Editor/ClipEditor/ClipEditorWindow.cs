@@ -10,7 +10,6 @@ namespace Ami.BroAudio.Editor
 	{
 		public const string SaveFilePanelTitle = "Save as a new file";
 		public const string ConfirmOverwriteTitle = "Confirm overwrite";
-		public const string ConfirmOverwriteMessage = "Changes will be saved to the file permanently, and they cannot be undone. Would you like to proceed?";
 	
 		public const float Gap = 50f;
 		public const int DefaultVolumeOption = 2;
@@ -28,6 +27,7 @@ namespace Ami.BroAudio.Editor
 		private bool _isReverse = false;
 
 		private string _currSavingFilePath = null;
+		private BroInstructionHelper _instruction = new BroInstructionHelper();
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 5f;
 
 		public bool HasEdited
@@ -196,7 +196,7 @@ namespace Ami.BroAudio.Editor
 				string path = AssetDatabase.GetAssetPath(TargetClip);
 				string fullFilePath = BroEditorUtility.GetFullPath(path);
 
-				if (File.Exists(fullFilePath) && EditorUtility.DisplayDialog(ConfirmOverwriteTitle,ConfirmOverwriteMessage,"Yes","No"))
+				if (File.Exists(fullFilePath) && EditorUtility.DisplayDialog(ConfirmOverwriteTitle, _instruction.GetText(Instruction.ClipEditorConfirmationDialog), "Yes","No"))
 				{
 					SaveClip(fullFilePath);
 				}

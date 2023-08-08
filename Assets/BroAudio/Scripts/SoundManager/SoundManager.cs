@@ -7,6 +7,7 @@ using Ami.Extension;
 using static Ami.BroAudio.Utility;
 using static Ami.Extension.CoroutineExtension;
 using static Ami.BroAudio.BroLog;
+using static Ami.BroAudio.BroName;
 using System.Linq;
 using System;
 
@@ -40,9 +41,6 @@ namespace Ami.BroAudio.Runtime
 
         public static SoundManager Instance = null;
 
-        public const string MasterTrackName = "Master";
-        public const string GenericTrackNamePrefix = "Track";
-        public const string MixerName = "BroAudioMixer";
         public const string AudioPlayerPrefabName = "AudioPlayer";
 
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
@@ -80,7 +78,7 @@ namespace Ami.BroAudio.Runtime
                 return;
 			}
 
-            AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups(GenericTrackNamePrefix);
+            AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups(GenericTrackName);
             _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,transform,Setting.DefaultAudioPlayerPoolSize, mixerGroups);
 
 			InitBank();

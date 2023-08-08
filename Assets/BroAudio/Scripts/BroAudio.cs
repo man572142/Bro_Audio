@@ -121,15 +121,16 @@ namespace Ami.BroAudio
         /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
         public static void SetVolume(float vol, int id, float fadeTime) 
             => SoundManager.Instance.SetVolume(vol, id, fadeTime);
-		#endregion
+        #endregion
 
-		#region Effect
-		/// <summary>
-		/// Set effect for all audio
-		/// </summary>
-		/// <param name="effect"></param>
-		/// <returns></returns>
-		public static IAutoResetWaitable SetEffect(EffectParameter effect) 
+#if !UNITY_WEBGL
+#region Effect
+        /// <summary>
+        /// Set effect for all audio
+        /// </summary>
+        /// <param name="effect"></param>
+        /// <returns></returns>
+        public static IAutoResetWaitable SetEffect(EffectParameter effect) 
             => SoundManager.Instance.SetEffect(effect);
 
         /// <summary>
@@ -140,6 +141,7 @@ namespace Ami.BroAudio
         /// <returns></returns>
         public static IAutoResetWaitable SetEffect(EffectParameter effect, BroAudioType audioType)
             => SoundManager.Instance.SetEffect(audioType,effect);
-		#endregion
+#endregion
+#endif
 	}
 }

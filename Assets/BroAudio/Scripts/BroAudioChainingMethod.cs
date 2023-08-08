@@ -32,7 +32,7 @@ namespace Ami.BroAudio
 		public static IMusicPlayer SetTransition(this IMusicPlayer player, Transition transition, StopMode stopMode, float overrideFade)
 			=> player?.SetTransition(transition, stopMode, overrideFade);
 
-
+#if !UNITY_WEBGL
 		public static IPlayerEffect AsInvader(this IAudioPlayer player) 
 			=> player?.AsInvader();
 		public static IPlayerEffect AsInvader(this IMusicPlayer player)
@@ -64,6 +64,7 @@ namespace Ami.BroAudio
 		/// <returns></returns>
 		public static IPlayerEffect HighPassOthers(this IPlayerEffect player, float freq = HighPassFrequence, float fadeTime = FadeTime_Quick) 
 			=> player?.HighPassOthers(freq,fadeTime);
+#endif
 
 	}
 

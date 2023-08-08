@@ -28,7 +28,7 @@ namespace Ami.BroAudio.Runtime
         public float TrackVolumeBeforeMute { get; private set; } = DefaultTrackVolume;
 
         /// <summary>
-        /// ¼½©ñClipªº­µ¶q¡A¨Ì¤£¦PªºClip¦³¤£¦P³]©w¡A¦ÓFadeIn/FadeOut¤]¥u§@¥Î¦b¦¹­È
+        /// ï¿½ï¿½ï¿½ï¿½Clipï¿½ï¿½ï¿½ï¿½ï¿½qï¿½Aï¿½Ì¤ï¿½ï¿½Pï¿½ï¿½Clipï¿½ï¿½ï¿½ï¿½ï¿½Pï¿½]ï¿½wï¿½Aï¿½ï¿½FadeIn/FadeOutï¿½]ï¿½uï¿½@ï¿½Î¦bï¿½ï¿½ï¿½ï¿½
         /// </summary>
         public float ClipVolume
         {
@@ -36,12 +36,16 @@ namespace Ami.BroAudio.Runtime
             private set
             {
                 _clipVolume = value;
+#if UNITY_WEBGL
+                WebGLSetVolume();
+#else
                 MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel(true);
+#endif
             }
         }
 
         /// <summary>
-        /// ­µ­yªº­µ¶q¡A¤]¥iºâ¬O¦¹Playerªº­µ¶q¡A§@¥Î¬Û·í©ó²V­µªºFader
+        /// ï¿½ï¿½ï¿½yï¿½ï¿½ï¿½ï¿½ï¿½qï¿½Aï¿½]ï¿½iï¿½ï¿½Oï¿½ï¿½Playerï¿½ï¿½ï¿½ï¿½ï¿½qï¿½Aï¿½@ï¿½Î¬Û·ï¿½ï¿½ï¿½Vï¿½ï¿½ï¿½ï¿½Fader
         /// </summary>
         public float TrackVolume
         {
@@ -49,12 +53,16 @@ namespace Ami.BroAudio.Runtime
             private set
             {
                 _trackVolume = value;
+#if UNITY_WEBGL
+                WebGLSetVolume();
+#else
                 MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel(true);
+#endif
             }
         }
 
         /// <summary>
-        /// MixerDecibelVolume ¹ê»Ú¦bAudioMixer¤Wªº¤À¨©¼Æ
+        /// MixerDecibelVolume ï¿½ï¿½Ú¦bAudioMixerï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         /// </summary>
         public float MixerDecibelVolume
         {
@@ -122,7 +130,6 @@ namespace Ami.BroAudio.Runtime
 			}
 
             float startVol = GetVol();
-            //Ease ease = startVol < targetVol ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
 
             IEnumerable<float> volumes = GetLerpValuesPerFrame(startVol, targetVol, duration, ease);
             if (volumes != null)
@@ -142,5 +149,12 @@ namespace Ami.BroAudio.Runtime
             _mixerDecibelVolume = DefaultMixerDecibelVolume;
             TrackVolumeBeforeMute = DefaultTrackVolume;
         }
+
+#if UNITY_WEBGL
+        private void WebGLSetVolume()
+        {
+            AudioSource.volume = AudioExtension.ClampNormalize(_clipVolume * _trackVolume);
+        }
+#endif
     }
 }

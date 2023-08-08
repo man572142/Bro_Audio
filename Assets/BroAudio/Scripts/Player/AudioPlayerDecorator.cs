@@ -35,24 +35,9 @@ namespace Ami.BroAudio.Runtime
 
 		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Player.SetVolume(vol, fadeTime);
 		IMusicPlayer IMusicDecoratable.AsBGM() => Player.AsBGM();
+#if !UNITY_WEBGL
 		IPlayerEffect IEffectDecoratable.AsInvader() => Player.AsInvader();
+#endif
 		IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => Player;
-
-		//public virtual void Play(int id,BroAudioClip clip, PlaybackPreference pref)
-		//{
-		//	Player.Play(id,clip,pref);
-		//}
-
-		//public virtual void Stop(float fadeOut,Action onFinishStopping)
-		//{
-		//	Player.Stop(fadeOut,onFinishStopping);
-		//}
-		//#region Stop Overloads
-		//public virtual void Stop() => Stop(UseClipFadeSetting);
-		//public virtual void Stop(float fadeOut) => Stop(fadeOut, null);
-		//public virtual void Stop(Action onFinishStopping) => Stop(UseClipFadeSetting,onFinishStopping);
-		//#endregion
-
-
 	}
 }

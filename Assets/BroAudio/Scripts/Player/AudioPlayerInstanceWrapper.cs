@@ -33,7 +33,9 @@ namespace Ami.BroAudio
 
 		IMusicPlayer IMusicDecoratable.AsBGM() => IsAvailable() ? Instance.AsBGM() : null;
 
+#if !UNITY_WEBGL
 		IPlayerEffect IEffectDecoratable.AsInvader() => IsAvailable() ? Instance.AsInvader() : null;
+#endif
 
 		IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => IsAvailable() ? Instance.GetPlaybackControl() : null;
 

@@ -97,7 +97,12 @@ namespace Ami.BroAudio.Runtime
         }
 
         public void SetEffect(EffectType effect,SetEffectMode mode)
-		{ 
+		{
+            if(effect == EffectType.None)
+            {
+                return;
+            }
+
 			switch (mode)
 			{
 				case SetEffectMode.Add:
@@ -134,10 +139,13 @@ namespace Ami.BroAudio.Runtime
         {
             return GetDecorator<MusicPlayer>();
         }
+
+#if !UNITY_WEBGL
         IPlayerEffect IEffectDecoratable.AsInvader()
         {
             return GetDecorator<AudioPlayerEffect>();
         }
+#endif
 
         private T GetDecorator<T>() where T : AudioPlayerDecorator, new()
         {

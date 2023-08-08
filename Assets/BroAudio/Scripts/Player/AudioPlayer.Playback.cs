@@ -82,7 +82,6 @@ namespace Ami.BroAudio.Runtime
 			{
                 yield return new WaitForSeconds(pref.Delay);
             }
-
             AudioSource.clip = clip.AudioClip;
             VolumeControl fader = VolumeControl.Clip;
             ClipVolume = 0f;
@@ -122,13 +121,15 @@ namespace Ami.BroAudio.Runtime
                 }
                 #endregion
 
-                if(pref.IsSeamlessLoop)
+                
+                if (pref.IsSeamlessLoop)
 				{
                     pref.ApplySeamlessFade();
 				}
-
+                
                 #region FadeOut
                 float endTime = AudioSource.clip.length - clip.EndPosition;
+
                 if (HasFading(clip.FadeOut, pref.FadeOut, out float fadeOut))
                 {
                     yield return new WaitUntil(() => (endTime - AudioSource.time) <= fadeOut);
@@ -140,7 +141,7 @@ namespace Ami.BroAudio.Runtime
                 }
                 else
                 {
-                    yield return new WaitUntil(() => AudioSource.time >= endTime);
+                    yield return new WaitUntil(() => AudioSource.time >= endTime || !AudioSource.isPlaying);
                     OnFinishOneRound(clip, pref);
                 }
                 #endregion

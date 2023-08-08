@@ -31,7 +31,7 @@ namespace Ami.BroAudio.Runtime
         public bool IsStopping { get; private set; }
         public bool IsFadingOut { get; private set; }
         public bool IsFadingIn { get; private set; }
-        public int ID { get; private set; }
+        public int ID { get; private set; } = -1;
         public EffectType CurrentActiveEffects { get; private set; } = EffectType.None;
         public string VolumeParaName 
         {

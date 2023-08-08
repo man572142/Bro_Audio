@@ -47,13 +47,18 @@ namespace Ami.BroAudio
 		{
 			Type = type;
 
-			Value = type switch
+			switch (type)
 			{
-				EffectType.Volume => AudioConstant.FullVolume,
-				EffectType.LowPass => BroAdvice.LowPassFrequence,
-				EffectType.HighPass => BroAdvice.HighPassFrequence,
-				_ => 0f,
-			};
+				case EffectType.Volume:
+					Value = AudioConstant.FullVolume;
+					break;
+				case EffectType.LowPass:
+					Value = BroAdvice.LowPassFrequence;
+					break;
+				case EffectType.HighPass:
+					Value = BroAdvice.HighPassFrequence;
+					break;
+			}
 		}
 	}
 }

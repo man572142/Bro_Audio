@@ -40,16 +40,24 @@ namespace Ami.BroAudio.Demo
 
 		private float GetSliderValue(BroAudioType audioType)
 		{
-			return audioType switch
+			switch (audioType)
 			{
-				BroAudioType.Music => _musicVol.value,
-				BroAudioType.UI => _uiVol.value,
-				BroAudioType.Ambience => _ambVol.value,
-				BroAudioType.SFX => _sfxVol.value,
-				BroAudioType.VoiceOver => _voiceVol.value,
-				BroAudioType.All => _masterVol.value,
-				_ => throw new System.NotImplementedException(),
-			};
+				case BroAudioType.Music:
+					return _musicVol.value;
+				case BroAudioType.UI:
+					return _uiVol.value;
+				case BroAudioType.Ambience:
+					return _ambVol.value;
+				case BroAudioType.SFX:
+					return _sfxVol.value;
+				case BroAudioType.VoiceOver:
+					return _voiceVol.value;
+				case BroAudioType.All:
+					return _masterVol.value;
+				default:
+					BroLog.LogError($"Can't get value from {audioType}");
+					return -1f;
+			}
 		}
 	}
 

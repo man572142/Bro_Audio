@@ -30,12 +30,15 @@ public class Sample : MonoBehaviour
 
 	private AudioID GetCurrentSideAudioID()
 	{
-		return _tape.CurrentSide switch
+		switch (_tape.CurrentSide)
 		{
-			CassetteTape.Side.A => _musicA,
-			CassetteTape.Side.B => _musicB,
-			_ => throw new NotImplementedException(),
-		};
+			case CassetteTape.Side.A:
+				return _musicA;
+			case CassetteTape.Side.B:
+				return _musicB;
+			default:
+				return default;
+		}
 	}
 
 	public void FlipSide()

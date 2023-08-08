@@ -52,15 +52,21 @@ namespace Ami.BroAudio.Data
 
 		public Color GetAudioTypeColor(BroAudioType audioType)
 		{
-			return audioType switch
+			switch (audioType)
 			{
-				BroAudioType.Music => MusicColor,
-				BroAudioType.UI => UIColor,
-				BroAudioType.Ambience => AmbienceColor,
-				BroAudioType.SFX => SFXColor,
-				BroAudioType.VoiceOver => VoiceOverColor,
-				_ => default,
-			};
+				case BroAudioType.Music:
+					return MusicColor;
+				case BroAudioType.UI:
+					return UIColor;
+				case BroAudioType.Ambience:
+					return AmbienceColor;
+				case BroAudioType.SFX:
+					return SFXColor;
+				case BroAudioType.VoiceOver:
+					return VoiceOverColor;
+				default:
+					return default;
+			}
 		}
 
 		public void ResetToFactorySettings()
@@ -100,6 +106,6 @@ namespace Ami.BroAudio.Data
             }
         }
 #endif
-    }
+	}
 
 }

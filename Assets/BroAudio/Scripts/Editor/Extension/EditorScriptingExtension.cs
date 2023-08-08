@@ -157,13 +157,17 @@ namespace Ami.Extension
 
 		private static string GetIconName(MessageType messageType)
 		{
-			return messageType switch
+			switch (messageType)
 			{
-				MessageType.Info => "d_console.infoicon",
-				MessageType.Warning => "d_console.warnicon",
-				MessageType.Error => "d_console.erroricon",
-				_ => string.Empty,
-			};
+				case MessageType.Info:
+					return "d_console.infoicon";
+				case MessageType.Warning:
+					return "d_console.warnicon";
+				case MessageType.Error:
+					return "d_console.erroricon";
+				default:
+					return string.Empty;
+			}
 		}
 
 		/// <summary>
@@ -292,6 +296,6 @@ namespace Ami.Extension
 
 			return Mathf.Pow(10,logResult);
 		}
-		
+
 	}
 }

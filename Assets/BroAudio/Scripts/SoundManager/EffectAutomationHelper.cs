@@ -292,24 +292,32 @@ namespace Ami.BroAudio.Runtime
 
 		private string GetEffectParameterName(EffectType effectType)
 		{
-			return effectType switch
+			switch (effectType)
 			{
-				EffectType.Volume => EffectTrackName,
-				EffectType.LowPass => LowPassExposedName,
-				EffectType.HighPass => HighPassExposedName,
-				_ => string.Empty,
-			};
+				case EffectType.Volume:
+					return EffectTrackName;
+				case EffectType.LowPass:
+					return LowPassExposedName;
+				case EffectType.HighPass:
+					return HighPassExposedName;
+				default:
+					return string.Empty;
+			}
 		}
 
 		private float GetEffectDefaultValue(EffectType effectType)
 		{
-			return effectType switch
+			switch (effectType)
 			{
-				EffectType.Volume => AudioConstant.FullDecibelVolume,
-				EffectType.LowPass => AudioConstant.MaxFrequence,
-				EffectType.HighPass => AudioConstant.MinFrequence,
-				_ => -1f,
-			};
+				case EffectType.Volume:
+					return AudioConstant.FullDecibelVolume;
+				case EffectType.LowPass:
+					return AudioConstant.MaxFrequence;
+				case EffectType.HighPass:
+					return AudioConstant.MinFrequence;
+				default:
+					return -1f;
+			}
 		}
-	} 
+	}
 }

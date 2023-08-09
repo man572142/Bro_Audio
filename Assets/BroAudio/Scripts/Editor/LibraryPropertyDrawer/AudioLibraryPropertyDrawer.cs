@@ -173,10 +173,19 @@ namespace Ami.BroAudio.Editor
 			fadeOutProp.floatValue = newFading.FadeOut;
 		}
 
+		private void DrawClipPreview(Rect position, SerializedProperty property, Transport transport, AudioClip audioClip)
+		{
+			SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioLibrary.NameOf_IsShowClipPreview);
+			isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
+			bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
+			if (isShowPreview)
+			{
+				_clipPropHelper.DrawClipPreview(GetRectAndIterateLine(position), transport, audioClip);
+			}
+		}
+
 		private float DrawVolumeSlider(Rect position, GUIContent label, float currentValue,bool isSnap,Action onSwitchBoostMode)
 		{
-			float sliderFullScale = FullVolume / (FullDecibelVolume - MinDecibelVolume / DecibelVoulumeFullScale);
-
 			Rect suffixRect = EditorGUI.PrefixLabel(position, label);
 			if (TrySplitRectHorizontal(suffixRect, new float[] { 0.7f, 0.1f, 0.2f }, 10f, out Rect[] rects))
 			{
@@ -184,29 +193,36 @@ namespace Ami.BroAudio.Editor
 				Rect fieldRect = rects[1];
 				Rect dbLabelRect = rects[2];
 
+#if !UNITY_WEBGL
 				if (BroEditorUtility.GlobalSetting.ShowVUColorOnVolumeSlider)
 				{
 					DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
 				}
 
-				if(isSnap && CanSnap(currentValue))
+				if (isSnap && CanSnap(currentValue))
 				{
 					currentValue = FullVolume;
 				}
 
-				float sliderValue = ConvertToSliderValue(currentValue);
-				float newSliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);		
+				float sliderFullScale = FullVolume / (FullDecibelVolume - MinDecibelVolume / DecibelVoulumeFullScale);
+				DrawFullVolumeSnapPoint(sliderRect, sliderFullScale, isSnap, onSwitchBoostMode);
+
+				float sliderValue = ConvertToSliderValue(currentValue, sliderFullScale);
+				float newSliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
 				bool hasSliderChanged = sliderValue != newSliderValue;
 
-				float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged? ConvertToNomalizedVolume(newSliderValue) : currentValue);
+				float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? ConvertToNomalizedVolume(newSliderValue, sliderFullScale) : currentValue);
 				currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
+#else
+				currentValue = GUI.HorizontalSlider(sliderRect, currentValue, 0f, FullVolume);
+				currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue),0f,FullVolume);
+#endif
 
 				DrawDecibelValueLabel(dbLabelRect, currentValue);
-				DrawFullVolumeSnapPoint(sliderRect, onSwitchBoostMode);
 			}
 			return currentValue;
 
-			void DrawDecibelValueLabel(Rect position, float value)
+			static void DrawDecibelValueLabel(Rect position, float value)
 			{
 				value = Mathf.Log10(value) * 20f;
 				string plusSymbol = value > 0 ? "+" : string.Empty;
@@ -214,19 +230,20 @@ namespace Ami.BroAudio.Editor
 				EditorGUI.LabelField(position, volText);
 			}
 
-			void DrawVUMeter(Rect vuRect, Color maskColor)
+#if !UNITY_WEBGL
+			static void DrawVUMeter(Rect vuRect, Color maskColor)
 			{
 				vuRect.height *= 0.5f;
 				EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent("d_VUMeterTextureHorizontal").image);
 				EditorGUI.DrawRect(vuRect, maskColor);
 			}
 
-			void DrawFullVolumeSnapPoint(Rect sliderPosition, Action onSwitchSnapMode)
+			static void DrawFullVolumeSnapPoint(Rect sliderPosition,float sliderFullScale,bool isSnap ,Action onSwitchSnapMode)
 			{
 				Rect rect = new Rect(sliderPosition);
 				rect.width = 30f;
 				rect.x = sliderPosition.x + sliderPosition.width * (FullVolume / sliderFullScale) - (rect.width * 0.5f) + 1f; // add 1 pixel for more precise position
-				rect.y -= position.height;
+				rect.y -= sliderPosition.height;
 				var icon = EditorGUIUtility.IconContent("SignalAsset Icon");
 				EditorGUI.BeginDisabledGroup(!isSnap);
 				{
@@ -239,7 +256,7 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 
-			float ConvertToSliderValue(float vol)
+			static float ConvertToSliderValue(float vol, float sliderFullScale)
 			{
 				if(vol > FullVolume)
 				{
@@ -250,7 +267,7 @@ namespace Ami.BroAudio.Editor
 				
 			}
 
-			float ConvertToNomalizedVolume(float sliderValue)
+			static float ConvertToNomalizedVolume(float sliderValue,float sliderFullScale)
 			{
 				if(sliderValue > FullVolume)
 				{
@@ -260,25 +277,14 @@ namespace Ami.BroAudio.Editor
 				return sliderValue;
 			}
 
-			bool CanSnap(float value)
+			static bool CanSnap(float value)
 			{
 				float difference = value - FullVolume;
 				bool isInLowVolumeSnappingRange = difference < 0f && difference * -1f <= _lowVolumeSnappingThreshold;
 				bool isInHighVolumeSnappingRange = difference > 0f && difference <= _highVolumeSnappingThreshold;
 				return isInLowVolumeSnappingRange || isInHighVolumeSnappingRange;
 			}
+#endif
 		}
-
-
-		private void DrawClipPreview(Rect position, SerializedProperty property, Transport transport, AudioClip audioClip)
-        {
-            SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioLibrary.NameOf_IsShowClipPreview);
-            isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
-            bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
-            if (isShowPreview)
-            {
-                _clipPropHelper.DrawClipPreview(GetRectAndIterateLine(position), transport, audioClip);
-            }
-        }
     }
 }

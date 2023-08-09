@@ -20,11 +20,11 @@ MonoBehaviour:
     loss or unexpected behavior due to the nature of Comb Filtering (or Hass Effect).
     \n\nYou can set it to 0 to ignore this feature, or any other shorter value as
     needed."
-  TracksAndVoicesNotMatchWarning: The {0}'s tracks count is less than the {1} of
-    your current Project Settings! You should add more tracks by clicking the button
-    below, or set it back to 32 (Unity's default setting) in {2}
-  AddTracksConfirmationDialog: 'This action cannot be undone!  Please check the following
-    condition before you proceed.
+  TracksAndVoicesNotMatchWarning: The {0}'s track count is less than the {1} of your
+    current Project Settings! Click the button below to match them, or set it back
+    to 32 (Unity's default setting) in {2}
+  AddTracksConfirmationDialog: 'This action cannot be undone! Please check the following
+    instructions before you proceed.
 
 
     1. Back up the BroAudioMixer.asset file
@@ -34,7 +34,7 @@ MonoBehaviour:
     the last track of the BroAudioMixer. Make sure it''s at its original setting.'
   AudioVoicesToolTip: Max Real Voices will determine how many sounds can be heard
     at the same time by Unity's Audio Engine. The track count of BroAudioMixer should
-    match this setting to effectively control all the voices.
+    match it to effectively control all the voices.
   Copyright: 'Copyright 2022-2023 CheHsiang Weng (Ami).
 
     All rights reserved.'

@@ -28,7 +28,7 @@ namespace Ami.BroAudio.Runtime
         public float TrackVolumeBeforeMute { get; private set; } = DefaultTrackVolume;
 
         /// <summary>
-        /// ����Clip�����q�A�̤��P��Clip�����P�]�w�A��FadeIn/FadeOut�]�u�@�Φb����
+        /// The playback volume of an audio clip, it's determined by the clip's property settings, such as Fade In/Out.   
         /// </summary>
         public float ClipVolume
         {
@@ -45,7 +45,7 @@ namespace Ami.BroAudio.Runtime
         }
 
         /// <summary>
-        /// ���y�����q�A�]�i��O��Player�����q�A�@�ά۷���V����Fader
+        /// The playback volume of an audio track, it will be set by SetVolume() function.
         /// </summary>
         public float TrackVolume
         {
@@ -62,7 +62,7 @@ namespace Ami.BroAudio.Runtime
         }
 
         /// <summary>
-        /// MixerDecibelVolume ��ڦbAudioMixer�W��������
+        /// The final decibel volume that is set in the mixer.
         /// </summary>
         public float MixerDecibelVolume
         {

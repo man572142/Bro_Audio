@@ -119,12 +119,14 @@ namespace Ami.BroAudio.Runtime
         #region Volume
         public void SetVolume(float vol, BroAudioType targetType, float fadeTime)
 		{
+#if !UNITY_WEBGL
             if(targetType == BroAudioType.All)
 			{
                 SetMasterVolume(vol,fadeTime);
                 return;
 			}
-            else if (targetType == BroAudioType.None)
+#endif
+            if (targetType == BroAudioType.None)
 			{
                 LogWarning($"SetVolume with {targetType} is meaningless");
                 return;
@@ -182,9 +184,9 @@ namespace Ami.BroAudio.Runtime
                 }
             });
         }
-		#endregion
+#endregion
 
-		#region Effect
+        #region Effect
         public IAutoResetWaitable SetEffect(EffectParameter effect)
 		{
             return SetEffect(BroAudioType.All,effect);
@@ -225,7 +227,7 @@ namespace Ami.BroAudio.Runtime
 				}
 			});
 		}
-		#endregion
+        #endregion
 
 		private void GetPlaybackPrefByType(BroAudioType targetType, Action<AudioTypePlaybackPreference> onGetPref)
         {
@@ -287,7 +289,7 @@ namespace Ami.BroAudio.Runtime
             library = null;
             if (id <= 0 || !_audioBank.TryGetValue(id, out library))
             {
-                LogError("The sound is missing or it has never been assigned. No sound will be played");
+                LogError($"The sound is missing or it has never been assigned. No sound will be played. AudioID:{id}");
                 return false;
             }
 

@@ -20,8 +20,10 @@ namespace Ami.BroAudio.Runtime
 		public override AudioPlayer Extract()
 		{
 			AudioPlayer player = base.Extract();
+#if !UNITY_WEBGL
 			player.SetMixer(SoundManager.Instance.Mixer);
 			player.AudioTrack = _audioTrackPool.Extract();
+#endif
 
 			_inUsePlayers ??= new List<AudioPlayer>();
 			_inUsePlayers.Add(player);

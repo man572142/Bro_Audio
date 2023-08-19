@@ -150,10 +150,16 @@ namespace Ami.BroAudio.Runtime
 					return;
 				}
 
-				Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
-				var volumes = AnimationExtension.GetLerpValuesPerFrame(currentVol, targetVol, fadeTime, ease);
-
-				this.StartCoroutineAndReassign(SetMasterVolume(volumes),ref _masterVolumeCoroutine);
+                if(fadeTime != 0f)
+                {
+                    Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
+                    var volumes = AnimationExtension.GetLerpValuesPerFrame(currentVol, targetVol, fadeTime, ease);
+                    this.StartCoroutineAndReassign(SetMasterVolume(volumes), ref _masterVolumeCoroutine);
+                }
+				else
+                {
+                    _broAudioMixer.SetFloat(MasterTrackName, targetVol);
+                }
 			}
 
             IEnumerator SetMasterVolume(IEnumerable<float> volumes)
@@ -279,15 +285,9 @@ namespace Ami.BroAudio.Runtime
         private bool IsPlayable(int id,out IAudioLibrary library)
         {
             library = null;
-            if (id <= 0)
+            if (id <= 0 || !_audioBank.TryGetValue(id, out library))
             {
-                LogError("The sound is missing or it has never been assigned. No Sound will play");
-                return false;
-            }
-
-            if (!_audioBank.TryGetValue(id,out library))
-            {
-                LogError($"AudioID:{id} may not exist ,please check [BroAudio > Library Manager]");
+                LogError("The sound is missing or it has never been assigned. No sound will be played");
                 return false;
             }
 

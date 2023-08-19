@@ -34,7 +34,13 @@ namespace Ami.Extension
 			return $"<size={size}>{text}</size>";
 		}
 
-		public static char ToLower(this char word)
+        public static bool IsEnglishLetter(char word)
+        {
+            return (word >= 65 && word <= 90) || (word >= 97 && word <= 122);
+        }
+
+
+        public static char ToLower(this char word)
 		{
 			if(word >= 65 && word <= 90)
 			{
@@ -61,5 +67,20 @@ namespace Ami.Extension
 
 			return Char.ToUpper(word);
 		}
-	}
+
+        public static string TrimStartAndEnd(this string text)
+        {
+            if (Char.IsWhiteSpace(text[0]))
+            {
+                text = text.TrimStart();
+            }
+            
+			if (Char.IsWhiteSpace(text[text.Length - 1]))
+            {
+                text = text.TrimEnd();
+            }
+
+            return text;
+        }
+    }
 }

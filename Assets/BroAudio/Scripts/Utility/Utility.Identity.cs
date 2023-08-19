@@ -1,5 +1,6 @@
 using System;
 using static Ami.Extension.LoopExtension;
+using static Ami.Extension.StringExtension;
 using static Ami.BroAudio.BroLog;
 using Ami.BroAudio.Data;
 
@@ -104,15 +105,16 @@ namespace Ami.BroAudio
 				return true;
 			}
 
-			if(Char.IsNumber(name[0]))
-			{
-				errorCode = ValidationErrorCode.StartWithNumber;
-				return true;
-			}
+			// Enum generation is deprecated, this limitation is no longer needed 
+			//if(Char.IsNumber(name[0]))
+			//{
+			//	errorCode = ValidationErrorCode.StartWithNumber;
+			//	return true;
+			//}
 
 			foreach (char word in name)
 			{
-				if (!Char.IsNumber(word) && word != '_' && !IsEnglishLetter(word))
+				if (!Char.IsNumber(word) && !Char.IsWhiteSpace(word) && word != '_' && !IsEnglishLetter(word))
 				{
 					errorCode = ValidationErrorCode.ContainsInvalidWord;
 					return true;
@@ -120,11 +122,6 @@ namespace Ami.BroAudio
 			}
 			errorCode = ValidationErrorCode.NoError;
 			return false;
-		}
-
-		public static bool IsEnglishLetter(char word)
-		{
-			return (word >= 65 && word <= 90) || (word >= 97 && word <= 122);
 		}
 
 		public static bool Validate(string name, BroAudioClip[] clips, int id)
@@ -137,7 +134,7 @@ namespace Ami.BroAudio
 
 			if(clips == null || clips.Length == 0)
 			{
-				LogError($"{name} has no audio clips, please assign or delete the library.");
+				LogWarning($"{name} has no audio clips, please assign or delete the library.");
 				return false;
 			}
 

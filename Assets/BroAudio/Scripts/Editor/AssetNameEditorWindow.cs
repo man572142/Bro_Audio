@@ -48,7 +48,7 @@ namespace Ami.BroAudio.Editor
 			
 			if(GUILayout.Button("OK"))
 			{
-				OnConfirm?.Invoke(_libraryName);
+				OnConfirm?.Invoke(_libraryName.TrimStartAndEnd());
 				Close();
 			}
 		}
@@ -77,10 +77,8 @@ namespace Ami.BroAudio.Editor
 					EditorGUILayout.HelpBox("Name already exists!", MessageType.Error);
 					return false;
 				}
-				
 			}
 			return true;
 		}
 	}
-
 }

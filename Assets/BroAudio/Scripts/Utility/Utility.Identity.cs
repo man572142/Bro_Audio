@@ -14,6 +14,7 @@ namespace Ami.BroAudio
 			IsNullOrEmpty,
 			StartWithNumber,
 			ContainsInvalidWord,
+			ContainsWhiteSpace,
 		}
 
 		// 最後一個enum = ALL加1再右移一位
@@ -105,18 +106,23 @@ namespace Ami.BroAudio
 				return true;
 			}
 
-			// Enum generation is deprecated, this limitation is no longer needed 
-			//if(Char.IsNumber(name[0]))
-			//{
-			//	errorCode = ValidationErrorCode.StartWithNumber;
-			//	return true;
-			//}
+			if (Char.IsNumber(name[0]))
+			{
+				errorCode = ValidationErrorCode.StartWithNumber;
+				return true;
+			}
 
 			foreach (char word in name)
 			{
-				if (!Char.IsNumber(word) && !Char.IsWhiteSpace(word) && word != '_' && !IsEnglishLetter(word))
+				if (!Char.IsNumber(word) && word != '_' && !IsEnglishLetter(word) && !Char.IsWhiteSpace(word))
 				{
 					errorCode = ValidationErrorCode.ContainsInvalidWord;
+					return true;
+				}
+
+				if(Char.IsWhiteSpace(word))
+				{
+					errorCode = ValidationErrorCode.ContainsWhiteSpace;
 					return true;
 				}
 			}

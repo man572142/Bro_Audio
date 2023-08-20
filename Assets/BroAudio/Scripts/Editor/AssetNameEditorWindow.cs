@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using Ami.Extension;
+using Ami.BroAudio.Editor.Setting;
 
 namespace Ami.BroAudio.Editor
 {
@@ -16,9 +17,10 @@ namespace Ami.BroAudio.Editor
 
 		private string _libraryName = string.Empty;
 		private GUIStyleHelper _guiStyleHelper = GUIStyleHelper.Instance;
-		
+		private BroInstructionHelper _instruction = null;
 
-		public static void ShowWindow(List<string> usedAssetName,Action<string> onConfirm)
+
+        public static void ShowWindow(List<string> usedAssetName,Action<string> onConfirm)
 		{
 
 			EditorWindow window = GetWindow(typeof(AssetNameEditorWindow));
@@ -32,7 +34,14 @@ namespace Ami.BroAudio.Editor
 			{
 				instance.OnConfirm = onConfirm;
 				instance.UsedAssetsName = usedAssetName;
+				instance.Init();
 			}
+		}
+
+		public void Init()
+		{
+			_instruction ??= new BroInstructionHelper();
+			_instruction.Init();
 		}
 
 		private void OnGUI()
@@ -60,21 +69,24 @@ namespace Ami.BroAudio.Editor
 				switch (code)
 				{
 					case Utility.ValidationErrorCode.IsNullOrEmpty:
-						EditorGUILayout.HelpBox("Please Enter Asset Name", MessageType.Info);
+						EditorGUILayout.HelpBox(_instruction.GetText(Instruction.AssetNaming_IsNullOrEmpty), MessageType.Info);
 						return false;
 					case Utility.ValidationErrorCode.StartWithNumber:
-						EditorGUILayout.HelpBox("Name can't start with a number!", MessageType.Error);
+						EditorGUILayout.HelpBox(_instruction.GetText(Instruction.AssetNaming_StartWithNumber), MessageType.Error);
 						return false;
 					case Utility.ValidationErrorCode.ContainsInvalidWord:
-						EditorGUILayout.HelpBox("Name contains invalid word!", MessageType.Error);
+						EditorGUILayout.HelpBox(_instruction.GetText(Instruction.AssetNaming_ContainsInvalidWords), MessageType.Error);
 						return false;
-				}
+                    case Utility.ValidationErrorCode.ContainsWhiteSpace:
+                        EditorGUILayout.HelpBox(_instruction.GetText(Instruction.AssetNaming_ContainsWhiteSpace), MessageType.Error);
+                        return false;
+                }
 			}
 			else
 			{
 				if (UsedAssetsName.Contains(_libraryName))
 				{
-					EditorGUILayout.HelpBox("Name already exists!", MessageType.Error);
+					EditorGUILayout.HelpBox(_instruction.GetText(Instruction.AssetNaming_IsDuplicated), MessageType.Error);
 					return false;
 				}
 			}

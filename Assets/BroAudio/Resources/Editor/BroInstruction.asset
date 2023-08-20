@@ -40,3 +40,12 @@ MonoBehaviour:
     All rights reserved.'
   ClipEditorConfirmationDialog: Changes will be saved to the file permanently, and
     they cannot be undone. Would you like to proceed?
+  LibraryState_IsNullOrEmpty: 'There are some empty name in asset: {0}!'
+  LibraryState_IsDuplicated: 'Name:{0} is duplicated in asset: {1}'
+  LibraryState_ContainsInvalidWords: 'Name:{0} in asset: {1} has invalid word!'
+  LibraryState_Fine: Everything works great!
+  AssetNaming_IsNullOrEmpty: Please enter an asset name
+  AssetNaming_ContainsWhiteSpace: Naming with whitespace is not recommended
+  AssetNaming_IsDuplicated: Name already exists!
+  AssetNaming_ContainsInvalidWords: Name contains invalid words
+  AssetNaming_StartWithNumber: Name that starts with a number is not recommended

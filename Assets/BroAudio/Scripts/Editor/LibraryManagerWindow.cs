@@ -44,6 +44,7 @@ namespace Ami.BroAudio.Editor
 		private GUIStyle _assetNameTitleStyle = null;
 		private VerticalGapDrawingHelper _gapDrawer = new VerticalGapDrawingHelper();
 		private LibraryIDController _libraryIdController = new LibraryIDController();
+		private BroInstructionHelper _instruction = new BroInstructionHelper();
 
 		private Gradient gradient = new Gradient();
 
@@ -92,8 +93,9 @@ namespace Ami.BroAudio.Editor
 		private void OnEnable()
 		{
 			_allAssetGUIDs = GetGUIDListFromJson();
+			_instruction.Init();
 
-			InitGUIStyle();
+            InitGUIStyle();
 
 			InitEditorDictionary();
 			InitAssetOptionGenericMenu();
@@ -110,7 +112,7 @@ namespace Ami.BroAudio.Editor
 			}	
 		}
 
-		#region Init
+		#region Initialization
 		private void InitGUIStyle()
 		{
 			_assetNameTitleStyle = GUIStyleHelper.Instance.UpperCenterStyle;
@@ -320,19 +322,24 @@ namespace Ami.BroAudio.Editor
 				LibraryState state = editor.GetLibraryState(out string dataName);
 				string assetName = editor.Asset.AssetName.ToBold().SetColor(Color.white);
 				dataName = dataName.ToBold().SetColor(Color.white);
-				switch (state)
+				string text = string.Empty;
+                switch (state)
 				{
 					case LibraryState.HasEmptyName:
-						EditorScriptingExtension.RichTextHelpBox($"There are some empty name in asset: {assetName}!", MessageType.Error);
+                        text = _instruction.GetText(Instruction.LibraryState_IsNullOrEmpty);
+						EditorScriptingExtension.RichTextHelpBox(String.Format(text,assetName), MessageType.Error);
 						break;
 					case LibraryState.HasDuplicateName:
-						EditorScriptingExtension.RichTextHelpBox($"Name:{dataName} is duplicated in asset: {assetName} !", MessageType.Error);
+                        text = _instruction.GetText(Instruction.LibraryState_IsDuplicated);
+                        EditorScriptingExtension.RichTextHelpBox(String.Format(text,dataName,assetName), MessageType.Error);
 						break;
 					case LibraryState.HasInvalidName:
-						EditorScriptingExtension.RichTextHelpBox($"Name:{dataName} in asset: {assetName} has invalid word !", MessageType.Error);
+                        text = _instruction.GetText(Instruction.LibraryState_ContainsInvalidWords);
+                        EditorScriptingExtension.RichTextHelpBox(String.Format(text, dataName, assetName), MessageType.Error);
 						break;
 					case LibraryState.Fine:
-						EditorScriptingExtension.RichTextHelpBox($"Everything works great!", "Toggle Icon");
+                        text = _instruction.GetText(Instruction.LibraryState_Fine);
+                        EditorScriptingExtension.RichTextHelpBox(text, "Toggle Icon");
 						break;
 				}
 			}

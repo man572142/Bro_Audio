@@ -8,17 +8,37 @@ namespace Ami.BroAudio.Editor
 {
 	public enum Instruction
 	{
-		HaasEffectTooltip,
-		SettingFileMissing,
+        // Settings
+        SettingFileMissing,
+        AssetOutputPathPanelTtile,
+
+		// Settings/Audio
+        HaasEffectTooltip,
 		TracksAndVoicesNotMatchWarning,
 		AddTracksConfirmationDialog,
-		AssetOutputPathPanelTtile,
-		ClipEditorConfirmationDialog,
-		Copyright,
-		AudioVoicesToolTip,
-	}
+        AudioVoicesToolTip,
 
-	public class BroInstructionHelper
+        // Settings/Info
+        Copyright,
+
+		// Clip Editor
+        ClipEditorConfirmationDialog,
+
+        // LibraryState
+        LibraryState_IsNullOrEmpty,
+        LibraryState_IsDuplicated,
+        LibraryState_ContainsInvalidWords,
+        LibraryState_Fine,
+
+        // Asset Naming
+        AssetNaming_IsNullOrEmpty,
+        AssetNaming_ContainsWhiteSpace,
+        AssetNaming_IsDuplicated,
+        AssetNaming_ContainsInvalidWords,
+        AssetNaming_StartWithNumber
+    }
+
+    public class BroInstructionHelper
 	{
 		public const string InstructionMissingText = "BroAudio's instruction file is missing. " +
 			"Please reimport the " + InstructionFileName + ".asset file from the package to any Resources/Editor folder";
@@ -43,40 +63,66 @@ namespace Ami.BroAudio.Editor
 			}
 
 			string instructionText = GetInstruction(instruction);
-			return string.IsNullOrWhiteSpace(instructionText) ? MissingText : instructionText;
+			return instructionText;
 		}
 
 		private string GetInstruction(Instruction instruction)
 		{
-			switch (instruction)
-			{
-				case Instruction.HaasEffectTooltip:
-					return _instruction.HaasEffectTooltipText;
+            switch (instruction)
+            {
+                case Instruction.HaasEffectTooltip:
+                    return _instruction.HaasEffectTooltipText;
 
-				case Instruction.SettingFileMissing:
-					return _instruction.SettingFileMissingText;
+                case Instruction.SettingFileMissing:
+                    return _instruction.SettingFileMissingText;
 
-				case Instruction.TracksAndVoicesNotMatchWarning:
-					return _instruction.TracksAndVoicesNotMatchWarning;
+                case Instruction.TracksAndVoicesNotMatchWarning:
+                    return _instruction.TracksAndVoicesNotMatchWarning;
 
-				case Instruction.AddTracksConfirmationDialog:
-					return _instruction.AddTracksConfirmationDialog;
+                case Instruction.AddTracksConfirmationDialog:
+                    return _instruction.AddTracksConfirmationDialog;
 
-				case Instruction.AssetOutputPathPanelTtile:
-					return _instruction.AssetOutputPathPanelTtile;
+                case Instruction.AssetOutputPathPanelTtile:
+                    return _instruction.AssetOutputPathPanelTtile;
 
-				case Instruction.ClipEditorConfirmationDialog:
-					return _instruction.ClipEditorConfirmationDialog;
+                case Instruction.ClipEditorConfirmationDialog:
+                    return _instruction.ClipEditorConfirmationDialog;
 
-				case Instruction.Copyright:
-					return _instruction.Copyright;
+                case Instruction.Copyright:
+                    return _instruction.Copyright;
 
-				case Instruction.AudioVoicesToolTip:
-					return _instruction.AudioVoicesToolTip;
-				default:
-					return MissingText;
-			}
-		}
-	}
+                case Instruction.AudioVoicesToolTip:
+                    return _instruction.AudioVoicesToolTip;
 
+                case Instruction.LibraryState_IsNullOrEmpty:
+                    return _instruction.LibraryState_IsNullOrEmpty;
+
+                case Instruction.LibraryState_IsDuplicated:
+                    return _instruction.LibraryState_IsDuplicated;
+
+                case Instruction.LibraryState_ContainsInvalidWords:
+                    return _instruction.LibraryState_ContainsInvalidWords;
+
+                case Instruction.LibraryState_Fine:
+                    return _instruction.LibraryState_Fine;
+
+                case Instruction.AssetNaming_IsNullOrEmpty:
+                    return _instruction.AssetNaming_IsNullOrEmpty;
+                case Instruction.AssetNaming_ContainsWhiteSpace:
+                    return _instruction.AssetNaming_ContainsWhiteSpace;
+
+                case Instruction.AssetNaming_IsDuplicated:
+                    return _instruction.AssetNaming_IsDuplicated;
+
+                case Instruction.AssetNaming_ContainsInvalidWords:
+                    return _instruction.AssetNaming_ContainsInvalidWords;
+
+                case Instruction.AssetNaming_StartWithNumber:
+                    return _instruction.AssetNaming_StartWithNumber;
+                
+                default:
+                    return MissingText;
+            }
+        }
+    }
 }

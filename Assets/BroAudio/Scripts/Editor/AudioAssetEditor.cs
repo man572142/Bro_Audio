@@ -147,7 +147,7 @@ namespace Ami.BroAudio.Editor
 					_libraryState = LibraryState.HasDuplicateName;
 					return false;
 				}
-				else if (IsInvalidName(data.Name, out var errorCode))
+				else if (IsInvalidName(data.Name, out var errorCode) && errorCode != ValidationErrorCode.ContainsWhiteSpace)
 				{
 					_libraryState = LibraryState.HasInvalidName;
 					return false;

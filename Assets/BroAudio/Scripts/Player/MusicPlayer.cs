@@ -63,8 +63,9 @@ namespace Ami.BroAudio.Runtime
 						break;
 					case Transition.Default:
 					case Transition.OnlyFadeOut:
-						pref.WaitForPrevious(true);
-						StopCurrentMusic(() => pref.WaitForPrevious(false));
+
+						var waiter = pref.CreateWaiter();
+						StopCurrentMusic(waiter.Finish);
 						break;
 				}
 			}

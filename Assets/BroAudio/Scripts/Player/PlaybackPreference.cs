@@ -3,6 +3,7 @@ using Ami.BroAudio.Data;
 using Ami.Extension;
 using static Ami.BroAudio.Runtime.AudioPlayer;
 using static Ami.BroAudio.Utility;
+using System;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -21,7 +22,7 @@ namespace Ami.BroAudio.Runtime
 
 		public float FadeIn { get; private set; }
 		public float FadeOut { get; private set; }
-		public bool HaveToWaitForPrevious { get; private set; }
+		public Waiter PlayerWaiter { get; private set; }
 
 		public PlaybackPreference(IAudioLibrary library,Vector3 position) : this(library)
 		{
@@ -40,12 +41,12 @@ namespace Ami.BroAudio.Runtime
 			SeamlessTransitionTime = UseLibraryManagerSetting;
 			IsSeamlessLoop = false;
 			IsNormalLoop = false;
-			HaveToWaitForPrevious = false;
 			Delay = default;
 			Position = Vector3.negativeInfinity;
 			FollowTarget = null;
+			PlayerWaiter = null;
 
-            BroAudioType audioType = GetAudioType(library.ID);
+			BroAudioType audioType = GetAudioType(library.ID);
 
 			if(PersistentType.HasFlag(audioType))
 			{
@@ -94,12 +95,22 @@ namespace Ami.BroAudio.Runtime
 			FadeOut = SeamlessTransitionTime;
 		}
 
-		public void WaitForPrevious(bool enable)
+		public Waiter CreateWaiter()
 		{
-			HaveToWaitForPrevious = enable;
+			if (PlayerWaiter == null)
+			{
+                PlayerWaiter = new Waiter();
+            }
+			
+			return PlayerWaiter;
 		}
 
-		public bool HasPosition(out Vector3 position)
+        public void DisposeWaiter()
+        {
+            PlayerWaiter = null;
+        }
+
+        public bool HasPosition(out Vector3 position)
 		{
 			position = Position;
 			return !Position.Equals(Vector3.negativeInfinity);

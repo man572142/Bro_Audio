@@ -15,9 +15,16 @@ namespace Ami.BroAudio.Runtime
 		{
 			_getPlayerFunc = getPlayerFunc;
 			_playerWrapper = playerWrapper;
+			_playerWrapper.OnWrapperRecycle += OnRecycle;
 		}
 
-		public void SetPlayer(AudioPlayer player)
+        private void OnRecycle(AudioPlayer player)
+        {
+            _playerWrapper.OnWrapperRecycle -= OnRecycle;
+            player.OnFinishingOneRound -= OnFinishingOneRound;
+        }
+
+        public void SetPlayer(AudioPlayer player)
 		{
 			player.OnFinishingOneRound += OnFinishingOneRound;
 		}

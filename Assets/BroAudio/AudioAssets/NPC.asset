@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a8c0a979f92ae74f8e57de68f441a5a, type: 3}
-  m_Name: Hollow
+  m_Name: NPC
   m_EditorClassIdentifier: 
   Libraries:
-  - <Name>k__BackingField: Yell
-    <ID>k__BackingField: 574156190
+  - <Name>k__BackingField: Villager
+    <ID>k__BackingField: 1192603460
     Clips:
     - AudioClip: {fileID: 8300000, guid: 138057753561787459cddb97dd2e52bc, type: 3}
       Volume: 1
@@ -22,9 +22,10 @@ MonoBehaviour:
       EndPosition: 0
       FadeIn: 0
       FadeOut: 0
-      Weight: 1
+      Weight: 0
+      SnapToFullVolume: 0
     MulticlipsPlayMode: 0
     IsShowClipPreview: 0
     Delay: 0
-  <AssetName>k__BackingField: Hollow
-  _assetGUID: d52edcf0a5ea9ce469a144f89a07aeec
+  <AssetName>k__BackingField: NPC
+  _assetGUID: 43d9fb3fa1ddf0d488c955cbc033a0c7

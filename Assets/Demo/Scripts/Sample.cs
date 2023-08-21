@@ -2,6 +2,7 @@
 using UnityEngine;
 using Ami.BroAudio;
 using System;
+using static Ami.BroAudio.Utility;
 
 public class Sample : MonoBehaviour
 {
@@ -18,13 +19,15 @@ public class Sample : MonoBehaviour
 
 	void Start()
     {
-		BroAudio.Play(_seamlessAmb);
+		//BroAudio.Play(_seamlessAmb);
     }
 
-	// Trigger by button
-	public void PlayMusic()
+
+    // Trigger by button
+    public void PlayMusic()
 	{
 		AudioID currentAudioID = GetCurrentSideAudioID();
+		
 		_currentMusicPlayer = BroAudio.Play(currentAudioID).AsBGM().SetTransition(_transitionMode, 3f);
     }
 
@@ -41,14 +44,15 @@ public class Sample : MonoBehaviour
 		}
 	}
 
-	public void FlipSide()
+    // Trigger by button
+    public void FlipSide()
 	{
 		if(_tape)
 		{
-			StopMusic();
 			_tape.Flip();
-			BroAudio.Play(_flipTapeSFX);
-		}
+			//BroAudio.Play(_flipTapeSFX);
+			PlayMusic();
+        }
 	}
 
 	// Trigger by button
@@ -57,7 +61,7 @@ public class Sample : MonoBehaviour
         BroAudio.Play(_voiceOver);
     }
 
-	// Trigger by button
+	// Also trigger by button
 	public void StopMusic()
 	{
 		BroAudio.Stop(GetCurrentSideAudioID());

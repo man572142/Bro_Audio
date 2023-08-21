@@ -4,11 +4,14 @@ using Ami.BroAudio.Runtime;
 using UnityEngine;
 using Ami.Extension;
 using static Ami.BroAudio.BroLog;
+using System;
 
 namespace Ami.BroAudio
 {
 	public class AudioPlayerInstanceWrapper : InstanceWrapper<AudioPlayer> ,IAudioPlayer
 	{
+		public event Action<AudioPlayer> OnWrapperRecycle;
+
 		public AudioPlayerInstanceWrapper(AudioPlayer instance) : base(instance)
 		{
 			Instance.OnRecycle += OnRecycle;
@@ -23,7 +26,9 @@ namespace Ami.BroAudio
 
 		private void OnRecycle(AudioPlayer player)
 		{
-			Instance.OnRecycle -= OnRecycle;
+			OnWrapperRecycle?.Invoke(player);
+
+            Instance.OnRecycle -= OnRecycle;
 			Instance = null;
 		}
 

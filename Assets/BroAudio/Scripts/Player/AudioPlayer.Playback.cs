@@ -73,15 +73,17 @@ namespace Ami.BroAudio.Runtime
 
         private IEnumerator PlayControl(BroAudioClip clip, PlaybackPreference pref)
         {
-            if (pref.HaveToWaitForPrevious)
+            if (pref.PlayerWaiter != null)
 			{
-                yield return new WaitUntil(() => pref.HaveToWaitForPrevious == false);
+                yield return new WaitUntil(() => pref.PlayerWaiter.IsFinished);
+                pref.DisposeWaiter();
 			}
 
             if (pref.Delay > 0)
 			{
                 yield return new WaitForSeconds(pref.Delay);
             }
+
             AudioSource.clip = clip.AudioClip;
             VolumeControl fader = VolumeControl.Clip;
             ClipVolume = 0f;
@@ -121,7 +123,6 @@ namespace Ami.BroAudio.Runtime
                 }
                 #endregion
 
-                
                 if (pref.IsSeamlessLoop)
 				{
                     pref.ApplySeamlessFade();
@@ -208,9 +209,8 @@ namespace Ami.BroAudio.Runtime
                     yield return Fade(0f, fadeTime, VolumeControl.Clip,SoundManager.FadeOutEase);
                 }
             }
-			#endregion
-
-			switch (stopMode)
+            #endregion
+            switch (stopMode)
 			{
 				case StopMode.Stop:
                     EndPlaying();

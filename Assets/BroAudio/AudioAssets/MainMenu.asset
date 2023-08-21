@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 680bf00f28c5cb040b3225278702641a, type: 3}
+  m_Name: MainMenu
+  m_EditorClassIdentifier: 
+  Libraries:
+  - <Name>k__BackingField: Click and
+    <ID>k__BackingField: 1666
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: c3e560973e51b8343ad349ec68b002d1, type: 3}
+      Volume: 0.8834968
+      StartPosition: 18.76
+      EndPosition: 8.9
+      FadeIn: 0.68
+      FadeOut: 0.83
+      Weight: 0
+      SnapToFullVolume: 0
+    MulticlipsPlayMode: 0
+    IsShowClipPreview: 1
+    Delay: 0
+  <AssetName>k__BackingField: MainMenu
+  _assetGUID: 057ad83a8002b5644b97bf7e26040f63

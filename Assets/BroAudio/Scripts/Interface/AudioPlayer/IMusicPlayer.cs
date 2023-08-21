@@ -7,6 +7,6 @@ namespace Ami.BroAudio
     {
 		public int ID { get; }
 		public bool IsPlaying { get; }
-		internal IMusicPlayer SetTransition(Transition transition,StopMode stopMode,float overrideFade);
+		IMusicPlayer SetTransition(Transition transition,StopMode stopMode,float overrideFade);
 	}
 }

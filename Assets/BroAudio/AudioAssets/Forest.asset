@@ -25,7 +25,7 @@ MonoBehaviour:
       Weight: 0
       SnapToFullVolume: 1
     MulticlipsPlayMode: 0
-    IsShowClipPreview: 0
+    IsShowClipPreview: 1
     Loop: 0
     SeamlessLoop: 1
     TransitionTime: 3

@@ -9,9 +9,9 @@ namespace Ami.BroAudio.Data
     {
         public override BroAudioType PossibleFlags => BroAudioType.Music | BroAudioType.Ambience;
 
-        public bool Loop;
-        public bool SeamlessLoop;
-        public float TransitionTime;
+        public bool Loop = false;
+        public bool SeamlessLoop = false;
+        public float TransitionTime = default;
 
 #if UNITY_EDITOR
         public enum SeamlessType
@@ -28,8 +28,8 @@ namespace Ami.BroAudio.Data
             public int Beats;
         }
 
-        [SerializeField] private SeamlessType SeamlessTransitionType;
-        [SerializeField] private TempoTransition TransitionTempo;
+        [SerializeField] private SeamlessType SeamlessTransitionType = SeamlessType.ClipSetting;
+        [SerializeField] private TempoTransition TransitionTempo = default;
         public static string NameOf_SeamlessType => nameof(SeamlessTransitionType);
         public static string NameOf_TransitionTempo => nameof(TransitionTempo);
 #endif

@@ -12,7 +12,7 @@ namespace Ami.BroAudio.Data
         public BroAudioClip[] Clips;
         public BroAudioClip Clip => Clips.PickNewOne(MulticlipsPlayMode, ID);
 
-        [SerializeField] private MulticlipsPlayMode MulticlipsPlayMode;
+        [SerializeField] private MulticlipsPlayMode MulticlipsPlayMode = MulticlipsPlayMode.Single;
 
         public abstract BroAudioType PossibleFlags { get; }
 
@@ -22,7 +22,7 @@ namespace Ami.BroAudio.Data
         }
 
 #if UNITY_EDITOR
-        [SerializeField] private bool IsShowClipPreview;
+        [SerializeField] private bool IsShowClipPreview = false;
         
         public static string NameOf_IsShowClipPreview => nameof(IsShowClipPreview);
         public static string NameOf_MulticlipsPlayMode => nameof(MulticlipsPlayMode);

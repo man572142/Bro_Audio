@@ -40,7 +40,8 @@ namespace Ami.BroAudio.Editor
 
 		public void Init()
 		{
-			_instruction ??= new BroInstructionHelper();
+			if(_instruction == null) 
+				_instruction = new BroInstructionHelper();
 			_instruction.Init();
 		}
 

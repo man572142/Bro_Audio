@@ -38,9 +38,9 @@ namespace Ami.BroAudio.Runtime
 
 		public interface ITweakingWaitable
 		{
-			public EffectParameter Effect { get; }
-			public bool IsFinished();
-			public IEnumerator GetYieldInstruction();
+			EffectParameter Effect { get; }
+			bool IsFinished();
+			IEnumerator GetYieldInstruction();
 		}
 
 		private class TweakingWaitable : ITweakingWaitable
@@ -75,7 +75,8 @@ namespace Ami.BroAudio.Runtime
 
 			public override IEnumerator GetYieldInstruction()
 			{
-				_waitUntil ??= new WaitUntil(IsFinished);
+				if(_waitUntil == null)
+					_waitUntil = new WaitUntil(IsFinished);
 				yield return _waitUntil;
 			}
 		}
@@ -176,7 +177,8 @@ namespace Ami.BroAudio.Runtime
 				_tweakerDict.Add(effect.Type, tweaker);
 			}
 
-			tweaker.WaitableList ??= new List<ITweakingWaitable>();
+			if(tweaker.WaitableList == null)
+				tweaker.WaitableList = new List<ITweakingWaitable>();
 			tweaker.WaitableList.Add(new TweakingWaitable(effect));
 
 			StartCoroutineAndReassign(TweakTrackParameter(tweaker, OnTweakingFinished), ref tweaker.Coroutine);

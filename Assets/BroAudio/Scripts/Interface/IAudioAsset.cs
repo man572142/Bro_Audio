@@ -4,12 +4,12 @@ namespace Ami.BroAudio.Data
 {
     public interface IAudioAsset
     {
-        public BroAudioType AudioType { get; }
-        public IEnumerable<IAudioLibrary> GetAllAudioLibraries();
+        BroAudioType AudioType { get; }
+        IEnumerable<IAudioLibrary> GetAllAudioLibraries();
 
 #if UNITY_EDITOR
-        public string AssetGUID { get; set; }
-		public string AssetName { get; set; } 
+        string AssetGUID { get; set; }
+		string AssetName { get; set; } 
 #endif
     }
 }

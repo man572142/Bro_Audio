@@ -116,11 +116,13 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void InitGUIContents()
 		{
-			_haasEffectGUIContent ??= new GUIContent();
+			if(_haasEffectGUIContent == null) 
+				_haasEffectGUIContent = new GUIContent();
 			_haasEffectGUIContent.text = HaasEffectLabel;
 			_haasEffectGUIContent.tooltip = _instruction.GetText(Instruction.HaasEffectTooltip);
 
-			_audioVoicesGUIContent ??= new GUIContent();
+			if(_audioVoicesGUIContent == null) 
+				_audioVoicesGUIContent = new GUIContent();
 			_audioVoicesGUIContent.text = RealVoicesParameterName;
 			_audioVoicesGUIContent.tooltip = _instruction.GetText(Instruction.AudioVoicesToolTip);
 		}
@@ -138,7 +140,8 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void InitTabs()
 		{
-			_tabs ??= new GUIContent[3];
+			if(_tabs == null) 
+				_tabs = new GUIContent[3];
 			_tabs[(int)Tab.Audio] = EditorGUIUtility.IconContent("d_AudioMixerController On Icon");
 			_tabs[(int)Tab.GUI] = EditorGUIUtility.IconContent("GUISkin Icon");
 			_tabs[(int)Tab.Info] = EditorGUIUtility.IconContent("UnityEditor.InspectorWindow@2x");

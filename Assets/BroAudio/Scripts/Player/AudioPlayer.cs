@@ -160,7 +160,8 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
-            _decorators ??= new List<AudioPlayerDecorator>();
+            if(_decorators == null)
+                _decorators = new List<AudioPlayerDecorator>();
             var decoratedPalyer = this.DecorateWith<T>();
             _decorators.Add(decoratedPalyer);
             decoratedPalyer.OnPlayerRecycle += RemoveDecorator;

@@ -31,11 +31,11 @@ namespace Ami.BroAudio.Data
 
 	public interface IBroAudioClip
 	{
-		public AudioClip AudioClip { get; }
-		public float Volume { get; }
-		public float StartPosition { get; }
-		public float EndPosition { get; }
-		public float FadeIn { get;}
-		public float FadeOut { get; }
+		AudioClip AudioClip { get; }
+		float Volume { get; }
+		float StartPosition { get; }
+		float EndPosition { get; }
+		float FadeIn { get;}
+		float FadeOut { get; }
 	}
 }

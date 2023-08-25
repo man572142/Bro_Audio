@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public interface IEditorDrawLineCounter
+namespace Ami.Extension
 {
-    public float SingleLineSpace { get; }
-    public int DrawLineCount { get; set;}
+	public interface IEditorDrawLineCounter
+	{
+		float SingleLineSpace { get; }
+		int DrawLineCount { get; set; }
+	}
 }

@@ -8,7 +8,7 @@ using Ami.BroAudio.Editor.Setting;
 using System;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.Extension.AudioConstant;
-
+using static Ami.Extension.EditorVersionAdapter;
 
 namespace Ami.BroAudio.Editor
 {
@@ -38,7 +38,7 @@ namespace Ami.BroAudio.Editor
 		protected override void OnEnable()
 		{
 			base.OnEnable();
-			_hasOpenedLibraryManager = EditorWindow.HasOpenInstances<LibraryManagerWindow>();
+			_hasOpenedLibraryManager = HasOpenEditorWindow<LibraryManagerWindow>();
 
 			if(_hasOpenedLibraryManager)
 			{
@@ -205,7 +205,7 @@ namespace Ami.BroAudio.Editor
 				}
 
 				float sliderFullScale = FullVolume / (FullDecibelVolume - MinDecibelVolume / DecibelVoulumeFullScale);
-				DrawFullVolumeSnapPoint(sliderRect, sliderFullScale, isSnap, onSwitchBoostMode);
+				DrawFullVolumeSnapPoint(sliderRect, sliderFullScale, onSwitchBoostMode);
 
 				float sliderValue = ConvertToSliderValue(currentValue, sliderFullScale);
 				float newSliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
@@ -222,29 +222,29 @@ namespace Ami.BroAudio.Editor
 			}
 			return currentValue;
 
-			static void DrawDecibelValueLabel(Rect position, float value)
+			void DrawDecibelValueLabel(Rect dbRect, float value)
 			{
 				value = Mathf.Log10(value) * 20f;
 				string plusSymbol = value > 0 ? "+" : string.Empty;
 				string volText = plusSymbol + value.ToString(_dbValueStringFormat) + "dB";
-				EditorGUI.LabelField(position, volText);
+				EditorGUI.LabelField(dbRect, volText);
 			}
 
 #if !UNITY_WEBGL
-			static void DrawVUMeter(Rect vuRect, Color maskColor)
+			void DrawVUMeter(Rect vuRect, Color maskColor)
 			{
 				vuRect.height *= 0.5f;
-				EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent("d_VUMeterTextureHorizontal").image);
+				EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent(IconConstant.HorizontalVUMeter).image);
 				EditorGUI.DrawRect(vuRect, maskColor);
 			}
 
-			static void DrawFullVolumeSnapPoint(Rect sliderPosition,float sliderFullScale,bool isSnap ,Action onSwitchSnapMode)
+			void DrawFullVolumeSnapPoint(Rect sliderPosition,float sliderFullScale ,Action onSwitchSnapMode)
 			{
 				Rect rect = new Rect(sliderPosition);
 				rect.width = 30f;
 				rect.x = sliderPosition.x + sliderPosition.width * (FullVolume / sliderFullScale) - (rect.width * 0.5f) + 1f; // add 1 pixel for more precise position
 				rect.y -= sliderPosition.height;
-				var icon = EditorGUIUtility.IconContent("SignalAsset Icon");
+				var icon = EditorGUIUtility.IconContent(IconConstant.VolumeSnapPointer);
 				EditorGUI.BeginDisabledGroup(!isSnap);
 				{
 					GUI.Label(rect, icon);
@@ -256,7 +256,7 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 
-			static float ConvertToSliderValue(float vol, float sliderFullScale)
+			float ConvertToSliderValue(float vol, float sliderFullScale)
 			{
 				if(vol > FullVolume)
 				{
@@ -267,7 +267,7 @@ namespace Ami.BroAudio.Editor
 				
 			}
 
-			static float ConvertToNomalizedVolume(float sliderValue,float sliderFullScale)
+			float ConvertToNomalizedVolume(float sliderValue,float sliderFullScale)
 			{
 				if(sliderValue > FullVolume)
 				{
@@ -277,7 +277,7 @@ namespace Ami.BroAudio.Editor
 				return sliderValue;
 			}
 
-			static bool CanSnap(float value)
+			bool CanSnap(float value)
 			{
 				float difference = value - FullVolume;
 				bool isInLowVolumeSnappingRange = difference < 0f && difference * -1f <= _lowVolumeSnappingThreshold;

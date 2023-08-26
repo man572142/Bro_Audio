@@ -13,12 +13,12 @@ namespace Ami.BroAudio.Runtime
         public static Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
         public event Action<int,BroAudioClip,PlaybackPreference> OnFinishingOneRound = null;
-        public event Func<PlaybackPreference,PlaybackPreference> DecoratePlaybackPreference;
+        public event Func<PlaybackPreference,PlaybackPreference> DecoratePlaybackPreference = null;
 
         private StopMode _stopMode = default;
-        private Coroutine _playbackControlCoroutine;
-        private Coroutine _trackVolumeControlCoroutine;
-        private Coroutine _recycleCoroutine;
+        private Coroutine _playbackControlCoroutine = null;
+        private Coroutine _trackVolumeControlCoroutine = null;
+        private Coroutine _recycleCoroutine = null;
         private bool _isReadyToPlay = false;
 
         public void Play(int id, BroAudioClip clip, PlaybackPreference pref,bool waitForChainingMethod = true)
@@ -37,7 +37,7 @@ namespace Ami.BroAudio.Runtime
                     if (_isReadyToPlay)
 					{
 						DecoratePref(ref pref);
-						StartPlaying(clip, pref);
+						StartPlaying();
 					}
 					else
                     {
@@ -47,10 +47,10 @@ namespace Ami.BroAudio.Runtime
             }
             else
 			{
-                StartPlaying(clip, pref);
+                StartPlaying();
             }
 
-			void StartPlaying(BroAudioClip clip, PlaybackPreference pref)
+			void StartPlaying()
 			{
 				this.StartCoroutineAndReassign(PlayControl(clip, pref), ref _playbackControlCoroutine);
 			}
@@ -60,14 +60,14 @@ namespace Ami.BroAudio.Runtime
                 AsyncTaskExtension.DelayDoAction(AsyncTaskExtension.MillisecondInSeconds, action);
             }
 
-			PlaybackPreference DecoratePref(ref PlaybackPreference pref)
+			PlaybackPreference DecoratePref(ref PlaybackPreference decoPref)
 			{
                 if(DecoratePlaybackPreference != null)
 				{
-                    pref = DecoratePlaybackPreference.Invoke(pref);
+                    decoPref = DecoratePlaybackPreference.Invoke(decoPref);
                 }
 				
-				return pref;
+				return decoPref;
 			}
 		}
 

@@ -9,6 +9,8 @@ using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.BroAudio.BroName;
 using static Ami.BroAudio.BroLog;
+using static Ami.Extension.EditorVersionAdapter;
+using static Ami.BroAudio.Editor.IconConstant;
 using System.IO;
 using UnityEngine.Audio;
 using System;
@@ -35,7 +37,6 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string SettingFileName = "BroAudioGlobalSetting";
 		public const string SettingText = "Setting";
 		public const float Gap = 50f;
-		public const string BrowserIcon = "FolderOpened Icon";
 		
 		public const string HaasEffectLabel = "Time to prevent Comb Filtering (Haas Effect)";
 		public const string ResetSettingButtonText = "Reset To Factory Settings";
@@ -142,9 +143,9 @@ namespace Ami.BroAudio.Editor.Setting
 		{
 			if(_tabs == null) 
 				_tabs = new GUIContent[3];
-			_tabs[(int)Tab.Audio] = EditorGUIUtility.IconContent("d_AudioMixerController On Icon");
-			_tabs[(int)Tab.GUI] = EditorGUIUtility.IconContent("GUISkin Icon");
-			_tabs[(int)Tab.Info] = EditorGUIUtility.IconContent("UnityEditor.InspectorWindow@2x");
+			_tabs[(int)Tab.Audio] = EditorGUIUtility.IconContent(AudioSettingTab);
+			_tabs[(int)Tab.GUI] = EditorGUIUtility.IconContent(GUISettingTab);
+			_tabs[(int)Tab.Info] = EditorGUIUtility.IconContent(InfoTab);
 		}
 
 
@@ -215,15 +216,15 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawAudioSetting(Rect drawPosition)
 		{
-			DrawHaasEffectSetting(drawPosition);
+			DrawHaasEffectSetting();
 			DrawEmptyLine(1);
 
-			DrawDefaultEasing(drawPosition);
-			DrawSeamlessLoopEasing(drawPosition);
+			DrawDefaultEasing();
+			DrawSeamlessLoopEasing();
 			DrawEmptyLine(1);
-			DrawAudioProjectSettings(drawPosition);
+			DrawAudioProjectSettings();
 
-			void DrawDefaultEasing(Rect drawPosition)
+			void DrawDefaultEasing()
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Default Easing".ToWhiteBold(), GUIStyleHelper.Instance.RichText);
 				EditorGUI.indentLevel++;
@@ -234,7 +235,7 @@ namespace Ami.BroAudio.Editor.Setting
 				EditorGUI.indentLevel--;
 			}
 
-			void DrawSeamlessLoopEasing(Rect drawPosition)
+			void DrawSeamlessLoopEasing()
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Seamless Loop Easing".ToWhiteBold(), GUIStyleHelper.Instance.RichText);
 				EditorGUI.indentLevel++;
@@ -245,7 +246,7 @@ namespace Ami.BroAudio.Editor.Setting
 				EditorGUI.indentLevel--;
 			}
 
-			void DrawHaasEffectSetting(Rect drawPosition)
+			void DrawHaasEffectSetting()
 			{
 				Rect haasRect = GetRectAndIterateLine(drawPosition);
 				EditorGUI.LabelField(haasRect, _haasEffectGUIContent);
@@ -255,7 +256,7 @@ namespace Ami.BroAudio.Editor.Setting
 				GlobalSetting.HaasEffectInSeconds = EditorGUI.FloatField(haasRect, " ", GlobalSetting.HaasEffectInSeconds);
 			}
 
-			void DrawAudioProjectSettings(Rect drawPosition)
+			void DrawAudioProjectSettings()
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), ProjectSettings.ToWhiteBold(), GUIStyleHelper.Instance.RichText);
 
@@ -276,7 +277,7 @@ namespace Ami.BroAudio.Editor.Setting
 				{
 					Rect warningBoxRect = GetRectAndIterateLine(drawPosition);
 					warningBoxRect.height *= 3;
-					Color linkBlue = EditorStyles.linkLabel.normal.textColor;
+					Color linkBlue = LinkLabel.normal.textColor;
 					string text = string.Format(_instruction.GetText(Instruction.TracksAndVoicesNotMatchWarning), MixerName.ToWhiteBold(), RealVoicesParameterName.ToWhiteBold(), ProjectSettingsMenuItemPath.SetColor(linkBlue));
 					RichTextHelpBox(warningBoxRect, text, MessageType.Warning);
 					if (GUI.Button(warningBoxRect, GUIContent.none, GUIStyle.none))
@@ -351,7 +352,7 @@ namespace Ami.BroAudio.Editor.Setting
 		private void DrawGUISetting(Rect drawPosition)
 		{
 			GlobalSetting.ShowVUColorOnVolumeSlider = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), VUColorToggleLabel, GlobalSetting.ShowVUColorOnVolumeSlider);
-			DemonstrateSlider(drawPosition);
+			DemonstrateSlider();
 
 			GlobalSetting.ShowAudioTypeOnAudioID = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), ShowAudioTypeToggleLabel, GlobalSetting.ShowAudioTypeOnAudioID);
 
@@ -378,7 +379,7 @@ namespace Ami.BroAudio.Editor.Setting
 				});
 			}
 
-			void DemonstrateSlider(Rect drawPosition)
+			void DemonstrateSlider()
 			{
 				Rect sliderRect = GetRectAndIterateLine(drawPosition);
 				sliderRect.width = drawPosition.width * 0.5f;
@@ -387,7 +388,7 @@ namespace Ami.BroAudio.Editor.Setting
 				{
 					Rect vuRect = new Rect(sliderRect);
 					vuRect.height *= 0.5f;
-					EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent("d_VUMeterTextureHorizontal").image);
+					EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent(HorizontalVUMeter).image);
                     EditorGUI.DrawRect(vuRect, VUMaskColor);
                 }
 				GUI.HorizontalSlider(sliderRect, 1f, 0f, 1.25f);
@@ -424,7 +425,7 @@ namespace Ami.BroAudio.Editor.Setting
             EditorGUI.SelectableLabel(GetRectAndIterateLine(drawPosition), _instruction.GetText(Instruction.Copyright), GUIStyleHelper.Instance.MiddleCenterText);
 
 			DrawEmptyLine(1);
-			var linkStyle = new GUIStyle(EditorStyles.linkLabel);
+			var linkStyle = new GUIStyle(LinkLabel);
 			linkStyle.alignment = TextAnchor.MiddleCenter;
 			Rect linkRect = GetRectAndIterateLine(drawPosition);
 			if (GUI.Button(linkRect, GitURL, linkStyle))
@@ -470,7 +471,9 @@ namespace Ami.BroAudio.Editor.Setting
 			browserIconRect.width = EditorGUIUtility.singleLineHeight;
 			browserIconRect.height = EditorGUIUtility.singleLineHeight;
 			browserIconRect.x = rect.xMax - EditorGUIUtility.singleLineHeight;
-			GUI.DrawTexture(browserIconRect, EditorGUIUtility.IconContent(BrowserIcon).image);
+#if UNITY_2020_1_OR_NEWER
+			GUI.DrawTexture(browserIconRect, EditorGUIUtility.IconContent(AssetOutputBrowser).image);
+#endif
 			EditorGUI.DrawRect(browserIconRect, BroAudioGUISetting.ShadowMaskColor);
 		}
 	}

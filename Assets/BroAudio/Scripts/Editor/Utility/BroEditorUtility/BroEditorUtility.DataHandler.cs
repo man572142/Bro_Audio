@@ -2,6 +2,8 @@ using UnityEditor;
 using UnityEngine;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Runtime;
+// For versions that under Unity 2019.2
+using static Ami.Extension.VersionAdapter;
 
 namespace Ami.BroAudio.Editor
 {
@@ -12,7 +14,6 @@ namespace Ami.BroAudio.Editor
 			bool hasDeleted = DeleteJsonDataByAsset(AssetDatabase.AssetPathToGUID(assetPath));
 			if(hasDeleted && TryGetAssetByPath(assetPath, out var asset))
 			{
-				//DeleteEnumFile(asset.AssetName);
 				ScriptableObject scriptableObject = asset as ScriptableObject;
 				RemoveDeletedAssetFromSoundManager(scriptableObject);
 			}

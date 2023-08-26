@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using System.Linq;
-using System.Collections.Generic;
+using Ami.BroAudio.Editor;
 
 namespace Ami.Extension
 {
@@ -160,11 +160,11 @@ namespace Ami.Extension
 			switch (messageType)
 			{
 				case MessageType.Info:
-					return "d_console.infoicon";
+					return IconConstant.InfoMessage;
 				case MessageType.Warning:
-					return "d_console.warnicon";
+					return IconConstant.WarningMessage;
 				case MessageType.Error:
-					return "d_console.erroricon";
+					return IconConstant.ErrorMessage;
 				default:
 					return string.Empty;
 			}

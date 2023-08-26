@@ -8,21 +8,29 @@ namespace Ami.Extension
 {
 	public static class EditorPlayAudioClip
 	{
-		public static void PlayClip(AudioClip clip, int startSample = 0, bool loop = false)
+#if UNITY_2020_2_OR_NEWER
+		public const string PlayClipMethodName = "PlayPreviewClip";
+        public const string StopClipMethodName = "StopAllPreviewClips";
+#else
+		public const string PlayClipMethodName = "PlayClip";
+        public const string StopClipMethodName = "StopAllClips";
+#endif
+
+
+        public static void PlayClip(AudioClip clip, int startSample = 0, bool loop = false)
 		{
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
 
 			Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
 			MethodInfo method = audioUtilClass.GetMethod(
-				"PlayPreviewClip",
+                PlayClipMethodName,
 				BindingFlags.Static | BindingFlags.Public,
 				null,
 				new Type[] { typeof(AudioClip), typeof(int), typeof(bool) },
 				null
 			);
 
-			//Debug.Log(method);
-			method.Invoke(
+			method?.Invoke(
 				null,
 				new object[] { clip, startSample, loop }
 			);
@@ -34,15 +42,14 @@ namespace Ami.Extension
 
 			Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
 			MethodInfo method = audioUtilClass.GetMethod(
-				"StopAllPreviewClips",
+                StopClipMethodName,
 				BindingFlags.Static | BindingFlags.Public,
 				null,
 				new Type[] { },
 				null
 			);
 
-			//Debug.Log(method);
-			method.Invoke(
+			method?.Invoke(
 				null,
 				new object[] { }
 			);

@@ -272,22 +272,21 @@ namespace Ami.BroAudio.Editor
 			_gapDrawer.DrawLineCount = 0;
 
 			//DrawASCIITitle();
-			
 
 			EditorGUILayout.BeginHorizontal();
 			{                
-                EditorGUILayout.Space(_gapDrawer.GetSpace());
+                GUILayout.Space(_gapDrawer.GetSpace());
 				EditorScriptingExtension.SplitRectHorizontal(position, 0.3f, _gapDrawer.GetSpace(), out Rect assetListRect, out Rect librariesRect);
 
 				EditorGUILayout.BeginVertical();
 				{
                     EditorGUILayout.LabelField(nameof(BroAudio).ToBold().SetColor(MainTitleColor).SetSize(30), GUIStyleHelper.Instance.RichText);
-                    EditorGUILayout.Space(10f);
+                    GUILayout.Space(10f);
                     DrawAssetList(assetListRect);
                 }
 				EditorGUILayout.EndVertical();
 				
-				EditorGUILayout.Space(_gapDrawer.GetSpace());
+				GUILayout.Space(_gapDrawer.GetSpace());
 				librariesRect.width -= _gapDrawer.GetTotalSpace();
 				DrawLibrariesList(librariesRect);
 			}
@@ -339,7 +338,7 @@ namespace Ami.BroAudio.Editor
 						break;
 					case LibraryState.Fine:
                         text = _instruction.GetText(Instruction.LibraryState_Fine);
-                        EditorScriptingExtension.RichTextHelpBox(text, "Toggle Icon");
+                        EditorScriptingExtension.RichTextHelpBox(text, IconConstant.LibraryWorkdFine);
 						break;
 				}
 			}
@@ -352,7 +351,7 @@ namespace Ami.BroAudio.Editor
 				if (TryGetCurrentAssetEditor(out var editor))
 				{
 					EditorGUILayout.LabelField(editor.Asset.AssetName.SetSize(25).SetColor(Color.white), _assetNameTitleStyle);
-					EditorGUILayout.Space(10f);
+					GUILayout.Space(10f);
 					if (_assetReorderableList.count > 0)
 					{
 						_settingScrollPos = EditorGUILayout.BeginScrollView(_settingScrollPos);

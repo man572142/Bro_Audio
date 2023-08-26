@@ -40,7 +40,7 @@ namespace Ami.Extension
 			}
 			for (int i = 0; i < 3; i++)
 			{
-				EditorGUILayout.Space(10);
+				GUILayout.Space(10);
 			}
 
 			var buttonHeight = GUILayout.Height(EditorGUIUtility.singleLineHeight * 2f);

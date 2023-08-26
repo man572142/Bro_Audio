@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
+using static Ami.BroAudio.Editor.IconConstant;
 using Ami.Extension;
 
 namespace Ami.BroAudio.Editor
@@ -68,11 +69,11 @@ namespace Ami.BroAudio.Editor
 			clipViewRect.height = ClipPreviewHeight;
 			SplitRectHorizontal(clipViewRect, 0.1f, 15f, out Rect playbackRect, out Rect waveformRect);
 
-			DrawWaveformPreview(waveformRect);
-			DrawPlaybackButton(playbackRect);
-			DrawClipPlaybackLine(waveformRect);
+			DrawWaveformPreview();
+			DrawPlaybackButton();
+			DrawClipPlaybackLine();
 
-			void DrawWaveformPreview(Rect waveformRect)
+			void DrawWaveformPreview()
 			{
 				Texture2D waveformTexture = AssetPreview.GetAssetPreview(audioClip);
 				if (waveformTexture != null)
@@ -82,9 +83,9 @@ namespace Ami.BroAudio.Editor
 				EditorGUI.DrawRect(waveformRect, ShadowMaskColor);
 			}
 
-			void DrawPlaybackButton(Rect clipViewRect)
+			void DrawPlaybackButton()
 			{
-				SplitRectVertical(clipViewRect, 0.5f, 15f, out Rect playRect, out Rect stopRect);
+				SplitRectVertical(playbackRect, 0.5f, 15f, out Rect playRect, out Rect stopRect);
 				// 保持在正方形
 				float maxHeight = playRect.height;
 				playRect.width = Mathf.Clamp(playRect.width, playRect.width, maxHeight);
@@ -92,7 +93,7 @@ namespace Ami.BroAudio.Editor
 				stopRect.width = playRect.width;
 				stopRect.height = playRect.height;
 
-				if (GUI.Button(playRect, EditorGUIUtility.IconContent("d_PlayButton")))
+				if (GUI.Button(playRect, EditorGUIUtility.IconContent(PlayButton)))
 				{
 					EditorPlayAudioClip.StopAllClips();
 					EditorPlayAudioClip.PlayClip(audioClip, Mathf.RoundToInt(AudioSettings.outputSampleRate * transport.StartPosition));
@@ -100,7 +101,7 @@ namespace Ami.BroAudio.Editor
 					float duration = audioClip.length - transport.StartPosition - transport.EndPosition;
 					AsyncTaskExtension.DelayDoAction(duration, EditorPlayAudioClip.StopAllClips);
 				}
-				if (GUI.Button(stopRect, EditorGUIUtility.IconContent("d_PreMatQuad")))
+				if (GUI.Button(stopRect, EditorGUIUtility.IconContent(StopButton)))
 				{
 					EditorPlayAudioClip.StopAllClips();
 				}
@@ -109,7 +110,7 @@ namespace Ami.BroAudio.Editor
 				EditorGUI.DrawRect(stopRect, StopButtonColor);
 			}
 
-			void DrawClipPlaybackLine(Rect waveformRect)
+			void DrawClipPlaybackLine()
 			{
 				Vector3[] points = GetClipLinePoints(waveformRect.width, audioClip.length);
 				if (points.Length < 4)

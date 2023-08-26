@@ -7,6 +7,7 @@ using UnityEngine;
 using static Ami.BroAudio.Utility;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.Extension.EditorScriptingExtension;
+using static Ami.Extension.EditorVersionAdapter;
 using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Editor
@@ -31,7 +32,7 @@ namespace Ami.BroAudio.Editor
 			_librariesProp = serializedObject.FindProperty(nameof(AudioAsset<IAudioLibrary>.Libraries));
 			Asset = target as IAudioAsset;
 			_currentAudioDatas = Asset.GetAllAudioLibraries();
-			_hasOpenedLibraryManager = EditorWindow.HasOpenInstances<LibraryManagerWindow>();
+			_hasOpenedLibraryManager = HasOpenEditorWindow<LibraryManagerWindow>();
 
 			InitReorderableList();
 			CheckLibrariesState();

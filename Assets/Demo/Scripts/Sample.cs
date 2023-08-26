@@ -6,11 +6,11 @@ using static Ami.BroAudio.Utility;
 
 public class Sample : MonoBehaviour
 {
-    [SerializeField] AudioID _musicA;
-    [SerializeField] AudioID _musicB;
-	[SerializeField] AudioID _seamlessAmb;
-    [SerializeField] AudioID _flipTapeSFX;
-    [SerializeField] AudioID _voiceOver;
+    [SerializeField] AudioID _musicA = default;
+    [SerializeField] AudioID _musicB = default;
+	[SerializeField] AudioID _seamlessAmb = default;
+    [SerializeField] AudioID _flipTapeSFX = default;
+    [SerializeField] AudioID _voiceOver = default;
 
 	[SerializeField] CassetteTape _tape = null;
 
@@ -19,7 +19,7 @@ public class Sample : MonoBehaviour
 
 	void Start()
     {
-		//BroAudio.Play(_seamlessAmb);
+		BroAudio.Play(_seamlessAmb);
     }
 
 
@@ -50,8 +50,8 @@ public class Sample : MonoBehaviour
 		if(_tape)
 		{
 			_tape.Flip();
-			//BroAudio.Play(_flipTapeSFX);
-			PlayMusic();
+			BroAudio.Play(_flipTapeSFX);
+			//PlayMusic();
         }
 	}
 

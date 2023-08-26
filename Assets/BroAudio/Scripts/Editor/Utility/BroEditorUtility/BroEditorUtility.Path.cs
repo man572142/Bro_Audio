@@ -38,6 +38,7 @@ namespace Ami.BroAudio.Editor
 		public static string GetFullPath(string path) => Combine(UnityProjectRootPath,path);
 		public static string GetFilePath(string path,string fileName) => Combine(path,fileName);
 		public static string GetFullFilePath(string path,string fileName) => Combine(UnityProjectRootPath, path, fileName);
+		public static string GetPathInAssetsFolder(string fullPath) => fullPath.Remove(0, UnityProjectRootPath.Length + 1); // +1 for separator
 
 		public static string EnsureDirectoryExists(this string path)
 		{

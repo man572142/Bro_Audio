@@ -87,7 +87,8 @@ namespace Ami.BroAudio.Editor
 
 		private void OnEnable()
 		{
-			OnChangeAudioClip += ResetSetting;
+			_instruction.Init();
+            OnChangeAudioClip += ResetSetting;
 			ResetSetting();
 		}
 
@@ -198,7 +199,7 @@ namespace Ami.BroAudio.Editor
 
 				if (File.Exists(fullFilePath) && EditorUtility.DisplayDialog(ConfirmOverwriteTitle, _instruction.GetText(Instruction.ClipEditorConfirmationDialog), "Yes","No"))
 				{
-					SaveClip(fullFilePath);
+					SaveClip(path);
 				}
 			}
 			
@@ -244,9 +245,9 @@ namespace Ami.BroAudio.Editor
 
 				if(HasEdited)
 				{
-					_currSavingFilePath = savePath;
 					SavWav.Save(savePath, helper.GetResultClip());
-					AssetDatabase.Refresh();
+                    _currSavingFilePath = savePath;
+                    AssetDatabase.Refresh();
 				}
 			}
 		}

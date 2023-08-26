@@ -48,7 +48,11 @@ namespace Ami.BroAudio.Editor
 
 		public void Init()
 		{
-			_instruction = Resources.Load<BroInstruction>("Editor/" + InstructionFileName);
+            if(!_instruction)
+            {
+                _instruction = Resources.Load<BroInstruction>("Editor/" + InstructionFileName);
+            }
+			
 			if (!_instruction)
 			{
 				BroLog.LogWarning(InstructionMissingText);

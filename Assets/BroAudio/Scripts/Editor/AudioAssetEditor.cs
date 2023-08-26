@@ -24,7 +24,7 @@ namespace Ami.BroAudio.Editor
 
 		private IEnumerable<IAudioLibrary> _currentAudioDatas = null;
 
-		private ILibraryIDContainer _idContainer = null;
+		private IUniqueIDGenerator _idGenerator = null;
 		public IAudioAsset Asset { get; private set; }
 
 		private void OnEnable()
@@ -68,7 +68,9 @@ namespace Ami.BroAudio.Editor
 				SerializedProperty newElement = _librariesProp.GetArrayElementAtIndex(list.count - 1);
 
 				ResetLibrarySerializedProperties(newElement);
-				newElement.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.ID))).intValue = _idContainer.GetUniqueID(Asset.AudioType);
+				
+				var idProp = newElement.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.ID)));
+                idProp.intValue = _idGenerator.GetUniqueID(Asset.AudioType);
 				newElement.serializedObject.ApplyModifiedProperties();
 			}
 
@@ -76,7 +78,6 @@ namespace Ami.BroAudio.Editor
 			{
 				SerializedProperty removedElement = _librariesProp.GetArrayElementAtIndex(list.index);
 				int removedID = removedElement.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.ID))).intValue;
-				_idContainer.RemoveID(Asset.AudioType, removedID);
 				ReorderableList.defaultBehaviours.DoRemoveButton(list);
 			}
 
@@ -111,9 +112,9 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public void SetIDAccessor(ILibraryIDContainer idAccessor)
+		public void SetIDGenerator(IUniqueIDGenerator idAccessor)
 		{
-			_idContainer = idAccessor;
+			_idGenerator = idAccessor;
 		}
 
 
@@ -125,10 +126,8 @@ namespace Ami.BroAudio.Editor
 
 		private void CheckLibrariesState()
 		{
-			if (CompareWithPrevious() && CompareWithAll())
-			{
-				//PendingUpdates?.CheckChanges(this);
-			}
+			CompareWithPrevious();
+			CompareWithAll();
 		}
 
 

@@ -364,19 +364,16 @@ namespace Ami.BroAudio.Editor.Setting
 				colorRect.xMax -= 20f;
 				SplitRectHorizontal(colorRect, 0.5f, 0f, out Rect leftColorRect, out Rect rightColorRect);
 				int count = 0;
-				ForeachAudioType((audioType) =>
+				ForeachConcreteAudioType((audioType) =>
 				{
-					if (audioType != BroAudioType.None && audioType != BroAudioType.All)
-					{
-						SetAudioTypeLabelColor(count % 2 == 0 ? leftColorRect : rightColorRect, audioType);
-						count++;
-						if (count % 2 == 1)
-						{
-							leftColorRect.y += SingleLineSpace;
-							rightColorRect.y += SingleLineSpace;
-						}
-					}
-				});
+                    SetAudioTypeLabelColor(count % 2 == 0 ? leftColorRect : rightColorRect, audioType);
+                    count++;
+                    if (count % 2 == 1)
+                    {
+                        leftColorRect.y += SingleLineSpace;
+                        rightColorRect.y += SingleLineSpace;
+                    }
+                });
 			}
 
 			void DemonstrateSlider()
@@ -458,14 +455,12 @@ namespace Ami.BroAudio.Editor.Setting
 					openPath = Application.dataPath;
 				}
 				string newPath = EditorUtility.OpenFolderPanel(_instruction.GetText(Instruction.AssetOutputPathPanelTtile),openPath , "");
-				if (!string.IsNullOrEmpty(newPath))
+				if (!string.IsNullOrEmpty(newPath) && IsInProjectFolder(newPath))
 				{
-					if (IsInProjectFolder(newPath))
-					{
-						AssetOutputPath = newPath.Remove(0, UnityProjectRootPath.Length + 1);
-						WriteAssetOutputPathToCoreData();
-					}
-				}
+					newPath = newPath.Remove(0, UnityProjectRootPath.Length + 1);
+					AssetOutputPath = newPath;
+                    WriteAssetOutputPathToCoreData(newPath);
+                }
 			}
 			Rect browserIconRect = rect;
 			browserIconRect.width = EditorGUIUtility.singleLineHeight;

@@ -107,10 +107,7 @@ namespace Ami.BroAudio.Runtime
 
         public void Stop(BroAudioType targetType,float fadeTime)
 		{
-            ForeachAudioType((audioType) =>
-            {
-                StopPlayer(fadeTime,x => targetType.HasFlag(GetAudioType(x.ID)));
-            });
+            StopPlayer(fadeTime, x => targetType.HasFlag(GetAudioType(x.ID)));
         }            
 
         private void StopPlayer(float fadeTime,Predicate<AudioPlayer> predicate)

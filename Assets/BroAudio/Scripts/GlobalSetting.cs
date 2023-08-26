@@ -5,7 +5,7 @@ using Ami.Extension;
 
 namespace Ami.BroAudio.Data
 {
-	[CreateAssetMenu(menuName = "BroAudio(DevOnly)/Create Global Setting Asset File", fileName = "BroAudioGlobalSetting")]
+	//[CreateAssetMenu(menuName = "BroAudio(DevOnly)/Create Global Setting Asset File", fileName = "BroAudioGlobalSetting")]
 	public class GlobalSetting : ScriptableObject
 	{
 		public class FactorySettings

@@ -13,19 +13,19 @@ MonoBehaviour:
   m_Name: Forest
   m_EditorClassIdentifier: 
   Libraries:
-  - <Name>k__BackingField: Birds
-    <ID>k__BackingField: 971824
+  - <Name>k__BackingField: ForestBirds
+    <ID>k__BackingField: 805306369
     Clips:
     - AudioClip: {fileID: 8300000, guid: ad86e3b46cdd6d249885f216cd4cab75, type: 3}
-      Volume: 10
+      Volume: 1
       StartPosition: 0
-      EndPosition: 15.66
+      EndPosition: 0
       FadeIn: 0
       FadeOut: 0
       Weight: 0
-      SnapToFullVolume: 1
+      SnapToFullVolume: 0
     MulticlipsPlayMode: 0
-    IsShowClipPreview: 1
+    IsShowClipPreview: 0
     Loop: 0
     SeamlessLoop: 1
     TransitionTime: 3
@@ -34,4 +34,4 @@ MonoBehaviour:
       BPM: 0
       Beats: 0
   <AssetName>k__BackingField: Forest
-  _assetGUID: f70c288605a288c4699ee26414a692d9
+  _assetGUID: 34d3fed302c539b4498948080e580a4a

@@ -1,66 +1,74 @@
-using System;
-using System.Linq;
 using System.Collections.Generic;
-using Ami.BroAudio.Data;
-using UnityEngine;
-using Ami.BroAudio;
-using static Ami.Extension.LoopExtension;
+using static Ami.BroAudio.Editor.BroEditorUtility;
+using static Ami.BroAudio.Utility;
 
 namespace Ami.BroAudio.Editor
 {
-	public class LibraryIDController : ILibraryIDContainer
+	public class LibraryIDController : IUniqueIDGenerator
 	{
-		private Dictionary<BroAudioType, List<int>> _idController = new Dictionary<BroAudioType, List<int>>();
+		private Dictionary<BroAudioType,int> _lastIDDict = null;
+		private bool _isInit = false;
 
-		public void AddByAsset(IAudioAsset asset)
+		private void Init()
 		{
-			if (!_idController.ContainsKey(asset.AudioType))
+			if(TryGetCoreData(out var coreData))
 			{
-				_idController.Add(asset.AudioType, new List<int>());
-			}
+				_lastIDDict = new Dictionary<BroAudioType, int>();
+				List<AudioTypeLastID> idList = coreData.AudioTypeLastIDs;
+				if(idList ==  null || idList.Count == 0)
+                {
+                    idList = CreateLastIDs();
+                    WriteLastIDsToCoreData(idList);
+                }
 
-			_idController[asset.AudioType].AddRange(asset.GetAllAudioLibraries().Select(x => x.ID));
-		}
-
-		public int GetUniqueID(BroAudioType audioType)
-		{
-			int id = 0;
-			int min = audioType.ToConstantID();
-			int max = audioType.ToNext().ToConstantID();
-
-			if (_idController.TryGetValue(audioType, out var idList))
-			{
-				Loop(() =>
+                for (int i = 0; i < idList.Count;i++)
 				{
-				// TODO: needs better uniqueID algorithm
-				id = UnityEngine.Random.Range(min, max);
-					if (!idList.Contains(id))
-					{
-						return Statement.Break;
-					}
-					return Statement.Continue;
-				});
-				_idController[audioType].Add(id);
-				return id;
+					var pair = idList[i];
+					_lastIDDict.Add(pair.AudioType, pair.LastID);
+				}
 			}
-			else
-			{
-				return -1;
-			}
+
+			_isInit = true;
 		}
 
-		public bool RemoveID(BroAudioType audioType, int id)
-		{
-			if (_idController.TryGetValue(audioType, out var idList))
-			{
-				return idList.Remove(id);
-			}
-			return false;
-		}
+        public int GetUniqueID(BroAudioType audioType)
+        {
+            if (!_isInit)
+            {
+                Init();
+            }
 
-		public void Reset()
+            if (_lastIDDict.TryGetValue(audioType, out int lastID))
+            {
+                lastID++;
+                if (lastID >= audioType.ToNext().GetInitialID() || lastID >= FinalIDLimit)
+                {
+                    // While surpassing the limit isn't entirely out of the question, it's much less likely than other potential causes.
+                    BroLog.LogError("Audio ID is out of range. If you encounter this error,a bug report would be appreciated.");
+                    return default;
+                }
+
+                _lastIDDict[audioType] = lastID;
+                WriteNewLastID(audioType, lastID);
+                return lastID;
+            }
+            return default;
+        }
+
+		private void WriteNewLastID(BroAudioType audioType, int lastId)
 		{
-			_idController.Clear();
+			RewriteCoreData((coreData) => 
+			{
+                for (int i = 0; i < coreData.AudioTypeLastIDs.Count; i++)
+                {
+                    var item = coreData.AudioTypeLastIDs[i];
+                    if (item.AudioType == audioType)
+                    {
+                        item.LastID = lastId;
+                        coreData.AudioTypeLastIDs[i] = item;
+                    }
+                }
+            });
 		}
 	} 
 }

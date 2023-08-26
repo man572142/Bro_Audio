@@ -43,7 +43,7 @@ namespace Ami.BroAudio.Editor
 
 		private GUIStyle _assetNameTitleStyle = null;
 		private VerticalGapDrawingHelper _gapDrawer = new VerticalGapDrawingHelper();
-		private LibraryIDController _libraryIdController = new LibraryIDController();
+		private LibraryIDController _libraryIdGenerator = new LibraryIDController();
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 
 		private Gradient gradient = new Gradient();
@@ -146,8 +146,7 @@ namespace Ami.BroAudio.Editor
 				editor.serializedObject.ApplyModifiedPropertiesWithoutUndo();
 			}
 
-			_libraryIdController.AddByAsset(editor.Asset);
-			editor.SetIDAccessor(_libraryIdController);
+			editor.SetIDGenerator(_libraryIdGenerator);
 			return editor;
 		}
 
@@ -207,23 +206,23 @@ namespace Ami.BroAudio.Editor
 		private void InitAssetOptionGenericMenu()
 		{
 			_assetOption = new GenericMenu();
+            _assetOption.AddItem(new GUIContent("Choose an AudioType to create an asset"), false, null);
+            _assetOption.AddSeparator("");
 
-			ForeachAudioType((BroAudioType audioType) =>
+			ForeachConcreteAudioType((audioType) => 
 			{
-				if (audioType == BroAudioType.None)
-				{
-					_assetOption.AddItem(new GUIContent("Choose an AudioType to create an asset"), false, null);
-					_assetOption.AddSeparator("");
-				}
-				else
-				{
-					_assetOption.AddItem(new GUIContent(audioType.ToString()), false, () => OnCreateAssetAskName(audioType));
-				}
-			});
+                GUIContent optionName = new GUIContent(audioType.ToString());
+                _assetOption.AddItem(optionName, false, OnClickOption);
+
+                void OnClickOption()
+                {
+                    ShowCreateAssetAskName(audioType);
+                }
+            });
 		} 
 		#endregion
 
-		private void OnCreateAssetAskName(BroAudioType audioType)
+		private void ShowCreateAssetAskName(BroAudioType audioType)
 		{
 			// In the following case. List has better performance than IEnumerable , even with a ToList() method.
 			List<string> assetNames = _assetEditorDict.Values.Select(x => x.Asset.AssetName).ToList();

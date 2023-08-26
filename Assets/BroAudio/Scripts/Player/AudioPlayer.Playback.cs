@@ -36,7 +36,6 @@ namespace Ami.BroAudio.Runtime
                 {
                     if (_isReadyToPlay)
 					{
-						DecoratePref(ref pref);
 						StartPlaying();
 					}
 					else
@@ -52,7 +51,8 @@ namespace Ami.BroAudio.Runtime
 
 			void StartPlaying()
 			{
-				this.StartCoroutineAndReassign(PlayControl(clip, pref), ref _playbackControlCoroutine);
+                DecoratePref(ref pref);
+                this.StartCoroutineAndReassign(PlayControl(clip, pref), ref _playbackControlCoroutine);
 			}
 
             void ExecuteAfterChainingMethod(Action action)

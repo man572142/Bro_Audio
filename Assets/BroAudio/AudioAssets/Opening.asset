@@ -10,33 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b8dea545865285941be8a4ddd0692911, type: 3}
-  m_Name: OpeningScene
+  m_Name: Opening
   m_EditorClassIdentifier: 
   Libraries:
   - <Name>k__BackingField: Plastic Love
-    <ID>k__BackingField: 99
+    <ID>k__BackingField: 268435457
     Clips:
     - AudioClip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
-      Volume: 1
-      StartPosition: 9.23
-      EndPosition: 0
-      FadeIn: 0
-      FadeOut: 0
-      Weight: 0
-      SnapToFullVolume: 0
-    MulticlipsPlayMode: 0
-    IsShowClipPreview: 0
-    Loop: 0
-    SeamlessLoop: 0
-    TransitionTime: 0
-    SeamlessTransitionType: 0
-    TransitionTempo:
-      BPM: 0
-      Beats: 0
-  - <Name>k__BackingField: Never  Gonna Give You Up
-    <ID>k__BackingField: 47
-    Clips:
-    - AudioClip: {fileID: 8300000, guid: 8efd1e9bfd873e64fb764efa0281c950, type: 3}
       Volume: 1
       StartPosition: 0
       EndPosition: 0
@@ -53,25 +33,25 @@ MonoBehaviour:
     TransitionTempo:
       BPM: 0
       Beats: 0
-  - <Name>k__BackingField: Chill Lofi Beat
-    <ID>k__BackingField: 52
+  - <Name>k__BackingField: Chill
+    <ID>k__BackingField: 268435458
     Clips:
     - AudioClip: {fileID: 8300000, guid: 4b55b743fac55204abecc70b86b4c7e5, type: 3}
       Volume: 1
-      StartPosition: 3.21
-      EndPosition: 2.9
-      FadeIn: 2.26
-      FadeOut: 3
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
       Weight: 0
       SnapToFullVolume: 0
     MulticlipsPlayMode: 0
-    IsShowClipPreview: 1
+    IsShowClipPreview: 0
     Loop: 0
-    SeamlessLoop: 1
-    TransitionTime: 3.4285715
-    SeamlessTransitionType: 2
+    SeamlessLoop: 0
+    TransitionTime: 0
+    SeamlessTransitionType: 0
     TransitionTempo:
-      BPM: 70
-      Beats: 4
-  <AssetName>k__BackingField: OpeningScene
-  _assetGUID: aa36f8469281bd24c8b751e8d4085ef7
+      BPM: 0
+      Beats: 0
+  <AssetName>k__BackingField: Opening
+  _assetGUID: 3fcd1b0110320ba41b3cfce25f4f14f5

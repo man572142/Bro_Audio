@@ -24,13 +24,9 @@ namespace Ami.BroAudio.Demo
 			_voiceVol.onValueChanged.AddListener((value) => SetVolume(BroAudioType.VoiceOver, value));
 			_ambVol.onValueChanged.AddListener((value) => SetVolume(BroAudioType.Ambience, value));
 
-			Utility.ForeachAudioType((audioType) => 
-			{
-				if(audioType != BroAudioType.None)
-				{
-					SetVolume(audioType, GetSliderValue(audioType));
-				}
-			});
+			Utility.ForeachConcreteAudioType((audioType) => SetVolume(audioType, GetSliderValue(audioType)));
+			//Set master
+			SetVolume(BroAudioType.All, GetSliderValue(BroAudioType.All));
 		}
 
 		public void SetVolume(BroAudioType audioType, float value)

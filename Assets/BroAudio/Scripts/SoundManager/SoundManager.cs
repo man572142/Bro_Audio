@@ -232,7 +232,7 @@ namespace Ami.BroAudio.Runtime
 		private void GetPlaybackPrefByType(BroAudioType targetType, Action<AudioTypePlaybackPreference> onGetPref)
         {
             // For those which may be played in the future.
-            ForeachAudioType((audioType) =>
+            ForeachConcreteAudioType((audioType) =>
             {
                 if (targetType.HasFlag(audioType) && _auidoTypePref.TryGetValue(audioType,out var pref))
                 {

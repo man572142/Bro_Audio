@@ -2163,20 +2163,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _musicA:
-    ID: 99
-    SourceAsset: {fileID: 11400000, guid: aa36f8469281bd24c8b751e8d4085ef7, type: 2}
+    ID: 268435457
+    SourceAsset: {fileID: 11400000, guid: 3fcd1b0110320ba41b3cfce25f4f14f5, type: 2}
   _musicB:
-    ID: 52
-    SourceAsset: {fileID: 11400000, guid: aa36f8469281bd24c8b751e8d4085ef7, type: 2}
+    ID: 268435458
+    SourceAsset: {fileID: 11400000, guid: 3fcd1b0110320ba41b3cfce25f4f14f5, type: 2}
   _seamlessAmb:
-    ID: 971824
-    SourceAsset: {fileID: 11400000, guid: f70c288605a288c4699ee26414a692d9, type: 2}
+    ID: 805306369
+    SourceAsset: {fileID: 11400000, guid: 34d3fed302c539b4498948080e580a4a, type: 2}
   _flipTapeSFX:
-    ID: 4116985
-    SourceAsset: {fileID: 11400000, guid: f699ae8578cc64e4a95a1e342b4b2476, type: 2}
+    ID: 1073741825
+    SourceAsset: {fileID: 11400000, guid: dc82a9c1d12be6243824bc9c88e88121, type: 2}
   _voiceOver:
-    ID: 959568899
-    SourceAsset: {fileID: 11400000, guid: 54ce01fe0e912754d80147664656f1a9, type: 2}
+    ID: 1342177281
+    SourceAsset: {fileID: 11400000, guid: 1c803e2b44259b54a801cc6e667a0c5b, type: 2}
   _tape: {fileID: 201543267}
 --- !u!4 &1317931363
 Transform:

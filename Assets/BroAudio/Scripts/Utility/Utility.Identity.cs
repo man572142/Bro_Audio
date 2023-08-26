@@ -17,15 +17,15 @@ namespace Ami.BroAudio
 			ContainsWhiteSpace,
 		}
 
-		// 最後一個enum = ALL加1再右移一位
-		public static readonly int LastAudioType = ((int)BroAudioType.All + 1) >> 1;
-		public const int IdMultiplier = 100; // 用到1000會超出int上限，若有需要則必須改用long
+        public const BroAudioType PersistentType = BroAudioType.Music | BroAudioType.Ambience;
+        public const BroAudioType OneShotType = BroAudioType.SFX | BroAudioType.UI | BroAudioType.VoiceOver;
 
-		public const BroAudioType PersistentType = BroAudioType.Music | BroAudioType.Ambience;
-		public const BroAudioType OneShotType = BroAudioType.SFX | BroAudioType.UI | BroAudioType.VoiceOver;
+        public static readonly int LastAudioType = ((int)BroAudioType.All + 1) >> 1;
+		public static readonly int IDCapacity = 0x10000000; // 1000 0000 in HEX. 268,435,456 in DEC
 
+        public static int FinalIDLimit => ((BroAudioType)LastAudioType).GetInitialID() + IDCapacity;
 
-		public static int ToConstantID(this BroAudioType audioType)
+        public static int GetInitialID(this BroAudioType audioType)
 		{
 			if (audioType == BroAudioType.None)
 			{
@@ -37,13 +37,13 @@ namespace Ami.BroAudio
 			}
 
 			// Faster than Math.Log2 ()
-			int result = 1;
+			int result = 0;
 			int type = (int)audioType;
 
-			While(_ => (type >> 1) > 0, () => 
+			While(_ => type > 0, () => 
 			{
-				type = type >> 1;
-				result *= IdMultiplier;
+                result += IDCapacity;
+                type = type >> 1;
 
 				return Statement.Continue;
 			});
@@ -72,7 +72,7 @@ namespace Ami.BroAudio
 			// 換回一般While以減少效能開銷 
 			While(_ => nextType <= (BroAudioType)LastAudioType, () =>
 			{
-				if (id >= resultType.ToConstantID() && id < nextType.ToConstantID())
+				if (id >= resultType.GetInitialID() && id < nextType.GetInitialID())
 				{
 					return Statement.Break;
 				}
@@ -83,20 +83,22 @@ namespace Ami.BroAudio
 			});
 			return resultType;
 		}
-		
-		/// <summary>
-		/// 每輪迴圈以callback回傳AudioType
-		/// </summary>
-		public static void ForeachAudioType(Action<BroAudioType> loopCallback)
+
+		public static void ForeachConcreteAudioType(Action<BroAudioType> loopCallback)
 		{
-			BroAudioType currentType = BroAudioType.None;
-			While(_ => currentType <= (BroAudioType)LastAudioType, () =>
-			{
-				loopCallback?.Invoke(currentType);
-				currentType = currentType.ToNext();
-				return Statement.Continue;
-			});
-		}
+            BroAudioType currentType = BroAudioType.None;
+            While(_ => currentType <= (BroAudioType)LastAudioType, () =>
+            {
+				if(currentType != BroAudioType.None && currentType != BroAudioType.All)
+				{
+                    loopCallback?.Invoke(currentType);
+                }
+                
+                currentType = currentType.ToNext();
+                return Statement.Continue;
+            });
+        }
+
 
 		public static bool IsInvalidName(string name,out ValidationErrorCode errorCode)
 		{

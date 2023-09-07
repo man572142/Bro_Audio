@@ -4,28 +4,19 @@ using UnityEngine;
 
 namespace Ami.BroAudio.Editor
 {
+
 	public class EditorSetting : ScriptableObject
 	{
-		private Dictionary<BroAudioType, DrawedProperty> _propertySettings = new Dictionary<BroAudioType, DrawedProperty>
-		{
-			{ BroAudioType.Music, default},
-			{ BroAudioType.UI, default},
-			{ BroAudioType.Ambience, default},
-			{ BroAudioType.SFX, default},
-			{ BroAudioType.VoiceOver, default},
-		};
+		public bool ShowAudioTypeOnAudioID;
+		public bool ShowVUColorOnVolumeSlider;
 
-		public IReadOnlyDictionary<BroAudioType, DrawedProperty> PropertySettings => _propertySettings;
+		public Color MusicColor;
+		public Color UIColor;
+		public Color AmbienceColor;
+		public Color SFXColor;
+		public Color VoiceOverColor;
 
-		public bool ShowAudioTypeOnAudioID = FactorySettings.ShowAudioTypeOnAudioID;
-
-		public Color MusicColor = new Color(0f, 0.1f, 0.3f, 0.3f);
-		public Color UIColor = new Color(0f, 0.5f, 0.2f, 0.3f);
-		public Color AmbienceColor = new Color(0.1f, 0.5f, 0.5f, 0.3f);
-		public Color SFXColor = new Color(0.7f, 0.2f, 0.2f, 0.3f);
-		public Color VoiceOverColor = new Color(0.8f, 0.6f, 0f, 0.3f);
-
-		public bool ShowVUColorOnVolumeSlider = FactorySettings.ShowVUColorOnVolumeSlider;
+		public IReadOnlyDictionary<BroAudioType, DrawedProperty> PropertySettings;
 
 		public Color GetAudioTypeColor(BroAudioType audioType)
 		{
@@ -50,6 +41,15 @@ namespace Ami.BroAudio.Editor
 		{
 			ShowVUColorOnVolumeSlider = FactorySettings.ShowVUColorOnVolumeSlider;
 			ShowAudioTypeOnAudioID = FactorySettings.ShowAudioTypeOnAudioID;
+
+			PropertySettings = new Dictionary<BroAudioType, DrawedProperty>
+			{
+				{ BroAudioType.Music, FactorySettings.MusicDrawedProperties},
+				{ BroAudioType.UI, FactorySettings.UIDrawedProperties},
+				{ BroAudioType.Ambience, FactorySettings.AmbienceDrawedProperties},
+				{ BroAudioType.SFX, FactorySettings.SFXDrawedProperties},
+				{ BroAudioType.VoiceOver, FactorySettings.VoiceOverDrawedProperties},
+			};
 
 			if (ColorUtility.TryParseHtmlString(FactorySettings.MusicColor, out var musicColor))
 			{
@@ -85,6 +85,14 @@ namespace Ami.BroAudio.Editor
 			public const string AmbienceColor = "#1A80804C";
 			public const string SFXColor = "#B233334C";
 			public const string VoiceOverColor = "#CC99004C";
+
+			public const DrawedProperty BasicDrawedProperty = DrawedProperty.Volume | DrawedProperty.PlaybackPosition | DrawedProperty.Fade | DrawedProperty.ClipPreview;
+
+			public const DrawedProperty MusicDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop | DrawedProperty.SeamlessLoop;
+			public const DrawedProperty UIDrawedProperties = BasicDrawedProperty | DrawedProperty.Delay;
+			public const DrawedProperty AmbienceDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop | DrawedProperty.SeamlessLoop;
+			public const DrawedProperty SFXDrawedProperties = BasicDrawedProperty | DrawedProperty.Delay | DrawedProperty.Loop | DrawedProperty.SeamlessLoop;
+			public const DrawedProperty VoiceOverDrawedProperties = BasicDrawedProperty | DrawedProperty.Delay;
 
 			public const bool ShowVUColorOnVolumeSlider = true;
 		}

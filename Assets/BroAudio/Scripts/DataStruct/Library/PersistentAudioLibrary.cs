@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Ami.BroAudio.Data
 {
     [System.Serializable]
-    public class PersistentAudioLibrary : AudioLibrary
+    public class PersistentAudioLibrary
     {
         //public override BroAudioType PossibleFlags => BroAudioType.Music | BroAudioType.Ambience;
 

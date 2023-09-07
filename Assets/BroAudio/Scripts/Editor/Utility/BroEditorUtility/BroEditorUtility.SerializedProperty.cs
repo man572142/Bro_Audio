@@ -27,13 +27,13 @@ namespace Ami.BroAudio.Editor
             property.FindPropertyRelative(AudioLibrary.NameOf.IsShowClipPreview).boolValue = false;
             property.FindPropertyRelative(AudioLibrary.NameOf.MulticlipsPlayMode).enumValueIndex = 0;
 
-            var delayProp = property.FindPropertyRelative(nameof(OneShotAudioLibrary.Delay));
+            var delayProp = property.FindPropertyRelative(nameof(AudioLibrary.Delay));
             if(delayProp != null)
 			{
                 delayProp.floatValue = 0f;
 			}
 
-            var loopPorp = property.FindPropertyRelative(nameof(PersistentAudioLibrary.Loop));
+            var loopPorp = property.FindPropertyRelative(nameof(AudioLibrary.Loop));
             if(loopPorp != null)
 			{
                 loopPorp.boolValue = false;

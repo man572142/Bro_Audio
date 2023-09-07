@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Ami.BroAudio.Data
 {
     [System.Serializable]
-    public class OneShotAudioLibrary : AudioLibrary
+    public class OneShotAudioLibrary
     {
         public float Delay;
 

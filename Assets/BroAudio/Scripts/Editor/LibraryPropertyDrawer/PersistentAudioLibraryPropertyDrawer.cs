@@ -4,13 +4,12 @@ using UnityEditor;
 using UnityEngine;
 using Ami.BroAudio.Data;
 using static Ami.Extension.EditorScriptingExtension;
-using static Ami.BroAudio.Data.PersistentAudioLibrary;
 using Ami.Extension;
 using Ami.BroAudio.Runtime;
+using static Ami.BroAudio.Data.AudioLibrary;
 
 namespace Ami.BroAudio.Editor
 {
-	[CustomPropertyDrawer(typeof(PersistentAudioLibrary))]
 	public class PersistentAudioLibraryPropertyDrawer : AudioLibraryPropertyDrawer
 	{
 		private GUIContent _loopingLabel = new GUIContent("Looping");
@@ -22,15 +21,15 @@ namespace Ami.BroAudio.Editor
 		// The number should match the amount of EditorGUI elements that being draw in this script.
 		protected override int GetAdditionalBaseProtiesLineCount(SerializedProperty property)
 		{
-			var seamlessToggleProp = property.FindPropertyRelative(nameof(PersistentAudioLibrary.SeamlessLoop));
+			var seamlessToggleProp = property.FindPropertyRelative(nameof(AudioLibrary.SeamlessLoop));
 			return seamlessToggleProp.boolValue ? 2 : 1;
 		}
 		protected override int GetAdditionalClipPropertiesLineCount(SerializedProperty property) => 0;
 
 		protected override void DrawAdditionalBaseProperties(Rect position, SerializedProperty property)
 		{
-			_loopingToggles[0] = property.FindPropertyRelative(nameof(PersistentAudioLibrary.Loop));
-			_loopingToggles[1] = property.FindPropertyRelative(nameof(PersistentAudioLibrary.SeamlessLoop));
+			_loopingToggles[0] = property.FindPropertyRelative(nameof(AudioLibrary.Loop));
+			_loopingToggles[1] = property.FindPropertyRelative(nameof(AudioLibrary.SeamlessLoop));
 
 			Rect loopRect = GetRectAndIterateLine(position);
 			DrawToggleGroup(loopRect, _loopingLabel, _loopingToggles);
@@ -52,13 +51,13 @@ namespace Ami.BroAudio.Editor
 			EditorGUI.LabelField(rects[drawIndex], "Transition By");
 			drawIndex++;
 
-			var seamlessTypeProp = property.FindPropertyRelative(NameOf_SeamlessType);
+			var seamlessTypeProp = property.FindPropertyRelative(NameOf.SeamlessType);
 			SeamlessType currentType = (SeamlessType)seamlessTypeProp.enumValueIndex;
 			currentType = (SeamlessType)EditorGUI.EnumPopup(rects[drawIndex], currentType);
 			seamlessTypeProp.enumValueIndex = (int)currentType;
 			drawIndex++;
 
-			var transitionTimeProp = property.FindPropertyRelative(nameof(PersistentAudioLibrary.TransitionTime));
+			var transitionTimeProp = property.FindPropertyRelative(nameof(AudioLibrary.TransitionTime));
 			switch (currentType)
 			{
 				// TODO : 數值不能超過Clip長度
@@ -66,7 +65,7 @@ namespace Ami.BroAudio.Editor
                     transitionTimeProp.floatValue = Mathf.Abs(EditorGUI.FloatField(rects[drawIndex], transitionTimeProp.floatValue));
 					break;
 				case SeamlessType.Tempo:
-					var tempoProp = property.FindPropertyRelative(NameOf_TransitionTempo);
+					var tempoProp = property.FindPropertyRelative(NameOf.TransitionTempo);
 					var bpmProp = tempoProp.FindPropertyRelative(nameof(TempoTransition.BPM));
 					var beatsProp = tempoProp.FindPropertyRelative(nameof(TempoTransition.Beats));
 

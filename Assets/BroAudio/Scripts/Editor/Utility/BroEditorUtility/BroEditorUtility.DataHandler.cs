@@ -2,8 +2,6 @@ using UnityEditor;
 using UnityEngine;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Runtime;
-// For versions that under Unity 2019.2
-using static Ami.Extension.VersionAdapter;
 
 namespace Ami.BroAudio.Editor
 {

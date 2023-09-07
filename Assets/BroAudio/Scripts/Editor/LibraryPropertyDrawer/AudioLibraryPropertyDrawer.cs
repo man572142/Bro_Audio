@@ -12,7 +12,8 @@ using static Ami.Extension.EditorVersionAdapter;
 
 namespace Ami.BroAudio.Editor
 {
-	public abstract class AudioLibraryPropertyDrawer : MiPropertyDrawer
+	[CustomPropertyDrawer(typeof(AudioLibrary))]
+	public partial class AudioLibraryPropertyDrawer : MiPropertyDrawer
 	{
 		protected const float ClipPreviewHeight = 100f;
 		private const int _basePropertiesLineCount = 2;
@@ -29,11 +30,6 @@ namespace Ami.BroAudio.Editor
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper(ClipPreviewHeight);
 		
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
-
-		protected abstract int GetAdditionalBaseProtiesLineCount(SerializedProperty property);
-		protected abstract int GetAdditionalClipPropertiesLineCount(SerializedProperty property);
-		protected abstract void DrawAdditionalBaseProperties(Rect position, SerializedProperty property);
-		protected abstract void DrawAdditionalClipProperties(Rect position, SerializedProperty property);
 
 		protected override void OnEnable()
 		{
@@ -78,7 +74,8 @@ namespace Ami.BroAudio.Editor
 			if (property.isExpanded)
 			{
 				nameProp.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProp.stringValue);
-				DrawAdditionalBaseProperties(position, property);
+				BroAudioType audioType = GetAudioType(property);
+				DrawAdditionalBaseProperties(position, property, audioType);
 
 				#region Clip Properties
 				ReorderableClips currClipList = DrawReorderableClipsList(position, property);
@@ -86,7 +83,7 @@ namespace Ami.BroAudio.Editor
 				if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip),out AudioClip audioClip))
 				{
 					DrawClipProperties(position, currClipList, audioClip,out Transport transport);
-					DrawAdditionalClipProperties(position, property);
+					DrawAdditionalClipProperties(position, property, audioType);
 					DrawClipPreview(position, property, transport, audioClip);
 				}
 				#endregion
@@ -99,6 +96,7 @@ namespace Ami.BroAudio.Editor
 			
 			if (property.isExpanded)
 			{
+				BroAudioType audioType = GetAudioType(property);
 				if (_reorderableClipsDict.TryGetValue(property.propertyPath, out ReorderableClips clipList))
 				{
 					height += clipList.Height;
@@ -106,17 +104,18 @@ namespace Ami.BroAudio.Editor
 						clipList.CurrentSelectedClip != null &&
 						clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip);
 					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioLibrary.NameOf.IsShowClipPreview).boolValue;
+					
 
 					if(isShowClipProp)
 					{
-						height += (_clipPropertiesLineCount + GetAdditionalClipPropertiesLineCount(property)) * SingleLineSpace;
+						height += (_clipPropertiesLineCount + GetAdditionalClipPropertiesLineCount(property, audioType)) * SingleLineSpace;
 					}
 					if(isShowClipPreview)
 					{
 						height += ClipPreviewHeight;
 					}
 				}
-				height += (_basePropertiesLineCount + GetAdditionalBaseProtiesLineCount(property)) * SingleLineSpace;
+				height += (_basePropertiesLineCount + GetAdditionalBaseProtiesLineCount(property, audioType)) * SingleLineSpace;
 			}
 			return height;
 		}
@@ -194,7 +193,7 @@ namespace Ami.BroAudio.Editor
 				Rect dbLabelRect = rects[2];
 
 #if !UNITY_WEBGL
-				if (BroEditorUtility.GlobalSetting.ShowVUColorOnVolumeSlider)
+				if (BroEditorUtility.EditorSetting.ShowVUColorOnVolumeSlider)
 				{
 					DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
 				}
@@ -285,6 +284,12 @@ namespace Ami.BroAudio.Editor
 				return isInLowVolumeSnappingRange || isInHighVolumeSnappingRange;
 			}
 #endif
+		}
+
+		private BroAudioType GetAudioType(SerializedProperty property)
+		{
+			int id = property.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.ID))).intValue;
+			return Utility.GetAudioType(id);
 		}
     }
 }

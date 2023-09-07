@@ -45,6 +45,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string VUColorToggleLabel = "Show VU color on volume slider";
 		public const string ShowAudioTypeToggleLabel = "Show audioType on AudioID";
 		public const string AudioTypeColorLabel = "Audio Type Color";
+		public const string AudioTypeDrawedProperties = "Audio Type Drawed Properties";
 		public const string GitURL = "https://github.com/man572142/Bro_Audio";
 		
 		public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
@@ -62,6 +63,7 @@ namespace Ami.BroAudio.Editor.Setting
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 		private AudioMixerGroup _duplicateTrackSource = null;
 		private AudioMixer _mixer = null;
+		private int _audioTypeCount = -1;
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
@@ -80,6 +82,19 @@ namespace Ami.BroAudio.Editor.Setting
 					}
 				}
 				return _mixer;
+			}
+		}
+
+		public int AudioTypeCount
+		{
+			get
+			{
+				if(_audioTypeCount < 0)
+				{
+					_audioTypeCount = 0;
+					ForeachConcreteAudioType(audioType => _audioTypeCount++);
+				}
+				return _audioTypeCount;
 			}
 		}
 
@@ -363,19 +378,11 @@ namespace Ami.BroAudio.Editor.Setting
 				EditorGUI.indentLevel++;
 				Rect colorRect = GetRectAndIterateLine(drawPosition);
 				colorRect.xMax -= 20f;
-				SplitRectHorizontal(colorRect, 0.5f, 0f, out Rect leftColorRect, out Rect rightColorRect);
-				int count = 0;
-				ForeachConcreteAudioType((audioType) =>
-				{
-                    SetAudioTypeLabelColor(count % 2 == 0 ? leftColorRect : rightColorRect, audioType);
-                    count++;
-                    if (count % 2 == 1)
-                    {
-                        leftColorRect.y += SingleLineSpace;
-                        rightColorRect.y += SingleLineSpace;
-                    }
-                });
+
+				DrawTwoColumnAudioType(colorRect, SetAudioTypeLabelColor);
 			}
+
+			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeDrawedProperties.ToWhiteBold(), GUIStyleHelper.Instance.RichText);
 
 			void DemonstrateSlider()
 			{
@@ -390,6 +397,22 @@ namespace Ami.BroAudio.Editor.Setting
 					EditorGUI.DrawRect(vuRect, VUMaskColor);
                 }
 				GUI.HorizontalSlider(sliderRect, 1f, 0f, 1.25f);
+			}
+
+			void DrawTwoColumnAudioType(Rect colorRect, Action<Rect, BroAudioType> onDraw)
+			{
+				SplitRectHorizontal(colorRect, 0.5f, 0f, out Rect leftColorRect, out Rect rightColorRect);
+				int count = 0;
+				ForeachConcreteAudioType((audioType) =>
+				{
+					onDraw?.Invoke(count % 2 == 0 ? leftColorRect : rightColorRect, audioType);
+					count++;
+					if (count % 2 == 1)
+					{
+						leftColorRect.y += SingleLineSpace;
+						rightColorRect.y += SingleLineSpace;
+					}
+				});
 			}
 
 			void SetAudioTypeLabelColor(Rect fieldRect, BroAudioType audioType)
@@ -436,6 +459,7 @@ namespace Ami.BroAudio.Editor.Setting
             if (GUI.Button(GetRectAndIterateLine(drawPosition),ResetSettingButtonText))
 			{
 				RuntimeSetting.ResetToFactorySettings();
+				EditorSetting.ResetToFactorySettings();
 			}
 		}
 

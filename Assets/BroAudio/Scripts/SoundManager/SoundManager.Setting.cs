@@ -9,17 +9,17 @@ namespace Ami.BroAudio.Runtime
 {
 	public partial class SoundManager : MonoBehaviour
 	{
-		private GlobalSetting _setting = null;
-		public GlobalSetting Setting
+		private RuntimeSetting _setting = null;
+		public RuntimeSetting Setting
 		{
 			get
 			{
 				if(_setting == null)
-					_setting = Resources.Load<GlobalSetting>(GlobalSetting.FilePath);
+					_setting = Resources.Load<RuntimeSetting>(RuntimeSetting.FilePath);
 
 				if(!_setting)
 				{
-					_setting = new GlobalSetting();
+					_setting = new RuntimeSetting();
 					LogWarning("Can't load BroAudioGlobalSetting.asset, all setting values will be as default. " +
 						"If your setting file is missing. Please open BroAudio/Setting to recreate it and put it under any [Resource] folder");
 				}

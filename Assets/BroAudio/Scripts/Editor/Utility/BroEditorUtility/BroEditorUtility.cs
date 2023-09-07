@@ -17,21 +17,39 @@ namespace Ami.BroAudio.Editor
         public const string VoiceCountPropertyName = "m_RealVoiceCount";
 
 
-        private static GlobalSetting _setting = null;
-        public static GlobalSetting GlobalSetting
+        private static RuntimeSetting _runtimeSetting = null;
+        public static RuntimeSetting RuntimeSetting
         {
             get
             {
-                if(!_setting)
+                if(!_runtimeSetting)
                 {
-                    _setting = Resources.Load<GlobalSetting>(GlobalSetting.FilePath);
-                    if (!_setting)
+                    _runtimeSetting = Resources.Load<RuntimeSetting>(RuntimeSetting.FilePath);
+                    if (!_runtimeSetting)
                     {
                         GlobalSettingEditorWindow.ShowWindowWithMessage(GlobalSettingEditorWindow.OpenMessage.SettingAssetFileMissing);
                     }
                     EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
                 }
-                return _setting;
+                return _runtimeSetting;
+            }
+        }
+
+        private static EditorSetting _editorSetting = null;
+        public static EditorSetting EditorSetting
+        {
+            get
+            {
+                if (!_editorSetting)
+                {
+                    _editorSetting = Resources.Load<EditorSetting>(RuntimeSetting.FilePath);
+                    if (!_editorSetting)
+                    {
+                        GlobalSettingEditorWindow.ShowWindowWithMessage(GlobalSettingEditorWindow.OpenMessage.SettingAssetFileMissing);
+                    }
+                    EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+                }
+                return _editorSetting;
             }
         }
 
@@ -40,7 +58,7 @@ namespace Ami.BroAudio.Editor
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
             if (mode == PlayModeStateChange.ExitingEditMode || mode == PlayModeStateChange.EnteredPlayMode)
             {
-                _setting = null;
+                _runtimeSetting = null;
             }
         }
 

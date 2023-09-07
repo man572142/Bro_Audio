@@ -65,7 +65,8 @@ namespace Ami.BroAudio.Editor.Setting
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
-		
+		public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
+
 		private AudioMixer AudioMixer
 		{
 			get
@@ -190,7 +191,7 @@ namespace Ami.BroAudio.Editor.Setting
 			EditorGUI.indentLevel++;
 			EditorGUI.DrawRect(tabBackgroundRect, UnityDefaultEditorColor);
 
-			if (GlobalSetting != null)
+			if (RuntimeSetting != null)
 			{
 				switch (_currentSelectTab)
 				{
@@ -228,10 +229,10 @@ namespace Ami.BroAudio.Editor.Setting
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Default Easing".ToWhiteBold(), GUIStyleHelper.Instance.RichText);
 				EditorGUI.indentLevel++;
-				GlobalSetting.DefaultFadeInEase =
-					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", GlobalSetting.DefaultFadeInEase);
-				GlobalSetting.DefaultFadeOutEase =
-					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", GlobalSetting.DefaultFadeOutEase);
+				RuntimeSetting.DefaultFadeInEase =
+					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", RuntimeSetting.DefaultFadeInEase);
+				RuntimeSetting.DefaultFadeOutEase =
+					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.DefaultFadeOutEase);
 				EditorGUI.indentLevel--;
 			}
 
@@ -239,10 +240,10 @@ namespace Ami.BroAudio.Editor.Setting
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Seamless Loop Easing".ToWhiteBold(), GUIStyleHelper.Instance.RichText);
 				EditorGUI.indentLevel++;
-				GlobalSetting.SeamlessFadeInEase =
-					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", GlobalSetting.SeamlessFadeInEase);
-				GlobalSetting.SeamlessFadeOutEase =
-					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", GlobalSetting.SeamlessFadeOutEase);
+				RuntimeSetting.SeamlessFadeInEase =
+					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", RuntimeSetting.SeamlessFadeInEase);
+				RuntimeSetting.SeamlessFadeOutEase =
+					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.SeamlessFadeOutEase);
 				EditorGUI.indentLevel--;
 			}
 
@@ -253,7 +254,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 				haasRect.width *= 0.5f;
 				haasRect.x += 150f;
-				GlobalSetting.HaasEffectInSeconds = EditorGUI.FloatField(haasRect, " ", GlobalSetting.HaasEffectInSeconds);
+				RuntimeSetting.HaasEffectInSeconds = EditorGUI.FloatField(haasRect, " ", RuntimeSetting.HaasEffectInSeconds);
 			}
 
 			void DrawAudioProjectSettings()
@@ -351,12 +352,12 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawGUISetting(Rect drawPosition)
 		{
-			GlobalSetting.ShowVUColorOnVolumeSlider = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), VUColorToggleLabel, GlobalSetting.ShowVUColorOnVolumeSlider);
+			EditorSetting.ShowVUColorOnVolumeSlider = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), VUColorToggleLabel, EditorSetting.ShowVUColorOnVolumeSlider);
 			DemonstrateSlider();
 
-			GlobalSetting.ShowAudioTypeOnAudioID = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), ShowAudioTypeToggleLabel, GlobalSetting.ShowAudioTypeOnAudioID);
+			EditorSetting.ShowAudioTypeOnAudioID = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), ShowAudioTypeToggleLabel, EditorSetting.ShowAudioTypeOnAudioID);
 
-			if (GlobalSetting.ShowAudioTypeOnAudioID)
+			if (EditorSetting.ShowAudioTypeOnAudioID)
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeColorLabel.ToWhiteBold(), GUIStyleHelper.Instance.RichText);
 				EditorGUI.indentLevel++;
@@ -381,12 +382,12 @@ namespace Ami.BroAudio.Editor.Setting
 				Rect sliderRect = GetRectAndIterateLine(drawPosition);
 				sliderRect.width = drawPosition.width * 0.5f;
 				sliderRect.x += Gap;
-				if (GlobalSetting.ShowVUColorOnVolumeSlider)
+				if (EditorSetting.ShowVUColorOnVolumeSlider)
 				{
 					Rect vuRect = new Rect(sliderRect);
 					vuRect.height *= 0.5f;
 					EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent(HorizontalVUMeter).image);
-                    EditorGUI.DrawRect(vuRect, VUMaskColor);
+					EditorGUI.DrawRect(vuRect, VUMaskColor);
                 }
 				GUI.HorizontalSlider(sliderRect, 1f, 0f, 1.25f);
 			}
@@ -396,19 +397,19 @@ namespace Ami.BroAudio.Editor.Setting
 				switch (audioType)
 				{
 					case BroAudioType.Music:
-						GlobalSetting.MusicColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.MusicColor);
+						EditorSetting.MusicColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), EditorSetting.MusicColor);
 						break;
 					case BroAudioType.UI:
-						GlobalSetting.UIColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.UIColor);
+						EditorSetting.UIColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), EditorSetting.UIColor);
 						break;
 					case BroAudioType.Ambience:
-						GlobalSetting.AmbienceColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.AmbienceColor);
+						EditorSetting.AmbienceColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), EditorSetting.AmbienceColor);
 						break;
 					case BroAudioType.SFX:
-						GlobalSetting.SFXColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.SFXColor);
+						EditorSetting.SFXColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), EditorSetting.SFXColor);
 						break;
 					case BroAudioType.VoiceOver:
-						GlobalSetting.VoiceOverColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), GlobalSetting.VoiceOverColor);
+						EditorSetting.VoiceOverColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), EditorSetting.VoiceOverColor);
 						break;
 					default:
 						break;
@@ -434,7 +435,7 @@ namespace Ami.BroAudio.Editor.Setting
 			DrawEmptyLine(1);
             if (GUI.Button(GetRectAndIterateLine(drawPosition),ResetSettingButtonText))
 			{
-				GlobalSetting.ResetToFactorySettings();
+				RuntimeSetting.ResetToFactorySettings();
 			}
 		}
 

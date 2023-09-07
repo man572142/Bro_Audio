@@ -73,10 +73,10 @@ namespace Ami.BroAudio.Editor
 				dropdown.Show(idRect);
 			}
 			
-			if (BroEditorUtility.GlobalSetting.ShowAudioTypeOnAudioID && audioAsset != null && idProp.intValue > 0)
+			if (BroEditorUtility.EditorSetting.ShowAudioTypeOnAudioID && audioAsset != null && idProp.intValue > 0)
 			{
 				Rect audioTypeRect = EditorScriptingExtension.DissolveHorizontal(idRect, 0.7f);
-				EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.GlobalSetting.GetAudioTypeColor(audioAsset.AudioType));
+				EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(audioAsset.AudioType));
 				EditorGUI.LabelField(audioTypeRect, audioAsset.AudioType.ToString(), GUIStyleHelper.Instance.MiddleCenterText);
 			}
 

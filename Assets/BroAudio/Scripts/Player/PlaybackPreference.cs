@@ -2,8 +2,6 @@ using UnityEngine;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using static Ami.BroAudio.Runtime.AudioPlayer;
-using static Ami.BroAudio.Utility;
-using System;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -24,17 +22,17 @@ namespace Ami.BroAudio.Runtime
 		public float FadeOut { get; private set; }
 		public Waiter PlayerWaiter { get; private set; }
 
-		public PlaybackPreference(IAudioLibrary library,Vector3 position) : this(library)
+		public PlaybackPreference(IAudioEntity entity,Vector3 position) : this(entity)
 		{
 			Position = position;
 		}
 
-		public PlaybackPreference(IAudioLibrary library, Transform followTarget) : this(library)
+		public PlaybackPreference(IAudioEntity entity, Transform followTarget) : this(entity)
 		{
 			FollowTarget = followTarget;
 		}
 
-		public PlaybackPreference(IAudioLibrary library)
+		public PlaybackPreference(IAudioEntity entity)
 		{
 			FadeIn = UseLibraryManagerSetting;
 			FadeOut = UseLibraryManagerSetting;
@@ -46,19 +44,10 @@ namespace Ami.BroAudio.Runtime
 			FollowTarget = null;
 			PlayerWaiter = null;
 
-			BroAudioType audioType = GetAudioType(library.ID);
-
-			if(PersistentType.HasFlag(audioType))
-			{
-				var persistentLib = library.CastTo<PersistentAudioLibrary>();
-				SeamlessTransitionTime = persistentLib.TransitionTime;
-                IsSeamlessLoop = persistentLib.SeamlessLoop ;
-				IsNormalLoop = IsSeamlessLoop ? false : persistentLib.Loop;
-			}
-			else if(OneShotType.HasFlag(audioType))
-			{
-				Delay = library.CastTo<OneShotAudioLibrary>().Delay;
-			}
+			SeamlessTransitionTime = entity.TransitionTime;
+			IsSeamlessLoop = entity.SeamlessLoop;
+			IsNormalLoop = IsSeamlessLoop ? false : entity.Loop;
+			Delay = entity.Delay;
 
 			FadeInEase = IsSeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
 			FadeOutEase = IsSeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;

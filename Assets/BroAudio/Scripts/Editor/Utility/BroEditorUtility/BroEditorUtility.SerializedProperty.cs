@@ -24,8 +24,8 @@ namespace Ami.BroAudio.Editor
         {
             property.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.Name))).stringValue = string.Empty;
             property.FindPropertyRelative(nameof(AudioLibrary.Clips)).arraySize = 0;
-            property.FindPropertyRelative(AudioLibrary.NameOf_IsShowClipPreview).boolValue = false;
-            property.FindPropertyRelative(AudioLibrary.NameOf_MulticlipsPlayMode).enumValueIndex = 0;
+            property.FindPropertyRelative(AudioLibrary.NameOf.IsShowClipPreview).boolValue = false;
+            property.FindPropertyRelative(AudioLibrary.NameOf.MulticlipsPlayMode).enumValueIndex = 0;
 
             var delayProp = property.FindPropertyRelative(nameof(OneShotAudioLibrary.Delay));
             if(delayProp != null)

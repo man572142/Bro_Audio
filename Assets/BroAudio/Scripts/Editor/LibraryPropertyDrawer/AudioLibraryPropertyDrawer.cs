@@ -105,7 +105,7 @@ namespace Ami.BroAudio.Editor
 					bool isShowClipProp =
 						clipList.CurrentSelectedClip != null &&
 						clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip);
-					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioLibrary.NameOf_IsShowClipPreview).boolValue;
+					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioLibrary.NameOf.IsShowClipPreview).boolValue;
 
 					if(isShowClipProp)
 					{
@@ -175,7 +175,7 @@ namespace Ami.BroAudio.Editor
 
 		private void DrawClipPreview(Rect position, SerializedProperty property, Transport transport, AudioClip audioClip)
 		{
-			SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioLibrary.NameOf_IsShowClipPreview);
+			SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioLibrary.NameOf.IsShowClipPreview);
 			isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
 			bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
 			if (isShowPreview)

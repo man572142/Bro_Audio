@@ -7,7 +7,7 @@ namespace Ami.BroAudio.Data
     [System.Serializable]
     public class PersistentAudioLibrary : AudioLibrary
     {
-        public override BroAudioType PossibleFlags => BroAudioType.Music | BroAudioType.Ambience;
+        //public override BroAudioType PossibleFlags => BroAudioType.Music | BroAudioType.Ambience;
 
         public bool Loop = false;
         public bool SeamlessLoop = false;

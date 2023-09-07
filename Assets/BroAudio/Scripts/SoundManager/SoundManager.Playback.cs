@@ -21,9 +21,9 @@ namespace Ami.BroAudio.Runtime
         #region Play
         public IAudioPlayer Play(int id)
         {
-            if (IsPlayable(id,out var library) && TryGetAvailablePlayer(id, out var player))
+            if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
             {
-                var pref = new PlaybackPreference(library);
+                var pref = new PlaybackPreference(entity);
                 return PlayerToPlay(id, player, pref);
             }
             return null;
@@ -31,9 +31,9 @@ namespace Ami.BroAudio.Runtime
 
         public IAudioPlayer Play(int id, Vector3 position)
         {
-            if (IsPlayable(id,out var library) && TryGetAvailablePlayer(id, out var player))
+            if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
             {
-                var pref = new PlaybackPreference(library,position);
+                var pref = new PlaybackPreference(entity,position);
                 return PlayerToPlay(id, player,pref);
             }
             return null;
@@ -41,9 +41,9 @@ namespace Ami.BroAudio.Runtime
 
         public IAudioPlayer Play(int id, Transform followTarget)
         {
-            if (IsPlayable(id,out var library) && TryGetAvailablePlayer(id, out var player))
+            if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
             {
-                var pref = new PlaybackPreference(library,followTarget);
+                var pref = new PlaybackPreference(entity,followTarget);
                 return PlayerToPlay(id, player,pref);
             }
             return null;
@@ -58,8 +58,8 @@ namespace Ami.BroAudio.Runtime
                 player.SetVolume(audioTypePref.Volume, 0f);
             }
 
-            var library = _audioBank[id];
-            var clip = library.CastTo<AudioLibrary>().Clip;
+            var entity = _audioBank[id];
+            var clip = entity.Clip;
             player.Play(id, clip, pref);
 
             AudioPlayerInstanceWrapper wrapper = new AudioPlayerInstanceWrapper(player);

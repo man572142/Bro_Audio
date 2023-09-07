@@ -7,6 +7,6 @@ namespace Ami.BroAudio.Data
     {
         public float Delay;
 
-		public override BroAudioType PossibleFlags => BroAudioType.UI | BroAudioType.SFX | BroAudioType.VoiceOver;
+		//public override BroAudioType PossibleFlags => BroAudioType.UI | BroAudioType.SFX | BroAudioType.VoiceOver;
 	}
 }

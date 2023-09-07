@@ -50,7 +50,7 @@ namespace Ami.BroAudio.Runtime
 
         [Header("Library")]
         [SerializeField] private List<ScriptableObject> _soundAssets = new List<ScriptableObject>();
-        private Dictionary<int, IAudioLibrary> _audioBank = new Dictionary<int, IAudioLibrary>();
+        private Dictionary<int, IAudioEntity> _audioBank = new Dictionary<int, IAudioEntity>();
 
         private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
@@ -103,7 +103,7 @@ namespace Ami.BroAudio.Runtime
 
                     if (!_audioBank.ContainsKey(library.ID))
                     {
-                        _audioBank.Add(library.ID, library);
+                        _audioBank.Add(library.ID, library as IAudioEntity);
                     }
 
                     var audioType = GetAudioType(library.ID);
@@ -284,10 +284,10 @@ namespace Ami.BroAudio.Runtime
         }
 
         #region NullChecker
-        private bool IsPlayable(int id,out IAudioLibrary library)
+        private bool IsPlayable(int id,out IAudioEntity entity)
         {
-            library = null;
-            if (id <= 0 || !_audioBank.TryGetValue(id, out library))
+            entity = null;
+            if (id <= 0 || !_audioBank.TryGetValue(id, out entity))
             {
                 LogError($"The sound is missing or it has never been assigned. No sound will be played. AudioID:{id}");
                 return false;
@@ -320,9 +320,10 @@ namespace Ami.BroAudio.Runtime
 			}
 
             string result = string.Empty;
-            if(_audioBank.TryGetValue(id,out var audioLibrary))
+            if(_audioBank.TryGetValue(id,out var entity))
 			{
-                result = audioLibrary.Name;
+                IAudioLibrary library = entity as IAudioLibrary;
+                result = library?.Name;
 			}
             return result;
         }

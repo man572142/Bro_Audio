@@ -203,7 +203,7 @@ namespace Ami.Extension
 		/// </summary>
 		/// <param name="propertyName"></param>
 		/// <returns></returns>
-		public static string GetAutoBackingFieldName(string propertyName)
+		public static string GetBackingFieldName(string propertyName)
 		{
 			return $"<{propertyName}>k__BackingField";
 		}

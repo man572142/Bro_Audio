@@ -137,7 +137,7 @@ namespace Ami.BroAudio.Editor
 			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject))) as AudioAssetEditor;
 			if(string.IsNullOrEmpty(editor.Asset.AssetName))
 			{
-				string assetNamePropertyPath = EditorScriptingExtension.GetAutoBackingFieldName(nameof(Data.IAudioAsset.AssetName));
+				string assetNamePropertyPath = EditorScriptingExtension.GetBackingFieldName(nameof(Data.IAudioAsset.AssetName));
 				editor.serializedObject.FindProperty(assetNamePropertyPath).stringValue = assetName;
 
 				string assetGUIDPropertyPath = EditorScriptingExtension.GetFieldName(nameof(Data.IAudioAsset.AssetGUID));

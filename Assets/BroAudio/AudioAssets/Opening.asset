@@ -13,42 +13,15 @@ MonoBehaviour:
   m_Name: Opening
   m_EditorClassIdentifier: 
   Libraries:
-  - <Name>k__BackingField: Plastic Love
-    <ID>k__BackingField: 268435457
-    Clips:
-    - AudioClip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
-      Volume: 1
-      StartPosition: 0
-      EndPosition: 0
-      FadeIn: 0
-      FadeOut: 0
-      Weight: 0
-      SnapToFullVolume: 0
+  - <Name>k__BackingField: 
+    <ID>k__BackingField: 268435459
     MulticlipsPlayMode: 0
+    Clips: []
+    <Delay>k__BackingField: 0
+    <Loop>k__BackingField: 0
+    <SeamlessLoop>k__BackingField: 0
+    <TransitionTime>k__BackingField: -1
     IsShowClipPreview: 0
-    Loop: 0
-    SeamlessLoop: 0
-    TransitionTime: 0
-    SeamlessTransitionType: 0
-    TransitionTempo:
-      BPM: 0
-      Beats: 0
-  - <Name>k__BackingField: Chill
-    <ID>k__BackingField: 268435458
-    Clips:
-    - AudioClip: {fileID: 8300000, guid: 4b55b743fac55204abecc70b86b4c7e5, type: 3}
-      Volume: 1
-      StartPosition: 0
-      EndPosition: 0
-      FadeIn: 0
-      FadeOut: 0
-      Weight: 0
-      SnapToFullVolume: 0
-    MulticlipsPlayMode: 0
-    IsShowClipPreview: 0
-    Loop: 0
-    SeamlessLoop: 0
-    TransitionTime: 0
     SeamlessTransitionType: 0
     TransitionTempo:
       BPM: 0

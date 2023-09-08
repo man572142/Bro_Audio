@@ -47,6 +47,3 @@ MonoBehaviour:
   _broAudioMixer: {fileID: 24100000, guid: fbb1400fd876dd84dbdbfeb7add01ba9, type: 2}
   _soundAssets:
   - {fileID: 11400000, guid: 3fcd1b0110320ba41b3cfce25f4f14f5, type: 2}
-  - {fileID: 11400000, guid: dc82a9c1d12be6243824bc9c88e88121, type: 2}
-  - {fileID: 11400000, guid: 1c803e2b44259b54a801cc6e667a0c5b, type: 2}
-  - {fileID: 11400000, guid: 34d3fed302c539b4498948080e580a4a, type: 2}

@@ -11,10 +11,15 @@ namespace Ami.BroAudio.Editor
 		Fade = 1 << 2,
 		ClipPreview = 1 << 3,
 
-		// Additional
-		Delay = 1 << 4,
-		Loop = 1 << 5,
-		SeamlessLoop = 1 << 6,
-		Priority = 1 << 7,
+		// Additional (start from 10)
+		Delay = 1 << 10,
+		Loop = 1 << 11,
+		Priority = 1 << 12,
 	} 
+
+	public static class DrawedPropertyConstant
+	{
+		public const int BasicPropertyStartPoint = 1 << 0;
+		public const int AdditionalPropertyStartPoint = 1 << 10;
+	}
 }

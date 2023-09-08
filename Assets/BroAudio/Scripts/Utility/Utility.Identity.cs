@@ -17,9 +17,6 @@ namespace Ami.BroAudio
 			ContainsWhiteSpace,
 		}
 
-        public const BroAudioType PersistentType = BroAudioType.Music | BroAudioType.Ambience;
-        public const BroAudioType OneShotType = BroAudioType.SFX | BroAudioType.UI | BroAudioType.VoiceOver;
-
         public static readonly int LastAudioType = ((int)BroAudioType.All + 1) >> 1;
 		public static readonly int IDCapacity = 0x10000000; // 1000 0000 in HEX. 268,435,456 in DEC
 

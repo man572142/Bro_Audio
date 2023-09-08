@@ -30,6 +30,7 @@ namespace Ami.BroAudio.Editor
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper(ClipPreviewHeight);
 		
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
+		public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
 
 		protected override void OnEnable()
 		{
@@ -68,7 +69,7 @@ namespace Ami.BroAudio.Editor
 				return;
 			}
 			
-			SerializedProperty nameProp = property.FindPropertyRelative(GetAutoBackingFieldName(nameof(IAudioLibrary.Name)));
+			SerializedProperty nameProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IAudioLibrary.Name)));
 
 			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProp.stringValue);
 			if (property.isExpanded)
@@ -288,7 +289,7 @@ namespace Ami.BroAudio.Editor
 
 		private BroAudioType GetAudioType(SerializedProperty property)
 		{
-			int id = property.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.ID))).intValue;
+			int id = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.ID))).intValue;
 			return Utility.GetAudioType(id);
 		}
     }

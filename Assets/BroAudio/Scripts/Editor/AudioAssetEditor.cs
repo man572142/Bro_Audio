@@ -69,7 +69,7 @@ namespace Ami.BroAudio.Editor
 
 				ResetLibrarySerializedProperties(newElement);
 				
-				var idProp = newElement.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.ID)));
+				var idProp = newElement.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.ID)));
                 idProp.intValue = _idGenerator.GetUniqueID(Asset.AudioType);
 				newElement.serializedObject.ApplyModifiedProperties();
 			}
@@ -77,7 +77,7 @@ namespace Ami.BroAudio.Editor
 			void OnRemove(ReorderableList list)
 			{
 				SerializedProperty removedElement = _librariesProp.GetArrayElementAtIndex(list.index);
-				int removedID = removedElement.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.ID))).intValue;
+				int removedID = removedElement.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.ID))).intValue;
 				ReorderableList.defaultBehaviours.DoRemoveButton(list);
 			}
 

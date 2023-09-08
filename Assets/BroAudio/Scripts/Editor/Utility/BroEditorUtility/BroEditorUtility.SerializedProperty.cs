@@ -22,7 +22,7 @@ namespace Ami.BroAudio.Editor
 
         public static void ResetLibrarySerializedProperties(SerializedProperty property)
         {
-            property.FindPropertyRelative(GetAutoBackingFieldName(nameof(AudioLibrary.Name))).stringValue = string.Empty;
+            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.Name))).stringValue = string.Empty;
             property.FindPropertyRelative(nameof(AudioLibrary.Clips)).arraySize = 0;
             property.FindPropertyRelative(AudioLibrary.NameOf.IsShowClipPreview).boolValue = false;
             property.FindPropertyRelative(AudioLibrary.NameOf.MulticlipsPlayMode).enumValueIndex = 0;

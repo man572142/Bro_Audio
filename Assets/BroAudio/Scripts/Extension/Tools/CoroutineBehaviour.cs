@@ -5,7 +5,7 @@ using UnityEngine.Internal;
 
 namespace Ami.Extension
 {
-	public class CoroutineBehaviour
+	public abstract class CoroutineBehaviour
 	{
 		private MonoBehaviour _mono;
 

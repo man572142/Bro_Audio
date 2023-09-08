@@ -6,15 +6,15 @@ namespace Ami.BroAudio.Editor
 	public enum DrawedProperty
 	{
 		// Basic
-		Volume,
-		PlaybackPosition,
-		Fade,
-		ClipPreview,
+		Volume = 1 << 0,
+		PlaybackPosition = 1 << 1,
+		Fade = 1 << 2,
+		ClipPreview = 1 << 3,
 
 		// Additional
-		Delay,
-		Loop,
-		SeamlessLoop,
-		Priority,
+		Delay = 1 << 4,
+		Loop = 1 << 5,
+		SeamlessLoop = 1 << 6,
+		Priority = 1 << 7,
 	} 
 }

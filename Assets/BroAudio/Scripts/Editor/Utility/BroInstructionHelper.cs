@@ -9,7 +9,8 @@ namespace Ami.BroAudio.Editor
 	public enum Instruction
 	{
         // Settings
-        SettingFileMissing,
+        RuntimeSettingFileMissing,
+        EditorSettingFileMissing,
         AssetOutputPathPanelTtile,
 
 		// Settings/Audio
@@ -77,7 +78,7 @@ namespace Ami.BroAudio.Editor
                 case Instruction.HaasEffectTooltip:
                     return _instruction.HaasEffectTooltipText;
 
-                case Instruction.SettingFileMissing:
+                case Instruction.RuntimeSettingFileMissing:
                     return _instruction.SettingFileMissingText;
 
                 case Instruction.TracksAndVoicesNotMatchWarning:

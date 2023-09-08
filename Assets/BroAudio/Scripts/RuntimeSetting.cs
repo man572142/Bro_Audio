@@ -5,10 +5,11 @@ using Ami.Extension;
 
 namespace Ami.BroAudio.Data
 {
-	//[CreateAssetMenu(menuName = "BroAudio(DevOnly)/Create Runtime Setting Asset File", fileName = "BroAudioRuntimeSetting")]
+	//[CreateAssetMenu(menuName = "BroAudio(DevOnly)/Create Runtime Setting Asset File", fileName = FileName)]
 	public class RuntimeSetting : ScriptableObject
 	{
-		public const string FilePath = "BroAudioGlobalSetting";
+		public const string FileName = "BroRuntimeSetting";
+		public const string FilePath = FileName;
 
 		public float HaasEffectInSeconds = FactorySettings.HaasEffectInSeconds;
 		public Ease DefaultFadeInEase = FactorySettings.DefaultFadeInEase;

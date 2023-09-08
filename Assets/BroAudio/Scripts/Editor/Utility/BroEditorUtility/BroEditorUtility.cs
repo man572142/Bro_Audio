@@ -27,7 +27,7 @@ namespace Ami.BroAudio.Editor
                     _runtimeSetting = Resources.Load<RuntimeSetting>(RuntimeSetting.FilePath);
                     if (!_runtimeSetting)
                     {
-                        GlobalSettingEditorWindow.ShowWindowWithMessage(GlobalSettingEditorWindow.OpenMessage.SettingAssetFileMissing);
+                        GlobalSettingEditorWindow.ShowWindowWithMessage(GlobalSettingEditorWindow.OpenMessage.RuntimeSettingFileMissing);
                     }
                     EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
                 }
@@ -42,10 +42,10 @@ namespace Ami.BroAudio.Editor
             {
                 if (!_editorSetting)
                 {
-                    _editorSetting = Resources.Load<EditorSetting>(RuntimeSetting.FilePath);
+                    _editorSetting = Resources.Load<EditorSetting>(Editor.EditorSetting.FilePath);
                     if (!_editorSetting)
                     {
-                        GlobalSettingEditorWindow.ShowWindowWithMessage(GlobalSettingEditorWindow.OpenMessage.SettingAssetFileMissing);
+                        GlobalSettingEditorWindow.ShowWindowWithMessage(GlobalSettingEditorWindow.OpenMessage.RuntimeSettingFileMissing);
                     }
                     EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
                 }

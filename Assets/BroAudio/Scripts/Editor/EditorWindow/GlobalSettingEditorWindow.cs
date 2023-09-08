@@ -24,7 +24,8 @@ namespace Ami.BroAudio.Editor.Setting
 		{
 			None,
 			Welcome,
-			SettingAssetFileMissing,
+			RuntimeSettingFileMissing,
+			EditorSettingFileMissing,
 		}
 
 		public enum Tab
@@ -45,7 +46,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string VUColorToggleLabel = "Show VU color on volume slider";
 		public const string ShowAudioTypeToggleLabel = "Show audioType on AudioID";
 		public const string AudioTypeColorLabel = "Audio Type Color";
-		public const string AudioTypeDrawedProperties = "Audio Type Drawed Properties";
+		public const string AudioTypeDrawedProperties = "Displayed Properties";
 		public const string GitURL = "https://github.com/man572142/Bro_Audio";
 		
 		public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
@@ -149,6 +150,12 @@ namespace Ami.BroAudio.Editor.Setting
 			ResetTracksAndAudioVoices();
 		}
 
+		private void OnLostFocus()
+		{
+			EditorUtility.SetDirty(RuntimeSetting);
+			EditorUtility.SetDirty(EditorSetting);
+		}
+
 		private void ResetTracksAndAudioVoices()
 		{
 			_currProjectSettingVoiceCount = -1;
@@ -178,10 +185,12 @@ namespace Ami.BroAudio.Editor.Setting
 
 			switch (Message)
 			{
-				case OpenMessage.SettingAssetFileMissing:
+				case OpenMessage.RuntimeSettingFileMissing:
+				case OpenMessage.EditorSettingFileMissing:
 					Rect errorRect = GetRectAndIterateLine(drawPosition);
 					errorRect.height *= 2;
-					EditorGUI.HelpBox(errorRect, _instruction.GetText(Instruction.SettingFileMissing), MessageType.Error);
+					Instruction instructionEnum = GetInstructionEnum(Message);
+					EditorGUI.HelpBox(errorRect, _instruction.GetText(instructionEnum), MessageType.Error);
 					break;
 				case OpenMessage.None:
 
@@ -221,6 +230,18 @@ namespace Ami.BroAudio.Editor.Setting
 						break;
 				}
 			}
+		}
+
+		private Instruction GetInstructionEnum(OpenMessage message)
+		{
+			switch (message)
+			{
+				case OpenMessage.RuntimeSettingFileMissing:
+					return Instruction.RuntimeSettingFileMissing;
+				case OpenMessage.EditorSettingFileMissing:
+					return Instruction.EditorSettingFileMissing;
+			}
+			return default;
 		}
 
 		private void DrawTabs(Rect drawPosition)
@@ -380,9 +401,15 @@ namespace Ami.BroAudio.Editor.Setting
 				colorRect.xMax -= 20f;
 
 				DrawTwoColumnAudioType(colorRect, SetAudioTypeLabelColor);
+				EditorGUI.indentLevel--;
 			}
 
 			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeDrawedProperties.ToWhiteBold(), GUIStyleHelper.Instance.RichText);
+			EditorGUI.indentLevel++;
+			Rect drawedPropRect = GetRectAndIterateLine(drawPosition);
+
+			DrawTwoColumnAudioType(drawedPropRect, SetAudioTypeDrawedProperties);
+			EditorGUI.indentLevel--;
 
 			void DemonstrateSlider()
 			{
@@ -411,31 +438,26 @@ namespace Ami.BroAudio.Editor.Setting
 					{
 						leftColorRect.y += SingleLineSpace;
 						rightColorRect.y += SingleLineSpace;
+						DrawEmptyLine(1);
 					}
 				});
 			}
 
 			void SetAudioTypeLabelColor(Rect fieldRect, BroAudioType audioType)
 			{
-				switch (audioType)
+				if(EditorSetting.TryGetAudioTypeSetting(audioType,out var setting))
 				{
-					case BroAudioType.Music:
-						EditorSetting.MusicColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), EditorSetting.MusicColor);
-						break;
-					case BroAudioType.UI:
-						EditorSetting.UIColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), EditorSetting.UIColor);
-						break;
-					case BroAudioType.Ambience:
-						EditorSetting.AmbienceColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), EditorSetting.AmbienceColor);
-						break;
-					case BroAudioType.SFX:
-						EditorSetting.SFXColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), EditorSetting.SFXColor);
-						break;
-					case BroAudioType.VoiceOver:
-						EditorSetting.VoiceOverColor = EditorGUI.ColorField(fieldRect, audioType.ToString(), EditorSetting.VoiceOverColor);
-						break;
-					default:
-						break;
+					setting.Color = EditorGUI.ColorField(fieldRect, audioType.ToString(), setting.Color);
+					EditorSetting.WriteAudioTypeSetting(audioType, setting);
+				}
+			}
+
+			void SetAudioTypeDrawedProperties(Rect fieldRect, BroAudioType audioType)
+			{
+				if (EditorSetting.TryGetAudioTypeSetting(audioType, out var setting))
+				{
+					setting.DrawedProperty = (DrawedProperty)EditorGUI.EnumFlagsField(fieldRect, audioType.ToString(), setting.DrawedProperty);
+					EditorSetting.WriteAudioTypeSetting(audioType, setting);
 				}
 			}
 		}

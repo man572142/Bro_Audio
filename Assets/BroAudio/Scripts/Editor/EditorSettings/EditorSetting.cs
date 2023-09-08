@@ -4,76 +4,90 @@ using UnityEngine;
 
 namespace Ami.BroAudio.Editor
 {
-
+	//[CreateAssetMenu(menuName = "BroAudio(DevOnly)/Create Editor Setting Asset File", fileName = FileName)]
 	public class EditorSetting : ScriptableObject
 	{
+		[System.Serializable]
+		public struct AudioTypeSetting
+		{
+			public BroAudioType AudioType;
+			public Color Color;
+			public DrawedProperty DrawedProperty;
+
+			public AudioTypeSetting(BroAudioType audioType,string colorString, DrawedProperty drawedProperty)
+			{
+				AudioType = audioType;
+				ColorUtility.TryParseHtmlString(colorString, out Color);
+				DrawedProperty = drawedProperty;
+			}
+		}
+
+		public const string FileName = "BroEditorSetting";
+		public const string FilePath = "Editor/" + FileName;
+
 		public bool ShowAudioTypeOnAudioID;
 		public bool ShowVUColorOnVolumeSlider;
 
-		public Color MusicColor;
-		public Color UIColor;
-		public Color AmbienceColor;
-		public Color SFXColor;
-		public Color VoiceOverColor;
-
-		public IReadOnlyDictionary<BroAudioType, DrawedProperty> PropertySettings;
+		public List<AudioTypeSetting> AudioTypeSettings;
 
 		public Color GetAudioTypeColor(BroAudioType audioType)
 		{
-			switch (audioType)
+			if(TryGetAudioTypeSetting(audioType,out var setting))
 			{
-				case BroAudioType.Music:
-					return MusicColor;
-				case BroAudioType.UI:
-					return UIColor;
-				case BroAudioType.Ambience:
-					return AmbienceColor;
-				case BroAudioType.SFX:
-					return SFXColor;
-				case BroAudioType.VoiceOver:
-					return VoiceOverColor;
-				default:
-					return default;
+				return setting.Color;
 			}
+			return default;
+		}
+
+		public bool TryGetAudioTypeSetting(BroAudioType audioType,out AudioTypeSetting result)
+		{
+			result = default;
+			if(AudioTypeSettings == null)
+			{
+				CreateNewAudioTypeSettings();
+			}
+
+			foreach (var setting in AudioTypeSettings)
+			{
+				if(audioType == setting.AudioType)
+				{
+					result = setting;
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public bool WriteAudioTypeSetting(BroAudioType audioType, AudioTypeSetting newSetting)
+		{
+			for(int i = 0; i < AudioTypeSettings.Count; i++)
+			{
+				if (audioType == AudioTypeSettings[i].AudioType)
+				{
+					AudioTypeSettings[i] = newSetting;
+					return true;
+				}
+			}
+			return false;
 		}
 
 		public void ResetToFactorySettings()
 		{
 			ShowVUColorOnVolumeSlider = FactorySettings.ShowVUColorOnVolumeSlider;
 			ShowAudioTypeOnAudioID = FactorySettings.ShowAudioTypeOnAudioID;
+			CreateNewAudioTypeSettings();
+		}
 
-			PropertySettings = new Dictionary<BroAudioType, DrawedProperty>
+		private void CreateNewAudioTypeSettings()
+		{
+			AudioTypeSettings = new List<AudioTypeSetting>
 			{
-				{ BroAudioType.Music, FactorySettings.MusicDrawedProperties},
-				{ BroAudioType.UI, FactorySettings.UIDrawedProperties},
-				{ BroAudioType.Ambience, FactorySettings.AmbienceDrawedProperties},
-				{ BroAudioType.SFX, FactorySettings.SFXDrawedProperties},
-				{ BroAudioType.VoiceOver, FactorySettings.VoiceOverDrawedProperties},
+				 new AudioTypeSetting(BroAudioType.Music, FactorySettings.MusicColor, FactorySettings.MusicDrawedProperties),
+				 new AudioTypeSetting(BroAudioType.UI, FactorySettings.UIColor, FactorySettings.UIDrawedProperties),
+				 new AudioTypeSetting(BroAudioType.Ambience, FactorySettings.AmbienceColor, FactorySettings.AmbienceDrawedProperties),
+				 new AudioTypeSetting(BroAudioType.SFX, FactorySettings.SFXColor, FactorySettings.SFXDrawedProperties),
+				 new AudioTypeSetting(BroAudioType.VoiceOver, FactorySettings.VoiceOverColor, FactorySettings.VoiceOverDrawedProperties),
 			};
-
-			if (ColorUtility.TryParseHtmlString(FactorySettings.MusicColor, out var musicColor))
-			{
-				MusicColor = musicColor;
-			}
-
-			if (ColorUtility.TryParseHtmlString(FactorySettings.UIColor, out var uiColor))
-			{
-				UIColor = uiColor;
-			}
-
-			if (ColorUtility.TryParseHtmlString(FactorySettings.AmbienceColor, out var ambColor))
-			{
-				AmbienceColor = ambColor;
-			}
-
-			if (ColorUtility.TryParseHtmlString(FactorySettings.SFXColor, out var sfxColor))
-			{
-				SFXColor = sfxColor;
-			}
-			if (ColorUtility.TryParseHtmlString(FactorySettings.VoiceOverColor, out var voiceColor))
-			{
-				VoiceOverColor = voiceColor;
-			}
 		}
 
 		public class FactorySettings

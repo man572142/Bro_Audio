@@ -19,7 +19,6 @@ namespace Ami.BroAudio.Editor
 
 	public static class DrawedPropertyConstant
 	{
-		public const int BasicPropertyStartPoint = 1 << 0;
-		public const int AdditionalPropertyStartPoint = 1 << 10;
+		public const int AdditionalPropertyStartIndex = 10;
 	}
 }

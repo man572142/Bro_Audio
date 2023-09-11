@@ -5,6 +5,8 @@ using UnityEditor;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using static Ami.Extension.EditorScriptingExtension;
+using static Ami.Extension.FlagsExtension;
+using static Ami.BroAudio.Editor.EditorSetting;
 using static Ami.BroAudio.Data.AudioLibrary;
 using Ami.BroAudio.Runtime;
 
@@ -19,49 +21,32 @@ namespace Ami.BroAudio.Editor
 
 		private float[] _seamlessSettingRectRatio = new float[] { 0.2f, 0.25f, 0.2f, 0.2f, 0.15f };
 
-        private SerializedProperty _loopProp => _loopingToggles[0];
-        private SerializedProperty _seamlessLoopProp => _loopingToggles[1];
-
-		private int GetAdditionalBaseProtiesLineCount(SerializedProperty property, BroAudioType audioType)
+		private int GetAdditionalBaseProtiesLineCount(SerializedProperty property, AudioTypeSetting setting)
 		{
-			if (!EditorSetting.TryGetAudioTypeSetting(audioType, out var setting))
-			{
-				return default;
-			}
-
-			int filterRange = int.MaxValue ^ (DrawedPropertyConstant.AdditionalPropertyStartPoint - 1);
+			int filterRange = GetFlagsRange(0, DrawedPropertyConstant.AdditionalPropertyStartIndex -1 ,FlagsRangeType.Excluded);
 			int count = GetFlagsOnCount((int)setting.DrawedProperty & filterRange);
 
-			return count;
-		}
-
-		private int GetFlagsOnCount(int flags)
-		{
-			int count = 0;
-			while (flags != 0)
+			var seamlessProp = GetBackingNameAndFindProperty(property, nameof(AudioLibrary.SeamlessLoop));
+            if (seamlessProp.boolValue)
 			{
-				flags = flags & (flags - 1);
 				count++;
 			}
-			return count;
+
+			return count; 
 		}
 
-		private int GetAdditionalClipPropertiesLineCount(SerializedProperty property, BroAudioType audioType)
+		private int GetAdditionalClipPropertiesLineCount(SerializedProperty property, AudioTypeSetting setting)
 		{
-			return default;
-		}
+            int filterRange = GetFlagsRange(0, DrawedPropertyConstant.AdditionalPropertyStartIndex - 1, FlagsRangeType.Included);
+            return GetFlagsOnCount((int)setting.DrawedProperty & filterRange);
+        }
 
-		private void DrawAdditionalBaseProperties(Rect position, SerializedProperty property, BroAudioType audioType)
+		private void DrawAdditionalBaseProperties(Rect position, SerializedProperty property, AudioTypeSetting setting)
 		{
-			if (!EditorSetting.TryGetAudioTypeSetting(audioType, out var setting))
-			{
-				return;
-			}
+			DrawDelayProperty();
+			DrawLoopProperty();
 
-			DrawDelayProperty(position, property, setting);
-			DrawLoopProperty(position, property, setting);
-
-			void DrawDelayProperty(Rect position, SerializedProperty property, EditorSetting.AudioTypeSetting setting)
+			void DrawDelayProperty()
 			{
 				if (setting.DrawedProperty.HasFlag(DrawedProperty.Delay))
 				{
@@ -70,7 +55,7 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 
-			void DrawLoopProperty(Rect position, SerializedProperty property, EditorSetting.AudioTypeSetting setting)
+			void DrawLoopProperty()
 			{
 				if (setting.DrawedProperty.HasFlag(DrawedProperty.Loop))
 				{
@@ -88,7 +73,7 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawAdditionalClipProperties(Rect position, SerializedProperty property, BroAudioType audioType)
+		private void DrawAdditionalClipProperties(Rect position, SerializedProperty property, AudioTypeSetting setting)
 		{
 
 		}

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Runtime;
-using static Ami.BroAudio.BroLog;
 
 namespace Ami.BroAudio
 {

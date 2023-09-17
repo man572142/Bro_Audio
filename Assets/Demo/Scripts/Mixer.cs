@@ -31,7 +31,7 @@ namespace Ami.BroAudio.Demo
 
 		public void SetVolume(BroAudioType audioType, float value)
 		{
-			BroAudio.SetVolume(value, audioType,BroAdvice.FadeTime_Immediate);
+			BroAudio.SetVolume(value, audioType,Tools.BroAdvice.FadeTime_Immediate);
 		}
 
 		private float GetSliderValue(BroAudioType audioType)

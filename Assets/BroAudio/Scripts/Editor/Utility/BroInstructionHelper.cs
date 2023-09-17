@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Ami.BroAudio.Editor.Setting;
 using UnityEngine;
-using static Ami.BroAudio.BroName;
+using static Ami.BroAudio.Tools.BroName;
 
 namespace Ami.BroAudio.Editor
 {

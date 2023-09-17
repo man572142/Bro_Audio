@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Ami.Extension;
 using UnityEngine;
 using UnityEngine.Audio;
+using Ami.BroAudio.Tools;
 using static Ami.BroAudio.BroLog;
 
 namespace Ami.BroAudio.Runtime

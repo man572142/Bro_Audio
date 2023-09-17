@@ -116,10 +116,10 @@ namespace Ami.BroAudio.Runtime
                     break;
 			}
 
-            bool newState = CurrentActiveEffects != EffectType.None;
-			if (_isUsingEffect != newState)
+            bool newUsingEffectState = CurrentActiveEffects != EffectType.None;
+			if (_isUsingEffect != newUsingEffectState)
 			{
-				_isUsingEffect = newState;
+				_isUsingEffect = newUsingEffectState;
 				ChangeChannel();
 			}
 		}
@@ -141,7 +141,7 @@ namespace Ami.BroAudio.Runtime
         }
 
 #if !UNITY_WEBGL
-        IPlayerEffect IEffectDecoratable.AsInvader()
+        IPlayerEffect IEffectDecoratable.AsDominator(BroAudioType dominatedType)
         {
             return GetDecorator<AudioPlayerEffect>();
         }

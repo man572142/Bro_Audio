@@ -1,4 +1,4 @@
-﻿using static Ami.BroAudio.BroAdvice;
+﻿using static Ami.BroAudio.Tools.BroAdvice;
 
 namespace Ami.BroAudio
 {
@@ -33,10 +33,10 @@ namespace Ami.BroAudio
 			=> player?.SetTransition(transition, stopMode, overrideFade);
 
 #if !UNITY_WEBGL
-		public static IPlayerEffect AsInvader(this IAudioPlayer player) 
-			=> player?.AsInvader();
-		public static IPlayerEffect AsInvader(this IMusicPlayer player)
-			=> player?.AsInvader();
+		public static IPlayerEffect AsDominator(this IAudioPlayer player, BroAudioType dominatedType = BroAudioType.All) 
+			=> player?.AsDominator(dominatedType);
+		public static IPlayerEffect AsDominator(this IMusicPlayer player, BroAudioType dominatedType = BroAudioType.All)
+			=> player?.AsDominator(dominatedType);
 
 		/// <summary>
 		/// 除了此Player以外的其他Player都降至指定的音量，直到播放完畢為止

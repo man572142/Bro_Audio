@@ -36,7 +36,7 @@ namespace Ami.BroAudio.Runtime
 		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Player.SetVolume(vol, fadeTime);
 		IMusicPlayer IMusicDecoratable.AsBGM() => Player.AsBGM();
 #if !UNITY_WEBGL
-		IPlayerEffect IEffectDecoratable.AsInvader() => Player.AsInvader();
+		IPlayerEffect IEffectDecoratable.AsDominator(BroAudioType dominatedType) => Player.AsDominator(dominatedType);
 #endif
 		IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => Player;
 	}

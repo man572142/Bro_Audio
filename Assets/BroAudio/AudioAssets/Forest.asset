@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9ffd86bb881c84428f4ae5105db7050, type: 3}
+  m_Name: Forest
+  m_EditorClassIdentifier: 
+  Libraries:
+  - <Name>k__BackingField: Birds
+    <ID>k__BackingField: 805306370
+    MulticlipsPlayMode: 0
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: ad86e3b46cdd6d249885f216cd4cab75, type: 3}
+      Volume: 1
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+      SnapToFullVolume: 0
+    <Delay>k__BackingField: 0
+    <Loop>k__BackingField: 0
+    <SeamlessLoop>k__BackingField: 0
+    <TransitionTime>k__BackingField: 0
+    IsShowClipPreview: 0
+    SeamlessTransitionType: 0
+    TransitionTempo:
+      BPM: 0
+      Beats: 0
+  <AssetName>k__BackingField: Forest
+  _assetGUID: bb6cd9b276f375a449e44d1c442dfc81

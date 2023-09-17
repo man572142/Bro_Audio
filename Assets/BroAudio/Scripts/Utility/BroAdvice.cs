@@ -1,6 +1,6 @@
 using Ami.Extension;
 
-namespace Ami.BroAudio
+namespace Ami.BroAudio.Tools
 {
 	public static class BroAdvice
 	{

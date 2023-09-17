@@ -4,9 +4,9 @@ namespace Ami.BroAudio
     {
 #if !UNITY_WEBGL
 #if UNITY_2020_2_OR_NEWER
-        internal IPlayerEffect AsInvader();
+        internal IPlayerEffect AsDominator(BroAudioType dominatedType);
 #else
-        IPlayerEffect AsInvader();
+        IPlayerEffect AsDominator(BroAudioType dominatedType);
 #endif
 #endif
     }

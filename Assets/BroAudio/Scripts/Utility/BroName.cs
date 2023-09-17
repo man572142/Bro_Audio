@@ -1,4 +1,4 @@
-namespace Ami.BroAudio
+namespace Ami.BroAudio.Tools
 {
 	public static class BroName
 	{

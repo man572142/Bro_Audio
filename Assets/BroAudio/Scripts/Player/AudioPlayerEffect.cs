@@ -20,7 +20,7 @@ namespace Ami.BroAudio.Runtime
 				FadeTime = fadeTime,
 			};
 
-			SetAllEffectExceptMyself(effect);
+			SetAllEffectExceptDominator(effect);
 			return this;
 		}
 
@@ -37,7 +37,7 @@ namespace Ami.BroAudio.Runtime
                 FadeTime = fadeTime,
             };
 
-            SetAllEffectExceptMyself(effect);
+            SetAllEffectExceptDominator(effect);
             return this;
         }
 
@@ -54,11 +54,11 @@ namespace Ami.BroAudio.Runtime
                 FadeTime = fadeTime,
             };
 
-            SetAllEffectExceptMyself(effect);
+            SetAllEffectExceptDominator(effect);
             return this;
         }
 
-        private void SetAllEffectExceptMyself(EffectParameter effect)
+        private void SetAllEffectExceptDominator(EffectParameter effect)
         {
             // set effect for all except this plyer itself
             SoundManager.Instance.SetEffect(BroAudioType.All, effect).While(PlayerIsPlaying);

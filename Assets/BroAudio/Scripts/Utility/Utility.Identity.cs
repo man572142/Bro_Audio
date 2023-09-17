@@ -1,7 +1,7 @@
 using System;
 using static Ami.Extension.LoopExtension;
 using static Ami.Extension.StringExtension;
-using static Ami.BroAudio.BroLog;
+using static Ami.BroAudio.Tools.BroLog;
 using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio

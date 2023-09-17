@@ -1,5 +1,5 @@
 using Ami.Extension;
-using static Ami.BroAudio.BroLog;
+using static Ami.BroAudio.Tools.BroLog;
 using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio

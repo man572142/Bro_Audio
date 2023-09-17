@@ -4,7 +4,7 @@ using UnityEngine;
 using System.IO;
 using System;
 using UnityEditor;
-using static Ami.BroAudio.BroLog;
+using static Ami.BroAudio.Tools.BroLog;
 using static Ami.BroAudio.Utility;
 
 namespace Ami.BroAudio.Editor

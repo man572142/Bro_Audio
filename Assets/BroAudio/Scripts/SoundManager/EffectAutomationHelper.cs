@@ -5,7 +5,7 @@ using Ami.Extension;
 using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Tools;
-using static Ami.BroAudio.BroLog;
+using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.BroAudio.Runtime
 {

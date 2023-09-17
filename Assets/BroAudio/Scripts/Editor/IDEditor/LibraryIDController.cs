@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Utility;
+using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.BroAudio.Editor
 {
@@ -44,7 +45,7 @@ namespace Ami.BroAudio.Editor
                 if (lastID >= audioType.ToNext().GetInitialID() || lastID >= FinalIDLimit)
                 {
                     // While surpassing the limit isn't entirely out of the question, it's much less likely than other potential causes.
-                    BroLog.LogError("Audio ID is out of range. If you encounter this error,a bug report would be appreciated.");
+                    LogError("Audio ID is out of range. If you encounter this error,a bug report would be appreciated.");
                     return default;
                 }
 

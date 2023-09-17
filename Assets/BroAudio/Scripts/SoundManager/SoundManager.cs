@@ -6,7 +6,7 @@ using Ami.BroAudio.Data;
 using Ami.Extension;
 using static Ami.BroAudio.Utility;
 using static Ami.Extension.CoroutineExtension;
-using static Ami.BroAudio.BroLog;
+using static Ami.BroAudio.Tools.BroLog;
 using static Ami.BroAudio.Tools.BroName;
 using System.Linq;
 using System;

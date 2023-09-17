@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.Audio;
 using static Ami.Extension.ReflectionExtension;
-using static Ami.BroAudio.BroLog;
+using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.Extension
 {

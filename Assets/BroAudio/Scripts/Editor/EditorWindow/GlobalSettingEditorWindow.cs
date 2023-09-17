@@ -8,7 +8,7 @@ using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.BroAudio.Tools.BroName;
-using static Ami.BroAudio.BroLog;
+using static Ami.BroAudio.Tools.BroLog;
 using static Ami.Extension.EditorVersionAdapter;
 using static Ami.BroAudio.Editor.IconConstant;
 using System.IO;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Ami.BroAudio.Editor.Setting;
 using UnityEngine;
 using static Ami.BroAudio.Tools.BroName;
+using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.BroAudio.Editor
 {
@@ -56,7 +57,7 @@ namespace Ami.BroAudio.Editor
 			
 			if (!_instruction)
 			{
-				BroLog.LogWarning(InstructionMissingText);
+				LogWarning(InstructionMissingText);
 			}
 		}
 

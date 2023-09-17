@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using UnityEngine;
-using static Ami.BroAudio.BroLog;
+using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.BroAudio.Runtime
 {

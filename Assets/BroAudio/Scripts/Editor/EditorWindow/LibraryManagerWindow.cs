@@ -10,6 +10,7 @@ using Ami.BroAudio.Editor.Setting;
 using static Ami.BroAudio.Utility;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
+using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
@@ -54,7 +55,7 @@ namespace Ami.BroAudio.Editor
 		{
 			EditorWindow window = GetWindow(typeof(LibraryManagerWindow));
 			window.minSize = BroAudioGUISetting.MinWindowSize;
-			window.titleContent = new GUIContent("Library Manager");
+			window.titleContent = new GUIContent(BroName.MenuItem_LibraryManager);
 			window.Show();
 			return window as LibraryManagerWindow;
 		}

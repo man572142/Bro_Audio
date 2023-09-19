@@ -113,7 +113,7 @@ namespace Ami.BroAudio
 
 			foreach (char word in name)
 			{
-				if (!Char.IsNumber(word) && word != '_' && !IsEnglishLetter(word) && !Char.IsWhiteSpace(word))
+				if (!IsValidWord(word))
 				{
 					errorCode = ValidationErrorCode.ContainsInvalidWord;
 					return true;
@@ -127,6 +127,11 @@ namespace Ami.BroAudio
 			}
 			errorCode = ValidationErrorCode.NoError;
 			return false;
+		}
+
+		public static bool IsValidWord(this Char word)
+		{
+			return IsEnglishLetter(word) || Char.IsNumber(word) || word == '_' || Char.IsWhiteSpace(word);
 		}
 
 		public static bool Validate(string name, BroAudioClip[] clips, int id)

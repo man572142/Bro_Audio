@@ -33,7 +33,6 @@ namespace Ami.BroAudio.Editor
 			public int LastID;
 		}
 
-        //[MenuItem("BroAudio/[DevOnly]Reset All Audio Types Last ID")]
         public static void ResetAllAudioTypeLastID()
         {
 			var idList = CreateLastIDs();

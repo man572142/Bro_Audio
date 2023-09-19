@@ -4,6 +4,8 @@ using Ami.Extension;
 using System;
 using System.IO;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
+using Ami.BroAudio.Tools;
+
 namespace Ami.BroAudio.Editor
 {
 	public class ClipEditorWindow : MiEditorWindow
@@ -81,7 +83,7 @@ namespace Ami.BroAudio.Editor
 		{
 			EditorWindow window = GetWindow(typeof(ClipEditorWindow));
 			window.minSize = new Vector2(640f,360f);
-			window.titleContent = new GUIContent("BroAudio Clip Editor");
+			window.titleContent = new GUIContent(BroName.MenuItem_ClipEditor);
 			window.Show();
 		}
 

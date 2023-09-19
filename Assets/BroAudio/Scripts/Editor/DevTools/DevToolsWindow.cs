@@ -6,6 +6,7 @@ using UnityEngine.Audio;
 using System.Linq;
 using static Ami.BroAudio.Tools.BroLog;
 using static Ami.BroAudio.Tools.BroName;
+using Ami.BroAudio.Editor;
 
 namespace Ami.Extension
 {
@@ -17,6 +18,7 @@ namespace Ami.Extension
 		public const string Cancel = "No";
 
 		public const string Function_CreateNewAudioMixerGroup = "Create New BroAuio Track";
+		public const string Function_ResetLastAllAudioID = "Reset All Last Audio ID";
 
 		private AudioMixer _targetMixer = null;
 
@@ -44,12 +46,17 @@ namespace Ami.Extension
 			}
 
 			var buttonHeight = GUILayout.Height(EditorGUIUtility.singleLineHeight * 2f);
-			DuplicateOneTrackAndCopySetting(buttonHeight);
+			DrawDuplicateOneTrackAndCopySettingButton(buttonHeight);
+
+			if(GUILayout.Button(Function_ResetLastAllAudioID, buttonHeight))
+			{
+                BroEditorUtility.ResetAllAudioTypeLastID();
+            }
 
 			EditorGUILayout.Space();
 		}
 
-		private void DuplicateOneTrackAndCopySetting(GUILayoutOption buttonHeight)
+		private void DrawDuplicateOneTrackAndCopySettingButton(GUILayoutOption buttonHeight)
 		{
 			if (GUILayout.Button(Function_CreateNewAudioMixerGroup, buttonHeight) && DisplayDialog(Function_CreateNewAudioMixerGroup))
 			{

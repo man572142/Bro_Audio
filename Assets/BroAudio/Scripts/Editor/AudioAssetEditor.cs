@@ -9,13 +9,13 @@ using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.Extension.EditorVersionAdapter;
 using Ami.BroAudio.Data;
+using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
     [CustomEditor(typeof(AudioAsset<>), true)]
     public class AudioAssetEditor : UnityEditor.Editor
 	{
-		private bool _hasOpenedLibraryManager = false;
         private SerializedProperty _librariesProp = null;
         private ReorderableList _reorderableList = null;
 
@@ -32,15 +32,9 @@ namespace Ami.BroAudio.Editor
 			_librariesProp = serializedObject.FindProperty(nameof(AudioAsset<IAudioLibrary>.Libraries));
 			Asset = target as IAudioAsset;
 			_currentAudioDatas = Asset.GetAllAudioLibraries();
-			_hasOpenedLibraryManager = HasOpenEditorWindow<LibraryManagerWindow>();
 
 			InitReorderableList();
 			CheckLibrariesState();
-		}
-
-		private void OnDisable()
-		{
-			_hasOpenedLibraryManager = false;
 		}
 
 		private void InitReorderableList()
@@ -96,7 +90,7 @@ namespace Ami.BroAudio.Editor
 
 		public override void OnInspectorGUI()
         {
-            if(!_hasOpenedLibraryManager)
+            if(GUILayout.Button("Open " + BroName.MenuItem_LibraryManager))
 			{
 				LibraryManagerWindow.OpenFromAssetFile(Asset.AssetGUID);
 			}
@@ -127,7 +121,10 @@ namespace Ami.BroAudio.Editor
 		private void CheckLibrariesState()
 		{
 			CompareWithPrevious();
-			CompareWithAll();
+			if(_libraryState == LibraryState.Fine)
+			{
+                CompareWithAll();
+            }
 		}
 
 
@@ -137,29 +134,35 @@ namespace Ami.BroAudio.Editor
 			foreach (IAudioLibrary data in _currentAudioDatas)
 			{
 				_libraryStateOutput = data.Name;
-				if (string.IsNullOrEmpty(data.Name))
-				{
-					_libraryState = LibraryState.HasEmptyName;
-					return false;
-				}
-				else if (previousData != null && data.Name.Equals(previousData.Name))
+                if (string.IsNullOrWhiteSpace(data.Name))
+                {
+                    _libraryState = LibraryState.HasEmptyName;
+                    return false;
+                }
+                else if (previousData != null && data.Name.Equals(previousData.Name))
 				{
 					_libraryState = LibraryState.HasDuplicateName;
 					return false;
 				}
-				else if (IsInvalidName(data.Name, out var errorCode) && errorCode != ValidationErrorCode.ContainsWhiteSpace)
+				else
 				{
-					_libraryState = LibraryState.HasInvalidName;
-					return false;
+					foreach(char word in data.Name)
+					{
+						if(!word.IsValidWord())
+						{
+							_libraryState = LibraryState.HasInvalidName;
+                            return false;
+						}
+					}
 				}
-				previousData = data;
-			}
-			_libraryState = LibraryState.Fine;
+                previousData = data;
+            }
+            _libraryState = LibraryState.Fine;
 			_libraryStateOutput = string.Empty;
 			return true;
-		}
+        }
 
-		private bool CompareWithAll()
+        private bool CompareWithAll()
 		{
 			List<string> nameList = new List<string>();
 			foreach (IAudioLibrary data in _currentAudioDatas)
@@ -177,5 +180,5 @@ namespace Ami.BroAudio.Editor
 			return true;
 		}
 
-	}
+    }
 }

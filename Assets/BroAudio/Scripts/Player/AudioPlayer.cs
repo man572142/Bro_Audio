@@ -59,6 +59,8 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
+        public bool IsDominator => TryGetDecorator<EffectDominator>(out _);
+
         protected virtual void Awake()
         {
             if (AudioSource == null)
@@ -98,7 +100,7 @@ namespace Ami.BroAudio.Runtime
 
         public void SetEffect(EffectType effect,SetEffectMode mode)
 		{
-            if(effect == EffectType.None)
+            if(effect == EffectType.None && mode != SetEffectMode.Override)
             {
                 return;
             }
@@ -137,32 +139,29 @@ namespace Ami.BroAudio.Runtime
 
         IMusicPlayer IMusicDecoratable.AsBGM()
         {
-            return GetDecorator<MusicPlayer>();
+            return GetOrCreateDecorator<MusicPlayer>();
         }
 
 #if !UNITY_WEBGL
         IPlayerEffect IEffectDecoratable.AsDominator(BroAudioType dominatedType)
         {
-            return GetDecorator<AudioPlayerEffect>();
+            EffectDominator dominator = GetOrCreateDecorator<EffectDominator>();
+            dominator.SetDominatedType(dominatedType);
+            return dominator;
         }
 #endif
 
-        private T GetDecorator<T>() where T : AudioPlayerDecorator, new()
+        private T GetOrCreateDecorator<T>() where T : AudioPlayerDecorator, new()
         {
-            if (_decorators != null)
+            if (_decorators != null && TryGetDecorator(out T decoratedPalyer))
             {
-                foreach (var deco in _decorators)
-                {
-                    if (deco is T)
-                    {
-                        return (T)deco;
-                    }
-                }
+                return decoratedPalyer;
             }
 
             if(_decorators == null)
                 _decorators = new List<AudioPlayerDecorator>();
-            var decoratedPalyer = this.DecorateWith<T>();
+
+            decoratedPalyer = this.DecorateWith<T>();
             _decorators.Add(decoratedPalyer);
             decoratedPalyer.OnPlayerRecycle += RemoveDecorator;
             return decoratedPalyer;
@@ -172,6 +171,23 @@ namespace Ami.BroAudio.Runtime
                 decoratedPalyer.OnPlayerRecycle -= RemoveDecorator;
                 _decorators = null;
             }
+        }
+
+        private bool TryGetDecorator<T>(out T result) where T : AudioPlayerDecorator, new()
+        {
+            result = null;
+            if(_decorators != null)
+            {
+                foreach (var deco in _decorators)
+                {
+                    if (deco is T targt)
+                    {
+                        result = targt;
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private IEnumerator Recycle()

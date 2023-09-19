@@ -4,8 +4,10 @@ using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.BroAudio.Runtime
 {
-	public class AudioPlayerEffect : AudioPlayerDecorator , IPlayerEffect
+	public class EffectDominator : AudioPlayerDecorator , IPlayerEffect
 	{
+        public BroAudioType DominatedType { get; private set; }
+
 		IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, float fadeTime)
 		{
 			if (othersVol <= 0f || othersVol > 1f)
@@ -58,11 +60,16 @@ namespace Ami.BroAudio.Runtime
             return this;
         }
 
+        internal void SetDominatedType(BroAudioType dominatdType)
+        {
+            DominatedType = dominatdType;
+        }
+
         private void SetAllEffectExceptDominator(EffectParameter effect)
         {
-            // set effect for all except this plyer itself
-            SoundManager.Instance.SetEffect(BroAudioType.All, effect).While(PlayerIsPlaying);
-            Player.SetEffect(effect.Type,SetEffectMode.Remove);
+           
+            SoundManager.Instance.SetEffect(DominatedType, effect).While(PlayerIsPlaying);
+            Player.SetEffect(EffectType.None,SetEffectMode.Override);
         }
 
         private bool PlayerIsPlaying()

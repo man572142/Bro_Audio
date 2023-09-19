@@ -221,7 +221,7 @@ namespace Ami.BroAudio.Runtime
 
 			GetCurrentInUsePlayers(player =>
 			{
-                if (targetType.HasFlag(GetAudioType(player.ID)))
+                if (targetType.HasFlag(GetAudioType(player.ID)) && !player.IsDominator)
 				{
 					player.SetEffect(effectType, mode);
 				}

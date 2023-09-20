@@ -11,14 +11,6 @@ namespace Ami.BroAudio
 		public static IAudioPlayer SetVolume(this IPlayerEffect player, float vol, float fadeTime = FadeTime_Immediate) 
 			=> player?.SetVolume(vol, fadeTime);
 
-		public static IPlaybackControllable GetPlaybackControl(this IMusicPlayer player)
-			=> player?.GetPlaybackControl();
-		public static IPlaybackControllable GetPlaybackControl(this IAudioPlayer player)
-			=> player?.GetPlaybackControl();
-		public static IPlaybackControllable GetPlaybackControl(this IPlayerEffect player)
-			=> player?.GetPlaybackControl();
-
-
 		public static IMusicPlayer AsBGM(this IAudioPlayer player) 
 			=> player?.AsBGM();
 		public static IMusicPlayer AsBGM(this IPlayerEffect player)

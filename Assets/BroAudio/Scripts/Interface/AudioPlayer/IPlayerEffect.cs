@@ -1,6 +1,6 @@
 namespace Ami.BroAudio
 {
-    public interface IPlayerEffect : IVolumeSettable,IPlaybackControlGettable,IMusicDecoratable
+    public interface IPlayerEffect : IVolumeSettable,IMusicDecoratable
     {
 #if UNITY_2020_2_OR_NEWER
         internal IPlayerEffect QuietOthers(float othersVol, float fadeTime);

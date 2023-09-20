@@ -8,7 +8,7 @@ using Ami.BroAudio.Data;
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
-	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>,IPlaybackControllable
+	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>
 	{
         public static Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
@@ -169,8 +169,8 @@ namespace Ami.BroAudio.Runtime
             => Stop(UseLibraryManagerSetting);
         public void Stop(float fadeOut) 
             => Stop(fadeOut, null);
-        public void Stop(Action onFinishStopping) 
-            => Stop(UseLibraryManagerSetting, onFinishStopping);
+        public void Stop(Action onFinished) 
+            => Stop(UseLibraryManagerSetting, onFinished);
         public void Stop(float fadeOut, Action onFinished) 
             => Stop(fadeOut, default, onFinished);
         #endregion

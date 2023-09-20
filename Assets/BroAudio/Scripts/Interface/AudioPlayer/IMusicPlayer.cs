@@ -3,7 +3,7 @@ using Ami.BroAudio.Runtime;
 
 namespace Ami.BroAudio
 {
-    public interface IMusicPlayer : IEffectDecoratable,IVolumeSettable,IPlaybackControlGettable
+    public interface IMusicPlayer : IEffectDecoratable,IVolumeSettable
     {
 		int ID { get; }
 		bool IsPlaying { get; }

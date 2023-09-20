@@ -9,7 +9,7 @@ using Ami.Extension;
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
-	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>,IPlaybackControllable
+	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>
 	{
         public const float UseLibraryManagerSetting = -1f;
         public const float Immediate = 0f;
@@ -134,8 +134,6 @@ namespace Ami.BroAudio.Runtime
 			_audioMixer.SetFloat(_sendParaName, sendVol);
 			_audioMixer.SetFloat(AudioTrack.name, mainVol);
 		}
-
-		IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => this;
 
         IMusicPlayer IMusicDecoratable.AsBGM()
         {

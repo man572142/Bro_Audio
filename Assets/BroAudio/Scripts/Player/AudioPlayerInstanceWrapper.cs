@@ -41,9 +41,6 @@ namespace Ami.BroAudio
 #if !UNITY_WEBGL
 		IPlayerEffect IEffectDecoratable.AsDominator(BroAudioType dominatedType) => IsAvailable() ? Instance.AsDominator(dominatedType) : null;
 #endif
-
-		IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => IsAvailable() ? Instance.GetPlaybackControl() : null;
-
 		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => IsAvailable() ? Instance.SetVolume(vol, fadeTime) : null;
 
 		protected override void LogInstanceIsNull()

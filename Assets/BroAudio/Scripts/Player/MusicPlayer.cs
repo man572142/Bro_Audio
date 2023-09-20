@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Runtime
 {
 	public class MusicPlayer : AudioPlayerDecorator , IMusicPlayer
 	{
-		public static IPlaybackControllable CurrentPlayer = null;
+		public static AudioPlayer CurrentPlayer = null;
 
 		private Transition _transition = default;
 		private StopMode _stopMode = default;

@@ -38,6 +38,5 @@ namespace Ami.BroAudio.Runtime
 #if !UNITY_WEBGL
 		IPlayerEffect IEffectDecoratable.AsDominator(BroAudioType dominatedType) => Player.AsDominator(dominatedType);
 #endif
-		IPlaybackControllable IPlaybackControlGettable.GetPlaybackControl() => Player;
 	}
 }

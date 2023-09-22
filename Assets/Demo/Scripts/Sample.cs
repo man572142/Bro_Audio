@@ -19,17 +19,7 @@ public class Sample : MonoBehaviour
 
 	void Start()
     {
-		BroAudio.Play(_musicA);
-		StartCoroutine(Test());
-		
-    }
-
-	private IEnumerator Test()
-	{
-		yield return new WaitForSeconds(3f);
-        BroAudio.Play(_musicB).AsDominator().QuietOthers(0.7f).LowPassOthers(1000f);
-		yield return new WaitForSeconds(3f);
-        BroAudio.Play(_voiceOver).AsDominator().QuietOthers(0.1f);
+		BroAudio.Play(_musicA);	
     }
 
 

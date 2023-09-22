@@ -68,6 +68,7 @@ namespace Ami.BroAudio.Editor.Setting
 		private AudioMixerGroup _duplicateTrackSource = null;
 		private AudioMixer _mixer = null;
 		private Vector2 _scrollPos = default;
+		private float _demoSliderValue = 1f; 
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
@@ -415,7 +416,7 @@ namespace Ami.BroAudio.Editor.Setting
 					EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent(HorizontalVUMeter).image);
 					EditorGUI.DrawRect(vuRect, VUMaskColor);
                 }
-				GUI.HorizontalSlider(sliderRect, 1f, 0f, 1.25f);
+				_demoSliderValue = GUI.HorizontalSlider(sliderRect, _demoSliderValue, 0f, 1.25f);
 			}
 
 			void DrawTwoColumnAudioType(Rect colorRect, Action<Rect, BroAudioType> onDraw)

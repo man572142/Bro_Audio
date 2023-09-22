@@ -20,21 +20,24 @@ MonoBehaviour:
     loss or unexpected behavior due to the nature of Comb Filtering (or Hass Effect).
     \n\nYou can set it to 0 to ignore this feature, or any other shorter value as
     needed."
-  TracksAndVoicesNotMatchWarning: The {0}'s track count is less than the {1} of your
-    current Project Settings! Click the button below to match them, or set it back
-    to 32 (Unity's default setting) in {2}
+  TracksAndVoicesNotMatchWarning: The {0} track count should be greater than the
+    sum of BroVirtual and the Max Real Voices! Click the button below to match them,
+    or set it back to 32 (Unity's default setting) in {1}
   AddTracksConfirmationDialog: 'This action cannot be undone! Please check the following
     instructions before you proceed.
 
 
-    1. Back up the BroAudioMixer.asset file
+    1. Backup the BroAudioMixer.asset file
     if you''ve modified it for your own needs
 
     2. The process will duplicate
     the last track of the BroAudioMixer. Make sure it''s at its original setting.'
   AudioVoicesToolTip: Max Real Voices will determine how many sounds can be heard
-    at the same time by Unity's Audio Engine. The track count of BroAudioMixer should
-    match it to effectively control all the voices.
+    simultaneously by Unity's Audio Engine. The track count of BroAudioMixer should
+    be greater than Max Real Voices in order to effectively control all the voices.
+  BroVirtualToolTip: Sounds exceeding Max Real Voices will turn into Virtual Voices
+    and become inaudible until a Real Voice becomes available. BroVirtual tracks
+    ensure that the voices returning from Virtual Voices can be controlled again.
   Copyright: 'Copyright 2022-2023 CheHsiang Weng (Ami).
 
     All rights reserved.'

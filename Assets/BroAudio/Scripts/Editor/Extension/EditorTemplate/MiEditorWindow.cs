@@ -7,6 +7,8 @@ namespace Ami.Extension
 {
 	public abstract class MiEditorWindow : EditorWindow, IEditorDrawLineCounter
 	{
+		private EditorScrollViewHelper _scrollViewHelper = null;
+
 		public abstract float SingleLineSpace { get; }
 		public int DrawLineCount { get; set; }
 
@@ -26,6 +28,19 @@ namespace Ami.Extension
 		{
 			return EditorScriptingExtension.GetRectAndIterateLine(this, position);
 		}
-	}
 
+		public Vector2 BeginScrollView(Rect position, Vector2 scrollPosition, bool alwaysShowHorizontal = false, bool alwaysShowVertical = false)
+		{
+			if(_scrollViewHelper == null)
+			{
+				_scrollViewHelper = new EditorScrollViewHelper(this);
+			}
+			return _scrollViewHelper.BeginScrollView(position, scrollPosition, alwaysShowHorizontal, alwaysShowVertical);
+		}
+
+		public void EndScrollView()
+		{
+			_scrollViewHelper.EndScrollView();
+		}
+	}
 }

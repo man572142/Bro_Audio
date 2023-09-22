@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Editor.Setting
 	//[CreateAssetMenu(menuName = "BroAudio(DevOnly)/Create instruction asset",fileName = BroName.InstructionFileName)]
 	public class BroInstruction : ScriptableObject
 	{
-		public const bool CanEdit = false;
+		public const bool CanEdit = true;
 
 		[Header("Settings")]
 
@@ -31,6 +31,9 @@ namespace Ami.BroAudio.Editor.Setting
 
 		[ReadOnlyTextArea(!CanEdit)]
 		public string AudioVoicesToolTip;
+
+		[ReadOnlyTextArea(!CanEdit)]
+		public string BroVirtualToolTip;
 
 		[Header("Settings/Info")]
 

@@ -19,6 +19,7 @@ namespace Ami.BroAudio.Editor
 		TracksAndVoicesNotMatchWarning,
 		AddTracksConfirmationDialog,
         AudioVoicesToolTip,
+        BroVirtual,
 
         // Settings/Info
         Copyright,
@@ -100,6 +101,9 @@ namespace Ami.BroAudio.Editor
                 case Instruction.AudioVoicesToolTip:
                     return _instruction.AudioVoicesToolTip;
 
+                case Instruction.BroVirtual:
+                    return _instruction.BroVirtualToolTip;
+
                 case Instruction.LibraryState_IsNullOrEmpty:
                     return _instruction.LibraryState_IsNullOrEmpty;
 
@@ -114,6 +118,7 @@ namespace Ami.BroAudio.Editor
 
                 case Instruction.AssetNaming_IsNullOrEmpty:
                     return _instruction.AssetNaming_IsNullOrEmpty;
+
                 case Instruction.AssetNaming_ContainsWhiteSpace:
                     return _instruction.AssetNaming_ContainsWhiteSpace;
 

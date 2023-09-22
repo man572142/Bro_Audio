@@ -52,6 +52,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
 		public const string ProjectSettings = "Project Settings";
 		public const string RealVoicesParameterName = "Max Real Voices";
+		public const string BroVirtualTracks = "Bro Virtual Tracks";
 
 		private readonly string _titleText = nameof(BroAudio).ToBold().SetSize(30).SetColor(MainTitleColor);
 
@@ -59,12 +60,14 @@ namespace Ami.BroAudio.Editor.Setting
 		private Tab _currentSelectTab = Tab.Audio;
 		private int _currProjectSettingVoiceCount = -1;
 		private int _currentMixerTracksCount = -1;
+		private int _broVirtualTracksCount = Tools.BroAdvice.VirtualTrackCount;
 		private GUIContent _haasEffectGUIContent = null;
 		private GUIContent _audioVoicesGUIContent = null;
+		private GUIContent _virtualTracksGUIContent = null;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 		private AudioMixerGroup _duplicateTrackSource = null;
 		private AudioMixer _mixer = null;
-		private int _audioTypeCount = -1;
+		private Vector2 _scrollPos = default;
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
@@ -83,19 +86,6 @@ namespace Ami.BroAudio.Editor.Setting
 					}
 				}
 				return _mixer;
-			}
-		}
-
-		public int AudioTypeCount
-		{
-			get
-			{
-				if(_audioTypeCount < 0)
-				{
-					_audioTypeCount = 0;
-					ForeachConcreteAudioType(audioType => _audioTypeCount++);
-				}
-				return _audioTypeCount;
 			}
 		}
 
@@ -130,19 +120,11 @@ namespace Ami.BroAudio.Editor.Setting
 			InitGUIContents();
 		}
 
-		
-
 		private void InitGUIContents()
 		{
-			if(_haasEffectGUIContent == null) 
-				_haasEffectGUIContent = new GUIContent();
-			_haasEffectGUIContent.text = HaasEffectLabel;
-			_haasEffectGUIContent.tooltip = _instruction.GetText(Instruction.HaasEffectTooltip);
-
-			if(_audioVoicesGUIContent == null) 
-				_audioVoicesGUIContent = new GUIContent();
-			_audioVoicesGUIContent.text = RealVoicesParameterName;
-			_audioVoicesGUIContent.tooltip = _instruction.GetText(Instruction.AudioVoicesToolTip);
+			_haasEffectGUIContent = new GUIContent(HaasEffectLabel, _instruction.GetText(Instruction.HaasEffectTooltip));
+			_audioVoicesGUIContent = new GUIContent(RealVoicesParameterName, _instruction.GetText(Instruction.AudioVoicesToolTip));
+			_virtualTracksGUIContent = new GUIContent(BroVirtualTracks, _instruction.GetText(Instruction.BroVirtual));
 		}
 
 		private void OnDisable()
@@ -170,7 +152,6 @@ namespace Ami.BroAudio.Editor.Setting
 			_tabs[(int)Tab.GUI] = EditorGUIUtility.IconContent(GUISettingTab);
 			_tabs[(int)Tab.Info] = EditorGUIUtility.IconContent(InfoTab);
 		}
-
 
 		protected override void OnGUI()
 		{
@@ -215,6 +196,7 @@ namespace Ami.BroAudio.Editor.Setting
 			EditorGUI.indentLevel++;
 			EditorGUI.DrawRect(tabBackgroundRect, UnityDefaultEditorColor);
 
+			_scrollPos = BeginScrollView(tabBackgroundRect, _scrollPos);
 			if (RuntimeSetting != null)
 			{
 				switch (_currentSelectTab)
@@ -230,6 +212,7 @@ namespace Ami.BroAudio.Editor.Setting
 						break;
 				}
 			}
+			EndScrollView();
 		}
 
 		private Instruction GetInstructionEnum(OpenMessage message)
@@ -253,6 +236,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawAudioSetting(Rect drawPosition)
 		{
+			drawPosition.width -= Gap;
 			DrawHaasEffectSetting();
 			DrawEmptyLine(1);
 
@@ -306,16 +290,22 @@ namespace Ami.BroAudio.Editor.Setting
 						voiceRect.x += 150f;
 						voiceRect.width = 100f;
 						EditorGUI.IntField(voiceRect, _currProjectSettingVoiceCount);
+
+						Rect virtualTracksRect = GetRectAndIterateLine(drawPosition);
+						EditorGUI.LabelField(virtualTracksRect, _virtualTracksGUIContent);
+						virtualTracksRect.x += 150f;
+						virtualTracksRect.width = 100f;
+						EditorGUI.IntField(virtualTracksRect, _broVirtualTracksCount);
 					}
 					EditorGUI.EndDisabledGroup();
 				}
 
-				if (HasValidMixerTracksCount() && _currentMixerTracksCount < _currProjectSettingVoiceCount)
+				if (HasValidMixerTracksCount() && _currentMixerTracksCount < _currProjectSettingVoiceCount + _broVirtualTracksCount)
 				{
 					Rect warningBoxRect = GetRectAndIterateLine(drawPosition);
 					warningBoxRect.height *= 3;
 					Color linkBlue = LinkLabel.normal.textColor;
-					string text = string.Format(_instruction.GetText(Instruction.TracksAndVoicesNotMatchWarning), MixerName.ToWhiteBold(), RealVoicesParameterName.ToWhiteBold(), ProjectSettingsMenuItemPath.SetColor(linkBlue));
+					string text = string.Format(_instruction.GetText(Instruction.TracksAndVoicesNotMatchWarning), MixerName.ToWhiteBold(), ProjectSettingsMenuItemPath.SetColor(linkBlue));
 					RichTextHelpBox(warningBoxRect, text, MessageType.Warning);
 					if (GUI.Button(warningBoxRect, GUIContent.none, GUIStyle.none))
 					{
@@ -323,14 +313,16 @@ namespace Ami.BroAudio.Editor.Setting
 					}
 					EditorGUIUtility.AddCursorRect(warningBoxRect, MouseCursor.Link);
 
+					DrawEmptyLine(2); // For Help Box
+
 					Rect autoMatchBtnRect = GetRectAndIterateLine(drawPosition);
-					autoMatchBtnRect.y += EditorGUIUtility.singleLineHeight * 2f;
 					autoMatchBtnRect.height *= 2f;
 					if (GUI.Button(autoMatchBtnRect, AutoMatchTracksButtonText) 
 						&& EditorUtility.DisplayDialog("Confirmation", _instruction.GetText(Instruction.AddTracksConfirmationDialog), "OK", "Cancel"))
 					{
 						AutoMatchAudioVoices();
 					}
+					DrawEmptyLine(2); // For Match Button
 				}
 			}
 		}
@@ -489,7 +481,7 @@ namespace Ami.BroAudio.Editor.Setting
 		{
 			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AssetOutputPathLabel, GUIStyleHelper.Instance.MiddleCenterRichText);
 
-			GUIStyle style = EditorStyles.objectField;
+			GUIStyle style = new GUIStyle(EditorStyles.objectField);
 			style.alignment = TextAnchor.MiddleCenter;
 			Rect rect = GetRectAndIterateLine(drawPosition);
 			rect.x += drawPosition.width * 0.15f;

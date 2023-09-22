@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Editor
 		private bool _isInit = false;
 		private string _idName = null;
 
-		private GUIStyle _dropdownStyle = EditorStyles.popup;
+		private GUIStyle _dropdownStyle = new GUIStyle(EditorStyles.popup);
 
 		private void Init(SerializedProperty idProp,IAudioAsset audioAsset)
 		{

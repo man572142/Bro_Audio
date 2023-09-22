@@ -19,7 +19,7 @@ public class Sample : MonoBehaviour
 
 	void Start()
     {
-		BroAudio.Play(_musicA);	
+		BroAudio.Play(_musicA).AsBGM();	
     }
 
 
@@ -51,7 +51,7 @@ public class Sample : MonoBehaviour
 		{
 			_tape.Flip();
 			BroAudio.Play(_flipTapeSFX);
-			//PlayMusic();
+			PlayMusic();
         }
 	}
 

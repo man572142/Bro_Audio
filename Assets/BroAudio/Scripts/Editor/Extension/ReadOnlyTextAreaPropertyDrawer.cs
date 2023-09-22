@@ -26,7 +26,7 @@ namespace Ami.Extension
 
 				EditorGUI.BeginDisabledGroup(targetAttribute.ReadOnly);
 				{
-					GUIStyle areaStyle = EditorStyles.textArea;
+					GUIStyle areaStyle = new GUIStyle(EditorStyles.textArea);
 					areaStyle.wordWrap = true;
 					property.stringValue = EditorGUI.TextArea(textAreaRect, property.stringValue, areaStyle);
 				}

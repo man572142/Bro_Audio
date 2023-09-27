@@ -19,10 +19,10 @@ MonoBehaviour:
     Clips:
     - AudioClip: {fileID: 8300000, guid: ef1b1a7680b07b9438370bf81f0dcf9e, type: 3}
       Volume: 1
-      StartPosition: 0
-      EndPosition: 0
-      FadeIn: 0
-      FadeOut: 0
+      StartPosition: 0.55
+      EndPosition: 0.45
+      FadeIn: 0.47
+      FadeOut: 0.87
       Weight: 0
       SnapToFullVolume: 0
     <Delay>k__BackingField: 0

@@ -125,7 +125,6 @@ namespace Ami.BroAudio.Editor
 			drawPosition.x += Gap;
 			drawPosition.width -= Gap * 2;
 
-			_clipPropHelper.SetCurrentTransport(_transport);
 			DrawPlaybackPositionField(drawPosition);
 			DrawFadingField(drawPosition);
 
@@ -164,17 +163,17 @@ namespace Ami.BroAudio.Editor
 		private void DrawPlaybackPositionField(Rect drawPosition)
 		{
 			Rect playbackRect = GetRectAndIterateLine(drawPosition);
-			_clipPropHelper.DrawPlaybackPositionField(playbackRect, _transport, out var newPos);
-			_transport.StartPosition = newPos.StartPosition;
-			_transport.EndPosition = newPos.EndPosition;
+			_clipPropHelper.DrawPlaybackPositionField(playbackRect, _transport);
+			//_transport.StartPosition = newPos.StartPosition;
+			//_transport.EndPosition = newPos.EndPosition;
 		}
 
 		private void DrawFadingField(Rect drawPosition)
 		{
 			Rect fadingRect = GetRectAndIterateLine(drawPosition);
-			_clipPropHelper.DrawFadingField(fadingRect, _transport, out var newFading);
-			_transport.FadeIn = newFading.FadeIn;
-			_transport.FadeOut = newFading.FadeOut;
+			_clipPropHelper.DrawFadingField(fadingRect, _transport);
+			//_transport.FadeIn = newFading.FadeIn;
+			//_transport.FadeOut = newFading.FadeOut;
 		}
 
 		private int GetLineCountByPixels(float pixels)

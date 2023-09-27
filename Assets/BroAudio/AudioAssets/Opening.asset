@@ -18,9 +18,9 @@ MonoBehaviour:
     MulticlipsPlayMode: 0
     Clips:
     - AudioClip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
-      Volume: 1
-      StartPosition: 0
-      EndPosition: 0
+      Volume: 0.8517097
+      StartPosition: 20.02
+      EndPosition: 145.87
       FadeIn: 0
       FadeOut: 0
       Weight: 0
@@ -40,14 +40,14 @@ MonoBehaviour:
     Clips:
     - AudioClip: {fileID: 8300000, guid: 4b55b743fac55204abecc70b86b4c7e5, type: 3}
       Volume: 1
-      StartPosition: 21.58
-      EndPosition: 24.6
+      StartPosition: 9.68
+      EndPosition: 21.58
       FadeIn: 0
       FadeOut: 0
       Weight: 0
       SnapToFullVolume: 0
     <Delay>k__BackingField: 0
-    <Loop>k__BackingField: 0
+    <Loop>k__BackingField: 1
     <SeamlessLoop>k__BackingField: 0
     <TransitionTime>k__BackingField: -1
     IsShowClipPreview: 1

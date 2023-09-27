@@ -10,6 +10,8 @@ namespace Ami.BroAudio.Editor
         public const string VolumeSnapPointer = "SignalAsset Icon";
         public const string HorizontalVUMeter = "d_VUMeterTextureHorizontal";
         public const string LibraryWorkdFine = "Toggle Icon";
+        public const string PlaybackPosition = "icon dropdown@2x";
+        public const string FadingPosition = "d_icon dropdown@2x";
 
         // GlobalSettingWindow
         public const string AssetOutputBrowser = "FolderOpened Icon";

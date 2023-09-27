@@ -297,5 +297,14 @@ namespace Ami.Extension
 			return Mathf.Pow(10,logResult);
 		}
 
+		public static bool GUIClipContains(this Rect scope,Rect guiClip ,Vector2 position)
+		{
+			float offsetX = scope.xMin - guiClip.xMin;
+			float offsetY = scope.yMin - guiClip.yMin;
+
+			Rect rect = new Rect(offsetX, offsetY, scope.width, scope.height);
+			return rect.Contains(position);
+		}
+
 	}
 }

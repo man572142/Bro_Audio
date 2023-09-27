@@ -2,14 +2,13 @@ using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Editor 
 {
-	public struct Transport
+	public struct Transport : ITransport
 	{
-		public float StartPosition;
-		public float EndPosition;
-		public float FadeIn;
-		public float FadeOut;
-
-		public float FullLength;
+		public float StartPosition { get; set; }
+		public float EndPosition { get; set; }
+		public float FadeIn { get; set; }
+		public float FadeOut { get; set; }
+		public float FullLength { get; set; }
 
 		public Transport(BroAudioClip clip)
 		{
@@ -26,5 +25,37 @@ namespace Ami.BroAudio.Editor
 
 		public bool HasDifferentPosition => StartPosition != 0f || EndPosition != 0f;
 		public bool HasFading => FadeIn != 0f || FadeOut != 0f;
+
+		public float[] GetMultiFloatValues(TransportType transportType)
+		{
+			//switch (transportType)
+			//{
+			//	case TransportType.PlaybackPosition:
+			//		return GetOrCreateValues();
+			//		break;
+			//	case TransportType.Fading:
+			//		break;
+			//}
+			return null;
+		}
+
+		public void ClampAndSetProperty(TransportType transportType)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		private float[] GetOrCreateValues(float[] values, params float[] sources)
+		{
+			if(values == null)
+			{
+				values = new float[sources.Length];
+
+				for (int i = 0; i < sources.Length; i++)
+				{
+					values[i] = sources[i];
+				}
+			}
+			return values;
+		}
 	}
 }

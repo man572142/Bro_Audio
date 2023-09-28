@@ -34,7 +34,6 @@ namespace Ami.BroAudio.Editor
 		}
 
 		public const float DragPointSizeLength = 20f;
-		public const int FloatFieldDigits = 2;
 
 		public float ClipPreviewHeight { get; private set; }
 
@@ -69,26 +68,24 @@ namespace Ami.BroAudio.Editor
 		}
 
 		public void DrawPlaybackPositionField(Rect position, ITransport transport)
-		{
-			float[] playbackValues = transport.GetMultiFloatValues(TransportType.PlaybackPosition);
+		{		
 			EditorGUI.BeginChangeCheck();
-			EditorGUI.MultiFloatField(position, new GUIContent("Playback Position"), PlaybackLabels, playbackValues);
+			EditorGUI.MultiFloatField(position, new GUIContent("Playback Position"), PlaybackLabels, transport.PlaybackValues);
 			if(EditorGUI.EndChangeCheck())
 			{
-				transport.StartPosition = playbackValues[0];
-				transport.EndPosition = playbackValues[1];
+				transport.SetValue(transport.PlaybackValues[0], TransportType.Start);
+				transport.SetValue(transport.PlaybackValues[1], TransportType.End);
 			}
 		}
 
 		public void DrawFadingField(Rect position, ITransport transport)
 		{
-			float[] fadingValues = transport.GetMultiFloatValues(TransportType.Fading);
 			EditorGUI.BeginChangeCheck();
-			EditorGUI.MultiFloatField(position, new GUIContent("Fade"), FadeLabels, fadingValues);
+			EditorGUI.MultiFloatField(position, new GUIContent("Fade"), FadeLabels, transport.FadingValues);
 			if (EditorGUI.EndChangeCheck())
 			{
-				transport.FadeIn = fadingValues[0];
-				transport.FadeOut = fadingValues[1];
+				transport.SetValue(transport.FadingValues[0], TransportType.FadeIn);
+				transport.SetValue(transport.FadingValues[1], TransportType.FadeOut);
 			}
 		}
 
@@ -104,7 +101,7 @@ namespace Ami.BroAudio.Editor
 			{
 				return;
 			}
-			TransportVectorPoints points = new TransportVectorPoints((IReadOnlyTransport)transport, new Vector2(waveformRect.width,ClipPreviewHeight), audioClip.length);
+			TransportVectorPoints points = new TransportVectorPoints(transport, new Vector2(waveformRect.width,ClipPreviewHeight), audioClip.length);
 			DrawClipPlaybackLine();
 			DrawDraggable();
 
@@ -262,13 +259,13 @@ namespace Ami.BroAudio.Editor
 			switch (transportType)
 			{
 				case TransportType.Start:
-					return new DraggablePoint(rect, posInSec => transport.StartPosition = posInSec);
+					return new DraggablePoint(rect, posInSec => transport.SetValue(posInSec,transportType));
 				case TransportType.FadeIn:
-					return new DraggablePoint(rect, posInSec => transport.FadeIn = posInSec - transport.StartPosition);
+					return new DraggablePoint(rect, posInSec => transport.SetValue(posInSec - transport.StartPosition,transportType));
 				case TransportType.FadeOut:
-					return new DraggablePoint(rect, posInSec => transport.FadeOut = transport.FullLength - transport.EndPosition - posInSec);
+					return new DraggablePoint(rect, posInSec => transport.SetValue(transport.FullLength - transport.EndPosition - posInSec,transportType));
 				case TransportType.End:
-					return new DraggablePoint(rect, posInSec => transport.EndPosition = transport.FullLength - posInSec);
+					return new DraggablePoint(rect, posInSec => transport.SetValue(transport.FullLength - posInSec,transportType));
 				default:
 					Tools.BroLog.LogError($"No corresponding point for transport type {transportType}");
 					return default;

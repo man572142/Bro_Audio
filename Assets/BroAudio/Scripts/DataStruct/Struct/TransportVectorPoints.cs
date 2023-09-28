@@ -4,11 +4,11 @@ namespace Ami.BroAudio.Editor
 {
 	public struct TransportVectorPoints
 	{
-		public readonly IReadOnlyTransport Transport;
+		public readonly ITransport Transport;
 		public readonly Vector2 DrawingSize;
 		public readonly float ClipLength;
 
-		public TransportVectorPoints(IReadOnlyTransport transport, Vector2 drawingSize, float clipLength)
+		public TransportVectorPoints(ITransport transport, Vector2 drawingSize, float clipLength)
 		{
 			Transport = transport;
 			DrawingSize = drawingSize;

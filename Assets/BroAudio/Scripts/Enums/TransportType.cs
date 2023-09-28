@@ -6,8 +6,5 @@
 		End = 1 << 1,
 		FadeIn = 1 << 2,
 		FadeOut = 1 << 3,
-
-		PlaybackPosition = Start | End,
-		Fading = FadeIn | FadeOut,
 	}
 }

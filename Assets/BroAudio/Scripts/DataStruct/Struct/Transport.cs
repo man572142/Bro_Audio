@@ -1,63 +1,65 @@
 using System;
-using Ami.BroAudio.Data;
+using UnityEngine;
 
 namespace Ami.BroAudio.Editor 
 {
-	public class Transport : ITransport, IReadOnlyTransport
+	public class Transport : ITransport
 	{
-		public event Action<TransportType> OnTransportChanged;
+		public const int FloatFieldDigits = 2;
+
 		public float StartPosition { get; set; }
 		public float EndPosition { get; set; }
 		public float FadeIn { get; set; }
 		public float FadeOut { get; set; }
 		public float FullLength { get; set; }
+		public float[] PlaybackValues { get; private set; }
+		public float[] FadingValues { get; private set; }
 
-		public Transport(BroAudioClip clip)
+		public Transport(AudioClip clip)
 		{
-			StartPosition = clip.StartPosition;
-			EndPosition = clip.EndPosition;
-			FadeIn = clip.FadeIn;
-			FadeOut = clip.FadeOut;
-            FullLength = 0f;
-            if (clip.AudioClip)
+            if (clip)
 			{
-                FullLength = clip.AudioClip.length;
+                FullLength = clip.length;
             }
+			PlaybackValues = new float[] { StartPosition, EndPosition };
+			FadingValues = new float[] { FadeIn, FadeOut };
 		}
 
 		public bool HasDifferentPosition => StartPosition != 0f || EndPosition != 0f;
 		public bool HasFading => FadeIn != 0f || FadeOut != 0f;
 
-		public float[] GetMultiFloatValues(TransportType transportType)
+		public void SetValue(float newValue, TransportType transportType)
 		{
-			//switch (transportType)
-			//{
-			//	case TransportType.PlaybackPosition:
-			//		return GetOrCreateValues();
-			//		break;
-			//	case TransportType.Fading:
-			//		break;
-			//}
-			return null;
-		}
-
-		public void ClampAndSetProperty(TransportType transportType)
-		{
-			throw new System.NotImplementedException();
-		}
-
-		private float[] GetOrCreateValues(float[] values, params float[] sources)
-		{
-			if(values == null)
+			switch (transportType)
 			{
-				values = new float[sources.Length];
-
-				for (int i = 0; i < sources.Length; i++)
-				{
-					values[i] = sources[i];
-				}
+				case TransportType.Start:
+					PlaybackValues[0] = ClampAndRound(newValue, StartPosition);
+					StartPosition = PlaybackValues[0];
+					break;
+				case TransportType.End:
+					PlaybackValues[1] = ClampAndRound(newValue, EndPosition);
+					EndPosition = PlaybackValues[1];
+					break;
+				case TransportType.FadeIn:
+					FadingValues[0] = ClampAndRound(newValue, FadeIn);
+					FadeIn = FadingValues[0];
+					break;
+				case TransportType.FadeOut:
+					FadingValues[1] = ClampAndRound(newValue, FadeOut);
+					FadeOut = FadingValues[1];
+					break;
 			}
-			return values;
+		}
+
+		private float ClampAndRound(float value, float targetValue)
+		{
+			float clamped = Mathf.Clamp(value, 0f, GetLengthLimit(targetValue));
+			return (float)System.Math.Round(clamped, FloatFieldDigits);
+		}
+
+		private float GetLengthLimit(float targetValue)
+		{
+			return FullLength - StartPosition - FadeIn - FadeOut - EndPosition + targetValue;
 		}
 	}
 }

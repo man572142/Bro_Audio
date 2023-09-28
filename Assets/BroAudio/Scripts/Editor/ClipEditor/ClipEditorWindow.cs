@@ -102,6 +102,11 @@ namespace Ami.BroAudio.Editor
 		protected override void OnGUI()
 		{
 			base.OnGUI();
+
+			if(_transport != null)
+			{
+				//Debug.Log($"prop:{_transport.StartPosition} array:{_transport._playbackValues[0]}");
+			}
 			
 			Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
 
@@ -113,10 +118,6 @@ namespace Ami.BroAudio.Editor
 				Rect noClipRect = new Rect(drawPosition.width * 0.5f, drawPosition.height * 0.5f, 0f, 0f);
 				EditorGUI.LabelField(noClipRect, "No Clip".SetSize(30).SetColor(Color.white), GUIStyleHelper.Instance.MiddleCenterRichText);
 				return;
-			}
-			if (_transport.FullLength == 0f)
-			{
-				_transport.FullLength = TargetClip.length;
 			}
 
 			DrawEmptyLine(1);
@@ -150,7 +151,12 @@ namespace Ami.BroAudio.Editor
 		private void DrawAudioClipObjectField(Rect drawPosition)
 		{
 			Rect clipObjectRect = GetRectAndIterateLine(drawPosition);
+			EditorGUI.BeginChangeCheck();
 			TargetClip = EditorGUI.ObjectField(clipObjectRect, "Audio Clip", TargetClip, typeof(AudioClip), false) as AudioClip;
+			if(EditorGUI.EndChangeCheck() && TargetClip)
+			{
+				_transport = new Transport(TargetClip);
+			}
 		}
 
 		private void DrawClipPreview(Rect drawPosition,float height)
@@ -258,6 +264,7 @@ namespace Ami.BroAudio.Editor
 
 			AudioClip newClip = AssetDatabase.LoadAssetAtPath(_currSavingFilePath, typeof(AudioClip)) as AudioClip;
 			TargetClip = newClip;
+			_transport = new Transport(TargetClip);
 		}
 
 		private void ResetSetting()

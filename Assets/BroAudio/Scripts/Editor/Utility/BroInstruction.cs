@@ -5,7 +5,9 @@ using Ami.Extension;
 
 namespace Ami.BroAudio.Editor.Setting
 {
-	//[CreateAssetMenu(menuName = "BroAudio(DevOnly)/Create instruction asset",fileName = BroName.InstructionFileName)]
+#if BroAudio_DevOnly
+	[CreateAssetMenu(menuName = "BroAudio/Create instruction asset",fileName = Tools.BroName.InstructionFileName)]
+#endif
 	public class BroInstruction : ScriptableObject
 	{
 		public const bool CanEdit = true;

@@ -22,7 +22,9 @@ namespace Ami.Extension
 
 		private AudioMixer _targetMixer = null;
 
-		//[MenuItem("BroAudio/Dev Only")]
+#if BroAudio_DevOnly
+		[MenuItem("BroAudio/Dev Only Tools")]
+#endif
 		public static void ShowWindow()
 		{
 			EditorWindow window = GetWindow(typeof(DevToolsWindow));

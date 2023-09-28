@@ -5,7 +5,9 @@ using Ami.Extension;
 
 namespace Ami.BroAudio.Data
 {
-	//[CreateAssetMenu(menuName = "BroAudio(DevOnly)/Create Runtime Setting Asset File", fileName = FileName)]
+#if BroAudio_DevOnly
+	[CreateAssetMenu(menuName = "BroAudio/Create Runtime Setting Asset File", fileName = FileName)]
+#endif
 	public class RuntimeSetting : ScriptableObject
 	{
 		public const string FileName = "BroRuntimeSetting";
@@ -42,5 +44,4 @@ namespace Ami.BroAudio.Data
 		}
 #endif
 	}
-
 }

@@ -4,7 +4,9 @@ using UnityEngine;
 
 namespace Ami.BroAudio.Editor
 {
-	//[CreateAssetMenu(menuName = "BroAudio(DevOnly)/Create Editor Setting Asset File", fileName = FileName)]
+#if BroAudio_DevOnly
+	[CreateAssetMenu(menuName = "BroAudio/Create Editor Setting Asset File", fileName = FileName)]
+#endif
 	public class EditorSetting : ScriptableObject
 	{
 		[System.Serializable]

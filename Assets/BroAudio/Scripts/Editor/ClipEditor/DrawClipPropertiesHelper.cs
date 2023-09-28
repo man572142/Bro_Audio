@@ -247,6 +247,13 @@ namespace Ami.BroAudio.Editor
 				{
 					_currDraggedPoint = default;
 				}
+
+#if BroAudio_DevOnly && BroAudio_ShowClipDraggableArea
+				foreach (var point in pointsDict.Values)
+				{
+					EditorGUI.DrawRect(point.Rect, new Color(1f, 1f, 1f, 0.3f));
+				}
+#endif
 			}
 		}
 

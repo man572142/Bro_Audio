@@ -1,9 +1,11 @@
+using System;
 using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Editor 
 {
-	public struct Transport : ITransport
+	public class Transport : ITransport, IReadOnlyTransport
 	{
+		public event Action<TransportType> OnTransportChanged;
 		public float StartPosition { get; set; }
 		public float EndPosition { get; set; }
 		public float FadeIn { get; set; }

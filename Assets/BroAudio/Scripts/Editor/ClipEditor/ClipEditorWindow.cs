@@ -157,23 +157,19 @@ namespace Ami.BroAudio.Editor
 		{
 			Rect previewRect = GetRectAndIterateLine(drawPosition);
 			_clipPropHelper.SetPreviewHeight(height);
-			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip);
+			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip,TargetClip.name);
 			DrawEmptyLine(GetLineCountByPixels(height));
 		}
 		private void DrawPlaybackPositionField(Rect drawPosition)
 		{
 			Rect playbackRect = GetRectAndIterateLine(drawPosition);
 			_clipPropHelper.DrawPlaybackPositionField(playbackRect, _transport);
-			//_transport.StartPosition = newPos.StartPosition;
-			//_transport.EndPosition = newPos.EndPosition;
 		}
 
 		private void DrawFadingField(Rect drawPosition)
 		{
 			Rect fadingRect = GetRectAndIterateLine(drawPosition);
 			_clipPropHelper.DrawFadingField(fadingRect, _transport);
-			//_transport.FadeIn = newFading.FadeIn;
-			//_transport.FadeOut = newFading.FadeOut;
 		}
 
 		private int GetLineCountByPixels(float pixels)

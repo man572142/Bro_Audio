@@ -122,6 +122,28 @@ namespace Ami.Extension
 			return new Rect(origin.xMin + dissolveRatio * origin.width, origin.y, (1 - dissolveRatio) * origin.width, origin.height);
 		}
 
+		public static Vector3 DeScope(this Vector3 inScopePos, Rect scope, Vector3 offset = default)
+		{
+			return DeScope(inScopePos.ToVector2(),scope,offset.ToVector2());
+		}
+
+		public static Vector2 DeScope(this Vector2 inScopePos, Rect scope, Vector2 offset = default)
+		{
+			return new Vector2(inScopePos.x + scope.x + offset.x, inScopePos.y + scope.y + offset.y);
+		}
+
+		public static Vector3 Scoping(this Vector3 originPos, Rect scope, Vector3 offset = default)
+		{
+			return Scoping(originPos.ToVector2(), scope, offset.ToVector2());
+		}
+
+		public static Vector2 Scoping(this Vector2 originPos, Rect scope, Vector2 offset = default)
+		{
+			return new Vector2(originPos.x - scope.x + offset.x, originPos.y - scope.y + offset.y);
+		}
+
+		private static Vector2 ToVector2(this Vector3 vector) => vector;
+
 		public static bool TryGetPropertyObject<T>(this SerializedProperty sourceProperty, string propertyPath, out T newProperty) where T : class
 		{
 			newProperty = null;

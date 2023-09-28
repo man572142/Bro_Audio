@@ -28,6 +28,7 @@ namespace Ami.BroAudio.Editor
 		private Dictionary<string, ReorderableClips> _reorderableClipsDict = new Dictionary<string, ReorderableClips>();
 		private LibraryManagerWindow _editorWindow = null;
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper(ClipPreviewHeight);
+		private Dictionary<string, ITransport> _clipTransport = new Dictionary<string, ITransport>();
 		
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
@@ -48,8 +49,9 @@ namespace Ami.BroAudio.Editor
 		private void OnDisable()
 		{
 			_reorderableClipsDict.Clear();
+			_clipTransport.Clear();
 
-			if(_editorWindow)
+			if (_editorWindow)
 			{
 				_editorWindow.OnCloseLibraryManagerWindow -= OnDisable;
 				_editorWindow.OnSelectAsset -= OnDisable;
@@ -167,7 +169,11 @@ namespace Ami.BroAudio.Editor
                 });
             }
 
-			transport = new TransportSerializeWrapper(startPosProp, endPosProp, fadeInProp, fadeOutProp, audioClip.length);
+			if(!_clipTransport.TryGetValue(clipProp.propertyPath,out transport))
+			{
+				transport = new TransportSerializedWrapper(startPosProp, endPosProp, fadeInProp, fadeOutProp, audioClip.length);
+				_clipTransport.Add(clipProp.propertyPath, transport);
+			}
 
 			if (setting.DrawedProperty.HasFlag(DrawedProperty.PlaybackPosition))
 			{
@@ -191,7 +197,7 @@ namespace Ami.BroAudio.Editor
 			bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
 			if (isShowPreview)
 			{
-				_clipPropHelper.DrawClipPreview(GetRectAndIterateLine(position), transport, audioClip);
+				_clipPropHelper.DrawClipPreview(GetRectAndIterateLine(position), transport, audioClip, property.propertyPath);
 			}
 		}
 

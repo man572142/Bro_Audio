@@ -98,7 +98,7 @@ namespace Ami.Extension
 				return;
 			}
 
-			int startSample = startTime != 0f ? Mathf.RoundToInt(startTime * _originalClip.frequency * _originalClip.channels) : 0;
+			int startSample = Mathf.RoundToInt(startTime * _originalClip.frequency * _originalClip.channels);
 			int fadeSample = Mathf.RoundToInt(fadeTime * _originalClip.frequency * _originalClip.channels);
 			int endSample = startSample + fadeSample;
 

@@ -103,17 +103,14 @@ namespace Ami.BroAudio.Editor
 		{
 			base.OnGUI();
 
-			if(_transport != null)
-			{
-				//Debug.Log($"prop:{_transport.StartPosition} array:{_transport._playbackValues[0]}");
-			}
+			
 			
 			Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
 
 			DrawEmptyLine(1);
 			DrawAudioClipObjectField(drawPosition);
 
-			if (TargetClip == null)
+			if (TargetClip == null || _transport == null)
 			{
 				Rect noClipRect = new Rect(drawPosition.width * 0.5f, drawPosition.height * 0.5f, 0f, 0f);
 				EditorGUI.LabelField(noClipRect, "No Clip".SetSize(30).SetColor(Color.white), GUIStyleHelper.Instance.MiddleCenterRichText);
@@ -237,7 +234,8 @@ namespace Ami.BroAudio.Editor
 
 				if(_transport.FadeOut != 0f)
 				{
-					float outTime = TargetClip.length - _transport.EndPosition - _transport.FadeOut;
+					float trimmedClipLength = TargetClip.length - _transport.StartPosition - _transport.EndPosition;
+					float outTime = trimmedClipLength - _transport.FadeOut ;
 					helper.Fade(outTime, _transport.FadeOut,false);
 				}
 

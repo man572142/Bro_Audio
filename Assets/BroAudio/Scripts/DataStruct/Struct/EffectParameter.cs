@@ -54,10 +54,10 @@ namespace Ami.BroAudio
 					Value = AudioConstant.FullVolume;
 					break;
 				case EffectType.LowPass:
-					Value = BroAdvice.LowPassFrequence;
+					Value = BroAdvice.HighCutFrequence;
 					break;
 				case EffectType.HighPass:
-					Value = BroAdvice.HighPassFrequence;
+					Value = BroAdvice.LowCutFrequence;
 					break;
 			}
 		}

@@ -26,7 +26,7 @@ namespace Ami.BroAudio.Runtime
 			return this;
 		}
 
-		IPlayerEffect IPlayerEffect.LowPassOthers(float freq ,float fadeTime)
+		IPlayerEffect IPlayerEffect.HighCutOthers(float freq ,float fadeTime)
         {
             if (!AudioExtension.IsValidFrequence(freq))
             {
@@ -43,7 +43,7 @@ namespace Ami.BroAudio.Runtime
             return this;
         }
 
-        IPlayerEffect IPlayerEffect.HighPassOthers(float freq,float fadeTime)
+        IPlayerEffect IPlayerEffect.LowCutOthers(float freq,float fadeTime)
         {
             if (!AudioExtension.IsValidFrequence(freq))
             {

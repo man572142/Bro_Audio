@@ -14,12 +14,14 @@ namespace Ami.BroAudio.Editor
 		public struct DraggablePoint
 		{
 			public Rect Rect;
-			public readonly Action<float> OnSetPlaybackPosition;
+			public Texture Image;
+			public Vector4 ImageBorder;
+			public Color ColorTint;
+			public Action<float> OnSetPlaybackPosition;
 
-			public DraggablePoint(Rect position, Action<float> onSetPlaybackPos)
+			public DraggablePoint(Rect position) : this()
 			{
 				Rect = position;
-				OnSetPlaybackPosition = onSetPlaybackPos;
 			}
 
 			public void SetPlaybackPosition(float value)
@@ -31,12 +33,6 @@ namespace Ami.BroAudio.Editor
 			{
 				return Rect == default;
 			}
-		}
-
-		public class ClipData
-		{
-			public Texture WaveformTexture;
-			public Dictionary<TransportType, DraggablePoint> DraggablePoints = new Dictionary<TransportType, DraggablePoint>();
 		}
 		
 		public const float DragPointSizeLength = 20f;
@@ -50,9 +46,11 @@ namespace Ami.BroAudio.Editor
 
 		private GUIContent[] FadeLabels = { new GUIContent("    In    "), new GUIContent(" Out ") };
 		private GUIContent[] PlaybackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
-		private Dictionary<string, ClipData> _clipDataDict = new Dictionary<string, ClipData>();
+		private Dictionary<string, Dictionary<TransportType, DraggablePoint>> _clipDraggablePointsDict = new Dictionary<string, Dictionary<TransportType, DraggablePoint>>();
 
 		private KeyValuePair<string, DraggablePoint> _currDraggedPoint = default;
+
+		private TransportType[] _allTransportType = Enum.GetValues(typeof(TransportType)) as TransportType[];
 
 		public DrawClipPropertiesHelper()
 		{
@@ -95,11 +93,11 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public void DrawClipPreview(Rect clipViewRect, ITransport transport, AudioClip audioClip,string propertyPath)
+		public void DrawClipPreview(Rect clipViewRect, ITransport transport, AudioClip audioClip,string clipPath)
 		{
 			clipViewRect.height = ClipPreviewHeight;
 			SplitRectHorizontal(clipViewRect, 0.1f, 15f, out Rect playbackRect, out Rect waveformRect);
-			ClipData clipData = GetOrCreateClipData(propertyPath, audioClip);
+			var draggablePoints = GetOrCreateDraggablePoints(clipPath);
 
 			DrawWaveformPreview();
 			DrawPlaybackButton();
@@ -112,12 +110,14 @@ namespace Ami.BroAudio.Editor
 			DrawClipPlaybackLine();
 			DrawDraggable();
 			DrawClipLength();
+			HandleDraggable();
 
 			void DrawWaveformPreview()
 			{
-				if (clipData != null)
+				Texture2D waveformTexture = AssetPreview.GetAssetPreview(audioClip);
+				if (waveformTexture != null)
 				{
-					EditorGUI.DrawPreviewTexture(waveformRect, clipData.WaveformTexture);
+					EditorGUI.DrawPreviewTexture(waveformRect, waveformTexture);
 					EditorGUI.DrawRect(waveformRect, ShadowMaskColor);
 				}
 			}
@@ -125,7 +125,7 @@ namespace Ami.BroAudio.Editor
 			void DrawPlaybackButton()
 			{
 				SplitRectVertical(playbackRect, 0.5f, 15f, out Rect playRect, out Rect stopRect);
-				// 保持在正方形
+				// Keep in square
 				float maxHeight = playRect.height;
 				playRect.width = Mathf.Clamp(playRect.width, playRect.width, maxHeight);
 				playRect.height = playRect.width;
@@ -195,45 +195,40 @@ namespace Ami.BroAudio.Editor
 
 			void DrawDraggable()
 			{
-				Vector2 offset = new Vector2(-DragPointSizeLength * 0.5f, -DragPointSizeLength);
-				Vector2 dragPointSize = new Vector2(DragPointSizeLength, DragPointSizeLength);
+				ScaleMode scaleMode = ScaleMode.ScaleToFit;
+				foreach (var transportType in _allTransportType)
+				{
+					DraggablePoint point = GetDraggablePoint(waveformRect, points, transport, transportType);
+					draggablePoints[transportType] = point;
+					GUI.DrawTexture(point.Rect, point.Image, scaleMode, true, 0f, point.ColorTint, point.ImageBorder, 0f);
+				}	
+			}
 
-				Vector2 startPos = new Vector2(points.Start.x, 0f).DeScope(waveformRect, offset);
-				Vector2 fadeInPos = new Vector2(points.FadeIn.x, dragPointSize.y).DeScope(waveformRect, offset);
-				Vector2 fadeOutPos = new Vector2(points.FadeOut.x, dragPointSize.y).DeScope(waveformRect, offset);
-				Vector2 endPos = new Vector2(points.End.x, 0f).DeScope(waveformRect, offset);
+			void DrawClipLength()
+			{
+				Rect labelRect = new Rect(waveformRect);
+				labelRect.height = EditorGUIUtility.singleLineHeight;
+				labelRect.y = waveformRect.yMax - labelRect.height;
+				float currentLength = audioClip.length - transport.StartPosition - transport.EndPosition;
+				EditorGUI.DropShadowLabel(labelRect, currentLength.ToString("0.00") + "s");
+			}
 
-				Rect startRect = new Rect(startPos, dragPointSize);
-				Rect fadeInRect = new Rect(fadeInPos, dragPointSize);
-				Rect fadeOutRect = new Rect(fadeOutPos, dragPointSize);
-				Rect endRect = new Rect(endPos, dragPointSize);
-
-				clipData.DraggablePoints[TransportType.Start] = GetDraggablePoint(startRect, transport, TransportType.Start);
-				clipData.DraggablePoints[TransportType.FadeIn] = GetDraggablePoint(fadeInRect, transport, TransportType.FadeIn);
-				clipData.DraggablePoints[TransportType.FadeOut] = GetDraggablePoint(fadeOutRect, transport, TransportType.FadeOut);
-				clipData.DraggablePoints[TransportType.End] = GetDraggablePoint(endRect, transport, TransportType.End);
-
-				Vector4 leftPointBorder = new Vector4(DragPointSizeLength * 0.5f, 0f, 0f, 0f);
-				Vector4 rightPointBorder = new Vector4(0f, 0f, DragPointSizeLength * 0.5f, 0f);
-				GUI.DrawTexture(startRect, EditorGUIUtility.IconContent(PlaybackPosIcon).image, ScaleMode.ScaleToFit, true, 0f, _startEndColor, leftPointBorder, 0f);
-				GUI.DrawTexture(fadeInRect, EditorGUIUtility.IconContent(FadeInIcon).image, ScaleMode.ScaleToFit, true, 0f, _fadingLineColor, 0f, 0f);
-				GUI.DrawTexture(fadeOutRect, EditorGUIUtility.IconContent(FadeOutIcon).image, ScaleMode.ScaleToFit, true, 0f, _fadingLineColor, 0f, 0f);
-				GUI.DrawTexture(endRect, EditorGUIUtility.IconContent(PlaybackPosIcon).image, ScaleMode.ScaleToFit, true, 0f, _startEndColor, rightPointBorder, 0f);
-
+			void HandleDraggable()
+			{
 				Event currEvent = Event.current;
 				if (currEvent.type == EventType.MouseDown)
 				{
-					foreach (DraggablePoint point in clipData.DraggablePoints.Values)
+					foreach (DraggablePoint point in draggablePoints.Values)
 					{
 						if (point.Rect.Contains(currEvent.mousePosition))
 						{
-							_currDraggedPoint = new KeyValuePair<string, DraggablePoint>(propertyPath, point);
+							_currDraggedPoint = new KeyValuePair<string, DraggablePoint>(clipPath, point);
 							currEvent.Use();
 							break;
 						}
 					}
 				}
-				else if (currEvent.type == EventType.MouseDrag && _currDraggedPoint.Key == propertyPath && !_currDraggedPoint.Value.IsDefault())
+				else if (currEvent.type == EventType.MouseDrag && _currDraggedPoint.Key == clipPath && !_currDraggedPoint.Value.IsDefault())
 				{
 					float posInSeconds = currEvent.mousePosition.Scoping(waveformRect).x / waveformRect.width * audioClip.length;
 					_currDraggedPoint.Value.SetPlaybackPosition(posInSeconds);
@@ -251,49 +246,84 @@ namespace Ami.BroAudio.Editor
 				}
 #endif
 			}
-
-			void DrawClipLength()
-			{
-				Rect labelRect = new Rect(waveformRect);
-				labelRect.height = EditorGUIUtility.singleLineHeight;
-				labelRect.y = waveformRect.yMax - labelRect.height;
-				float currentLength = audioClip.length - transport.StartPosition - transport.EndPosition;
-				EditorGUI.DropShadowLabel(labelRect, currentLength.ToString("0.00") + "s");
-			}
 		}
 
-		private ClipData GetOrCreateClipData(string propertyPath,AudioClip audioClip)
+		private Dictionary<TransportType, DraggablePoint> GetOrCreateDraggablePoints(string clipPath)
 		{
-			if (!_clipDataDict.TryGetValue(propertyPath, out var clipData))
+			if (!_clipDraggablePointsDict.TryGetValue(clipPath, out var draggablePoints))
 			{
-				clipData = new ClipData();
-				clipData.WaveformTexture = AssetPreview.GetAssetPreview(audioClip);
-				clipData.DraggablePoints = new Dictionary<TransportType, DraggablePoint>()
+				draggablePoints = new Dictionary<TransportType, DraggablePoint>()
 					{
 						{ TransportType.Start,default},{ TransportType.FadeIn,default},{ TransportType.FadeOut,default},{ TransportType.End,default},
 					};
-				_clipDataDict.Add(propertyPath, clipData);
+				_clipDraggablePointsDict.Add(clipPath, draggablePoints);
 			}
 
-			return clipData;
+			return draggablePoints;
 		}
 
-		private DraggablePoint GetDraggablePoint(Rect rect, ITransport transport,TransportType transportType)
+		private DraggablePoint GetDraggablePoint(Rect waveformRect,TransportVectorPoints points, ITransport transport,TransportType transportType)
 		{
+			Rect rect = GetDraggableRect(waveformRect, points, transportType);
 			switch (transportType)
 			{
 				case TransportType.Start:
-					return new DraggablePoint(rect, posInSec => transport.SetValue(posInSec,transportType));
+					return new DraggablePoint(rect)
+					{
+						Image = EditorGUIUtility.IconContent(PlaybackPosIcon).image,
+						ImageBorder = new Vector4(DragPointSizeLength * 0.5f, 0f, 0f, 0f),
+						ColorTint = _startEndColor,
+						OnSetPlaybackPosition = posInSec => transport.SetValue(posInSec, transportType),
+					};
 				case TransportType.FadeIn:
-					return new DraggablePoint(rect, posInSec => transport.SetValue(posInSec - transport.StartPosition,transportType));
+					return new DraggablePoint(rect)
+					{
+						Image = EditorGUIUtility.IconContent(FadeInIcon).image,
+						ColorTint = _fadingLineColor,
+						OnSetPlaybackPosition = posInSec => transport.SetValue(posInSec - transport.StartPosition, transportType),
+					};
 				case TransportType.FadeOut:
-					return new DraggablePoint(rect, posInSec => transport.SetValue(transport.FullLength - transport.EndPosition - posInSec,transportType));
+					return new DraggablePoint(rect)
+					{
+						Image = EditorGUIUtility.IconContent(FadeOutIcon).image,
+						ColorTint = _fadingLineColor,
+						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.FullLength - transport.EndPosition - posInSec, transportType),
+					};
 				case TransportType.End:
-					return new DraggablePoint(rect, posInSec => transport.SetValue(transport.FullLength - posInSec,transportType));
+					return new DraggablePoint(rect)
+					{
+						Image = EditorGUIUtility.IconContent(PlaybackPosIcon).image,
+						ImageBorder = new Vector4(0f, 0f, DragPointSizeLength * 0.5f, 0f),
+						ColorTint = _startEndColor,
+						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.FullLength - posInSec, transportType),
+					};
 				default:
 					Tools.BroLog.LogError($"No corresponding point for transport type {transportType}");
 					return default;
 			}
+		}
+
+		private Rect GetDraggableRect(Rect waveformRect,TransportVectorPoints points, TransportType transportType)
+		{
+			Vector2 offset = new Vector2(-DragPointSizeLength * 0.5f, -DragPointSizeLength);
+			Vector2 dragPointSize = new Vector2(DragPointSizeLength, DragPointSizeLength);
+			Vector2 position = default;
+			switch (transportType)
+			{
+				case TransportType.Start:
+					position = new Vector2(points.Start.x, 0f).DeScope(waveformRect, offset);
+					break;
+				case TransportType.FadeIn:
+					position = new Vector2(points.FadeIn.x, dragPointSize.y).DeScope(waveformRect, offset);
+					break;
+				case TransportType.FadeOut:
+					position = new Vector2(points.FadeOut.x, dragPointSize.y).DeScope(waveformRect, offset);
+					break;
+				case TransportType.End:
+					position = new Vector2(points.End.x, 0f).DeScope(waveformRect, offset);
+					break;
+			}
+			return new Rect(position, dragPointSize);
 		}
 	}
 }

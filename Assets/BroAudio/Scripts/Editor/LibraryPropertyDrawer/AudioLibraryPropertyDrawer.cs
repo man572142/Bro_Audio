@@ -74,31 +74,33 @@ namespace Ami.BroAudio.Editor
 			SerializedProperty nameProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IAudioLibrary.Name)));
 
 			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProp.stringValue);
-			if (property.isExpanded)
+			if (!property.isExpanded || !EditorSetting.TryGetAudioTypeSetting(GetAudioType(property), out var setting))
 			{
-				nameProp.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProp.stringValue);
-				BroAudioType audioType = GetAudioType(property);
-                if (!EditorSetting.TryGetAudioTypeSetting(audioType, out var setting))
-                {
-                    return;
-                }
-
-                DrawAdditionalBaseProperties(position, property, setting);
-
-				#region Clip Properties
-				ReorderableClips currClipList = DrawReorderableClipsList(position, property);
-				SerializedProperty currSelectClip = currClipList.CurrentSelectedClip;
-				if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip),out AudioClip audioClip))
-				{
-					DrawClipProperties(position, currClipList, audioClip,setting,out ITransport transport);
-					DrawAdditionalClipProperties(position, property, setting);
-					if(setting.DrawedProperty.HasFlag(DrawedProperty.ClipPreview))
-					{
-                        DrawClipPreview(position, property, transport, audioClip);
-                    }
-				}
-				#endregion
+				return;
 			}
+
+			nameProp.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProp.stringValue);
+			DrawAdditionalBaseProperties(position, property, setting);
+
+			#region Clip Properties
+			ReorderableClips currClipList = DrawReorderableClipsList(position, property);
+			SerializedProperty currSelectClip = currClipList.CurrentSelectedClip;
+			if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
+			{
+				DrawClipProperties(position, currClipList, audioClip, setting, out ITransport transport);
+				DrawAdditionalClipProperties(position, property, setting);
+				if (setting.DrawedProperty.HasFlag(DrawedProperty.ClipPreview))
+				{
+					SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioLibrary.NameOf.IsShowClipPreview);
+					isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
+					bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
+					if (isShowPreview)
+					{
+						_clipPropHelper.DrawClipPreview(GetRectAndIterateLine(position), transport, audioClip, currSelectClip.propertyPath);
+					}
+				}
+			}
+			#endregion
 		}
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
@@ -188,17 +190,6 @@ namespace Ami.BroAudio.Editor
                 fadingRect.width *= 0.8f;
                 _clipPropHelper.DrawFadingField(fadingRect, transport);
             }   
-		}
-
-		private void DrawClipPreview(Rect position, SerializedProperty property, ITransport transport, AudioClip audioClip)
-		{
-			SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioLibrary.NameOf.IsShowClipPreview);
-			isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
-			bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
-			if (isShowPreview)
-			{
-				_clipPropHelper.DrawClipPreview(GetRectAndIterateLine(position), transport, audioClip, property.propertyPath);
-			}
 		}
 
 		private float DrawVolumeSlider(Rect position, GUIContent label, float currentValue,bool isSnap,Action onSwitchBoostMode)

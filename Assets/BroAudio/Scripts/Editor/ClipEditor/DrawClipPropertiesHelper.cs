@@ -135,7 +135,8 @@ namespace Ami.BroAudio.Editor
 				if (GUI.Button(playRect, EditorGUIUtility.IconContent(PlayButton)))
 				{
 					EditorPlayAudioClip.StopAllClips();
-					EditorPlayAudioClip.PlayClip(audioClip, Mathf.RoundToInt(AudioSettings.outputSampleRate * transport.StartPosition));
+					EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(waveformRect, transport);
+					EditorPlayAudioClip.PlayClip(audioClip, Mathf.RoundToInt(audioClip.frequency * transport.StartPosition));
 
 					float duration = audioClip.length - transport.StartPosition - transport.EndPosition;
 					AsyncTaskExtension.DelayDoAction(duration, EditorPlayAudioClip.StopAllClips);
@@ -287,7 +288,7 @@ namespace Ami.BroAudio.Editor
 					{
 						Image = EditorGUIUtility.IconContent(FadeOutIcon).image,
 						ColorTint = _fadingLineColor,
-						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.FullLength - transport.EndPosition - posInSec, transportType),
+						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.Length - transport.EndPosition - posInSec, transportType),
 					};
 				case TransportType.End:
 					return new DraggablePoint(rect)
@@ -295,7 +296,7 @@ namespace Ami.BroAudio.Editor
 						Image = EditorGUIUtility.IconContent(PlaybackPosIcon).image,
 						ImageBorder = new Vector4(0f, 0f, DragPointSizeLength * 0.5f, 0f),
 						ColorTint = _startEndColor,
-						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.FullLength - posInSec, transportType),
+						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.Length - posInSec, transportType),
 					};
 				default:
 					Tools.BroLog.LogError($"No corresponding point for transport type {transportType}");

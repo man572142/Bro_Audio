@@ -14,21 +14,8 @@ using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
-	public class LibraryManagerWindow : EditorWindow
+	public partial class LibraryManagerWindow : EditorWindow
 	{
-		private class VerticalGapDrawingHelper : IEditorDrawLineCounter
-		{
-			public float SingleLineSpace => 10f;
-			public int DrawLineCount { get; set; }
-			public float GetTotalSpace() => DrawLineCount * SingleLineSpace;
-
-			public float GetSpace()
-			{
-				DrawLineCount++;
-				return SingleLineSpace;
-			}
-		}
-
 		public event Action OnCloseLibraryManagerWindow;
 		public event Action OnSelectAsset;
 
@@ -40,7 +27,7 @@ namespace Ami.BroAudio.Editor
 		private Dictionary<string, AudioAssetEditor> _assetEditorDict = new Dictionary<string, AudioAssetEditor>();
 
 		private Vector2 _assetListScrollPos = Vector2.zero;
-		private Vector2 _settingScrollPos = Vector2.zero;
+		private Vector2 _librariesScrollPos = Vector2.zero;
 
 		private GUIStyle _assetNameTitleStyle = null;
 		private VerticalGapDrawingHelper _gapDrawer = new VerticalGapDrawingHelper();
@@ -76,11 +63,6 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void OnLostFocus()
-		{
-			EditorPlayAudioClip.StopAllClips();
-		}
-
 		public void RemoveAssetEditor(string guid)
 		{
 			if (_assetEditorDict.TryGetValue(guid, out var editor))
@@ -89,6 +71,18 @@ namespace Ami.BroAudio.Editor
 			}
 			_assetEditorDict.Remove(guid);
 			_allAssetGUIDs.Remove(guid);
+		}
+
+		private void OnFocus()
+		{
+			EditorPlayAudioClip.PlaybackIndicator.OnUpdate -= Repaint;
+			EditorPlayAudioClip.PlaybackIndicator.OnUpdate += Repaint;
+		}
+
+		private void OnLostFocus()
+		{
+			EditorPlayAudioClip.StopAllClips();
+			EditorPlayAudioClip.PlaybackIndicator.OnUpdate -= Repaint;
 		}
 
 		private void OnEnable()
@@ -102,7 +96,6 @@ namespace Ami.BroAudio.Editor
 			InitAssetOptionGenericMenu();
 			InitReorderableList();
 		}
-
 
 		private void OnDisable()
 		{
@@ -271,8 +264,6 @@ namespace Ami.BroAudio.Editor
 		{
 			_gapDrawer.DrawLineCount = 0;
 
-			//DrawASCIITitle();
-
 			EditorGUILayout.BeginHorizontal();
 			{                
                 GUILayout.Space(_gapDrawer.GetSpace());
@@ -287,13 +278,14 @@ namespace Ami.BroAudio.Editor
 				EditorGUILayout.EndVertical();
 				
 				GUILayout.Space(_gapDrawer.GetSpace());
-				librariesRect.width -= _gapDrawer.GetTotalSpace();
-				DrawLibrariesList(librariesRect);
+				DrawLibrariesList(librariesRect.width - _gapDrawer.GetTotalSpace(), out float topGap);
+
+				// TODO: Don't know why there is a 10 pixels error. 
+				Vector2 offset = new Vector2(_gapDrawer.GetTotalSpace(), topGap + 10f);
+				DrawPlaybackIndicator(librariesRect.Scoping(position, offset));
 			}
 			EditorGUILayout.EndHorizontal();
 		}
-
-		
 
 		private void DrawAssetList(Rect rect)
 		{
@@ -344,17 +336,20 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawLibrariesList(Rect rect)
+		private void DrawLibrariesList(float width,out float topGap)
 		{
-			EditorGUILayout.BeginVertical(GUIStyleHelper.Instance.DefaultDarkBackground,GUILayout.Width(rect.width));
+			topGap = default;
+			EditorGUILayout.BeginVertical(GUIStyleHelper.Instance.DefaultDarkBackground,GUILayout.Width(width));
 			{
 				if (TryGetCurrentAssetEditor(out var editor))
 				{
 					EditorGUILayout.LabelField(editor.Asset.AssetName.SetSize(25).SetColor(Color.white), _assetNameTitleStyle);
-					GUILayout.Space(10f);
+					float space = 15f;
+					GUILayout.Space(space);
+					topGap = space + EditorGUIUtility.singleLineHeight;
 					if (_assetReorderableList.count > 0)
 					{
-						_settingScrollPos = EditorGUILayout.BeginScrollView(_settingScrollPos);
+						_librariesScrollPos = EditorGUILayout.BeginScrollView(_librariesScrollPos);
 						{
 							editor.DrawLibraries();
 						}
@@ -374,50 +369,19 @@ namespace Ami.BroAudio.Editor
 			EditorGUILayout.EndVertical();
 		}
 
-        private void DrawASCIITitle()
-        {
-			
-            GUIStyle style = new GUIStyle(GUI.skin.label);
-            style.font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
-			style.richText = true;
-
-			string ascii =
-							"########  ########   #######     ###    ##     ## ########  ####  #######  " +
-							"##     ## ##     ## ##     ##   ## ##   ##     ## ##     ##  ##  ##     ## " +
-							"##     ## ##     ## ##     ##  ##   ##  ##     ## ##     ##  ##  ##     ## " +
-							"########  ########  ##     ## ##     ## ##     ## ##     ##  ##  ##     ## " +
-							"##     ## ##   ##   ##     ## ######### ##     ## ##     ##  ##  ##     ## " +
-							"##     ## ##    ##  ##     ## ##     ## ##     ## ##     ##  ##  ##     ## " +
-							"########  ##     ##  #######  ##     ##  #######  ########  ####  #######  ";
-
-			int oneLineLength = "########  ########   #######     ###    ##     ## ########  ####  #######  ".Length;
-
-			int lineCount = 5;
-			int currentLine = 0;
-
-			string line = string.Empty;
-
-			for (int i = 0; i < ascii.Length; i++)
+		private void DrawPlaybackIndicator(Rect librariesScope)
+		{
+			var indicator = EditorPlayAudioClip.PlaybackIndicator;
+			if (indicator.IsPlaying)
 			{
-				if(ascii[i] == ' ')
+				GUI.BeginClip(librariesScope);
 				{
-					line += "_";
-                }
-				else
-				{
-                    line += ascii[i];
-                }
-				
-				if (i != 0 && (i + 1) % oneLineLength == 0)
-				{
-					float evalute = currentLine / (float)lineCount;
-					Color color = gradient.Evaluate(evalute);
-					EditorGUILayout.LabelField(line.SetColor(color), style, GUILayout.Height(EditorGUIUtility.singleLineHeight *0.5f));
-					line = string.Empty;
-					currentLine++;
+					Rect indicatorRect = indicator.GetIndicatorPosition();
+					EditorGUI.DrawRect(new Rect(indicatorRect.position - _librariesScrollPos, indicatorRect.size), indicator.Color);
 				}
+				GUI.EndClip();
 			}
-			gradient = EditorGUILayout.GradientField(gradient, GUILayout.Width(500f));
 		}
-    }
+
+	}
 }

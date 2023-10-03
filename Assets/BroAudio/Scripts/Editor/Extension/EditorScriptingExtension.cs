@@ -122,6 +122,14 @@ namespace Ami.Extension
 			return new Rect(origin.xMin + dissolveRatio * origin.width, origin.y, (1 - dissolveRatio) * origin.width, origin.height);
 		}
 
+		public static Rect DeScope(this Rect inScopeRect, Rect scope, Vector2 offset = default)
+		{
+			Rect rect = new Rect(inScopeRect.position.DeScope(scope, offset), inScopeRect.size);
+			rect.xMax = rect.xMax > scope.xMax ? scope.xMax : rect.xMax;
+			rect.yMax = rect.yMax > scope.yMax ? scope.yMax : rect.yMax;
+			return rect;
+		}
+
 		public static Vector3 DeScope(this Vector3 inScopePos, Rect scope, Vector3 offset = default)
 		{
 			return DeScope(inScopePos.ToVector2(),scope,offset.ToVector2());
@@ -130,6 +138,14 @@ namespace Ami.Extension
 		public static Vector2 DeScope(this Vector2 inScopePos, Rect scope, Vector2 offset = default)
 		{
 			return new Vector2(inScopePos.x + scope.x + offset.x, inScopePos.y + scope.y + offset.y);
+		}
+
+		public static Rect Scoping(this Rect originRect, Rect scope, Vector2 offset = default)
+		{
+			Rect rect = new Rect(originRect.position.Scoping(scope, offset), originRect.size);
+			rect.xMax = rect.xMax > scope.xMax ? scope.xMax : rect.xMax;
+			rect.yMax = rect.yMax > scope.yMax ? scope.yMax : rect.yMax;
+			return rect;
 		}
 
 		public static Vector3 Scoping(this Vector3 originPos, Rect scope, Vector3 offset = default)

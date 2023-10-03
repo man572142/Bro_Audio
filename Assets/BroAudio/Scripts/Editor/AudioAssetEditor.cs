@@ -1,15 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditorInternal;
-using UnityEditor;
-using UnityEngine;
-using static Ami.BroAudio.Utility;
-using static Ami.BroAudio.Editor.BroEditorUtility;
-using static Ami.Extension.EditorScriptingExtension;
-using static Ami.Extension.EditorVersionAdapter;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Tools;
+using Ami.Extension;
+using UnityEditor;
+using UnityEditorInternal;
+using UnityEngine;
+using static Ami.BroAudio.Editor.BroEditorUtility;
+using static Ami.Extension.EditorScriptingExtension;
 
 namespace Ami.BroAudio.Editor
 {
@@ -21,10 +20,9 @@ namespace Ami.BroAudio.Editor
 
 		private string _libraryStateOutput = string.Empty;
 		private LibraryState _libraryState = LibraryState.Fine;
-
 		private IEnumerable<IAudioLibrary> _currentAudioDatas = null;
-
 		private IUniqueIDGenerator _idGenerator = null;
+
 		public IAudioAsset Asset { get; private set; }
 
 		private void OnEnable()
@@ -110,7 +108,6 @@ namespace Ami.BroAudio.Editor
 		{
 			_idGenerator = idAccessor;
 		}
-
 
 		public LibraryState GetLibraryState(out string output)
 		{

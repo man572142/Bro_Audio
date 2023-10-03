@@ -16,5 +16,4 @@ namespace Ami.Extension
 			action.Invoke();
 		}
 	}
-
 }

@@ -15,25 +15,21 @@ namespace Ami.Extension
 		public const string PlayClipMethodName = "PlayClip";
         public const string StopClipMethodName = "StopAllClips";
 #endif
+		public readonly static PlaybackIndicatorUpdater PlaybackIndicator = new PlaybackIndicatorUpdater();
 
-
-        public static void PlayClip(AudioClip clip, int startSample = 0, bool loop = false)
+		public static void PlayClip(AudioClip clip, int startSample = 0, bool loop = false)
 		{
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
 
 			Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
-			MethodInfo method = audioUtilClass.GetMethod(
-                PlayClipMethodName,
-				BindingFlags.Static | BindingFlags.Public,
-				null,
-				new Type[] { typeof(AudioClip), typeof(int), typeof(bool) },
-				null
-			);
+			MethodInfo method = audioUtilClass.GetMethod(PlayClipMethodName,
+				BindingFlags.Static | BindingFlags.Public,null,	new Type[] { typeof(AudioClip), typeof(int), typeof(bool) },null);
 
-			method?.Invoke(
-				null,
-				new object[] { clip, startSample, loop }
-			);
+			if(method != null)
+			{
+				method.Invoke(null,	new object[] { clip, startSample, loop });
+				PlaybackIndicator.Start();
+			}
 		}
 
 		public static void StopAllClips()
@@ -49,10 +45,11 @@ namespace Ami.Extension
 				null
 			);
 
-			method?.Invoke(
-				null,
-				new object[] { }
-			);
+			if(method != null)
+			{
+				method.Invoke(null,new object[] { });
+				PlaybackIndicator.End();
+			}
 		}
 	} 
 }

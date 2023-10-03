@@ -11,7 +11,7 @@ namespace Ami.BroAudio.Editor
 		public float EndPosition { get; set; }
 		public float FadeIn { get; set; }
 		public float FadeOut { get; set; }
-		public float FullLength { get; set; }
+		public float Length { get; set; }
 		public float[] PlaybackValues { get; private set; }
 		public float[] FadingValues { get; private set; }
 
@@ -19,7 +19,7 @@ namespace Ami.BroAudio.Editor
 		{
             if (clip)
 			{
-                FullLength = clip.length;
+                Length = clip.length;
             }
 			PlaybackValues = new float[] { StartPosition, EndPosition };
 			FadingValues = new float[] { FadeIn, FadeOut };
@@ -59,7 +59,7 @@ namespace Ami.BroAudio.Editor
 
 		private float GetLengthLimit(float targetValue)
 		{
-			return FullLength - StartPosition - FadeIn - FadeOut - EndPosition + targetValue;
+			return Length - StartPosition - FadeIn - FadeOut - EndPosition + targetValue;
 		}
 	}
 }

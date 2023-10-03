@@ -19,7 +19,7 @@ namespace Ami.BroAudio.Editor
 			EndPosProp = endPosProp;
 			FadeInProp = fadeInProp;
 			FadeOutProp = fadeOutProp;
-			FullLength = fullLength;
+			Length = fullLength;
 
 			PlaybackValues = new float[] { StartPosition, EndPosition };
 			FadingValues = new float[] { FadeIn, FadeOut };
@@ -29,7 +29,7 @@ namespace Ami.BroAudio.Editor
 		public float EndPosition => EndPosProp.floatValue;
 		public float FadeIn => FadeInProp.floatValue;
 		public float FadeOut => FadeOutProp.floatValue;
-		public float FullLength { get; set; }
+		public float Length { get; set; }
 		public float[] PlaybackValues { get; private set; }
 		public float[] FadingValues { get; private set; }
 
@@ -80,7 +80,7 @@ namespace Ami.BroAudio.Editor
 
 		private float GetLengthLimit(SerializedProperty modifiedProp)
 		{
-			return FullLength - GetOccupyLength(StartPosProp) - GetOccupyLength(EndPosProp) - GetOccupyLength(FadeInProp) - GetOccupyLength(FadeOutProp);
+			return Length - GetOccupyLength(StartPosProp) - GetOccupyLength(EndPosProp) - GetOccupyLength(FadeInProp) - GetOccupyLength(FadeOutProp);
 
 			float GetOccupyLength(SerializedProperty property)
 			{

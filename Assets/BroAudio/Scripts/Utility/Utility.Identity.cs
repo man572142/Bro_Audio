@@ -66,7 +66,7 @@ namespace Ami.BroAudio
 		{
 			BroAudioType resultType = BroAudioType.None;
 			BroAudioType nextType = resultType.ToNext();
-			// 換回一般While以減少效能開銷 
+			// todo:換回一般While以減少效能開銷 
 			While(_ => nextType <= (BroAudioType)LastAudioType, () =>
 			{
 				if (id >= resultType.GetInitialID() && id < nextType.GetInitialID())

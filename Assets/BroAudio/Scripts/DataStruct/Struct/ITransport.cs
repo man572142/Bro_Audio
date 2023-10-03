@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Editor
 		float EndPosition { get; }
 		float FadeIn { get; }
 		float FadeOut { get; }
-		float FullLength { get; }
+		float Length { get; }
 		float[] PlaybackValues { get; }
 		float[] FadingValues { get; }
 		void SetValue(float value, TransportType transportType);

@@ -288,7 +288,7 @@ namespace Ami.BroAudio.Editor
 				// This value is calculated by eyes currently because it's too hard to find the actual value from Unity source code (aka magic number hell)
 				Vector2 offset = new Vector2(_gapDrawer.GetTotalSpace(), librariesTopGap + 9f);
 				
-				DrawPlaybackIndicator(librariesRect.Scoping(position, offset));
+				DrawClipPropertiesHelper.DrawPlaybackIndicator(librariesRect.Scoping(position, offset), -_librariesScrollPos);
 			}
 			
 			EditorGUILayout.EndHorizontal();
@@ -373,20 +373,6 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 			EditorGUILayout.EndVertical();
-		}
-
-		private void DrawPlaybackIndicator(Rect librariesScope)
-		{
-			var indicator = EditorPlayAudioClip.PlaybackIndicator;
-			if (indicator.IsPlaying)
-			{
-				GUI.BeginClip(librariesScope);
-				{
-					Rect indicatorRect = indicator.GetIndicatorPosition();
-					EditorGUI.DrawRect(new Rect(indicatorRect.position - _librariesScrollPos, indicatorRect.size), indicator.Color);
-				}
-				GUI.EndClip();
-			}
 		}
 	}
 }

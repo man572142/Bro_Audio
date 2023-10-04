@@ -99,12 +99,25 @@ namespace Ami.BroAudio.Editor
 			OnChangeAudioClip -= ResetSetting;
 		}
 
+		private void OnFocus()
+		{
+			EditorPlayAudioClip.PlaybackIndicator.OnUpdate -= Repaint;
+			EditorPlayAudioClip.PlaybackIndicator.OnUpdate += Repaint;
+			EditorPlayAudioClip.PlaybackIndicator.OnEnd -= Repaint;
+			EditorPlayAudioClip.PlaybackIndicator.OnEnd += Repaint;
+		}
+
+		private void OnLostFocus()
+		{
+			EditorPlayAudioClip.StopAllClips();
+			EditorPlayAudioClip.PlaybackIndicator.OnUpdate -= Repaint;
+			EditorPlayAudioClip.PlaybackIndicator.OnEnd -= Repaint;
+		}
+
 		protected override void OnGUI()
 		{
 			base.OnGUI();
 
-			
-			
 			Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
 
 			DrawEmptyLine(1);
@@ -119,13 +132,13 @@ namespace Ami.BroAudio.Editor
 
 			DrawEmptyLine(1);
 			DrawClipPreview(drawPosition, position.height * 0.3f);
+			DrawClipPropertiesHelper.DrawPlaybackIndicator(position.Scoping(position));
 
 			drawPosition.x += Gap;
 			drawPosition.width -= Gap * 2;
 
 			DrawPlaybackPositionField(drawPosition);
 			DrawFadingField(drawPosition);
-
 			DrawVolumeChangeToolBar(drawPosition);
 
 			_isReverse = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition),"Reverse",_isReverse);

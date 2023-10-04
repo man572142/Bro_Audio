@@ -245,6 +245,20 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
+		public static void DrawPlaybackIndicator(Rect scope, Vector2 positionOffset = default)
+		{
+			var indicator = EditorPlayAudioClip.PlaybackIndicator;
+			if (indicator.IsPlaying)
+			{
+				GUI.BeginClip(scope);
+				{
+					Rect indicatorRect = indicator.GetIndicatorPosition();
+					EditorGUI.DrawRect(new Rect(indicatorRect.position + positionOffset, indicatorRect.size), indicator.Color);
+				}
+				GUI.EndClip();
+			}
+		}
+
 		private Dictionary<TransportType, DraggablePoint> GetOrCreateDraggablePoints(string clipPath)
 		{
 			if (!_clipDraggablePointsDict.TryGetValue(clipPath, out var draggablePoints))

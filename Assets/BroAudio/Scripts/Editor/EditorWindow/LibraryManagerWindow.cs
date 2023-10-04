@@ -14,7 +14,7 @@ using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
-	public partial class LibraryManagerWindow : EditorWindow
+	public class LibraryManagerWindow : EditorWindow
 	{
 		public event Action OnCloseLibraryManagerWindow;
 		public event Action OnSelectAsset;
@@ -77,12 +77,15 @@ namespace Ami.BroAudio.Editor
 		{
 			EditorPlayAudioClip.PlaybackIndicator.OnUpdate -= Repaint;
 			EditorPlayAudioClip.PlaybackIndicator.OnUpdate += Repaint;
+			EditorPlayAudioClip.PlaybackIndicator.OnEnd -= Repaint;
+			EditorPlayAudioClip.PlaybackIndicator.OnEnd += Repaint;
 		}
 
 		private void OnLostFocus()
 		{
 			EditorPlayAudioClip.StopAllClips();
 			EditorPlayAudioClip.PlaybackIndicator.OnUpdate -= Repaint;
+			EditorPlayAudioClip.PlaybackIndicator.OnEnd -= Repaint;
 		}
 
 		private void OnEnable()
@@ -194,6 +197,7 @@ namespace Ami.BroAudio.Editor
 			{
 				OnSelectAsset?.Invoke();
 				_currSelectedAssetIndex = list.index;
+				EditorPlayAudioClip.StopAllClips();
 			}
 		}
 
@@ -278,12 +282,15 @@ namespace Ami.BroAudio.Editor
 				EditorGUILayout.EndVertical();
 				
 				GUILayout.Space(_gapDrawer.GetSpace());
-				DrawLibrariesList(librariesRect.width - _gapDrawer.GetTotalSpace(), out float topGap);
+				DrawLibrariesList(librariesRect.width - _gapDrawer.GetTotalSpace(), out float librariesTopGap);
 
-				// TODO: Don't know why there is a 10 pixels error. 
-				Vector2 offset = new Vector2(_gapDrawer.GetTotalSpace(), topGap + 10f);
+				// Add 9 pixels for some kind of default layout offset on y axis.
+				// This value is calculated by eyes currently because it's too hard to find the actual value from Unity source code (aka magic number hell)
+				Vector2 offset = new Vector2(_gapDrawer.GetTotalSpace(), librariesTopGap + 9f);
+				
 				DrawPlaybackIndicator(librariesRect.Scoping(position, offset));
 			}
+			
 			EditorGUILayout.EndHorizontal();
 		}
 
@@ -336,17 +343,17 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawLibrariesList(float width,out float topGap)
+		private void DrawLibrariesList(float width,out float librariesTopGap)
 		{
-			topGap = default;
-			EditorGUILayout.BeginVertical(GUIStyleHelper.Instance.DefaultDarkBackground,GUILayout.Width(width));
+			librariesTopGap = default;
+			EditorGUILayout.BeginVertical(GUIStyleHelper.Instance.DefaultDarkBackground, GUILayout.Width(width));
 			{
 				if (TryGetCurrentAssetEditor(out var editor))
 				{
 					EditorGUILayout.LabelField(editor.Asset.AssetName.SetSize(25).SetColor(Color.white), _assetNameTitleStyle);
 					float space = 15f;
 					GUILayout.Space(space);
-					topGap = space + EditorGUIUtility.singleLineHeight;
+					librariesTopGap = space + EditorGUIUtility.singleLineHeight; // space + labelField
 					if (_assetReorderableList.count > 0)
 					{
 						_librariesScrollPos = EditorGUILayout.BeginScrollView(_librariesScrollPos);
@@ -364,7 +371,6 @@ namespace Ami.BroAudio.Editor
 				{
 					EditorGUILayout.LabelField("No Asset".SetSize(30).SetColor(Color.white), GUIStyleHelper.Instance.RichText);
 				}
-				
 			}
 			EditorGUILayout.EndVertical();
 		}
@@ -382,6 +388,5 @@ namespace Ami.BroAudio.Editor
 				GUI.EndClip();
 			}
 		}
-
 	}
 }

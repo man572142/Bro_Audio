@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-
+using System.Threading;
 
 namespace Ami.Extension
 {
@@ -9,11 +9,18 @@ namespace Ami.Extension
 		public const int SecondInMilliseconds = 1000;
 		public const float MillisecondInSeconds = 0.001f;
 
-		public static async void DelayDoAction(float delay, Action action)
+		public static async void DelayDoAction(float delay, Action action, CancellationToken cancellationToken = default)
 		{
 			float ms = delay * SecondInMilliseconds;
-			await Task.Delay((int)ms);
-			action.Invoke();
+			try
+			{
+				await Task.Delay((int)ms, cancellationToken);
+				action.Invoke();
+			}
+			catch(TaskCanceledException)
+			{
+				// This exception is thrown by the task cancellation design, not an actual error.
+			}
 		}
 	}
 }

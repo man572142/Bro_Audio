@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Reflection;
+using System.Threading;
 
 #if UNITY_EDITOR
 namespace Ami.Extension
@@ -17,33 +18,48 @@ namespace Ami.Extension
 #endif
 		public readonly static PlaybackIndicatorUpdater PlaybackIndicator = new PlaybackIndicatorUpdater();
 
-		public static void PlayClip(AudioClip clip, int startSample = 0, bool loop = false)
+		private static CancellationTokenSource CurrentPlayingTaskCanceller = null;
+
+		public static void PlayClip(AudioClip audioClip, float startTime = 0f, float endTime = 0f, bool loop = false)
 		{
+			StopAllClips();
+
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
 
 			Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
 			MethodInfo method = audioUtilClass.GetMethod(PlayClipMethodName,
 				BindingFlags.Static | BindingFlags.Public,null,	new Type[] { typeof(AudioClip), typeof(int), typeof(bool) },null);
 
-			if(method != null)
+
+			int startSample = Mathf.RoundToInt(audioClip.frequency * startTime);
+			if (method != null)
 			{
-				method.Invoke(null,	new object[] { clip, startSample, loop });
+				method.Invoke(null,	new object[] { audioClip, startSample, loop });
 				PlaybackIndicator.Start();
 			}
+
+			if(CurrentPlayingTaskCanceller == null)
+			{
+				CurrentPlayingTaskCanceller = new CancellationTokenSource();
+			}
+
+			float duration = audioClip.length - startTime - endTime;
+			AsyncTaskExtension.DelayDoAction(duration, StopAllClips, CurrentPlayingTaskCanceller.Token);
 		}
 
 		public static void StopAllClips()
 		{
+			if (CurrentPlayingTaskCanceller != null && CurrentPlayingTaskCanceller.Token.CanBeCanceled)
+			{
+				CurrentPlayingTaskCanceller.Cancel();
+				CurrentPlayingTaskCanceller?.Dispose();
+				CurrentPlayingTaskCanceller = null;
+			}
+
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
 
 			Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
-			MethodInfo method = audioUtilClass.GetMethod(
-                StopClipMethodName,
-				BindingFlags.Static | BindingFlags.Public,
-				null,
-				new Type[] { },
-				null
-			);
+			MethodInfo method = audioUtilClass.GetMethod(StopClipMethodName, BindingFlags.Static | BindingFlags.Public, null, new Type[] { }, null);
 
 			if(method != null)
 			{

@@ -134,12 +134,8 @@ namespace Ami.BroAudio.Editor
 
 				if (GUI.Button(playRect, EditorGUIUtility.IconContent(PlayButton)))
 				{
-					EditorPlayAudioClip.StopAllClips();
 					EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(waveformRect, transport);
-					EditorPlayAudioClip.PlayClip(audioClip, Mathf.RoundToInt(audioClip.frequency * transport.StartPosition));
-
-					float duration = audioClip.length - transport.StartPosition - transport.EndPosition;
-					AsyncTaskExtension.DelayDoAction(duration, EditorPlayAudioClip.StopAllClips);
+					EditorPlayAudioClip.PlayClip(audioClip, transport.StartPosition, transport.EndPosition);
 				}
 				if (GUI.Button(stopRect, EditorGUIUtility.IconContent(StopButton)))
 				{

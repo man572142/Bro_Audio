@@ -173,7 +173,7 @@ namespace Ami.BroAudio.Editor
 
 		private void OnSelect(ReorderableList list)
 		{
-			//CurrentSelectedClip = _reorderableList.serializedProperty.GetArrayElementAtIndex(list.index);
+			EditorPlayAudioClip.StopAllClips();
 		}
 
 		#endregion

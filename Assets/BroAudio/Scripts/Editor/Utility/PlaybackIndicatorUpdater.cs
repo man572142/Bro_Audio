@@ -11,10 +11,11 @@ namespace Ami.Extension
 		public const float AudioClipIndicatorWidth = 2f;
 
 		public event Action OnUpdate;
+		public event Action OnEnd;
 
 		private Rect _waveformRect = default;
 		private ITransport _transport = null;
-		private double _startTime = default;
+		private double _playingStartTime = default;
 		
 		public bool IsPlaying { get; private set; }
 
@@ -33,24 +34,37 @@ namespace Ami.Extension
 		{
 			if(_transport != null && _waveformRect != default)
 			{
-				double currentTime = _transport.StartPosition + (EditorApplication.timeSinceStartup - _startTime);
+				float endTime = _transport.Length - _transport.EndPosition;
+				double currentTime = _transport.StartPosition + (EditorApplication.timeSinceStartup - _playingStartTime);
+				currentTime = currentTime > endTime ? endTime : currentTime;
 				float x = _waveformRect.x + ((float)currentTime / _transport.Length * _waveformRect.width);
 				return new Rect(x,_waveformRect.y, AudioClipIndicatorWidth,_waveformRect.height);
 			}
 			return default;
 		}
 
+		public Rect GetEndPos()
+		{
+			float endTime = _transport.Length - _transport.EndPosition;
+			return new Rect(_waveformRect.x + (endTime / _transport.Length * _waveformRect.width), _waveformRect.y, AudioClipIndicatorWidth, _waveformRect.height);
+		}
+
 		public override void Start()
 		{
-			_startTime = EditorApplication.timeSinceStartup;
+			_playingStartTime = EditorApplication.timeSinceStartup;
 			IsPlaying = true;
 			base.Start();
 		}
 
 		public override void End()
 		{
+			if(IsPlaying)
+			{
+				IsPlaying = false;
+				OnEnd?.Invoke();
+			}
+			_playingStartTime = default;
 			base.End();
-			IsPlaying = false;
 		}
 
 		protected override void Update()

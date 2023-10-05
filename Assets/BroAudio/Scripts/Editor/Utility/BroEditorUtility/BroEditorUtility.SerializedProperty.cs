@@ -9,18 +9,22 @@ namespace Ami.BroAudio.Editor
 	public static partial class BroEditorUtility
     {
         public static void ResetBroAudioClipSerializedProperties(SerializedProperty property)
-        {
-            property.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = null;
-            property.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = 1f;
-            property.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue = 0f;
-            property.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue = 0f;
-            property.FindPropertyRelative(nameof(BroAudioClip.FadeIn)).floatValue = 0f;
-            property.FindPropertyRelative(nameof(BroAudioClip.FadeOut)).floatValue = 0f;
+		{
+			property.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = null;
+			property.FindPropertyRelative(nameof(BroAudioClip.Weight)).intValue = 0;
+			ResetBroAudioClipPlaybackSetting(property);
+		}
 
-            property.FindPropertyRelative(nameof(BroAudioClip.Weight)).intValue = 0;
-        }
+		public static void ResetBroAudioClipPlaybackSetting(SerializedProperty property)
+		{
+			property.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = 1f;
+			property.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue = 0f;
+			property.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue = 0f;
+			property.FindPropertyRelative(nameof(BroAudioClip.FadeIn)).floatValue = 0f;
+			property.FindPropertyRelative(nameof(BroAudioClip.FadeOut)).floatValue = 0f;
+		}
 
-        public static void ResetLibrarySerializedProperties(SerializedProperty property)
+		public static void ResetLibrarySerializedProperties(SerializedProperty property)
         {
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.Name))).stringValue = string.Empty;
             property.FindPropertyRelative(nameof(AudioLibrary.Clips)).arraySize = 0;

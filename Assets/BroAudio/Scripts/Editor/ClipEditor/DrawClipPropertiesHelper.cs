@@ -47,7 +47,6 @@ namespace Ami.BroAudio.Editor
 		private GUIContent[] FadeLabels = { new GUIContent("    In    "), new GUIContent(" Out ") };
 		private GUIContent[] PlaybackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
 		private Dictionary<string, Dictionary<TransportType, DraggablePoint>> _clipDraggablePointsDict = new Dictionary<string, Dictionary<TransportType, DraggablePoint>>();
-
 		private KeyValuePair<string, DraggablePoint> _currDraggedPoint = default;
 
 		private TransportType[] _allTransportType = Enum.GetValues(typeof(TransportType)) as TransportType[];

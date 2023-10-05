@@ -6,13 +6,15 @@ using UnityEditorInternal;
 using Ami.Extension;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Editor.Setting;
+using System;
 
 namespace Ami.BroAudio.Editor
 {
 	public class ReorderableClips
 	{
-		private ReorderableList _reorderableList;
+		public Action<string> OnAudioClipChanged;
 
+		private ReorderableList _reorderableList;
 		private SerializedProperty _playModeProp;
 		private IEditorDrawLineCounter _editorDrawer;
 
@@ -51,10 +53,10 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public ReorderableClips(SerializedProperty audioSetProperty,IEditorDrawLineCounter editorDrawer)
+		public ReorderableClips(SerializedProperty entityProperty,IEditorDrawLineCounter editorDrawer)
 		{
-			_playModeProp = audioSetProperty.FindPropertyRelative(AudioLibrary.NameOf.MulticlipsPlayMode);
-			_reorderableList = CreateReorderabeList(audioSetProperty);
+			_playModeProp = entityProperty.FindPropertyRelative(AudioLibrary.NameOf.MulticlipsPlayMode);
+			_reorderableList = CreateReorderabeList(entityProperty);
 			UpdatePlayMode();
 			_editorDrawer = editorDrawer;
 		}
@@ -64,9 +66,9 @@ namespace Ami.BroAudio.Editor
 			_reorderableList.DoList(position);
 		}
 
-		private ReorderableList CreateReorderabeList(SerializedProperty audioSetProperty)
+		private ReorderableList CreateReorderabeList(SerializedProperty entityProperty)
 		{
-			SerializedProperty clipsProp = audioSetProperty.FindPropertyRelative(nameof(AudioLibrary.Clips));
+			SerializedProperty clipsProp = entityProperty.FindPropertyRelative(nameof(AudioLibrary.Clips));
 			var list = new ReorderableList(clipsProp.serializedObject, clipsProp);
 			list.drawHeaderCallback = OnDrawHeader;
 			list.drawElementCallback = OnDrawElement;
@@ -124,7 +126,13 @@ namespace Ami.BroAudio.Editor
 			SerializedProperty clipProp = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
 			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
 			EditorScriptingExtension.SplitRectHorizontal(rect, 0.9f, 15f, out Rect clipRect, out Rect valueRect);
-			EditorGUI.PropertyField(clipRect, audioClipProp, new GUIContent(""));
+			EditorGUI.BeginChangeCheck();
+			EditorGUI.PropertyField(clipRect, audioClipProp, GUIContent.none);
+			if (EditorGUI.EndChangeCheck())
+			{
+				BroEditorUtility.ResetBroAudioClipPlaybackSetting(clipProp);
+				OnAudioClipChanged?.Invoke(clipProp.propertyPath);
+			}
 
 			MulticlipsPlayMode currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
 			switch (currentPlayMode)

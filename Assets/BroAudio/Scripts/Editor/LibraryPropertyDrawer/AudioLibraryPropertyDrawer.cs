@@ -83,11 +83,12 @@ namespace Ami.BroAudio.Editor
 			DrawAdditionalBaseProperties(position, property, setting);
 
 			#region Clip Properties
-			ReorderableClips currClipList = DrawReorderableClipsList(position, property);
+			ReorderableClips currClipList = DrawReorderableClipsList(position, property, OnClipChanged);
 			SerializedProperty currSelectClip = currClipList.CurrentSelectedClip;
+			//Debug.Log(currSelectClip.propertyPath);
 			if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
 			{
-				DrawClipProperties(position, currClipList, audioClip, setting, out ITransport transport);
+				DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport);
 				DrawAdditionalClipProperties(position, property, setting);
 				if (setting.DrawedProperty.HasFlag(DrawedProperty.ClipPreview))
 				{
@@ -139,7 +140,7 @@ namespace Ami.BroAudio.Editor
 		}
 		#endregion
 
-		private ReorderableClips DrawReorderableClipsList(Rect position, SerializedProperty property)
+		private ReorderableClips DrawReorderableClipsList(Rect position, SerializedProperty property,Action<string> onClipChanged)
 		{
 			bool hasReorderableClips = _reorderableClipsDict.TryGetValue(property.propertyPath, out var reorderableClips);
 			if (!hasReorderableClips)
@@ -149,12 +150,12 @@ namespace Ami.BroAudio.Editor
 			}
 
 			reorderableClips.DrawReorderableList(GetRectAndIterateLine(position));
+			reorderableClips.OnAudioClipChanged = onClipChanged;
 			return reorderableClips;
 		}
 
-		private void DrawClipProperties(Rect position,ReorderableClips reorderableClips ,AudioClip audioClip, EditorSetting.AudioTypeSetting setting, out ITransport transport)
+		private void DrawClipProperties(Rect position,SerializedProperty clipProp, AudioClip audioClip, EditorSetting.AudioTypeSetting setting, out ITransport transport)
 		{
-			SerializedProperty clipProp = reorderableClips.CurrentSelectedClip;
 			SerializedProperty volumeProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
 			SerializedProperty startPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition));
 			SerializedProperty endPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition));
@@ -299,6 +300,11 @@ namespace Ami.BroAudio.Editor
 		{
 			int id = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.ID))).intValue;
 			return Utility.GetAudioType(id);
+		}
+
+		private void OnClipChanged(string clipPropPath)
+		{
+			_clipTransport.Remove(clipPropPath);
 		}
     }
 }

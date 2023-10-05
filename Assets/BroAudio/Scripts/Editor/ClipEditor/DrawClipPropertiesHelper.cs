@@ -117,8 +117,12 @@ namespace Ami.BroAudio.Editor
 				Texture2D waveformTexture = AssetPreview.GetAssetPreview(audioClip);
 				if (waveformTexture != null)
 				{
+					if(Event.current.type == EventType.Repaint)
+					{
+						GUI.skin.window.Draw(waveformRect, false, false, false, false);
+					}
+
 					EditorGUI.DrawPreviewTexture(waveformRect, waveformTexture);
-					EditorGUI.DrawRect(waveformRect, ShadowMaskColor);
 				}
 			}
 

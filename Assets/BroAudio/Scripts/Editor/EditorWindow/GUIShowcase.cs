@@ -54,6 +54,7 @@ namespace Ami.Extension
 			foreach (MouseCursor cursorType in AllCursorTypes)
 			{
 				Rect rect = GetRectAndIterateLine(drawPosition);
+				rect.width = CursorTypeWidth;
 				EditorGUI.LabelField(rect, cursorType.ToString());
 				EditorGUIUtility.AddCursorRect(rect, cursorType);
 			}

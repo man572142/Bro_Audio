@@ -200,6 +200,7 @@ namespace Ami.BroAudio.Editor
 				{
 					DraggablePoint point = GetDraggablePoint(waveformRect, points, transport, transportType);
 					draggablePoints[transportType] = point;
+					EditorGUIUtility.AddCursorRect(point.Rect, MouseCursor.SlideArrow);
 					GUI.DrawTexture(point.Rect, point.Image, scaleMode, true, 0f, point.ColorTint, point.ImageBorder, 0f);
 				}	
 			}

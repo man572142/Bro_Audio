@@ -96,6 +96,7 @@ namespace Ami.BroAudio.Editor
 		{
 			clipViewRect.height = ClipPreviewHeight;
 			SplitRectHorizontal(clipViewRect, 0.1f, 15f, out Rect playbackRect, out Rect waveformRect);
+			waveformRect.width -= 5f;
 			var draggablePoints = GetOrCreateDraggablePoints(clipPath);
 
 			DrawWaveformPreview();
@@ -241,7 +242,7 @@ namespace Ami.BroAudio.Editor
 				}
 
 #if BroAudio_DevOnly && BroAudio_ShowClipDraggableArea
-				foreach (var point in pointsDict.Values)
+				foreach (var point in draggablePoints.Values)
 				{
 					EditorGUI.DrawRect(point.Rect, new Color(1f, 1f, 1f, 0.3f));
 				}

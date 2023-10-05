@@ -263,32 +263,30 @@ namespace Ami.BroAudio.Editor
 			EditorGUILayout.BeginHorizontal();
 			{                
                 GUILayout.Space(_verticalGapDrawer.GetSpace());
-				EditorScriptingExtension.SplitRectHorizontal(position, 0.3f, _verticalGapDrawer.GetSpace(), out Rect assetListRect, out Rect librariesRect);
+				EditorScriptingExtension.SplitRectHorizontal(position, 0.7f, _verticalGapDrawer.SingleLineSpace, out Rect librariesRect, out Rect assetListRect);
 
-				EditorGUILayout.BeginVertical();
-				{
-                    EditorGUILayout.LabelField(nameof(BroAudio).ToBold().SetColor(MainTitleColor).SetSize(30), GUIStyleHelper.RichText);
-                    GUILayout.Space(10f);
-                    DrawAssetList(assetListRect);
-                }
-				EditorGUILayout.EndVertical();
-				
-				GUILayout.Space(_verticalGapDrawer.GetSpace());
 				DrawLibrariesList(librariesRect.width - _verticalGapDrawer.GetTotalSpace(), out float librariesTopGap);
 
 				// Add 9 pixels for some kind of default layout offset on y axis.
 				// This value is calculated by eyes currently because it's too hard to find the actual value from Unity source code (aka magic number hell)
 				Vector2 offset = new Vector2(_verticalGapDrawer.GetTotalSpace(), librariesTopGap + 9f);
-				
 				DrawClipPropertiesHelper.DrawPlaybackIndicator(librariesRect.Scoping(position, offset), -_librariesScrollPos);
+
+				GUILayout.Space(_verticalGapDrawer.GetSpace());
+
+				EditorGUILayout.BeginVertical();
+				{
+                    DrawAssetList(assetListRect.width - (_verticalGapDrawer.GetTotalSpace() - _verticalGapDrawer.SingleLineSpace));
+                }
+				EditorGUILayout.EndVertical();
 			}
 			
 			EditorGUILayout.EndHorizontal();
 		}
 
-		private void DrawAssetList(Rect rect)
+		private void DrawAssetList(float width)
 		{
-			EditorGUILayout.BeginVertical(GUI.skin.box,GUILayout.Width(rect.width));
+			EditorGUILayout.BeginVertical(GUI.skin.box,GUILayout.Width(width));
 			{
 				_assetListScrollPos = EditorGUILayout.BeginScrollView(_assetListScrollPos);
 				{

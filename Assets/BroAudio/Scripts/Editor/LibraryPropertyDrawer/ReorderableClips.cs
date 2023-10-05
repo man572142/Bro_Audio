@@ -113,7 +113,7 @@ namespace Ami.BroAudio.Editor
 							EditorGUI.LabelField(newRects[ratio.Length - 1], "Weight");
 							break;
 					}
-					EditorGUI.LabelField(newRects[1].DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.Instance.MiddleCenterRichText);
+					EditorGUI.LabelField(newRects[1].DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
 				}
 				_editorDrawer.DrawLineCount++;
 			}
@@ -132,7 +132,7 @@ namespace Ami.BroAudio.Editor
 				case MulticlipsPlayMode.Single:
 					break;
 				case MulticlipsPlayMode.Sequence:
-					EditorGUI.LabelField(valueRect, index.ToString(), GUIStyleHelper.Instance.MiddleCenterText);
+					EditorGUI.LabelField(valueRect, index.ToString(), GUIStyleHelper.MiddleCenterText);
 					break;
 				case MulticlipsPlayMode.Random:
 					SerializedProperty weightProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Weight));
@@ -151,7 +151,7 @@ namespace Ami.BroAudio.Editor
 			{
 				Rect labelRect = new Rect(rect);
 				labelRect.y += 5f;
-				EditorGUI.LabelField(labelRect, audioClip.name.SetColor(BroAudioGUISetting.ClipLabelColor).ToBold(), GUIStyleHelper.Instance.RichText);
+				EditorGUI.LabelField(labelRect, audioClip.name.SetColor(BroAudioGUISetting.ClipLabelColor).ToBold(), GUIStyleHelper.RichText);
 			}
 			_editorDrawer.DrawLineCount++;
 		}

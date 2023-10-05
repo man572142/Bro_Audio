@@ -6,11 +6,13 @@ using static Ami.BroAudio.Utility;
 
 public class Sample : MonoBehaviour
 {
-    [SerializeField] AudioID _musicA = default;
+#pragma warning disable 0414
+	[SerializeField] AudioID _musicA = default;
     [SerializeField] AudioID _musicB = default;
 	[SerializeField] AudioID _seamlessAmb = default;
     [SerializeField] AudioID _flipTapeSFX = default;
     [SerializeField] AudioID _voiceOver = default;
+#pragma warning restore 0414
 
 	[SerializeField] CassetteTape _tape = null;
 

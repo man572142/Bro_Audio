@@ -16,9 +16,7 @@ namespace Ami.BroAudio.Editor
 		public List<string> UsedAssetsName = null;
 
 		private string _libraryName = string.Empty;
-		private GUIStyleHelper _guiStyleHelper = GUIStyleHelper.Instance;
 		private BroInstructionHelper _instruction = null;
-
 
         public static void ShowWindow(List<string> usedAssetName,Action<string> onConfirm)
 		{

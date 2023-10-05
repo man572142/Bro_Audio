@@ -9,7 +9,6 @@ using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.BroAudio.Tools.BroName;
 using static Ami.BroAudio.Tools.BroLog;
-using static Ami.Extension.EditorVersionAdapter;
 using static Ami.BroAudio.Editor.IconConstant;
 using System.IO;
 using UnityEngine.Audio;
@@ -161,7 +160,7 @@ namespace Ami.BroAudio.Editor.Setting
 			Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
 
 			DrawEmptyLine(1);
-			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), _titleText, GUIStyleHelper.Instance.MiddleCenterRichText);
+			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), _titleText, GUIStyleHelper.MiddleCenterRichText);
 
 			DrawEmptyLine(1);
 
@@ -248,7 +247,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 			void DrawDefaultEasing()
 			{
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Default Easing".ToWhiteBold(), GUIStyleHelper.Instance.RichText);
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Default Easing".ToWhiteBold(), GUIStyleHelper.RichText);
 				EditorGUI.indentLevel++;
 				RuntimeSetting.DefaultFadeInEase =
 					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", RuntimeSetting.DefaultFadeInEase);
@@ -259,7 +258,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 			void DrawSeamlessLoopEasing()
 			{
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Seamless Loop Easing".ToWhiteBold(), GUIStyleHelper.Instance.RichText);
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Seamless Loop Easing".ToWhiteBold(), GUIStyleHelper.RichText);
 				EditorGUI.indentLevel++;
 				RuntimeSetting.SeamlessFadeInEase =
 					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", RuntimeSetting.SeamlessFadeInEase);
@@ -280,7 +279,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 			void DrawAudioProjectSettings()
 			{
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), ProjectSettings.ToWhiteBold(), GUIStyleHelper.Instance.RichText);
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), ProjectSettings.ToWhiteBold(), GUIStyleHelper.RichText);
 
 				if (HasValidProjectSettingVoiceCount())
 				{
@@ -305,7 +304,7 @@ namespace Ami.BroAudio.Editor.Setting
 				{
 					Rect warningBoxRect = GetRectAndIterateLine(drawPosition);
 					warningBoxRect.height *= 3;
-					Color linkBlue = LinkLabel.normal.textColor;
+					Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
 					string text = string.Format(_instruction.GetText(Instruction.TracksAndVoicesNotMatchWarning), MixerName.ToWhiteBold(), ProjectSettingsMenuItemPath.SetColor(linkBlue));
 					RichTextHelpBox(warningBoxRect, text, MessageType.Warning);
 					if (GUI.Button(warningBoxRect, GUIContent.none, GUIStyle.none))
@@ -388,7 +387,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 			if (EditorSetting.ShowAudioTypeOnAudioID)
 			{
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeColorLabel.ToWhiteBold(), GUIStyleHelper.Instance.RichText);
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeColorLabel.ToWhiteBold(), GUIStyleHelper.RichText);
 				EditorGUI.indentLevel++;
 				Rect colorRect = GetRectAndIterateLine(drawPosition);
 				colorRect.xMax -= 20f;
@@ -397,7 +396,7 @@ namespace Ami.BroAudio.Editor.Setting
 				EditorGUI.indentLevel--;
 			}
 
-			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeDrawedProperties.ToWhiteBold(), GUIStyleHelper.Instance.RichText);
+			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeDrawedProperties.ToWhiteBold(), GUIStyleHelper.RichText);
 			EditorGUI.indentLevel++;
 			Rect drawedPropRect = GetRectAndIterateLine(drawPosition);
 
@@ -458,13 +457,11 @@ namespace Ami.BroAudio.Editor.Setting
 		private void DrawInfo(Rect drawPosition)
 		{
             DrawEmptyLine(2);
-            EditorGUI.SelectableLabel(GetRectAndIterateLine(drawPosition), _instruction.GetText(Instruction.Copyright), GUIStyleHelper.Instance.MiddleCenterText);
+            EditorGUI.SelectableLabel(GetRectAndIterateLine(drawPosition), _instruction.GetText(Instruction.Copyright), GUIStyleHelper.MiddleCenterText);
 
 			DrawEmptyLine(1);
-			var linkStyle = new GUIStyle(LinkLabel);
-			linkStyle.alignment = TextAnchor.MiddleCenter;
 			Rect linkRect = GetRectAndIterateLine(drawPosition);
-			if (GUI.Button(linkRect, GitURL, linkStyle))
+			if (GUI.Button(linkRect, GitURL, GUIStyleHelper.LinkLabelStyle))
 			{
 				Application.OpenURL(GitURL);
 			}
@@ -480,7 +477,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawAssetOutputPath(Rect drawPosition)
 		{
-			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AssetOutputPathLabel, GUIStyleHelper.Instance.MiddleCenterRichText);
+			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AssetOutputPathLabel, GUIStyleHelper.MiddleCenterRichText);
 
 			GUIStyle style = new GUIStyle(EditorStyles.objectField);
 			style.alignment = TextAnchor.MiddleCenter;

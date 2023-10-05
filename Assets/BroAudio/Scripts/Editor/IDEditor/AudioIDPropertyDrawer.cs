@@ -77,7 +77,7 @@ namespace Ami.BroAudio.Editor
 			{
 				Rect audioTypeRect = EditorScriptingExtension.DissolveHorizontal(idRect, 0.7f);
 				EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(audioAsset.AudioType));
-				EditorGUI.LabelField(audioTypeRect, audioAsset.AudioType.ToString(), GUIStyleHelper.Instance.MiddleCenterText);
+				EditorGUI.LabelField(audioTypeRect, audioAsset.AudioType.ToString(), GUIStyleHelper.MiddleCenterText);
 			}
 
 			void OnSelect(int id, string name, ScriptableObject asset)

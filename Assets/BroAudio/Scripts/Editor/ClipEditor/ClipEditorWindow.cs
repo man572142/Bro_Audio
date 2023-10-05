@@ -126,7 +126,7 @@ namespace Ami.BroAudio.Editor
 			if (TargetClip == null || _transport == null)
 			{
 				Rect noClipRect = new Rect(drawPosition.width * 0.5f, drawPosition.height * 0.5f, 0f, 0f);
-				EditorGUI.LabelField(noClipRect, "No Clip".SetSize(30).SetColor(Color.white), GUIStyleHelper.Instance.MiddleCenterRichText);
+				EditorGUI.LabelField(noClipRect, "No Clip".SetSize(30).SetColor(Color.white), GUIStyleHelper.MiddleCenterRichText);
 				return;
 			}
 

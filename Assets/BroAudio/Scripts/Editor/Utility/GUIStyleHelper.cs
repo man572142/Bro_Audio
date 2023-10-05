@@ -1,146 +1,60 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using static Ami.Extension.EditorVersionAdapter;
 
 namespace Ami.Extension
 {
-	public class GUIStyleHelper
+	public static class GUIStyleHelper
 	{
-		public static GUIStyleHelper Instance
+		public static GUIStyle MiddleCenterText
 		{
 			get
 			{
-				if (_instance == null)
-				{
-					_instance = new GUIStyleHelper();
-				}
-				return _instance;
+				GUIStyle style = new GUIStyle();
+				style.alignment = TextAnchor.MiddleCenter;
+				style.normal.textColor = Color.white;
+				return style;
 			}
 		}
 
-		private static GUIStyleHelper _instance;
-		private GUIStyle _richTextStyle;
-		private GUIStyle _middleCenterStyle;
-		private GUIStyle _defaultDarkBackground;
-		private GUIStyle _fieldStyle;
-		private GUIStyle _richTextHelpbox;
-		private GUIStyle _upperCenterStyle;
-		private GUIStyle _middleRightStyle;
-		private GUIStyle _richTextHelpBox;
-
-		public GUIStyle MiddleCenterText
+		public static GUIStyle RichText
 		{
 			get
 			{
-				if (_middleCenterStyle == null)
-				{
-					_middleCenterStyle = new GUIStyle();
-					_middleCenterStyle.alignment = TextAnchor.MiddleCenter;
-					_middleCenterStyle.normal.textColor = Color.white;
-				}
-				return _middleCenterStyle;
+				GUIStyle style = new GUIStyle();
+				style.richText = true;
+				return style;
 			}
 		}
 
-		public GUIStyle MiddleRightText
+		public static GUIStyle MiddleCenterRichText
 		{
 			get
 			{
-				if (_middleRightStyle == null)
-				{
-					_middleRightStyle = new GUIStyle(MiddleCenterText);
-					_middleRightStyle.alignment = TextAnchor.MiddleRight;
-				}
-				return _middleRightStyle;
+				GUIStyle style = new GUIStyle(MiddleCenterText);
+				style.richText = true;
+				return style;
 			}
 		}
 
-		public GUIStyle RichText
+		public static GUIStyle RichTextHelpBox
 		{
 			get
 			{
-				if (_richTextStyle == null)
-				{
-					_richTextStyle = new GUIStyle();
-					_richTextStyle.richText = true;
-				}
-				return _richTextStyle;
+				GUIStyle style = new GUIStyle(EditorStyles.helpBox);
+				style.richText = true;
+				return style;
 			}
 		}
 
-		public GUIStyle MiddleCenterRichText
+		public static GUIStyle LinkLabelStyle
 		{
 			get
 			{
-				GUIStyle result = new GUIStyle(MiddleCenterText);
-				result.richText = true;
-				return result;
-			}
-		}
-
-		public GUIStyle DefaultDarkBackground
-		{
-			get
-			{
-				if (_defaultDarkBackground == null)
-				{
-					_defaultDarkBackground = new GUIStyle(GUI.skin.box);
-				}
-				return _defaultDarkBackground;
-			}
-		}
-
-		public GUIStyle DefaultFieldStyle
-		{
-			get
-			{
-				if (_fieldStyle == null)
-				{
-					_fieldStyle = new GUIStyle(EditorStyles.textField);
-				}
-				return _fieldStyle;
-			}
-		}
-
-		public GUIStyle RichTextHelpBox
-		{
-			get
-			{
-				if (_richTextHelpbox == null)
-				{
-					_richTextHelpbox = new GUIStyle(EditorStyles.helpBox);
-					_richTextHelpbox.richText = true;
-				}
-				return _richTextHelpbox;
-			}
-		}
-
-		public GUIStyle UpperCenterStyle
-		{
-			get
-			{
-				if(_upperCenterStyle == null)
-				{
-					_upperCenterStyle = new GUIStyle();
-					_upperCenterStyle.alignment = TextAnchor.UpperCenter;
-				}
-				return _upperCenterStyle;
-			}
-		}
-
-		public GUIStyle RichTextHelpBoxStyle
-		{
-			get
-			{
-				if(_richTextHelpbox == null)
-				{
-					_richTextHelpbox = new GUIStyle(EditorStyles.helpBox);
-					_richTextHelpbox.richText = true;
-				}
-				return _richTextHelpbox;
+				GUIStyle style = new GUIStyle(LinkLabel);
+				style.alignment = TextAnchor.MiddleCenter;
+				return style;
 			}
 		}
 	}
-
 }

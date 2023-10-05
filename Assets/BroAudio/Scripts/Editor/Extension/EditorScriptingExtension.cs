@@ -217,7 +217,7 @@ namespace Ami.Extension
 		public static void RichTextHelpBox(Rect position,string message, string icon)
 		{
 			GUIContent content = GetRichTextContent(message, icon);
-			EditorGUI.LabelField(position, content, GUIStyleHelper.Instance.RichTextHelpBox);
+			EditorGUI.LabelField(position, content, GUIStyleHelper.RichTextHelpBox);
 		}
 
 		/// <summary>
@@ -228,7 +228,7 @@ namespace Ami.Extension
 		public static void RichTextHelpBox(string message, string icon)
 		{
 			GUIContent content = GetRichTextContent(message, icon);
-			EditorGUILayout.LabelField(content, GUIStyleHelper.Instance.RichTextHelpBox);
+			EditorGUILayout.LabelField(content, GUIStyleHelper.RichTextHelpBox);
 		}
 
 		private static GUIContent GetRichTextContent(string message, string icon)

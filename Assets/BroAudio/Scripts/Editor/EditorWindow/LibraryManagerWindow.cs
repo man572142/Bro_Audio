@@ -29,7 +29,7 @@ namespace Ami.BroAudio.Editor
 		private Vector2 _assetListScrollPos = Vector2.zero;
 		private Vector2 _librariesScrollPos = Vector2.zero;
 
-		private VerticalGapDrawingHelper _gapDrawer = new VerticalGapDrawingHelper();
+		private GapDrawingHelper _verticalGapDrawer = new GapDrawingHelper();
 		private LibraryIDController _libraryIdGenerator = new LibraryIDController();
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 
@@ -258,12 +258,12 @@ namespace Ami.BroAudio.Editor
 
 		private void OnGUI()
 		{
-			_gapDrawer.DrawLineCount = 0;
+			_verticalGapDrawer.DrawLineCount = 0;
 
 			EditorGUILayout.BeginHorizontal();
 			{                
-                GUILayout.Space(_gapDrawer.GetSpace());
-				EditorScriptingExtension.SplitRectHorizontal(position, 0.3f, _gapDrawer.GetSpace(), out Rect assetListRect, out Rect librariesRect);
+                GUILayout.Space(_verticalGapDrawer.GetSpace());
+				EditorScriptingExtension.SplitRectHorizontal(position, 0.3f, _verticalGapDrawer.GetSpace(), out Rect assetListRect, out Rect librariesRect);
 
 				EditorGUILayout.BeginVertical();
 				{
@@ -273,12 +273,12 @@ namespace Ami.BroAudio.Editor
                 }
 				EditorGUILayout.EndVertical();
 				
-				GUILayout.Space(_gapDrawer.GetSpace());
-				DrawLibrariesList(librariesRect.width - _gapDrawer.GetTotalSpace(), out float librariesTopGap);
+				GUILayout.Space(_verticalGapDrawer.GetSpace());
+				DrawLibrariesList(librariesRect.width - _verticalGapDrawer.GetTotalSpace(), out float librariesTopGap);
 
 				// Add 9 pixels for some kind of default layout offset on y axis.
 				// This value is calculated by eyes currently because it's too hard to find the actual value from Unity source code (aka magic number hell)
-				Vector2 offset = new Vector2(_gapDrawer.GetTotalSpace(), librariesTopGap + 9f);
+				Vector2 offset = new Vector2(_verticalGapDrawer.GetTotalSpace(), librariesTopGap + 9f);
 				
 				DrawClipPropertiesHelper.DrawPlaybackIndicator(librariesRect.Scoping(position, offset), -_librariesScrollPos);
 			}

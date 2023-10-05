@@ -1,8 +1,8 @@
 ﻿using Ami.Extension;
 
-namespace Ami.BroAudio.Editor
+namespace Ami.Extension
 {
-	public class VerticalGapDrawingHelper : IEditorDrawLineCounter
+	public class GapDrawingHelper : IEditorDrawLineCounter
 	{
 		public float SingleLineSpace => 10f;
 		public int DrawLineCount { get; set; }

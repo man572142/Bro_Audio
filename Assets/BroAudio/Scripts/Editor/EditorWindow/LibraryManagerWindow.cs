@@ -14,7 +14,7 @@ using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
-	public class LibraryManagerWindow : EditorWindow
+	public partial class LibraryManagerWindow : EditorWindow
 	{
 		public const int CreationHintFontSize = 25;
 		public const int AssetModificationFontSize = 15;
@@ -246,7 +246,6 @@ namespace Ami.BroAudio.Editor
 
 		private bool TryGetCurrentAssetEditor(out AudioAssetEditor editor)
 		{
-			editor = null;
 			if (_allAssetGUIDs.Count > 0 && _assetReorderableList.index >= 0)
 			{
 				int index = Mathf.Clamp(_assetReorderableList.index, 0, _allAssetGUIDs.Count - 1);
@@ -254,6 +253,10 @@ namespace Ami.BroAudio.Editor
 				{
 					return true;
 				}
+			}
+			else if(_assetEditorDict.TryGetValue(TempAssetKey, out editor))
+			{
+				return true;
 			}
 			return false;
 		}
@@ -354,31 +357,6 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 			EditorGUILayout.EndVertical();
-		}
-
-		private void DrawLibraryFactory(Rect librariesRect)
-		{
-			if(Event.current.type == EventType.DragExited && librariesRect.Scoping(position).Contains(Event.current.mousePosition))
-			{
-				foreach(var obj in DragAndDrop.objectReferences)
-				{
-					throw new NotImplementedException();
-				}
-			}
-			GUILayoutUtility.GetRect(librariesRect.width, librariesRect.height);
-
-			float creationHintHeight = EditorScriptingExtension.FontSizeToPixels(CreationHintFontSize);
-			Rect creationRect = new Rect(0f, librariesRect.height * 0.5f - creationHintHeight, librariesRect.width, creationHintHeight);
-			string creationHint = _instruction.GetText(Instruction.LibraryManager_CreateEntity).SetSize(CreationHintFontSize).SetColor(GUIStyleHelper.DefaultLabelColor);
-			EditorGUI.LabelField(creationRect,creationHint, GUIStyleHelper.MiddleCenterRichText);
-
-			Rect importIcon = new Rect(librariesRect.width * 0.5f, creationRect.y - ImportIconSize, ImportIconSize, ImportIconSize);
-			GUI.DrawTexture(importIcon, EditorGUIUtility.IconContent(IconConstant.ImportFile).image);
-
-			float modifyHintHeight = EditorScriptingExtension.FontSizeToPixels(AssetModificationFontSize);
-			Rect modifyRect = new Rect(0f, librariesRect.height * 0.5f, librariesRect.width, modifyHintHeight);
-			string modifyHint = _instruction.GetText(Instruction.LibraryManager_ModifyAsset).SetSize(AssetModificationFontSize).SetColor(GUIStyleHelper.DefaultLabelColor * 0.8f);
-			EditorGUI.LabelField(modifyRect,modifyHint, GUIStyleHelper.MiddleCenterRichText);
 		}
 
 		private void DrawLibraryHeader(string assetName)

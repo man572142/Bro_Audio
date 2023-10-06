@@ -44,6 +44,19 @@ namespace Ami.BroAudio.Editor
 		public bool TryGetAudioTypeSetting(BroAudioType audioType,out AudioTypeSetting result)
 		{
 			result = default;
+
+			// For temp asset
+			if(audioType == BroAudioType.None)
+			{
+				result = new AudioTypeSetting()
+				{
+					AudioType = audioType,
+					Color = Color.red,
+					DrawedProperty = (DrawedProperty)int.MaxValue,
+				};
+				return true;
+			}
+
 			if(AudioTypeSettings == null)
 			{
 				CreateNewAudioTypeSettings();

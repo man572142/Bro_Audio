@@ -16,7 +16,7 @@ namespace Ami.BroAudio.Editor
     public class AudioAssetEditor : UnityEditor.Editor
 	{
         private SerializedProperty _librariesProp = null;
-        private ReorderableList _reorderableList = null;
+        protected ReorderableList LibrariesList = null;
 
 		private string _libraryStateOutput = string.Empty;
 		private LibraryState _libraryState = LibraryState.Fine;
@@ -39,7 +39,7 @@ namespace Ami.BroAudio.Editor
 		{
 			if (Asset != null)
 			{
-				_reorderableList = new ReorderableList(_librariesProp.serializedObject, _librariesProp,true,false,true,true)
+				LibrariesList = new ReorderableList(_librariesProp.serializedObject, _librariesProp,true,false,true,true)
 				{
 					onAddCallback = OnAdd,
 					onRemoveCallback = OnRemove,
@@ -91,7 +91,7 @@ namespace Ami.BroAudio.Editor
 		public void DrawLibraries()
 		{
 			EditorGUI.BeginChangeCheck();
-			_reorderableList.DoLayoutList();
+			LibrariesList.DoLayoutList();
 			if (EditorGUI.EndChangeCheck())
 			{
 				CheckLibrariesState();

@@ -39,19 +39,13 @@ namespace Ami.BroAudio.Editor
 		{
 			if (Asset != null)
 			{
-				_reorderableList = new ReorderableList(_librariesProp.serializedObject, _librariesProp)
+				_reorderableList = new ReorderableList(_librariesProp.serializedObject, _librariesProp,true,false,true,true)
 				{
-					drawHeaderCallback = OnDrawHeader,
 					onAddCallback = OnAdd,
 					onRemoveCallback = OnRemove,
 					drawElementCallback = OnDrawElement,
 					elementHeightCallback = OnGetPropertyHeight,
 				};
-			}
-
-			void OnDrawHeader(Rect rect)
-			{
-				EditorGUI.LabelField(rect, new GUIContent($"Libraries of " + Asset.AssetName));
 			}
 
 			void OnAdd(ReorderableList list)
@@ -124,7 +118,6 @@ namespace Ami.BroAudio.Editor
             }
 		}
 
-
 		private bool CompareWithPrevious()
 		{
 			IAudioLibrary previousData = null;
@@ -176,6 +169,5 @@ namespace Ami.BroAudio.Editor
 			_libraryStateOutput = string.Empty;
 			return true;
 		}
-
     }
 }

@@ -13,6 +13,9 @@ namespace Ami.BroAudio.Editor
         public const string PlaybackPosIcon = "icon dropdown@2x";
         public const string FadeInIcon = "AudioHighPassFilter Icon";
         public const string FadeOutIcon = "AudioLowPassFilter Icon";
+        public const string BackButton = "d_tab_prev@2x";
+        public const string ImportFile = "Import@2x";
+        public const string AudioClip = "AudioClip Icon";
 
         // GlobalSettingWindow
         public const string AssetOutputBrowser = "FolderOpened Icon";

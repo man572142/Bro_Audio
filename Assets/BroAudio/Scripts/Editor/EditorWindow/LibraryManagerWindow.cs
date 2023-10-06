@@ -16,9 +16,14 @@ namespace Ami.BroAudio.Editor
 {
 	public class LibraryManagerWindow : EditorWindow
 	{
+		public const int CreationHintFontSize = 25;
+		public const int AssetModificationFontSize = 15;
+		public const float ImportIconSize = 30f;
+
 		public event Action OnCloseLibraryManagerWindow;
 		public event Action OnSelectAsset;
 
+		private readonly Vector2 _librariesHeaderSize = new Vector2(200f,EditorGUIUtility.singleLineHeight * 2);
 		private List<string> _allAssetGUIDs = null;
 		private ReorderableList _assetReorderableList = null;
 		private int _currSelectedAssetIndex = -1;
@@ -32,9 +37,6 @@ namespace Ami.BroAudio.Editor
 		private GapDrawingHelper _verticalGapDrawer = new GapDrawingHelper();
 		private LibraryIDController _libraryIdGenerator = new LibraryIDController();
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
-
-		private Gradient gradient = new Gradient();
-
 
 		[MenuItem(LibraryManagerMenuPath, false,LibraryManagerMenuIndex)]
 		public static LibraryManagerWindow ShowWindow()
@@ -93,8 +95,8 @@ namespace Ami.BroAudio.Editor
 			_instruction.Init();
 
 			InitEditorDictionary();
-			InitAssetOptionGenericMenu();
 			InitReorderableList();
+			InitAssetOptionGenericMenu();
 		}
 
 		private void OnDisable()
@@ -245,7 +247,7 @@ namespace Ami.BroAudio.Editor
 		private bool TryGetCurrentAssetEditor(out AudioAssetEditor editor)
 		{
 			editor = null;
-			if (_allAssetGUIDs.Count > 0)
+			if (_allAssetGUIDs.Count > 0 && _assetReorderableList.index >= 0)
 			{
 				int index = Mathf.Clamp(_assetReorderableList.index, 0, _allAssetGUIDs.Count - 1);
 				if (_assetEditorDict.TryGetValue(_allAssetGUIDs[index], out editor))
@@ -265,12 +267,12 @@ namespace Ami.BroAudio.Editor
                 GUILayout.Space(_verticalGapDrawer.GetSpace());
 				EditorScriptingExtension.SplitRectHorizontal(position, 0.7f, _verticalGapDrawer.SingleLineSpace, out Rect librariesRect, out Rect assetListRect);
 
-				DrawLibrariesList(librariesRect.width - _verticalGapDrawer.GetTotalSpace(), out float librariesTopGap);
+				librariesRect.width -= _verticalGapDrawer.GetTotalSpace();
+				DrawLibrariesList(librariesRect);
 
-				// Add 9 pixels for some kind of default layout offset on y axis.
-				// This value is calculated by eyes currently because it's too hard to find the actual value from Unity source code (aka magic number hell)
-				Vector2 offset = new Vector2(_verticalGapDrawer.GetTotalSpace(), librariesTopGap + 9f);
-				DrawClipPropertiesHelper.DrawPlaybackIndicator(librariesRect.Scoping(position, offset), -_librariesScrollPos);
+				float offsetX = _verticalGapDrawer.GetTotalSpace() + GUI.skin.box.padding.left;
+				float offsetY = ReorderableList.Defaults.padding + GUI.skin.box.padding.top -1f ;
+				DrawClipPropertiesHelper.DrawPlaybackIndicator(librariesRect.Scoping(position, new Vector2(offsetX,offsetY)), -_librariesScrollPos);
 
 				GUILayout.Space(_verticalGapDrawer.GetSpace());
 
@@ -333,38 +335,80 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawLibrariesList(float width,out float librariesTopGap)
+		private void DrawLibrariesList(Rect librariesRect)
 		{
-			librariesTopGap = default;
-			EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(width));
+			EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(librariesRect.width));
 			{
 				if (TryGetCurrentAssetEditor(out var editor))
 				{
-					GUIStyle upperCenterStyle = new GUIStyle();
-					upperCenterStyle.alignment = TextAnchor.UpperCenter;
-					EditorGUILayout.LabelField(editor.Asset.AssetName.SetSize(25).SetColor(Color.white), upperCenterStyle);
-					float space = 15f;
-					GUILayout.Space(space);
-					librariesTopGap = space + EditorGUIUtility.singleLineHeight; // space + labelField
-					if (_assetReorderableList.count > 0)
+					_librariesScrollPos = EditorGUILayout.BeginScrollView(_librariesScrollPos);
 					{
-						_librariesScrollPos = EditorGUILayout.BeginScrollView(_librariesScrollPos);
-						{
-							editor.DrawLibraries();
-						}
-						EditorGUILayout.EndScrollView();
+						DrawLibraryHeader(editor.Asset.AssetName);
+						editor.DrawLibraries();
 					}
-					else
-					{
-						EditorGUILayout.LabelField("No Libraries!".SetSize(50).SetColor(Color.gray), GUIStyleHelper.RichText);
-					}
+					EditorGUILayout.EndScrollView();
 				}
 				else
 				{
-					EditorGUILayout.LabelField("No Asset".SetSize(30).SetColor(Color.white), GUIStyleHelper.RichText);
+					DrawLibraryFactory(librariesRect);
 				}
 			}
 			EditorGUILayout.EndVertical();
+		}
+
+		private void DrawLibraryFactory(Rect librariesRect)
+		{
+			if(Event.current.type == EventType.DragExited && librariesRect.Scoping(position).Contains(Event.current.mousePosition))
+			{
+				foreach(var obj in DragAndDrop.objectReferences)
+				{
+					throw new NotImplementedException();
+				}
+			}
+			GUILayoutUtility.GetRect(librariesRect.width, librariesRect.height);
+
+			float creationHintHeight = EditorScriptingExtension.FontSizeToPixels(CreationHintFontSize);
+			Rect creationRect = new Rect(0f, librariesRect.height * 0.5f - creationHintHeight, librariesRect.width, creationHintHeight);
+			string creationHint = _instruction.GetText(Instruction.LibraryManager_CreateEntity).SetSize(CreationHintFontSize).SetColor(GUIStyleHelper.DefaultLabelColor);
+			EditorGUI.LabelField(creationRect,creationHint, GUIStyleHelper.MiddleCenterRichText);
+
+			Rect importIcon = new Rect(librariesRect.width * 0.5f, creationRect.y - ImportIconSize, ImportIconSize, ImportIconSize);
+			GUI.DrawTexture(importIcon, EditorGUIUtility.IconContent(IconConstant.ImportFile).image);
+
+			float modifyHintHeight = EditorScriptingExtension.FontSizeToPixels(AssetModificationFontSize);
+			Rect modifyRect = new Rect(0f, librariesRect.height * 0.5f, librariesRect.width, modifyHintHeight);
+			string modifyHint = _instruction.GetText(Instruction.LibraryManager_ModifyAsset).SetSize(AssetModificationFontSize).SetColor(GUIStyleHelper.DefaultLabelColor * 0.8f);
+			EditorGUI.LabelField(modifyRect,modifyHint, GUIStyleHelper.MiddleCenterRichText);
+		}
+
+		private void DrawLibraryHeader(string assetName)
+		{
+			EditorGUILayout.BeginHorizontal();
+			{
+				if(GUILayout.Button(EditorGUIUtility.IconContent(IconConstant.BackButton),GUILayout.Width(28f),GUILayout.Height(28f)))
+				{
+					_assetReorderableList.index = -1;
+				}
+				GUILayout.FlexibleSpace();
+
+				// The ReorderableList default header background GUIStyle has set fixedHeight to non-0 and stretchHeight to false, which is unreasonable...
+				// Draw it manually could solve the problem and do more customization.
+				Rect headerRect = GUILayoutUtility.GetRect(_librariesHeaderSize.x, _librariesHeaderSize.y);
+				headerRect.width = _librariesHeaderSize.x;
+				GUIStyle header = new GUIStyle(ReorderableList.defaultBehaviours.headerBackground);
+				header.fixedWidth = headerRect.width;
+				header.stretchWidth = false;
+				header.fixedHeight = 0f;
+				header.stretchHeight = true;
+				if (Event.current.type == EventType.Repaint)
+				{
+					header.Draw(headerRect, false, false, false, false);
+				}
+				GUIStyle wrappableStyle = new GUIStyle(GUIStyleHelper.MiddleCenterRichText);
+				wrappableStyle.wordWrap = true;
+				EditorGUI.LabelField(headerRect, assetName.SetColor(GUIStyleHelper.DefaultLabelColor).SetSize(16), wrappableStyle);
+			}
+			EditorGUILayout.EndHorizontal();
 		}
 	}
 }

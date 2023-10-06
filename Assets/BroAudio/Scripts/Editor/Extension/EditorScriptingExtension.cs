@@ -344,5 +344,10 @@ namespace Ami.Extension
 			return rect.Contains(position);
 		}
 
+		public static int FontSizeToPixels(int fontSize)
+		{
+			// 16px = 12pt.
+			return Mathf.RoundToInt(fontSize * (16f / 12f));
+		}
 	}
 }

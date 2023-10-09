@@ -10,9 +10,22 @@ namespace Ami.BroAudio.Editor
 	[CustomEditor(typeof(TempAudioAsset))]
 	public class TempAudioAssetEditor : AudioAssetEditor
 	{
-		public void AddTempEntity()
+		public SerializedProperty CreateTempEntity()
 		{
 			ReorderableList.defaultBehaviours.DoAddButton(LibrariesList);
+			SerializedProperty newEntity = LibrariesList.serializedProperty.GetArrayElementAtIndex(LibrariesList.count - 1);
+			BroEditorUtility.ResetLibrarySerializedProperties(newEntity);
+			return newEntity;
+		}
+
+		public SerializedProperty[] CreateTempEntity(int count)
+		{
+			SerializedProperty[] properties = new SerializedProperty[count];
+			for(int i = 0; i < count; i++)
+			{
+				properties[i] = CreateTempEntity();
+			}
+			return properties;
 		}
 	}
 }

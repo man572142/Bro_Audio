@@ -15,6 +15,8 @@ namespace Ami.BroAudio.Editor
 		Delay = 1 << 10,
 		Loop = 1 << 11,
 		Priority = 1 << 12,
+
+		All = Volume | PlaybackPosition | Fade | ClipPreview | Delay | Loop | Priority,
 	} 
 
 	public static class DrawedPropertyConstant

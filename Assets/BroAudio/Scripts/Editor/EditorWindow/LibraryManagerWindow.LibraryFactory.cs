@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Ami.BroAudio.Data;
+using Ami.BroAudio.Tools;
 using Ami.Extension;
 using UnityEditor;
 using UnityEngine;
@@ -11,7 +12,12 @@ namespace Ami.BroAudio.Editor
 	public partial class LibraryManagerWindow : EditorWindow
 	{
 		public const string TempAssetKey = "Temp";
-		private enum ComplexDialogDecision	{ OK, Cancel, Alt,}
+		private enum MultiClipsImportOption	
+		{ 
+			MultipleForEach,
+			Cancel,
+			OneForAll,
+		}
 
 		private void DrawLibraryFactory(Rect librariesRect)
 		{
@@ -40,27 +46,84 @@ namespace Ami.BroAudio.Editor
 			{
 				var objs = DragAndDrop.objectReferences;
 
-				if (objs.Length > 1)
+                List<AudioClip> clips = new List<AudioClip>();
+                foreach (UnityEngine.Object obj in objs)
 				{
-					var decision = (ComplexDialogDecision)EditorUtility.DisplayDialogComplex("Multi-clips import decision", "You have drop more than one audio clips.\nDo you want to create multiple AudioEntities for each clip, or create one AudioEntity to contain them in its clip list?", "Multiple for each", "Cancel", "One for all");
-
-
+					if(obj is AudioClip clip)
+					{
+						clips.Add(clip);
+                    }
 				}
-				else if(objs.Length == 1)
+
+				if(clips.Count == 0 && objs.Length > 0)
 				{
-					CreateTempEntity();
-				}
-			}
-		}
+                    BroLog.LogWarning("The file isn't an Audio Clip");
+					return;
+                }
 
-		private void CreateTempEntity()
+                TempAudioAssetEditor tempEditor = CreateTempAssetEditor();
+
+                if (clips.Count > 1)
+				{
+					var option = (MultiClipsImportOption)EditorUtility.DisplayDialogComplex(
+						_instruction.GetText(Instruction.LibraryManager_MultiClipsImportTitle), // Title
+						_instruction.GetText(Instruction.LibraryManager_MultiClipsImportDialog), //Message
+						MultiClipsImportOption.MultipleForEach.ToString(), // OK
+						MultiClipsImportOption.Cancel.ToString(), // Cancel
+						MultiClipsImportOption.OneForAll.ToString()); // Alt
+
+                    switch (option)
+                    {
+                        case MultiClipsImportOption.MultipleForEach:
+                            foreach (AudioClip clip in clips)
+							{
+								CreateTempEntity(tempEditor, clip);
+                            }
+                            break;
+                        case MultiClipsImportOption.Cancel:
+							// Do Nothing
+                            break;
+                        case MultiClipsImportOption.OneForAll:
+                            CreateTempEntity(tempEditor, clips);
+                            break;
+                    }
+                }
+                else if(clips.Count == 1)
+				{
+					CreateTempEntity(tempEditor, clips[0]);
+				}
+            }
+        }
+
+        private void CreateTempEntity(TempAudioAssetEditor tempEditor, AudioClip clip)
+        {
+            SerializedProperty tempEntity = tempEditor.CreateTempEntity();
+            SerializedProperty clipListProp = tempEntity.FindPropertyRelative(nameof(AudioLibrary.Clips));
+
+            clipListProp.InsertArrayElementAtIndex(0);
+            clipListProp.GetArrayElementAtIndex(0).FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = clip;
+
+        }
+
+		private void CreateTempEntity(TempAudioAssetEditor tempEditor,List<AudioClip> clips)
 		{
-			var newAsset = ScriptableObject.CreateInstance(typeof(TempAudioAsset));
-			AudioAssetEditor baseEditor = UnityEditor.Editor.CreateEditor(newAsset) as AudioAssetEditor;
-			TempAudioAssetEditor tempEditor = baseEditor as TempAudioAssetEditor;
-			tempEditor.AddTempEntity();
-			// id 及 audiotype都不指定? 
-			_assetEditorDict.Add(TempAssetKey, tempEditor);
-		}
-	} 
+			SerializedProperty tempEntity = tempEditor.CreateTempEntity();
+			SerializedProperty clipListProp = tempEntity.FindPropertyRelative(nameof(AudioLibrary.Clips));
+
+			for(int i = 0; i < clips.Count;i++)
+			{
+                clipListProp.InsertArrayElementAtIndex(i);
+                clipListProp.GetArrayElementAtIndex(i).FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = clips[i];
+            }
+        }
+
+        private TempAudioAssetEditor CreateTempAssetEditor()
+        {
+            var newAsset = ScriptableObject.CreateInstance(typeof(TempAudioAsset));
+            AudioAssetEditor baseEditor = UnityEditor.Editor.CreateEditor(newAsset) as AudioAssetEditor;
+            TempAudioAssetEditor tempEditor = baseEditor as TempAudioAssetEditor;
+            _assetEditorDict.Add(TempAssetKey, tempEditor);
+            return tempEditor;
+        }
+    }
 }

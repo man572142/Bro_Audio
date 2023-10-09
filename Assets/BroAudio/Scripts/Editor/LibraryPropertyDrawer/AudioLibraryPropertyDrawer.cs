@@ -85,7 +85,6 @@ namespace Ami.BroAudio.Editor
 			#region Clip Properties
 			ReorderableClips currClipList = DrawReorderableClipsList(position, property, OnClipChanged);
 			SerializedProperty currSelectClip = currClipList.CurrentSelectedClip;
-			//Debug.Log(currSelectClip.propertyPath);
 			if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
 			{
 				DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport);

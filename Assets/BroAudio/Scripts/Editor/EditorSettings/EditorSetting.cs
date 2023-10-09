@@ -52,7 +52,7 @@ namespace Ami.BroAudio.Editor
 				{
 					AudioType = audioType,
 					Color = Color.red,
-					DrawedProperty = (DrawedProperty)int.MaxValue,
+					DrawedProperty = DrawedProperty.All,
 				};
 				return true;
 			}

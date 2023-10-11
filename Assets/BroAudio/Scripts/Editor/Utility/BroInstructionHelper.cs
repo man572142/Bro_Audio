@@ -19,7 +19,7 @@ namespace Ami.BroAudio.Editor
 		TracksAndVoicesNotMatchWarning,
 		AddTracksConfirmationDialog,
         AudioVoicesToolTip,
-        BroVirtual,
+        BroVirtualToolTip,
 
         // Settings/Info
         Copyright,
@@ -75,65 +75,11 @@ namespace Ami.BroAudio.Editor
 
 		private string GetInstruction(Instruction instruction)
 		{
-            switch (instruction)
-            {
-                case Instruction.HaasEffectTooltip:
-                    return _instruction.HaasEffectTooltipText;
-
-                case Instruction.RuntimeSettingFileMissing:
-                    return _instruction.SettingFileMissingText;
-
-                case Instruction.TracksAndVoicesNotMatchWarning:
-                    return _instruction.TracksAndVoicesNotMatchWarning;
-
-                case Instruction.AddTracksConfirmationDialog:
-                    return _instruction.AddTracksConfirmationDialog;
-
-                case Instruction.AssetOutputPathPanelTtile:
-                    return _instruction.AssetOutputPathPanelTtile;
-
-                case Instruction.ClipEditorConfirmationDialog:
-                    return _instruction.ClipEditorConfirmationDialog;
-
-                case Instruction.Copyright:
-                    return _instruction.Copyright;
-
-                case Instruction.AudioVoicesToolTip:
-                    return _instruction.AudioVoicesToolTip;
-
-                case Instruction.BroVirtual:
-                    return _instruction.BroVirtualToolTip;
-
-                case Instruction.LibraryState_IsNullOrEmpty:
-                    return _instruction.LibraryState_IsNullOrEmpty;
-
-                case Instruction.LibraryState_IsDuplicated:
-                    return _instruction.LibraryState_IsDuplicated;
-
-                case Instruction.LibraryState_ContainsInvalidWords:
-                    return _instruction.LibraryState_ContainsInvalidWords;
-
-                case Instruction.LibraryState_Fine:
-                    return _instruction.LibraryState_Fine;
-
-                case Instruction.AssetNaming_IsNullOrEmpty:
-                    return _instruction.AssetNaming_IsNullOrEmpty;
-
-                case Instruction.AssetNaming_ContainsWhiteSpace:
-                    return _instruction.AssetNaming_ContainsWhiteSpace;
-
-                case Instruction.AssetNaming_IsDuplicated:
-                    return _instruction.AssetNaming_IsDuplicated;
-
-                case Instruction.AssetNaming_ContainsInvalidWords:
-                    return _instruction.AssetNaming_ContainsInvalidWords;
-
-                case Instruction.AssetNaming_StartWithNumber:
-                    return _instruction.AssetNaming_StartWithNumber;
-                
-                default:
-                    return MissingText;
-            }
+            if(_instruction.Dictionary.TryGetValue(instruction,out string text))
+			{
+                return text;
+			}
+            return string.Empty;
         }
     }
 }

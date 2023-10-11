@@ -12,43 +12,64 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e3d9656167abb84bbe211433938026f, type: 3}
   m_Name: BroInstruction
   m_EditorClassIdentifier: 
-  SettingFileMissingText: Setting asset file is missing! please relocate the file
-    to any [Resource/Editor] folder or recreate a new one
-  AssetOutputPathPanelTtile: Select BroAudio auto-generated asset file's output folder
-  HaasEffectTooltipText: "If the same sound is played repeatedly in a very short
-    period of time (e.g. playing it every other frame). It may cause some quality
-    loss or unexpected behavior due to the nature of Comb Filtering (or Hass Effect).
-    \n\nYou can set it to 0 to ignore this feature, or any other shorter value as
-    needed."
-  TracksAndVoicesNotMatchWarning: The {0} track count should be greater than the
-    sum of BroVirtual and the Max Real Voices! Click the button below to match them,
-    or set it back to 32 (Unity's default setting) in {1}
-  AddTracksConfirmationDialog: 'This action cannot be undone! Please check the following
-    instructions before you proceed.
+  _dictionary:
+  - Key: 0
+    Value: BroRuntimeSetting asset file is missing! please relocate the file to any
+      [Resource] folder or recreate a new one
+  - Key: 1
+    Value: BroEditorSetting asset file is missing! please relocate the file to any
+      [Resource/Editor] folder or recreate a new one
+  - Key: 2
+    Value: Select BroAudio auto-generated asset file's output folder
+  - Key: 3
+    Value: "If the same sound is played repeatedly in a very short period of time
+      (e.g. playing it every other frame). It may cause some quality loss or unexpected
+      behavior due to the nature of Comb Filtering (or Hass Effect). \r\n\r\nYou
+      can set it to 0 to ignore this feature, or any other shorter value as needed."
+  - Key: 4
+    Value: The {0} track count should be greater than the sum of BroVirtual and the
+      Max Real Voices! Click the button below to match them, or set it back to 32
+      (Unity's default setting) in {1}
+  - Key: 5
+    Value: 'This action cannot be undone! Please check the following instructions
+      before you proceed.
 
 
-    1. Backup the BroAudioMixer.asset file
-    if you''ve modified it for your own needs
+      1. Backup the BroAudioMixer.asset file if you''ve
+      modified it for your own needs
 
-    2. The process will duplicate
-    the last track of the BroAudioMixer. Make sure it''s at its original setting.'
-  AudioVoicesToolTip: Max Real Voices will determine how many sounds can be heard
-    simultaneously by Unity's Audio Engine. The track count of BroAudioMixer should
-    be greater than Max Real Voices in order to effectively control all the voices.
-  BroVirtualToolTip: Sounds exceeding Max Real Voices will turn into Virtual Voices
-    and become inaudible until a Real Voice becomes available. BroVirtual tracks
-    ensure that the voices returning from Virtual Voices can be controlled again.
-  Copyright: 'Copyright 2022-2023 CheHsiang Weng (Ami).
+      2. The process will duplicate the last
+      track of the BroAudioMixer. Make sure it''s at its original setting.'
+  - Key: 6
+    Value: Max Real Voices will determine how many sounds can be heard simultaneously
+      by Unity's Audio Engine. The track count of BroAudioMixer should be greater
+      than Max Real Voices in order to effectively control all the voices.
+  - Key: 7
+    Value: Sounds exceeding Max Real Voices will turn into Virtual Voices and become
+      inaudible until a Real Voice becomes available. BroVirtual tracks ensure that
+      the voices returning from Virtual Voices can be controlled again.
+  - Key: 8
+    Value: 'Copyright 2022-2023 CheHsiang Weng (Ami).
 
-    All rights reserved.'
-  ClipEditorConfirmationDialog: Changes will be saved to the file permanently, and
-    they cannot be undone. Would you like to proceed?
-  LibraryState_IsNullOrEmpty: 'There are some empty name in asset: {0}!'
-  LibraryState_IsDuplicated: 'Name:{0} is duplicated in asset: {1}'
-  LibraryState_ContainsInvalidWords: 'Name:{0} in asset: {1} has invalid word!'
-  LibraryState_Fine: Everything works great!
-  AssetNaming_IsNullOrEmpty: Please enter an asset name
-  AssetNaming_ContainsWhiteSpace: Naming with whitespace is not recommended
-  AssetNaming_IsDuplicated: Name already exists!
-  AssetNaming_ContainsInvalidWords: Name contains invalid words
-  AssetNaming_StartWithNumber: Name that starts with a number is not recommended
+      All rights reserved.'
+  - Key: 9
+    Value: Changes will be saved to the file permanently, and they cannot be undone.
+      Would you like to proceed?
+  - Key: 10
+    Value: 'There are some empty name in asset: {0}!'
+  - Key: 11
+    Value: 'Name:{0} is duplicated in asset: {1}'
+  - Key: 12
+    Value: 'Name:{0} in asset: {1} has invalid word!'
+  - Key: 13
+    Value: Everything works great!
+  - Key: 14
+    Value: Please enter an asset name
+  - Key: 15
+    Value: Naming with whitespace is not recommended
+  - Key: 16
+    Value: Name already exists!
+  - Key: 17
+    Value: Name contains invalid words
+  - Key: 18
+    Value: Name that starts with a number is not recommended

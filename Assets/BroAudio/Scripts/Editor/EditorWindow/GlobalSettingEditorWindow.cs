@@ -124,7 +124,7 @@ namespace Ami.BroAudio.Editor.Setting
 		{
 			_haasEffectGUIContent = new GUIContent(HaasEffectLabel, _instruction.GetText(Instruction.HaasEffectTooltip));
 			_audioVoicesGUIContent = new GUIContent(RealVoicesParameterName, _instruction.GetText(Instruction.AudioVoicesToolTip));
-			_virtualTracksGUIContent = new GUIContent(BroVirtualTracks, _instruction.GetText(Instruction.BroVirtual));
+			_virtualTracksGUIContent = new GUIContent(BroVirtualTracks, _instruction.GetText(Instruction.BroVirtualToolTip));
 		}
 
 		private void OnDisable()

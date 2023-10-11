@@ -94,10 +94,8 @@ namespace Ami.BroAudio.Runtime
                 if (asset == null)
                     continue;
 
-                List<IAudioLibrary> dataList = asset.GetAllAudioLibraries().ToList();
-				for (int i = 0; i < dataList.Count; i++)
+				foreach(var library in asset.GetAllAudioLibraries())
 				{
-					var library = dataList[i];
 					if (!library.Validate())
                         continue;
 

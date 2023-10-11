@@ -38,8 +38,13 @@ namespace Ami.BroAudio.Editor
         AssetNaming_ContainsWhiteSpace,
         AssetNaming_IsDuplicated,
         AssetNaming_ContainsInvalidWords,
-        AssetNaming_StartWithNumber
-    }
+        AssetNaming_StartWithNumber,
+
+		LibraryManager_CreateEntity,
+		LibraryManager_ModifyAsset,
+		LibraryManager_MultiClipsImportTitle,
+		LibraryManager_MultiClipsImportDialog,
+	}
 
     public class BroInstructionHelper
 	{

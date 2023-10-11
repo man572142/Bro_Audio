@@ -73,3 +73,15 @@ MonoBehaviour:
     Value: Name contains invalid words
   - Key: 18
     Value: Name that starts with a number is not recommended
+  - Key: 19
+    Value: Drag & Drop to create a new AudioEntity
+  - Key: 20
+    Value: or select an Asset on the right side to modify existed entity.
+  - Key: 21
+    Value: Multiple audio clips import confirmation
+  - Key: 22
+    Value: 'You have drop more than one audio clips.
+
+      Do you want to create
+      multiple AudioEntities for each clip, or create one AudioEntity to contain
+      them in its clip list?'

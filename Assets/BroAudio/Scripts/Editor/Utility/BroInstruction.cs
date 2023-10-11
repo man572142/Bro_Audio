@@ -34,6 +34,7 @@ namespace Ami.BroAudio.Editor.Setting
 				return;
 			}
 
+			_actualDict.Clear();
 			foreach(var content in _dictionary)
 			{
 				_actualDict.Add(content.Key, content.Value);

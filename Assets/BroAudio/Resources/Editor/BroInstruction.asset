@@ -85,3 +85,7 @@ MonoBehaviour:
       Do you want to create
       multiple AudioEntities for each clip, or create one AudioEntity to contain
       them in its clip list?'
+  - Key: 23
+    Value: Choose an AudioType to create an asset
+  - Key: 24
+    Value: Change current AudioType to ...

@@ -20,6 +20,7 @@ namespace Ami.BroAudio.Editor
 		public const int CreationHintFontSize = 25;
 		public const int AssetModificationFontSize = 15;
 		public const float ImportIconSize = 30f;
+		public const float BackButtonSize = 28f;
 
 		public event Action OnCloseLibraryManagerWindow;
 		public event Action OnSelectAsset;
@@ -28,7 +29,8 @@ namespace Ami.BroAudio.Editor
 		private List<string> _allAssetGUIDs = null;
 		private ReorderableList _assetReorderableList = null;
 		private int _currSelectedAssetIndex = -1;
-		private GenericMenu _assetOption = null;
+		private GenericMenu _createAssetOption = null;
+		private GenericMenu _changeAudioTypeOption = null;
 
 		private Dictionary<string, AudioAssetEditor> _assetEditorDict = new Dictionary<string, AudioAssetEditor>();
 
@@ -97,7 +99,9 @@ namespace Ami.BroAudio.Editor
 
 			InitEditorDictionary();
 			InitReorderableList();
-			InitAssetOptionGenericMenu();
+
+			_createAssetOption = CreateAudioTypeGenericMenu(Instruction.LibraryManager_CreateAssetWithAudioType, ShowCreateAssetAskName);
+			_changeAudioTypeOption = CreateAudioTypeGenericMenu(Instruction.LibraryManager_ChangeAssetAudioType, OnChangeAssetAudioType);
 		}
 
 		private void OnDisable()
@@ -161,7 +165,7 @@ namespace Ami.BroAudio.Editor
 
 			void OnAddDropdown(Rect buttonRect, ReorderableList list)
 			{
-				_assetOption.DropDown(buttonRect);
+				_createAssetOption.DropDown(buttonRect);
 			}
 
 			void OnRemove(ReorderableList list)
@@ -199,30 +203,38 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void InitAssetOptionGenericMenu()
+		private GenericMenu CreateAudioTypeGenericMenu(Instruction instruction, GenericMenu.MenuFunction2 onClickOption)
 		{
-			_assetOption = new GenericMenu();
-            _assetOption.AddItem(new GUIContent("Choose an AudioType to create an asset"), false, null);
-            _assetOption.AddSeparator("");
+			GenericMenu menu = new GenericMenu();
+			GUIContent text = new GUIContent(_instruction.GetText(instruction));
+			menu.AddItem(text, false, null);
+			menu.AddSeparator("");
 
-			ForeachConcreteAudioType((audioType) => 
+			ForeachConcreteAudioType((audioType) =>
 			{
-                GUIContent optionName = new GUIContent(audioType.ToString());
-                _assetOption.AddItem(optionName, false, OnClickOption);
+				GUIContent optionName = new GUIContent(audioType.ToString());
+				menu.AddItem(optionName, false, onClickOption, audioType);
+			});
 
-                void OnClickOption()
-                {
-                    ShowCreateAssetAskName(audioType);
-                }
-            });
-		} 
+			return menu;
+		}
+
+		private void OnChangeAssetAudioType(object type)
+		{
+			if (TryGetCurrentAssetEditor(out var editor))
+			{
+				editor.Asset.AudioType = (BroAudioType)type;
+				editor.serializedObject.ApplyModifiedProperties();
+				Repaint();
+			}
+		}
 		#endregion
 
-		private void ShowCreateAssetAskName(BroAudioType audioType)
+		private void ShowCreateAssetAskName(object type)
 		{
 			// In the following case. List has better performance than IEnumerable , even with a ToList() method.
 			List<string> assetNames = _assetEditorDict.Values.Select(x => x.Asset.AssetName).ToList();
-			AssetNameEditorWindow.ShowWindow(assetNames, (assetName)=> OnCreateAsset(assetName,audioType));
+			AssetNameEditorWindow.ShowWindow(assetNames, (assetName)=> OnCreateAsset(assetName, (BroAudioType)type));
 		}
 
 		private void OnCreateAsset(string libraryName, BroAudioType audioType)
@@ -350,7 +362,7 @@ namespace Ami.BroAudio.Editor
 				{
 					_librariesScrollPos = EditorGUILayout.BeginScrollView(_librariesScrollPos);
 					{
-						DrawLibraryHeader(editor.Asset.AssetName);
+						DrawLibraryHeader(editor.Asset);
 						editor.DrawLibraries();
 					}
 					EditorGUILayout.EndScrollView();
@@ -363,32 +375,42 @@ namespace Ami.BroAudio.Editor
 			EditorGUILayout.EndVertical();
 		}
 
-		private void DrawLibraryHeader(string assetName)
+		private void DrawLibraryHeader(IAudioAsset asset)
 		{
 			EditorGUILayout.BeginHorizontal();
 			{
-				if(GUILayout.Button(EditorGUIUtility.IconContent(IconConstant.BackButton),GUILayout.Width(28f),GUILayout.Height(28f)))
+				if(GUILayout.Button(EditorGUIUtility.IconContent(IconConstant.BackButton),GUILayout.Width(BackButtonSize),GUILayout.Height(BackButtonSize)))
 				{
 					_assetReorderableList.index = -1;
+					// TODO: quit temp asset
 				}
-				GUILayout.FlexibleSpace();
+
+				GUILayout.Space(10f);
 
 				// The ReorderableList default header background GUIStyle has set fixedHeight to non-0 and stretchHeight to false, which is unreasonable...
-				// Draw it manually could solve the problem and do more customization.
+				// Use another style or Draw it manually could solve the problem and accept more customization.
 				Rect headerRect = GUILayoutUtility.GetRect(_librariesHeaderSize.x, _librariesHeaderSize.y);
 				headerRect.width = _librariesHeaderSize.x;
-				GUIStyle header = new GUIStyle(ReorderableList.defaultBehaviours.headerBackground);
-				header.fixedWidth = headerRect.width;
-				header.stretchWidth = false;
-				header.fixedHeight = 0f;
-				header.stretchHeight = true;
+				GUIStyle header = new GUIStyle(GUI.skin.window);
 				if (Event.current.type == EventType.Repaint)
 				{
 					header.Draw(headerRect, false, false, false, false);
 				}
 				GUIStyle wrappableStyle = new GUIStyle(GUIStyleHelper.MiddleCenterRichText);
 				wrappableStyle.wordWrap = true;
-				EditorGUI.LabelField(headerRect, assetName.SetColor(GUIStyleHelper.DefaultLabelColor).SetSize(16), wrappableStyle);
+				EditorGUI.LabelField(headerRect, asset.AssetName.SetColor(GUIStyleHelper.DefaultLabelColor).SetSize(16), wrappableStyle);
+
+				GUILayout.FlexibleSpace();
+
+				Rect audioTypeRect = GUILayoutUtility.GetRect(100f, 25f);
+				audioTypeRect.y += _librariesHeaderSize.y - audioTypeRect.height;
+				GUIContent audioTypeGUI = new GUIContent(asset.AudioType.ToString(),"Click to change audio type");
+				if (GUI.Button(audioTypeRect, audioTypeGUI))
+				{
+					_changeAudioTypeOption.DropDown(audioTypeRect);
+				}
+				EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(asset.AudioType));
+
 			}
 			EditorGUILayout.EndHorizontal();
 		}

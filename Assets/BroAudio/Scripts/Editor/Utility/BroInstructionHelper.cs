@@ -40,10 +40,13 @@ namespace Ami.BroAudio.Editor
         AssetNaming_ContainsInvalidWords,
         AssetNaming_StartWithNumber,
 
+		// Library Manager
 		LibraryManager_CreateEntity,
 		LibraryManager_ModifyAsset,
 		LibraryManager_MultiClipsImportTitle,
 		LibraryManager_MultiClipsImportDialog,
+		LibraryManager_CreateAssetWithAudioType,
+		LibraryManager_ChangeAssetAudioType,
 	}
 
     public class BroInstructionHelper
@@ -69,22 +72,12 @@ namespace Ami.BroAudio.Editor
 
 		public string GetText(Instruction instruction)
 		{
-			if (!_instruction)
+			if (_instruction && _instruction.Dictionary.TryGetValue(instruction, out string text))
 			{
-				return MissingText;
+				return text;
 			}
 
-			string instructionText = GetInstruction(instruction);
-			return instructionText;
+			return MissingText;
 		}
-
-		private string GetInstruction(Instruction instruction)
-		{
-            if(_instruction.Dictionary.TryGetValue(instruction,out string text))
-			{
-                return text;
-			}
-            return string.Empty;
-        }
     }
 }

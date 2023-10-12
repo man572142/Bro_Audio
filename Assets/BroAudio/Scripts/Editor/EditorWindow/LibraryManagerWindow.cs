@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using Ami.Extension;
 using Ami.BroAudio.Editor.Setting;
+using Ami.BroAudio.Data;
 using static Ami.BroAudio.Utility;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
@@ -122,17 +123,20 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private AudioAssetEditor CreateAssetEditor(string guid , string assetName = "")
+		private AudioAssetEditor CreateAssetEditor(string guid , string assetName = null, BroAudioType audioType = default)
 		{
 			string assetPath = AssetDatabase.GUIDToAssetPath(guid);
 			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject))) as AudioAssetEditor;
 			if(string.IsNullOrEmpty(editor.Asset.AssetName))
 			{
-				string assetNamePropertyPath = EditorScriptingExtension.GetBackingFieldName(nameof(Data.IAudioAsset.AssetName));
+				string assetNamePropertyPath = EditorScriptingExtension.GetBackingFieldName(nameof(IAudioAsset.AssetName));
 				editor.serializedObject.FindProperty(assetNamePropertyPath).stringValue = assetName;
 
-				string assetGUIDPropertyPath = EditorScriptingExtension.GetFieldName(nameof(Data.IAudioAsset.AssetGUID));
+				string assetGUIDPropertyPath = EditorScriptingExtension.GetFieldName(nameof(IAudioAsset.AssetGUID));
 				editor.serializedObject.FindProperty(assetGUIDPropertyPath).stringValue = guid;
+
+				string audioTypePropertyPath = EditorScriptingExtension.GetBackingFieldName(nameof(IAudioAsset.AudioType));
+				editor.serializedObject.FindProperty(audioTypePropertyPath).enumValueIndex = audioType.GetSerializedEnumIndex();
 
 				editor.serializedObject.ApplyModifiedPropertiesWithoutUndo();
 			}
@@ -231,7 +235,7 @@ namespace Ami.BroAudio.Editor
 			string fileName = libraryName + ".asset";
 			string path = GetFilePath(AssetOutputPath, fileName);
 
-			var newAsset = ScriptableObject.CreateInstance(audioType.GetAssetType());
+			var newAsset = ScriptableObject.CreateInstance(typeof(AudioAsset));
 			AssetDatabase.CreateAsset(newAsset, path);
 			AddToSoundManager(newAsset);
 			AssetDatabase.SaveAssets();
@@ -239,7 +243,7 @@ namespace Ami.BroAudio.Editor
 			string guid = AssetDatabase.AssetPathToGUID(path);
 
 			_allAssetGUIDs.Add(guid);
-			_assetEditorDict.Add(guid, CreateAssetEditor(guid, libraryName));
+			_assetEditorDict.Add(guid, CreateAssetEditor(guid, libraryName,audioType));
 
 			WriteGuidToCoreData(_allAssetGUIDs);	
 		}

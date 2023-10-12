@@ -12,7 +12,7 @@ using static Ami.Extension.EditorScriptingExtension;
 
 namespace Ami.BroAudio.Editor
 {
-    [CustomEditor(typeof(AudioAsset<>), true)]
+    [CustomEditor(typeof(AudioAsset), true)]
     public class AudioAssetEditor : UnityEditor.Editor
 	{
         private SerializedProperty _librariesProp = null;
@@ -27,7 +27,7 @@ namespace Ami.BroAudio.Editor
 
 		private void OnEnable()
 		{
-			_librariesProp = serializedObject.FindProperty(nameof(AudioAsset<IAudioLibrary>.Libraries));
+			_librariesProp = serializedObject.FindProperty(nameof(AudioAsset.Libraries));
 			Asset = target as IAudioAsset;
 			_currentAudioDatas = Asset.GetAllAudioLibraries();
 

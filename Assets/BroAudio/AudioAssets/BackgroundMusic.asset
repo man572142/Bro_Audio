@@ -9,39 +9,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b8dea545865285941be8a4ddd0692911, type: 3}
-  m_Name: Opening
+  m_Script: {fileID: 11500000, guid: d0345f6968f9c4241959624889b545dd, type: 3}
+  m_Name: BackgroundMusic
   m_EditorClassIdentifier: 
   Libraries:
-  - <Name>k__BackingField: Plastic Love
-    <ID>k__BackingField: 268435459
+  - <Name>k__BackingField: Plastic
+    <ID>k__BackingField: 268435462
     MulticlipsPlayMode: 0
     Clips:
-    - AudioClip: {fileID: 8300000, guid: 96591e2eb86743a4b84d4e417db7b9bd, type: 3}
-      Volume: 0.8517097
-      StartPosition: 20.02
-      EndPosition: 145.87
-      FadeIn: 0
-      FadeOut: 0
-      Weight: 0
-      SnapToFullVolume: 0
-    <Delay>k__BackingField: 0
-    <Loop>k__BackingField: 0
-    <SeamlessLoop>k__BackingField: 0
-    <TransitionTime>k__BackingField: -1
-    IsShowClipPreview: 1
-    SeamlessTransitionType: 0
-    TransitionTempo:
-      BPM: 0
-      Beats: 0
-  - <Name>k__BackingField: Chill
-    <ID>k__BackingField: 268435460
-    MulticlipsPlayMode: 0
-    Clips:
-    - AudioClip: {fileID: 8300000, guid: 4b55b743fac55204abecc70b86b4c7e5, type: 3}
-      Volume: 1
-      StartPosition: 9.68
-      EndPosition: 21.58
+    - AudioClip: {fileID: 8300000, guid: ad86e3b46cdd6d249885f216cd4cab75, type: 3}
+      Volume: 0.9959638
+      StartPosition: 0
+      EndPosition: 0
       FadeIn: 0
       FadeOut: 0
       Weight: 0
@@ -49,11 +28,33 @@ MonoBehaviour:
     <Delay>k__BackingField: 0
     <Loop>k__BackingField: 1
     <SeamlessLoop>k__BackingField: 0
-    <TransitionTime>k__BackingField: -1
-    IsShowClipPreview: 1
+    <TransitionTime>k__BackingField: 0
+    IsShowClipPreview: 0
     SeamlessTransitionType: 0
     TransitionTempo:
       BPM: 0
       Beats: 0
-  <AssetName>k__BackingField: Opening
-  _assetGUID: 3fcd1b0110320ba41b3cfce25f4f14f5
+  - <Name>k__BackingField: Chill
+    <ID>k__BackingField: 268435463
+    MulticlipsPlayMode: 0
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: 4b55b743fac55204abecc70b86b4c7e5, type: 3}
+      Volume: 1
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+      SnapToFullVolume: 0
+    <Delay>k__BackingField: 0
+    <Loop>k__BackingField: 0
+    <SeamlessLoop>k__BackingField: 0
+    <TransitionTime>k__BackingField: 0
+    IsShowClipPreview: 0
+    SeamlessTransitionType: 0
+    TransitionTempo:
+      BPM: 0
+      Beats: 0
+  <AudioType>k__BackingField: 1
+  <AssetName>k__BackingField: BackgroundMusic
+  _assetGUID: 8d36f8901b7b8eb4db68171135eb3b34

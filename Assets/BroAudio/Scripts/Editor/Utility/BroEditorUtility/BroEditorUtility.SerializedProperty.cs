@@ -44,5 +44,16 @@ namespace Ami.BroAudio.Editor
 			}
         }
 
+		public static int GetSerializedEnumIndex(this BroAudioType audioType)
+		{
+			int index = 0;
+			int intAudioType = (int)audioType;
+			while (intAudioType > 0)
+			{
+				index++;
+				intAudioType = intAudioType >> 1;
+			}
+			return index;
+		}
 	}
 }

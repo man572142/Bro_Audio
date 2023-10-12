@@ -160,24 +160,5 @@ namespace Ami.BroAudio
 			}
 			return true;
 		}
-
-		public static Type GetAssetType(this BroAudioType audioType)
-		{
-			switch (audioType)
-			{
-				case BroAudioType.Music:
-					return typeof(MusicLibraryAsset);
-				case BroAudioType.UI:
-					return typeof(UISoundLibraryAsset);
-				case BroAudioType.Ambience:
-					return typeof(AmbienceLibraryAsset);
-				case BroAudioType.SFX:
-					return typeof(SfxLibraryAsset);
-				case BroAudioType.VoiceOver:
-					return typeof(VoiceOverLibraryAsset);
-				default:
-					return null;
-			}
-		}
 	}
 }

@@ -1,15 +1,15 @@
 {
     "AssetOutputPath": "Assets/BroAudio/AudioAssets",
     "GUIDs": [
-        "3fcd1b0110320ba41b3cfce25f4f14f5",
-        "5af9e18ddbfbe804fa6280f4c45a27a6",
+        "8d36f8901b7b8eb4db68171135eb3b34",
+        "5d7a0565816cafb458b9dd336e91c881",
         "bb6cd9b276f375a449e44d1c442dfc81",
-        "5ba9253504051074abf4452536681c0c"
+        "1c7e7760b0de12c42921efeda9bd1093"
     ],
     "AudioTypeLastIDs": [
         {
             "AudioType": 1,
-            "LastID": 268435461
+            "LastID": 268435463
         },
         {
             "AudioType": 2,
@@ -17,15 +17,15 @@
         },
         {
             "AudioType": 4,
-            "LastID": 805306370
+            "LastID": 805306371
         },
         {
             "AudioType": 8,
-            "LastID": 1073741826
+            "LastID": 1073741829
         },
         {
             "AudioType": 16,
-            "LastID": 1342177282
+            "LastID": 1342177283
         }
     ]
 }

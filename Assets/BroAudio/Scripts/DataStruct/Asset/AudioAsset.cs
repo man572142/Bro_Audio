@@ -5,13 +5,11 @@ using UnityEditor;
 
 namespace Ami.BroAudio.Data
 {
-    public abstract class AudioAsset<T> : ScriptableObject, IAudioAsset where T : IAudioLibrary
+    public class AudioAsset : ScriptableObject, IAudioAsset
     {
+        public AudioLibrary[] Libraries;
 
-        public T[] Libraries;
-
-		public abstract BroAudioType AudioType { get; }
-#if UNITY_EDITOR
+        [field: SerializeField] public BroAudioType AudioType { get; set; }
         [field: SerializeField] public string AssetName { get; set; }
 
         [SerializeField] private string _assetGUID;
@@ -30,12 +28,11 @@ namespace Ami.BroAudio.Data
                 _assetGUID = value;
 			}
         }
-#endif
 
         public IEnumerable<IAudioLibrary> GetAllAudioLibraries()
 		{
             if (Libraries == null)
-                Libraries = new T[0];
+                Libraries = new AudioLibrary[0];
 
             foreach (var data in Libraries)
             {

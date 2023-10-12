@@ -17,15 +17,5 @@ namespace Ami.BroAudio.Editor
 			BroEditorUtility.ResetLibrarySerializedProperties(newEntity);
 			return newEntity;
 		}
-
-		public SerializedProperty[] CreateTempEntity(int count)
-		{
-			SerializedProperty[] properties = new SerializedProperty[count];
-			for(int i = 0; i < count; i++)
-			{
-				properties[i] = CreateTempEntity();
-			}
-			return properties;
-		}
 	}
 }

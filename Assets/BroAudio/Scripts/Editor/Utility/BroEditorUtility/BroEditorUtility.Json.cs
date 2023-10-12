@@ -118,29 +118,19 @@ namespace Ami.BroAudio.Editor
 			return true;
 		}
 
-		private static bool DeleteJsonDataByAsset(string assetGUID)
+		private static void DeleteJsonDataByAssetPath(string[] deletedAssetPaths)
 		{
-			// TODO: 這裡做了兩次Resources.Load
 			var currentLibraryGUID = GetGUIDListFromJson();
-			if(currentLibraryGUID == null)
+			if(currentLibraryGUID != null)
 			{
-				return false;
-			}
-			
-			bool hasRemoved = false;
-			for (int i = currentLibraryGUID.Count - 1; i >= 0 ; i--)
-			{
-				if(currentLibraryGUID[i] == assetGUID)
+				foreach (string path in deletedAssetPaths)
 				{
-					currentLibraryGUID.RemoveAt(i);
-					hasRemoved = true;
+					string guid = AssetDatabase.AssetPathToGUID(path);
+					currentLibraryGUID.Remove(guid);
 				}
-			}
-			if(hasRemoved)
-			{
+
 				WriteGuidToCoreData(currentLibraryGUID);
 			}
-			return hasRemoved;
 		}
 	}
 }

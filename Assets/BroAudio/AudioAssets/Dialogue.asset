@@ -9,18 +9,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf606c48b48ff1e46b789209070be0cc, type: 3}
-  m_Name: Cassette
+  m_Script: {fileID: 11500000, guid: d0345f6968f9c4241959624889b545dd, type: 3}
+  m_Name: Dialogue
   m_EditorClassIdentifier: 
   Libraries:
-  - <Name>k__BackingField: Flip
-    <ID>k__BackingField: 1073741826
+  - <Name>k__BackingField: Talk
+    <ID>k__BackingField: 1342177283
     MulticlipsPlayMode: 0
     Clips:
-    - AudioClip: {fileID: 8300000, guid: c3e560973e51b8343ad349ec68b002d1, type: 3}
+    - AudioClip: {fileID: 8300000, guid: 138057753561787459cddb97dd2e52bc, type: 3}
       Volume: 1
       StartPosition: 0
-      EndPosition: 20.97
+      EndPosition: 0
       FadeIn: 0
       FadeOut: 0
       Weight: 0
@@ -29,10 +29,11 @@ MonoBehaviour:
     <Loop>k__BackingField: 0
     <SeamlessLoop>k__BackingField: 0
     <TransitionTime>k__BackingField: 0
-    IsShowClipPreview: 1
+    IsShowClipPreview: 0
     SeamlessTransitionType: 0
     TransitionTempo:
       BPM: 0
       Beats: 0
-  <AssetName>k__BackingField: Cassette
-  _assetGUID: 5af9e18ddbfbe804fa6280f4c45a27a6
+  <AudioType>k__BackingField: 16
+  <AssetName>k__BackingField: Dialogue
+  _assetGUID: 5d7a0565816cafb458b9dd336e91c881

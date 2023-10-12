@@ -9,20 +9,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a8c0a979f92ae74f8e57de68f441a5a, type: 3}
-  m_Name: HollowKnight
+  m_Script: {fileID: 11500000, guid: d0345f6968f9c4241959624889b545dd, type: 3}
+  m_Name: SFX
   m_EditorClassIdentifier: 
   Libraries:
-  - <Name>k__BackingField: Boss
-    <ID>k__BackingField: 1342177282
+  - <Name>k__BackingField: FlipCassette
+    <ID>k__BackingField: 1073741829
     MulticlipsPlayMode: 0
     Clips:
-    - AudioClip: {fileID: 8300000, guid: ef1b1a7680b07b9438370bf81f0dcf9e, type: 3}
+    - AudioClip: {fileID: 8300000, guid: 8efd1e9bfd873e64fb764efa0281c950, type: 3}
       Volume: 1
-      StartPosition: 0.55
-      EndPosition: 0.45
-      FadeIn: 0.47
-      FadeOut: 0.87
+      StartPosition: 0.49
+      EndPosition: 1.36
+      FadeIn: 0
+      FadeOut: 0
       Weight: 0
       SnapToFullVolume: 0
     <Delay>k__BackingField: 0
@@ -34,5 +34,6 @@ MonoBehaviour:
     TransitionTempo:
       BPM: 0
       Beats: 0
-  <AssetName>k__BackingField: HollowKnight
-  _assetGUID: 5ba9253504051074abf4452536681c0c
+  <AudioType>k__BackingField: 8
+  <AssetName>k__BackingField: SFX
+  _assetGUID: 1c7e7760b0de12c42921efeda9bd1093

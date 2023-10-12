@@ -7,15 +7,34 @@ namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility
 	{
-		public static bool DeleteAssetRelativeData(string assetPath)
+		public static void DeleteAssetRelativeData(string[] deletedAssetPaths)
 		{
-			bool hasDeleted = DeleteJsonDataByAsset(AssetDatabase.AssetPathToGUID(assetPath));
-			if(hasDeleted && TryGetAssetByPath(assetPath, out var asset))
+			if(deletedAssetPaths == null || deletedAssetPaths.Length == 0)
 			{
-				ScriptableObject scriptableObject = asset as ScriptableObject;
-				RemoveDeletedAssetFromSoundManager(scriptableObject);
+				return;
 			}
-			return hasDeleted;
+
+			DeleteJsonDataByAssetPath(deletedAssetPaths);
+
+			string assetPath = AssetDatabase.GetAssetPath(Resources.Load(nameof(SoundManager)));
+			using (var editScope = new EditPrefabAssetScope(assetPath))
+			{
+				if (editScope.PrefabRoot.TryGetComponent<SoundManager>(out var soundManager))
+				{
+					foreach (string path in deletedAssetPaths)
+					{
+						if (TryGetAssetByPath(path, out var asset))
+						{
+							ScriptableObject scriptableObject = asset as ScriptableObject;
+							soundManager.RemoveDeletedAsset(scriptableObject);
+						}
+						else
+						{
+							soundManager.RemoveDeletedAsset(null);
+						}
+					}
+				}
+			}
 		}
 
 		public static void AddToSoundManager(ScriptableObject asset)
@@ -30,19 +49,6 @@ namespace Ami.BroAudio.Editor
 				editScope.PrefabRoot.transform.position = Vector3.one;
 			}
 		}
-
-		public static void RemoveDeletedAssetFromSoundManager(ScriptableObject asset)
-		{
-			string assetPath = AssetDatabase.GetAssetPath(Resources.Load(nameof(SoundManager)));
-			using (var editScope = new EditPrefabAssetScope(assetPath))
-			{
-				if (editScope.PrefabRoot.TryGetComponent<SoundManager>(out var soundManager))
-				{
-					soundManager.RemoveDeletedAsset(asset);
-				}
-			}
-		}
-
 
 		public static bool TryGetAssetByGUID(string assetGUID,out IAudioAsset asset)
 		{

@@ -8,8 +8,8 @@ namespace Ami.BroAudio.Data
         IEnumerable<IAudioLibrary> GetAllAudioLibraries();
 
 #if UNITY_EDITOR
-        string AssetGUID { get; set; }
-		string AssetName { get; set; } 
+        string AssetGUID { get; }
+		string AssetName { get; } 
 #endif
     }
 }

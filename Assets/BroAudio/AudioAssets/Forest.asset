@@ -9,12 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9ffd86bb881c84428f4ae5105db7050, type: 3}
+  m_Script: {fileID: 11500000, guid: d0345f6968f9c4241959624889b545dd, type: 3}
   m_Name: Forest
   m_EditorClassIdentifier: 
   Libraries:
   - <Name>k__BackingField: Birds
-    <ID>k__BackingField: 805306370
+    <ID>k__BackingField: 805306371
     MulticlipsPlayMode: 0
     Clips:
     - AudioClip: {fileID: 8300000, guid: ad86e3b46cdd6d249885f216cd4cab75, type: 3}
@@ -34,5 +34,6 @@ MonoBehaviour:
     TransitionTempo:
       BPM: 0
       Beats: 0
+  <AudioType>k__BackingField: 4
   <AssetName>k__BackingField: Forest
   _assetGUID: bb6cd9b276f375a449e44d1c442dfc81

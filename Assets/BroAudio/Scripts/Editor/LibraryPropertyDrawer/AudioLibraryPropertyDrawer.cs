@@ -70,11 +70,11 @@ namespace Ami.BroAudio.Editor
 			{
 				return;
 			}
-			
+
 			SerializedProperty nameProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IAudioLibrary.Name)));
 
 			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProp.stringValue);
-			if (!property.isExpanded || !EditorSetting.TryGetAudioTypeSetting(GetAudioType(property), out var setting))
+			if (!property.isExpanded || !TryGetAudioTypeSetting(property, out var setting))
 			{
 				return;
 			}
@@ -107,14 +107,8 @@ namespace Ami.BroAudio.Editor
 		{
 			float height = SingleLineSpace;
 			
-			if (property.isExpanded)
+			if (property.isExpanded && TryGetAudioTypeSetting(property, out var setting))
 			{
-				BroAudioType audioType = GetAudioType(property);
-				if(!EditorSetting.TryGetAudioTypeSetting(audioType, out var setting))
-				{
-					return height;
-				}
-
                 height += (_basePropertiesLineCount + GetAdditionalBaseProtiesLineCount(property, setting)) * SingleLineSpace;
                 if (_reorderableClipsDict.TryGetValue(property.propertyPath, out ReorderableClips clipList))
 				{
@@ -133,7 +127,6 @@ namespace Ami.BroAudio.Editor
 						height += ClipPreviewHeight;
 					}
 				}
-				
 			}
 			return height;
 		}
@@ -295,10 +288,11 @@ namespace Ami.BroAudio.Editor
 #endif
 		}
 
-		private BroAudioType GetAudioType(SerializedProperty property)
+		private bool TryGetAudioTypeSetting(SerializedProperty property, out EditorSetting.AudioTypeSetting setting)
 		{
-			int id = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.ID))).intValue;
-			return Utility.GetAudioType(id);
+			setting = default;
+			IAudioAsset asset = property.serializedObject.targetObject as AudioAsset;
+			return asset != null && EditorSetting.TryGetAudioTypeSetting(asset.AudioType, out setting);
 		}
 
 		private void OnClipChanged(string clipPropPath)

@@ -37,13 +37,11 @@ namespace Ami.BroAudio
 			int result = 0;
 			int type = (int)audioType;
 
-			While(_ => type > 0, () => 
+			while(type > 0)
 			{
                 result += IDCapacity;
                 type = type >> 1;
-
-				return Statement.Continue;
-			});
+			}
 			return result;
 		}
 
@@ -66,34 +64,31 @@ namespace Ami.BroAudio
 		{
 			BroAudioType resultType = BroAudioType.None;
 			BroAudioType nextType = resultType.ToNext();
-			// todo:換回一般While以減少效能開銷 
-			While(_ => nextType <= (BroAudioType)LastAudioType, () =>
+
+			while(nextType <= (BroAudioType)LastAudioType)
 			{
 				if (id >= resultType.GetInitialID() && id < nextType.GetInitialID())
 				{
-					return Statement.Break;
+					break;
 				}
 				resultType = nextType;
 				nextType = nextType.ToNext();
-
-				return Statement.Continue;
-			});
+			}
 			return resultType;
 		}
 
 		public static void ForeachConcreteAudioType(Action<BroAudioType> loopCallback)
 		{
             BroAudioType currentType = BroAudioType.None;
-            While(_ => currentType <= (BroAudioType)LastAudioType, () =>
-            {
+            while(currentType <= (BroAudioType)LastAudioType)
+			{
 				if(currentType != BroAudioType.None && currentType != BroAudioType.All)
 				{
                     loopCallback?.Invoke(currentType);
                 }
                 
                 currentType = currentType.ToNext();
-                return Statement.Continue;
-            });
+            }
         }
 
 

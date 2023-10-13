@@ -42,7 +42,6 @@ namespace Ami.BroAudio.Editor
 				LibrariesList = new ReorderableList(_librariesProp.serializedObject, _librariesProp,true,false,true,true)
 				{
 					onAddCallback = OnAdd,
-					onRemoveCallback = OnRemove,
 					drawElementCallback = OnDrawElement,
 					elementHeightCallback = OnGetPropertyHeight,
 				};
@@ -58,13 +57,6 @@ namespace Ami.BroAudio.Editor
 				var idProp = newElement.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.ID)));
                 idProp.intValue = _idGenerator.GetUniqueID(Asset.AudioType);
 				newElement.serializedObject.ApplyModifiedProperties();
-			}
-
-			void OnRemove(ReorderableList list)
-			{
-				SerializedProperty removedElement = _librariesProp.GetArrayElementAtIndex(list.index);
-				int removedID = removedElement.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.ID))).intValue;
-				ReorderableList.defaultBehaviours.DoRemoveButton(list);
 			}
 
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -107,6 +99,12 @@ namespace Ami.BroAudio.Editor
 		{
 			output = _libraryStateOutput;
 			return _libraryState;
+		}
+
+		public void SetAudioType(BroAudioType audioType)
+		{
+			SerializedProperty audioTypeProp = serializedObject.FindProperty(GetBackingFieldName(nameof(AudioAsset.AudioType)));
+			audioTypeProp.enumValueIndex = audioType.GetSerializedEnumIndex();
 		}
 
 		private void CheckLibrariesState()
@@ -169,5 +167,5 @@ namespace Ami.BroAudio.Editor
 			_libraryStateOutput = string.Empty;
 			return true;
 		}
-    }
+	}
 }

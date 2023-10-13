@@ -4,7 +4,8 @@ namespace Ami.BroAudio.Data
 {
     public interface IAudioAsset
     {
-        BroAudioType AudioType { get; set; }
+        BroAudioType AudioType { get; }
+        bool IsTemp { get; }
         IEnumerable<IAudioLibrary> GetAllAudioLibraries();
 
 #if UNITY_EDITOR

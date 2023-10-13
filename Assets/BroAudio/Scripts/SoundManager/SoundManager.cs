@@ -104,10 +104,9 @@ namespace Ami.BroAudio.Runtime
                         _audioBank.Add(library.ID, library as IAudioEntity);
                     }
 
-                    var audioType = GetAudioType(library.ID);
-                    if(!_auidoTypePref.ContainsKey(audioType))
+                    if(!_auidoTypePref.ContainsKey(asset.AudioType))
 					{
-                        _auidoTypePref.Add(audioType, new AudioTypePlaybackPreference());
+                        _auidoTypePref.Add(asset.AudioType, new AudioTypePlaybackPreference());
 					}
                 }
 			}

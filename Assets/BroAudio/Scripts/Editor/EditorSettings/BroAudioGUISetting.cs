@@ -22,6 +22,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public static Color StopButtonColor => new Color(0.9f, 0.25f, 0.25f, 0.4f);
 		public static Color ShadowMaskColor => new Color(0.05f, 0.05f, 0.05f, 0.3f);
 		public static Color VUMaskColor => new Color(0.2f, 0.2f, 0.2f, 0.8f);
+		public static Color FalseColor => new Color(0.7f, 0f, 0f,0.5f);
 
         public static Vector2 MinWindowSize => new Vector2(960f, 540f);
 		public static Vector2 UpdateButtonSize => new Vector2(80f, 40f);

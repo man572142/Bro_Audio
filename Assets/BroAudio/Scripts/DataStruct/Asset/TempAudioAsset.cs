@@ -6,6 +6,6 @@ namespace Ami.BroAudio.Data
 {
 	public class TempAudioAsset : AudioAsset
 	{
-		//public override BroAudioType AudioType => BroAudioType.None;
+		public override bool IsTemp => true;
 	}
 }

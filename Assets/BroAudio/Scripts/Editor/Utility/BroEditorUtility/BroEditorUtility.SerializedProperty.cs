@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using Ami.BroAudio.Data;
 using static Ami.Extension.EditorScriptingExtension;
+using Ami.Extension;
 
 namespace Ami.BroAudio.Editor
 {
@@ -17,7 +18,7 @@ namespace Ami.BroAudio.Editor
 
 		public static void ResetBroAudioClipPlaybackSetting(SerializedProperty property)
 		{
-			property.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = 1f;
+			property.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = AudioConstant.FullVolume;
 			property.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue = 0f;
 			property.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue = 0f;
 			property.FindPropertyRelative(nameof(BroAudioClip.FadeIn)).floatValue = 0f;

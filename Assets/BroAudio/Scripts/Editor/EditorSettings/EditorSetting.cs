@@ -51,7 +51,7 @@ namespace Ami.BroAudio.Editor
 				result = new AudioTypeSetting()
 				{
 					AudioType = audioType,
-					Color = Color.red,
+					Color = Setting.BroAudioGUISetting.FalseColor,
 					DrawedProperty = DrawedProperty.All,
 				};
 				return true;

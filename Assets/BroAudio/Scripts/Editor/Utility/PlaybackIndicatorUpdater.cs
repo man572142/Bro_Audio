@@ -7,10 +7,8 @@ namespace Ami.Extension
 {
 	public class PlaybackIndicatorUpdater : EditorUpdateHelper
 	{
-		public const float AudioClipIndicatorMotionInterval = 0.02f;
 		public const float AudioClipIndicatorWidth = 2f;
 
-		public event Action OnUpdate;
 		public event Action OnEnd;
 
 		private Rect _waveformRect = default;
@@ -20,9 +18,8 @@ namespace Ami.Extension
 		public bool IsPlaying { get; private set; }
 
 		public Color Color => new Color(1f,1f,1f,0.8f);
-		public PlaybackIndicatorUpdater() : base(AudioClipIndicatorMotionInterval)
-		{
-		}
+
+		protected override float UpdateInterval => 0.02f;  // 50 FPS
 
 		public void SetClipInfo(Rect waveformRect, ITransport transport)
 		{
@@ -65,11 +62,6 @@ namespace Ami.Extension
 			}
 			_playingStartTime = default;
 			base.End();
-		}
-
-		protected override void Update()
-		{
-			OnUpdate?.Invoke();
 		}
 	}
 }

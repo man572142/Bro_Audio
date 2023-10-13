@@ -1,17 +1,19 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Tools;
 using Ami.Extension;
 using UnityEditor;
 using UnityEngine;
+using static Ami.BroAudio.Editor.BroEditorUtility;
 
 namespace Ami.BroAudio.Editor
 {
 	public partial class LibraryManagerWindow : EditorWindow
 	{
-		public const string TempAssetKey = "Temp";
+		public const string TempAssetName = "Temp";
 		private enum MultiClipsImportOption	
 		{ 
 			MultipleForEach,
@@ -100,9 +102,7 @@ namespace Ami.BroAudio.Editor
             SerializedProperty tempEntity = tempEditor.CreateTempEntity();
             SerializedProperty clipListProp = tempEntity.FindPropertyRelative(nameof(AudioLibrary.Clips));
 
-            clipListProp.InsertArrayElementAtIndex(0);
-            clipListProp.GetArrayElementAtIndex(0).FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = clip;
-
+			SetClipList(clipListProp, 0, clip);
         }
 
 		private void CreateTempEntity(TempAudioAssetEditor tempEditor,List<AudioClip> clips)
@@ -112,18 +112,74 @@ namespace Ami.BroAudio.Editor
 
 			for(int i = 0; i < clips.Count;i++)
 			{
-                clipListProp.InsertArrayElementAtIndex(i);
-                clipListProp.GetArrayElementAtIndex(i).FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = clips[i];
-            }
+				SetClipList(clipListProp, i, clips[i]);
+			}
         }
+
+		private void SetClipList(SerializedProperty clipListProp, int index , AudioClip clip)
+		{
+			clipListProp.InsertArrayElementAtIndex(index);
+			SerializedProperty elementProp = clipListProp.GetArrayElementAtIndex(index);
+			elementProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = clip;
+			elementProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = AudioConstant.FullVolume;
+		}
 
         private TempAudioAssetEditor CreateTempAssetEditor()
         {
-            var newAsset = ScriptableObject.CreateInstance(typeof(TempAudioAsset));
+			if (string.IsNullOrEmpty(AssetOutputPath))
+			{
+				return null;
+			}
+
+			var newAsset = ScriptableObject.CreateInstance(typeof(TempAudioAsset));
             AudioAssetEditor baseEditor = UnityEditor.Editor.CreateEditor(newAsset) as AudioAssetEditor;
             TempAudioAssetEditor tempEditor = baseEditor as TempAudioAssetEditor;
-            _assetEditorDict.Add(TempAssetKey, tempEditor);
+
+			string fileName = TempAssetName + ".asset";
+			string path = GetFilePath(AssetOutputPath, fileName);
+
+			if (File.Exists(path))
+			{
+				// Todo: Warning or create with another name?
+			}
+			//AssetDatabase.CreateAsset(newAsset, path);
+			//AssetDatabase.SaveAssets();
+
+
+			_assetEditorDict.Add(TempAssetName, tempEditor);
             return tempEditor;
         }
-    }
+
+		private void ToggleTempGuidingFlash(bool hasAssetName)
+		{
+			if(!hasAssetName && !_flasingHelper.IsUpdating)
+			{
+				_flasingHelper.Start();
+			}
+			else if (hasAssetName && _flasingHelper.IsUpdating)
+			{
+				_flasingHelper.End();
+			}
+		}
+
+		private void DrawTempNamingReminder(Rect headerRect)
+		{
+			GUI.DrawTexture(headerRect, Texture2D.whiteTexture, ScaleMode.ScaleAndCrop, true, 0f, _flasingHelper.DisplayColor, 0f, 4f);
+		}
+
+		private void DrawTempAssetName(Rect headerRect, IAudioAsset asset, GUIStyle wordWrapStyle)
+		{
+			string namingHint = _instruction.GetText(Instruction.LibraryManager_NameTempAssetHint);
+
+			TempAudioAsset tempAsset = asset as TempAudioAsset;
+			string displayName = string.IsNullOrWhiteSpace(asset.AssetName) ? namingHint : asset.AssetName.SetSize(AssetNameFontSize);
+
+			string newName = EditorGUI.TextField(headerRect, displayName, wordWrapStyle);
+			if(newName != namingHint && newName != tempAsset.AssetName && !Utility.IsInvalidName(newName, out Utility.ValidationErrorCode code))
+			{
+				// todo: invalid的提示不夠明顯
+				tempAsset.AssetName = newName;
+			}
+		}
+	}
 }

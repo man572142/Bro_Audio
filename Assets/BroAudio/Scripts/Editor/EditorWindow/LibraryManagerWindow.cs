@@ -19,6 +19,7 @@ namespace Ami.BroAudio.Editor
 	{
 		public const int CreationHintFontSize = 25;
 		public const int AssetModificationFontSize = 15;
+		public const int AssetNameFontSize = 16;
 		public const float ImportIconSize = 30f;
 		public const float BackButtonSize = 28f;
 
@@ -26,6 +27,7 @@ namespace Ami.BroAudio.Editor
 		public event Action OnSelectAsset;
 
 		private readonly Vector2 _librariesHeaderSize = new Vector2(200f,EditorGUIUtility.singleLineHeight * 2);
+		private readonly Vector2 _headerAudioTypeSize = new Vector2(100f, 25f);
 		private List<string> _allAssetGUIDs = null;
 		private ReorderableList _assetReorderableList = null;
 		private int _currSelectedAssetIndex = -1;
@@ -40,6 +42,9 @@ namespace Ami.BroAudio.Editor
 		private GapDrawingHelper _verticalGapDrawer = new GapDrawingHelper();
 		private LibraryIDController _libraryIdGenerator = new LibraryIDController();
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
+		private EditorFlashingHelper _flasingHelper = new EditorFlashingHelper(Color.white,1f,Ease.InCubic);
+
+		public float DefaultLayoutPadding => GUI.skin.box.padding.top;
 
 		[MenuItem(LibraryManagerMenuPath, false,LibraryManagerMenuIndex)]
 		public static LibraryManagerWindow ShowWindow()
@@ -83,6 +88,8 @@ namespace Ami.BroAudio.Editor
 			EditorPlayAudioClip.PlaybackIndicator.OnUpdate += Repaint;
 			EditorPlayAudioClip.PlaybackIndicator.OnEnd -= Repaint;
 			EditorPlayAudioClip.PlaybackIndicator.OnEnd += Repaint;
+
+			_flasingHelper.OnUpdate += Repaint;
 		}
 
 		private void OnLostFocus()
@@ -90,6 +97,8 @@ namespace Ami.BroAudio.Editor
 			EditorPlayAudioClip.StopAllClips();
 			EditorPlayAudioClip.PlaybackIndicator.OnUpdate -= Repaint;
 			EditorPlayAudioClip.PlaybackIndicator.OnEnd -= Repaint;
+
+			_flasingHelper.OnUpdate -= Repaint;
 		}
 
 		private void OnEnable()
@@ -223,9 +232,9 @@ namespace Ami.BroAudio.Editor
 		{
 			if (TryGetCurrentAssetEditor(out var editor))
 			{
-				editor.Asset.AudioType = (BroAudioType)type;
+				editor.SetAudioType((BroAudioType)type);
 				editor.serializedObject.ApplyModifiedProperties();
-				Repaint();
+				// TODO: 換了之後其實裡面的ID還是舊的AudioType
 			}
 		}
 		#endregion
@@ -270,7 +279,7 @@ namespace Ami.BroAudio.Editor
 					return true;
 				}
 			}
-			else if(_assetEditorDict.TryGetValue(TempAssetKey, out editor))
+			else if(_assetEditorDict.TryGetValue(TempAssetName, out editor))
 			{
 				return true;
 			}
@@ -285,8 +294,9 @@ namespace Ami.BroAudio.Editor
 			{                
                 GUILayout.Space(_verticalGapDrawer.GetSpace());
 				EditorScriptingExtension.SplitRectHorizontal(position, 0.7f, _verticalGapDrawer.SingleLineSpace, out Rect librariesRect, out Rect assetListRect);
-
+				
 				librariesRect.width -= _verticalGapDrawer.GetTotalSpace();
+				librariesRect.height -= DefaultLayoutPadding * 2;
 				DrawLibrariesList(librariesRect);
 
 				float offsetX = _verticalGapDrawer.GetTotalSpace() + GUI.skin.box.padding.left;
@@ -295,19 +305,16 @@ namespace Ami.BroAudio.Editor
 
 				GUILayout.Space(_verticalGapDrawer.GetSpace());
 
-				EditorGUILayout.BeginVertical();
-				{
-                    DrawAssetList(assetListRect.width - (_verticalGapDrawer.GetTotalSpace() - _verticalGapDrawer.SingleLineSpace));
-                }
-				EditorGUILayout.EndVertical();
-			}
-			
+				assetListRect.width -= _verticalGapDrawer.GetTotalSpace() - _verticalGapDrawer.SingleLineSpace;
+				assetListRect.height -= DefaultLayoutPadding * 2;
+				DrawAssetList(assetListRect);
+			}		
 			EditorGUILayout.EndHorizontal();
 		}
 
-		private void DrawAssetList(float width)
+		private void DrawAssetList(Rect assetListRect)
 		{
-			EditorGUILayout.BeginVertical(GUI.skin.box,GUILayout.Width(width));
+			EditorGUILayout.BeginVertical(GUI.skin.box,GUILayout.Width(assetListRect.width),GUILayout.Height(assetListRect.height));
 			{
 				_assetListScrollPos = EditorGUILayout.BeginScrollView(_assetListScrollPos);
 				{
@@ -315,14 +322,10 @@ namespace Ami.BroAudio.Editor
 				}
 				EditorGUILayout.EndScrollView();
 
-				EditorGUILayout.BeginHorizontal();
+				if (TryGetCurrentAssetEditor(out var editor))
 				{
-					if (TryGetCurrentAssetEditor(out var editor))
-					{
-						DrawLibraryStateMessage(editor);
-					}
+					DrawLibraryStateMessage(editor);
 				}
-				EditorGUILayout.EndHorizontal();
 			}
 			EditorGUILayout.EndVertical();
 
@@ -356,7 +359,7 @@ namespace Ami.BroAudio.Editor
 
 		private void DrawLibrariesList(Rect librariesRect)
 		{
-			EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(librariesRect.width));
+			EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(librariesRect.width),GUILayout.Height(librariesRect.height));
 			{
 				if (TryGetCurrentAssetEditor(out var editor))
 				{
@@ -375,42 +378,57 @@ namespace Ami.BroAudio.Editor
 			EditorGUILayout.EndVertical();
 		}
 
+		// The ReorderableList default header background GUIStyle has set fixedHeight to non-0 and stretchHeight to false, which is unreasonable...
+		// Use another style or Draw it manually could solve the problem and accept more customization.
 		private void DrawLibraryHeader(IAudioAsset asset)
 		{
 			EditorGUILayout.BeginHorizontal();
 			{
-				if(GUILayout.Button(EditorGUIUtility.IconContent(IconConstant.BackButton),GUILayout.Width(BackButtonSize),GUILayout.Height(BackButtonSize)))
+				if (GUILayout.Button(EditorGUIUtility.IconContent(IconConstant.BackButton), GUILayout.Width(BackButtonSize), GUILayout.Height(BackButtonSize)))
 				{
 					_assetReorderableList.index = -1;
 					// TODO: quit temp asset
 				}
-
 				GUILayout.Space(10f);
 
-				// The ReorderableList default header background GUIStyle has set fixedHeight to non-0 and stretchHeight to false, which is unreasonable...
-				// Use another style or Draw it manually could solve the problem and accept more customization.
 				Rect headerRect = GUILayoutUtility.GetRect(_librariesHeaderSize.x, _librariesHeaderSize.y);
-				headerRect.width = _librariesHeaderSize.x;
-				GUIStyle header = new GUIStyle(GUI.skin.window);
+
+				bool hasAssetName = !string.IsNullOrEmpty(asset.AssetName);
+				ToggleTempGuidingFlash(hasAssetName);
+				if (!hasAssetName)
+				{
+					DrawTempNamingReminder(headerRect);
+					headerRect.size -= Vector2.one * 4f;
+					headerRect.position += Vector2.one * 2f;
+				}
+				GUIStyle wordWrapStyle = new GUIStyle(GUIStyleHelper.MiddleCenterRichText);
+				wordWrapStyle.wordWrap = true;
+
 				if (Event.current.type == EventType.Repaint)
 				{
+					GUIStyle header = new GUIStyle(GUI.skin.window);
 					header.Draw(headerRect, false, false, false, false);
 				}
-				GUIStyle wrappableStyle = new GUIStyle(GUIStyleHelper.MiddleCenterRichText);
-				wrappableStyle.wordWrap = true;
-				EditorGUI.LabelField(headerRect, asset.AssetName.SetColor(GUIStyleHelper.DefaultLabelColor).SetSize(16), wrappableStyle);
+
+				if (asset.IsTemp)
+				{
+					DrawTempAssetName(headerRect,asset, wordWrapStyle);
+				}
+				else
+				{
+					EditorGUI.LabelField(headerRect, asset.AssetName.SetColor(GUIStyleHelper.DefaultLabelColor).SetSize(AssetNameFontSize), wordWrapStyle);
+				}
 
 				GUILayout.FlexibleSpace();
 
-				Rect audioTypeRect = GUILayoutUtility.GetRect(100f, 25f);
+				Rect audioTypeRect = GUILayoutUtility.GetRect(_headerAudioTypeSize.x, _headerAudioTypeSize.y);
 				audioTypeRect.y += _librariesHeaderSize.y - audioTypeRect.height;
-				GUIContent audioTypeGUI = new GUIContent(asset.AudioType.ToString(),"Click to change audio type");
+				GUIContent audioTypeGUI = new GUIContent(asset.AudioType.ToString(), "Click to change audio type");
 				if (GUI.Button(audioTypeRect, audioTypeGUI))
 				{
 					_changeAudioTypeOption.DropDown(audioTypeRect);
 				}
 				EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(asset.AudioType));
-
 			}
 			EditorGUILayout.EndHorizontal();
 		}

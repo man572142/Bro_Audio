@@ -89,3 +89,5 @@ MonoBehaviour:
     Value: Choose an AudioType to create an asset
   - Key: 24
     Value: Change current AudioType to ...
+  - Key: 25
+    Value: Click to name

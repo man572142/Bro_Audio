@@ -332,34 +332,43 @@ namespace Ami.BroAudio.Editor
 
 				if (TryGetCurrentAssetEditor(out var editor))
 				{
-					DrawLibraryStateMessage(editor);
+					DrawDataIssueMessage(editor);
 				}
 			}
 			EditorGUILayout.EndVertical();
 
-			void DrawLibraryStateMessage(AudioAssetEditor editor)
+			void DrawDataIssueMessage(AudioAssetEditor editor)
 			{
-				LibraryState state = editor.GetLibraryState(out string dataName);
+				DataIssue issue = editor.GetIssue(out string dataName);
 				string assetName = editor.Asset.AssetName.ToBold().SetColor(Color.white);
 				dataName = dataName.ToBold().SetColor(Color.white);
 				string text = string.Empty;
-                switch (state)
+				switch (issue)
 				{
-					case LibraryState.HasEmptyName:
-                        text = _instruction.GetText(Instruction.LibraryState_IsNullOrEmpty);
-						EditorScriptingExtension.RichTextHelpBox(String.Format(text,assetName), MessageType.Error);
+					case DataIssue.HasEmptyEntityName:
+						text = _instruction.GetText(Instruction.LibraryState_IsNullOrEmpty);
+						EditorScriptingExtension.RichTextHelpBox(String.Format(text, assetName), MessageType.Error);
 						break;
-					case LibraryState.HasDuplicateName:
-                        text = _instruction.GetText(Instruction.LibraryState_IsDuplicated);
-                        EditorScriptingExtension.RichTextHelpBox(String.Format(text,dataName,assetName), MessageType.Error);
+					case DataIssue.HasDuplicateEntityName:
+						text = _instruction.GetText(Instruction.LibraryState_IsDuplicated);
+						EditorScriptingExtension.RichTextHelpBox(String.Format(text, dataName, assetName), MessageType.Error);
 						break;
-					case LibraryState.HasInvalidName:
-                        text = _instruction.GetText(Instruction.LibraryState_ContainsInvalidWords);
-                        EditorScriptingExtension.RichTextHelpBox(String.Format(text, dataName, assetName), MessageType.Error);
+					case DataIssue.HasInvalidEntityName:
+						text = _instruction.GetText(Instruction.LibraryState_ContainsInvalidWords);
+						EditorScriptingExtension.RichTextHelpBox(String.Format(text, dataName, assetName), MessageType.Error);
 						break;
-					case LibraryState.Fine:
-                        text = _instruction.GetText(Instruction.LibraryState_Fine);
-                        EditorScriptingExtension.RichTextHelpBox(text, IconConstant.LibraryWorkdFine);
+					case DataIssue.None:
+						text = _instruction.GetText(Instruction.LibraryState_Fine);
+						EditorScriptingExtension.RichTextHelpBox(text, IconConstant.LibraryWorksFine);
+						break;
+					case DataIssue.AssetUnnamed:
+
+						break;
+					case DataIssue.HasInvalidAssetName:
+
+						break;
+					case DataIssue.AudioTypeNotSet:
+
 						break;
 				}
 			}

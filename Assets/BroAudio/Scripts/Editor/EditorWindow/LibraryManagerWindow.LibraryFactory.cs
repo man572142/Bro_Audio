@@ -95,7 +95,7 @@ namespace Ami.BroAudio.Editor
 				{
 					CreateNewEntity(tempEditor, clips[0]);
 				}
-				tempEditor.CheckLibrariesState();
+				tempEditor.Verify();
 				tempEditor.serializedObject.ApplyModifiedProperties();
 			}
         }

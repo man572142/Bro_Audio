@@ -17,8 +17,8 @@ namespace Ami.BroAudio.Editor
 	{
         protected ReorderableList LibrariesList = null;
 
-		private string _libraryStateOutput = string.Empty;
-		private LibraryState _libraryState = LibraryState.Fine;
+		private string _issueData = string.Empty;
+		private DataIssue _dataIssue = DataIssue.None;
 		private IEnumerable<IAudioLibrary> _currentAudioDatas = null;
 		private IUniqueIDGenerator _idGenerator = new LibraryIDController();
 
@@ -44,7 +44,7 @@ namespace Ami.BroAudio.Editor
 			}
 
 			InitReorderableList();
-			CheckLibrariesState();
+			Verify();
 		}
 
 
@@ -105,14 +105,14 @@ namespace Ami.BroAudio.Editor
 			LibrariesList.DoLayoutList();
 			if (EditorGUI.EndChangeCheck())
 			{
-				CheckLibrariesState();
+				Verify();
 			}
 		}
 
-		public LibraryState GetLibraryState(out string output)
+		public DataIssue GetIssue(out string output)
 		{
-			output = _libraryStateOutput;
-			return _libraryState;
+			output = _issueData;
+			return _dataIssue;
 		}
 
 		public void SetAudioType(BroAudioType audioType)
@@ -131,29 +131,42 @@ namespace Ami.BroAudio.Editor
 			return newEntity;
 		}
 
-		public void CheckLibrariesState()
+		public bool Verify()
 		{
-			CompareWithPrevious();
-			if(_libraryState == LibraryState.Fine)
+			if(IsValidAsset() && CompareWithPreviousEntity() && CompareWithAllEntities())
 			{
-                CompareWithAll();
-            }
+				return true;
+			}
+			return false;
 		}
 
-		private bool CompareWithPrevious()
+		private bool IsValidAsset()
+		{
+			if(string.IsNullOrWhiteSpace(Asset.AssetName))
+			{
+				_dataIssue = DataIssue.AssetUnnamed;
+				return false;
+			}
+
+
+
+			return true;
+		}
+
+		private bool CompareWithPreviousEntity()
 		{
 			IAudioLibrary previousData = null;
 			foreach (IAudioLibrary data in _currentAudioDatas)
 			{
-				_libraryStateOutput = data.Name;
+				_issueData = data.Name;
                 if (string.IsNullOrWhiteSpace(data.Name))
                 {
-                    _libraryState = LibraryState.HasEmptyName;
+                    _dataIssue = DataIssue.HasEmptyEntityName;
                     return false;
                 }
                 else if (previousData != null && data.Name.Equals(previousData.Name))
 				{
-					_libraryState = LibraryState.HasDuplicateName;
+					_dataIssue = DataIssue.HasDuplicateEntityName;
 					return false;
 				}
 				else
@@ -162,33 +175,33 @@ namespace Ami.BroAudio.Editor
 					{
 						if(!word.IsValidWord())
 						{
-							_libraryState = LibraryState.HasInvalidName;
+							_dataIssue = DataIssue.HasInvalidEntityName;
                             return false;
 						}
 					}
 				}
                 previousData = data;
             }
-            _libraryState = LibraryState.Fine;
-			_libraryStateOutput = string.Empty;
+            _dataIssue = DataIssue.None;
+			_issueData = string.Empty;
 			return true;
         }
 
-        private bool CompareWithAll()
+        private bool CompareWithAllEntities()
 		{
 			List<string> nameList = new List<string>();
 			foreach (IAudioLibrary data in _currentAudioDatas)
 			{
 				if (nameList.Contains(data.Name))
 				{
-					_libraryStateOutput = data.Name;
-					_libraryState = LibraryState.HasDuplicateName;
+					_issueData = data.Name;
+					_dataIssue = DataIssue.HasDuplicateEntityName;
 					return false;
 				}
 				nameList.Add(data.Name);
 			}
-			_libraryState = LibraryState.Fine;
-			_libraryStateOutput = string.Empty;
+			_dataIssue = DataIssue.None;
+			_issueData = string.Empty;
 			return true;
 		}
 	}

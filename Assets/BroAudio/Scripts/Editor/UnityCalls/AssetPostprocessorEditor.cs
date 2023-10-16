@@ -1,6 +1,8 @@
 using UnityEditor;
 using Ami.BroAudio.Editor;
 using static Ami.Extension.EditorVersionAdapter;
+using UnityEngine;
+using System.Collections.Generic;
 
 public class AssetPostprocessorEditor : AssetPostprocessor
 {
@@ -23,15 +25,27 @@ public class AssetPostprocessorEditor : AssetPostprocessor
 	{
 		if(deletedAssets != null && deletedAssets.Length > 0)
 		{
-			BroEditorUtility.DeleteAssetRelativeData(deletedAssets);
-
-			if (HasOpenEditorWindow<LibraryManagerWindow>())
+			List<string> paths = new List<string>();
+			foreach(string path in deletedAssets)
 			{
-				LibraryManagerWindow editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
-
-				foreach (string path in deletedAssets)
+				if(path.Contains(BroEditorUtility.AssetOutputPath))
 				{
+					paths.Add(path);
+				}
+			}
+
+			if(paths.Count > 0)
+			{
+				BroEditorUtility.DeleteAssetRelativeData(deletedAssets);
+
+				if (HasOpenEditorWindow<LibraryManagerWindow>())
+				{
+					LibraryManagerWindow editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
+
+					foreach (string path in deletedAssets)
+					{
 					editorWindow.RemoveAssetEditor(AssetDatabase.AssetPathToGUID(path));
+					}
 				}
 			}
 		}

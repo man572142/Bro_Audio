@@ -23,7 +23,7 @@ namespace Ami.BroAudio.Editor
 				{
 					foreach (string path in deletedAssetPaths)
 					{
-						if (TryGetAssetByPath(path, out var asset))
+						if (!string.IsNullOrEmpty(path) && TryGetAssetByPath(path, out var asset))
 						{
 							ScriptableObject scriptableObject = asset as ScriptableObject;
 							soundManager.RemoveDeletedAsset(scriptableObject);

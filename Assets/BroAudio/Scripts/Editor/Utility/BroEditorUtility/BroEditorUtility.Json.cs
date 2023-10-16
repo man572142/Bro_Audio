@@ -125,8 +125,11 @@ namespace Ami.BroAudio.Editor
 			{
 				foreach (string path in deletedAssetPaths)
 				{
-					string guid = AssetDatabase.AssetPathToGUID(path);
-					currentLibraryGUID.Remove(guid);
+					if(!string.IsNullOrEmpty(path))
+					{
+						string guid = AssetDatabase.AssetPathToGUID(path);
+						currentLibraryGUID.Remove(guid);
+					}
 				}
 
 				WriteGuidToCoreData(currentLibraryGUID);

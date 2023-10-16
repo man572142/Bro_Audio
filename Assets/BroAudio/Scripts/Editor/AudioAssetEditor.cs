@@ -15,31 +15,46 @@ namespace Ami.BroAudio.Editor
     [CustomEditor(typeof(AudioAsset), true)]
     public class AudioAssetEditor : UnityEditor.Editor
 	{
-        private SerializedProperty _librariesProp = null;
         protected ReorderableList LibrariesList = null;
 
 		private string _libraryStateOutput = string.Empty;
 		private LibraryState _libraryState = LibraryState.Fine;
 		private IEnumerable<IAudioLibrary> _currentAudioDatas = null;
-		private IUniqueIDGenerator _idGenerator = null;
+		private IUniqueIDGenerator _idGenerator = new LibraryIDController();
 
 		public IAudioAsset Asset { get; private set; }
 
-		private void OnEnable()
+		public void Init(string guid, string assetName = null, BroAudioType audioType = default)
 		{
-			_librariesProp = serializedObject.FindProperty(nameof(AudioAsset.Libraries));
 			Asset = target as IAudioAsset;
 			_currentAudioDatas = Asset.GetAllAudioLibraries();
+
+			if (string.IsNullOrEmpty(Asset.AssetName))
+			{
+				string assetNamePropertyPath = GetBackingFieldName(nameof(IAudioAsset.AssetName));
+				serializedObject.FindProperty(assetNamePropertyPath).stringValue = assetName;
+
+				string assetGUIDPropertyPath = GetFieldName(nameof(IAudioAsset.AssetGUID));
+				serializedObject.FindProperty(assetGUIDPropertyPath).stringValue = guid;
+
+				string audioTypePropertyPath = GetBackingFieldName(nameof(IAudioAsset.AudioType));
+				serializedObject.FindProperty(audioTypePropertyPath).enumValueIndex = audioType.GetSerializedEnumIndex();
+
+				serializedObject.ApplyModifiedPropertiesWithoutUndo();
+			}
 
 			InitReorderableList();
 			CheckLibrariesState();
 		}
 
+
+
 		private void InitReorderableList()
 		{
+			SerializedProperty librariesProp = serializedObject.FindProperty(nameof(AudioAsset.Libraries));
 			if (Asset != null)
 			{
-				LibrariesList = new ReorderableList(_librariesProp.serializedObject, _librariesProp,true,false,true,true)
+				LibrariesList = new ReorderableList(librariesProp.serializedObject, librariesProp,true,false,true,true)
 				{
 					onAddCallback = OnAdd,
 					drawElementCallback = OnDrawElement,
@@ -50,7 +65,7 @@ namespace Ami.BroAudio.Editor
 			void OnAdd(ReorderableList list)
 			{
 				ReorderableList.defaultBehaviours.DoAddButton(list);
-				SerializedProperty newElement = _librariesProp.GetArrayElementAtIndex(list.count - 1);
+				SerializedProperty newElement = librariesProp.GetArrayElementAtIndex(list.count - 1);
 
 				ResetLibrarySerializedProperties(newElement);
 				
@@ -61,14 +76,18 @@ namespace Ami.BroAudio.Editor
 
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
 			{
-				SerializedProperty elementProp = _librariesProp.GetArrayElementAtIndex(index);
+				SerializedProperty elementProp = librariesProp.GetArrayElementAtIndex(index);
+				EditorGUI.BeginChangeCheck();
 				EditorGUI.PropertyField(rect, elementProp);
-				elementProp.serializedObject.ApplyModifiedProperties();
+				if(EditorGUI.EndChangeCheck())
+				{
+					elementProp.serializedObject.ApplyModifiedProperties();
+				}
 			}
 
 			float OnGetPropertyHeight(int index)
 			{
-				return EditorGUI.GetPropertyHeight(_librariesProp.GetArrayElementAtIndex(index));
+				return EditorGUI.GetPropertyHeight(librariesProp.GetArrayElementAtIndex(index));
 			}
 		}
 
@@ -90,11 +109,6 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public void SetIDGenerator(IUniqueIDGenerator idAccessor)
-		{
-			_idGenerator = idAccessor;
-		}
-
 		public LibraryState GetLibraryState(out string output)
 		{
 			output = _libraryStateOutput;
@@ -107,7 +121,17 @@ namespace Ami.BroAudio.Editor
 			audioTypeProp.enumValueIndex = audioType.GetSerializedEnumIndex();
 		}
 
-		private void CheckLibrariesState()
+		public SerializedProperty CreateNewEntity()
+		{
+			ReorderableList.defaultBehaviours.DoAddButton(LibrariesList);
+			SerializedProperty librariesProp = serializedObject.FindProperty(nameof(AudioAsset.Libraries));
+			SerializedProperty newEntity = librariesProp.GetArrayElementAtIndex(LibrariesList.count - 1);
+			ResetLibrarySerializedProperties(newEntity);
+
+			return newEntity;
+		}
+
+		public void CheckLibrariesState()
 		{
 			CompareWithPrevious();
 			if(_libraryState == LibraryState.Fine)

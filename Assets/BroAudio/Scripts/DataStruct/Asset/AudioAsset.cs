@@ -8,7 +8,6 @@ namespace Ami.BroAudio.Data
     public class AudioAsset : ScriptableObject, IAudioAsset
     {
         public AudioLibrary[] Libraries;
-        public virtual bool IsTemp => false;
 
         [field: SerializeField] public BroAudioType AudioType { get; set; }
         [field: SerializeField] public string AssetName { get; set; }

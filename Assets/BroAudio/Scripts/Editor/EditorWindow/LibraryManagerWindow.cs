@@ -12,6 +12,7 @@ using static Ami.BroAudio.Utility;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using Ami.BroAudio.Tools;
+using System.IO;
 
 namespace Ami.BroAudio.Editor
 {
@@ -40,7 +41,6 @@ namespace Ami.BroAudio.Editor
 		private Vector2 _librariesScrollPos = Vector2.zero;
 
 		private GapDrawingHelper _verticalGapDrawer = new GapDrawingHelper();
-		private LibraryIDController _libraryIdGenerator = new LibraryIDController();
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 		private EditorFlashingHelper _flasingHelper = new EditorFlashingHelper(Color.white,1f,Ease.InCubic);
 
@@ -130,32 +130,13 @@ namespace Ami.BroAudio.Editor
 			{
 				if (!string.IsNullOrEmpty(guid) && !_assetEditorDict.ContainsKey(guid))
 				{
-					AudioAssetEditor editor = CreateAssetEditor(guid);
+					string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+					var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
+					AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(asset, typeof(AudioAssetEditor)) as AudioAssetEditor;
+					editor.Init(guid);
 					_assetEditorDict.Add(guid, editor);
 				}
 			}
-		}
-
-		private AudioAssetEditor CreateAssetEditor(string guid , string assetName = null, BroAudioType audioType = default)
-		{
-			string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject))) as AudioAssetEditor;
-			if(string.IsNullOrEmpty(editor.Asset.AssetName))
-			{
-				string assetNamePropertyPath = EditorScriptingExtension.GetBackingFieldName(nameof(IAudioAsset.AssetName));
-				editor.serializedObject.FindProperty(assetNamePropertyPath).stringValue = assetName;
-
-				string assetGUIDPropertyPath = EditorScriptingExtension.GetFieldName(nameof(IAudioAsset.AssetGUID));
-				editor.serializedObject.FindProperty(assetGUIDPropertyPath).stringValue = guid;
-
-				string audioTypePropertyPath = EditorScriptingExtension.GetBackingFieldName(nameof(IAudioAsset.AudioType));
-				editor.serializedObject.FindProperty(audioTypePropertyPath).enumValueIndex = audioType.GetSerializedEnumIndex();
-
-				editor.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-			}
-
-			editor.SetIDGenerator(_libraryIdGenerator);
-			return editor;
 		}
 
 		private void InitReorderableList()
@@ -182,7 +163,7 @@ namespace Ami.BroAudio.Editor
 				string path = AssetDatabase.GUIDToAssetPath(_allAssetGUIDs[list.index]);
 				AssetDatabase.DeleteAsset(path);
 				AssetDatabase.Refresh();
-				// AssetModificationEditor will do the rest
+				// AssetPostprocessorEditor will do the rest
 			}
 
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -243,30 +224,57 @@ namespace Ami.BroAudio.Editor
 		{
 			// In the following case. List has better performance than IEnumerable , even with a ToList() method.
 			List<string> assetNames = _assetEditorDict.Values.Select(x => x.Asset.AssetName).ToList();
-			AssetNameEditorWindow.ShowWindow(assetNames, (assetName)=> OnCreateAsset(assetName, (BroAudioType)type));
+			AssetNameEditorWindow.ShowWindow(assetNames, (assetName)=> CreateAsset(assetName, (BroAudioType)type));
 		}
 
-		private void OnCreateAsset(string libraryName, BroAudioType audioType)
+		private AudioAssetEditor CreateAsset(string libraryName, BroAudioType audioType)
 		{
-			if(string.IsNullOrEmpty(AssetOutputPath))
+			if(!TryGetNewPath(libraryName,out string path,out string newName))
 			{
-				return;
+				return null;
 			}
-
-			string fileName = libraryName + ".asset";
-			string path = GetFilePath(AssetOutputPath, fileName);
 
 			var newAsset = ScriptableObject.CreateInstance(typeof(AudioAsset));
 			AssetDatabase.CreateAsset(newAsset, path);
-			AddToSoundManager(newAsset);
+			if(audioType != BroAudioType.None)
+			{
+				AddToSoundManager(newAsset);
+			}
 			AssetDatabase.SaveAssets();
 
+			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(newAsset, typeof(AudioAssetEditor)) as AudioAssetEditor;
 			string guid = AssetDatabase.AssetPathToGUID(path);
-
+			editor.Init(guid, newName, audioType);
+			_assetEditorDict.Add(guid, editor);
 			_allAssetGUIDs.Add(guid);
-			_assetEditorDict.Add(guid, CreateAssetEditor(guid, libraryName,audioType));
 
-			WriteGuidToCoreData(_allAssetGUIDs);	
+			WriteGuidToCoreData(_allAssetGUIDs);
+			_assetReorderableList.index = _assetReorderableList.count - 1;
+			return editor;
+		}
+
+		private bool TryGetNewPath(string libraryName,out string path,out string newName)
+		{
+			path = string.Empty;
+			newName = libraryName;
+			if (!string.IsNullOrEmpty(AssetOutputPath))
+			{
+				int index = 0;
+				path = GetNewAssetPath(libraryName);
+				while(File.Exists(path))
+				{
+					index++;
+					newName = libraryName + index.ToString();
+					path = GetNewAssetPath(newName);
+				}
+				return true;
+			}
+			return false;
+
+			string GetNewAssetPath(string fileName)
+			{
+				return GetFilePath(AssetOutputPath, fileName + ".asset");
+			}
 		}
 
 		private bool TryGetCurrentAssetEditor(out AudioAssetEditor editor)
@@ -397,12 +405,10 @@ namespace Ami.BroAudio.Editor
 				ToggleTempGuidingFlash(hasAssetName);
 				if (!hasAssetName)
 				{
-					DrawTempNamingReminder(headerRect);
+					DrawUnnamedReminder(headerRect);
 					headerRect.size -= Vector2.one * 4f;
 					headerRect.position += Vector2.one * 2f;
 				}
-				GUIStyle wordWrapStyle = new GUIStyle(GUIStyleHelper.MiddleCenterRichText);
-				wordWrapStyle.wordWrap = true;
 
 				if (Event.current.type == EventType.Repaint)
 				{
@@ -410,14 +416,7 @@ namespace Ami.BroAudio.Editor
 					header.Draw(headerRect, false, false, false, false);
 				}
 
-				if (asset.IsTemp)
-				{
-					DrawTempAssetName(headerRect,asset, wordWrapStyle);
-				}
-				else
-				{
-					EditorGUI.LabelField(headerRect, asset.AssetName.SetColor(GUIStyleHelper.DefaultLabelColor).SetSize(AssetNameFontSize), wordWrapStyle);
-				}
+				DrawAssetNameField(headerRect, asset);
 
 				GUILayout.FlexibleSpace();
 
@@ -431,6 +430,25 @@ namespace Ami.BroAudio.Editor
 				EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(asset.AudioType));
 			}
 			EditorGUILayout.EndHorizontal();
+		}
+
+		private void DrawAssetNameField(Rect headerRect, IAudioAsset asset)
+		{
+			string namingHint = _instruction.GetText(Instruction.LibraryManager_NameTempAssetHint);
+
+			string displayName = string.IsNullOrWhiteSpace(asset.AssetName) ? namingHint : asset.AssetName;
+
+			GUIStyle wordWrapStyle = new GUIStyle(GUIStyleHelper.MiddleCenterRichText);
+			wordWrapStyle.wordWrap = true;
+			wordWrapStyle.fontSize = AssetNameFontSize;
+
+			EditorGUI.BeginChangeCheck();
+			string newName = EditorGUI.TextField(headerRect, displayName, wordWrapStyle);
+			if (EditorGUI.EndChangeCheck() && newName != asset.AssetName && !Utility.IsInvalidName(newName, out Utility.ValidationErrorCode code))
+			{
+				// todo: invalid的提示不夠明顯
+				asset.AssetName = newName;
+			}
 		}
 	}
 }

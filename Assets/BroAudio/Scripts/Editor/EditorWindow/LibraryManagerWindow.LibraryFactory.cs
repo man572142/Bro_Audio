@@ -14,6 +14,7 @@ namespace Ami.BroAudio.Editor
 	public partial class LibraryManagerWindow : EditorWindow
 	{
 		public const string TempAssetName = "Temp";
+
 		private enum MultiClipsImportOption	
 		{ 
 			MultipleForEach,
@@ -44,7 +45,7 @@ namespace Ami.BroAudio.Editor
 		private void HandleDragAndDrop(Rect librariesRect)
 		{
 			DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
-			if (Event.current.type == EventType.DragExited && librariesRect.Scoping(position).Contains(Event.current.mousePosition))
+			if (Event.current.type == EventType.DragPerform && librariesRect.Scoping(position).Contains(Event.current.mousePosition))
 			{
 				var objs = DragAndDrop.objectReferences;
 
@@ -63,7 +64,7 @@ namespace Ami.BroAudio.Editor
 					return;
                 }
 
-                TempAudioAssetEditor tempEditor = CreateTempAssetEditor();
+                AudioAssetEditor tempEditor = CreateAsset(TempAssetName,BroAudioType.None);	
 
                 if (clips.Count > 1)
 				{
@@ -79,42 +80,44 @@ namespace Ami.BroAudio.Editor
                         case MultiClipsImportOption.MultipleForEach:
                             foreach (AudioClip clip in clips)
 							{
-								CreateTempEntity(tempEditor, clip);
+								CreateNewEntity(tempEditor, clip);
                             }
                             break;
                         case MultiClipsImportOption.Cancel:
 							// Do Nothing
                             break;
                         case MultiClipsImportOption.OneForAll:
-                            CreateTempEntity(tempEditor, clips);
+                            CreateNewEntity(tempEditor, clips);
                             break;
                     }
                 }
                 else if(clips.Count == 1)
 				{
-					CreateTempEntity(tempEditor, clips[0]);
+					CreateNewEntity(tempEditor, clips[0]);
 				}
-            }
+				tempEditor.CheckLibrariesState();
+				tempEditor.serializedObject.ApplyModifiedProperties();
+			}
         }
 
-        private void CreateTempEntity(TempAudioAssetEditor tempEditor, AudioClip clip)
+        private void CreateNewEntity(AudioAssetEditor editor, AudioClip clip)
         {
-            SerializedProperty tempEntity = tempEditor.CreateTempEntity();
-            SerializedProperty clipListProp = tempEntity.FindPropertyRelative(nameof(AudioLibrary.Clips));
+            SerializedProperty entity = editor.CreateNewEntity();
+            SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioLibrary.Clips));
 
 			SetClipList(clipListProp, 0, clip);
-        }
+		}
 
-		private void CreateTempEntity(TempAudioAssetEditor tempEditor,List<AudioClip> clips)
+		private void CreateNewEntity(AudioAssetEditor editor, List<AudioClip> clips)
 		{
-			SerializedProperty tempEntity = tempEditor.CreateTempEntity();
-			SerializedProperty clipListProp = tempEntity.FindPropertyRelative(nameof(AudioLibrary.Clips));
+			SerializedProperty entity = editor.CreateNewEntity();
+			SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioLibrary.Clips));
 
 			for(int i = 0; i < clips.Count;i++)
 			{
 				SetClipList(clipListProp, i, clips[i]);
 			}
-        }
+		}
 
 		private void SetClipList(SerializedProperty clipListProp, int index , AudioClip clip)
 		{
@@ -123,32 +126,6 @@ namespace Ami.BroAudio.Editor
 			elementProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = clip;
 			elementProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = AudioConstant.FullVolume;
 		}
-
-        private TempAudioAssetEditor CreateTempAssetEditor()
-        {
-			if (string.IsNullOrEmpty(AssetOutputPath))
-			{
-				return null;
-			}
-
-			var newAsset = ScriptableObject.CreateInstance(typeof(TempAudioAsset));
-            AudioAssetEditor baseEditor = UnityEditor.Editor.CreateEditor(newAsset) as AudioAssetEditor;
-            TempAudioAssetEditor tempEditor = baseEditor as TempAudioAssetEditor;
-
-			string fileName = TempAssetName + ".asset";
-			string path = GetFilePath(AssetOutputPath, fileName);
-
-			if (File.Exists(path))
-			{
-				// Todo: Warning or create with another name?
-			}
-			//AssetDatabase.CreateAsset(newAsset, path);
-			//AssetDatabase.SaveAssets();
-
-
-			_assetEditorDict.Add(TempAssetName, tempEditor);
-            return tempEditor;
-        }
 
 		private void ToggleTempGuidingFlash(bool hasAssetName)
 		{
@@ -162,24 +139,9 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawTempNamingReminder(Rect headerRect)
+		private void DrawUnnamedReminder(Rect headerRect)
 		{
 			GUI.DrawTexture(headerRect, Texture2D.whiteTexture, ScaleMode.ScaleAndCrop, true, 0f, _flasingHelper.DisplayColor, 0f, 4f);
-		}
-
-		private void DrawTempAssetName(Rect headerRect, IAudioAsset asset, GUIStyle wordWrapStyle)
-		{
-			string namingHint = _instruction.GetText(Instruction.LibraryManager_NameTempAssetHint);
-
-			TempAudioAsset tempAsset = asset as TempAudioAsset;
-			string displayName = string.IsNullOrWhiteSpace(asset.AssetName) ? namingHint : asset.AssetName.SetSize(AssetNameFontSize);
-
-			string newName = EditorGUI.TextField(headerRect, displayName, wordWrapStyle);
-			if(newName != namingHint && newName != tempAsset.AssetName && !Utility.IsInvalidName(newName, out Utility.ValidationErrorCode code))
-			{
-				// todo: invalid的提示不夠明顯
-				tempAsset.AssetName = newName;
-			}
 		}
 	}
 }

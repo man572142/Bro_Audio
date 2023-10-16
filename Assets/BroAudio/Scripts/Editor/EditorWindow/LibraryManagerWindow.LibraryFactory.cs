@@ -13,8 +13,6 @@ namespace Ami.BroAudio.Editor
 {
 	public partial class LibraryManagerWindow : EditorWindow
 	{
-		public const string TempAssetName = "Temp";
-
 		private enum MultiClipsImportOption	
 		{ 
 			MultipleForEach,
@@ -64,7 +62,7 @@ namespace Ami.BroAudio.Editor
 					return;
                 }
 
-                AudioAssetEditor tempEditor = CreateAsset(TempAssetName,BroAudioType.None);	
+                AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName,BroAudioType.None);	
 
                 if (clips.Count > 1)
 				{

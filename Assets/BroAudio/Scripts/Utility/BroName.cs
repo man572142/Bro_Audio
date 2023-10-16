@@ -6,6 +6,7 @@ namespace Ami.BroAudio.Tools
 		public const string MasterTrackName = "Master";
 		public const string GenericTrackName = "Track";
 		public const string MainTrackName = "Main";
+		public const string TempAssetName = "Temp";
 
 		public const string InstructionFileName = "BroInstruction";
 

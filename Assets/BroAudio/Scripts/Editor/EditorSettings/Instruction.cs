@@ -32,6 +32,7 @@
         AssetNaming_IsDuplicated,
         AssetNaming_ContainsInvalidWords,
         AssetNaming_StartWithNumber,
+        AssetNaming_StartWithTemp,
 
 		// Library Manager
 		LibraryManager_CreateEntity,
@@ -41,5 +42,7 @@
 		LibraryManager_CreateAssetWithAudioType,
 		LibraryManager_ChangeAssetAudioType,
         LibraryManager_NameTempAssetHint,
+        LibraryManager_AssetAudioTypeNotSet,
+        LibraryManager_AssetUnnamed,
     }
 }

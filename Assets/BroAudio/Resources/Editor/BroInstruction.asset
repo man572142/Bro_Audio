@@ -74,20 +74,26 @@ MonoBehaviour:
   - Key: 18
     Value: Name that starts with a number is not recommended
   - Key: 19
-    Value: Drag & Drop to create a new AudioEntity
+    Value: Name:{0} has been reserved for temp asset
   - Key: 20
-    Value: or select an Asset on the right side to modify existed entity.
+    Value: Drag & Drop to create a new AudioEntity
   - Key: 21
-    Value: Multiple audio clips import confirmation
+    Value: or select an Asset on the right side to modify existed entity.
   - Key: 22
+    Value: Multiple audio clips import confirmation
+  - Key: 23
     Value: 'You have drop more than one audio clips.
 
       Do you want to create
       multiple AudioEntities for each clip, or create one AudioEntity to contain
       them in its clip list?'
-  - Key: 23
-    Value: Choose an AudioType to create an asset
   - Key: 24
-    Value: Change current AudioType to ...
+    Value: Choose an AudioType to create an asset
   - Key: 25
+    Value: Change current AudioType to ...
+  - Key: 26
     Value: Click to name
+  - Key: 27
+    Value: Choosing an AudioType to properly create the asset
+  - Key: 28
+    Value: Please name the temp asset

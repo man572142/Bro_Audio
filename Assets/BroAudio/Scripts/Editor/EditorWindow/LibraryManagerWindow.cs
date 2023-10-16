@@ -215,19 +215,24 @@ namespace Ami.BroAudio.Editor
 			{
 				editor.SetAudioType((BroAudioType)type);
 				editor.serializedObject.ApplyModifiedProperties();
-				// TODO: ´«¤F¤§«á¨ä¹ê¸Ì­±ªºIDÁÙ¬OÂÂªºAudioType
+				// TODO: ï¿½ï¿½ï¿½Fï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì­ï¿½ï¿½ï¿½IDï¿½Ù¬Oï¿½Âªï¿½AudioType
 			}
 		}
 		#endregion
 
 		private void ShowCreateAssetAskName(object type)
-		{
-			// In the following case. List has better performance than IEnumerable , even with a ToList() method.
-			List<string> assetNames = _assetEditorDict.Values.Select(x => x.Asset.AssetName).ToList();
-			AssetNameEditorWindow.ShowWindow(assetNames, (assetName)=> CreateAsset(assetName, (BroAudioType)type));
-		}
+        {
+            List<string> assetNames = GetAssetNameList();
+            AssetNameEditorWindow.ShowWindow(assetNames, (assetName) => CreateAsset(assetName, (BroAudioType)type));
+        }
 
-		private AudioAssetEditor CreateAsset(string libraryName, BroAudioType audioType)
+        private List<string> GetAssetNameList()
+        {
+            // In the following case. List has better performance than IEnumerable , even with a ToList() method.
+            return _assetEditorDict.Values.Select(x => x.Asset.AssetName).ToList();
+        }
+
+        private AudioAssetEditor CreateAsset(string libraryName, BroAudioType audioType)
 		{
 			if(!TryGetNewPath(libraryName,out string path,out string newName))
 			{
@@ -287,7 +292,7 @@ namespace Ami.BroAudio.Editor
 					return true;
 				}
 			}
-			else if(_assetEditorDict.TryGetValue(TempAssetName, out editor))
+			else if(_assetEditorDict.TryGetValue(BroName.TempAssetName, out editor))
 			{
 				return true;
 			}
@@ -330,47 +335,57 @@ namespace Ami.BroAudio.Editor
 				}
 				EditorGUILayout.EndScrollView();
 
-				if (TryGetCurrentAssetEditor(out var editor))
+				if (TryGetCurrentAssetEditor(out var editor) && 
+				AssetNameEditorWindow.DrawAssetNameValidation(editor.Asset.AssetName, _instruction) && 
+				DrawAssetValidation(editor.Asset))
 				{
 					DrawDataIssueMessage(editor);
 				}
 			}
 			EditorGUILayout.EndVertical();
 
-			void DrawDataIssueMessage(AudioAssetEditor editor)
+			bool DrawAssetValidation(IAudioAsset asset)
 			{
-				DataIssue issue = editor.GetIssue(out string dataName);
-				string assetName = editor.Asset.AssetName.ToBold().SetColor(Color.white);
+				if(asset.AssetName == BroName.TempAssetName || 
+				(asset.AssetName.StartsWith(BroName.TempAssetName) && Char.IsNumber(asset.AssetName[BroName.TempAssetName.Length])))
+				{
+					EditorGUILayout.HelpBox(_instruction.GetText(Instruction.LibraryManager_AssetUnnamed),MessageType.Error);
+					return false;
+				}
+				if(asset.AudioType == BroAudioType.None)
+				{
+					EditorGUILayout.HelpBox(_instruction.GetText(Instruction.LibraryManager_AssetAudioTypeNotSet),MessageType.Error);
+					return false;
+				}
+				return true;
+			}
+
+			void DrawDataIssueMessage(AudioAssetEditor assetEditor)
+			{
+				DataIssue issue = assetEditor.GetDataIssue(out string dataName);
+				string displayedName = assetEditor.Asset.AssetName.ToBold().SetColor(Color.white);
 				dataName = dataName.ToBold().SetColor(Color.white);
 				string text = string.Empty;
+				
 				switch (issue)
-				{
-					case DataIssue.HasEmptyEntityName:
-						text = _instruction.GetText(Instruction.LibraryState_IsNullOrEmpty);
-						EditorScriptingExtension.RichTextHelpBox(String.Format(text, assetName), MessageType.Error);
-						break;
-					case DataIssue.HasDuplicateEntityName:
-						text = _instruction.GetText(Instruction.LibraryState_IsDuplicated);
-						EditorScriptingExtension.RichTextHelpBox(String.Format(text, dataName, assetName), MessageType.Error);
-						break;
-					case DataIssue.HasInvalidEntityName:
-						text = _instruction.GetText(Instruction.LibraryState_ContainsInvalidWords);
-						EditorScriptingExtension.RichTextHelpBox(String.Format(text, dataName, assetName), MessageType.Error);
-						break;
-					case DataIssue.None:
-						text = _instruction.GetText(Instruction.LibraryState_Fine);
-						EditorScriptingExtension.RichTextHelpBox(text, IconConstant.LibraryWorksFine);
-						break;
-					case DataIssue.AssetUnnamed:
-
-						break;
-					case DataIssue.HasInvalidAssetName:
-
-						break;
-					case DataIssue.AudioTypeNotSet:
-
-						break;
-				}
+					{
+						case DataIssue.HasEmptyEntityName:
+							text = _instruction.GetText(Instruction.LibraryState_IsNullOrEmpty);
+							EditorScriptingExtension.RichTextHelpBox(String.Format(text, displayedName), MessageType.Error);
+							break;
+						case DataIssue.HasDuplicateEntityName:
+							text = _instruction.GetText(Instruction.LibraryState_IsDuplicated);
+							EditorScriptingExtension.RichTextHelpBox(String.Format(text, dataName, displayedName), MessageType.Error);
+							break;
+						case DataIssue.HasInvalidEntityName:
+							text = _instruction.GetText(Instruction.LibraryState_ContainsInvalidWords);
+							EditorScriptingExtension.RichTextHelpBox(String.Format(text, dataName, displayedName), MessageType.Error);
+							break;
+						case DataIssue.None:
+							text = _instruction.GetText(Instruction.LibraryState_Fine);
+							EditorScriptingExtension.RichTextHelpBox(text, IconConstant.LibraryWorksFine);
+							break;
+					}
 			}
 		}
 
@@ -455,7 +470,7 @@ namespace Ami.BroAudio.Editor
 			string newName = EditorGUI.TextField(headerRect, displayName, wordWrapStyle);
 			if (EditorGUI.EndChangeCheck() && newName != asset.AssetName && !Utility.IsInvalidName(newName, out Utility.ValidationErrorCode code))
 			{
-				// todo: invalidªº´£¥Ü¤£°÷©úÅã
+				// todo: invalidï¿½ï¿½ï¿½ï¿½ï¿½Ü¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				asset.AssetName = newName;
 			}
 		}

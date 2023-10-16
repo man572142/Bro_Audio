@@ -109,7 +109,7 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public DataIssue GetIssue(out string output)
+		public DataIssue GetDataIssue(out string output)
 		{
 			output = _issueData;
 			return _dataIssue;

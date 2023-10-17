@@ -11,6 +11,7 @@ using Ami.BroAudio.Data;
 using static Ami.BroAudio.Utility;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
+using static Ami.Extension.EditorScriptingExtension;
 using Ami.BroAudio.Tools;
 using System.IO;
 
@@ -133,7 +134,7 @@ namespace Ami.BroAudio.Editor
 					string assetPath = AssetDatabase.GUIDToAssetPath(guid);
 					var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
 					AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(asset, typeof(AudioAssetEditor)) as AudioAssetEditor;
-					editor.Init(guid);
+					editor.Init();
 					_assetEditorDict.Add(guid, editor);
 				}
 			}
@@ -258,7 +259,8 @@ namespace Ami.BroAudio.Editor
 
 			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(newAsset, typeof(AudioAssetEditor)) as AudioAssetEditor;
 			string guid = AssetDatabase.AssetPathToGUID(path);
-			editor.Init(guid, newName, audioType);
+			editor.Init();
+			editor.SetData(guid, newName, audioType);
 			_assetEditorDict.Add(guid, editor);
 			_allAssetGUIDs.Add(guid);
 
@@ -312,6 +314,12 @@ namespace Ami.BroAudio.Editor
 				return true;
 			}
 			return false;
+		}
+
+		private void OnAssetNameChanged(AudioAssetEditor editor, string newName)
+		{
+			editor.serializedObject.FindProperty(GetBackingFieldName(nameof(AudioAsset.AssetName))).stringValue = newName;
+			editor.serializedObject.ApplyModifiedProperties();
 		}
 
 		private void OnGUI()
@@ -391,7 +399,7 @@ namespace Ami.BroAudio.Editor
 				{
 					_librariesScrollPos = EditorGUILayout.BeginScrollView(_librariesScrollPos);
 					{
-						DrawLibraryHeader(editor.Asset);
+						DrawLibraryHeader(editor.Asset, newName => OnAssetNameChanged(editor,newName));
 						editor.DrawLibraries();
 					}
 					EditorGUILayout.EndScrollView();
@@ -404,9 +412,10 @@ namespace Ami.BroAudio.Editor
 			EditorGUILayout.EndVertical();
 		}
 
+
 		// The ReorderableList default header background GUIStyle has set fixedHeight to non-0 and stretchHeight to false, which is unreasonable...
 		// Use another style or Draw it manually could solve the problem and accept more customization.
-		private void DrawLibraryHeader(IAudioAsset asset)
+		private void DrawLibraryHeader(IAudioAsset asset,Action<string> onAssetNameChanged)
 		{
 			EditorGUILayout.BeginHorizontal();
 			{
@@ -433,7 +442,7 @@ namespace Ami.BroAudio.Editor
 					header.Draw(headerRect, false, false, false, false);
 				}
 
-				DrawAssetNameField(headerRect, asset);
+				DrawAssetNameField(headerRect, asset, onAssetNameChanged);
 
 				GUILayout.FlexibleSpace();
 
@@ -449,7 +458,7 @@ namespace Ami.BroAudio.Editor
 			EditorGUILayout.EndHorizontal();
 		}
 
-		private void DrawAssetNameField(Rect headerRect, IAudioAsset asset)
+		private void DrawAssetNameField(Rect headerRect, IAudioAsset asset, Action<string> onAssetNameChanged)
 		{
 			string namingHint = _instruction.GetText(Instruction.LibraryManager_NameTempAssetHint);
 
@@ -467,7 +476,7 @@ namespace Ami.BroAudio.Editor
 				string result = AssetDatabase.RenameAsset(path, newName);
 				if (string.IsNullOrEmpty(result))
 				{
-					asset.AssetName = newName;
+					onAssetNameChanged?.Invoke(newName);
 				}
 			}
 		}

@@ -34,10 +34,14 @@ namespace Ami.BroAudio.Editor
 			AudioLibraryPropertyDrawer.OnEntityNameChanged -= Verify;
 		}
 
-		public void Init(string guid, string assetName = null, BroAudioType audioType = default)
+		public void Init()
 		{
 			Asset = target as IAudioAsset;
+			InitReorderableList();
+		}
 
+		public void SetData(string guid, string assetName, BroAudioType audioType)
+		{
 			if (string.IsNullOrEmpty(Asset.AssetName))
 			{
 				string assetNamePropertyPath = GetBackingFieldName(nameof(IAudioAsset.AssetName));
@@ -51,8 +55,6 @@ namespace Ami.BroAudio.Editor
 
 				serializedObject.ApplyModifiedPropertiesWithoutUndo();
 			}
-
-			InitReorderableList();
 		}
 
 		private void InitReorderableList()
@@ -109,6 +111,7 @@ namespace Ami.BroAudio.Editor
         {
             if(GUILayout.Button("Open " + BroName.MenuItem_LibraryManager))
 			{
+				Init();
 				LibraryManagerWindow.OpenFromAssetFile(Asset.AssetGUID);
 			}
 		}

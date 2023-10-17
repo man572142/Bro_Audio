@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Data
 
 #if UNITY_EDITOR
         string AssetGUID { get; }
-		string AssetName { get; set; } 
+		string AssetName { get; } 
 #endif
     }
 }

@@ -244,7 +244,7 @@ namespace Ami.BroAudio.Editor
 
         private AudioAssetEditor CreateAsset(string libraryName, BroAudioType audioType)
 		{
-			if(!TryGetNewPath(libraryName,out string path,out string newName))
+			if(!TryGetNewPath(libraryName,out string path,out string fileName))
 			{
 				return null;
 			}
@@ -260,7 +260,7 @@ namespace Ami.BroAudio.Editor
 			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(newAsset, typeof(AudioAssetEditor)) as AudioAssetEditor;
 			string guid = AssetDatabase.AssetPathToGUID(path);
 			editor.Init();
-			editor.SetData(guid, newName, audioType);
+			editor.SetData(guid, fileName, audioType);
 			_assetEditorDict.Add(guid, editor);
 			_allAssetGUIDs.Add(guid);
 
@@ -269,10 +269,10 @@ namespace Ami.BroAudio.Editor
 			return editor;
 		}
 
-		private bool TryGetNewPath(string libraryName,out string path,out string newName)
+		private bool TryGetNewPath(string libraryName,out string path,out string fileName)
 		{
 			path = string.Empty;
-			newName = libraryName;
+			fileName = libraryName;
 			if (!string.IsNullOrEmpty(AssetOutputPath))
 			{
 				int index = 0;
@@ -280,8 +280,8 @@ namespace Ami.BroAudio.Editor
 				while(File.Exists(path))
 				{
 					index++;
-					newName = libraryName + index.ToString();
-					path = GetNewAssetPath(newName);
+					fileName = libraryName + index.ToString();
+					path = GetNewAssetPath(fileName);
 				}
 				return true;
 			}

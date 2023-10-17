@@ -19,11 +19,11 @@ namespace Ami.BroAudio.Editor
 
         public static void ShowWindow(List<string> usedAssetName,Action<string> onConfirm)
 		{
-			EditorWindow window = GetWindow(typeof(AssetNameEditorWindow));
+
+			EditorWindow window = CreateInstance<AssetNameEditorWindow>();
 			window.minSize = WindowSize;
 			window.maxSize = WindowSize;
 			window.titleContent = new GUIContent("New Asset");
-			window.Show();
 
 			var instance = window as AssetNameEditorWindow;
 			if (instance != null)
@@ -32,6 +32,8 @@ namespace Ami.BroAudio.Editor
 				instance.UsedAssetsName = usedAssetName;
 				instance.Init();
 			}
+
+			window.ShowModal();
 		}
 
 		public void Init()
@@ -45,7 +47,7 @@ namespace Ami.BroAudio.Editor
 		{
 			GUI.enabled = true;
 			_assetName = EditorGUILayout.TextField(_assetName, GUILayout.Height(EditorGUIUtility.singleLineHeight * 2));
-			if(!DrawAssetNameValidation(_assetName,_instruction) && DrawTempNameValidation() && DrawDuplicateValidation())
+			if(!DrawAssetNameValidation(_assetName) && DrawTempNameValidation() && DrawDuplicateValidation())
 			{
 				GUI.enabled = false;
 			}
@@ -80,7 +82,7 @@ namespace Ami.BroAudio.Editor
 			return true;
 		}
 
-		public static bool DrawAssetNameValidation(string assetName,BroInstructionHelper instruction)
+		public bool DrawAssetNameValidation(string assetName)
 		{
 			// todo: might need another helpbox validation while editing asset name
 			if (BroEditorUtility.IsInvalidName(assetName, out ValidationErrorCode code))
@@ -88,16 +90,16 @@ namespace Ami.BroAudio.Editor
 				switch (code)
 				{
 					case ValidationErrorCode.IsNullOrEmpty:
-						EditorGUILayout.HelpBox(instruction.GetText(Instruction.AssetNaming_IsNullOrEmpty), MessageType.Info);
+						EditorGUILayout.HelpBox(_instruction.GetText(Instruction.AssetNaming_IsNullOrEmpty), MessageType.Info);
 						return false;
 					case ValidationErrorCode.StartWithNumber:
-						EditorGUILayout.HelpBox(instruction.GetText(Instruction.AssetNaming_StartWithNumber), MessageType.Error);
+						EditorGUILayout.HelpBox(_instruction.GetText(Instruction.AssetNaming_StartWithNumber), MessageType.Error);
 						return false;
 					case ValidationErrorCode.ContainsInvalidWord:
-						EditorGUILayout.HelpBox(instruction.GetText(Instruction.AssetNaming_ContainsInvalidWords), MessageType.Error);
+						EditorGUILayout.HelpBox(_instruction.GetText(Instruction.AssetNaming_ContainsInvalidWords), MessageType.Error);
 						return false;
                     case ValidationErrorCode.ContainsWhiteSpace:
-                        EditorGUILayout.HelpBox(instruction.GetText(Instruction.AssetNaming_ContainsWhiteSpace), MessageType.Error);
+                        EditorGUILayout.HelpBox(_instruction.GetText(Instruction.AssetNaming_ContainsWhiteSpace), MessageType.Error);
                         return false;
                 }
 			}

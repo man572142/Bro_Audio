@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 using static Ami.BroAudio.Editor.BroEditorUtility;
+using static Ami.BroAudio.Utility;
 using static Ami.Extension.EditorScriptingExtension;
 
 namespace Ami.BroAudio.Editor
@@ -15,19 +16,27 @@ namespace Ami.BroAudio.Editor
     [CustomEditor(typeof(AudioAsset), true)]
     public class AudioAssetEditor : UnityEditor.Editor
 	{
-        protected ReorderableList LibrariesList = null;
-
-		private string _issueData = string.Empty;
-		private DataIssue _dataIssue = DataIssue.None;
-		private IEnumerable<IAudioLibrary> _currentAudioDatas = null;
+        private ReorderableList _librariesList = null;
 		private IUniqueIDGenerator _idGenerator = new LibraryIDController();
+		private ValidationErrorCode _entityIssue;
+		public string IssueEntityName { get; private set; }
+		public Instruction CurrInstruction { get; private set; }
 
 		public IAudioAsset Asset { get; private set; }
+
+		public void AddEntitiesNameChangeListener()
+		{
+			AudioLibraryPropertyDrawer.OnEntityNameChanged += Verify;
+		}
+
+		public void RemoveEntitiesNameChangeListener()
+		{
+			AudioLibraryPropertyDrawer.OnEntityNameChanged -= Verify;
+		}
 
 		public void Init(string guid, string assetName = null, BroAudioType audioType = default)
 		{
 			Asset = target as IAudioAsset;
-			_currentAudioDatas = Asset.GetAllAudioLibraries();
 
 			if (string.IsNullOrEmpty(Asset.AssetName))
 			{
@@ -44,19 +53,17 @@ namespace Ami.BroAudio.Editor
 			}
 
 			InitReorderableList();
-			Verify();
 		}
-
-
 
 		private void InitReorderableList()
 		{
 			SerializedProperty librariesProp = serializedObject.FindProperty(nameof(AudioAsset.Libraries));
 			if (Asset != null)
 			{
-				LibrariesList = new ReorderableList(librariesProp.serializedObject, librariesProp,true,false,true,true)
+				_librariesList = new ReorderableList(librariesProp.serializedObject, librariesProp,true,false,true,true)
 				{
 					onAddCallback = OnAdd,
+					onRemoveCallback = OnRemove,
 					drawElementCallback = OnDrawElement,
 					elementHeightCallback = OnGetPropertyHeight,
 				};
@@ -72,6 +79,13 @@ namespace Ami.BroAudio.Editor
 				var idProp = newElement.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.ID)));
                 idProp.intValue = _idGenerator.GetUniqueID(Asset.AudioType);
 				newElement.serializedObject.ApplyModifiedProperties();
+				Verify();
+			}
+
+			void OnRemove(ReorderableList list)
+			{
+				ReorderableList.defaultBehaviours.DoRemoveButton(list);
+				Verify();
 			}
 
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -101,18 +115,7 @@ namespace Ami.BroAudio.Editor
 
 		public void DrawLibraries()
 		{
-			EditorGUI.BeginChangeCheck();
-			LibrariesList.DoLayoutList();
-			if (EditorGUI.EndChangeCheck())
-			{
-				Verify();
-			}
-		}
-
-		public DataIssue GetDataIssue(out string output)
-		{
-			output = _issueData;
-			return _dataIssue;
+			_librariesList.DoLayoutList();
 		}
 
 		public void SetAudioType(BroAudioType audioType)
@@ -123,50 +126,91 @@ namespace Ami.BroAudio.Editor
 
 		public SerializedProperty CreateNewEntity()
 		{
-			ReorderableList.defaultBehaviours.DoAddButton(LibrariesList);
+			ReorderableList.defaultBehaviours.DoAddButton(_librariesList);
 			SerializedProperty librariesProp = serializedObject.FindProperty(nameof(AudioAsset.Libraries));
-			SerializedProperty newEntity = librariesProp.GetArrayElementAtIndex(LibrariesList.count - 1);
+			SerializedProperty newEntity = librariesProp.GetArrayElementAtIndex(_librariesList.count - 1);
 			ResetLibrarySerializedProperties(newEntity);
 
 			return newEntity;
 		}
 
-		public bool Verify()
+		public void Verify()
 		{
-			if(IsValidAsset() && CompareWithPreviousEntity() && CompareWithAllEntities())
+			if(VerifyAsset() && VerifyEntities())
 			{
-				return true;
+				CurrInstruction = default;
 			}
-			return false;
 		}
 
-		private bool IsValidAsset()
+		private bool VerifyAsset()
 		{
-			if(string.IsNullOrWhiteSpace(Asset.AssetName))
+			if (IsInvalidName(Asset.AssetName, out ValidationErrorCode code))
 			{
-				_dataIssue = DataIssue.AssetUnnamed;
+				switch (code)
+				{
+					case ValidationErrorCode.IsNullOrEmpty:
+						CurrInstruction = Instruction.AssetNaming_IsNullOrEmpty;
+						break;
+					case ValidationErrorCode.StartWithNumber:
+						CurrInstruction = Instruction.AssetNaming_StartWithNumber;
+						break;
+					case ValidationErrorCode.ContainsInvalidWord:
+						CurrInstruction = Instruction.AssetNaming_ContainsInvalidWords;
+						break;
+					case ValidationErrorCode.ContainsWhiteSpace:
+						CurrInstruction = Instruction.AssetNaming_ContainsWhiteSpace;
+						break;
+				}
 				return false;
 			}
+			else if (IsTempReservedName(Asset.AssetName))
+			{
+				CurrInstruction = Instruction.AssetNaming_StartWithTemp;
+				return false;
+			}
+			else if (Asset.AudioType == BroAudioType.None)
+			{
+				CurrInstruction = Instruction.LibraryManager_AssetAudioTypeNotSet;
+				return false;
+			}
+			return true;
+		}
 
-
-
+		private bool VerifyEntities()
+		{
+			if (!CompareWithPreviousEntity() || !CompareWithAllEntities())
+			{
+				switch (_entityIssue)
+				{
+					case ValidationErrorCode.IsNullOrEmpty:
+						CurrInstruction = Instruction.EntityIssue_HasEmptyName;
+						break;
+					case ValidationErrorCode.IsDuplicate:
+						CurrInstruction = Instruction.EntityIssue_IsDuplicated;
+						break;
+					case ValidationErrorCode.ContainsInvalidWord:
+						CurrInstruction = Instruction.EntityIssue_ContainsInvalidWords;
+						break;
+				}
+				return false;
+			}
 			return true;
 		}
 
 		private bool CompareWithPreviousEntity()
 		{
 			IAudioLibrary previousData = null;
-			foreach (IAudioLibrary data in _currentAudioDatas)
+			foreach (IAudioLibrary data in Asset.GetAllAudioLibraries())
 			{
-				_issueData = data.Name;
+				IssueEntityName = data.Name;
                 if (string.IsNullOrWhiteSpace(data.Name))
                 {
-                    _dataIssue = DataIssue.HasEmptyEntityName;
+                    _entityIssue = ValidationErrorCode.IsNullOrEmpty;
                     return false;
                 }
                 else if (previousData != null && data.Name.Equals(previousData.Name))
 				{
-					_dataIssue = DataIssue.HasDuplicateEntityName;
+					_entityIssue = ValidationErrorCode.IsDuplicate;
 					return false;
 				}
 				else
@@ -175,33 +219,33 @@ namespace Ami.BroAudio.Editor
 					{
 						if(!word.IsValidWord())
 						{
-							_dataIssue = DataIssue.HasInvalidEntityName;
+							_entityIssue = ValidationErrorCode.ContainsInvalidWord;
                             return false;
 						}
 					}
 				}
                 previousData = data;
             }
-            _dataIssue = DataIssue.None;
-			_issueData = string.Empty;
+            _entityIssue = ValidationErrorCode.NoError;
+			IssueEntityName = string.Empty;
 			return true;
         }
 
         private bool CompareWithAllEntities()
 		{
 			List<string> nameList = new List<string>();
-			foreach (IAudioLibrary data in _currentAudioDatas)
+			foreach (IAudioLibrary data in Asset.GetAllAudioLibraries())
 			{
 				if (nameList.Contains(data.Name))
 				{
-					_issueData = data.Name;
-					_dataIssue = DataIssue.HasDuplicateEntityName;
+					IssueEntityName = data.Name;
+					_entityIssue = ValidationErrorCode.IsDuplicate;
 					return false;
 				}
 				nameList.Add(data.Name);
 			}
-			_dataIssue = DataIssue.None;
-			_issueData = string.Empty;
+			_entityIssue = ValidationErrorCode.NoError;
+			IssueEntityName = string.Empty;
 			return true;
 		}
 	}

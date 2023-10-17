@@ -17,11 +17,11 @@ namespace Ami.BroAudio.Editor
 
 		public void Init()
 		{
-            if(!_instruction)
-            {
-                _instruction = Resources.Load<BroInstruction>("Editor/" + InstructionFileName);
-            }
-			
+			if (!_instruction)
+			{
+				_instruction = Resources.Load<BroInstruction>("Editor/" + InstructionFileName);
+			}
+
 			if (!_instruction)
 			{
 				LogWarning(InstructionMissingText);
@@ -37,5 +37,5 @@ namespace Ami.BroAudio.Editor
 
 			return MissingText;
 		}
-    }
+	}
 }

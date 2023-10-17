@@ -1,6 +1,4 @@
 using System;
-using static Ami.Extension.LoopExtension;
-using static Ami.Extension.StringExtension;
 using static Ami.BroAudio.Tools.BroLog;
 using Ami.BroAudio.Data;
 
@@ -8,15 +6,6 @@ namespace Ami.BroAudio
 {
 	public static partial class Utility
 	{
-		public enum ValidationErrorCode
-		{
-			NoError,
-			IsNullOrEmpty,
-			StartWithNumber,
-			ContainsInvalidWord,
-			ContainsWhiteSpace,
-		}
-
         public static readonly int LastAudioType = ((int)BroAudioType.All + 1) >> 1;
 		public static readonly int IDCapacity = 0x10000000; // 1000 0000 in HEX. 268,435,456 in DEC
 
@@ -90,44 +79,6 @@ namespace Ami.BroAudio
                 currentType = currentType.ToNext();
             }
         }
-
-
-		public static bool IsInvalidName(string name,out ValidationErrorCode errorCode)
-		{
-			if (String.IsNullOrWhiteSpace(name))
-			{
-				errorCode = ValidationErrorCode.IsNullOrEmpty;
-				return true;
-			}
-
-			if (Char.IsNumber(name[0]))
-			{
-				errorCode = ValidationErrorCode.StartWithNumber;
-				return true;
-			}
-
-			foreach (char word in name)
-			{
-				if (!IsValidWord(word))
-				{
-					errorCode = ValidationErrorCode.ContainsInvalidWord;
-					return true;
-				}
-
-				if(Char.IsWhiteSpace(word))
-				{
-					errorCode = ValidationErrorCode.ContainsWhiteSpace;
-					return true;
-				}
-			}
-			errorCode = ValidationErrorCode.NoError;
-			return false;
-		}
-
-		public static bool IsValidWord(this Char word)
-		{
-			return IsEnglishLetter(word) || Char.IsNumber(word) || word == '_' || Char.IsWhiteSpace(word);
-		}
 
 		public static bool Validate(string name, BroAudioClip[] clips, int id)
 		{

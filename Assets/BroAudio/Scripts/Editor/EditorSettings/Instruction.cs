@@ -2,32 +2,33 @@
 {
 	public enum Instruction
 	{
+        None = 0,
+
         // Settings
-        RuntimeSettingFileMissing,
+        RuntimeSettingFileMissing = 1,
         EditorSettingFileMissing,
         AssetOutputPathPanelTtile,
 
 		// Settings/Audio
-        HaasEffectTooltip,
+        HaasEffectTooltip = 10,
 		TracksAndVoicesNotMatchWarning,
 		AddTracksConfirmationDialog,
         AudioVoicesToolTip,
         BroVirtualToolTip,
 
         // Settings/Info
-        Copyright,
+        Copyright = 20,
 
 		// Clip Editor
-        ClipEditorConfirmationDialog,
+        ClipEditorConfirmationDialog = 30,
 
-        // LibraryState
-        LibraryState_IsNullOrEmpty,
-        LibraryState_IsDuplicated,
-        LibraryState_ContainsInvalidWords,
-        LibraryState_Fine,
+        // EntityIssue
+        EntityIssue_HasEmptyName = 100,
+        EntityIssue_IsDuplicated,
+        EntityIssue_ContainsInvalidWords,
 
         // Asset Naming
-        AssetNaming_IsNullOrEmpty,
+        AssetNaming_IsNullOrEmpty = 200,
         AssetNaming_ContainsWhiteSpace,
         AssetNaming_IsDuplicated,
         AssetNaming_ContainsInvalidWords,
@@ -35,7 +36,7 @@
         AssetNaming_StartWithTemp,
 
 		// Library Manager
-		LibraryManager_CreateEntity,
+		LibraryManager_CreateEntity = 300,
 		LibraryManager_ModifyAsset,
 		LibraryManager_MultiClipsImportTitle,
 		LibraryManager_MultiClipsImportDialog,

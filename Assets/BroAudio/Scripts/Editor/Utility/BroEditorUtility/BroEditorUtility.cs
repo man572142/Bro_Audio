@@ -1,11 +1,11 @@
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Editor.Setting;
+using Ami.BroAudio.Tools;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using static Ami.Extension.StringExtension;
 
 namespace Ami.BroAudio.Editor
 {
@@ -97,6 +97,56 @@ namespace Ami.BroAudio.Editor
             }
             return default;
         }
-    }
 
+        public static bool IsTempReservedName(string name)
+		{
+            string tempName = BroName.TempAssetName;
+            if(name.StartsWith(tempName, StringComparison.Ordinal))
+            {
+                if(name.Length == tempName.Length ||
+                    name.Length > tempName.Length && Char.IsNumber(name[tempName.Length]))
+				{
+                    return true;
+				}
+            }
+            return false;
+        }
+
+        public static bool IsInvalidName(string name, out ValidationErrorCode errorCode)
+        {
+            if (String.IsNullOrWhiteSpace(name))
+            {
+                errorCode = ValidationErrorCode.IsNullOrEmpty;
+                return true;
+            }
+
+            if (Char.IsNumber(name[0]))
+            {
+                errorCode = ValidationErrorCode.StartWithNumber;
+                return true;
+            }
+
+            foreach (char word in name)
+            {
+                if (!IsValidWord(word))
+                {
+                    errorCode = ValidationErrorCode.ContainsInvalidWord;
+                    return true;
+                }
+
+                if (Char.IsWhiteSpace(word))
+                {
+                    errorCode = ValidationErrorCode.ContainsWhiteSpace;
+                    return true;
+                }
+            }
+            errorCode = ValidationErrorCode.NoError;
+            return false;
+        }
+
+        public static bool IsValidWord(this Char word)
+        {
+            return IsEnglishLetter(word) || Char.IsNumber(word) || word == '_' || Char.IsWhiteSpace(word);
+        }
+    }
 }

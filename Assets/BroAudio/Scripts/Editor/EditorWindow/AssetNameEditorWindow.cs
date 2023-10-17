@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using Ami.Extension;
-using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
@@ -20,7 +19,6 @@ namespace Ami.BroAudio.Editor
 
         public static void ShowWindow(List<string> usedAssetName,Action<string> onConfirm)
 		{
-
 			EditorWindow window = GetWindow(typeof(AssetNameEditorWindow));
 			window.minSize = WindowSize;
 			window.maxSize = WindowSize;
@@ -63,8 +61,7 @@ namespace Ami.BroAudio.Editor
 
 		private bool DrawTempNameValidation()
 		{
-			if(_assetName == BroName.TempAssetName || 
-			(_assetName.StartsWith(BroName.TempAssetName) && Char.IsNumber(_assetName[BroName.TempAssetName.Length])))
+			if(BroEditorUtility.IsTempReservedName(_assetName))
 			{
 				string text = String.Format(_instruction.GetText(Instruction.AssetNaming_StartWithTemp),_assetName);
 				EditorGUILayout.HelpBox(text, MessageType.Error);
@@ -86,20 +83,20 @@ namespace Ami.BroAudio.Editor
 		public static bool DrawAssetNameValidation(string assetName,BroInstructionHelper instruction)
 		{
 			// todo: might need another helpbox validation while editing asset name
-			if (Utility.IsInvalidName(assetName, out Utility.ValidationErrorCode code))
+			if (BroEditorUtility.IsInvalidName(assetName, out ValidationErrorCode code))
 			{
 				switch (code)
 				{
-					case Utility.ValidationErrorCode.IsNullOrEmpty:
+					case ValidationErrorCode.IsNullOrEmpty:
 						EditorGUILayout.HelpBox(instruction.GetText(Instruction.AssetNaming_IsNullOrEmpty), MessageType.Info);
 						return false;
-					case Utility.ValidationErrorCode.StartWithNumber:
+					case ValidationErrorCode.StartWithNumber:
 						EditorGUILayout.HelpBox(instruction.GetText(Instruction.AssetNaming_StartWithNumber), MessageType.Error);
 						return false;
-					case Utility.ValidationErrorCode.ContainsInvalidWord:
+					case ValidationErrorCode.ContainsInvalidWord:
 						EditorGUILayout.HelpBox(instruction.GetText(Instruction.AssetNaming_ContainsInvalidWords), MessageType.Error);
 						return false;
-                    case Utility.ValidationErrorCode.ContainsWhiteSpace:
+                    case ValidationErrorCode.ContainsWhiteSpace:
                         EditorGUILayout.HelpBox(instruction.GetText(Instruction.AssetNaming_ContainsWhiteSpace), MessageType.Error);
                         return false;
                 }

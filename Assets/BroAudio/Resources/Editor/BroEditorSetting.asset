@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BroEditorSetting
   m_EditorClassIdentifier: 
   ShowAudioTypeOnAudioID: 1
-  ShowVUColorOnVolumeSlider: 1
+  ShowVUColorOnVolumeSlider: 0
   AudioTypeSettings:
   - AudioType: 1
     Color: {r: 0, g: 0.101960786, b: 0.29803923, a: 0.29803923}
@@ -25,8 +25,8 @@ MonoBehaviour:
     Color: {r: 0.101960786, g: 0.5019608, b: 0.5019608, a: 0.29803923}
     DrawedProperty: 2063
   - AudioType: 8
-    Color: {r: 0.69803923, g: 0.2, b: 0.2, a: 0.29803923}
+    Color: {r: 0.69032675, g: 0.4198113, b: 1, a: 0.29803923}
     DrawedProperty: 3087
   - AudioType: 16
-    Color: {r: 0.8, g: 0.6, b: 0, a: 0.29803923}
+    Color: {r: 0.9339623, g: 0.7765516, b: 0.21586865, a: 0.29803923}
     DrawedProperty: 1039

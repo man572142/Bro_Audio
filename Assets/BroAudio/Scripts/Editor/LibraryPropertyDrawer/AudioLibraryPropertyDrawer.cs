@@ -8,13 +8,14 @@ using Ami.BroAudio.Editor.Setting;
 using System;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.Extension.AudioConstant;
-using static Ami.Extension.EditorVersionAdapter;
 
 namespace Ami.BroAudio.Editor
 {
 	[CustomPropertyDrawer(typeof(AudioLibrary))]
 	public partial class AudioLibraryPropertyDrawer : MiPropertyDrawer
 	{
+		public static event Action OnEntityNameChanged;
+
 		protected const float ClipPreviewHeight = 100f;
 		private const int _basePropertiesLineCount = 1;
 		private const int _clipPropertiesLineCount = 1;
@@ -24,9 +25,7 @@ namespace Ami.BroAudio.Editor
 
 		private GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume));
 
-		private bool _hasOpenedLibraryManager = false;
 		private Dictionary<string, ReorderableClips> _reorderableClipsDict = new Dictionary<string, ReorderableClips>();
-		private LibraryManagerWindow _editorWindow = null;
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper(ClipPreviewHeight);
 		private Dictionary<string, ITransport> _clipTransport = new Dictionary<string, ITransport>();
 		
@@ -36,14 +35,9 @@ namespace Ami.BroAudio.Editor
 		protected override void OnEnable()
 		{
 			base.OnEnable();
-			_hasOpenedLibraryManager = HasOpenEditorWindow<LibraryManagerWindow>();
 
-			if(_hasOpenedLibraryManager)
-			{
-				_editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
-				_editorWindow.OnCloseLibraryManagerWindow += OnDisable;
-				_editorWindow.OnSelectAsset += OnDisable;
-			}
+			LibraryManagerWindow.OnCloseLibraryManagerWindow += OnDisable;
+			LibraryManagerWindow.OnSelectAsset += OnDisable;
 		}
 
 		private void OnDisable()
@@ -51,25 +45,16 @@ namespace Ami.BroAudio.Editor
 			_reorderableClipsDict.Clear();
 			_clipTransport.Clear();
 
-			if (_editorWindow)
-			{
-				_editorWindow.OnCloseLibraryManagerWindow -= OnDisable;
-				_editorWindow.OnSelectAsset -= OnDisable;
-				_editorWindow = null;
-			}
-			
+			LibraryManagerWindow.OnCloseLibraryManagerWindow -= OnDisable;
+			LibraryManagerWindow.OnSelectAsset -= OnDisable;
+
 			IsEnable = false;
 		}
-
 
 		#region Unity Entry Overrider
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			base.OnGUI(position,property,label);
-			if(!_hasOpenedLibraryManager)
-			{
-				return;
-			}
+			base.OnGUI(position, property, label);
 
 			SerializedProperty nameProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IAudioLibrary.Name)));
 
@@ -79,7 +64,8 @@ namespace Ami.BroAudio.Editor
 				return;
 			}
 
-			nameProp.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProp.stringValue);
+			DrawEntityNameField(position, nameProp);
+
 			DrawAdditionalBaseProperties(position, property, setting);
 
 			#region Clip Properties
@@ -101,6 +87,17 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 			#endregion
+		}
+
+		private void DrawEntityNameField(Rect position, SerializedProperty nameProp)
+		{
+			EditorGUI.BeginChangeCheck();
+			nameProp.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProp.stringValue);
+			if (EditorGUI.EndChangeCheck())
+			{
+				nameProp.serializedObject.ApplyModifiedProperties();
+				OnEntityNameChanged?.Invoke();
+			}
 		}
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)

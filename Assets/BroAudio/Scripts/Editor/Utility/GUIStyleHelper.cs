@@ -25,6 +25,7 @@ namespace Ami.Extension
 			{
 				GUIStyle style = new GUIStyle();
 				style.richText = true;
+				style.alignment = TextAnchor.MiddleLeft;
 				return style;
 			}
 		}

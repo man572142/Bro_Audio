@@ -31,7 +31,7 @@ namespace Ami.BroAudio.Editor
 				string path = AssetDatabase.GUIDToAssetPath(guid);
 				var asset = AssetDatabase.LoadAssetAtPath(path, typeof(IAudioAsset)) as IAudioAsset;
 
-				if (asset != null)
+				if (asset != null && asset.AudioType != BroAudioType.None && !string.IsNullOrEmpty(asset.AssetName))
 				{
 					var item = new AdvancedDropdownItem(asset.AssetName);
 					foreach (var library in asset.GetAllAudioLibraries())

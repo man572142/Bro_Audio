@@ -432,7 +432,7 @@ namespace Ami.BroAudio.Editor
 				ToggleTempGuidingFlash(hasAssetName);
 				if (!hasAssetName)
 				{
-					DrawUnnamedReminder(headerRect);
+					DrawFlashingReminder(headerRect);
 					headerRect.size -= Vector2.one * 4f;
 					headerRect.position += Vector2.one * 2f;
 				}
@@ -450,6 +450,14 @@ namespace Ami.BroAudio.Editor
 				Rect audioTypeRect = GUILayoutUtility.GetRect(_headerAudioTypeSize.x, _headerAudioTypeSize.y);
 				audioTypeRect.y += _librariesHeaderSize.y - audioTypeRect.height;
 				GUIContent audioTypeGUI = new GUIContent(asset.AudioType.ToString(), "Click to change audio type");
+
+				if (asset.AudioType == BroAudioType.None)
+				{
+					DrawFlashingReminder(audioTypeRect);
+					audioTypeRect.size -= Vector2.one * 4f;
+					audioTypeRect.position += Vector2.one * 2f;
+				}
+				
 				if (GUI.Button(audioTypeRect, audioTypeGUI))
 				{
 					_changeAudioTypeOption.DropDown(audioTypeRect);

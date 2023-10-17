@@ -137,7 +137,7 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawUnnamedReminder(Rect headerRect)
+		private void DrawFlashingReminder(Rect headerRect)
 		{
 			GUI.DrawTexture(headerRect, Texture2D.whiteTexture, ScaleMode.ScaleAndCrop, true, 0f, _flasingHelper.DisplayColor, 0f, 4f);
 		}

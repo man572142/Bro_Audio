@@ -10,7 +10,7 @@ namespace Ami.BroAudio.Editor.Setting
 #endif
 	public class BroInstruction : ScriptableObject
 	{
-		public const bool CanEdit = false;
+		public const bool CanEdit = true;
 
 		[System.Serializable]
 		public struct InstructionDictionary

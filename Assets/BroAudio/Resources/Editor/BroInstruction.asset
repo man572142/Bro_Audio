@@ -76,9 +76,9 @@ MonoBehaviour:
   - Key: 205
     Value: '[{0}] has been reserved for temp asset'
   - Key: 300
-    Value: Drag & Drop to create a new AudioEntity
+    Value: Add AudioClip to create AudioEntity
   - Key: 301
-    Value: or select an Asset on the right side to modify existed entity.
+    Value: Select an asset to modify existed entity.
   - Key: 302
     Value: Multiple audio clips import confirmation
   - Key: 303

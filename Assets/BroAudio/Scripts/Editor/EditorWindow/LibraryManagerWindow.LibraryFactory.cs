@@ -20,18 +20,25 @@ namespace Ami.BroAudio.Editor
 			OneForAll,
 		}
 
+		private int _pickerID = -1;
+
 		private void DrawLibraryFactory(Rect librariesRect)
 		{
 			HandleDragAndDrop(librariesRect);
+			HandleClick(librariesRect);
 
 			GUILayoutUtility.GetRect(librariesRect.width, librariesRect.height);
+			float creationHintHeight = EditorScriptingExtension.FontSizeToPixels(CreationHintFontSize) * 2;
 
-			float creationHintHeight = EditorScriptingExtension.FontSizeToPixels(CreationHintFontSize);
-			Rect creationRect = new Rect(0f, librariesRect.height * 0.5f - creationHintHeight, librariesRect.width, creationHintHeight);
+			Rect createEntityRect = new Rect(0f,0f,librariesRect.width,creationHintHeight);
 			string creationHint = _instruction.GetText(Instruction.LibraryManager_CreateEntity).SetSize(CreationHintFontSize).SetColor(GUIStyleHelper.DefaultLabelColor);
-			EditorGUI.LabelField(creationRect, creationHint, GUIStyleHelper.MiddleCenterRichText);
+			EditorGUI.LabelField(createEntityRect, creationHint, GUIStyleHelper.MiddleCenterRichText);
 
-			Rect importIcon = new Rect(librariesRect.width * 0.5f, creationRect.y - ImportIconSize, ImportIconSize, ImportIconSize);
+			Rect dragAndDropRect = new Rect(0f, librariesRect.height * 0.5f - creationHintHeight, librariesRect.width, creationHintHeight);
+			string dragAndDropHint = "Drag & Drop".SetSize(CreationHintFontSize).SetColor(GUIStyleHelper.DefaultLabelColor) + "\nor Click to browse";
+			EditorGUI.LabelField(dragAndDropRect, dragAndDropHint, GUIStyleHelper.MiddleCenterRichText);
+
+			Rect importIcon = new Rect(librariesRect.width * 0.5f - (ImportIconSize * 0.5f), dragAndDropRect.y - ImportIconSize, ImportIconSize, ImportIconSize);
 			GUI.DrawTexture(importIcon, EditorGUIUtility.IconContent(IconConstant.ImportFile).image);
 
 			float modifyHintHeight = EditorScriptingExtension.FontSizeToPixels(AssetModificationFontSize);
@@ -40,7 +47,30 @@ namespace Ami.BroAudio.Editor
 			EditorGUI.LabelField(modifyRect, modifyHint, GUIStyleHelper.MiddleCenterRichText);
 		}
 
-		private void HandleDragAndDrop(Rect librariesRect)
+        private void HandleClick(Rect librariesRect)
+        {
+			Event currEvent = Event.current;
+            if(currEvent.type == EventType.MouseDown && librariesRect.Scoping(position).Contains(currEvent.mousePosition))
+			{
+				_pickerID = EditorGUIUtility.GetControlID(FocusType.Passive);
+				EditorGUIUtility.ShowObjectPicker<AudioClip>(null,false,string.Empty,_pickerID);
+			}
+			else if (currEvent.type == EventType.ExecuteCommand)
+			{
+				if(currEvent.commandName == "ObjectSelectorClosed" && EditorGUIUtility.GetObjectPickerControlID() == _pickerID)
+				{
+					AudioClip audioClip = EditorGUIUtility.GetObjectPickerObject() as AudioClip;
+					if(audioClip)
+					{
+						AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName,BroAudioType.None);
+						CreateNewEntity(tempEditor, audioClip);
+						_pickerID = -1;
+					}
+				}
+			}
+        }
+
+        private void HandleDragAndDrop(Rect librariesRect)
 		{
 			DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
 			if (Event.current.type == EventType.DragPerform && librariesRect.Scoping(position).Contains(Event.current.mousePosition))

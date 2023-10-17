@@ -42,19 +42,19 @@ namespace Ami.BroAudio.Editor
 
 		public void SetData(string guid, string assetName, BroAudioType audioType)
 		{
-			if (string.IsNullOrEmpty(Asset.AssetName))
+			string assetGUIDPropertyPath = GetFieldName(nameof(IAudioAsset.AssetGUID));
+			serializedObject.FindProperty(assetGUIDPropertyPath).stringValue = guid;
+
+			if(audioType != BroAudioType.None)
 			{
 				string assetNamePropertyPath = GetBackingFieldName(nameof(IAudioAsset.AssetName));
 				serializedObject.FindProperty(assetNamePropertyPath).stringValue = assetName;
 
-				string assetGUIDPropertyPath = GetFieldName(nameof(IAudioAsset.AssetGUID));
-				serializedObject.FindProperty(assetGUIDPropertyPath).stringValue = guid;
-
 				string audioTypePropertyPath = GetBackingFieldName(nameof(IAudioAsset.AudioType));
 				serializedObject.FindProperty(audioTypePropertyPath).enumValueIndex = audioType.GetSerializedEnumIndex();
-
-				serializedObject.ApplyModifiedPropertiesWithoutUndo();
 			}
+
+			serializedObject.ApplyModifiedPropertiesWithoutUndo();
 		}
 
 		private void InitReorderableList()

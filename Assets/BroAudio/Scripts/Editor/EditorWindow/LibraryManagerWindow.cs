@@ -261,6 +261,7 @@ namespace Ami.BroAudio.Editor
 			string guid = AssetDatabase.AssetPathToGUID(path);
 			editor.Init();
 			editor.SetData(guid, fileName, audioType);
+			
 			_assetEditorDict.Add(guid, editor);
 			_allAssetGUIDs.Add(guid);
 

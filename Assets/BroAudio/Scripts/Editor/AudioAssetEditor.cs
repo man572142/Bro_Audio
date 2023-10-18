@@ -125,6 +125,17 @@ namespace Ami.BroAudio.Editor
 		{
 			SerializedProperty audioTypeProp = serializedObject.FindProperty(GetBackingFieldName(nameof(AudioAsset.AudioType)));
 			audioTypeProp.enumValueIndex = audioType.GetSerializedEnumIndex();
+			serializedObject.ApplyModifiedProperties();
+		}
+
+		public void SetAssetName(string newName)
+		{
+			var asset = Asset as AudioAsset;
+			string path = AssetDatabase.GetAssetPath(asset);
+			AssetDatabase.RenameAsset(path, newName);
+
+			serializedObject.FindProperty(GetBackingFieldName(nameof(AudioAsset.AssetName))).stringValue = newName;
+			serializedObject.ApplyModifiedProperties();
 		}
 
 		public SerializedProperty CreateNewEntity()

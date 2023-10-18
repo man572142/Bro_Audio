@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Editor
 {
 	public class AssetNameEditorWindow : EditorWindow
 	{
-		public static readonly Vector2 WindowSize = new Vector2(250f, 100f);
+		public readonly Vector2 WindowSize = new Vector2(250f, 100f);
 
 		public Action<string> OnConfirm;
 		public List<string> UsedAssetsName = null;
@@ -19,19 +19,13 @@ namespace Ami.BroAudio.Editor
 
         public static void ShowWindow(List<string> usedAssetName,Action<string> onConfirm)
 		{
-
-			EditorWindow window = CreateInstance<AssetNameEditorWindow>();
-			window.minSize = WindowSize;
-			window.maxSize = WindowSize;
+			AssetNameEditorWindow window = CreateInstance<AssetNameEditorWindow>() as AssetNameEditorWindow;
+			window.minSize = window.WindowSize;
+			window.maxSize = window.WindowSize;
 			window.titleContent = new GUIContent("New Asset");
-
-			var instance = window as AssetNameEditorWindow;
-			if (instance != null)
-			{
-				instance.OnConfirm = onConfirm;
-				instance.UsedAssetsName = usedAssetName;
-				instance.Init();
-			}
+			window.OnConfirm = onConfirm;
+			window.UsedAssetsName = usedAssetName;
+			window.Init();
 
 			window.ShowModal();
 		}

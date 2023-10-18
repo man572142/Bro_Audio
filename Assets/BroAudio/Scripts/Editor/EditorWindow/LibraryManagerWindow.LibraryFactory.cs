@@ -13,19 +13,20 @@ namespace Ami.BroAudio.Editor
 {
 	public partial class LibraryManagerWindow : EditorWindow
 	{
-		public const float CenterLineGap = 30f;
-		public const float CenterLength = 130f;
-		public const float BackgroundLogoSize = 500f;
-
-		private Vector2 _browseButtonSize = new Vector2(80f,30f);
-
-		private enum MultiClipsImportOption	
-		{ 
+		private enum MultiClipsImportOption
+		{
 			MultipleForEach,
 			Cancel,
 			OneForAll,
 		}
 
+		public const float CenterLineGap = 30f;
+		public const float CenterLength = 130f;
+		public const float BackgroundLogoSize = 500f;
+		public const string BackgroundLogoPath = "Editor/Logo_transparent";
+		public const int DragAndDropFontSize = 35;
+
+		private Vector2 _browseButtonSize = new Vector2(80f,30f);
 		private int _pickerID = -1;
 
 		private void DrawLibraryFactory(Rect librariesRect)
@@ -34,7 +35,7 @@ namespace Ami.BroAudio.Editor
 			DrawBackgroundLogo(librariesRect);
 
 			GUILayout.Space(librariesRect.height * 0.4f);
-			EditorGUILayout.LabelField("Drag & Drop".SetSize(CreationHintFontSize).SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
+			EditorGUILayout.LabelField("Drag & Drop".SetSize(DragAndDropFontSize).SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
 			GUILayout.Space(15f);
 			EditorGUILayout.LabelField("or".SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
 
@@ -67,10 +68,10 @@ namespace Ami.BroAudio.Editor
 			if (Event.current.type == EventType.Repaint)
 			{
 				Vector2 audioIconSize = new Vector2(BackgroundLogoSize, BackgroundLogoSize);
-				float offsetX = GUI.skin.box.padding.left * 2f;
+				float offsetX = DefaultLayoutPadding * 2f;
 				Vector2 logoPos = librariesRect.size * 0.5f - audioIconSize * 0.5f + new Vector2(offsetX, 0f);
 				Rect audioIconRect = new Rect(logoPos, audioIconSize);
-				Texture logo = Resources.Load<Texture>("Editor/Logo_transparent");
+				Texture logo = Resources.Load<Texture>(BackgroundLogoPath);
 				Material mat = (Material)EditorGUIUtility.LoadRequired("Inspectors/InactiveGUI.mat");
 				EditorGUI.DrawPreviewTexture(audioIconRect, logo, mat, ScaleMode.ScaleToFit);
 			}

@@ -19,10 +19,7 @@ namespace Ami.BroAudio.Editor
 {
 	public partial class LibraryManagerWindow : EditorWindow
 	{
-		public const int CreationHintFontSize = 35;
-		public const int AssetModificationFontSize = 15;
 		public const int AssetNameFontSize = 16;
-		public const float ImportIconSize = 30f;
 		public const float BackButtonSize = 28f;
 
 		public static event Action OnCloseLibraryManagerWindow;
@@ -223,17 +220,42 @@ namespace Ami.BroAudio.Editor
 
 			return menu;
 		}
+		#endregion
 
 		private void OnChangeAssetAudioType(object type)
 		{
 			if (TryGetCurrentAssetEditor(out var editor))
 			{
+				bool isFirstSet = editor.Asset.AudioType == BroAudioType.None;
 				editor.SetAudioType((BroAudioType)type);
-				editor.serializedObject.ApplyModifiedProperties();
-				// TODO: ���F������̭���ID�٬O�ª�AudioType
+				// todo: might need to regenerate ID
+
+				if (isFirstSet)
+				{
+					OnFirstSet(editor.Asset);
+				}
 			}
 		}
-		#endregion
+
+		private void OnChangeAssetName(AudioAssetEditor editor, string newName)
+		{
+			bool isFirstSet = string.IsNullOrEmpty(editor.Asset.AssetName);
+
+			editor.SetAssetName(newName);
+
+			if (isFirstSet)
+			{
+				OnFirstSet(editor.Asset);
+			}
+		}
+
+		private void OnFirstSet(IAudioAsset asset)
+		{
+			if(asset.AudioType != BroAudioType.None && !string.IsNullOrEmpty(asset.AssetName))
+			{
+				AddToSoundManager(asset as AudioAsset);
+			}
+		}
 
 		private void ShowCreateAssetAskName(object type)
         {
@@ -315,12 +337,6 @@ namespace Ami.BroAudio.Editor
 				return true;
 			}
 			return false;
-		}
-
-		private void OnAssetNameChanged(AudioAssetEditor editor, string newName)
-		{
-			editor.serializedObject.FindProperty(GetBackingFieldName(nameof(AudioAsset.AssetName))).stringValue = newName;
-			editor.serializedObject.ApplyModifiedProperties();
 		}
 
 		private void OnGUI()
@@ -405,7 +421,7 @@ namespace Ami.BroAudio.Editor
 				{
 					_librariesScrollPos = EditorGUILayout.BeginScrollView(_librariesScrollPos);
 					{
-						DrawLibraryHeader(editor.Asset, newName => OnAssetNameChanged(editor,newName));
+						DrawLibraryHeader(editor.Asset, newName => OnChangeAssetName(editor,newName));
 						editor.DrawLibraries();
 					}
 					EditorGUILayout.EndScrollView();
@@ -486,12 +502,7 @@ namespace Ami.BroAudio.Editor
 			string newName = EditorGUI.DelayedTextField(headerRect, displayName, wordWrapStyle);
 			if (EditorGUI.EndChangeCheck() && newName != asset.AssetName && IsValidAssetName(newName))
 			{
-				string path = AssetDatabase.GetAssetPath(asset as AudioAsset);
-				string result = AssetDatabase.RenameAsset(path, newName);
-				if (string.IsNullOrEmpty(result))
-				{
-					onAssetNameChanged?.Invoke(newName);
-				}
+				onAssetNameChanged?.Invoke(newName);
 			}
 		}
 

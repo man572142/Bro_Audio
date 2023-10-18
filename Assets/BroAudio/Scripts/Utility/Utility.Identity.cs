@@ -6,8 +6,8 @@ namespace Ami.BroAudio
 {
 	public static partial class Utility
 	{
-        public static readonly int LastAudioType = ((int)BroAudioType.All + 1) >> 1;
-		public static readonly int IDCapacity = 0x10000000; // 1000 0000 in HEX. 268,435,456 in DEC
+        public const int LastAudioType = ((int)BroAudioType.All + 1) >> 1;
+		public const int IDCapacity = 0x10000000; // 1000 0000 in HEX. 268,435,456 in DEC
 
         public static int FinalIDLimit => ((BroAudioType)LastAudioType).GetInitialID() + IDCapacity;
 

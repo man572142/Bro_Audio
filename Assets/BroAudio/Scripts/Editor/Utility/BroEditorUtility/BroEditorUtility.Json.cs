@@ -16,28 +16,13 @@ namespace Ami.BroAudio.Editor
 		{
 			public string AssetOutputPath;
 			public List<string> GUIDs;
-			public List<AudioTypeLastID> AudioTypeLastIDs;
 
-			public SerializedCoreData(string assetOutputPath,List<string> guids,List<AudioTypeLastID> lastIDs)
+			public SerializedCoreData(string assetOutputPath,List<string> guids)
 			{
 				AssetOutputPath = assetOutputPath;
 				GUIDs = guids;
-				AudioTypeLastIDs = lastIDs;
             }
 		}
-
-		[Serializable]
-		public struct AudioTypeLastID
-		{
-			public BroAudioType AudioType;
-			public int LastID;
-		}
-
-        public static void ResetAllAudioTypeLastID()
-        {
-			var idList = CreateLastIDs();
-			WriteLastIDsToCoreData(idList);
-        }
 
         public static void WriteGuidToCoreData(List<string> allLibraryGUID)
 		{
@@ -48,11 +33,6 @@ namespace Ami.BroAudio.Editor
 		{
             RewriteCoreData((coreData) => coreData.AssetOutputPath = newOutputPath);
 		}
-
-		public static void WriteLastIDsToCoreData(List<AudioTypeLastID> lastIDs)
-		{
-            RewriteCoreData((coreData) => coreData.AudioTypeLastIDs = lastIDs);
-        }
 
         public static void RewriteCoreData(Action<SerializedCoreData> onModifyCoreData)
         {
@@ -68,17 +48,6 @@ namespace Ami.BroAudio.Editor
             string path = AssetDatabase.GetAssetPath(coreDataAsset);
             File.WriteAllText(path, JsonUtility.ToJson(coreData, true));
             AssetDatabase.Refresh();
-        }
-
-        public static List<AudioTypeLastID> CreateLastIDs()
-        {
-            List<AudioTypeLastID> idList = new List<AudioTypeLastID>();
-            ForeachConcreteAudioType((audioType) =>
-            {
-                var idPair = new AudioTypeLastID() { AudioType = audioType, LastID = audioType.GetInitialID() };
-                idList.Add(idPair);
-            });
-			return idList;
         }
 
         public static List<string> GetGUIDListFromJson()

@@ -41,6 +41,7 @@ namespace Ami.BroAudio.Editor
 		private GapDrawingHelper _verticalGapDrawer = new GapDrawingHelper();
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 		private EditorFlashingHelper _flasingHelper = new EditorFlashingHelper(Color.white,1f,Ease.InCubic);
+		private IUniqueIDGenerator _idGenerator = new IdGenerator();
 
 		public float DefaultLayoutPadding => GUI.skin.box.padding.top;
 
@@ -54,10 +55,11 @@ namespace Ami.BroAudio.Editor
 			return window as LibraryManagerWindow;
 		}
 
-		public static void OpenFromAssetFile(string guid)
+		public static void OpenFromAssetFile(string guid, out IUniqueIDGenerator idGenerator)
 		{
 			LibraryManagerWindow window = ShowWindow();
 			window.SelectAsset(guid);
+			idGenerator = window._idGenerator;
 		}
 
 		public void SelectAsset(string guid)
@@ -131,7 +133,7 @@ namespace Ami.BroAudio.Editor
 					string assetPath = AssetDatabase.GUIDToAssetPath(guid);
 					var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
 					AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(asset, typeof(AudioAssetEditor)) as AudioAssetEditor;
-					editor.Init();
+					editor.Init(_idGenerator);
 					_assetEditorDict.Add(guid, editor);
 				}
 			}
@@ -281,7 +283,7 @@ namespace Ami.BroAudio.Editor
 
 			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(newAsset, typeof(AudioAssetEditor)) as AudioAssetEditor;
 			string guid = AssetDatabase.AssetPathToGUID(path);
-			editor.Init();
+			editor.Init(_idGenerator);
 			editor.SetData(guid, fileName, audioType);
 			
 			_assetEditorDict.Add(guid, editor);

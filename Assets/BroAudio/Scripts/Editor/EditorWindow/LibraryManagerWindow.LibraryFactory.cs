@@ -155,7 +155,7 @@ namespace Ami.BroAudio.Editor
             SerializedProperty entity = editor.CreateNewEntity();
             SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioLibrary.Clips));
 
-			SetClipList(clipListProp, 0, clip);
+			editor.SetClipList(clipListProp, 0, clip);
 		}
 
 		private void CreateNewEntity(AudioAssetEditor editor, List<AudioClip> clips)
@@ -165,16 +165,8 @@ namespace Ami.BroAudio.Editor
 
 			for(int i = 0; i < clips.Count;i++)
 			{
-				SetClipList(clipListProp, i, clips[i]);
+				editor.SetClipList(clipListProp, i, clips[i]);
 			}
-		}
-
-		private void SetClipList(SerializedProperty clipListProp, int index , AudioClip clip)
-		{
-			clipListProp.InsertArrayElementAtIndex(index);
-			SerializedProperty elementProp = clipListProp.GetArrayElementAtIndex(index);
-			elementProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = clip;
-			elementProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = AudioConstant.FullVolume;
 		}
 
 		private void ToggleTempGuidingFlash(bool hasAssetName)

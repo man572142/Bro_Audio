@@ -45,8 +45,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _audioPlayerPrefab: {fileID: 6105327489893945761, guid: 0e38aee583c6cf742b55a07d23ff515a, type: 3}
   _broAudioMixer: {fileID: 24100000, guid: fbb1400fd876dd84dbdbfeb7add01ba9, type: 2}
-  _soundAssets:
-  - {fileID: 11400000, guid: 8d36f8901b7b8eb4db68171135eb3b34, type: 2}
-  - {fileID: 11400000, guid: 5d7a0565816cafb458b9dd336e91c881, type: 2}
-  - {fileID: 11400000, guid: bb6cd9b276f375a449e44d1c442dfc81, type: 2}
-  - {fileID: 11400000, guid: 1c7e7760b0de12c42921efeda9bd1093, type: 2}
+  _soundAssets: []

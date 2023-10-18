@@ -50,11 +50,6 @@ namespace Ami.Extension
 			var buttonHeight = GUILayout.Height(EditorGUIUtility.singleLineHeight * 2f);
 			DrawDuplicateOneTrackAndCopySettingButton(buttonHeight);
 
-			if(GUILayout.Button(Function_ResetLastAllAudioID, buttonHeight))
-			{
-                BroEditorUtility.ResetAllAudioTypeLastID();
-            }
-
 			EditorGUILayout.Space();
 		}
 

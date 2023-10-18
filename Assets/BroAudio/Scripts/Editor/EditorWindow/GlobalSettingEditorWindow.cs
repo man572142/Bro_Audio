@@ -194,7 +194,10 @@ namespace Ami.BroAudio.Editor.Setting
 			tabBackgroundRect.yMax = drawPosition.yMax;
 
 			EditorGUI.indentLevel++;
-			EditorGUI.DrawRect(tabBackgroundRect, UnityDefaultEditorColor);
+			if(Event.current.type == EventType.Repaint)
+			{
+				GUI.skin.box.Draw(tabBackgroundRect, false, false, false, false);
+			}
 
 			_scrollPos = BeginScrollView(tabBackgroundRect, _scrollPos);
 			if (RuntimeSetting != null)

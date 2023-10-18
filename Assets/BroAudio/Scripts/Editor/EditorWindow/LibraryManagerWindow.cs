@@ -19,7 +19,7 @@ namespace Ami.BroAudio.Editor
 {
 	public partial class LibraryManagerWindow : EditorWindow
 	{
-		public const int CreationHintFontSize = 25;
+		public const int CreationHintFontSize = 35;
 		public const int AssetModificationFontSize = 15;
 		public const int AssetNameFontSize = 16;
 		public const float ImportIconSize = 30f;
@@ -175,7 +175,7 @@ namespace Ami.BroAudio.Editor
 						return;
 
 					EditorScriptingExtension.SplitRectHorizontal(rect, 0.7f, 0f, out Rect labelRect, out Rect audioTypeRect);
-					string displayName = string.IsNullOrEmpty(editor.Asset.AssetName)? "Temp".SetColor(FalseColor) : editor.Asset.AssetName.SetColor(UnityDefaultEditorColor);
+					string displayName = string.IsNullOrEmpty(editor.Asset.AssetName)? "Temp".SetColor(FalseColor) : editor.Asset.AssetName.SetColor(DefaultLabelColor);
 					EditorGUI.LabelField(labelRect, displayName,GUIStyleHelper.RichText);
 
 					EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(editor.Asset.AudioType));
@@ -331,14 +331,15 @@ namespace Ami.BroAudio.Editor
 			{                
                 GUILayout.Space(_verticalGapDrawer.GetSpace());
 				EditorScriptingExtension.SplitRectHorizontal(position, 0.7f, _verticalGapDrawer.SingleLineSpace, out Rect librariesRect, out Rect assetListRect);
-				
+
+				float offsetX = _verticalGapDrawer.GetTotalSpace() + GUI.skin.box.padding.left;
+				float offsetY = ReorderableList.Defaults.padding + GUI.skin.box.padding.top - 1f;
+				librariesRect = librariesRect.Scoping(position, new Vector2(offsetX, offsetY));
 				librariesRect.width -= _verticalGapDrawer.GetTotalSpace();
 				librariesRect.height -= DefaultLayoutPadding * 2;
 				DrawLibrariesList(librariesRect);
 
-				float offsetX = _verticalGapDrawer.GetTotalSpace() + GUI.skin.box.padding.left;
-				float offsetY = ReorderableList.Defaults.padding + GUI.skin.box.padding.top -1f ;
-				DrawClipPropertiesHelper.DrawPlaybackIndicator(librariesRect.Scoping(position, new Vector2(offsetX,offsetY)), -_librariesScrollPos);
+				DrawClipPropertiesHelper.DrawPlaybackIndicator(librariesRect, -_librariesScrollPos);
 
 				GUILayout.Space(_verticalGapDrawer.GetSpace());
 
@@ -362,6 +363,10 @@ namespace Ami.BroAudio.Editor
 				if (TryGetCurrentAssetEditor(out var editor))
 				{
 					DrawIssueMessage(editor);
+				}
+				else
+				{
+					EditorGUILayout.HelpBox(_instruction.GetText(Instruction.LibraryManager_ModifyAsset),MessageType.Info);
 				}
 			}
 			EditorGUILayout.EndVertical();

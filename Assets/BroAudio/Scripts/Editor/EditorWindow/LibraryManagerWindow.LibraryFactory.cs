@@ -7,12 +7,18 @@ using Ami.BroAudio.Tools;
 using Ami.Extension;
 using UnityEditor;
 using UnityEngine;
-using static Ami.BroAudio.Editor.BroEditorUtility;
+using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 
 namespace Ami.BroAudio.Editor
 {
 	public partial class LibraryManagerWindow : EditorWindow
 	{
+		public const float CenterLineGap = 30f;
+		public const float CenterLength = 130f;
+		public const float BackgroundLogoSize = 500f;
+
+		private Vector2 _browseButtonSize = new Vector2(80f,30f);
+
 		private enum MultiClipsImportOption	
 		{ 
 			MultipleForEach,
@@ -25,55 +31,70 @@ namespace Ami.BroAudio.Editor
 		private void DrawLibraryFactory(Rect librariesRect)
 		{
 			HandleDragAndDrop(librariesRect);
-			HandleClick(librariesRect);
+			DrawBackgroundLogo(librariesRect);
 
-			GUILayoutUtility.GetRect(librariesRect.width, librariesRect.height);
-			float creationHintHeight = EditorScriptingExtension.FontSizeToPixels(CreationHintFontSize) * 2;
+			GUILayout.Space(librariesRect.height * 0.4f);
+			EditorGUILayout.LabelField("Drag & Drop".SetSize(CreationHintFontSize).SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
+			GUILayout.Space(15f);
+			EditorGUILayout.LabelField("or".SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
 
-			Rect createEntityRect = new Rect(0f,0f,librariesRect.width,creationHintHeight);
-			string creationHint = _instruction.GetText(Instruction.LibraryManager_CreateEntity).SetSize(CreationHintFontSize).SetColor(GUIStyleHelper.DefaultLabelColor);
-			EditorGUI.LabelField(createEntityRect, creationHint, GUIStyleHelper.MiddleCenterRichText);
+			Rect centerLineRect = GUILayoutUtility.GetLastRect();
+			using (new Handles.DrawingScope(Color.grey))
+			{
+				float middleX = centerLineRect.xMin + centerLineRect.width * 0.5f;
+				float middleY = centerLineRect.yMin + centerLineRect.height * 0.5f;
+				Handles.DrawAAPolyLine(2f, new Vector3(middleX - CenterLineGap - CenterLength, middleY), new Vector3(middleX - CenterLineGap, middleY));
+				Handles.DrawAAPolyLine(2f, new Vector3(middleX + CenterLineGap + CenterLength, middleY), new Vector3(middleX + CenterLineGap, middleY));
+			}
 
-			Rect dragAndDropRect = new Rect(0f, librariesRect.height * 0.5f - creationHintHeight, librariesRect.width, creationHintHeight);
-			string dragAndDropHint = "Drag & Drop".SetSize(CreationHintFontSize).SetColor(GUIStyleHelper.DefaultLabelColor) + "\nor Click to browse";
-			EditorGUI.LabelField(dragAndDropRect, dragAndDropHint, GUIStyleHelper.MiddleCenterRichText);
-
-			Rect importIcon = new Rect(librariesRect.width * 0.5f - (ImportIconSize * 0.5f), dragAndDropRect.y - ImportIconSize, ImportIconSize, ImportIconSize);
-			GUI.DrawTexture(importIcon, EditorGUIUtility.IconContent(IconConstant.ImportFile).image);
-
-			float modifyHintHeight = EditorScriptingExtension.FontSizeToPixels(AssetModificationFontSize);
-			Rect modifyRect = new Rect(0f, librariesRect.height * 0.5f, librariesRect.width, modifyHintHeight);
-			string modifyHint = _instruction.GetText(Instruction.LibraryManager_ModifyAsset).SetSize(AssetModificationFontSize).SetColor(GUIStyleHelper.DefaultLabelColor * 0.8f);
-			EditorGUI.LabelField(modifyRect, modifyHint, GUIStyleHelper.MiddleCenterRichText);
+			GUILayout.Space(15f);
+			EditorGUILayout.BeginHorizontal();
+			{
+				GUILayout.FlexibleSpace();
+				if (GUILayout.Button("Browse", GUILayout.Width(_browseButtonSize.x), GUILayout.Height(_browseButtonSize.y)))
+				{
+					_pickerID = EditorGUIUtility.GetControlID(FocusType.Passive);
+					EditorGUIUtility.ShowObjectPicker<AudioClip>(null, false, string.Empty, _pickerID);
+				}
+				GUILayout.FlexibleSpace();
+			}
+			EditorGUILayout.EndHorizontal();
+			HandleObjectPicker();
 		}
 
-        private void HandleClick(Rect librariesRect)
-        {
-			Event currEvent = Event.current;
-            if(currEvent.type == EventType.MouseDown && librariesRect.Scoping(position).Contains(currEvent.mousePosition))
+		private void DrawBackgroundLogo(Rect librariesRect)
+		{
+			if (Event.current.type == EventType.Repaint)
 			{
-				_pickerID = EditorGUIUtility.GetControlID(FocusType.Passive);
-				EditorGUIUtility.ShowObjectPicker<AudioClip>(null,false,string.Empty,_pickerID);
+				Vector2 audioIconSize = new Vector2(BackgroundLogoSize, BackgroundLogoSize);
+				float offsetX = GUI.skin.box.padding.left * 2f;
+				Vector2 logoPos = librariesRect.size * 0.5f - audioIconSize * 0.5f + new Vector2(offsetX, 0f);
+				Rect audioIconRect = new Rect(logoPos, audioIconSize);
+				Texture logo = Resources.Load<Texture>("Editor/Logo_transparent");
+				Material mat = (Material)EditorGUIUtility.LoadRequired("Inspectors/InactiveGUI.mat");
+				EditorGUI.DrawPreviewTexture(audioIconRect, logo, mat, ScaleMode.ScaleToFit);
 			}
-			else if (currEvent.type == EventType.ExecuteCommand)
-			{
-				if(currEvent.commandName == "ObjectSelectorClosed" && EditorGUIUtility.GetObjectPickerControlID() == _pickerID)
-				{
-					AudioClip audioClip = EditorGUIUtility.GetObjectPickerObject() as AudioClip;
-					if(audioClip)
-					{
-						AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName,BroAudioType.None);
-						CreateNewEntity(tempEditor, audioClip);
-						_pickerID = -1;
-					}
-				}
-			}
-        }
+		}
 
-        private void HandleDragAndDrop(Rect librariesRect)
+		private void HandleObjectPicker()
+		{
+			if (Event.current.type == EventType.ExecuteCommand && Event.current.commandName == "ObjectSelectorClosed" 
+				&& EditorGUIUtility.GetObjectPickerControlID() == _pickerID)
+			{
+				AudioClip audioClip = EditorGUIUtility.GetObjectPickerObject() as AudioClip;
+				if (audioClip)
+				{
+					AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName, BroAudioType.None);
+					CreateNewEntity(tempEditor, audioClip);
+				}
+				_pickerID = -1;
+			}
+		}
+
+		private void HandleDragAndDrop(Rect librariesRect)
 		{
 			DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
-			if (Event.current.type == EventType.DragPerform && librariesRect.Scoping(position).Contains(Event.current.mousePosition))
+			if (Event.current.type == EventType.DragPerform && librariesRect.Contains(Event.current.mousePosition))
 			{
 				var objs = DragAndDrop.objectReferences;
 

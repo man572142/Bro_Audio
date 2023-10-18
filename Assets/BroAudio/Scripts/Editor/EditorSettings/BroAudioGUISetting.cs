@@ -23,10 +23,8 @@ namespace Ami.BroAudio.Editor.Setting
 		public static Color ShadowMaskColor => new Color(0.05f, 0.05f, 0.05f, 0.3f);
 		public static Color VUMaskColor => new Color(0.2f, 0.2f, 0.2f, 0.8f);
 		public static Color FalseColor => new Color(0.5f, 0.05f, 0.05f,0.5f);
+		public static Color DefaultLabelColor => GUI.skin.label.normal.textColor;
 
-        public static Vector2 MinWindowSize => new Vector2(960f, 540f);
-		public static Vector2 UpdateButtonSize => new Vector2(80f, 40f);
-
-		public static Color UnityDefaultEditorColor => GUI.skin.label.normal.textColor;
+		public static Vector2 MinWindowSize => new Vector2(960f, 540f);
 	}
 }

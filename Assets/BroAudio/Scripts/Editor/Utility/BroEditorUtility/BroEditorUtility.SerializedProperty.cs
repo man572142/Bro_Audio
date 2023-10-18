@@ -25,20 +25,20 @@ namespace Ami.BroAudio.Editor
 			property.FindPropertyRelative(nameof(BroAudioClip.FadeOut)).floatValue = 0f;
 		}
 
-		public static void ResetLibrarySerializedProperties(SerializedProperty property)
+		public static void ResetEntitySerializedProperties(SerializedProperty property)
         {
-            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.Name))).stringValue = string.Empty;
-            property.FindPropertyRelative(nameof(AudioLibrary.Clips)).arraySize = 0;
-            property.FindPropertyRelative(AudioLibrary.NameOf.IsShowClipPreview).boolValue = false;
-            property.FindPropertyRelative(AudioLibrary.NameOf.MulticlipsPlayMode).enumValueIndex = 0;
+            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Name))).stringValue = string.Empty;
+            property.FindPropertyRelative(nameof(AudioEntity.Clips)).arraySize = 0;
+            property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview).boolValue = false;
+            property.FindPropertyRelative(AudioEntity.NameOf.MulticlipsPlayMode).enumValueIndex = 0;
 
-            var delayProp = property.FindPropertyRelative(nameof(AudioLibrary.Delay));
+            var delayProp = property.FindPropertyRelative(nameof(AudioEntity.Delay));
             if(delayProp != null)
 			{
                 delayProp.floatValue = 0f;
 			}
 
-            var loopPorp = property.FindPropertyRelative(nameof(AudioLibrary.Loop));
+            var loopPorp = property.FindPropertyRelative(nameof(AudioEntity.Loop));
             if(loopPorp != null)
 			{
                 loopPorp.boolValue = false;

@@ -34,10 +34,10 @@ namespace Ami.BroAudio.Editor
 				if (asset != null && asset.AudioType != BroAudioType.None && !string.IsNullOrEmpty(asset.AssetName))
 				{
 					var item = new AdvancedDropdownItem(asset.AssetName);
-					foreach (var library in asset.GetAllAudioLibraries())
+					foreach (var entity in asset.GetAllAudioEntities())
 					{
 
-						item.AddChild(new AudioIDAdvancedDropdownItem(library.Name, library.ID, asset as ScriptableObject));
+						item.AddChild(new AudioIDAdvancedDropdownItem(entity.Name, entity.ID, asset as ScriptableObject));
 					}
 					root.AddChild(item);
 					childCount++;

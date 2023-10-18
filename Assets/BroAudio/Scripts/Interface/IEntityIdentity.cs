@@ -1,6 +1,6 @@
 namespace Ami.BroAudio.Data
 {
-    public interface IAudioLibrary
+    public interface IEntityIdentity
     {
         bool Validate();
         int ID { get; }

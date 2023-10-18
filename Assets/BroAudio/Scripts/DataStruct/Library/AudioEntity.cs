@@ -4,7 +4,7 @@ using Ami.Extension;
 namespace Ami.BroAudio.Data
 {
     [System.Serializable]
-    public class AudioLibrary : IAudioLibrary, IAudioEntity
+    public class AudioEntity : IEntityIdentity, IAudioEntity
     {
         [field: SerializeField] public string Name { get; set; }
         [field: SerializeField] public int ID { get; set; }
@@ -42,10 +42,10 @@ namespace Ami.BroAudio.Data
 
         public static class NameOf
 		{
-            public static string IsShowClipPreview => nameof(AudioLibrary.IsShowClipPreview);
-            public static string MulticlipsPlayMode => nameof(AudioLibrary.MulticlipsPlayMode);
-            public static string SeamlessType => nameof(AudioLibrary.SeamlessTransitionType);
-            public static string TransitionTempo => nameof(AudioLibrary.TransitionTempo);
+            public static string IsShowClipPreview => nameof(AudioEntity.IsShowClipPreview);
+            public static string MulticlipsPlayMode => nameof(AudioEntity.MulticlipsPlayMode);
+            public static string SeamlessType => nameof(AudioEntity.SeamlessTransitionType);
+            public static string TransitionTempo => nameof(AudioEntity.TransitionTempo);
         }
 
         [SerializeField] private bool IsShowClipPreview = false;

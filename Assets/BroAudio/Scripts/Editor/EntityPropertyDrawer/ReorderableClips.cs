@@ -55,7 +55,7 @@ namespace Ami.BroAudio.Editor
 
 		public ReorderableClips(SerializedProperty entityProperty,IEditorDrawLineCounter editorDrawer)
 		{
-			_playModeProp = entityProperty.FindPropertyRelative(AudioLibrary.NameOf.MulticlipsPlayMode);
+			_playModeProp = entityProperty.FindPropertyRelative(AudioEntity.NameOf.MulticlipsPlayMode);
 			_reorderableList = CreateReorderabeList(entityProperty);
 			UpdatePlayMode();
 			_editorDrawer = editorDrawer;
@@ -68,7 +68,7 @@ namespace Ami.BroAudio.Editor
 
 		private ReorderableList CreateReorderabeList(SerializedProperty entityProperty)
 		{
-			SerializedProperty clipsProp = entityProperty.FindPropertyRelative(nameof(AudioLibrary.Clips));
+			SerializedProperty clipsProp = entityProperty.FindPropertyRelative(nameof(AudioEntity.Clips));
 			var list = new ReorderableList(clipsProp.serializedObject, clipsProp);
 			list.drawHeaderCallback = OnDrawHeader;
 			list.drawElementCallback = OnDrawElement;

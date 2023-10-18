@@ -92,12 +92,12 @@ namespace Ami.BroAudio.Runtime
         #region Stop
         public void Stop(BroAudioType targetType)
         {
-            Stop(targetType,AudioPlayer.UseLibraryManagerSetting);
+            Stop(targetType,AudioPlayer.UseEntitySetting);
         }
 
         public void Stop(int id)
 		{
-            Stop(id, AudioPlayer.UseLibraryManagerSetting);
+            Stop(id, AudioPlayer.UseEntitySetting);
 		}
 
         public void Stop(int id,float fadeTime)
@@ -125,7 +125,7 @@ namespace Ami.BroAudio.Runtime
 
         public void Pause(int id)
 		{
-            Pause(id, AudioPlayer.UseLibraryManagerSetting);
+            Pause(id, AudioPlayer.UseEntitySetting);
 		}
 
         public void Pause(int id,float fadeTime)

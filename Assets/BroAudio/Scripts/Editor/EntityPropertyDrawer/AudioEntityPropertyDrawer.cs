@@ -11,8 +11,8 @@ using static Ami.Extension.AudioConstant;
 
 namespace Ami.BroAudio.Editor
 {
-	[CustomPropertyDrawer(typeof(AudioLibrary))]
-	public partial class AudioLibraryPropertyDrawer : MiPropertyDrawer
+	[CustomPropertyDrawer(typeof(AudioEntity))]
+	public partial class AudioEntityPropertyDrawer : MiPropertyDrawer
 	{
 		public static event Action OnEntityNameChanged;
 
@@ -56,7 +56,7 @@ namespace Ami.BroAudio.Editor
 		{
 			base.OnGUI(position, property, label);
 
-			SerializedProperty nameProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IAudioLibrary.Name)));
+			SerializedProperty nameProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IEntityIdentity.Name)));
 
 			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProp.stringValue);
 			if (!property.isExpanded || !TryGetAudioTypeSetting(property, out var setting))
@@ -77,7 +77,7 @@ namespace Ami.BroAudio.Editor
 				DrawAdditionalClipProperties(position, property, setting);
 				if (setting.DrawedProperty.HasFlag(DrawedProperty.ClipPreview))
 				{
-					SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioLibrary.NameOf.IsShowClipPreview);
+					SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview);
 					isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
 					bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
 					if (isShowPreview)
@@ -113,7 +113,7 @@ namespace Ami.BroAudio.Editor
 					bool isShowClipProp =
 						clipList.CurrentSelectedClip != null &&
 						clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip _);
-					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioLibrary.NameOf.IsShowClipPreview).boolValue;
+					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview).boolValue;
 
 					if(isShowClipProp)
 					{

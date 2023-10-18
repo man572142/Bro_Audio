@@ -12,7 +12,7 @@ namespace Ami.BroAudio.Runtime
 
 		private Transition _transition = default;
 		private StopMode _stopMode = default;
-		private float _overrideFade = AudioPlayer.UseLibraryManagerSetting;
+		private float _overrideFade = AudioPlayer.UseEntitySetting;
 
 		public bool IsBaseNull => !Player;
 		public bool IsPlayingVirtually => IsPlaying && Player.MixerDecibelVolume <= AudioConstant.MinDecibelVolume;
@@ -38,7 +38,7 @@ namespace Ami.BroAudio.Runtime
 
 			_transition = default;
 			_stopMode = default;
-			_overrideFade = AudioPlayer.UseLibraryManagerSetting;
+			_overrideFade = AudioPlayer.UseEntitySetting;
 		}
 
 		IMusicPlayer IMusicPlayer.SetTransition(Transition transition, StopMode stopMode, float overrideFade)

@@ -16,7 +16,7 @@ namespace Ami.BroAudio.Editor
     [CustomEditor(typeof(AudioAsset), true)]
     public class AudioAssetEditor : UnityEditor.Editor
 	{
-        private ReorderableList _librariesList = null;
+        private ReorderableList _entitiesList = null;
 		private IUniqueIDGenerator _idGenerator = null;
 		private ValidationErrorCode _entityIssue;
 		public string IssueEntityName { get; private set; }
@@ -26,12 +26,12 @@ namespace Ami.BroAudio.Editor
 
 		public void AddEntitiesNameChangeListener()
 		{
-			AudioLibraryPropertyDrawer.OnEntityNameChanged += Verify;
+			AudioEntityPropertyDrawer.OnEntityNameChanged += Verify;
 		}
 
 		public void RemoveEntitiesNameChangeListener()
 		{
-			AudioLibraryPropertyDrawer.OnEntityNameChanged -= Verify;
+			AudioEntityPropertyDrawer.OnEntityNameChanged -= Verify;
 		}
 
 		public void Init(IUniqueIDGenerator idGenerator)
@@ -62,7 +62,7 @@ namespace Ami.BroAudio.Editor
 		{
 			if (Asset != null)
 			{
-				_librariesList = new ReorderableList(serializedObject, serializedObject.FindProperty(nameof(AudioAsset.Libraries)), true,false,true,true)
+				_entitiesList = new ReorderableList(serializedObject, serializedObject.FindProperty(nameof(AudioAsset.Entities)), true,false,true,true)
 				{
 					onAddCallback = OnAdd,
 					onRemoveCallback = OnRemove,
@@ -75,7 +75,7 @@ namespace Ami.BroAudio.Editor
 			{
 				ReorderableList.defaultBehaviours.DoAddButton(list);
 				SerializedProperty newEntity = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
-				ResetLibrarySerializedProperties(newEntity);
+				ResetEntitySerializedProperties(newEntity);
 				AssignID(newEntity);
 
 				Verify();
@@ -89,7 +89,7 @@ namespace Ami.BroAudio.Editor
 
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
 			{
-				SerializedProperty elementProp = _librariesList.serializedProperty.GetArrayElementAtIndex(index);
+				SerializedProperty elementProp = _entitiesList.serializedProperty.GetArrayElementAtIndex(index);
 				EditorGUI.BeginChangeCheck();
 				EditorGUI.PropertyField(rect, elementProp);
 				if(EditorGUI.EndChangeCheck())
@@ -100,7 +100,7 @@ namespace Ami.BroAudio.Editor
 
 			float OnGetPropertyHeight(int index)
 			{
-				return EditorGUI.GetPropertyHeight(_librariesList.serializedProperty.GetArrayElementAtIndex(index));
+				return EditorGUI.GetPropertyHeight(_entitiesList.serializedProperty.GetArrayElementAtIndex(index));
 			}
 		}
 
@@ -111,7 +111,7 @@ namespace Ami.BroAudio.Editor
 
 		private void AssignID(int id, SerializedProperty entityProp)
 		{
-			var idProp = entityProp.FindPropertyRelative(GetBackingFieldName(nameof(AudioLibrary.ID)));
+			var idProp = entityProp.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.ID)));
 			idProp.intValue = id;
 			entityProp.serializedObject.ApplyModifiedProperties();
 		}
@@ -125,9 +125,9 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public void DrawLibraries()
+		public void DrawEntitiesList()
 		{
-			_librariesList.DoLayoutList();
+			_entitiesList.DoLayoutList();
 		}
 
 		public void SetAudioType(BroAudioType audioType)
@@ -141,9 +141,9 @@ namespace Ami.BroAudio.Editor
 			{
 				// RegenerateID
 				int id = _idGenerator.GetUniqueID(Asset);
-				for (int i = 0; i < _librariesList.serializedProperty.arraySize; i++)
+				for (int i = 0; i < _entitiesList.serializedProperty.arraySize; i++)
 				{
-					SerializedProperty entity = _librariesList.serializedProperty.GetArrayElementAtIndex(i);
+					SerializedProperty entity = _entitiesList.serializedProperty.GetArrayElementAtIndex(i);
 					AssignID(id, entity);
 					id++;
 				}
@@ -162,10 +162,10 @@ namespace Ami.BroAudio.Editor
 
 		public SerializedProperty CreateNewEntity()
 		{
-			ReorderableList.defaultBehaviours.DoAddButton(_librariesList);
-			SerializedProperty librariesProp = serializedObject.FindProperty(nameof(AudioAsset.Libraries));
-			SerializedProperty newEntity = librariesProp.GetArrayElementAtIndex(_librariesList.count - 1);
-			ResetLibrarySerializedProperties(newEntity);
+			ReorderableList.defaultBehaviours.DoAddButton(_entitiesList);
+			SerializedProperty entitiesProp = serializedObject.FindProperty(nameof(AudioAsset.Entities));
+			SerializedProperty newEntity = entitiesProp.GetArrayElementAtIndex(_entitiesList.count - 1);
+			ResetEntitySerializedProperties(newEntity);
 
 			AssignID(newEntity);
 
@@ -245,8 +245,8 @@ namespace Ami.BroAudio.Editor
 
 		private bool CompareWithPreviousEntity()
 		{
-			IAudioLibrary previousData = null;
-			foreach (IAudioLibrary data in Asset.GetAllAudioLibraries())
+			IEntityIdentity previousData = null;
+			foreach (IEntityIdentity data in Asset.GetAllAudioEntities())
 			{
 				IssueEntityName = data.Name;
                 if (string.IsNullOrWhiteSpace(data.Name))
@@ -280,7 +280,7 @@ namespace Ami.BroAudio.Editor
         private bool CompareWithAllEntities()
 		{
 			List<string> nameList = new List<string>();
-			foreach (IAudioLibrary data in Asset.GetAllAudioLibraries())
+			foreach (IEntityIdentity data in Asset.GetAllAudioEntities())
 			{
 				if (nameList.Contains(data.Name))
 				{

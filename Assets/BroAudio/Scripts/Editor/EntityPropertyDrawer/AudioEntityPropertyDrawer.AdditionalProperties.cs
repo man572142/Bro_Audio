@@ -7,13 +7,13 @@ using Ami.Extension;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.Extension.FlagsExtension;
 using static Ami.BroAudio.Editor.EditorSetting;
-using static Ami.BroAudio.Data.AudioLibrary;
+using static Ami.BroAudio.Data.AudioEntity;
 using Ami.BroAudio.Runtime;
 
 namespace Ami.BroAudio.Editor
 {
-	[CustomPropertyDrawer(typeof(AudioLibrary))]
-	public partial class AudioLibraryPropertyDrawer : MiPropertyDrawer
+	[CustomPropertyDrawer(typeof(AudioEntity))]
+	public partial class AudioEntityPropertyDrawer : MiPropertyDrawer
 	{
 		private GUIContent _loopingLabel = new GUIContent("Looping");
 		private GUIContent _seamlessLabel = new GUIContent("Seamless Setting");
@@ -26,7 +26,7 @@ namespace Ami.BroAudio.Editor
 			int filterRange = GetFlagsRange(0, DrawedPropertyConstant.AdditionalPropertyStartIndex -1 ,FlagsRangeType.Excluded);
 			int count = GetFlagsOnCount((int)setting.DrawedProperty & filterRange);
 
-			var seamlessProp = GetBackingNameAndFindProperty(property, nameof(AudioLibrary.SeamlessLoop));
+			var seamlessProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.SeamlessLoop));
             if (seamlessProp.boolValue)
 			{
 				count++;
@@ -50,7 +50,7 @@ namespace Ami.BroAudio.Editor
 			{
 				if (setting.DrawedProperty.HasFlag(DrawedProperty.Delay))
 				{
-					SerializedProperty delayProperty = GetBackingNameAndFindProperty(property,nameof(AudioLibrary.Delay));
+					SerializedProperty delayProperty = GetBackingNameAndFindProperty(property,nameof(AudioEntity.Delay));
 					delayProperty.floatValue = EditorGUI.FloatField(GetRectAndIterateLine(position), "Delay", delayProperty.floatValue);
 				}
 			}
@@ -59,8 +59,8 @@ namespace Ami.BroAudio.Editor
 			{
 				if (setting.DrawedProperty.HasFlag(DrawedProperty.Loop))
 				{
-					_loopingToggles[0] = GetBackingNameAndFindProperty(property,nameof(AudioLibrary.Loop));
-					_loopingToggles[1] = GetBackingNameAndFindProperty(property,nameof(AudioLibrary.SeamlessLoop));
+					_loopingToggles[0] = GetBackingNameAndFindProperty(property,nameof(AudioEntity.Loop));
+					_loopingToggles[1] = GetBackingNameAndFindProperty(property,nameof(AudioEntity.SeamlessLoop));
 
 					Rect loopRect = GetRectAndIterateLine(position);
 					DrawToggleGroup(loopRect, _loopingLabel, _loopingToggles);
@@ -95,7 +95,7 @@ namespace Ami.BroAudio.Editor
 			seamlessTypeProp.enumValueIndex = (int)currentType;
 			drawIndex++;
 
-			var transitionTimeProp = GetBackingNameAndFindProperty(property,nameof(AudioLibrary.TransitionTime));
+			var transitionTimeProp = GetBackingNameAndFindProperty(property,nameof(AudioEntity.TransitionTime));
 			switch (currentType)
 			{
 				// TODO : 數值不能超過Clip長度
@@ -119,14 +119,14 @@ namespace Ami.BroAudio.Editor
 					transitionTimeProp.floatValue = Mathf.Abs(AudioExtension.TempoToTime(bpmProp.floatValue, beatsProp.intValue));
 					break;
 				case SeamlessType.ClipSetting:
-					transitionTimeProp.floatValue = AudioPlayer.UseLibraryManagerSetting;
+					transitionTimeProp.floatValue = AudioPlayer.UseEntitySetting;
 					break;
 			}
 		}
 
-		private SerializedProperty GetBackingNameAndFindProperty(SerializedProperty libraryProp, string memberName)
+		private SerializedProperty GetBackingNameAndFindProperty(SerializedProperty entityProp, string memberName)
 		{
-			return libraryProp.FindPropertyRelative(GetBackingFieldName(memberName));
+			return entityProp.FindPropertyRelative(GetBackingFieldName(memberName));
 		}
 	} 
 }

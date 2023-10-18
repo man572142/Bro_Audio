@@ -90,7 +90,7 @@ namespace Ami.BroAudio
 
 			if(clips == null || clips.Length == 0)
 			{
-				LogWarning($"{name} has no audio clips, please assign or delete the library.");
+				LogWarning($"{name} has no audio clips, please assign or delete the entity.");
 				return false;
 			}
 

@@ -11,7 +11,7 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource))]
 	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>
 	{
-        public const float UseLibraryManagerSetting = -1f;
+        public const float UseEntitySetting = -1f;
         public const float Immediate = 0f;
         public const string SendParaName = "_Send";
         public const float SpatialBlend_2D = 0f;

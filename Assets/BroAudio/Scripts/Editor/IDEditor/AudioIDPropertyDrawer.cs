@@ -39,11 +39,11 @@ namespace Ami.BroAudio.Editor
 
 			if (audioAsset != null)
 			{
-				foreach (var library in audioAsset.GetAllAudioLibraries())
+				foreach (var entity in audioAsset.GetAllAudioEntities())
 				{
-					if (library.ID == idProp.intValue)
+					if (entity.ID == idProp.intValue)
 					{
-						_idName = library.Name;
+						_idName = entity.Name;
 						return;
 					}
 				}

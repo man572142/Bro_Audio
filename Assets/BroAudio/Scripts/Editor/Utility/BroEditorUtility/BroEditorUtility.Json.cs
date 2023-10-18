@@ -24,9 +24,9 @@ namespace Ami.BroAudio.Editor
             }
 		}
 
-        public static void WriteGuidToCoreData(List<string> allLibraryGUID)
+        public static void WriteGuidToCoreData(List<string> allAssetGUID)
 		{
-			RewriteCoreData((coreData) => coreData.GUIDs = allLibraryGUID);
+			RewriteCoreData((coreData) => coreData.GUIDs = allAssetGUID);
         }
 
         public static void WriteAssetOutputPathToCoreData(string newOutputPath)
@@ -89,19 +89,19 @@ namespace Ami.BroAudio.Editor
 
 		private static void DeleteJsonDataByAssetPath(string[] deletedAssetPaths)
 		{
-			var currentLibraryGUID = GetGUIDListFromJson();
-			if(currentLibraryGUID != null)
+			var currAssetGUIDs = GetGUIDListFromJson();
+			if(currAssetGUIDs != null)
 			{
 				foreach (string path in deletedAssetPaths)
 				{
 					if(!string.IsNullOrEmpty(path))
 					{
 						string guid = AssetDatabase.AssetPathToGUID(path);
-						currentLibraryGUID.Remove(guid);
+						currAssetGUIDs.Remove(guid);
 					}
 				}
 
-				WriteGuidToCoreData(currentLibraryGUID);
+				WriteGuidToCoreData(currAssetGUIDs);
 			}
 		}
 	}

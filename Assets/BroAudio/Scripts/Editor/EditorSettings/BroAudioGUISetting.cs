@@ -10,10 +10,10 @@ namespace Ami.BroAudio.Editor.Setting
 		public const int LibraryManagerMenuIndex = 0;
 		public const string LibraryManagerMenuPath = BroName.MenuItem_BroAudio + "/" + BroName.MenuItem_LibraryManager;
 
-		public const int ClipEditorMenuIndex = 1;
+		public const int ClipEditorMenuIndex = 11;
 		public const string ClipEditorMenuPath = BroName.MenuItem_BroAudio + "/" + BroName.MenuItem_ClipEditor;
 
-        public const int GlobalSettingMenuIndex = 2;
+        public const int GlobalSettingMenuIndex = 12;
 		public const string GlobalSettingMenuPath = BroName.MenuItem_BroAudio + "/" + BroName.MenuItem_Setting;
 
         public static Color MainTitleColor => new Color(0.04f, 0.82f, 0.7f);

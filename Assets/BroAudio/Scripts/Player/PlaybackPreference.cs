@@ -34,9 +34,9 @@ namespace Ami.BroAudio.Runtime
 
 		public PlaybackPreference(IAudioEntity entity)
 		{
-			FadeIn = UseLibraryManagerSetting;
-			FadeOut = UseLibraryManagerSetting;
-			SeamlessTransitionTime = UseLibraryManagerSetting;
+			FadeIn = UseEntitySetting;
+			FadeOut = UseEntitySetting;
+			SeamlessTransitionTime = UseEntitySetting;
 			IsSeamlessLoop = false;
 			IsNormalLoop = false;
 			Delay = default;

@@ -29,12 +29,12 @@ namespace Ami.BroAudio.Editor
 		private Vector2 _browseButtonSize = new Vector2(80f,30f);
 		private int _pickerID = -1;
 
-		private void DrawLibraryFactory(Rect librariesRect)
+		private void DrawEntityFactory(Rect entitiesRect)
 		{
-			HandleDragAndDrop(librariesRect);
-			DrawBackgroundLogo(librariesRect);
+			HandleDragAndDrop(entitiesRect);
+			DrawBackgroundLogo(entitiesRect);
 
-			GUILayout.Space(librariesRect.height * 0.4f);
+			GUILayout.Space(entitiesRect.height * 0.4f);
 			EditorGUILayout.LabelField("Drag & Drop".SetSize(DragAndDropFontSize).SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
 			GUILayout.Space(15f);
 			EditorGUILayout.LabelField("or".SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
@@ -63,13 +63,13 @@ namespace Ami.BroAudio.Editor
 			HandleObjectPicker();
 		}
 
-		private void DrawBackgroundLogo(Rect librariesRect)
+		private void DrawBackgroundLogo(Rect entitiesRect)
 		{
 			if (Event.current.type == EventType.Repaint)
 			{
 				Vector2 audioIconSize = new Vector2(BackgroundLogoSize, BackgroundLogoSize);
 				float offsetX = DefaultLayoutPadding * 2f;
-				Vector2 logoPos = librariesRect.size * 0.5f - audioIconSize * 0.5f + new Vector2(offsetX, 0f);
+				Vector2 logoPos = entitiesRect.size * 0.5f - audioIconSize * 0.5f + new Vector2(offsetX, 0f);
 				Rect audioIconRect = new Rect(logoPos, audioIconSize);
 				Texture logo = Resources.Load<Texture>(BackgroundLogoPath);
 				Material mat = (Material)EditorGUIUtility.LoadRequired("Inspectors/InactiveGUI.mat");
@@ -92,10 +92,10 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void HandleDragAndDrop(Rect librariesRect)
+		private void HandleDragAndDrop(Rect entitiesRect)
 		{
 			DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
-			if (Event.current.type == EventType.DragPerform && librariesRect.Contains(Event.current.mousePosition))
+			if (Event.current.type == EventType.DragPerform && entitiesRect.Contains(Event.current.mousePosition))
 			{
 				var objs = DragAndDrop.objectReferences;
 
@@ -153,7 +153,7 @@ namespace Ami.BroAudio.Editor
         private void CreateNewEntity(AudioAssetEditor editor, AudioClip clip)
         {
             SerializedProperty entity = editor.CreateNewEntity();
-            SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioLibrary.Clips));
+            SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioEntity.Clips));
 
 			editor.SetClipList(clipListProp, 0, clip);
 		}
@@ -161,7 +161,7 @@ namespace Ami.BroAudio.Editor
 		private void CreateNewEntity(AudioAssetEditor editor, List<AudioClip> clips)
 		{
 			SerializedProperty entity = editor.CreateNewEntity();
-			SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioLibrary.Clips));
+			SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioEntity.Clips));
 
 			for(int i = 0; i < clips.Count;i++)
 			{

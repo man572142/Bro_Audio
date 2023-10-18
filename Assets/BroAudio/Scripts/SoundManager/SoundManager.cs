@@ -48,7 +48,7 @@ namespace Ami.BroAudio.Runtime
 
         [SerializeField] AudioMixer _broAudioMixer = null;
 
-        [Header("Library")]
+        [Header("Assets")]
         [SerializeField] private List<ScriptableObject> _soundAssets = new List<ScriptableObject>();
         private Dictionary<int, IAudioEntity> _audioBank = new Dictionary<int, IAudioEntity>();
 
@@ -94,14 +94,14 @@ namespace Ami.BroAudio.Runtime
                 if (asset == null)
                     continue;
 
-				foreach(var library in asset.GetAllAudioLibraries())
+				foreach(var entity in asset.GetAllAudioEntities())
 				{
-					if (!library.Validate())
+					if (!entity.Validate())
                         continue;
 
-                    if (!_audioBank.ContainsKey(library.ID))
+                    if (!_audioBank.ContainsKey(entity.ID))
                     {
-                        _audioBank.Add(library.ID, library as IAudioEntity);
+                        _audioBank.Add(entity.ID, entity as IAudioEntity);
                     }
 
                     if(!_auidoTypePref.ContainsKey(asset.AudioType))
@@ -319,8 +319,8 @@ namespace Ami.BroAudio.Runtime
             string result = string.Empty;
             if(_audioBank.TryGetValue(id,out var entity))
 			{
-                IAudioLibrary library = entity as IAudioLibrary;
-                result = library?.Name;
+                IEntityIdentity entityIdentity = entity as IEntityIdentity;
+                result = entityIdentity?.Name;
 			}
             return result;
         }

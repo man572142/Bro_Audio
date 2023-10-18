@@ -7,7 +7,7 @@ namespace Ami.BroAudio.Data
 {
     public class AudioAsset : ScriptableObject, IAudioAsset
     {
-        public AudioLibrary[] Libraries;
+        public AudioEntity[] Entities;
 
         [field: SerializeField] public BroAudioType AudioType { get; set; }
         [field: SerializeField] public string AssetName { get; set; }
@@ -29,12 +29,12 @@ namespace Ami.BroAudio.Data
 			}
         }
 
-        public IEnumerable<IAudioLibrary> GetAllAudioLibraries()
+        public IEnumerable<IEntityIdentity> GetAllAudioEntities()
 		{
-            if (Libraries == null)
-                Libraries = new AudioLibrary[0];
+            if (Entities == null)
+                Entities = new AudioEntity[0];
 
-            foreach (var data in Libraries)
+            foreach (var data in Entities)
             {
                 yield return data;
             }

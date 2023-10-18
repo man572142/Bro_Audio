@@ -166,11 +166,11 @@ namespace Ami.BroAudio.Runtime
 
         #region Stop Overloads
         public void Stop() 
-            => Stop(UseLibraryManagerSetting);
+            => Stop(UseEntitySetting);
         public void Stop(float fadeOut) 
             => Stop(fadeOut, null);
         public void Stop(Action onFinished) 
-            => Stop(UseLibraryManagerSetting, onFinished);
+            => Stop(UseEntitySetting, onFinished);
         public void Stop(float fadeOut, Action onFinished) 
             => Stop(fadeOut, default, onFinished);
         #endregion
@@ -232,7 +232,7 @@ namespace Ami.BroAudio.Runtime
         private bool HasFading(float clipFade, float overrideFade, out float fadeTime)
         {
             fadeTime = clipFade;
-            if (overrideFade != UseLibraryManagerSetting)
+            if (overrideFade != UseEntitySetting)
             {
                 fadeTime = overrideFade;
             }

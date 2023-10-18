@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Editor
         public const string StopButton = "PreMatQuad";
         public const string VolumeSnapPointer = "SignalAsset Icon";
         public const string HorizontalVUMeter = "d_VUMeterTextureHorizontal";
-        public const string LibraryWorksFine = "Toggle Icon";
+        public const string WorksFine = "Toggle Icon";
         public const string PlaybackPosIcon = "icon dropdown@2x";
         public const string FadeInIcon = "AudioHighPassFilter Icon";
         public const string FadeOutIcon = "AudioLowPassFilter Icon";

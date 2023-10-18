@@ -5,7 +5,7 @@ namespace Ami.BroAudio.Data
     public interface IAudioAsset
     {
         BroAudioType AudioType { get; }
-        IEnumerable<IAudioLibrary> GetAllAudioLibraries();
+        IEnumerable<IEntityIdentity> GetAllAudioEntities();
 
 #if UNITY_EDITOR
         string AssetGUID { get; }

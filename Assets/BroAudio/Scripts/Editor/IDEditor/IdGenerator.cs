@@ -57,7 +57,7 @@ namespace Ami.BroAudio.Editor
                 int lastID = default;
                 foreach(IAudioAsset asset in assetList)
 				{
-                    foreach(var entity in asset.GetAllAudioLibraries())
+                    foreach(var entity in asset.GetAllAudioEntities())
 					{
                         if(entity.ID > lastID)
 						{

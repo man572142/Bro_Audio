@@ -60,5 +60,14 @@ namespace Ami.Extension
 				return style;
 			}
 		}
+
+		public static GUIStyle GetStyleAndCached(ref GUIStyle style,string styleName)
+		{
+			if(style == null)
+			{
+				style = GUI.skin.FindStyle(styleName);
+			}
+			return style;
+		}
 	}
 }

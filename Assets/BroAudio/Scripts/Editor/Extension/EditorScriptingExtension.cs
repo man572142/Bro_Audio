@@ -15,7 +15,7 @@ namespace Ami.Extension
 		}
 
 		/// <summary>
-		/// ¨ú±o¥Ø«eÃ¸»sªº¨º¤@¦æªºRect¡A¨ú§¹¦Û°Ê­¡¥N¦Ü¤U¦æ (°õ¦æ¶¶§Ç±N·|¨M©wÃ¸»sªº¦ì¸m)
+		/// ï¿½ï¿½ï¿½oï¿½Ø«eÃ¸ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½@ï¿½æªºRectï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Û°Ê­ï¿½ï¿½Nï¿½Ü¤Uï¿½ï¿½ (ï¿½ï¿½ï¿½æ¶¶ï¿½Ç±Nï¿½|ï¿½Mï¿½wÃ¸ï¿½sï¿½ï¿½ï¿½ï¿½m)
 		/// </summary>
 		/// <param name="drawer"></param>
 		/// <param name="position"></param>
@@ -29,13 +29,13 @@ namespace Ami.Extension
 		}
 
 		/// <summary>
-		/// ±NRect¨Ì«ü©w¤ñ¨Ò¤ô¥­©î¤À¬°¨â­ÓRect
+		/// ï¿½NRectï¿½Ì«ï¿½ï¿½wï¿½ï¿½Ò¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Rect
 		/// </summary>
-		/// <param name="origin">­ì©lRect</param>
-		/// <param name="firstRatio">²Ä¤@­ÓRectªº¤ñ¨Ò</param>
-		/// <param name="gap">¨âªÌªº¶¡¹j</param>
-		/// <param name="rect1">¿é¥Xªº²Ä¤@­ÓRect</param>
-		/// <param name="rect2">¿é¥Xªº²Ä¤G­ÓRecr</param>
+		/// <param name="origin">ï¿½ï¿½lRect</param>
+		/// <param name="firstRatio">ï¿½Ä¤@ï¿½ï¿½Rectï¿½ï¿½ï¿½ï¿½ï¿½</param>
+		/// <param name="gap">ï¿½ï¿½Ìªï¿½ï¿½ï¿½ï¿½j</param>
+		/// <param name="rect1">ï¿½ï¿½Xï¿½ï¿½ï¿½Ä¤@ï¿½ï¿½Rect</param>
+		/// <param name="rect2">ï¿½ï¿½Xï¿½ï¿½ï¿½Ä¤Gï¿½ï¿½Recr</param>
 		public static void SplitRectHorizontal(Rect origin, float firstRatio, float gap, out Rect rect1, out Rect rect2)
 		{
 			float halfGap = gap * 0.5f;
@@ -43,8 +43,29 @@ namespace Ami.Extension
 			rect2 = new Rect(rect1.xMax + gap, origin.y, origin.width * (1 - firstRatio) - halfGap, origin.height);
 		}
 
+		public static void SplitRectHorizontal(Rect origin,float gap, out Rect[] outputRects,params float[] ratios)
+		{
+			outputRects = null;
+			if (ratios.Sum() != 1)
+			{
+				Debug.LogError("[Editor] Split ratio's sum should be 1");
+				return;
+			}
+
+			Rect[] results = new Rect[ratios.Length];
+
+			for(int i = 0; i < results.Length;i++)
+			{
+				float offsetWidth = i == 0 || i == results.Length - 1 ? gap : gap * 0.5f;
+				float newWidth = origin.width * ratios[i] - offsetWidth;
+				float newX = i > 0 ? results[i - 1].xMax + gap : origin.x;
+				results[i] = new Rect(newX, origin.y, newWidth , origin.height);
+			}
+			outputRects = results;
+		}
+
 		/// <summary>
-		/// ±NRect¨Ì«ü©w¤ñ¨Ò¤ô¥­©î¤À¬°¬ÛÀ³¼Æ¶qªºRect
+		/// ï¿½NRectï¿½Ì«ï¿½ï¿½wï¿½ï¿½Ò¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶qï¿½ï¿½Rect
 		/// </summary>
 		/// <param name="origin"></param>
 		/// <param name="allRatio"></param>
@@ -53,6 +74,7 @@ namespace Ami.Extension
 		/// <returns></returns>
 		public static bool TrySplitRectHorizontal(Rect origin, float[] allRatio, float gap, out Rect[] outputRects)
 		{
+			// todo: Change to non-TryGet 
 			if (allRatio.Sum() != 1)
 			{
 				Debug.LogError("[Editor] Split ratio's sum should be 1");
@@ -74,7 +96,7 @@ namespace Ami.Extension
 		}
 
 		/// <summary>
-		/// ±NRect¨Ì«ü©w¤ñ¨Ò««ª½©î¤À¬°¨â­ÓRect
+		/// ï¿½NRectï¿½Ì«ï¿½ï¿½wï¿½ï¿½Ò«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Rect
 		/// </summary>
 		/// <param name="origin"></param>
 		/// <param name="firstRatio"></param>
@@ -89,7 +111,7 @@ namespace Ami.Extension
 		}
 
 		/// <summary>
-		/// ±NRect¨Ì«ü©w¤ñ¨Ò¤ô¥­©î¤À¬°¬ÛÀ³¼Æ¶qªºRect
+		/// ï¿½NRectï¿½Ì«ï¿½ï¿½wï¿½ï¿½Ò¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶qï¿½ï¿½Rect
 		/// </summary>
 		/// <param name="origin"></param>
 		/// <param name="allRatio"></param>
@@ -119,7 +141,7 @@ namespace Ami.Extension
 		}
 
 		/// <summary>
-		/// ¦b­ì©lRect·í¤¤ªº«ü©w¤ñ¨Ò¦ì¸mÅã¥Ü·sªºRect(¥²¶·¤ñ­ì©lRect±ßÃ¸»s)
+		/// ï¿½bï¿½ï¿½lRectï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½Ò¦ï¿½mï¿½ï¿½Ü·sï¿½ï¿½Rect(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½lRectï¿½ï¿½Ã¸ï¿½s)
 		/// </summary>
 		/// <param name="origin"></param>
 		/// <param name="dissolveRatio"></param>
@@ -180,21 +202,21 @@ namespace Ami.Extension
 		}
 
 		/// <summary>
-		/// ¤ä´©RichTextªºHelpBox
+		/// ï¿½ä´©RichTextï¿½ï¿½HelpBox
 		/// </summary>
-		/// <param name="position">Ã¸»s¦ì¸m</param>
-		/// <param name="message">°T®§¤º®e</param>
-		/// <param name="messageType">°T®§Ãþ«¬</param>
+		/// <param name="position">Ã¸ï¿½sï¿½ï¿½m</param>
+		/// <param name="message">ï¿½Tï¿½ï¿½ï¿½ï¿½ï¿½e</param>
+		/// <param name="messageType">ï¿½Tï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</param>
 		public static void RichTextHelpBox(Rect position,string message, MessageType messageType)
 		{
 			RichTextHelpBox(position,message, GetIconName(messageType));
 		}
 
 		/// <summary>
-		/// ¤ä´©RichTextªºHelpBox
+		/// ï¿½ä´©RichTextï¿½ï¿½HelpBox
 		/// </summary>
-		/// <param name="message">°T®§¤º®e</param>
-		/// <param name="messageType">°T®§Ãþ«¬</param>
+		/// <param name="message">ï¿½Tï¿½ï¿½ï¿½ï¿½ï¿½e</param>
+		/// <param name="messageType">ï¿½Tï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</param>
 		public static void RichTextHelpBox(string message, MessageType messageType)
 		{
 			RichTextHelpBox(message, GetIconName(messageType));
@@ -216,11 +238,11 @@ namespace Ami.Extension
 		}
 
 		/// <summary>
-		/// ¤ä´©RichText¤Î¦Û­qiconªºHelpBox
+		/// ï¿½ä´©RichTextï¿½Î¦Û­qiconï¿½ï¿½HelpBox
 		/// </summary>
-		/// <param name="position">Ã¸»s¦ì¸m</param>
-		/// <param name="message">°T®§¤º®e</param>
-		/// <param name="icon">Unity¤º«ØIcon¦WºÙ</param>
+		/// <param name="position">Ã¸ï¿½sï¿½ï¿½m</param>
+		/// <param name="message">ï¿½Tï¿½ï¿½ï¿½ï¿½ï¿½e</param>
+		/// <param name="icon">Unityï¿½ï¿½ï¿½ï¿½Iconï¿½Wï¿½ï¿½</param>
 		public static void RichTextHelpBox(Rect position,string message, string icon)
 		{
 			GUIContent content = GetRichTextContent(message, icon);
@@ -228,10 +250,10 @@ namespace Ami.Extension
 		}
 
 		/// <summary>
-		/// ¤ä´©RichText¤Î¦Û­qiconªºHelpBox
+		/// ï¿½ä´©RichTextï¿½Î¦Û­qiconï¿½ï¿½HelpBox
 		/// </summary>
-		/// <param name="message">°T®§¤º®e</param>
-		/// <param name="icon">Unity¤º«ØIcon¦WºÙ</param>
+		/// <param name="message">ï¿½Tï¿½ï¿½ï¿½ï¿½ï¿½e</param>
+		/// <param name="icon">Unityï¿½ï¿½ï¿½ï¿½Iconï¿½Wï¿½ï¿½</param>
 		public static void RichTextHelpBox(string message, string icon)
 		{
 			GUIContent content = GetRichTextContent(message, icon);
@@ -244,7 +266,7 @@ namespace Ami.Extension
 		}
 
 		/// <summary>
-		/// ¨ú±oProperty¦Û°Ê¥Í¦¨BackingFieldªº¦WºÙ
+		/// ï¿½ï¿½ï¿½oPropertyï¿½Û°Ê¥Í¦ï¿½BackingFieldï¿½ï¿½ï¿½Wï¿½ï¿½
 		/// </summary>
 		/// <param name="propertyName"></param>
 		/// <returns></returns>
@@ -254,7 +276,7 @@ namespace Ami.Extension
 		}
 
 		/// <summary>
-		/// ¨ú±oPorpertyªºField¦WºÙ(©R¦W³W«h:_camelCase)
+		/// ï¿½ï¿½ï¿½oPorpertyï¿½ï¿½Fieldï¿½Wï¿½ï¿½(ï¿½Rï¿½Wï¿½Wï¿½h:_camelCase)
 		/// </summary>
 		/// <param name="propertyName"></param>
 		/// <returns></returns>

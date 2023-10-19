@@ -55,7 +55,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private readonly string _titleText = nameof(BroAudio).ToBold().SetSize(30).SetColor(MainTitleColor);
 
-		private GUIContent[] _tabs = null;
+		private GUIContent[] _tabContents = null;
 		private Tab _currentSelectTab = Tab.Audio;
 		private int _currProjectSettingVoiceCount = -1;
 		private int _currentMixerTracksCount = -1;
@@ -68,6 +68,10 @@ namespace Ami.BroAudio.Editor.Setting
 		private AudioMixer _mixer = null;
 		private Vector2 _scrollPos = default;
 		private float _demoSliderValue = 1f; 
+		private GUIStyle _frameBox = null;
+		private GUIStyle _tabFirst = null;
+		private GUIStyle _tabMiddle = null;
+		private GUIStyle _tabLast = null;
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
@@ -146,11 +150,11 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void InitTabs()
 		{
-			if(_tabs == null) 
-				_tabs = new GUIContent[3];
-			_tabs[(int)Tab.Audio] = EditorGUIUtility.IconContent(AudioSettingTab);
-			_tabs[(int)Tab.GUI] = EditorGUIUtility.IconContent(GUISettingTab);
-			_tabs[(int)Tab.Info] = EditorGUIUtility.IconContent(InfoTab);
+			if(_tabContents == null) 
+				_tabContents = new GUIContent[3];
+			_tabContents[(int)Tab.Audio] = EditorGUIUtility.IconContent(AudioSettingTab);
+			_tabContents[(int)Tab.GUI] = EditorGUIUtility.IconContent(GUISettingTab);
+			_tabContents[(int)Tab.Info] = EditorGUIUtility.IconContent(InfoTab);
 		}
 
 		protected override void OnGUI()
@@ -161,21 +165,20 @@ namespace Ami.BroAudio.Editor.Setting
 
 			DrawEmptyLine(1);
 			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), _titleText, GUIStyleHelper.MiddleCenterRichText);
-
-			DrawEmptyLine(1);
-
-			switch (Message)
+			
+			if(Message != OpenMessage.None)
 			{
-				case OpenMessage.RuntimeSettingFileMissing:
-				case OpenMessage.EditorSettingFileMissing:
-					Rect errorRect = GetRectAndIterateLine(drawPosition);
-					errorRect.height *= 2;
-					Instruction instructionEnum = GetInstructionEnum(Message);
-					EditorGUI.HelpBox(errorRect, _instruction.GetText(instructionEnum), MessageType.Error);
-					break;
-				case OpenMessage.None:
-
-					break;
+				DrawEmptyLine(1);
+				switch (Message)
+				{
+					case OpenMessage.RuntimeSettingFileMissing:
+					case OpenMessage.EditorSettingFileMissing:
+						Rect errorRect = GetRectAndIterateLine(drawPosition);
+						errorRect.height *= 2;
+						Instruction instructionEnum = GetInstructionEnum(Message);
+						EditorGUI.HelpBox(errorRect, _instruction.GetText(instructionEnum), MessageType.Error);
+						break;
+				}
 			}
 
 			DrawEmptyLine(1);
@@ -186,20 +189,21 @@ namespace Ami.BroAudio.Editor.Setting
 			drawPosition.x += Gap;
 			drawPosition.width -= Gap * 2;
 
-			DrawTabs(drawPosition);
-			DrawEmptyLine(1);
+			Rect tabWindowRect = GetRectAndIterateLine(drawPosition);
+			tabWindowRect.yMax = drawPosition.yMax;
 
-			Rect tabBackgroundRect = GetRectAndIterateLine(drawPosition);
-			tabBackgroundRect.y -= 6f;
-			tabBackgroundRect.yMax = drawPosition.yMax;
-
-			EditorGUI.indentLevel++;
 			if(Event.current.type == EventType.Repaint)
 			{
-				GUI.skin.box.Draw(tabBackgroundRect, false, false, false, false);
+				GUIStyleHelper.GetStyleAndCached(ref _frameBox,"FrameBox")?.Draw(tabWindowRect, false, false, false, false);
 			}
 
-			_scrollPos = BeginScrollView(tabBackgroundRect, _scrollPos);
+			Rect tabLabelsRect = DrawTabsLabel(tabWindowRect);
+			DrawEmptyLine(2);
+
+			EditorGUI.indentLevel++;
+			
+			Rect tabPageScrollRect = new Rect(tabLabelsRect.x,tabLabelsRect.yMax,tabLabelsRect.width,tabWindowRect.height - tabLabelsRect.height);
+			_scrollPos = BeginScrollView(tabPageScrollRect, _scrollPos);
 			if (RuntimeSetting != null)
 			{
 				switch (_currentSelectTab)
@@ -230,14 +234,41 @@ namespace Ami.BroAudio.Editor.Setting
 			return default;
 		}
 
-		private void DrawTabs(Rect drawPosition)
+		private Rect DrawTabsLabel(Rect tabWindowRect)
 		{
-			Rect tabRect = GetRectAndIterateLine(drawPosition);
-			tabRect.height = EditorGUIUtility.singleLineHeight * 2f;
-			_currentSelectTab = (Tab)GUI.Toolbar(tabRect, (int)_currentSelectTab, _tabs);
+			Rect rect = new Rect(tabWindowRect);
+			rect.height = EditorGUIUtility.singleLineHeight * 2f;
+			SplitRectHorizontal(rect,0f,out Rect[] tabRects,0.34f,0.33f,0.33f);
+
+			for(int i = 0; i < tabRects.Length;i++)
+			{
+				bool oldState = (int)_currentSelectTab == i;
+				bool newState = GUI.Toggle(tabRects[i], oldState, _tabContents[i],GetTabStyle(i,tabRects.Length));
+				if(newState)
+				{
+					_currentSelectTab = (Tab)i;
+				}
+			}
+			return rect;
 		}
 
-		private void DrawAudioSetting(Rect drawPosition)
+        private GUIStyle GetTabStyle(int i, int length)
+        {
+            if(i == 0)
+			{
+				return GUIStyleHelper.GetStyleAndCached(ref _tabFirst,"Tab first");
+			}
+			else if(i == length - 1)
+			{
+				return GUIStyleHelper.GetStyleAndCached(ref _tabLast,"Tab last");
+			}
+			else
+			{
+				return GUIStyleHelper.GetStyleAndCached(ref _tabMiddle,"Tab middle");
+			}
+        }
+
+        private void DrawAudioSetting(Rect drawPosition)
 		{
 			drawPosition.width -= Gap;
 			DrawHaasEffectSetting();

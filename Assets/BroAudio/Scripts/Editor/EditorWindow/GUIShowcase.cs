@@ -47,7 +47,7 @@ namespace Ami.Extension
 				GUI.skin.window.Draw(cursorWindow, false, false, false, false);
 			}
 			EditorGUI.indentLevel++;
-			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Cursor Type".SetColor(Color.white).SetSize(25), GUIStyleHelper.RichText);
+			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Cursor Type".SetSize(25), GUIStyleHelper.RichText);
 			DrawEmptyLine(1);
 
 			EditorGUI.indentLevel++;

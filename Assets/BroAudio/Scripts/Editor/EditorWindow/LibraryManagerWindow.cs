@@ -174,7 +174,7 @@ namespace Ami.BroAudio.Editor
 						return;
 
 					EditorScriptingExtension.SplitRectHorizontal(rect, 0.7f, 0f, out Rect labelRect, out Rect audioTypeRect);
-					string displayName = string.IsNullOrEmpty(editor.Asset.AssetName)? "Temp".SetColor(FalseColor) : editor.Asset.AssetName.SetColor(DefaultLabelColor);
+					string displayName = string.IsNullOrEmpty(editor.Asset.AssetName)? "Temp".SetColor(FalseColor) : editor.Asset.AssetName;
 					EditorGUI.LabelField(labelRect, displayName,GUIStyleHelper.RichText);
 
 					EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(editor.Asset.AudioType));

@@ -7,6 +7,13 @@ namespace Ami.Extension
 {
 	public static class EditorScriptingExtension
 	{
+		public struct MultiLabel
+		{
+			public string Main;
+			public string Left;
+			public string Right;
+		}
+
 		/// <summary>
 		/// 取得目前繪製的那一行的Rect，取完自動迭代至下行 (執行順序將會決定繪製的位置)
 		/// </summary>
@@ -348,6 +355,25 @@ namespace Ami.Extension
 		{
 			// 16px = 12pt.
 			return Mathf.RoundToInt(fontSize * (16f / 12f));
+		}
+
+		public static float Draw2SidesLabelSlider(MultiLabel labels,float value,float leftValue, float rightValue, params GUILayoutOption[] options)
+		{
+			float resultValue = EditorGUILayout.Slider(labels.Main, value, leftValue, rightValue, options);
+			Rect lastRect = GUILayoutUtility.GetLastRect();
+			float offsetY = 7f;
+			float rightWordLength = 30f; // todo: calculate by word length?
+			Rect leftRect = new Rect(EditorGUIUtility.labelWidth, lastRect.y + offsetY, EditorGUIUtility.fieldWidth, lastRect.height);
+			Rect rightRect = new Rect(lastRect.xMax - EditorGUIUtility.fieldWidth - rightWordLength, lastRect.y + offsetY, EditorGUIUtility.fieldWidth, lastRect.height);
+
+			GUIStyle lowerLeftMiniLabel = new GUIStyle(EditorStyles.centeredGreyMiniLabel);
+			lowerLeftMiniLabel.alignment = TextAnchor.LowerLeft;
+
+			EditorGUI.LabelField(leftRect, labels.Left, lowerLeftMiniLabel);
+			EditorGUI.LabelField(rightRect, labels.Right, lowerLeftMiniLabel);
+
+
+			return resultValue;
 		}
 	}
 }

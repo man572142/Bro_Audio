@@ -26,6 +26,7 @@ namespace Ami.Extension
 				GUIStyle style = new GUIStyle();
 				style.richText = true;
 				style.alignment = TextAnchor.MiddleLeft;
+				style.normal.textColor = DefaultLabelColor;
 				return style;
 			}
 		}

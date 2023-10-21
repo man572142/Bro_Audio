@@ -17,6 +17,7 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public bool Loop { get; set; }
         [field: SerializeField] public bool SeamlessLoop { get; set; }
         [field: SerializeField] public float TransitionTime { get; set; }
+        [field: SerializeField] public SpatialSettings SpatialSettings { get; set; }
 
         public BroAudioClip Clip => Clips.PickNewOne(MulticlipsPlayMode, ID);
 

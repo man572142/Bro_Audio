@@ -7,6 +7,7 @@ namespace Ami.BroAudio.Runtime
 {
 	public struct PlaybackPreference
 	{
+		public readonly SpatialSettings SpatialSettings;
 		public readonly bool IsNormalLoop;
 		public readonly bool IsSeamlessLoop;
 		public readonly float Delay;
@@ -48,6 +49,7 @@ namespace Ami.BroAudio.Runtime
 			IsSeamlessLoop = entity.SeamlessLoop;
 			IsNormalLoop = IsSeamlessLoop ? false : entity.Loop;
 			Delay = entity.Delay;
+			SpatialSettings = entity.SpatialSettings;
 
 			FadeInEase = IsSeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
 			FadeOutEase = IsSeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;

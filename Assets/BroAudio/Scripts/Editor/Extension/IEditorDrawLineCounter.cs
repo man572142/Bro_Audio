@@ -4,5 +4,6 @@ namespace Ami.Extension
 	{
 		float SingleLineSpace { get; }
 		int DrawLineCount { get; set; }
+		float Offset { get; set; }
 	}
 }

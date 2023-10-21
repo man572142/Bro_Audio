@@ -16,7 +16,7 @@ namespace Ami.Extension
 
 		public static Rect GetRectAndIterateLine(IEditorDrawLineCounter drawer, Rect position)
 		{
-			Rect newRect = new Rect(position.x, position.y + drawer.SingleLineSpace * drawer.DrawLineCount, position.width, EditorGUIUtility.singleLineHeight);
+			Rect newRect = new Rect(position.x, position.y + drawer.SingleLineSpace * drawer.DrawLineCount + drawer.Offset, position.width, EditorGUIUtility.singleLineHeight);
 			drawer.DrawLineCount++;
 
 			return newRect;

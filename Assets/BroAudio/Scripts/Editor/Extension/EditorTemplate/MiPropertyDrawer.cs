@@ -9,8 +9,9 @@ namespace Ami.Extension
 	{
 		public abstract float SingleLineSpace { get; }
 		public int DrawLineCount { get; set; }
-
-		public bool IsEnable { get; protected set; }
+        public float Offset { get; set; }
+        public bool IsEnable { get; protected set; }
+		
 
 		protected virtual void OnEnable()
 		{
@@ -21,6 +22,7 @@ namespace Ami.Extension
 			// EditorGUIUtility.wideMode should be set here; otherwise, some EditorGUI will draw poorly (e.g.EditorGUI.MultiFloatField )
 			EditorGUIUtility.wideMode = true;
 			DrawLineCount = 0;
+			Offset = 0f;
 
 			if (!IsEnable)
 			{
@@ -36,8 +38,14 @@ namespace Ami.Extension
 
 		protected Rect GetRectAndIterateLine(Rect position)
 		{
-			return EditorScriptingExtension.GetRectAndIterateLine(this, position);
+			return GetRectAndIterateLine(position, 0);
 		}
-	}
 
+        protected Rect GetRectAndIterateLine(Rect position, int extraLines)
+        {
+			Rect rect = EditorScriptingExtension.GetRectAndIterateLine(this, position);
+            DrawEmptyLine(extraLines);
+			return rect;
+        }
+    }
 }

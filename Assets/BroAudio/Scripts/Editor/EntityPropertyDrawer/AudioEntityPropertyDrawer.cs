@@ -8,6 +8,7 @@ using Ami.BroAudio.Editor.Setting;
 using System;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.Extension.AudioConstant;
+using static Ami.BroAudio.Editor.BroEditorUtility;
 
 namespace Ami.BroAudio.Editor
 {
@@ -18,7 +19,6 @@ namespace Ami.BroAudio.Editor
 
 		protected const float ClipPreviewHeight = 100f;
 		private const int _basePropertiesLineCount = 1;
-		private const int _clipPropertiesLineCount = 1;
 		private const float _lowVolumeSnappingThreshold = 0.05f;
 		private const float _highVolumeSnappingThreshold = 0.2f;
 		private const string _dbValueStringFormat = "0.##";
@@ -68,39 +68,52 @@ namespace Ami.BroAudio.Editor
 
 			DrawAdditionalBaseProperties(position, property, setting);
 
-			#region Clip Properties
-			ReorderableClips currClipList = DrawReorderableClipsList(position, property, OnClipChanged);
+            #region Clip Properties
+            ReorderableClips currClipList = DrawReorderableClipsList(position, property, OnClipChanged);
 			SerializedProperty currSelectClip = currClipList.CurrentSelectedClip;
 			if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
 			{
-				DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport);
+                DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport);
 				DrawAdditionalClipProperties(position, property, setting);
 				if (setting.DrawedProperty.HasFlag(DrawedProperty.ClipPreview))
 				{
 					SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview);
-					isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
+                    isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
 					bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
 					if (isShowPreview)
 					{
 						_clipPropHelper.DrawClipPreview(GetRectAndIterateLine(position), transport, audioClip, currSelectClip.propertyPath);
+						Offset += ClipPreviewHeight;
 					}
 				}
 			}
-			#endregion
-		}
+		#endregion
 
-		private void DrawEntityNameField(Rect position, SerializedProperty nameProp)
-		{
-			EditorGUI.BeginChangeCheck();
-			nameProp.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProp.stringValue);
-			if (EditorGUI.EndChangeCheck())
+			//hack: temporary , and don't mind the drawing position
+
+			if (GUI.Button(GetRectAndIterateLine(position), "Spatial Setting"))
 			{
-				nameProp.serializedObject.ApplyModifiedProperties();
-				OnEntityNameChanged?.Invoke();
-			}
-		}
+                SerializedProperty settingsProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
+                SpatialSettingsEditorWindow.ShowWindow(settingsProp, OnSetSpatialSettingBack);
+                GUIUtility.ExitGUI();
+            }
 
-		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+            void OnSetSpatialSettingBack(SpatialSettings settings)
+            {
+				SerializedProperty prop = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.StereoPan).floatValue = settings.StereoPan;
+                GetSpatialSettingsProperty(prop, SpatialPropertyType.DopplerLevel).floatValue = settings.DopplerLevel;
+                GetSpatialSettingsProperty(prop, SpatialPropertyType.MinDistance).floatValue = settings.MinDistance;
+                GetSpatialSettingsProperty(prop, SpatialPropertyType.MaxDistance).floatValue = settings.MaxDistance;
+                GetSpatialSettingsProperty(prop, SpatialPropertyType.SpatialBlend).animationCurveValue = settings.SpatialBlend;
+                GetSpatialSettingsProperty(prop, SpatialPropertyType.ReverbZoneMix).animationCurveValue = settings.ReverbZoneMix;
+                GetSpatialSettingsProperty(prop, SpatialPropertyType.Spread).animationCurveValue = settings.Spread;
+                GetSpatialSettingsProperty(prop, SpatialPropertyType.CustomRolloff).animationCurveValue = settings.CustomRolloff;
+                prop.serializedObject.ApplyModifiedProperties();
+            }
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
 			float height = SingleLineSpace;
 			
@@ -117,8 +130,9 @@ namespace Ami.BroAudio.Editor
 
 					if(isShowClipProp)
 					{
-						height += (_clipPropertiesLineCount + GetAdditionalClipPropertiesLineCount(property, setting)) * SingleLineSpace;
+						height += GetAdditionalClipPropertiesLineCount(property, setting) * SingleLineSpace;
 					}
+
 					if(isShowClipPreview)
 					{
 						height += ClipPreviewHeight;
@@ -127,9 +141,20 @@ namespace Ami.BroAudio.Editor
 			}
 			return height;
 		}
-		#endregion
+        #endregion
 
-		private ReorderableClips DrawReorderableClipsList(Rect position, SerializedProperty property,Action<string> onClipChanged)
+        private void DrawEntityNameField(Rect position, SerializedProperty nameProp)
+        {
+            EditorGUI.BeginChangeCheck();
+            nameProp.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProp.stringValue);
+            if (EditorGUI.EndChangeCheck())
+            {
+                nameProp.serializedObject.ApplyModifiedProperties();
+                OnEntityNameChanged?.Invoke();
+            }
+        }
+
+        private ReorderableClips DrawReorderableClipsList(Rect position, SerializedProperty property,Action<string> onClipChanged)
 		{
 			bool hasReorderableClips = _reorderableClipsDict.TryGetValue(property.propertyPath, out var reorderableClips);
 			if (!hasReorderableClips)
@@ -138,9 +163,10 @@ namespace Ami.BroAudio.Editor
 				_reorderableClipsDict.Add(property.propertyPath, reorderableClips);
 			}
 
-			reorderableClips.DrawReorderableList(GetRectAndIterateLine(position));
+			Rect rect = GetRectAndIterateLine(position);
+            reorderableClips.DrawReorderableList(rect);
 			reorderableClips.OnAudioClipChanged = onClipChanged;
-			return reorderableClips;
+            return reorderableClips;
 		}
 
 		private void DrawClipProperties(Rect position,SerializedProperty clipProp, AudioClip audioClip, EditorSetting.AudioTypeSetting setting, out ITransport transport)

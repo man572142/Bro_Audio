@@ -11,8 +11,9 @@ namespace Ami.Extension
 
 		public abstract float SingleLineSpace { get; }
 		public int DrawLineCount { get; set; }
+        public float Offset { get; set; }
 
-		protected virtual void OnGUI()
+        protected virtual void OnGUI()
 		{
 			// EditorGUIUtility.wideMode should be set here; otherwise, some EditorGUI will draw poorly (e.g.EditorGUI.MultiFloatField )
 			EditorGUIUtility.wideMode = true;

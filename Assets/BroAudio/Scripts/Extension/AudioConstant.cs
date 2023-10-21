@@ -42,7 +42,11 @@ namespace Ami.Extension
 		/// </summary>
 		public const float MinFrequence = 10f;
 
-		public static float DecibelVoulumeFullScale => MaxDecibelVolume - MinDecibelVolume;
+		public const float DefaultDoppler = 1f;
+		public const float DefaultAttenuationMinDistance = 1f;
+        public const float DefaultAttenuationMaxDistance = 500f;
+
+        public static float DecibelVoulumeFullScale => MaxDecibelVolume - MinDecibelVolume;
 	}
 
 }

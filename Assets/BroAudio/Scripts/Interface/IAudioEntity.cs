@@ -7,5 +7,6 @@ namespace Ami.BroAudio.Data
 		bool SeamlessLoop { get; }
 		float TransitionTime { get; }
 		BroAudioClip Clip { get; }
-	} 
+        SpatialSettings SpatialSettings { get; }
+    } 
 }

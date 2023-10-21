@@ -6,138 +6,145 @@ using System.Reflection;
 using System;
 using Ami.Extension;
 using static Ami.Extension.EditorScriptingExtension;
+using static Ami.BroAudio.Editor.BroEditorUtility;
+using Ami.BroAudio.Data;
 
-public class SpatialSettingsEditorWindow : EditorWindow
+namespace Ami.BroAudio.Editor
 {
-	private static class PropertyPath
+	public class SpatialSettingsEditorWindow : EditorWindow
 	{
-		public const string OutputAudioMixerGroup = "OutputAudioMixerGroup";
-		public const string AudioClip = "m_audioClip";
-		public const string PlayOnAwake = "m_PlayOnAwake";
-		public const string Volume = "m_Volume";
-		public const string Pitch = "m_Pitch";
-		public const string Loop = "Loop";
-		public const string Mute = "Mute";
-		public const string Spatialize = "Spatialize";
-		public const string SpatializePostEffects = "SpatializePostEffects";
-		public const string Priority = "Priority";
-		public const string DopplerLevel = "DopplerLevel";
-		public const string MinDistance = "MinDistance";
-		public const string MaxDistance = "MaxDistance";
-		public const string StereoPan = "Pan2D";
-		public const string VolumeRolloff = "rolloffMode";
-		public const string BypassEffects = "BypassEffects";
-		public const string BypassListenerEffects = "BypassListenerEffects";
-		public const string BypassReverbZones = "BypassReverbZones";
-		public const string RolloffCustomCurve = "rolloffCustomCurve";
-		public const string SpatialBlend = "panLevelCustomCurve";
-		public const string Spread = "spreadCustomCurve";
-		public const string ReverbZoneMix = "reverbZoneMixCustomCurve";
-	}
+		public const string ReverbZoneMixLabel = "Reverb Zone Mix";
 
-	public const string ReverbZoneMixLabel = "Reverb Zone Mix";
+		public Action<SpatialSettings> OnCloseWindow;
 
-	private GameObject _prefab = null;
-	private Type _audioSourceInspector = null;
-	private MethodInfo _draw3DGUIMethod = null;
-	private Editor _audioSourceEditor = null;
-	private readonly Keyframe[] _dummyFrameArray = new Keyframe[] { new Keyframe(0f, 0f) };
+		private Type _audioSourceInspector = null;
+		private MethodInfo _draw3DGUIMethod = null;
+		private UnityEditor.Editor _audioSourceEditor = null;
+		private readonly Keyframe[] _dummyFrameArray = new Keyframe[] { new Keyframe(0f, 0f) };
 
-	private MultiLabel _stereoPanLabels => new MultiLabel() { Main = "Stereo Pan", Left = "Left", Right = "Right"};
-	private MultiLabel _spatialBlendLabels => new MultiLabel() { Main = "Spatial Blend", Left = "2D", Right = "3D" };
+		private MultiLabel _stereoPanLabels => new MultiLabel() { Main = "Stereo Pan", Left = "Left", Right = "Right" };
+		private MultiLabel _spatialBlendLabels => new MultiLabel() { Main = "Spatial Blend", Left = "2D", Right = "3D" };
 
-#if BroAudio_DevOnly
-	[MenuItem("BroAudio/Spatial Setting Window")]
-#endif
-	public static void ShowWindow()
-	{
-		EditorWindow window = GetWindow<SpatialSettingsEditorWindow>();
-		Vector2 size = new Vector2(400f, 550f);
-		window.minSize = size;
-		window.maxSize = size;
-		window.titleContent = new GUIContent("Spatial Setting");
-		window.ShowModal();
-	}
-
-	private void OnEnable()
-	{
-		Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
-		_audioSourceInspector = unityEditorAssembly?.GetType($"UnityEditor.AudioSourceInspector");
-
-		_draw3DGUIMethod = _audioSourceInspector?.GetMethod("Audio3DGUI", BindingFlags.NonPublic | BindingFlags.Instance);
-
-		_prefab = Resources.Load<GameObject>("Editor/AudioSourceInspector");
-		AudioSource audioSource = _prefab.AddComponent<AudioSource>();
-		
-		_audioSourceEditor = Editor.CreateEditor(audioSource);
-	}
-
-	private void OnDisable()
-	{
-
-		ResetComponent();
-		DestroyImmediate(_audioSourceEditor);
-	}
-
-	private void ResetComponent()
-	{
-		// Unsupported.SmartReset(_audioSourceEditor.target); 
-		// The code above works too, but such a misty code is hard to trust.
-
-		DestroyImmediate(_audioSourceEditor.target,true);
-	}
-
-	private void OnGUI()
-	{
-		if (_audioSourceEditor == null)
+		public static void ShowWindow(SerializedProperty settingsProp, Action<SpatialSettings> onCloseWindow)
 		{
-			return;
+			var window = GetWindow<SpatialSettingsEditorWindow>();
+			Vector2 size = new Vector2(400f, 550f);
+			window.minSize = size;
+			window.maxSize = size;
+			window.titleContent = new GUIContent("Spatial Settings");
+			window.OnCloseWindow = onCloseWindow;
+            window.Init(settingsProp);
+            window.ShowModal();
 		}
 
-		DrawStereoPan();
-		EditorGUILayout.Space();
+        private void Init(SerializedProperty settingsProp)
+        {
+            Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
+            _audioSourceInspector = unityEditorAssembly?.GetType($"UnityEditor.AudioSourceInspector");
 
-		SerializedProperty spatialBlendProp = _audioSourceEditor.serializedObject.FindProperty(PropertyPath.SpatialBlend);
-		SerializeAnimateCurveValue(spatialBlendProp,_spatialBlendLabels.Main, currValue => Draw2SidesLabelSlider(_spatialBlendLabels, currValue, 0f, 1f));
-		EditorGUILayout.Space();
+            _draw3DGUIMethod = _audioSourceInspector?.GetMethod("Audio3DGUI", BindingFlags.NonPublic | BindingFlags.Instance);
 
-		SerializedProperty reverbZoneProp = _audioSourceEditor.serializedObject.FindProperty(PropertyPath.ReverbZoneMix);
-		SerializeAnimateCurveValue(reverbZoneProp, ReverbZoneMixLabel, currValue => EditorGUILayout.Slider(ReverbZoneMixLabel, currValue, 0f, 1.1f)); // reverb zone can accept value up to 1.1
-		EditorGUILayout.Space();
+            GameObject prefab = Resources.Load<GameObject>("Editor/AudioSourceInspector");
+            AudioSource audioSource = prefab.AddComponent<AudioSource>();
 
-		EditorGUILayout.LabelField("3D Sound Settings".ToBold(), GUIStyleHelper.RichText);
-		if (_draw3DGUIMethod != null)
+            _audioSourceEditor = UnityEditor.Editor.CreateEditor(audioSource);
+
+			SerializedObject so = _audioSourceEditor.serializedObject;
+			GetAudioSourceProperty(so, SpatialPropertyType.StereoPan).floatValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.StereoPan).floatValue;
+            GetAudioSourceProperty(so, SpatialPropertyType.DopplerLevel).floatValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.DopplerLevel).floatValue;
+            GetAudioSourceProperty(so, SpatialPropertyType.MinDistance).floatValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.MinDistance).floatValue;
+            GetAudioSourceProperty(so, SpatialPropertyType.MaxDistance).floatValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.MaxDistance).floatValue;
+            GetAudioSourceProperty(so, SpatialPropertyType.SpatialBlend).animationCurveValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.SpatialBlend).animationCurveValue;
+            GetAudioSourceProperty(so, SpatialPropertyType.ReverbZoneMix).animationCurveValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.ReverbZoneMix).animationCurveValue;
+            GetAudioSourceProperty(so, SpatialPropertyType.Spread).animationCurveValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.Spread).animationCurveValue;
+            GetAudioSourceProperty(so, SpatialPropertyType.CustomRolloff).animationCurveValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.CustomRolloff).animationCurveValue;
+        }
+
+        private void OnDisable()
 		{
-			_draw3DGUIMethod.Invoke(_audioSourceEditor, null);
-		}
-	}
-
-	private void DrawStereoPan()
-	{
-		SerializedProperty stereoPanProp = _audioSourceEditor.serializedObject.FindProperty(PropertyPath.StereoPan);
-		stereoPanProp.floatValue = Draw2SidesLabelSlider(_stereoPanLabels, stereoPanProp.floatValue, -1f, 1f);
-	}
-
-	private void SerializeAnimateCurveValue(SerializedProperty serializedProperty,string label,Func<float,float> onDrawSlider)
-	{
-		if (serializedProperty.animationCurveValue.length > 1)
-		{
-			GUIStyle leftMiniGrey = new GUIStyle(EditorStyles.centeredGreyMiniLabel);
-			leftMiniGrey.alignment = TextAnchor.MiddleLeft;
-			EditorGUILayout.LabelField(label, "Controlled by curve", leftMiniGrey);
-		}
-		else if (serializedProperty.animationCurveValue.length == 1)
-		{
-			EditorGUI.BeginChangeCheck();
-			float newValue = onDrawSlider.Invoke(serializedProperty.animationCurveValue[0].value);
-			if (EditorGUI.EndChangeCheck())
+			if(_audioSourceEditor != null)
 			{
-				AnimationCurve curve = serializedProperty.animationCurveValue;
-				_dummyFrameArray[0] = new Keyframe(0f, newValue);
-				curve.keys = _dummyFrameArray;
-				serializedProperty.animationCurveValue = curve;
-				serializedProperty.serializedObject.ApplyModifiedProperties();
+                OnCloseWindow?.Invoke(GetSpatialSettings());
+
+                // Unsupported.SmartReset(_audioSourceEditor.target); 
+                // The code above works too, but such a misty code is hard to trust.
+                DestroyImmediate(_audioSourceEditor.target, true);
+
+                DestroyImmediate(_audioSourceEditor);
+				_audioSourceEditor = null;
+            }
+		}
+
+        private SpatialSettings GetSpatialSettings()
+        {
+			SerializedObject so = _audioSourceEditor.serializedObject;
+            SpatialSettings settings = new SpatialSettings()
+            {
+                StereoPan = GetAudioSourceProperty(so,SpatialPropertyType.StereoPan).floatValue,
+                DopplerLevel = GetAudioSourceProperty(so, SpatialPropertyType.DopplerLevel).floatValue,
+                MinDistance = GetAudioSourceProperty(so, SpatialPropertyType.MinDistance).floatValue,
+                MaxDistance = GetAudioSourceProperty(so, SpatialPropertyType.MaxDistance).floatValue,
+                SpatialBlend = GetAudioSourceProperty(so, SpatialPropertyType.SpatialBlend).animationCurveValue,
+                ReverbZoneMix = GetAudioSourceProperty(so, SpatialPropertyType.ReverbZoneMix).animationCurveValue,
+                Spread = GetAudioSourceProperty(so, SpatialPropertyType.Spread).animationCurveValue,
+                CustomRolloff = GetAudioSourceProperty(so, SpatialPropertyType.CustomRolloff).animationCurveValue,
+            };
+            return settings;
+        }
+
+		private void OnGUI()
+		{
+			if (_audioSourceEditor == null)
+			{
+				return;
+			}
+
+			DrawStereoPan();
+			EditorGUILayout.Space();
+
+			SerializedProperty spatialBlendProp = _audioSourceEditor.serializedObject.FindProperty(AudioSourcePropertyPath.SpatialBlend);
+			SerializeAnimateCurveValue(spatialBlendProp, _spatialBlendLabels.Main, currValue => Draw2SidesLabelSlider(_spatialBlendLabels, currValue, 0f, 1f));
+			EditorGUILayout.Space();
+
+			SerializedProperty reverbZoneProp = _audioSourceEditor.serializedObject.FindProperty(AudioSourcePropertyPath.ReverbZoneMix);
+			SerializeAnimateCurveValue(reverbZoneProp, ReverbZoneMixLabel, currValue => EditorGUILayout.Slider(ReverbZoneMixLabel, currValue, 0f, 1.1f)); // reverb zone can accept value up to 1.1
+			EditorGUILayout.Space();
+
+			EditorGUILayout.LabelField("3D Sound Settings".ToBold(), GUIStyleHelper.RichText);
+			if (_draw3DGUIMethod != null)
+			{
+				_draw3DGUIMethod.Invoke(_audioSourceEditor, null);
+			}
+		}
+
+		private void DrawStereoPan()
+		{
+			SerializedProperty stereoPanProp = _audioSourceEditor.serializedObject.FindProperty(AudioSourcePropertyPath.StereoPan);
+			stereoPanProp.floatValue = Draw2SidesLabelSlider(_stereoPanLabels, stereoPanProp.floatValue, -1f, 1f);
+		}
+
+		private void SerializeAnimateCurveValue(SerializedProperty serializedProperty, string label, Func<float, float> onDrawSlider)
+		{
+			if (serializedProperty.animationCurveValue.length > 1)
+			{
+				GUIStyle leftMiniGrey = new GUIStyle(EditorStyles.centeredGreyMiniLabel);
+				leftMiniGrey.alignment = TextAnchor.MiddleLeft;
+				EditorGUILayout.LabelField(label, "Controlled by curve", leftMiniGrey);
+			}
+			else if (serializedProperty.animationCurveValue.length == 1)
+			{
+				EditorGUI.BeginChangeCheck();
+				float newValue = onDrawSlider.Invoke(serializedProperty.animationCurveValue[0].value);
+				if (EditorGUI.EndChangeCheck())
+				{
+					AnimationCurve curve = serializedProperty.animationCurveValue;
+					_dummyFrameArray[0] = new Keyframe(0f, newValue);
+					curve.keys = _dummyFrameArray;
+					serializedProperty.animationCurveValue = curve;
+					serializedProperty.serializedObject.ApplyModifiedProperties();
+				}
 			}
 		}
 	}
+
 }

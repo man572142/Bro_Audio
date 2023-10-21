@@ -76,15 +76,43 @@ namespace Ami.BroAudio.Runtime
 
         private void SetSpatial(PlaybackPreference pref)
         {
-            if(pref.HasFollowTarget(out var followTarget) && transform.parent != followTarget)
+            SpatialSettings settings = pref.SpatialSettings;
+            AudioSource.panStereo = settings.StereoPan;
+            if(settings != default)
+            {
+                AudioSource.dopplerLevel = settings.DopplerLevel;
+                AudioSource.minDistance = settings.MinDistance;
+                AudioSource.maxDistance = settings.MaxDistance;
+            }
+            else
+            {
+                // todo: add to co
+                AudioSource.dopplerLevel = 1f;
+                AudioSource.minDistance = 1f;
+                AudioSource.maxDistance = 500f;
+            }
+
+            AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, settings.SpatialBlend);
+            AudioSource.SetCustomCurve(AudioSourceCurveType.ReverbZoneMix, settings.ReverbZoneMix);
+            AudioSource.SetCustomCurve(AudioSourceCurveType.Spread, settings.Spread);
+            AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, settings.CustomRolloff);
+
+
+            if (pref.HasFollowTarget(out var followTarget) && transform.parent != followTarget)
 			{
                 transform.SetParent(followTarget,false);
-                AudioSource.spatialBlend = SpatialBlend_3D;
+                if(settings.SpatialBlend == null)
+                {
+                    AudioSource.spatialBlend = SpatialBlend_3D;
+                }
             }
             else if (pref.HasPosition(out var position))
 			{
                 transform.position = position;
-                AudioSource.spatialBlend = SpatialBlend_3D;
+                if(settings.SpatialBlend == null)
+                {
+                    AudioSource.spatialBlend = SpatialBlend_3D;
+                }
             }
         }
 

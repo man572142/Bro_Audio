@@ -20,7 +20,7 @@ namespace Ami.BroAudio.Editor
 
 		public bool IsMulticlips => _reorderableList.count > 1;
 		public bool HasAnyClip => _reorderableList.count > 0;
-		public float Height => _reorderableList.GetHeight();
+		public float Height => _reorderableList.GetHeight() + ReorderableList.Defaults.padding;
 
 		private int _currSelectedClipIndex = -1;
 		private SerializedProperty _currSelectedClip;
@@ -64,6 +64,7 @@ namespace Ami.BroAudio.Editor
 		public void DrawReorderableList(Rect position)
 		{
 			_reorderableList.DoList(position);
+			_editorDrawer.Offset += ReorderableList.Defaults.padding * 2;
 		}
 
 		private ReorderableList CreateReorderabeList(SerializedProperty entityProperty)
@@ -117,7 +118,6 @@ namespace Ami.BroAudio.Editor
 					}
 					EditorGUI.LabelField(newRects[1].DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
 				}
-				_editorDrawer.DrawLineCount++;
 			}
 		}
 
@@ -149,6 +149,7 @@ namespace Ami.BroAudio.Editor
 					weightProp.intValue = EditorGUI.IntField(valueRect, weightProp.intValue, intFieldStyle);
 					break;
 			}
+			
 			_editorDrawer.DrawLineCount++;
 		}
 
@@ -157,9 +158,7 @@ namespace Ami.BroAudio.Editor
 			ReorderableList.defaultBehaviours.DrawFooter(rect, _reorderableList);
 			if (CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
 			{
-				Rect labelRect = new Rect(rect);
-				labelRect.y += 5f;
-				EditorGUI.LabelField(labelRect, audioClip.name.SetColor(BroAudioGUISetting.ClipLabelColor).ToBold(), GUIStyleHelper.RichText);
+				EditorGUI.LabelField(rect, audioClip.name.SetColor(BroAudioGUISetting.ClipLabelColor).ToBold(), GUIStyleHelper.RichText);
 			}
 			_editorDrawer.DrawLineCount++;
 		}

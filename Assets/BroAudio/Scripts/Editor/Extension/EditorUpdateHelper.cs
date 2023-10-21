@@ -7,6 +7,7 @@ namespace Ami.Extension
 {
 	public abstract class EditorUpdateHelper
 	{
+		// TODO: use AnimBase instaed?
 		public event Action OnUpdate;
 
 		private double _lastUpdateTime = default;

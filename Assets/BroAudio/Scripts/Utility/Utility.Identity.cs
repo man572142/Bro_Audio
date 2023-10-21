@@ -1,6 +1,7 @@
 using System;
 using static Ami.BroAudio.Tools.BroLog;
 using Ami.BroAudio.Data;
+using Ami.Extension;
 
 namespace Ami.BroAudio
 {
@@ -51,6 +52,11 @@ namespace Ami.BroAudio
 
 		public static BroAudioType GetAudioType(int id)
 		{
+			if(id >= FinalIDLimit)
+			{
+				return BroAudioType.None;
+			}
+
 			BroAudioType resultType = BroAudioType.None;
 			BroAudioType nextType = resultType.ToNext();
 
@@ -66,12 +72,25 @@ namespace Ami.BroAudio
 			return resultType;
 		}
 
-		public static void ForeachConcreteAudioType(Action<BroAudioType> loopCallback)
+		public static bool IsConcrete(this BroAudioType audioType, bool checkFlags = false)
+		{
+			if(audioType == BroAudioType.None || audioType == BroAudioType.All)
+			{
+				return false;
+			}
+			else if (checkFlags && FlagsExtension.GetFlagsOnCount((int)audioType) > 1)
+			{
+				return false;
+			}
+			return true;
+		}
+
+        public static void ForeachConcreteAudioType(Action<BroAudioType> loopCallback)
 		{
             BroAudioType currentType = BroAudioType.None;
             while(currentType <= (BroAudioType)LastAudioType)
 			{
-				if(currentType != BroAudioType.None && currentType != BroAudioType.All)
+				if(currentType.IsConcrete())
 				{
                     loopCallback?.Invoke(currentType);
                 }

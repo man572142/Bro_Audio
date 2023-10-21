@@ -68,10 +68,10 @@ namespace Ami.BroAudio.Editor.Setting
 		private AudioMixer _mixer = null;
 		private Vector2 _scrollPos = default;
 		private float _demoSliderValue = 1f; 
-		private GUIStyle _frameBox = null;
-		private GUIStyle _tabFirst = null;
-		private GUIStyle _tabMiddle = null;
-		private GUIStyle _tabLast = null;
+		private GUIStyle _frameBox = "FrameBox";
+		private GUIStyle _tabFirst = "Tab first";
+		private GUIStyle _tabMiddle = "Tab middle";
+		private GUIStyle _tabLast = "Tab last";
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
@@ -194,7 +194,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 			if(Event.current.type == EventType.Repaint)
 			{
-				GUIStyleHelper.GetStyleAndCached(ref _frameBox,"FrameBox")?.Draw(tabWindowRect, false, false, false, false);
+                _frameBox?.Draw(tabWindowRect, false, false, false, false);
 			}
 
 			Rect tabLabelsRect = DrawTabsLabel(tabWindowRect);
@@ -250,22 +250,22 @@ namespace Ami.BroAudio.Editor.Setting
 				}
 			}
 			return rect;
-		}
 
-        private GUIStyle GetTabStyle(int i, int length)
-        {
-            if(i == 0)
-			{
-				return GUIStyleHelper.GetStyleAndCached(ref _tabFirst,"Tab first");
-			}
-			else if(i == length - 1)
-			{
-				return GUIStyleHelper.GetStyleAndCached(ref _tabLast,"Tab last");
-			}
-			else
-			{
-				return GUIStyleHelper.GetStyleAndCached(ref _tabMiddle,"Tab middle");
-			}
+            GUIStyle GetTabStyle(int i, int length)
+            {
+                if (i == 0)
+                {
+                    return _tabFirst;
+                }
+                else if (i == length - 1)
+                {
+                    return _tabLast;
+                }
+                else
+                {
+                    return _tabMiddle;
+                }
+            }
         }
 
         private void DrawAudioSetting(Rect drawPosition)

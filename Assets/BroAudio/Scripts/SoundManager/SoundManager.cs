@@ -290,15 +290,9 @@ namespace Ami.BroAudio.Runtime
                 return false;
             }
 
-            BroAudioType audioType = GetAudioType(id);
-            if (audioType == BroAudioType.All || audioType == BroAudioType.None)
-            {
-                LogError($"Audio:{id.ToName().ToWhiteBold()} is invalid");
-                return false;
-            }
-
             if (_combFilteringPreventer.TryGetValue(id, out bool isPreventing) && isPreventing)
             {
+                // todo: add an option on Settings to let the user choose whether they need this warning or not
                 LogWarning($"One of the plays of Audio:{id.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
                     $"Check [BroAudio > Global Setting] for more information, or change the setting.");
                 return false;

@@ -14,12 +14,6 @@ namespace Ami.Extension
 			public string Right;
 		}
 
-		/// <summary>
-		/// ���o�ثeø�s�����@�檺Rect�A�����۰ʭ��N�ܤU�� (���涶�ǱN�|�M�wø�s����m)
-		/// </summary>
-		/// <param name="drawer"></param>
-		/// <param name="position"></param>
-		/// <returns></returns>
 		public static Rect GetRectAndIterateLine(IEditorDrawLineCounter drawer, Rect position)
 		{
 			Rect newRect = new Rect(position.x, position.y + drawer.SingleLineSpace * drawer.DrawLineCount, position.width, EditorGUIUtility.singleLineHeight);
@@ -28,14 +22,6 @@ namespace Ami.Extension
 			return newRect;
 		}
 
-		/// <summary>
-		/// �NRect�̫��w��Ҥ�����������Rect
-		/// </summary>
-		/// <param name="origin">��lRect</param>
-		/// <param name="firstRatio">�Ĥ@��Rect�����</param>
-		/// <param name="gap">��̪����j</param>
-		/// <param name="rect1">��X���Ĥ@��Rect</param>
-		/// <param name="rect2">��X���ĤG��Recr</param>
 		public static void SplitRectHorizontal(Rect origin, float firstRatio, float gap, out Rect rect1, out Rect rect2)
 		{
 			float halfGap = gap * 0.5f;
@@ -64,14 +50,7 @@ namespace Ami.Extension
 			outputRects = results;
 		}
 
-		/// <summary>
-		/// �NRect�̫��w��Ҥ�������������ƶq��Rect
-		/// </summary>
-		/// <param name="origin"></param>
-		/// <param name="allRatio"></param>
-		/// <param name="gap"></param>
-		/// <param name="outputRects"></param>
-		/// <returns></returns>
+
 		public static bool TrySplitRectHorizontal(Rect origin, float[] allRatio, float gap, out Rect[] outputRects)
 		{
 			// todo: Change to non-TryGet 
@@ -95,14 +74,6 @@ namespace Ami.Extension
 			return true;
 		}
 
-		/// <summary>
-		/// �NRect�̫��w��ҫ�����������Rect
-		/// </summary>
-		/// <param name="origin"></param>
-		/// <param name="firstRatio"></param>
-		/// <param name="gap"></param>
-		/// <param name="rect1"></param>
-		/// <param name="rect2"></param>
 		public static void SplitRectVertical(Rect origin, float firstRatio, float gap, out Rect rect1, out Rect rect2)
 		{
 			float halfGap = gap * 0.5f;
@@ -110,14 +81,6 @@ namespace Ami.Extension
 			rect2 = new Rect(origin.x, rect1.yMax + gap, origin.width, origin.height * (1 - firstRatio) - halfGap);
 		}
 
-		/// <summary>
-		/// �NRect�̫��w��Ҥ�������������ƶq��Rect
-		/// </summary>
-		/// <param name="origin"></param>
-		/// <param name="allRatio"></param>
-		/// <param name="gap"></param>
-		/// <param name="outputRects"></param>
-		/// <returns></returns>
 		public static bool TrySplitRectVertical(Rect origin, float[] allRatio, float gap, out Rect[] outputRects)
 		{
 			if (allRatio.Sum() != 1)
@@ -140,12 +103,6 @@ namespace Ami.Extension
 			return true;
 		}
 
-		/// <summary>
-		/// �b��lRect���������w��Ҧ�m��ܷs��Rect(�������lRect��ø�s)
-		/// </summary>
-		/// <param name="origin"></param>
-		/// <param name="dissolveRatio"></param>
-		/// <returns></returns>
 		public static Rect DissolveHorizontal(this Rect origin,float dissolveRatio)
 		{
 			return new Rect(origin.xMin + dissolveRatio * origin.width, origin.y, (1 - dissolveRatio) * origin.width, origin.height);
@@ -201,22 +158,11 @@ namespace Ami.Extension
 			return newProperty != null;
 		}
 
-		/// <summary>
-		/// �䴩RichText��HelpBox
-		/// </summary>
-		/// <param name="position">ø�s��m</param>
-		/// <param name="message">�T�����e</param>
-		/// <param name="messageType">�T������</param>
 		public static void RichTextHelpBox(Rect position,string message, MessageType messageType)
 		{
 			RichTextHelpBox(position,message, GetIconName(messageType));
 		}
 
-		/// <summary>
-		/// �䴩RichText��HelpBox
-		/// </summary>
-		/// <param name="message">�T�����e</param>
-		/// <param name="messageType">�T������</param>
 		public static void RichTextHelpBox(string message, MessageType messageType)
 		{
 			RichTextHelpBox(message, GetIconName(messageType));
@@ -237,23 +183,12 @@ namespace Ami.Extension
 			}
 		}
 
-		/// <summary>
-		/// �䴩RichText�Φۭqicon��HelpBox
-		/// </summary>
-		/// <param name="position">ø�s��m</param>
-		/// <param name="message">�T�����e</param>
-		/// <param name="icon">Unity����Icon�W��</param>
 		public static void RichTextHelpBox(Rect position,string message, string icon)
 		{
 			GUIContent content = GetRichTextContent(message, icon);
 			EditorGUI.LabelField(position, content, GUIStyleHelper.RichTextHelpBox);
 		}
 
-		/// <summary>
-		/// �䴩RichText�Φۭqicon��HelpBox
-		/// </summary>
-		/// <param name="message">�T�����e</param>
-		/// <param name="icon">Unity����Icon�W��</param>
 		public static void RichTextHelpBox(string message, string icon)
 		{
 			GUIContent content = GetRichTextContent(message, icon);
@@ -265,21 +200,11 @@ namespace Ami.Extension
 			return string.IsNullOrEmpty(icon) ? new GUIContent(message) : new GUIContent(message, EditorGUIUtility.IconContent(icon).image);
 		}
 
-		/// <summary>
-		/// ���oProperty�۰ʥͦ�BackingField���W��
-		/// </summary>
-		/// <param name="propertyName"></param>
-		/// <returns></returns>
 		public static string GetBackingFieldName(string propertyName)
 		{
 			return $"<{propertyName}>k__BackingField";
 		}
 
-		/// <summary>
-		/// ���oPorperty��Field�W��(�R�W�W�h:_camelCase)
-		/// </summary>
-		/// <param name="propertyName"></param>
-		/// <returns></returns>
 		public static string GetFieldName(string propertyName)
 		{
 			if(!string.IsNullOrEmpty(propertyName) && propertyName.Length > 0)
@@ -394,8 +319,9 @@ namespace Ami.Extension
 			EditorGUI.LabelField(leftRect, labels.Left, lowerLeftMiniLabel);
 			EditorGUI.LabelField(rightRect, labels.Right, lowerLeftMiniLabel);
 
-
 			return resultValue;
 		}
+
+
 	}
 }

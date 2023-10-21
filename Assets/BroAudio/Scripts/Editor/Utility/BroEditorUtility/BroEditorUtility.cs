@@ -148,5 +148,19 @@ namespace Ami.BroAudio.Editor
         {
             return IsEnglishLetter(word) || Char.IsNumber(word) || word == '_' || Char.IsWhiteSpace(word);
         }
+
+        public static bool TryGetEntityName(IAudioAsset asset, int id, out string name)
+        {
+            name = null;
+            foreach (var entity in asset.GetAllAudioEntities())
+            {
+                if (entity.ID == id)
+                {
+                    name = entity.Name;
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

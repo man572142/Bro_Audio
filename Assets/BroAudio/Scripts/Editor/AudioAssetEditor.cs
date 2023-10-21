@@ -120,8 +120,9 @@ namespace Ami.BroAudio.Editor
         {
             if(GUILayout.Button("Open " + BroName.MenuItem_LibraryManager))
 			{
-				LibraryManagerWindow.OpenFromAssetFile(Asset.AssetGUID, out var idGenerator);
-				Init(idGenerator);
+				LibraryManagerWindow window = LibraryManagerWindow.ShowWindow();
+				window.SelectAsset(Asset.AssetGUID);
+				Init(window.IDGenerator);
 			}
 		}
 

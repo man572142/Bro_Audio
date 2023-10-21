@@ -22,6 +22,12 @@ namespace Ami.Extension
 			return newRect;
 		}
 
+		public static Rect GetNextLineRect(IEditorDrawLineCounter drawer, Rect position)
+		{
+            Rect newRect = new Rect(position.x, position.y + drawer.SingleLineSpace * drawer.DrawLineCount + drawer.Offset, position.width, EditorGUIUtility.singleLineHeight);
+            return newRect;
+        }
+
 		public static void SplitRectHorizontal(Rect origin, float firstRatio, float gap, out Rect rect1, out Rect rect2)
 		{
 			float halfGap = gap * 0.5f;

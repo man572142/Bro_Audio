@@ -36,6 +36,11 @@ namespace Ami.Extension
 			DrawLineCount += count;
 		}
 
+		protected Rect GetNextLineRect(Rect position)
+		{
+			return EditorScriptingExtension.GetNextLineRect(this,position);
+		}
+
 		protected Rect GetRectAndIterateLine(Rect position)
 		{
 			return GetRectAndIterateLine(position, 0);

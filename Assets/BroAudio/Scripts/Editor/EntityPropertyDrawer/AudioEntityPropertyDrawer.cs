@@ -115,23 +115,14 @@ namespace Ami.BroAudio.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
-			float height = SingleLineSpace;
+			float height = SingleLineSpace * DrawLineCount;
 			
-			if (property.isExpanded && TryGetAudioTypeSetting(property, out var setting))
+			if (property.isExpanded)
 			{
-                height += (_basePropertiesLineCount + GetAdditionalBaseProtiesLineCount(property, setting)) * SingleLineSpace;
                 if (_reorderableClipsDict.TryGetValue(property.propertyPath, out ReorderableClips clipList))
 				{
 					height += clipList.Height;
-					bool isShowClipProp =
-						clipList.CurrentSelectedClip != null &&
-						clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip _);
-					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview).boolValue;
-
-					if(isShowClipProp)
-					{
-						height += GetAdditionalClipPropertiesLineCount(property, setting) * SingleLineSpace;
-					}
+					bool isShowClipPreview = property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview).boolValue;
 
 					if(isShowClipPreview)
 					{
@@ -159,12 +150,13 @@ namespace Ami.BroAudio.Editor
 			bool hasReorderableClips = _reorderableClipsDict.TryGetValue(property.propertyPath, out var reorderableClips);
 			if (!hasReorderableClips)
 			{
-				reorderableClips = new ReorderableClips(property,this);
+				reorderableClips = new ReorderableClips(property);
 				_reorderableClipsDict.Add(property.propertyPath, reorderableClips);
 			}
 
-			Rect rect = GetRectAndIterateLine(position);
+			Rect rect = GetNextLineRect(position);
             reorderableClips.DrawReorderableList(rect);
+			Offset += reorderableClips.Height;
 			reorderableClips.OnAudioClipChanged = onClipChanged;
             return reorderableClips;
 		}

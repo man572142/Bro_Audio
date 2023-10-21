@@ -16,11 +16,10 @@ namespace Ami.BroAudio.Editor
 
 		private ReorderableList _reorderableList;
 		private SerializedProperty _playModeProp;
-		private IEditorDrawLineCounter _editorDrawer;
 
 		public bool IsMulticlips => _reorderableList.count > 1;
-		public bool HasAnyClip => _reorderableList.count > 0;
-		public float Height => _reorderableList.GetHeight() + ReorderableList.Defaults.padding;
+		public int Count => _reorderableList.count;
+		public float Height => _reorderableList.GetHeight();
 
 		private int _currSelectedClipIndex = -1;
 		private SerializedProperty _currSelectedClip;
@@ -28,7 +27,7 @@ namespace Ami.BroAudio.Editor
 		{
 			get
 			{
-				if(HasAnyClip)
+				if(_reorderableList.count > 0)
 				{
 					if(_reorderableList.index < 0)
 					{
@@ -53,18 +52,16 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public ReorderableClips(SerializedProperty entityProperty,IEditorDrawLineCounter editorDrawer)
+		public ReorderableClips(SerializedProperty entityProperty)
 		{
 			_playModeProp = entityProperty.FindPropertyRelative(AudioEntity.NameOf.MulticlipsPlayMode);
 			_reorderableList = CreateReorderabeList(entityProperty);
 			UpdatePlayMode();
-			_editorDrawer = editorDrawer;
 		}
 
 		public void DrawReorderableList(Rect position)
 		{
 			_reorderableList.DoList(position);
-			_editorDrawer.Offset += ReorderableList.Defaults.padding * 2;
 		}
 
 		private ReorderableList CreateReorderabeList(SerializedProperty entityProperty)
@@ -149,8 +146,6 @@ namespace Ami.BroAudio.Editor
 					weightProp.intValue = EditorGUI.IntField(valueRect, weightProp.intValue, intFieldStyle);
 					break;
 			}
-			
-			_editorDrawer.DrawLineCount++;
 		}
 
 		private void OnDrawFooter(Rect rect)
@@ -160,7 +155,6 @@ namespace Ami.BroAudio.Editor
 			{
 				EditorGUI.LabelField(rect, audioClip.name.SetColor(BroAudioGUISetting.ClipLabelColor).ToBold(), GUIStyleHelper.RichText);
 			}
-			_editorDrawer.DrawLineCount++;
 		}
 
 		private void OnRemove(ReorderableList list)

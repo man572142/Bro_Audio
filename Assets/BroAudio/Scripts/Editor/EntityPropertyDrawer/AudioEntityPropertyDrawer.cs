@@ -205,40 +205,37 @@ namespace Ami.BroAudio.Editor
 		private float DrawVolumeSlider(Rect position, GUIContent label, float currentValue,bool isSnap,Action onSwitchBoostMode)
 		{
 			Rect suffixRect = EditorGUI.PrefixLabel(position, label);
-			if (TrySplitRectHorizontal(suffixRect, new float[] { 0.7f, 0.1f, 0.2f }, 10f, out Rect[] rects))
-			{
-				Rect sliderRect = rects[0];
-				Rect fieldRect = rects[1];
-				Rect dbLabelRect = rects[2];
+            SplitRectHorizontal(suffixRect, 10f, out Rect[] rects, 0.7f, 0.1f, 0.2f);
+            Rect sliderRect = rects[0];
+            Rect fieldRect = rects[1];
+            Rect dbLabelRect = rects[2];
 
 #if !UNITY_WEBGL
-				if (BroEditorUtility.EditorSetting.ShowVUColorOnVolumeSlider)
-				{
-					DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
-				}
+            if (BroEditorUtility.EditorSetting.ShowVUColorOnVolumeSlider)
+            {
+                DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
+            }
 
-				if (isSnap && CanSnap(currentValue))
-				{
-					currentValue = FullVolume;
-				}
+            if (isSnap && CanSnap(currentValue))
+            {
+                currentValue = FullVolume;
+            }
 
-				float sliderFullScale = FullVolume / (FullDecibelVolume - MinDecibelVolume / DecibelVoulumeFullScale);
-				DrawFullVolumeSnapPoint(sliderRect, sliderFullScale, onSwitchBoostMode);
+            float sliderFullScale = FullVolume / (FullDecibelVolume - MinDecibelVolume / DecibelVoulumeFullScale);
+            DrawFullVolumeSnapPoint(sliderRect, sliderFullScale, onSwitchBoostMode);
 
-				float sliderValue = ConvertToSliderValue(currentValue, sliderFullScale);
-				float newSliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
-				bool hasSliderChanged = sliderValue != newSliderValue;
+            float sliderValue = ConvertToSliderValue(currentValue, sliderFullScale);
+            float newSliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
+            bool hasSliderChanged = sliderValue != newSliderValue;
 
-				float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? ConvertToNomalizedVolume(newSliderValue, sliderFullScale) : currentValue);
-				currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
+            float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? ConvertToNomalizedVolume(newSliderValue, sliderFullScale) : currentValue);
+            currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
 #else
 				currentValue = GUI.HorizontalSlider(sliderRect, currentValue, 0f, FullVolume);
 				currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue),0f,FullVolume);
 #endif
-
-				DrawDecibelValueLabel(dbLabelRect, currentValue);
-			}
-			return currentValue;
+            DrawDecibelValueLabel(dbLabelRect, currentValue);
+            return currentValue;
 
 			void DrawDecibelValueLabel(Rect dbRect, float value)
 			{

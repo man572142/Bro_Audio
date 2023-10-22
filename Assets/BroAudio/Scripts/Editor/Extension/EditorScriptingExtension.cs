@@ -2,6 +2,8 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 using Ami.BroAudio.Editor;
+using static Ami.BroAudio.Editor.Setting.GlobalSettingEditorWindow;
+using System;
 
 namespace Ami.Extension
 {
@@ -56,30 +58,6 @@ namespace Ami.Extension
 			outputRects = results;
 		}
 
-
-		public static bool TrySplitRectHorizontal(Rect origin, float[] allRatio, float gap, out Rect[] outputRects)
-		{
-			// todo: Change to non-TryGet 
-			if (allRatio.Sum() != 1)
-			{
-				Debug.LogError("[Editor] Split ratio's sum should be 1");
-				outputRects = null;
-				return false;
-			}
-
-			Rect[] results = new Rect[allRatio.Length];
-
-			for(int i = 0; i < results.Length;i++)
-			{
-				float offsetWidth = i == 0 || i == results.Length - 1 ? gap : gap * 0.5f;
-				float newWidth = origin.width * allRatio[i] - offsetWidth;
-				float newX = i > 0 ? results[i - 1].xMax + gap : origin.x;
-				results[i] = new Rect(newX, origin.y, newWidth , origin.height);
-			}
-			outputRects = results;
-			return true;
-		}
-
 		public static void SplitRectVertical(Rect origin, float firstRatio, float gap, out Rect rect1, out Rect rect2)
 		{
 			float halfGap = gap * 0.5f;
@@ -87,26 +65,25 @@ namespace Ami.Extension
 			rect2 = new Rect(origin.x, rect1.yMax + gap, origin.width, origin.height * (1 - firstRatio) - halfGap);
 		}
 
-		public static bool TrySplitRectVertical(Rect origin, float[] allRatio, float gap, out Rect[] outputRects)
+		public static void SplitRectVertical(Rect origin, float gap, out Rect[] outputRects, params float[] ratios)
 		{
-			if (allRatio.Sum() != 1)
+			if (ratios.Sum() != 1)
 			{
 				Debug.LogError("[Editor] Split ratio's sum should be 1");
 				outputRects = null;
-				return false;
+				return;
 			}
 
-			Rect[] results = new Rect[allRatio.Length];
+			Rect[] results = new Rect[ratios.Length];
 
 			for (int i = 0; i < results.Length; i++)
 			{
 				float offsetHeight = i == 0 || i == results.Length - 1 ? gap : gap * 0.5f;
-				float newHeight = origin.height * allRatio[i] - offsetHeight;
+				float newHeight = origin.height * ratios[i] - offsetHeight;
 				float newY = i > 0 ? results[i - 1].yMax + gap : origin.y;
 				results[i] = new Rect(origin.x,newY, origin.width,newHeight);
 			}
 			outputRects = results;
-			return true;
 		}
 
 		public static Rect DissolveHorizontal(this Rect origin,float dissolveRatio)
@@ -295,15 +272,6 @@ namespace Ami.Extension
 			return Mathf.Pow(10,logResult);
 		}
 
-		public static bool GUIClipContains(this Rect scope,Rect guiClip ,Vector2 position)
-		{
-			float offsetX = scope.xMin - guiClip.xMin;
-			float offsetY = scope.yMin - guiClip.yMin;
-
-			Rect rect = new Rect(offsetX, offsetY, scope.width, scope.height);
-			return rect.Contains(position);
-		}
-
 		public static int FontSizeToPixels(int fontSize)
 		{
 			// 16px = 12pt.
@@ -328,6 +296,54 @@ namespace Ami.Extension
 			return resultValue;
 		}
 
+		public struct TabView
+		{
+			public string Label;
+			public Action<Rect> OnDrawContent;
+		}
 
-	}
+        public static int DrawTabsView(Rect position,int selectedTabIndex,float labelTabHeight, GUIContent[] labels, float[] ratios)
+        {
+			if(Event.current.type == EventType.Repaint)
+			{
+                GUIStyle frameBox = "FrameBox";
+                frameBox.Draw(position, false, false, false, false);
+			}
+
+			// draw tab label
+			Rect tabRect = new Rect(position);
+			tabRect.height = labelTabHeight;
+            SplitRectHorizontal(tabRect, 0f, out Rect[] tabRects, ratios);
+            for (int i = 0; i < tabRects.Length; i++)
+            {
+                bool oldState = selectedTabIndex == i;
+                bool newState = GUI.Toggle(tabRects[i], oldState, labels[i], GetTabStyle(i, tabRects.Length));
+                if (newState != oldState && newState)
+                {
+                    selectedTabIndex = i;
+                }
+            }
+			return selectedTabIndex;
+
+            GUIStyle GetTabStyle(int i, int length)
+            {
+				if(length == 1)
+				{
+					return "Tab onlyOne";
+                }
+                else if (i == 0)
+                {
+                    return "Tab first";
+                }
+                else if (i == length - 1)
+                {
+                    return "Tab last";
+                }
+                else
+                {
+                    return "Tab middle";
+                }
+            }
+        }
+    }
 }

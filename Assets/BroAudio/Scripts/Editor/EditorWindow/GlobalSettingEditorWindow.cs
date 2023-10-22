@@ -27,12 +27,7 @@ namespace Ami.BroAudio.Editor.Setting
 			EditorSettingFileMissing,
 		}
 
-		public enum Tab
-		{
-			Audio,
-			GUI,
-			Info,
-		}
+		public enum Tab { Audio, GUI, Info,	}
 
 		public const string SettingFileName = "BroAudioGlobalSetting";
 		public const string SettingText = "Setting";
@@ -54,9 +49,11 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string BroVirtualTracks = "Bro Virtual Tracks";
 
 		private readonly string _titleText = nameof(BroAudio).ToBold().SetSize(30).SetColor(MainTitleColor);
+		private readonly float _tabLabelHeight = EditorGUIUtility.singleLineHeight * 2f;
+		private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
-		private GUIContent[] _tabContents = null;
-		private Tab _currentSelectTab = Tab.Audio;
+		private GUIContent[] _tabLabels = null;
+		private Tab _currSelectedTab = Tab.Audio;
 		private int _currProjectSettingVoiceCount = -1;
 		private int _currentMixerTracksCount = -1;
 		private int _broVirtualTracksCount = Tools.BroAdvice.VirtualTrackCount;
@@ -68,10 +65,6 @@ namespace Ami.BroAudio.Editor.Setting
 		private AudioMixer _mixer = null;
 		private Vector2 _scrollPos = default;
 		private float _demoSliderValue = 1f; 
-		private GUIStyle _frameBox = "FrameBox";
-		private GUIStyle _tabFirst = "Tab first";
-		private GUIStyle _tabMiddle = "Tab middle";
-		private GUIStyle _tabLast = "Tab last";
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
@@ -120,7 +113,7 @@ namespace Ami.BroAudio.Editor.Setting
 		private void OnEnable()
 		{
 			_instruction.Init();
-			InitTabs();
+			InitTabsLabel();
 			InitGUIContents();
 		}
 
@@ -148,13 +141,13 @@ namespace Ami.BroAudio.Editor.Setting
 			_currentMixerTracksCount = -1;
 		}
 
-		private void InitTabs()
+		private void InitTabsLabel()
 		{
-			if(_tabContents == null) 
-				_tabContents = new GUIContent[3];
-			_tabContents[(int)Tab.Audio] = EditorGUIUtility.IconContent(AudioSettingTab);
-			_tabContents[(int)Tab.GUI] = EditorGUIUtility.IconContent(GUISettingTab);
-			_tabContents[(int)Tab.Info] = EditorGUIUtility.IconContent(InfoTab);
+			if(_tabLabels == null) 
+				_tabLabels = new GUIContent[3];
+			_tabLabels[(int)Tab.Audio] = EditorGUIUtility.IconContent(AudioSettingTab);
+			_tabLabels[(int)Tab.GUI] = EditorGUIUtility.IconContent(GUISettingTab);
+			_tabLabels[(int)Tab.Info] = EditorGUIUtility.IconContent(InfoTab);
 		}
 
 		protected override void OnGUI()
@@ -191,22 +184,17 @@ namespace Ami.BroAudio.Editor.Setting
 
 			Rect tabWindowRect = GetRectAndIterateLine(drawPosition);
 			tabWindowRect.yMax = drawPosition.yMax;
+			_currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab,_tabLabelHeight, _tabLabels,_tabLabelRatios);
 
-			if(Event.current.type == EventType.Repaint)
-			{
-                _frameBox?.Draw(tabWindowRect, false, false, false, false);
-			}
-
-			Rect tabLabelsRect = DrawTabsLabel(tabWindowRect);
 			DrawEmptyLine(2);
 
 			EditorGUI.indentLevel++;
 			
-			Rect tabPageScrollRect = new Rect(tabLabelsRect.x,tabLabelsRect.yMax,tabLabelsRect.width,tabWindowRect.height - tabLabelsRect.height);
+			Rect tabPageScrollRect = new Rect(tabWindowRect.x, tabWindowRect.y + _tabLabelHeight, tabWindowRect.width, tabWindowRect.height - _tabLabelHeight);
 			_scrollPos = BeginScrollView(tabPageScrollRect, _scrollPos);
 			if (RuntimeSetting != null)
 			{
-				switch (_currentSelectTab)
+				switch (_currSelectedTab)
 				{
 					case Tab.Audio:
 						DrawAudioSetting(drawPosition);
@@ -234,39 +222,25 @@ namespace Ami.BroAudio.Editor.Setting
 			return default;
 		}
 
-		private Rect DrawTabsLabel(Rect tabWindowRect)
-		{
-			Rect rect = new Rect(tabWindowRect);
-			rect.height = EditorGUIUtility.singleLineHeight * 2f;
-			SplitRectHorizontal(rect,0f,out Rect[] tabRects,0.34f,0.33f,0.33f);
+		//private Rect DrawTabsLabel(Rect tabWindowRect)
+		//{
+		//	Rect rect = new Rect(tabWindowRect);
+		//	rect.height = EditorGUIUtility.singleLineHeight * 2f;
+		//	SplitRectHorizontal(rect,0f,out Rect[] tabRects,0.34f,0.33f,0.33f);
 
-			for(int i = 0; i < tabRects.Length;i++)
-			{
-				bool oldState = (int)_currentSelectTab == i;
-				bool newState = GUI.Toggle(tabRects[i], oldState, _tabContents[i],GetTabStyle(i,tabRects.Length));
-				if(newState)
-				{
-					_currentSelectTab = (Tab)i;
-				}
-			}
-			return rect;
+		//	for(int i = 0; i < tabRects.Length;i++)
+		//	{
+		//		bool oldState = (int)_currentSelectTab == i;
+		//		bool newState = GUI.Toggle(tabRects[i], oldState, _tabLabels[i],GetTabStyle(i,tabRects.Length));
+		//		if(newState)
+		//		{
+		//			_currentSelectTab = (Tab)i;
+		//		}
+		//	}
+		//	return rect;
 
-            GUIStyle GetTabStyle(int i, int length)
-            {
-                if (i == 0)
-                {
-                    return _tabFirst;
-                }
-                else if (i == length - 1)
-                {
-                    return _tabLast;
-                }
-                else
-                {
-                    return _tabMiddle;
-                }
-            }
-        }
+            
+  //      }
 
         private void DrawAudioSetting(Rect drawPosition)
 		{

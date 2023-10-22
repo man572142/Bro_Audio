@@ -81,11 +81,9 @@ namespace Ami.BroAudio.Editor
 		private void DrawSeamlessSetting(Rect totalPosition, SerializedProperty property)
 		{
 			Rect suffixRect = EditorGUI.PrefixLabel(GetRectAndIterateLine(totalPosition), _seamlessLabel);
-			if (!TrySplitRectHorizontal(suffixRect, _seamlessSettingRectRatio, 10f, out Rect[] rects))
-			{
-				return;
-			}
-			int drawIndex = 0;
+			SplitRectHorizontal(suffixRect, 10f, out Rect[] rects, _seamlessSettingRectRatio);
+
+            int drawIndex = 0;
 			EditorGUI.LabelField(rects[drawIndex], "Transition By");
 			drawIndex++;
 

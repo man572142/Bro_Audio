@@ -94,29 +94,28 @@ namespace Ami.BroAudio.Editor
 		private void OnDrawHeader(Rect rect)
 		{
 			float[] ratio = { 0.3f, 0.4f, 0.18f, 0.12f };
-			if (EditorScriptingExtension.TrySplitRectHorizontal(rect, ratio, 15f, out Rect[] newRects))
-			{
-				EditorGUI.LabelField(newRects[0], "Clips");
-				if (IsMulticlips)
-				{
-					GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
-					popupStyle.alignment = TextAnchor.MiddleLeft;
-					MulticlipsPlayMode currentPlayMode =(MulticlipsPlayMode)_playModeProp.enumValueIndex;
-					_playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(newRects[1], currentPlayMode, popupStyle);
-					currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
-					switch (currentPlayMode)
-					{
-						case MulticlipsPlayMode.Sequence:
-							EditorGUI.LabelField(newRects[ratio.Length - 1], "Index");
-							break;
-						case MulticlipsPlayMode.Random:
-							EditorGUI.LabelField(newRects[ratio.Length - 1], "Weight");
-							break;
-					}
-					EditorGUI.LabelField(newRects[1].DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
-				}
-			}
-		}
+			EditorScriptingExtension.SplitRectHorizontal(rect, 15f, out Rect[] newRects, ratio);
+
+            EditorGUI.LabelField(newRects[0], "Clips");
+            if (IsMulticlips)
+            {
+                GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
+                popupStyle.alignment = TextAnchor.MiddleLeft;
+                MulticlipsPlayMode currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+                _playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(newRects[1], currentPlayMode, popupStyle);
+                currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+                switch (currentPlayMode)
+                {
+                    case MulticlipsPlayMode.Sequence:
+                        EditorGUI.LabelField(newRects[ratio.Length - 1], "Index");
+                        break;
+                    case MulticlipsPlayMode.Random:
+                        EditorGUI.LabelField(newRects[ratio.Length - 1], "Weight");
+                        break;
+                }
+                EditorGUI.LabelField(newRects[1].DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
+            }
+        }
 
 		private void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
 		{

@@ -17,7 +17,6 @@ namespace Ami.BroAudio.Editor
 
 		public Action<SpatialSettings> OnCloseWindow;
 
-		private Type _audioSourceInspector = null;
 		private MethodInfo _draw3DGUIMethod = null;
 		private UnityEditor.Editor _audioSourceEditor = null;
 		private readonly Keyframe[] _dummyFrameArray = new Keyframe[] { new Keyframe(0f, 0f) };
@@ -40,24 +39,32 @@ namespace Ami.BroAudio.Editor
         private void Init(SerializedProperty settingsProp)
         {
             Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
-            _audioSourceInspector = unityEditorAssembly?.GetType($"UnityEditor.AudioSourceInspector");
-
-            _draw3DGUIMethod = _audioSourceInspector?.GetMethod("Audio3DGUI", BindingFlags.NonPublic | BindingFlags.Instance);
+            Type audioSourceInspector = unityEditorAssembly?.GetType($"UnityEditor.AudioSourceInspector");
+            _draw3DGUIMethod = audioSourceInspector?.GetMethod("Audio3DGUI", BindingFlags.NonPublic | BindingFlags.Instance);
 
             GameObject prefab = Resources.Load<GameObject>("Editor/AudioSourceInspector");
             AudioSource audioSource = prefab.AddComponent<AudioSource>();
-
             _audioSourceEditor = UnityEditor.Editor.CreateEditor(audioSource);
 
-			SerializedObject so = _audioSourceEditor.serializedObject;
-			GetAudioSourceProperty(so, SpatialPropertyType.StereoPan).floatValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.StereoPan).floatValue;
-            GetAudioSourceProperty(so, SpatialPropertyType.DopplerLevel).floatValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.DopplerLevel).floatValue;
-            GetAudioSourceProperty(so, SpatialPropertyType.MinDistance).floatValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.MinDistance).floatValue;
-            GetAudioSourceProperty(so, SpatialPropertyType.MaxDistance).floatValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.MaxDistance).floatValue;
-            GetAudioSourceProperty(so, SpatialPropertyType.SpatialBlend).animationCurveValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.SpatialBlend).animationCurveValue;
-            GetAudioSourceProperty(so, SpatialPropertyType.ReverbZoneMix).animationCurveValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.ReverbZoneMix).animationCurveValue;
-            GetAudioSourceProperty(so, SpatialPropertyType.Spread).animationCurveValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.Spread).animationCurveValue;
-            GetAudioSourceProperty(so, SpatialPropertyType.CustomRolloff).animationCurveValue = GetSpatialSettingsProperty(settingsProp, SpatialPropertyType.CustomRolloff).animationCurveValue;
+			foreach(SpatialPropertyType propType in Enum.GetValues(typeof(SpatialPropertyType)))
+			{
+				SetAudioSourceProperty(propType,settingsProp);
+			}
+        }
+
+		private void SetAudioSourceProperty(SpatialPropertyType propType, SerializedProperty settingsProp)
+        {
+            SerializedProperty audioSourceProp = GetAudioSourceProperty(_audioSourceEditor.serializedObject, propType);
+            SerializedProperty settingRelativeProp = GetSpatialSettingsProperty(settingsProp, propType);
+
+            if (audioSourceProp.propertyType == SerializedPropertyType.Float)
+            {
+                audioSourceProp.floatValue = settingRelativeProp.floatValue;
+            }
+            else if (audioSourceProp.propertyType == SerializedPropertyType.AnimationCurve)
+            {
+                audioSourceProp.SafeSetCurve(settingRelativeProp.animationCurveValue);
+            }
         }
 
         private void OnDisable()
@@ -67,7 +74,7 @@ namespace Ami.BroAudio.Editor
                 OnCloseWindow?.Invoke(GetSpatialSettings());
 
                 // Unsupported.SmartReset(_audioSourceEditor.target); 
-                // The code above works too, but such a misty code is hard to trust.
+                // The code above works too, but such a misty code is hard to trust. remove and add it back to reset it would be better. 
                 DestroyImmediate(_audioSourceEditor.target, true);
 
                 DestroyImmediate(_audioSourceEditor);

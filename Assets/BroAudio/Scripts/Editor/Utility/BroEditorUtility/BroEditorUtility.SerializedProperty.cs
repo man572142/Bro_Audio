@@ -4,6 +4,7 @@ using UnityEditor;
 using Ami.BroAudio.Data;
 using static Ami.Extension.EditorScriptingExtension;
 using Ami.Extension;
+using UnityEngine;
 
 namespace Ami.BroAudio.Editor
 {
@@ -31,18 +32,21 @@ namespace Ami.BroAudio.Editor
             property.FindPropertyRelative(nameof(AudioEntity.Clips)).arraySize = 0;
             property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview).boolValue = false;
             property.FindPropertyRelative(AudioEntity.NameOf.MulticlipsPlayMode).enumValueIndex = 0;
+            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Delay))).floatValue = 0f;
+            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Loop))).boolValue = false;
+            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SeamlessLoop))).boolValue = false;
 
-            var delayProp = property.FindPropertyRelative(nameof(AudioEntity.Delay));
-            if(delayProp != null)
-			{
-                delayProp.floatValue = 0f;
-			}
+            SerializedProperty spatialProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.StereoPan)).floatValue = 0f;
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.DopplerLevel)).floatValue = AudioConstant.DefaultDoppler;
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.MinDistance)).floatValue = AudioConstant.AttenuationMinDistance;
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.MaxDistance)).floatValue = AudioConstant.AttenuationMaxDistance;
 
-            var loopPorp = property.FindPropertyRelative(nameof(AudioEntity.Loop));
-            if(loopPorp != null)
-			{
-                loopPorp.boolValue = false;
-			}
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.SpatialBlend)).animationCurveValue = AudioConstant.SpatialBlend;
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.ReverbZoneMix)).animationCurveValue = AudioConstant.ReverbZoneMix;
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.Spread)).animationCurveValue = AudioConstant.Spread;
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.CustomRolloff)).animationCurveValue = AudioConstant.CustomRolloff;
+            spatialProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
 		public static int GetSerializedEnumIndex(this BroAudioType audioType)
@@ -57,26 +61,26 @@ namespace Ami.BroAudio.Editor
 			return index;
 		}
 
-        public static SerializedProperty GetSpatialSettingsProperty(SerializedProperty sourceProp, SpatialPropertyType propertyType)
+        public static SerializedProperty GetSpatialSettingsProperty(SerializedProperty settingProp, SpatialPropertyType propertyType)
         {
             switch (propertyType)
             {
                 case SpatialPropertyType.StereoPan:
-                    return sourceProp.FindPropertyRelative(nameof(SpatialSettings.StereoPan));
+                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.StereoPan));
                 case SpatialPropertyType.DopplerLevel:
-                    return sourceProp.FindPropertyRelative(nameof(SpatialSettings.DopplerLevel));
+                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.DopplerLevel));
                 case SpatialPropertyType.MinDistance:
-                    return sourceProp.FindPropertyRelative(nameof(SpatialSettings.MinDistance));
+                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.MinDistance));
                 case SpatialPropertyType.MaxDistance:
-                    return sourceProp.FindPropertyRelative(nameof(SpatialSettings.MaxDistance));
+                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.MaxDistance));
                 case SpatialPropertyType.SpatialBlend:
-                    return sourceProp.FindPropertyRelative(nameof(SpatialSettings.SpatialBlend));
+                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.SpatialBlend));
                 case SpatialPropertyType.ReverbZoneMix:
-                    return sourceProp.FindPropertyRelative(nameof(SpatialSettings.ReverbZoneMix));
+                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.ReverbZoneMix));
                 case SpatialPropertyType.Spread:
-                    return sourceProp.FindPropertyRelative(nameof(SpatialSettings.Spread));
+                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.Spread));
                 case SpatialPropertyType.CustomRolloff:
-                    return sourceProp.FindPropertyRelative(nameof(SpatialSettings.CustomRolloff));
+                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.CustomRolloff));
             }
             return null;
         }
@@ -103,6 +107,14 @@ namespace Ami.BroAudio.Editor
                     return sourceSO.FindProperty(AudioSourcePropertyPath.CustomRolloff);
             }
             return null;
+        }
+
+        public static void SafeSetCurve(this SerializedProperty property, AnimationCurve curve)
+        {
+            if (curve != null && curve.keys.Length > 0)
+            {
+                property.animationCurveValue = curve;
+            }
         }
     }
 }

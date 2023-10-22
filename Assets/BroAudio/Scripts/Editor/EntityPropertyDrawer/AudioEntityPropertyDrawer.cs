@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Editor
 		public static event Action OnEntityNameChanged;
 
 		protected const float ClipPreviewHeight = 100f;
-		private const int _basePropertiesLineCount = 1;
+		protected const float ClipPreviewPadding = 6f;
 		private const float _lowVolumeSnappingThreshold = 0.05f;
 		private const float _highVolumeSnappingThreshold = 0.2f;
 		private const string _dbValueStringFormat = "0.##";
@@ -82,16 +82,15 @@ namespace Ami.BroAudio.Editor
 					bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
 					if (isShowPreview)
 					{
-						_clipPropHelper.DrawClipPreview(GetRectAndIterateLine(position), transport, audioClip, currSelectClip.propertyPath);
-						Offset += ClipPreviewHeight;
+						_clipPropHelper.DrawClipPreview(GetNextLineRect(position), transport, audioClip, currSelectClip.propertyPath);
+						Offset += ClipPreviewHeight + ClipPreviewPadding;
 					}
 				}
 			}
 		#endregion
 
-			//hack: temporary , and don't mind the drawing position
-
-			if (GUI.Button(GetRectAndIterateLine(position), "Spatial Setting"))
+			// todo: looks ugly now, needs upgrade
+			if (setting.DrawedProperty.HasFlag(DrawedProperty.SpatialSettings) && GUI.Button(GetRectAndIterateLine(position), "Spatial Setting"))
 			{
                 SerializedProperty settingsProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
                 SpatialSettingsEditorWindow.ShowWindow(settingsProp, OnSetSpatialSettingBack);
@@ -115,19 +114,22 @@ namespace Ami.BroAudio.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
-			float height = SingleLineSpace * DrawLineCount;
-			
-			if (property.isExpanded)
-			{
-                if (_reorderableClipsDict.TryGetValue(property.propertyPath, out ReorderableClips clipList))
-				{
-					height += clipList.Height;
-					bool isShowClipPreview = property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview).boolValue;
+            float height = SingleLineSpace; // Header
 
-					if(isShowClipPreview)
-					{
-						height += ClipPreviewHeight;
-					}
+			if (property.isExpanded && TryGetAudioTypeSetting(property, out var setting))
+			{
+				height += SingleLineSpace; // Name
+                height += GetAdditionalBaseProtiesLineCount(property, setting) * SingleLineSpace;
+				if (_reorderableClipsDict.TryGetValue(property.propertyPath, out ReorderableClips clipList))
+				{
+					bool isShowClipProp =
+						clipList.CurrentSelectedClip != null &&
+						clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip _);
+					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview).boolValue;
+
+                    height += clipList.Height;
+                    height += isShowClipProp?  GetAdditionalClipPropertiesLineCount(property, setting) * SingleLineSpace : 0f;
+                    height += isShowClipPreview ? ClipPreviewHeight + ClipPreviewPadding : 0f;
 				}
 			}
 			return height;

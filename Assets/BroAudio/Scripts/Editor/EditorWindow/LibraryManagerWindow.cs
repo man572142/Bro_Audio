@@ -12,6 +12,7 @@ using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.Extension.EditorScriptingExtension;
 using Ami.BroAudio.Tools;
 using System.IO;
+using UnityEditor.IMGUI.Controls;
 
 namespace Ami.BroAudio.Editor
 {
@@ -30,7 +31,10 @@ namespace Ami.BroAudio.Editor
         private readonly EditorFlashingHelper _flasingHelper = new EditorFlashingHelper(Color.white, 1f, Ease.InCubic);
         private readonly IUniqueIDGenerator _idGenerator = new IdGenerator();
 
-        private List<string> _allAssetGUIDs = null;
+		[SerializeField] private TreeViewState _treeViewState;
+		private LibraryTreeView _treeView;
+
+		private List<string> _allAssetGUIDs = null;
 		private ReorderableList _assetReorderableList = null;
 		private int _currSelectedAssetIndex = -1;
 		private GenericMenu _createAssetOption = null;
@@ -102,6 +106,13 @@ namespace Ami.BroAudio.Editor
 
 			_createAssetOption = CreateAudioTypeGenericMenu(Instruction.LibraryManager_CreateAssetWithAudioType, ShowCreateAssetAskName);
 			_changeAudioTypeOption = CreateAudioTypeGenericMenu(Instruction.LibraryManager_ChangeAssetAudioType, OnChangeAssetAudioType);
+
+			if (_treeViewState == null)
+			{
+				_treeViewState = new TreeViewState();
+			}
+
+			_treeView = new LibraryTreeView(_treeViewState, _assetEditorDict);
 		}
 
 		private void OnDisable()
@@ -357,31 +368,44 @@ namespace Ami.BroAudio.Editor
 
 				assetListRect.width -= _verticalGapDrawer.GetTotalSpace() - _verticalGapDrawer.SingleLineSpace;
 				assetListRect.height -= DefaultLayoutPadding * 2;
-				DrawAssetList(assetListRect);
+				DrawAssetList(assetListRect.Scoping(position, new Vector2(0f,DefaultLayoutPadding)));
 			}
 			EditorGUILayout.EndHorizontal();
 		}
 
 		private void DrawAssetList(Rect assetListRect)
 		{
-			EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(assetListRect.width), GUILayout.Height(assetListRect.height));
-			{
-				_assetListScrollPos = EditorGUILayout.BeginScrollView(_assetListScrollPos);
-				{
-					_assetReorderableList.DoLayoutList();
-				}
-				EditorGUILayout.EndScrollView();
+			GUILayoutUtility.GetRect(assetListRect.width,assetListRect.height);
+			//if (Event.current.type == EventType.Repaint)
+			//{
+			//	GUIStyle frameBox = "FrameBox";
+			//	frameBox.Draw(assetListRect, false, false, false, false);
+			//}
 
-				if (TryGetCurrentAssetEditor(out var editor))
-				{
-					DrawIssueMessage(editor);
-				}
-				else if (_assetReorderableList.count > 0)
-				{
-					EditorGUILayout.HelpBox(_instruction.GetText(Instruction.LibraryManager_ModifyAsset), MessageType.Info);
-				}
-			}
-			EditorGUILayout.EndVertical();
+			Rect treeViewRect = new Rect(assetListRect);
+			treeViewRect.position += Vector2.one * DefaultLayoutPadding;
+			treeViewRect.size -= Vector2.one * DefaultLayoutPadding * 2;
+
+			_treeView.OnGUI(treeViewRect);
+
+			//EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(assetListRect.width), GUILayout.Height(assetListRect.height));
+			//{
+			//	_assetListScrollPos = EditorGUILayout.BeginScrollView(_assetListScrollPos);
+			//	{
+			//		_assetReorderableList.DoLayoutList();
+			//	}
+			//	EditorGUILayout.EndScrollView();
+
+			//	if (TryGetCurrentAssetEditor(out var editor))
+			//	{
+			//		DrawIssueMessage(editor);
+			//	}
+			//	else if (_assetReorderableList.count > 0)
+			//	{
+			//		EditorGUILayout.HelpBox(_instruction.GetText(Instruction.LibraryManager_ModifyAsset), MessageType.Info);
+			//	}
+			//}
+			//EditorGUILayout.EndVertical();
 
 			void DrawIssueMessage(AudioAssetEditor assetEditor)
 			{

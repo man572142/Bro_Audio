@@ -7,6 +7,8 @@ namespace Ami.BroAudio.Editor.Setting
 {
 	public static class BroAudioGUISetting
 	{
+		public const string LogoPath = "Editor/Logo";
+		public const string BackgroundLogoPath = "Editor/Logo_transparent";
 		public const int LibraryManagerMenuIndex = 0;
 		public const string LibraryManagerMenuPath = BroName.MenuItem_BroAudio + "/" + BroName.MenuItem_LibraryManager;
 

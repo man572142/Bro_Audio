@@ -58,13 +58,14 @@ namespace Ami.BroAudio.Editor
 
 			SerializedProperty nameProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IEntityIdentity.Name)));
 
-			property.isExpanded = EditorGUI.Foldout(GetRectAndIterateLine(position), property.isExpanded, nameProp.stringValue);
+			Rect headerRect = GetRectAndIterateLine(position);
+			property.isExpanded = EditorGUI.Foldout(headerRect, property.isExpanded, nameProp.stringValue);
 			if (!property.isExpanded || !TryGetAudioTypeSetting(property, out var setting))
 			{
 				return;
 			}
 
-			DrawEntityNameField(position, nameProp);
+			DrawEntityNameField(headerRect, nameProp);
 
 			DrawAdditionalBaseProperties(position, property, setting);
 
@@ -136,10 +137,12 @@ namespace Ami.BroAudio.Editor
 		}
         #endregion
 
-        private void DrawEntityNameField(Rect position, SerializedProperty nameProp)
+        private void DrawEntityNameField(Rect nameFieldRect, SerializedProperty nameProp)
         {
+			nameFieldRect.x += 14f;
+			nameFieldRect.width = 300f;
             EditorGUI.BeginChangeCheck();
-            nameProp.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProp.stringValue);
+            nameProp.stringValue = EditorGUI.TextField(nameFieldRect, nameProp.stringValue);
             if (EditorGUI.EndChangeCheck())
             {
                 nameProp.serializedObject.ApplyModifiedProperties();

@@ -23,7 +23,6 @@ namespace Ami.BroAudio.Editor
 		public const float CenterLineGap = 30f;
 		public const float CenterLength = 130f;
 		public const float BackgroundLogoSize = 500f;
-		public const string BackgroundLogoPath = "Editor/Logo_transparent";
 		public const int DragAndDropFontSize = 35;
 
 		private Vector2 _browseButtonSize = new Vector2(80f,30f);

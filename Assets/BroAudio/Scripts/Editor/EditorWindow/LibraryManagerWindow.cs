@@ -46,6 +46,7 @@ namespace Ami.BroAudio.Editor
 
 		public float DefaultLayoutPadding => GUI.skin.box.padding.top;
 		public IUniqueIDGenerator IDGenerator => _idGenerator;
+		private SerializedProperty _inspectedItem = null;
 
 		[MenuItem(LibraryManagerMenuPath, false,LibraryManagerMenuIndex)]
 		public static LibraryManagerWindow ShowWindow()
@@ -112,10 +113,15 @@ namespace Ami.BroAudio.Editor
 				_treeViewState = new TreeViewState();
 			}
 
-			_treeView = new LibraryTreeView(_treeViewState, _assetEditorDict);
+			_treeView = new LibraryTreeView(_treeViewState, _assetEditorDict, OnSelectTreeItem);
 		}
 
-		private void OnDisable()
+        private void OnSelectTreeItem(LibraryTreeView.HierarchyDepth depth, SerializedProperty property)
+        {
+            _inspectedItem = depth != LibraryTreeView.HierarchyDepth.Asset? property : null;
+        }
+
+        private void OnDisable()
 		{
 			OnCloseLibraryManagerWindow?.Invoke();
 			foreach (AudioAssetEditor editor in _assetEditorDict.Values)
@@ -437,14 +443,15 @@ namespace Ami.BroAudio.Editor
 		{
 			EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(entitiesRect.width), GUILayout.Height(entitiesRect.height));
 			{
-				if (TryGetCurrentAssetEditor(out var editor))
+				if (_inspectedItem != null)
 				{
-					_entitiesScrollPos = EditorGUILayout.BeginScrollView(_entitiesScrollPos);
-					{
-						DrawEntitiesHeader(editor.Asset, newName => OnChangeAssetName(editor, newName));
-						editor.DrawEntitiesList();
-					}
-					EditorGUILayout.EndScrollView();
+					EditorGUI.PropertyField(entitiesRect,_inspectedItem);
+					// _entitiesScrollPos = EditorGUILayout.BeginScrollView(_entitiesScrollPos);
+					// {
+					// 	DrawEntitiesHeader(editor.Asset, newName => OnChangeAssetName(editor, newName));
+					// 	editor.DrawEntitiesList();
+					// }
+					// EditorGUILayout.EndScrollView();
 				}
 				else
 				{

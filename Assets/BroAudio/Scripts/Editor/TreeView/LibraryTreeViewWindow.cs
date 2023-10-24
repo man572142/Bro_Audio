@@ -31,12 +31,7 @@ namespace Ami.BroAudio.Editor
 
 		private void OnEnable()
 		{
-			if(_treeViewState == null)
-			{
-				_treeViewState = new TreeViewState();
-			}
 
-			_treeView = new LibraryTreeView(_treeViewState,null);
 		}
 
 		private void OnGUI()

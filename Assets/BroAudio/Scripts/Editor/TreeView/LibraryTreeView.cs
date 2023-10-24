@@ -20,14 +20,17 @@ namespace Ami.BroAudio.Editor
 		}
 
 		public event Action<AudioAssetEditor, string> OnRename;
+		private Action<HierarchyDepth,SerializedProperty> _onSelectItem;
 
 		private IReadOnlyDictionary<string, AudioAssetEditor> _assetEditorDict;
 
-		public LibraryTreeView(TreeViewState state, IReadOnlyDictionary<string, AudioAssetEditor> assetEditorDict) : base(state)
+		public LibraryTreeView(TreeViewState state, IReadOnlyDictionary<string, AudioAssetEditor> assetEditorDict
+		, Action<HierarchyDepth,SerializedProperty> onSelectItem) : base(state)
 		{
 			showBorder = true;
 			extraSpaceBeforeIconAndLabel = EditorGUIUtility.singleLineHeight;
 			_assetEditorDict = assetEditorDict;
+			_onSelectItem = onSelectItem;
 			Reload();
 		}
 
@@ -42,27 +45,17 @@ namespace Ami.BroAudio.Editor
                 TreeViewItem assetItem = new TreeViewItem { id = assetTreeId, depth = (int)HierarchyDepth.Asset, displayName = editor.Asset.AssetName };
 				SerializedProperty entitiesArrayProp = editor.serializedObject.FindProperty(nameof(AudioAsset.Entities));
                 for(int i = 0; i < entitiesArrayProp.arraySize;i++)
-				{
-					SerializedProperty entityProp = entitiesArrayProp.GetArrayElementAtIndex(i);
-					int entityID = entityProp.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.ID))).intValue;
-					string entityName = entityProp.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Name))).stringValue;
-					var entityItem = new SerializedTreeViewItem { id = entityID, depth = (int)HierarchyDepth.Entity, displayName = entityName };
-					entityItem.SerializedProperty = entityProp;
+                {
+                    SerializedProperty entityProp = entitiesArrayProp.GetArrayElementAtIndex(i);
+                    TreeViewItem entityItem = CreateEntityItem(entityProp);
 
-					SerializedProperty clipsArrayProp = entityProp.FindPropertyRelative(nameof(AudioEntity.Clips));
-					for(int c = 0; c < clipsArrayProp.arraySize; c++)
-					{
-						SerializedProperty clipProp = clipsArrayProp.GetArrayElementAtIndex(c).FindPropertyRelative(nameof(BroAudioClip.AudioClip));
-						if(clipProp.objectReferenceValue != null)
-						{
-							// hack: id with GetHashCode() might have collision?
-							var clipItem = new SerializedTreeViewItem { id = clipProp.GetHashCode(), depth = (int)HierarchyDepth.AudioClip, displayName = clipProp.objectReferenceValue.name };
-							clipItem.SerializedProperty = clipProp;
-							entityItem.AddChild(clipItem);
-						}
-					}
-					assetItem.AddChild(entityItem);
-				}
+                    SerializedProperty clipsArrayProp = entityProp.FindPropertyRelative(nameof(AudioEntity.Clips));
+                    for (int clipIndex = 0; clipIndex < clipsArrayProp.arraySize; clipIndex++)
+                    {
+                        CreateClipItem(clipsArrayProp, clipIndex, clipItem => entityItem.AddChild(clipItem));
+                    }
+                    assetItem.AddChild(entityItem);
+                }
                 rootItems.Add(assetItem);
 				assetTreeId++;
 			}
@@ -71,41 +64,60 @@ namespace Ami.BroAudio.Editor
             return root;
         }
 
-		protected override void RowGUI(RowGUIArgs args)
+        private SerializedTreeViewItem CreateEntityItem(SerializedProperty entityProp)
+        {
+            int entityID = entityProp.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.ID))).intValue;
+            string entityName = entityProp.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Name))).stringValue;
+            var entityItem = new SerializedTreeViewItem { id = entityID, depth = (int)HierarchyDepth.Entity, displayName = entityName };
+            entityItem.SerializedProperty = entityProp;
+            return entityItem;
+        }
+
+        private void CreateClipItem(SerializedProperty clipsArrayProp, int index, Action<TreeViewItem> onCreateClipItem)
+        {
+            SerializedProperty clipProp = clipsArrayProp.GetArrayElementAtIndex(index).FindPropertyRelative(nameof(BroAudioClip.AudioClip));
+            if (clipProp.objectReferenceValue != null)
+            {
+                // hack: id with GetHashCode() might have collision?
+                var clipItem = new SerializedTreeViewItem { id = clipProp.GetHashCode(), depth = (int)HierarchyDepth.AudioClip, displayName = clipProp.objectReferenceValue.name };
+                clipItem.SerializedProperty = clipProp;
+				onCreateClipItem?.Invoke(clipItem);
+            }
+        }
+
+        protected override void RowGUI(RowGUIArgs args)
 		{
             HierarchyDepth hierarchyDepth = (HierarchyDepth)args.item.depth;
 			Rect iconRect = new Rect(args.rowRect);
 			iconRect.width = iconRect.height;
 			iconRect.x += (args.item.depth + 1) * iconRect.width;
 
-			Texture icon = null;
-			switch (hierarchyDepth)
-			{
-				case HierarchyDepth.Asset:
-					icon = EditorGUIUtility.IconContent(IconConstant.ScriptableObject).image;
-					break;
-				case HierarchyDepth.Entity:
-					icon = EditorGUIUtility.IconContent(IconConstant.AudioMixer).image;
-					break;
-				case HierarchyDepth.AudioClip:
-					icon = EditorGUIUtility.IconContent(IconConstant.AudioClip).image;
-					break;
-			}
+			Texture icon = EditorGUIUtility.IconContent(GetIconName(hierarchyDepth)).image;
 
 			if(Event.current.type == EventType.Repaint)
 			{
 				GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit, true);
 			}
-			if(hierarchyDepth != HierarchyDepth.Asset && args.item is SerializedTreeViewItem item)
+
+			if(args.selected && args.focused && args.item is SerializedTreeViewItem item)
 			{
-				Debug.Log(item.SerializedProperty.propertyPath);
-				base.RowGUI(args);
+				_onSelectItem?.Invoke(hierarchyDepth, item.SerializedProperty);
 			}
-			else
+			base.RowGUI(args);
+		}
+
+		private string GetIconName(HierarchyDepth hierarchyDepth)
+		{
+			switch (hierarchyDepth)
 			{
-				base.RowGUI(args);
+				case HierarchyDepth.Asset:
+					return IconConstant.ScriptableObject;
+				case HierarchyDepth.Entity:
+					return IconConstant.AudioMixer;
+				case HierarchyDepth.AudioClip:
+					return IconConstant.AudioClip;
 			}
-			
+			return null;
 		}
 
 		protected override bool CanRename(TreeViewItem item)

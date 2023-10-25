@@ -7,5 +7,7 @@ namespace Ami.BroAudio.Data
 		float TransitionTime { get; }
 		BroAudioClip Clip { get; }
         SpatialSettings SpatialSettings { get; }
+		int Priority { get; }
+		float Pitch { get; }
     } 
 }

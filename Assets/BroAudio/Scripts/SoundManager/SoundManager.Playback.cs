@@ -64,7 +64,7 @@ namespace Ami.BroAudio.Runtime
 
             AudioPlayerInstanceWrapper wrapper = new AudioPlayerInstanceWrapper(player);
 
-            if (pref.IsSeamlessLoop)
+            if (pref.Entity.SeamlessLoop)
             {
                 var seamlessLoopHelper = new SeamlessLoopHelper(wrapper, GetNewAudioPlayer);
                 seamlessLoopHelper.SetPlayer(player);
@@ -74,18 +74,6 @@ namespace Ami.BroAudio.Runtime
 
             return wrapper;
         }
-
-
-        //public IAudioPlayer PlayOneShot(int id, float preventTime)
-        //      {
-        //          if(IsPlayable(id,_soundBank)&& TryGetPlayerWithType<OneShotPlayer>(out var player))
-        //          {
-        //              player.PlayOneShot(id, _soundBank[id].Clip, _soundBank[id].Delay);
-        //              StartCoroutine(PreventCombFiltering(id,preventTime));
-        //              return player;
-        //          }
-        //          return null;
-        //      }
 
         #endregion
 

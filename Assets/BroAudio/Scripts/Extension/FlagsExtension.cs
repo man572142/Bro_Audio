@@ -15,6 +15,11 @@ namespace Ami.Extension
             {
                 flags = flags & (flags - 1);
                 count++;
+                if(count > 32) // integer has only 32-bit max
+                {
+                    UnityEngine.Debug.LogError("count flags is failed");
+                    break;
+				}
             }
             return count;
         }

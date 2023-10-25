@@ -22,6 +22,7 @@ namespace Ami.BroAudio.Editor
 		private const float _lowVolumeSnappingThreshold = 0.05f;
 		private const float _highVolumeSnappingThreshold = 0.2f;
 		private const string _dbValueStringFormat = "0.##";
+		private const float _defaultFieldRatio = 0.8f;
 
 		private GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume));
 
@@ -65,7 +66,6 @@ namespace Ami.BroAudio.Editor
 			}
 
 			DrawEntityNameField(position, nameProp);
-
 			DrawAdditionalBaseProperties(position, property, setting);
 
             #region Clip Properties
@@ -119,7 +119,7 @@ namespace Ami.BroAudio.Editor
 			if (property.isExpanded && TryGetAudioTypeSetting(property, out var setting))
 			{
 				height += SingleLineSpace; // Name
-                height += GetAdditionalBaseProtiesLineCount(property, setting) * SingleLineSpace;
+                height += GetAdditionalBaseProtiesLineCount(property, setting) * SingleLineSpace + GetAdditionalBasePropertiesOffest(setting);
 				if (_reorderableClipsDict.TryGetValue(property.propertyPath, out ReorderableClips clipList))
 				{
 					bool isShowClipProp =
@@ -139,7 +139,9 @@ namespace Ami.BroAudio.Editor
         private void DrawEntityNameField(Rect position, SerializedProperty nameProp)
         {
             EditorGUI.BeginChangeCheck();
-            nameProp.stringValue = EditorGUI.TextField(GetRectAndIterateLine(position), "Name", nameProp.stringValue);
+			Rect nameRect = GetRectAndIterateLine(position);
+			nameRect.width *= _defaultFieldRatio;
+			nameProp.stringValue = EditorGUI.TextField(nameRect, nameof(AudioEntity.Name), nameProp.stringValue);
             if (EditorGUI.EndChangeCheck())
             {
                 nameProp.serializedObject.ApplyModifiedProperties();
@@ -192,14 +194,14 @@ namespace Ami.BroAudio.Editor
 			if (CanDraw(DrawedProperty.PlaybackPosition))
 			{
                 Rect playbackRect = GetRectAndIterateLine(position);
-                playbackRect.width *= 0.6f;
+                playbackRect.width *= _defaultFieldRatio;
                 _clipPropHelper.DrawPlaybackPositionField(playbackRect, transport);
 			}
 
             if (CanDraw(DrawedProperty.Fade))
 			{
                 Rect fadingRect = GetRectAndIterateLine(position);
-                fadingRect.width *= 0.6f;
+                fadingRect.width *= _defaultFieldRatio;
                 _clipPropHelper.DrawFadingField(fadingRect, transport);
             }
 

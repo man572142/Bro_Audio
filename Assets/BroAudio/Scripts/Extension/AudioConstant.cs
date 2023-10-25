@@ -45,9 +45,17 @@ namespace Ami.Extension
 		/// </summary>
 		public const float MinFrequence = 10f;
 
+        // Base on AuidoSource default values
 		public const float DefaultDoppler = 1f;
 		public const float AttenuationMinDistance = 1f;
         public const float AttenuationMaxDistance = 500f;
+        public const float SpatialBlend_3D = 1f;
+        public const float SpatialBlend_2D = 0f;
+        public const float MinPitch = -3f;
+        public const float MaxPitch = 3f;
+        public const int DefaultPriority = 128;
+        public const int MinPriority = 0;
+        public const float MaxPriority = 256;
 
         public static float DecibelVoulumeFullScale => MaxDecibelVolume - MinDecibelVolume;
 		public static AnimationCurve SpatialBlend => AnimationCurve.Constant(0f, 0f, 0f);
@@ -97,5 +105,4 @@ namespace Ami.Extension
         }
         #endregion
     }
-
 }

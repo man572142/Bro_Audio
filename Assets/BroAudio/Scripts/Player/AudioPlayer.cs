@@ -14,8 +14,6 @@ namespace Ami.BroAudio.Runtime
         public const float UseEntitySetting = -1f;
         public const float Immediate = 0f;
         public const string SendParaName = "_Send";
-        public const float SpatialBlend_2D = 0f;
-        public const float SpatialBlend_3D = 1f;
 
         public event Action<AudioPlayer> OnRecycle;
 
@@ -76,34 +74,25 @@ namespace Ami.BroAudio.Runtime
 
         private void SetSpatial(PlaybackPreference pref)
         {
-            SpatialSettings settings = pref.SpatialSettings;
+            SpatialSettings settings = pref.Entity.SpatialSettings;
             AudioSource.panStereo = settings.StereoPan;
-            if(settings != default)
-            {
-                AudioSource.dopplerLevel = settings.DopplerLevel;
-                AudioSource.minDistance = settings.MinDistance;
-                AudioSource.maxDistance = settings.MaxDistance;
-            }
-            else
-            {
-                // todo: add to co
-                AudioSource.dopplerLevel = 1f;
-                AudioSource.minDistance = 1f;
-                AudioSource.maxDistance = 500f;
-            }
+            bool isDefault = settings != default;
+
+            AudioSource.dopplerLevel = isDefault? AudioConstant.DefaultDoppler : settings.DopplerLevel;
+            AudioSource.minDistance = isDefault ? AudioConstant.AttenuationMinDistance : settings.MinDistance;
+            AudioSource.maxDistance = isDefault ? AudioConstant.AttenuationMaxDistance : settings.MaxDistance;
 
             AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, settings.SpatialBlend);
             AudioSource.SetCustomCurve(AudioSourceCurveType.ReverbZoneMix, settings.ReverbZoneMix);
             AudioSource.SetCustomCurve(AudioSourceCurveType.Spread, settings.Spread);
             AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, settings.CustomRolloff);
 
-
-            if (pref.HasFollowTarget(out var followTarget) && transform.parent != followTarget)
+            if (pref.FollowTarget != null && transform.parent != pref.FollowTarget)
 			{
-                transform.SetParent(followTarget,false);
+                transform.SetParent(pref.FollowTarget, false);
                 if(settings.SpatialBlend == null)
                 {
-                    AudioSource.spatialBlend = SpatialBlend_3D;
+                    AudioSource.spatialBlend = AudioConstant.SpatialBlend_3D;
                 }
             }
             else if (pref.HasPosition(out var position))
@@ -111,15 +100,15 @@ namespace Ami.BroAudio.Runtime
                 transform.position = position;
                 if(settings.SpatialBlend == null)
                 {
-                    AudioSource.spatialBlend = SpatialBlend_3D;
+                    AudioSource.spatialBlend = AudioConstant.SpatialBlend_3D;
                 }
             }
         }
 
         public void ResetSpatial()
         {
-            AudioSource.spatialBlend = SpatialBlend_2D;
-            if(transform.parent != SoundManager.Instance)
+            AudioSource.spatialBlend = AudioConstant.SpatialBlend_2D;
+            if (transform.parent != SoundManager.Instance)
 			{
                 transform.SetParent(SoundManager.Instance.transform);
 			}

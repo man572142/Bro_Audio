@@ -27,7 +27,6 @@ namespace Ami.BroAudio.Runtime
             CurrentClip = clip;
             _isReadyToPlay = true;
             IsStopping = false;
-            SetSpatial(pref);
             this.SafeStopCoroutine(_recycleCoroutine);
 
             if(waitForChainingMethod)
@@ -85,6 +84,9 @@ namespace Ami.BroAudio.Runtime
             }
 
             AudioSource.clip = clip.AudioClip;
+            AudioSource.priority = pref.Entity.Priority;
+            AudioSource.pitch = pref.Entity.Pitch;
+            SetSpatial(pref);
             VolumeControl fader = VolumeControl.Clip;
             ClipVolume = 0f;
             RemoveFromResumablePlayer();
@@ -123,7 +125,7 @@ namespace Ami.BroAudio.Runtime
                 }
                 #endregion
 
-                if (pref.IsSeamlessLoop)
+                if (pref.Entity.SeamlessLoop)
 				{
                     pref.ApplySeamlessFade();
 				}
@@ -146,7 +148,7 @@ namespace Ami.BroAudio.Runtime
                     OnFinishOneRound(clip, pref);
                 }
                 #endregion
-            } while (pref.IsNormalLoop);
+            } while (pref.Entity.Loop);
 
             EndPlaying();
 

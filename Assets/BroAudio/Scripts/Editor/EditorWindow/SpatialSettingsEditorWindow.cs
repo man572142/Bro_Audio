@@ -110,7 +110,7 @@ namespace Ami.BroAudio.Editor
 			EditorGUILayout.Space();
 
 			SerializedProperty spatialBlendProp = _audioSourceEditor.serializedObject.FindProperty(AudioSourcePropertyPath.SpatialBlend);
-			SerializeAnimateCurveValue(spatialBlendProp, _spatialBlendLabels.Main, currValue => Draw2SidesLabelSlider(_spatialBlendLabels, currValue, 0f, 1f));
+			SerializeAnimateCurveValue(spatialBlendProp, _spatialBlendLabels.Main, currValue => Draw2SidesLabelSliderLayout(_spatialBlendLabels, currValue, 0f, 1f));
 			EditorGUILayout.Space();
 
 			SerializedProperty reverbZoneProp = _audioSourceEditor.serializedObject.FindProperty(AudioSourcePropertyPath.ReverbZoneMix);
@@ -127,7 +127,7 @@ namespace Ami.BroAudio.Editor
 		private void DrawStereoPan()
 		{
 			SerializedProperty stereoPanProp = _audioSourceEditor.serializedObject.FindProperty(AudioSourcePropertyPath.StereoPan);
-			stereoPanProp.floatValue = Draw2SidesLabelSlider(_stereoPanLabels, stereoPanProp.floatValue, -1f, 1f);
+			stereoPanProp.floatValue = Draw2SidesLabelSliderLayout(_stereoPanLabels, stereoPanProp.floatValue, -1f, 1f);
 		}
 
 		private void SerializeAnimateCurveValue(SerializedProperty serializedProperty, string label, Func<float, float> onDrawSlider)

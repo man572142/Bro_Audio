@@ -9,6 +9,7 @@ using static Ami.Extension.FlagsExtension;
 using static Ami.BroAudio.Editor.EditorSetting;
 using static Ami.BroAudio.Data.AudioEntity;
 using Ami.BroAudio.Runtime;
+using System;
 
 namespace Ami.BroAudio.Editor
 {
@@ -24,6 +25,7 @@ namespace Ami.BroAudio.Editor
 		private int GetAdditionalBaseProtiesLineCount(SerializedProperty property, AudioTypeSetting setting)
 		{
 			int filterRange = GetFlagsRange(0, DrawedPropertyConstant.AdditionalPropertyStartIndex -1 ,FlagsRangeType.Excluded);
+			ConvertUnityEverythingFlagsToAll(ref setting.DrawedProperty);
 			int count = GetFlagsOnCount((int)setting.DrawedProperty & filterRange);
 
 			var seamlessProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.SeamlessLoop));
@@ -35,15 +37,28 @@ namespace Ami.BroAudio.Editor
 			return count; 
 		}
 
+		private float GetAdditionalBasePropertiesOffest(AudioTypeSetting setting)
+		{
+			float offset = 0f;
+			if(setting.DrawedProperty.HasFlag(DrawedProperty.Priority))
+			{
+				offset += TwoSidesLabelOffsetY;
+			}
+			return offset;
+		}
+
 		private int GetAdditionalClipPropertiesLineCount(SerializedProperty property, AudioTypeSetting setting)
 		{
             int filterRange = GetFlagsRange(0, DrawedPropertyConstant.AdditionalPropertyStartIndex - 1, FlagsRangeType.Included);
-            return GetFlagsOnCount((int)setting.DrawedProperty & filterRange);
+			ConvertUnityEverythingFlagsToAll(ref setting.DrawedProperty);
+			return GetFlagsOnCount((int)setting.DrawedProperty & filterRange);
         }
 
 		private void DrawAdditionalBaseProperties(Rect position, SerializedProperty property, AudioTypeSetting setting)
 		{
 			DrawLoopProperty();
+			DrawPitchProperty();
+			DrawPriorityProperty();
 
 			void DrawLoopProperty()
 			{
@@ -59,6 +74,32 @@ namespace Ami.BroAudio.Editor
 					{
 						DrawSeamlessSetting(position, property);
 					}
+				}
+			}
+
+			void DrawPitchProperty()
+			{
+				if (setting.DrawedProperty.HasFlag(DrawedProperty.Pitch))
+				{
+					Rect pitchRect = GetRectAndIterateLine(position);
+					pitchRect.width *= _defaultFieldRatio;
+					SerializedProperty pitchProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Pitch));
+
+					pitchProp.floatValue = EditorGUI.Slider(pitchRect, nameof(AudioEntity.Pitch), pitchProp.floatValue, AudioConstant.MinPitch, AudioConstant.MaxPitch);
+				}
+			}
+
+			void DrawPriorityProperty()
+			{
+				if (setting.DrawedProperty.HasFlag(DrawedProperty.Priority))
+				{
+					Rect priorityRect = GetRectAndIterateLine(position);
+					priorityRect.width *= _defaultFieldRatio;
+					SerializedProperty priorityProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Priority));
+
+					MultiLabel multiLabels = new MultiLabel() { Main = nameof(AudioEntity.Priority), Left = "High", Right = "Low"};
+					priorityProp.intValue = (int)Draw2SidesLabelSlider(priorityRect, multiLabels, priorityProp.intValue, AudioConstant.MinPriority, AudioConstant.MaxPriority);
+					Offset += TwoSidesLabelOffsetY;
 				}
 			}
 		}
@@ -115,6 +156,14 @@ namespace Ami.BroAudio.Editor
 		private SerializedProperty GetBackingNameAndFindProperty(SerializedProperty entityProp, string memberName)
 		{
 			return entityProp.FindPropertyRelative(GetBackingFieldName(memberName));
+		}
+
+		private void ConvertUnityEverythingFlagsToAll(ref DrawedProperty drawedProperty)
+		{
+			if((int)drawedProperty == -1)
+			{
+				drawedProperty = DrawedProperty.All;
+			}
 		}
 	} 
 }

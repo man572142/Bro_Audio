@@ -9,6 +9,8 @@ namespace Ami.Extension
 {
 	public static class EditorScriptingExtension
 	{
+		public const float TwoSidesLabelOffsetY = 7f;
+
 		public struct MultiLabel
 		{
 			public string Main;
@@ -305,25 +307,35 @@ namespace Ami.Extension
 			return Mathf.RoundToInt(fontSize * (16f / 12f));
 		}
 
-		public static float Draw2SidesLabelSlider(MultiLabel labels,float value,float leftValue, float rightValue, params GUILayoutOption[] options)
+		public static float Draw2SidesLabelSliderLayout(MultiLabel labels,float value,float leftValue, float rightValue, params GUILayoutOption[] options)
 		{
 			float resultValue = EditorGUILayout.Slider(labels.Main, value, leftValue, rightValue, options);
 			Rect lastRect = GUILayoutUtility.GetLastRect();
-			float offsetY = 7f;
+			Draw2SidesLabels(lastRect, labels);
+			return resultValue;
+		}
+
+		public static float Draw2SidesLabelSlider(Rect position,MultiLabel labels, float value, float leftValue, float rightValue)
+		{
+			float resultValue = EditorGUI.Slider(position,labels.Main, value, leftValue, rightValue);
+			Draw2SidesLabels(position, labels);
+			return resultValue;
+		}
+
+		public static void Draw2SidesLabels(Rect position, MultiLabel labels)
+		{
 			float rightWordLength = 30f; // todo: calculate by word length?
-			Rect leftRect = new Rect(EditorGUIUtility.labelWidth, lastRect.y + offsetY, EditorGUIUtility.fieldWidth, lastRect.height);
-			Rect rightRect = new Rect(lastRect.xMax - EditorGUIUtility.fieldWidth - rightWordLength, lastRect.y + offsetY, EditorGUIUtility.fieldWidth, lastRect.height);
+			Rect leftRect = new Rect(EditorGUIUtility.labelWidth, position.y + TwoSidesLabelOffsetY, EditorGUIUtility.fieldWidth, position.height);
+			Rect rightRect = new Rect(position.xMax - EditorGUIUtility.fieldWidth - rightWordLength, position.y + TwoSidesLabelOffsetY, EditorGUIUtility.fieldWidth, position.height);
 
 			GUIStyle lowerLeftMiniLabel = new GUIStyle(EditorStyles.centeredGreyMiniLabel);
 			lowerLeftMiniLabel.alignment = TextAnchor.LowerLeft;
 
 			EditorGUI.LabelField(leftRect, labels.Left, lowerLeftMiniLabel);
 			EditorGUI.LabelField(rightRect, labels.Right, lowerLeftMiniLabel);
-
-			return resultValue;
 		}
 
-        public static int DrawTabsView(Rect position,int selectedTabIndex,float labelTabHeight, GUIContent[] labels, float[] ratios)
+		public static int DrawTabsView(Rect position,int selectedTabIndex,float labelTabHeight, GUIContent[] labels, float[] ratios)
         {
 			if(Event.current.type == EventType.Repaint)
 			{

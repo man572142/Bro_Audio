@@ -7,16 +7,13 @@ namespace Ami.BroAudio.Runtime
 {
 	public struct PlaybackPreference
 	{
-		public readonly SpatialSettings SpatialSettings;
-		public readonly bool IsNormalLoop;
-		public readonly bool IsSeamlessLoop;
+		public readonly IAudioEntity Entity;
 
 		public readonly Vector3 Position;
 		public readonly Transform FollowTarget;
 
 		public readonly Ease FadeInEase;
 		public readonly Ease FadeOutEase;
-		public readonly float SeamlessTransitionTime;
 
 		public float FadeIn { get; private set; }
 		public float FadeOut { get; private set; }
@@ -34,22 +31,15 @@ namespace Ami.BroAudio.Runtime
 
 		public PlaybackPreference(IAudioEntity entity)
 		{
+			Entity = entity;
 			FadeIn = UseEntitySetting;
 			FadeOut = UseEntitySetting;
-			SeamlessTransitionTime = UseEntitySetting;
-			IsSeamlessLoop = false;
-			IsNormalLoop = false;
 			Position = Vector3.negativeInfinity;
 			FollowTarget = null;
 			PlayerWaiter = null;
 
-			SeamlessTransitionTime = entity.TransitionTime;
-			IsSeamlessLoop = entity.SeamlessLoop;
-			IsNormalLoop = IsSeamlessLoop ? false : entity.Loop;
-			SpatialSettings = entity.SpatialSettings;
-
-			FadeInEase = IsSeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
-			FadeOutEase = IsSeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
+			FadeInEase = Entity.SeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
+			FadeOutEase = Entity.SeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
 		}
 
 
@@ -79,8 +69,8 @@ namespace Ami.BroAudio.Runtime
 
 		public void ApplySeamlessFade()
 		{
-			FadeIn = SeamlessTransitionTime;
-			FadeOut = SeamlessTransitionTime;
+			FadeIn = Entity.TransitionTime;
+			FadeOut = Entity.TransitionTime;
 		}
 
 		public Waiter CreateWaiter()
@@ -102,12 +92,6 @@ namespace Ami.BroAudio.Runtime
 		{
 			position = Position;
 			return !Position.Equals(Vector3.negativeInfinity);
-		}
-
-		public bool HasFollowTarget(out Transform followTarget)
-		{
-			followTarget = FollowTarget;
-			return FollowTarget != null;
 		}
 	}
 }

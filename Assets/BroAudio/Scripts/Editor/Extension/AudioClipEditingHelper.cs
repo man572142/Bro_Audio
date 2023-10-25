@@ -15,15 +15,15 @@ namespace Ami.Extension
 			_originalClip = originalClip;
 		}
 
-		public bool IsInit => _originalClip != null;
+		public bool HasClip => _originalClip != null;
 
-		public bool CanEdit => IsInit && Samples != null;
+		public bool CanEdit => HasClip && Samples != null;
 
 		private float[] Samples
 		{
 			get
 			{
-				if (_sampleDatas == null && IsInit)
+				if (_sampleDatas == null && HasClip)
 				{
 					_sampleDatas = _originalClip.GetSampleData();
 				}
@@ -33,7 +33,8 @@ namespace Ami.Extension
 
 		public AudioClip GetResultClip()
 		{
-			if (!IsInit)
+
+			if (!HasClip)
 			{
 				return null;
 			}
@@ -47,12 +48,26 @@ namespace Ami.Extension
 
 		public void Trim(float startPos, float endPos)
 		{
-			if (!IsInit)
+			if (!HasClip)
 			{
 				return;
 			}
 
 			HasEdited = _originalClip.TryGetSampleData(out _sampleDatas, startPos, endPos);
+		}
+
+		public void AddSlient(float time)
+		{
+			if(!CanEdit)
+			{
+				return;
+			}
+
+			int slientSampleLength = (int)(time * _originalClip.frequency * _originalClip.channels);
+			float[] newSampleDatas = new float[_sampleDatas.Length + slientSampleLength];
+			Array.Copy(_sampleDatas, 0, newSampleDatas, slientSampleLength, _sampleDatas.Length);
+			_sampleDatas = newSampleDatas;
+			HasEdited = true;
 		}
 
 		public void Boost(float boostVolInDb)

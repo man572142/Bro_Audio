@@ -79,9 +79,9 @@ namespace Ami.BroAudio.Runtime
                 pref.DisposeWaiter();
 			}
 
-            if (pref.Delay > 0)
+            if (clip.Delay > 0)
 			{
-                yield return new WaitForSeconds(pref.Delay);
+                yield return new WaitForSeconds(clip.Delay);
             }
 
             AudioSource.clip = clip.AudioClip;

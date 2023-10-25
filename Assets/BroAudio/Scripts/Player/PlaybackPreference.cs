@@ -10,7 +10,6 @@ namespace Ami.BroAudio.Runtime
 		public readonly SpatialSettings SpatialSettings;
 		public readonly bool IsNormalLoop;
 		public readonly bool IsSeamlessLoop;
-		public readonly float Delay;
 
 		public readonly Vector3 Position;
 		public readonly Transform FollowTarget;
@@ -40,7 +39,6 @@ namespace Ami.BroAudio.Runtime
 			SeamlessTransitionTime = UseEntitySetting;
 			IsSeamlessLoop = false;
 			IsNormalLoop = false;
-			Delay = default;
 			Position = Vector3.negativeInfinity;
 			FollowTarget = null;
 			PlayerWaiter = null;
@@ -48,7 +46,6 @@ namespace Ami.BroAudio.Runtime
 			SeamlessTransitionTime = entity.TransitionTime;
 			IsSeamlessLoop = entity.SeamlessLoop;
 			IsNormalLoop = IsSeamlessLoop ? false : entity.Loop;
-			Delay = entity.Delay;
 			SpatialSettings = entity.SpatialSettings;
 
 			FadeInEase = IsSeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;

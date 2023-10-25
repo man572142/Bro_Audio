@@ -173,7 +173,7 @@ namespace Ami.BroAudio.Editor
 		{
 			Rect previewRect = GetRectAndIterateLine(drawPosition);
 			_clipPropHelper.SetPreviewHeight(height);
-			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip,TargetClip.name);
+			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip,TargetClip.name,true);
 			DrawEmptyLine(GetLineCountByPixels(height));
 		}
 		private void DrawPlaybackPositionField(Rect drawPosition)
@@ -234,6 +234,11 @@ namespace Ami.BroAudio.Editor
 					helper.Trim(_transport.StartPosition, _transport.EndPosition);
 				}
 
+				if(_transport.Delay > 0f)
+				{
+					helper.AddSlient(_transport.Delay);
+				}
+
 				float boostVolume = _volumeOptions[_currVolumeOption];
 				if(boostVolume != 0f)
 				{
@@ -257,7 +262,7 @@ namespace Ami.BroAudio.Editor
 					helper.Reverse();
 				}
 
-				if(HasEdited)
+				if (HasEdited)
 				{
 					SavWav.Save(savePath, helper.GetResultClip());
                     _currSavingFilePath = savePath;

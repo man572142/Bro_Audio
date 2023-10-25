@@ -118,10 +118,10 @@ namespace Ami.BroAudio.Editor
 			public const DrawedProperty BasicDrawedProperty = DrawedProperty.Volume | DrawedProperty.PlaybackPosition | DrawedProperty.Fade | DrawedProperty.ClipPreview;
 
 			public const DrawedProperty MusicDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop;
-			public const DrawedProperty UIDrawedProperties = BasicDrawedProperty | DrawedProperty.Delay;
+			public const DrawedProperty UIDrawedProperties = BasicDrawedProperty;
 			public const DrawedProperty AmbienceDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop;
-			public const DrawedProperty SFXDrawedProperties = BasicDrawedProperty | DrawedProperty.Delay | DrawedProperty.Loop;
-			public const DrawedProperty VoiceOverDrawedProperties = BasicDrawedProperty | DrawedProperty.Delay;
+			public const DrawedProperty SFXDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop;
+			public const DrawedProperty VoiceOverDrawedProperties = BasicDrawedProperty;
 
 			public const bool ShowVUColorOnVolumeSlider = true;
 		}

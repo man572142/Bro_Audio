@@ -4,7 +4,8 @@
 	{ 
 		Start = 1 << 0,
 		End = 1 << 1,
-		FadeIn = 1 << 2,
-		FadeOut = 1 << 3,
+		Delay = 1 << 2,
+		FadeIn = 1 << 3,
+		FadeOut =  1 << 4,
 	}
 }

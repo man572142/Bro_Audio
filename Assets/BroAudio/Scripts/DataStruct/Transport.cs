@@ -9,6 +9,7 @@ namespace Ami.BroAudio.Editor
 
 		public float StartPosition { get; set; }
 		public float EndPosition { get; set; }
+		public float Delay { get; set; }
 		public float FadeIn { get; set; }
 		public float FadeOut { get; set; }
 		public float Length { get; set; }
@@ -21,11 +22,11 @@ namespace Ami.BroAudio.Editor
 			{
                 Length = clip.length;
             }
-			PlaybackValues = new float[] { StartPosition, EndPosition };
+			PlaybackValues = new float[] { StartPosition, EndPosition, Delay};
 			FadingValues = new float[] { FadeIn, FadeOut };
 		}
 
-		public bool HasDifferentPosition => StartPosition != 0f || EndPosition != 0f;
+		public bool HasDifferentPosition => StartPosition != 0f || EndPosition != 0f || (Delay > StartPosition);
 		public bool HasFading => FadeIn != 0f || FadeOut != 0f;
 
 		public void SetValue(float newValue, TransportType transportType)
@@ -39,6 +40,10 @@ namespace Ami.BroAudio.Editor
 				case TransportType.End:
 					PlaybackValues[1] = ClampAndRound(newValue, EndPosition);
 					EndPosition = PlaybackValues[1];
+					break;
+				case TransportType.Delay:
+					PlaybackValues[2] = Mathf.Max(newValue,0f);
+					Delay = PlaybackValues[2];
 					break;
 				case TransportType.FadeIn:
 					FadingValues[0] = ClampAndRound(newValue, FadeIn);

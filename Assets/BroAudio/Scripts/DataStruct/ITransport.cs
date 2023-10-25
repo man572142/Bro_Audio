@@ -6,6 +6,7 @@ namespace Ami.BroAudio.Editor
 	{
 		float StartPosition { get; }
 		float EndPosition { get; }
+		float Delay { get; }
 		float FadeIn { get; }
 		float FadeOut { get; }
 		float Length { get; }

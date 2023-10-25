@@ -12,12 +12,12 @@ namespace Ami.BroAudio.Editor
 		ClipPreview = 1 << 3,
 
 		// Additional (start from 10)
-		Delay = 1 << 10,
+		//Delay = 1 << 10,
 		Loop = 1 << 11,
 		Priority = 1 << 12,
 		SpatialSettings = 1 << 13,
 
-		All = Volume | PlaybackPosition | Fade | ClipPreview | Delay | Loop | Priority | SpatialSettings,
+		All = Volume | PlaybackPosition | Fade | ClipPreview | Loop | Priority | SpatialSettings,
 	} 
 
 	public static class DrawedPropertyConstant

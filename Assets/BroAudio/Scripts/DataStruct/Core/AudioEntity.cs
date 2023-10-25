@@ -13,7 +13,6 @@ namespace Ami.BroAudio.Data
 
         public BroAudioClip[] Clips;
 
-        [field: SerializeField] public float Delay { get; set; }
         [field: SerializeField] public bool Loop { get; set; }
         [field: SerializeField] public bool SeamlessLoop { get; set; }
         [field: SerializeField] public float TransitionTime { get; set; }

@@ -10,7 +10,6 @@ namespace Ami.Extension
     {
         public struct AudioClipSetting
 		{
-            public readonly float Length;
             public readonly int Frequency;
             public readonly int Channels;
             public readonly int Samples;
@@ -22,7 +21,6 @@ namespace Ami.Extension
 
 			public AudioClipSetting(AudioClip originClip)
 			{
-				Length = originClip.length;
 				Frequency = originClip.frequency;
 				Channels = originClip.channels;
 				Samples = originClip.samples;
@@ -61,7 +59,7 @@ namespace Ami.Extension
             return Mathf.Clamp(dB,MinDecibelVolume,allowBoost? MaxDecibelVolume : FullDecibelVolume);
         }
 
-        public static bool TryGetSampleData(this AudioClip originClip,out float[] sampleArray, float startPosInSecond = 0f, float endPosInSecond = 0f)
+        public static bool TryGetSampleData(this AudioClip originClip,out float[] sampleArray, float startPosInSecond, float endPosInSecond)
         {
             int startSample = (int)(startPosInSecond * originClip.frequency * originClip.channels);
             int sampleLength = (int)((originClip.length - endPosInSecond - startPosInSecond) * originClip.frequency * originClip.channels);

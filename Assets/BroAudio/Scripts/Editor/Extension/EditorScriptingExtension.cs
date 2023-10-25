@@ -16,6 +16,12 @@ namespace Ami.Extension
 			public string Right;
 		}
 
+		public struct TabView
+		{
+			public string Label;
+			public Action<Rect> OnDrawContent;
+		}
+
 		public static Rect GetRectAndIterateLine(IEditorDrawLineCounter drawer, Rect position)
 		{
 			Rect newRect = new Rect(position.x, position.y + drawer.SingleLineSpace * drawer.DrawLineCount + drawer.Offset, position.width, EditorGUIUtility.singleLineHeight);
@@ -37,25 +43,46 @@ namespace Ami.Extension
 			rect2 = new Rect(rect1.xMax + gap, origin.y, origin.width * (1 - firstRatio) - halfGap, origin.height);
 		}
 
-		public static void SplitRectHorizontal(Rect origin,float gap, out Rect[] outputRects,params float[] ratios)
+		public static void SplitRectHorizontal(Rect origin, int count, float gap, out Rect[] results)
 		{
-			outputRects = null;
+			results = SplitHorizontal(origin, count, gap, index => 
+			{
+				float ratio = 1f / count;
+				if (index == count - 1)
+				{
+					return 1 - (ratio * (count - 1));
+				}
+				else
+				{
+					return ratio;
+				}
+			});
+		}
+
+		public static void SplitRectHorizontal(Rect origin,float gap, out Rect[] results,params float[] ratios)
+		{
+			results = null;
 			if (ratios.Sum() != 1)
 			{
 				Debug.LogError("[Editor] Split ratio's sum should be 1");
 				return;
 			}
 
-			Rect[] results = new Rect[ratios.Length];
+			results = SplitHorizontal(origin,ratios.Length,gap, index => ratios[index]);
+		}
 
-			for(int i = 0; i < results.Length;i++)
+		private static Rect[] SplitHorizontal(Rect origin, int count, float gap, Func<int, float> getRatio)
+		{
+			Rect[] results = new Rect[count];
+			for (int i = 0; i < count; i++)
 			{
-				float offsetWidth = i == 0 || i == results.Length - 1 ? gap : gap * 0.5f;
-				float newWidth = origin.width * ratios[i] - offsetWidth;
+				float offsetWidth = i == 0 || i == count - 1 ? gap : gap * 0.5f;
+				float newWidth = origin.width * getRatio.Invoke(i) - offsetWidth;
 				float newX = i > 0 ? results[i - 1].xMax + gap : origin.x;
-				results[i] = new Rect(newX, origin.y, newWidth , origin.height);
+				results[i] = new Rect(newX, origin.y, newWidth, origin.height);
 			}
-			outputRects = results;
+
+			return results;
 		}
 
 		public static void SplitRectVertical(Rect origin, float firstRatio, float gap, out Rect rect1, out Rect rect2)
@@ -296,12 +323,6 @@ namespace Ami.Extension
 			return resultValue;
 		}
 
-		public struct TabView
-		{
-			public string Label;
-			public Action<Rect> OnDrawContent;
-		}
-
         public static int DrawTabsView(Rect position,int selectedTabIndex,float labelTabHeight, GUIContent[] labels, float[] ratios)
         {
 			if(Event.current.type == EventType.Repaint)
@@ -345,5 +366,52 @@ namespace Ami.Extension
                 }
             }
         }
-    }
+
+		public static void DrawMultiFloatField(Rect position,GUIContent title, GUIContent[] labels,float[] values, float totalFieldWidth = 100f, float gap = 10f)
+		{
+			if (labels == null || values == null || labels.Length != values.Length)
+			{
+				Debug.LogError("[Editor] Draw Multi-Float field failed. labels and values cannot be null, and their length should be equal");
+				return;
+			}
+
+			Rect suffixRect = EditorGUI.PrefixLabel(position, title);
+
+			for(int i = 0; i < values.Length;i++)
+			{
+				Rect rect = new Rect(suffixRect);
+				rect.x += i== 0? 0 : (totalFieldWidth + gap) * i;
+				rect.width = totalFieldWidth;
+				EditorGUIUtility.labelWidth = totalFieldWidth * 0.4f;
+				values[i] = EditorGUI.FloatField(rect, labels[i], values[i]);
+				EditorGUIUtility.labelWidth = 0f;
+			}
+		}
+		
+		public static void DrawEditorRulerHorizontal(Rect position,float unitWidth = 10f)
+		{
+			if (Event.current.type == EventType.Repaint)
+			{
+				int unitCount = Mathf.CeilToInt(position.width / unitWidth);
+				for (int i = 0; i < unitCount; i++)
+				{
+					Rect rect = new Rect(position.x + i * unitWidth, position.y, unitWidth, EditorGUIUtility.singleLineHeight);
+					EditorGUI.DrawRect(rect, GetColor(i));
+					EditorGUI.LabelField(rect, new GUIContent(string.Empty, ((i + 1) * unitWidth).ToString()));
+				}
+			}
+			
+			Color GetColor(int index)
+			{
+				if(index % 2 == 0)
+				{
+					return new Color(0.4f, 0.4f, 0.4f,0.7f);
+				}
+				else
+				{
+					return new Color(0.7f, 0.7f, 0.7f, 0.8f);
+				}
+			}
+		}
+	}
 }

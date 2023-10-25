@@ -43,17 +43,7 @@ namespace Ami.BroAudio.Editor
 
 		private void DrawAdditionalBaseProperties(Rect position, SerializedProperty property, AudioTypeSetting setting)
 		{
-			DrawDelayProperty();
 			DrawLoopProperty();
-
-			void DrawDelayProperty()
-			{
-				if (setting.DrawedProperty.HasFlag(DrawedProperty.Delay))
-				{
-					SerializedProperty delayProperty = GetBackingNameAndFindProperty(property,nameof(AudioEntity.Delay));
-					delayProperty.floatValue = EditorGUI.FloatField(GetRectAndIterateLine(position), "Delay", delayProperty.floatValue);
-				}
-			}
 
 			void DrawLoopProperty()
 			{

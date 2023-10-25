@@ -37,15 +37,17 @@ namespace Ami.BroAudio.Editor
 		
 		public const float DragPointSizeLength = 20f;
 
+		private readonly GUIContent PlaybackMainLabel = new GUIContent("Playback Position");
+		private readonly GUIContent FadeMainLabel = new GUIContent("Fade");
+		private readonly GUIContent[] FadeLabels = { new GUIContent("   In"), new GUIContent("Out") };
+		private readonly GUIContent[] PlaybackLabels = { new GUIContent("Start"), new GUIContent("End") , new GUIContent("Delay") };
+		private readonly Color _silentMaskColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
+		private readonly Color _fadingMaskColor = new Color(0.2f, 0.2f, 0.2f, 0.5f);
+		private readonly Color _startEndColor = Color.white;
+		private readonly Color _fadingLineColor = Color.green;
+
 		public float ClipPreviewHeight { get; private set; }
-
-		private Color _silentMaskColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
-		private Color _fadingMaskColor = new Color(0.2f, 0.2f, 0.2f, 0.5f);
-		private Color _startEndColor = Color.white;
-		private Color _fadingLineColor = Color.green;
-
-		private GUIContent[] FadeLabels = { new GUIContent("    In    "), new GUIContent(" Out ") };
-		private GUIContent[] PlaybackLabels = { new GUIContent(" Start "), new GUIContent(" End ") };
+		
 		private Dictionary<string, Dictionary<TransportType, DraggablePoint>> _clipDraggablePointsDict = new Dictionary<string, Dictionary<TransportType, DraggablePoint>>();
 		private KeyValuePair<string, DraggablePoint> _currDraggedPoint = default;
 
@@ -73,18 +75,19 @@ namespace Ami.BroAudio.Editor
 		public void DrawPlaybackPositionField(Rect position, ITransport transport)
 		{		
 			EditorGUI.BeginChangeCheck();
-			EditorGUI.MultiFloatField(position, new GUIContent("Playback Position"), PlaybackLabels, transport.PlaybackValues);
+			DrawMultiFloatField(position, PlaybackMainLabel, PlaybackLabels, transport.PlaybackValues);
 			if(EditorGUI.EndChangeCheck())
 			{
 				transport.SetValue(transport.PlaybackValues[0], TransportType.Start);
 				transport.SetValue(transport.PlaybackValues[1], TransportType.End);
+				transport.SetValue(transport.PlaybackValues[2], TransportType.Delay);
 			}
 		}
 
 		public void DrawFadingField(Rect position, ITransport transport)
 		{
 			EditorGUI.BeginChangeCheck();
-			EditorGUI.MultiFloatField(position, new GUIContent("Fade"), FadeLabels, transport.FadingValues);
+			DrawMultiFloatField(position, FadeMainLabel, FadeLabels, transport.FadingValues);
 			if (EditorGUI.EndChangeCheck())
 			{
 				transport.SetValue(transport.FadingValues[0], TransportType.FadeIn);
@@ -92,36 +95,54 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public void DrawClipPreview(Rect clipViewRect, ITransport transport, AudioClip audioClip,string clipPath)
+		public void DrawClipPreview(Rect clipViewRect, ITransport transport, AudioClip audioClip,string clipPath, bool addDelayInFrontOfStart = false)
 		{
 			clipViewRect.height = ClipPreviewHeight;
-			SplitRectHorizontal(clipViewRect, 0.1f, 15f, out Rect playbackRect, out Rect waveformRect);
-			waveformRect.width -= 5f;
+			SplitRectHorizontal(clipViewRect, 0.1f, 15f, out Rect playbackRect, out Rect previewRect);
+			previewRect.width -= 5f;
 			var draggablePoints = GetOrCreateDraggablePoints(clipPath);
 
 			DrawWaveformPreview();
 			DrawPlaybackButton();
 			
-			if(Event.current.type == EventType.Layout || waveformRect.width <= 0f)
+			if(Event.current.type == EventType.Layout || previewRect.width <= 0f)
 			{
 				return;
 			}
-			TransportVectorPoints points = new TransportVectorPoints(transport, new Vector2(waveformRect.width,ClipPreviewHeight), audioClip.length);
+			TransportVectorPoints points = new TransportVectorPoints(transport, new Vector2(previewRect.width,ClipPreviewHeight), audioClip.length);
 			DrawClipPlaybackLine();
 			DrawDraggable();
 			DrawClipLength();
 			HandleDraggable();
+			if(addDelayInFrontOfStart)
+			{
+				float exceedTime = Mathf.Max(transport.Delay - transport.StartPosition, 0f);
+				float delayInPixels = (transport.Delay / (audioClip.length + exceedTime)) * previewRect.width;
+				Rect slientRect = new Rect(previewRect);
+				slientRect.width =  delayInPixels;
+				slientRect.x += (transport.StartPosition + exceedTime) / (exceedTime + audioClip.length) * previewRect.width - delayInPixels;
+				EditorGUI.DrawRect(slientRect, _silentMaskColor);
+				EditorGUI.DropShadowLabel(slientRect, "Add Slience");
+			}
 
 			void DrawWaveformPreview()
-			{
+			{			
 				Texture2D waveformTexture = AssetPreview.GetAssetPreview(audioClip);
 				if (waveformTexture != null)
 				{
 					if(Event.current.type == EventType.Repaint)
 					{
-						GUI.skin.window.Draw(waveformRect, false, false, false, false);
+						GUI.skin.window.Draw(previewRect, false, false, false, false);
 					}
 
+					Rect waveformRect = new Rect(previewRect);
+					if (transport.Delay > transport.StartPosition)
+					{
+						float exceedTime = Mathf.Max(transport.Delay - transport.StartPosition, 0f);
+						float exceedTimeInPixels = exceedTime / (exceedTime + audioClip.length) * waveformRect.width;
+						waveformRect.width -= exceedTimeInPixels;
+						waveformRect.x += exceedTimeInPixels;
+					}
 					EditorGUI.DrawPreviewTexture(waveformRect, waveformTexture);
 				}
 			}
@@ -138,7 +159,7 @@ namespace Ami.BroAudio.Editor
 
 				if (GUI.Button(playRect, EditorGUIUtility.IconContent(PlayButton)))
 				{
-					EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(waveformRect, transport);
+					EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, transport);
 					EditorPlayAudioClip.PlayClip(audioClip, transport.StartPosition, transport.EndPosition);
 				}
 				if (GUI.Button(stopRect, EditorGUIUtility.IconContent(StopButton)))
@@ -152,7 +173,7 @@ namespace Ami.BroAudio.Editor
 
 			void DrawClipPlaybackLine()
 			{
-				GUI.BeginClip(waveformRect);
+				GUI.BeginClip(previewRect);
 				{
 					Handles.color = _fadingLineColor;
 					Handles.DrawAAPolyLine(2f, points.GetVectorsClockwise());
@@ -186,8 +207,8 @@ namespace Ami.BroAudio.Editor
 					Handles.color = _silentMaskColor;
 					Vector3[] endToSilent = new Vector3[4];
 					endToSilent[0] = new Vector3(points.End.x, 0f);
-					endToSilent[1] = new Vector3(waveformRect.width, 0f, 0f);
-					endToSilent[2] = new Vector3(waveformRect.width, ClipPreviewHeight, 0f);
+					endToSilent[1] = new Vector3(previewRect.width, 0f, 0f);
+					endToSilent[2] = new Vector3(previewRect.width, ClipPreviewHeight, 0f);
 					endToSilent[3] = points.End;
 					Handles.DrawAAConvexPolygon(endToSilent);
 				}
@@ -199,18 +220,21 @@ namespace Ami.BroAudio.Editor
 				ScaleMode scaleMode = ScaleMode.ScaleToFit;
 				foreach (var transportType in _allTransportType)
 				{
-					DraggablePoint point = GetDraggablePoint(waveformRect, points, transport, transportType);
-					draggablePoints[transportType] = point;
-					EditorGUIUtility.AddCursorRect(point.Rect, MouseCursor.SlideArrow);
-					GUI.DrawTexture(point.Rect, point.Image, scaleMode, true, 0f, point.ColorTint, point.ImageBorder, 0f);
+					if(transportType != TransportType.Delay) // Delay dragging is not supported
+					{
+						DraggablePoint point = GetDraggablePoint(previewRect, points, transport, transportType);
+						draggablePoints[transportType] = point;
+						EditorGUIUtility.AddCursorRect(point.Rect, MouseCursor.SlideArrow);
+						GUI.DrawTexture(point.Rect, point.Image, scaleMode, true, 0f, point.ColorTint, point.ImageBorder, 0f);
+					}
 				}	
 			}
 
 			void DrawClipLength()
 			{
-				Rect labelRect = new Rect(waveformRect);
+				Rect labelRect = new Rect(previewRect);
 				labelRect.height = EditorGUIUtility.singleLineHeight;
-				labelRect.y = waveformRect.yMax - labelRect.height;
+				labelRect.y = previewRect.yMax - labelRect.height;
 				float currentLength = audioClip.length - transport.StartPosition - transport.EndPosition;
 				EditorGUI.DropShadowLabel(labelRect, currentLength.ToString("0.00") + "s");
 			}
@@ -232,7 +256,7 @@ namespace Ami.BroAudio.Editor
 				}
 				else if (currEvent.type == EventType.MouseDrag && _currDraggedPoint.Key == clipPath && !_currDraggedPoint.Value.IsDefault())
 				{
-					float posInSeconds = currEvent.mousePosition.Scoping(waveformRect).x / waveformRect.width * audioClip.length;
+					float posInSeconds = currEvent.mousePosition.Scoping(previewRect).x / previewRect.width * audioClip.length;
 					_currDraggedPoint.Value.SetPlaybackPosition(posInSeconds);
 					currEvent.Use();
 				}

@@ -32,7 +32,6 @@ namespace Ami.BroAudio.Editor
             property.FindPropertyRelative(nameof(AudioEntity.Clips)).arraySize = 0;
             property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview).boolValue = false;
             property.FindPropertyRelative(AudioEntity.NameOf.MulticlipsPlayMode).enumValueIndex = 0;
-            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Delay))).floatValue = 0f;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Loop))).boolValue = false;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SeamlessLoop))).boolValue = false;
 

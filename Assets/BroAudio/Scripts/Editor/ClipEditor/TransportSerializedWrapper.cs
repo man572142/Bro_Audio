@@ -8,23 +8,25 @@ namespace Ami.BroAudio.Editor
 	{
 		public const int FloatFieldDigits = 2;
 
+		private readonly SerializedProperty DelayProp;
 		private readonly SerializedProperty StartPosProp;
 		private readonly SerializedProperty EndPosProp;
 		private readonly SerializedProperty FadeInProp;
 		private readonly SerializedProperty FadeOutProp;
 
-		public TransportSerializedWrapper(SerializedProperty startPosProp, SerializedProperty endPosProp, SerializedProperty fadeInProp, SerializedProperty fadeOutProp, float fullLength)
+		public TransportSerializedWrapper(SerializedProperty startPosProp, SerializedProperty endPosProp, SerializedProperty fadeInProp, SerializedProperty fadeOutProp, SerializedProperty delayProp,float fullLength)
 		{
+			DelayProp = delayProp;
 			StartPosProp = startPosProp;
 			EndPosProp = endPosProp;
 			FadeInProp = fadeInProp;
 			FadeOutProp = fadeOutProp;
 			Length = fullLength;
 
-			PlaybackValues = new float[] { StartPosition, EndPosition };
+			PlaybackValues = new float[] { StartPosition, EndPosition, Delay };
 			FadingValues = new float[] { FadeIn, FadeOut };
 		}
-
+		public float Delay => DelayProp.floatValue;
 		public float StartPosition => StartPosProp.floatValue;
 		public float EndPosition => EndPosProp.floatValue;
 		public float FadeIn => FadeInProp.floatValue;
@@ -42,6 +44,9 @@ namespace Ami.BroAudio.Editor
 					break;
 				case TransportType.End:
 					PlaybackValues[1] = ClampAndRound(newValue, EndPosProp);
+					break;
+				case TransportType.Delay:
+					PlaybackValues[2] = Mathf.Max(newValue, 0f);
 					break;
 				case TransportType.FadeIn:
 					FadingValues[0] = ClampAndRound(newValue, FadeInProp);
@@ -63,12 +68,16 @@ namespace Ami.BroAudio.Editor
 				case TransportType.End:
 					EndPosProp.floatValue = PlaybackValues[1];
 					break;
+				case TransportType.Delay:
+					DelayProp.floatValue = PlaybackValues[2];
+					break;
 				case TransportType.FadeIn:
 					FadeInProp.floatValue = FadingValues[0];
 					break;
 				case TransportType.FadeOut:
 					FadeOutProp.floatValue = FadingValues[1];
 					break;
+				
 			}
 		}
 

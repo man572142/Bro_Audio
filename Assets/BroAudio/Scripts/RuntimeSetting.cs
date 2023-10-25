@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Ami.Extension;
+using Ami.BroAudio.Runtime;
 
 namespace Ami.BroAudio.Data
 {
@@ -20,6 +21,7 @@ namespace Ami.BroAudio.Data
 		public Ease SeamlessFadeOutEase = FactorySettings.SeamlessFadeOutEase;
 
 		public int DefaultAudioPlayerPoolSize = FactorySettings.DefaultAudioPlayerPoolSize;
+		public PitchShiftingSetting PitchShifting = PitchShiftingSetting.AudioMixer;
 
 #if UNITY_EDITOR
 		public void ResetToFactorySettings()
@@ -30,6 +32,7 @@ namespace Ami.BroAudio.Data
 			SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;
 			SeamlessFadeOutEase = FactorySettings.SeamlessFadeOutEase;
 			DefaultAudioPlayerPoolSize = FactorySettings.DefaultAudioPlayerPoolSize;
+			PitchShifting = FactorySettings.PitchShifting;
         }
 
 		public class FactorySettings
@@ -41,6 +44,7 @@ namespace Ami.BroAudio.Data
 			public const Ease SeamlessFadeOutEase = Ease.OutSine;
 
 			public const int DefaultAudioPlayerPoolSize = 5;
+			public const PitchShiftingSetting PitchShifting = PitchShiftingSetting.AudioMixer;
 		}
 #endif
 	}

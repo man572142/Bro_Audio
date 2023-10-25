@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using Ami.Extension;
+using Ami.BroAudio.Runtime;
 using static Ami.BroAudio.Utility;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
@@ -34,6 +35,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const float Gap = 50f;
 		
 		public const string HaasEffectLabel = "Time to prevent Comb Filtering (Haas Effect)";
+		public const string PitchShiftingLabel = "Pitch Shifting Setting";
 		public const string ResetSettingButtonText = "Reset To Factory Settings";
 		public const string AutoMatchTracksButtonText = "Auto-adding tracks to match audio voices.";
 		public const string AssetOutputPathLabel = "Asset Output Path";
@@ -57,9 +59,7 @@ namespace Ami.BroAudio.Editor.Setting
 		private int _currProjectSettingVoiceCount = -1;
 		private int _currentMixerTracksCount = -1;
 		private int _broVirtualTracksCount = Tools.BroAdvice.VirtualTrackCount;
-		private GUIContent _haasEffectGUIContent = null;
-		private GUIContent _audioVoicesGUIContent = null;
-		private GUIContent _virtualTracksGUIContent = null;
+		private GUIContent _haasEffectGUIContent , _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 		private AudioMixerGroup _duplicateTrackSource = null;
 		private AudioMixer _mixer = null;
@@ -120,6 +120,7 @@ namespace Ami.BroAudio.Editor.Setting
 		private void InitGUIContents()
 		{
 			_haasEffectGUIContent = new GUIContent(HaasEffectLabel, _instruction.GetText(Instruction.HaasEffectTooltip));
+			_pitchGUIContent = new GUIContent(PitchShiftingLabel, _instruction.GetText(Instruction.PitchShiftingToolTip));
 			_audioVoicesGUIContent = new GUIContent(RealVoicesParameterName, _instruction.GetText(Instruction.AudioVoicesToolTip));
 			_virtualTracksGUIContent = new GUIContent(BroVirtualTracks, _instruction.GetText(Instruction.BroVirtualToolTip));
 		}
@@ -222,36 +223,33 @@ namespace Ami.BroAudio.Editor.Setting
 			return default;
 		}
 
-		//private Rect DrawTabsLabel(Rect tabWindowRect)
-		//{
-		//	Rect rect = new Rect(tabWindowRect);
-		//	rect.height = EditorGUIUtility.singleLineHeight * 2f;
-		//	SplitRectHorizontal(rect,0f,out Rect[] tabRects,0.34f,0.33f,0.33f);
-
-		//	for(int i = 0; i < tabRects.Length;i++)
-		//	{
-		//		bool oldState = (int)_currentSelectTab == i;
-		//		bool newState = GUI.Toggle(tabRects[i], oldState, _tabLabels[i],GetTabStyle(i,tabRects.Length));
-		//		if(newState)
-		//		{
-		//			_currentSelectTab = (Tab)i;
-		//		}
-		//	}
-		//	return rect;
-
-            
-  //      }
-
         private void DrawAudioSetting(Rect drawPosition)
 		{
 			drawPosition.width -= Gap;
 			DrawHaasEffectSetting();
+			DrawPitchSetting();
 			DrawEmptyLine(1);
 
 			DrawDefaultEasing();
 			DrawSeamlessLoopEasing();
 			DrawEmptyLine(1);
 			DrawAudioProjectSettings();
+
+			void DrawHaasEffectSetting()
+			{
+				Rect haasRect = GetRectAndIterateLine(drawPosition);
+				EditorGUI.LabelField(haasRect, _haasEffectGUIContent);
+
+				haasRect.width *= 0.5f;
+				haasRect.x += 150f;
+				RuntimeSetting.HaasEffectInSeconds = EditorGUI.FloatField(haasRect, " ", RuntimeSetting.HaasEffectInSeconds);
+			}
+
+			void DrawPitchSetting()
+			{
+				Rect pitchRect = GetRectAndIterateLine(drawPosition);
+				RuntimeSetting.PitchShifting = (PitchShiftingSetting)EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, RuntimeSetting.PitchShifting);
+			}
 
 			void DrawDefaultEasing()
 			{
@@ -273,16 +271,6 @@ namespace Ami.BroAudio.Editor.Setting
 				RuntimeSetting.SeamlessFadeOutEase =
 					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.SeamlessFadeOutEase);
 				EditorGUI.indentLevel--;
-			}
-
-			void DrawHaasEffectSetting()
-			{
-				Rect haasRect = GetRectAndIterateLine(drawPosition);
-				EditorGUI.LabelField(haasRect, _haasEffectGUIContent);
-
-				haasRect.width *= 0.5f;
-				haasRect.x += 150f;
-				RuntimeSetting.HaasEffectInSeconds = EditorGUI.FloatField(haasRect, " ", RuntimeSetting.HaasEffectInSeconds);
 			}
 
 			void DrawAudioProjectSettings()

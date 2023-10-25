@@ -97,3 +97,7 @@ MonoBehaviour:
     Value: Choose an AudioType to properly create the asset
   - Key: 308
     Value: Please name the temp asset
+  - Key: 15
+    Value: "\rIn Unity, there are two places where you can set the audio pitch, and
+      they have different ranges and affect the sound differently.Choose the one
+      you like!"

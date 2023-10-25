@@ -15,6 +15,7 @@
 		AddTracksConfirmationDialog,
         AudioVoicesToolTip,
         BroVirtualToolTip,
+        PitchShiftingToolTip,
 
         // Settings/Info
         Copyright = 20,

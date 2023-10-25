@@ -95,11 +95,12 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public void DrawClipPreview(Rect clipViewRect, ITransport transport, AudioClip audioClip,string clipPath, bool addDelayInFrontOfStart = false)
+		public void DrawClipPreview(Rect clipViewRect, ITransport transport, AudioClip audioClip,string clipPath)
 		{
 			clipViewRect.height = ClipPreviewHeight;
 			SplitRectHorizontal(clipViewRect, 0.1f, 15f, out Rect playbackRect, out Rect previewRect);
 			previewRect.width -= 5f;
+			float exceedTime = Mathf.Max(transport.Delay - transport.StartPosition, 0f);
 			var draggablePoints = GetOrCreateDraggablePoints(clipPath);
 
 			DrawWaveformPreview();
@@ -109,21 +110,12 @@ namespace Ami.BroAudio.Editor
 			{
 				return;
 			}
-			TransportVectorPoints points = new TransportVectorPoints(transport, new Vector2(previewRect.width,ClipPreviewHeight), audioClip.length);
+			TransportVectorPoints points = new TransportVectorPoints(transport, new Vector2(previewRect.width,ClipPreviewHeight), audioClip.length + exceedTime);
 			DrawClipPlaybackLine();
+			DrawExtraSlience();
 			DrawDraggable();
-			DrawClipLength();
+			DrawClipLengthLabel();
 			HandleDraggable();
-			if(addDelayInFrontOfStart)
-			{
-				float exceedTime = Mathf.Max(transport.Delay - transport.StartPosition, 0f);
-				float delayInPixels = (transport.Delay / (audioClip.length + exceedTime)) * previewRect.width;
-				Rect slientRect = new Rect(previewRect);
-				slientRect.width =  delayInPixels;
-				slientRect.x += (transport.StartPosition + exceedTime) / (exceedTime + audioClip.length) * previewRect.width - delayInPixels;
-				EditorGUI.DrawRect(slientRect, _silentMaskColor);
-				EditorGUI.DropShadowLabel(slientRect, "Add Slience");
-			}
 
 			void DrawWaveformPreview()
 			{			
@@ -138,7 +130,6 @@ namespace Ami.BroAudio.Editor
 					Rect waveformRect = new Rect(previewRect);
 					if (transport.Delay > transport.StartPosition)
 					{
-						float exceedTime = Mathf.Max(transport.Delay - transport.StartPosition, 0f);
 						float exceedTimeInPixels = exceedTime / (exceedTime + audioClip.length) * waveformRect.width;
 						waveformRect.width -= exceedTimeInPixels;
 						waveformRect.x += exceedTimeInPixels;
@@ -230,13 +221,15 @@ namespace Ami.BroAudio.Editor
 				}	
 			}
 
-			void DrawClipLength()
+			void DrawClipLengthLabel()
 			{
 				Rect labelRect = new Rect(previewRect);
 				labelRect.height = EditorGUIUtility.singleLineHeight;
 				labelRect.y = previewRect.yMax - labelRect.height;
 				float currentLength = audioClip.length - transport.StartPosition - transport.EndPosition;
-				EditorGUI.DropShadowLabel(labelRect, currentLength.ToString("0.00") + "s");
+				string text = currentLength.ToString("0.00");
+				text += transport.Delay > 0 ? " + " + transport.Delay.ToString("0.00") : string.Empty;
+				EditorGUI.DropShadowLabel(labelRect, text + "s");
 			}
 
 			void HandleDraggable()
@@ -271,6 +264,17 @@ namespace Ami.BroAudio.Editor
 					EditorGUI.DrawRect(point.Rect, new Color(1f, 1f, 1f, 0.3f));
 				}
 #endif
+			}
+
+			Rect DrawExtraSlience()
+			{
+				float delayInPixels = (transport.Delay / (audioClip.length + exceedTime)) * previewRect.width;
+				Rect slientRect = new Rect(previewRect);
+				slientRect.width = delayInPixels;
+				slientRect.x += (transport.StartPosition + exceedTime) / (exceedTime + audioClip.length) * previewRect.width - delayInPixels;
+				EditorGUI.DrawRect(slientRect, _silentMaskColor);
+				EditorGUI.DropShadowLabel(slientRect, "Add Slience");
+				return previewRect;
 			}
 		}
 

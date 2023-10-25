@@ -173,7 +173,7 @@ namespace Ami.BroAudio.Editor
 		{
 			Rect previewRect = GetRectAndIterateLine(drawPosition);
 			_clipPropHelper.SetPreviewHeight(height);
-			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip,TargetClip.name,true);
+			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip,TargetClip.name);
 			DrawEmptyLine(GetLineCountByPixels(height));
 		}
 		private void DrawPlaybackPositionField(Rect drawPosition)

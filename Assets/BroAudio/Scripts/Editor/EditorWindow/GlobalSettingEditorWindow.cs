@@ -249,7 +249,17 @@ namespace Ami.BroAudio.Editor.Setting
 			void DrawPitchSetting()
 			{
 				Rect pitchRect = GetRectAndIterateLine(drawPosition);
-				RuntimeSetting.PitchSetting = (PitchShiftingSetting)EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, RuntimeSetting.PitchSetting);
+				bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
+				if(isWebGL)
+				{
+					EditorGUI.BeginDisabledGroup(isWebGL);
+					EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, PitchShiftingSetting.AudioSource);
+					EditorGUI.EndDisabledGroup();
+				}
+				else
+				{
+					RuntimeSetting.PitchSetting = (PitchShiftingSetting)EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, RuntimeSetting.PitchSetting);
+				}
 			}
 
 			void DrawDefaultEasing()

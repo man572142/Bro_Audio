@@ -88,7 +88,8 @@ namespace Ami.BroAudio.Editor
 				pitchRect.width *= _defaultFieldRatio;
 				SerializedProperty pitchProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Pitch));
 
-				var pitchSetting = BroEditorUtility.RuntimeSetting.PitchSetting;
+				bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
+				var pitchSetting = isWebGL? PitchShiftingSetting.AudioSource : BroEditorUtility.RuntimeSetting.PitchSetting;
 				float minPitch = pitchSetting == PitchShiftingSetting.AudioMixer ? AudioConstant.MinMixerPitch : AudioConstant.MinAudioSourcePitch;
 				float maxPitch = pitchSetting == PitchShiftingSetting.AudioMixer ? AudioConstant.MaxMixerPitch : AudioConstant.MaxAudioSourcePitch;
 				GUIContent label = new GUIContent(nameof(AudioEntity.Pitch), $"Pitch will be set on [{pitchSetting}] according to the current global setting");

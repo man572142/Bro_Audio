@@ -98,6 +98,6 @@ MonoBehaviour:
   - Key: 308
     Value: Please name the temp asset
   - Key: 15
-    Value: "\rIn Unity, there are two places where you can set the audio pitch, and
-      they have different ranges and affect the sound differently.Choose the one
-      you like!"
+    Value: "There are 2 places to set audio pitch, each with different ranges and
+      sound characteristics. \n[AudioMixer] is recommended for all platforms except
+      WebGL."

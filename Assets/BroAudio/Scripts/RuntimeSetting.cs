@@ -21,7 +21,7 @@ namespace Ami.BroAudio.Data
 		public Ease SeamlessFadeOutEase = FactorySettings.SeamlessFadeOutEase;
 
 		public int DefaultAudioPlayerPoolSize = FactorySettings.DefaultAudioPlayerPoolSize;
-		public PitchShiftingSetting PitchShifting = PitchShiftingSetting.AudioMixer;
+		public PitchShiftingSetting PitchSetting = PitchShiftingSetting.AudioMixer;
 
 #if UNITY_EDITOR
 		public void ResetToFactorySettings()
@@ -32,7 +32,7 @@ namespace Ami.BroAudio.Data
 			SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;
 			SeamlessFadeOutEase = FactorySettings.SeamlessFadeOutEase;
 			DefaultAudioPlayerPoolSize = FactorySettings.DefaultAudioPlayerPoolSize;
-			PitchShifting = FactorySettings.PitchShifting;
+			PitchSetting = FactorySettings.PitchShifting;
         }
 
 		public class FactorySettings

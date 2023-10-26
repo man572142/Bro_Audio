@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using Ami.Extension;
 using Ami.BroAudio.Runtime;
+using Ami.Extension.Reflection;
 using static Ami.BroAudio.Utility;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
@@ -248,7 +249,7 @@ namespace Ami.BroAudio.Editor.Setting
 			void DrawPitchSetting()
 			{
 				Rect pitchRect = GetRectAndIterateLine(drawPosition);
-				RuntimeSetting.PitchShifting = (PitchShiftingSetting)EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, RuntimeSetting.PitchShifting);
+				RuntimeSetting.PitchSetting = (PitchShiftingSetting)EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, RuntimeSetting.PitchSetting);
 			}
 
 			void DrawDefaultEasing()

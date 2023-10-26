@@ -5,6 +5,7 @@ using Ami.BroAudio.Data;
 using static Ami.Extension.EditorScriptingExtension;
 using Ami.Extension;
 using UnityEngine;
+using UnityEditor.Build;
 
 namespace Ami.BroAudio.Editor
 {
@@ -35,7 +36,7 @@ namespace Ami.BroAudio.Editor
             property.FindPropertyRelative(AudioEntity.NameOf.MulticlipsPlayMode).enumValueIndex = 0;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Loop))).boolValue = false;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SeamlessLoop))).boolValue = false;
-            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Pitch))).floatValue = 0f;
+            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Pitch))).floatValue = AudioConstant.DefaultPitch;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Priority))).intValue = AudioConstant.DefaultPriority;
 
             SerializedProperty spatialProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
@@ -49,7 +50,7 @@ namespace Ami.BroAudio.Editor
             spatialProp.FindPropertyRelative(nameof(SpatialSettings.Spread)).animationCurveValue = AudioConstant.Spread;
             spatialProp.FindPropertyRelative(nameof(SpatialSettings.CustomRolloff)).animationCurveValue = AudioConstant.CustomRolloff;
             spatialProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-        }
+		}
 
 		public static int GetSerializedEnumIndex(this BroAudioType audioType)
 		{
@@ -118,5 +119,5 @@ namespace Ami.BroAudio.Editor
                 property.animationCurveValue = curve;
             }
         }
-    }
+	}
 }

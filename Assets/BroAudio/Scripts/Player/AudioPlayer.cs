@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Data;
 using Ami.Extension;
+using static Ami.BroAudio.Tools.BroName;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -13,7 +14,7 @@ namespace Ami.BroAudio.Runtime
 	{
         public const float UseEntitySetting = -1f;
         public const float Immediate = 0f;
-        public const string SendParaName = "_Send";
+
 
         public event Action<AudioPlayer> OnRecycle;
 
@@ -23,6 +24,7 @@ namespace Ami.BroAudio.Runtime
         private IBroAudioClip CurrentClip;
         private List<AudioPlayerDecorator> _decorators = null;
         private string _sendParaName = null;
+        private string _pitchParaName = null;
         private bool _isUsingEffect = false;
 
         public bool IsPlaying => AudioSource.isPlaying;
@@ -53,7 +55,8 @@ namespace Ami.BroAudio.Runtime
             set
 			{
                 AudioSource.outputAudioMixerGroup = value;
-                _sendParaName = value == null ? null : AudioSource.outputAudioMixerGroup.name + SendParaName;
+                _sendParaName = value == null ? null : AudioSource.outputAudioMixerGroup.name + SendParaNameSuffix;
+                _pitchParaName = value == null ? null : AudioSource.outputAudioMixerGroup.name + PitchParaNameSuffix;
             }
         }
 
@@ -72,7 +75,20 @@ namespace Ami.BroAudio.Runtime
             _audioMixer = mixer;
 		}
 
-        private void SetSpatial(PlaybackPreference pref)
+        private void SetPitch(float pitch)
+        {
+			switch (SoundManager.PitchSetting)
+			{
+				case PitchShiftingSetting.AudioMixer:
+                    _audioMixer.SetFloat(_pitchParaName, pitch * 100f); // in percentage
+					break;
+				case PitchShiftingSetting.AudioSource:
+                    AudioSource.pitch = pitch;
+                    break;
+			}
+		}
+
+		private void SetSpatial(PlaybackPreference pref)
         {
             SpatialSettings settings = pref.Entity.SpatialSettings;
             AudioSource.panStereo = settings.StereoPan;

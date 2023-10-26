@@ -79,13 +79,35 @@ namespace Ami.BroAudio.Editor
 
 			void DrawPitchProperty()
 			{
-				if (setting.DrawedProperty.HasFlag(DrawedProperty.Pitch))
+				if (!setting.DrawedProperty.HasFlag(DrawedProperty.Pitch))
 				{
-					Rect pitchRect = GetRectAndIterateLine(position);
-					pitchRect.width *= _defaultFieldRatio;
-					SerializedProperty pitchProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Pitch));
+					return;
+				}
+				
+				Rect pitchRect = GetRectAndIterateLine(position);
+				pitchRect.width *= _defaultFieldRatio;
+				SerializedProperty pitchProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Pitch));
 
-					pitchProp.floatValue = EditorGUI.Slider(pitchRect, nameof(AudioEntity.Pitch), pitchProp.floatValue, AudioConstant.MinPitch, AudioConstant.MaxPitch);
+				var pitchSetting = BroEditorUtility.RuntimeSetting.PitchSetting;
+				float minPitch = pitchSetting == PitchShiftingSetting.AudioMixer ? AudioConstant.MinMixerPitch : AudioConstant.MinAudioSourcePitch;
+				float maxPitch = pitchSetting == PitchShiftingSetting.AudioMixer ? AudioConstant.MaxMixerPitch : AudioConstant.MaxAudioSourcePitch;
+				GUIContent label = new GUIContent(nameof(AudioEntity.Pitch), $"Pitch will be set on [{pitchSetting}] according to the current global setting");
+
+				float pitch = Mathf.Clamp(pitchProp.floatValue, minPitch, maxPitch);
+				switch (pitchSetting)
+				{
+					case PitchShiftingSetting.AudioMixer:
+						float percentage = 100f;
+						float displayValue = EditorGUI.Slider(pitchRect, label, Mathf.Round(pitch * percentage), minPitch * percentage, maxPitch * percentage);
+						pitchProp.floatValue = displayValue / percentage;
+						Rect percentageRect = new Rect(pitchRect);
+						percentageRect.width = 15f;
+						percentageRect.x = pitchRect.xMax - percentageRect.width;
+						EditorGUI.LabelField(percentageRect, "%");
+						break;
+					case PitchShiftingSetting.AudioSource:
+						pitchProp.floatValue = EditorGUI.Slider(pitchRect, label, pitch, minPitch, maxPitch);
+						break;
 				}
 			}
 
@@ -165,5 +187,5 @@ namespace Ami.BroAudio.Editor
 				drawedProperty = DrawedProperty.All;
 			}
 		}
-	} 
+	}
 }

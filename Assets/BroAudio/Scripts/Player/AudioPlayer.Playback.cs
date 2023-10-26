@@ -85,7 +85,7 @@ namespace Ami.BroAudio.Runtime
 
             AudioSource.clip = clip.AudioClip;
             AudioSource.priority = pref.Entity.Priority;
-            AudioSource.pitch = pref.Entity.Pitch;
+            SetPitch(pref.Entity.Pitch);
             SetSpatial(pref);
             VolumeControl fader = VolumeControl.Clip;
             ClipVolume = 0f;
@@ -160,7 +160,7 @@ namespace Ami.BroAudio.Runtime
 			}
 		}
 
-        private void OnFinishOneRound(BroAudioClip clip, PlaybackPreference pref)
+		private void OnFinishOneRound(BroAudioClip clip, PlaybackPreference pref)
         {
             OnFinishingOneRound?.Invoke(ID, clip, pref);
             OnFinishingOneRound = null;

@@ -26,7 +26,7 @@ namespace Ami.Extension.Reflection
 		private bool _exposeAllMixerGroup = false;
 
 #if BroAudio_DevOnly
-		[MenuItem("BroAudio/Dev Only Tools")]
+		[MenuItem(MenuItem_BroAudio + "/Dev Only Tools")]
 #endif
 		public static void ShowWindow()
 		{

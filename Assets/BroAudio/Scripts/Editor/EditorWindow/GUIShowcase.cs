@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using System;
+using Ami.BroAudio.Tools;
 
 namespace Ami.Extension
 {
@@ -26,7 +27,7 @@ namespace Ami.Extension
 			}
 		}
 
-		[MenuItem("BroAudio/GUI Showcase")]
+		[MenuItem(BroName.MenuItem_BroAudio + "/GUI Showcase")]
 		public static void ShowWindow()
 		{
 			EditorWindow window = EditorWindow.GetWindow<GUIShowcase>();

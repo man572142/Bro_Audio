@@ -6,9 +6,8 @@ using UnityEngine.Audio;
 using System.Linq;
 using static Ami.BroAudio.Tools.BroLog;
 using static Ami.BroAudio.Tools.BroName;
-using Ami.BroAudio.Editor;
 
-namespace Ami.Extension
+namespace Ami.Extension.Reflection
 {
 	public class DevToolsWindow : EditorWindow
 	{
@@ -17,10 +16,14 @@ namespace Ami.Extension
 		public const string Confirm = "Yes";
 		public const string Cancel = "No";
 
-		public const string Function_CreateNewAudioMixerGroup = "Create New BroAuio Track";
-		public const string Function_ResetLastAllAudioID = "Reset All Last Audio ID";
+		public const string Function_DuplicateLastTrack = "Duplicate The Last BroAuio Track";
+		public const string Function_AddExposedParameter = "Add Exposed Parameter";
 
 		private AudioMixer _targetMixer = null;
+		private GUILayoutOption _buttonHeight = GUILayout.Height(EditorGUIUtility.singleLineHeight* 2f);
+		private ExposedParameterType _exposedParaType = ExposedParameterType.Volume;
+		private AudioMixerGroup _targetExposeMixerGroup = null;
+		private bool _exposeAllMixerGroup = false;
 
 #if BroAudio_DevOnly
 		[MenuItem("BroAudio/Dev Only Tools")]
@@ -47,15 +50,14 @@ namespace Ami.Extension
 				GUILayout.Space(10);
 			}
 
-			var buttonHeight = GUILayout.Height(EditorGUIUtility.singleLineHeight * 2f);
-			DrawDuplicateOneTrackAndCopySettingButton(buttonHeight);
-
+			DrawDuplicateLastTrackButton();
 			EditorGUILayout.Space();
+			DrawAddExposedParameterButton();
 		}
 
-		private void DrawDuplicateOneTrackAndCopySettingButton(GUILayoutOption buttonHeight)
+		private void DrawDuplicateLastTrackButton()
 		{
-			if (GUILayout.Button(Function_CreateNewAudioMixerGroup, buttonHeight) && DisplayDialog(Function_CreateNewAudioMixerGroup))
+			if (GUILayout.Button(Function_DuplicateLastTrack, _buttonHeight) && DisplayDialog(Function_DuplicateLastTrack))
 			{
 				AudioMixerGroup mainTrack = _targetMixer.FindMatchingGroups(MainTrackName)?.FirstOrDefault();
 				AudioMixerGroup[] tracks = _targetMixer.FindMatchingGroups(GenericTrackName);
@@ -69,6 +71,48 @@ namespace Ami.Extension
 				string trackName = $"{GenericTrackName}{tracksCount + 1}";
 				BroAudioReflection.DuplicateBroAudioTrack(_targetMixer,mainTrack,tracks.Last(), trackName);
 			}
+		}
+
+		private void DrawAddExposedParameterButton()
+		{
+			EditorGUILayout.LabelField("Expose Mixer Group Parameter",EditorStyles.boldLabel);
+			EditorGUILayout.BeginHorizontal();
+			{
+				EditorGUILayout.BeginVertical();
+				{
+					_exposeAllMixerGroup = EditorGUILayout.ToggleLeft("Expose All",_exposeAllMixerGroup);
+					using (var disableScope = new EditorGUI.DisabledScope(_exposeAllMixerGroup))
+					{
+						EditorGUILayout.LabelField("Expose Target");
+						_targetExposeMixerGroup = (AudioMixerGroup)EditorGUILayout.ObjectField(_targetExposeMixerGroup, typeof(AudioMixerGroup), true);
+					}
+				}
+				EditorGUILayout.EndVertical();
+
+				EditorGUILayout.BeginVertical();
+				{
+					_exposedParaType = (ExposedParameterType)EditorGUILayout.EnumPopup("Parameter Type", _exposedParaType);
+
+					if (GUILayout.Button(Function_AddExposedParameter, _buttonHeight) && DisplayDialog(Function_AddExposedParameter))
+					{
+						if(_exposeAllMixerGroup)
+						{
+							AudioMixerGroup[] tracks = _targetMixer.FindMatchingGroups(GenericTrackName);
+							foreach(var track in tracks)
+							{
+								BroAudioReflection.ExposeParameter(_exposedParaType, track);
+							}
+						}
+						else if (_targetExposeMixerGroup != null)
+						{
+							BroAudioReflection.ExposeParameter(_exposedParaType, _targetExposeMixerGroup);
+						}
+					}
+				}
+				EditorGUILayout.EndVertical();
+			}
+			EditorGUILayout.EndHorizontal();
+			
 		}
 
 

@@ -8,7 +8,7 @@ using UnityEngine.Audio;
 using static Ami.Extension.ReflectionExtension;
 using System.Linq;
 
-namespace Ami.Extension
+namespace Ami.Extension.Reflection
 {
 	public static class CustomParameterExposer 
 	{

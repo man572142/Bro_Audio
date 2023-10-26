@@ -14,5 +14,9 @@ namespace Ami.BroAudio.Tools
 		public const string MenuItem_LibraryManager = "Library Manager";
         public const string MenuItem_ClipEditor = "Clip Editor";
 		public const string MenuItem_Setting = "Setting";
-    }
+
+		public const string SendParaNameSuffix = "_Send";
+		public const string PitchParaNameSuffix = "_Pitch";
+
+	}
 }

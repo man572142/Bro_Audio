@@ -2,7 +2,7 @@
 using System.Reflection;
 using UnityEditor;
 
-namespace Ami.Extension
+namespace Ami.Extension.Reflection
 {
 	public class AudioClassReflectionHelper
 	{

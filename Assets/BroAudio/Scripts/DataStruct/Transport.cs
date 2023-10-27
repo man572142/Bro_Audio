@@ -7,51 +7,43 @@ namespace Ami.BroAudio.Editor
 	{
 		public const int FloatFieldDigits = 2;
 
-		public float StartPosition { get; set; }
-		public float EndPosition { get; set; }
-		public float Delay { get; set; }
-		public float FadeIn { get; set; }
-		public float FadeOut { get; set; }
-		public float Length { get; set; }
+		public virtual float StartPosition => PlaybackValues[0];
+		public virtual float EndPosition => PlaybackValues[1];
+		public virtual float Delay => PlaybackValues[2];
+		public virtual float FadeIn => FadingValues[0];
+		public virtual float FadeOut => FadingValues[1];
+		public float Length { get; private set; }
 		public float[] PlaybackValues { get; private set; }
 		public float[] FadingValues { get; private set; }
 
-		public Transport(AudioClip clip)
+		public Transport(float length)
 		{
-            if (clip)
-			{
-                Length = clip.length;
-            }
-			PlaybackValues = new float[] { StartPosition, EndPosition, Delay};
-			FadingValues = new float[] { FadeIn, FadeOut };
+			Length = length;
+			PlaybackValues = new float[3]; // StartPosition, EndPosition, Delay
+			FadingValues = new float[2]; // FadeIn, FadeOut
 		}
 
 		public bool HasDifferentPosition => StartPosition != 0f || EndPosition != 0f || (Delay > StartPosition);
 		public bool HasFading => FadeIn != 0f || FadeOut != 0f;
 
-		public void SetValue(float newValue, TransportType transportType)
+		public virtual void SetValue(float newValue, TransportType transportType)
 		{
 			switch (transportType)
 			{
 				case TransportType.Start:
-					PlaybackValues[0] = ClampAndRound(newValue, StartPosition);
-					StartPosition = PlaybackValues[0];
+					PlaybackValues[0] = ClampAndRound(newValue, transportType);
 					break;
 				case TransportType.End:
-					PlaybackValues[1] = ClampAndRound(newValue, EndPosition);
-					EndPosition = PlaybackValues[1];
+					PlaybackValues[1] = ClampAndRound(newValue, transportType);
 					break;
 				case TransportType.Delay:
 					PlaybackValues[2] = Mathf.Max(newValue,0f);
-					Delay = PlaybackValues[2];
 					break;
 				case TransportType.FadeIn:
-					FadingValues[0] = ClampAndRound(newValue, FadeIn);
-					FadeIn = FadingValues[0];
+					FadingValues[0] = ClampAndRound(newValue, transportType);
 					break;
 				case TransportType.FadeOut:
-					FadingValues[1] = ClampAndRound(newValue, FadeOut);
-					FadeOut = FadingValues[1];
+					FadingValues[1] = ClampAndRound(newValue, transportType);
 					break;
 			}
 		}
@@ -65,15 +57,20 @@ namespace Ami.BroAudio.Editor
 			FadingValues[1] = FadeOut;
 		}
 
-		private float ClampAndRound(float value, float targetValue)
+		private float ClampAndRound(float value, TransportType transportType)
 		{
-			float clamped = Mathf.Clamp(value, 0f, GetLengthLimit(targetValue));
+			float clamped = Mathf.Clamp(value, 0f, GetLengthLimit(transportType));
 			return (float)System.Math.Round(clamped, FloatFieldDigits);
 		}
 
-		private float GetLengthLimit(float targetValue)
+		private float GetLengthLimit(TransportType modifiedType)
 		{
-			return Length - StartPosition - FadeIn - FadeOut - EndPosition + targetValue;
+			return Length - GetLength(TransportType.Start, StartPosition) - GetLength(TransportType.End, EndPosition) - GetLength(TransportType.FadeIn, FadeIn) - GetLength(TransportType.FadeOut, FadeOut);
+
+			float GetLength(TransportType transportType, float value)
+			{
+				return modifiedType != transportType ? value : 0f;
+			}
 		}
 	}
 }

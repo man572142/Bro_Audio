@@ -191,12 +191,13 @@ namespace Ami.BroAudio.Editor
 
 			if(!_clipTransport.TryGetValue(clipProp.propertyPath,out transport))
 			{
-				transport = new TransportSerializedWrapper(startPosProp, endPosProp, fadeInProp, fadeOutProp, delayProp,audioClip.length);
+				transport = new SerializedTransport(startPosProp, endPosProp, fadeInProp, fadeOutProp, delayProp,audioClip.length);
 				_clipTransport.Add(clipProp.propertyPath, transport);
 			}
 
 			if (CanDraw(DrawedProperty.PlaybackPosition))
 			{
+				SerializedTransport wrapper = transport as SerializedTransport;
                 Rect playbackRect = GetRectAndIterateLine(position);
                 playbackRect.width *= _defaultFieldRatio;
                 _clipPropHelper.DrawPlaybackPositionField(playbackRect, transport);

@@ -165,7 +165,7 @@ namespace Ami.BroAudio.Editor
 			TargetClip = EditorGUI.ObjectField(clipObjectRect, "Audio Clip", TargetClip, typeof(AudioClip), false) as AudioClip;
 			if(EditorGUI.EndChangeCheck() && TargetClip)
 			{
-				_transport = new Transport(TargetClip);
+				_transport = new Transport(TargetClip.length);
 			}
 		}
 
@@ -278,7 +278,7 @@ namespace Ami.BroAudio.Editor
 
 			AudioClip newClip = AssetDatabase.LoadAssetAtPath(_currSavingFilePath, typeof(AudioClip)) as AudioClip;
 			TargetClip = newClip;
-			_transport = new Transport(TargetClip);
+			_transport = new Transport(TargetClip.length);
 		}
 
 		private void ResetSetting()

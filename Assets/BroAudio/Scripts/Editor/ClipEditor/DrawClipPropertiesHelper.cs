@@ -73,10 +73,11 @@ namespace Ami.BroAudio.Editor
 		}
 
 		public void DrawPlaybackPositionField(Rect position, ITransport transport)
-		{		
+		{
+			transport.Update();
 			EditorGUI.BeginChangeCheck();
 			DrawMultiFloatField(position, PlaybackMainLabel, PlaybackLabels, transport.PlaybackValues);
-			if(EditorGUI.EndChangeCheck())
+			if (EditorGUI.EndChangeCheck())
 			{
 				transport.SetValue(transport.PlaybackValues[0], TransportType.Start);
 				transport.SetValue(transport.PlaybackValues[1], TransportType.End);
@@ -86,6 +87,7 @@ namespace Ami.BroAudio.Editor
 
 		public void DrawFadingField(Rect position, ITransport transport)
 		{
+			transport.Update();
 			EditorGUI.BeginChangeCheck();
 			DrawMultiFloatField(position, FadeMainLabel, FadeLabels, transport.FadingValues);
 			if (EditorGUI.EndChangeCheck())

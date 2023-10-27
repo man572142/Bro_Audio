@@ -13,5 +13,6 @@ namespace Ami.BroAudio.Editor
 		float[] PlaybackValues { get; }
 		float[] FadingValues { get; }
 		void SetValue(float value, TransportType transportType);
+		void Update();
 	}
 }

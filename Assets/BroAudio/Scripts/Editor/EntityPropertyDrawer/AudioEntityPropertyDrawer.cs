@@ -43,6 +43,10 @@ namespace Ami.BroAudio.Editor
 
 		private void OnDisable()
 		{
+			foreach(var reorderableClips in _reorderableClipsDict.Values)
+			{
+				reorderableClips.Dispose();
+			}
 			_reorderableClipsDict.Clear();
 			_clipTransport.Clear();
 
@@ -56,6 +60,7 @@ namespace Ami.BroAudio.Editor
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
 			base.OnGUI(position, property, label);
+			property.serializedObject.Update();
 
 			SerializedProperty nameProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IEntityIdentity.Name)));
 
@@ -87,8 +92,8 @@ namespace Ami.BroAudio.Editor
 					}
 				}
 			}
-		#endregion
-
+			#endregion
+			
 			// todo: looks ugly now, needs upgrade
 			if (setting.DrawedProperty.HasFlag(DrawedProperty.SpatialSettings) && GUI.Button(GetRectAndIterateLine(position), "Spatial Setting"))
 			{
@@ -97,7 +102,7 @@ namespace Ami.BroAudio.Editor
                 GUIUtility.ExitGUI();
             }
 
-            void OnSetSpatialSettingBack(SpatialSettings settings)
+			void OnSetSpatialSettingBack(SpatialSettings settings)
             {
 				SerializedProperty prop = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
 				GetSpatialSettingsProperty(prop, SpatialPropertyType.StereoPan).floatValue = settings.StereoPan;
@@ -108,11 +113,11 @@ namespace Ami.BroAudio.Editor
                 GetSpatialSettingsProperty(prop, SpatialPropertyType.ReverbZoneMix).animationCurveValue = settings.ReverbZoneMix;
                 GetSpatialSettingsProperty(prop, SpatialPropertyType.Spread).animationCurveValue = settings.Spread;
                 GetSpatialSettingsProperty(prop, SpatialPropertyType.CustomRolloff).animationCurveValue = settings.CustomRolloff;
-                prop.serializedObject.ApplyModifiedProperties();
+                prop.serializedObject.ApplyModifiedPropertiesWithoutUndo();
             }
         }
 
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
             float height = SingleLineSpace; // Header
 
@@ -144,7 +149,6 @@ namespace Ami.BroAudio.Editor
 			nameProp.stringValue = EditorGUI.TextField(nameRect, nameof(AudioEntity.Name), nameProp.stringValue);
             if (EditorGUI.EndChangeCheck())
             {
-                nameProp.serializedObject.ApplyModifiedProperties();
                 OnEntityNameChanged?.Invoke();
             }
         }

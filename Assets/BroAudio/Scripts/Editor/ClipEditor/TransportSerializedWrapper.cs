@@ -41,44 +41,34 @@ namespace Ami.BroAudio.Editor
 			{
 				case TransportType.Start:
 					PlaybackValues[0] = ClampAndRound(newValue, StartPosProp);
-					break;
-				case TransportType.End:
-					PlaybackValues[1] = ClampAndRound(newValue, EndPosProp);
-					break;
-				case TransportType.Delay:
-					PlaybackValues[2] = Mathf.Max(newValue, 0f);
-					break;
-				case TransportType.FadeIn:
-					FadingValues[0] = ClampAndRound(newValue, FadeInProp);
-					break;
-				case TransportType.FadeOut:
-					FadingValues[1] = ClampAndRound(newValue, FadeOutProp);
-					break;
-			}
-			SetPropertyByMultiFloatValues(transportType);
-		}
-
-		private void SetPropertyByMultiFloatValues(TransportType transportType)
-		{
-			switch (transportType)
-			{
-				case TransportType.Start:
 					StartPosProp.floatValue = PlaybackValues[0];
 					break;
 				case TransportType.End:
+					PlaybackValues[1] = ClampAndRound(newValue, EndPosProp);
 					EndPosProp.floatValue = PlaybackValues[1];
 					break;
 				case TransportType.Delay:
+					PlaybackValues[2] = Mathf.Max(newValue, 0f);
 					DelayProp.floatValue = PlaybackValues[2];
 					break;
 				case TransportType.FadeIn:
+					FadingValues[0] = ClampAndRound(newValue, FadeInProp);
 					FadeInProp.floatValue = FadingValues[0];
 					break;
 				case TransportType.FadeOut:
+					FadingValues[1] = ClampAndRound(newValue, FadeOutProp);
 					FadeOutProp.floatValue = FadingValues[1];
 					break;
-				
 			}
+		}
+
+		public void Update()
+		{
+			PlaybackValues[0] = StartPosition;
+			PlaybackValues[1] = EndPosition;
+			PlaybackValues[2] = Delay;
+			FadingValues[0] = FadeIn;
+			FadingValues[1] = FadeOut;
 		}
 
 		private float ClampAndRound(float value,SerializedProperty prop)

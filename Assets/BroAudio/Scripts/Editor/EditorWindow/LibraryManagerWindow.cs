@@ -102,6 +102,8 @@ namespace Ami.BroAudio.Editor
 
 			_createAssetOption = CreateAudioTypeGenericMenu(Instruction.LibraryManager_CreateAssetWithAudioType, ShowCreateAssetAskName);
 			_changeAudioTypeOption = CreateAudioTypeGenericMenu(Instruction.LibraryManager_ChangeAssetAudioType, OnChangeAssetAudioType);
+
+			Undo.undoRedoPerformed += Repaint;
 		}
 
 		private void OnDisable()
@@ -110,7 +112,8 @@ namespace Ami.BroAudio.Editor
 			foreach (AudioAssetEditor editor in _assetEditorDict.Values)
 			{
 				DestroyImmediate(editor);
-			}	
+			}
+			Undo.undoRedoPerformed -= Repaint;
 		}
 
 		#region Initialization

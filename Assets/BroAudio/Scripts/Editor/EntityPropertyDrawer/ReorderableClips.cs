@@ -57,6 +57,25 @@ namespace Ami.BroAudio.Editor
 			_playModeProp = entityProperty.FindPropertyRelative(AudioEntity.NameOf.MulticlipsPlayMode);
 			_reorderableList = CreateReorderabeList(entityProperty);
 			UpdatePlayMode();
+
+			Undo.undoRedoPerformed += OnUndoRedoPerformed;
+		}
+
+		public void Dispose()
+		{
+			Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+		}
+
+		private void OnUndoRedoPerformed()
+		{
+			_reorderableList.serializedProperty.serializedObject.Update();
+			int count = _reorderableList.count;
+			if(count == _reorderableList.index || count == _currSelectedClipIndex)
+			{
+				_currSelectedClipIndex = count - 1;
+				_reorderableList.index = count - 1;
+				_currSelectedClip = null;
+			}
 		}
 
 		public void DrawReorderableList(Rect position)

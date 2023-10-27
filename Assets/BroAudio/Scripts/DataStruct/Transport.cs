@@ -56,6 +56,15 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
+		public void Update()
+		{
+			PlaybackValues[0] = StartPosition;
+			PlaybackValues[1] = EndPosition;
+			PlaybackValues[2] = Delay;
+			FadingValues[0] = FadeIn;
+			FadingValues[1] = FadeOut;
+		}
+
 		private float ClampAndRound(float value, float targetValue)
 		{
 			float clamped = Mathf.Clamp(value, 0f, GetLengthLimit(targetValue));

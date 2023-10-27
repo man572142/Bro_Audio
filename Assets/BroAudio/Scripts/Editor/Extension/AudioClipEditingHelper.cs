@@ -33,7 +33,6 @@ namespace Ami.Extension
 
 		public AudioClip GetResultClip()
 		{
-
 			if (!HasClip)
 			{
 				return null;
@@ -106,32 +105,50 @@ namespace Ami.Extension
 			HasEdited = true;
 		}
 
-		public void Fade(float startTime, float fadeTime, bool isFadeIn)
+		public void FadeIn(float fadeTime)
+		{
+			if (!CanEdit)
+			{
+				Debug.Log("Cant edit");
+				return;
+			}
+
+			int fadeSample = Mathf.RoundToInt(fadeTime * _originalClip.frequency * _originalClip.channels);
+
+			// TODO: Accept more ease type
+			float volFactor = 0f;
+			float volIncrement = 1f / fadeSample;
+
+			for (int i = 0; i < fadeSample; i++)
+			{
+				Samples[i] *= volFactor;
+				volFactor += volIncrement;
+			}
+			HasEdited = true;
+		}
+
+		public void FadeOut(float fadeTime)
 		{
 			if (!CanEdit)
 			{
 				return;
 			}
 
-			int startSample = Mathf.RoundToInt(startTime * _originalClip.frequency * _originalClip.channels);
 			int fadeSample = Mathf.RoundToInt(fadeTime * _originalClip.frequency * _originalClip.channels);
-			int endSample = startSample + fadeSample;
+			int startSampleIndex = Samples.Length - fadeSample;
 
 			// TODO: Accept more ease type
-			float volFactor = isFadeIn ? 0f : 1f;
-			float volIncrement = 1f / fadeSample;
-			if (!isFadeIn)
-			{
-				volIncrement *= -1f;
-			}
+			float volFactor = 1f;
+			float volIncrement = 1f / fadeSample * -1f;
 
-			for (int i = startSample; i < endSample; i++)
+
+			for (int i = startSampleIndex; i < Samples.Length; i++)
 			{
 				Samples[i] *= volFactor;
 				volFactor += volIncrement;
 			}
+			HasEdited = true;
 		}
-
 
 		public void Dispose()
 		{

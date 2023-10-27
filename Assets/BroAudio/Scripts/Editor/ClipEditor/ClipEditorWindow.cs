@@ -247,14 +247,12 @@ namespace Ami.BroAudio.Editor
 
 				if(_transport.FadeIn != 0f)
 				{
-					helper.Fade(0f, _transport.FadeIn, true);
+					helper.FadeIn(_transport.FadeIn);
 				}
 
 				if(_transport.FadeOut != 0f)
 				{
-					float trimmedClipLength = TargetClip.length - _transport.StartPosition - _transport.EndPosition;
-					float outTime = trimmedClipLength - _transport.FadeOut ;
-					helper.Fade(outTime, _transport.FadeOut,false);
+					helper.FadeOut(_transport.FadeOut);
 				}
 
 				if(_isReverse)

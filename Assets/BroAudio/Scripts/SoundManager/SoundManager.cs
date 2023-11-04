@@ -13,7 +13,7 @@ using System;
 
 namespace Ami.BroAudio.Runtime
 {
-    [DisallowMultipleComponent]
+    [DisallowMultipleComponent, AddComponentMenu("")]
     public partial class SoundManager : MonoBehaviour
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -55,8 +55,8 @@ namespace Ami.BroAudio.Runtime
         private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
 
-        // ¨¾¤îHaas Effect²£¥ÍªºComb Filtering®ÄÀ³
-        // TODO: ¦pªG¬O¨C¦¸¼½©ñ³£¦b¤£¦PÁn¹D´N¤£¥Î
+        // ï¿½ï¿½ï¿½ï¿½Haas Effectï¿½ï¿½ï¿½Íªï¿½Comb Filteringï¿½ï¿½ï¿½ï¿½
+        // TODO: ï¿½pï¿½Gï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ñ³£¦bï¿½ï¿½ï¿½Pï¿½nï¿½Dï¿½Nï¿½ï¿½ï¿½ï¿½
         private Dictionary<int, bool> _combFilteringPreventer = new Dictionary<int, bool>();
 
         private Coroutine _masterVolumeCoroutine;
@@ -171,7 +171,7 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-		public void SetVolume(float vol, int id, float fadeTime)
+		public void SetVolume(int id, float vol, float fadeTime)
 		{
             GetCurrentInUsePlayers(player =>
             {

@@ -9,7 +9,7 @@ using static Ami.BroAudio.Tools.BroName;
 
 namespace Ami.BroAudio.Runtime
 {
-    [RequireComponent(typeof(AudioSource))]
+    [RequireComponent(typeof(AudioSource)), AddComponentMenu("")]
 	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>
 	{
         public const float UseEntitySetting = -1f;

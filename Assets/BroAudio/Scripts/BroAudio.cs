@@ -68,7 +68,7 @@ namespace Ami.BroAudio
         /// Pause an audio
         /// </summary>
         /// <param name="id"></param>
-        public static void Pause(int id) 
+        public static void Pause(AudioID id) 
             => SoundManager.Instance.Pause(id);
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="id"></param>
         /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
-        public static void Pause(int id,float fadeOut)
+        public static void Pause(AudioID id, float fadeOut)
             => SoundManager.Instance.Pause(id,fadeOut);
 
         #endregion
@@ -95,7 +95,7 @@ namespace Ami.BroAudio
         /// <param name="vol">0.0 to 1.0</param>
         /// <param name="audioType"></param>
         public static void SetVolume(float vol, BroAudioType audioType) 
-            => SetVolume(vol,audioType, BroAdvice.FadeTime_Quick);
+            => SetVolume(vol,audioType, BroAdvice.FadeTime_Immediate);
 
         /// <summary>
         /// Set the volume of the given audio type
@@ -111,8 +111,8 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="vol">0.0 to 1.0</param>
         /// <param name="id"></param>
-        public static void SetVolume(float vol, int id) 
-            => SetVolume(vol,id, BroAdvice.FadeTime_Quick);
+        public static void SetVolume(AudioID id, float vol) 
+            => SetVolume(id, vol, BroAdvice.FadeTime_Immediate);
 
         /// <summary>
         /// Set the volume of an audio
@@ -120,8 +120,8 @@ namespace Ami.BroAudio
         /// <param name="vol">0.0 to 1.0</param>
         /// <param name="id"></param>
         /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
-        public static void SetVolume(float vol, int id, float fadeTime) 
-            => SoundManager.Instance.SetVolume(vol, id, fadeTime);
+        public static void SetVolume(AudioID id, float vol, float fadeTime) 
+            => SoundManager.Instance.SetVolume(id, vol, fadeTime);
         #endregion
 
 #if !UNITY_WEBGL

@@ -2,7 +2,6 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 using Ami.BroAudio.Editor;
-using static Ami.BroAudio.Editor.Setting.GlobalSettingEditorWindow;
 using System;
 
 namespace Ami.Extension
@@ -36,6 +35,16 @@ namespace Ami.Extension
 		{
             Rect newRect = new Rect(position.x, position.y + drawer.SingleLineSpace * drawer.DrawLineCount + drawer.Offset, position.width, EditorGUIUtility.singleLineHeight);
             return newRect;
+        }
+
+		public static Rect OverrideSize(this Rect rect, float width, float height)
+		{
+			return new Rect(rect.x, rect.y, width, height);
+		}
+
+		public static Rect OverridePosition(this Rect rect, float x, float y)
+		{
+            return new Rect(x, y, rect.width, rect.height);
         }
 
 		public static void SplitRectHorizontal(Rect origin, float firstRatio, float gap, out Rect rect1, out Rect rect2)

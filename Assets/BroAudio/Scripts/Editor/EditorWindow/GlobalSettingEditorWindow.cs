@@ -113,7 +113,6 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void OnEnable()
 		{
-			_instruction.Init();
 			InitTabsLabel();
 			InitGUIContents();
 		}

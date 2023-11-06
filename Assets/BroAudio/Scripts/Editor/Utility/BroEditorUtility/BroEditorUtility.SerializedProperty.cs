@@ -64,6 +64,17 @@ namespace Ami.BroAudio.Editor
 			return index;
 		}
 
+        public static BroAudioType GetAudioTypeByIndex(int enumIndex)
+        {
+            BroAudioType audioType = BroAudioType.None;
+            while(enumIndex > 0)
+            {
+                audioType = audioType.ToNext();
+                enumIndex--;
+            }
+            return audioType;
+        }
+
         public static SerializedProperty GetSpatialSettingsProperty(SerializedProperty settingProp, SpatialPropertyType propertyType)
         {
             switch (propertyType)

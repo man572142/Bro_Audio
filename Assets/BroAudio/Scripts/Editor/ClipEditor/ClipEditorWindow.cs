@@ -89,7 +89,6 @@ namespace Ami.BroAudio.Editor
 
 		private void OnEnable()
 		{
-			_instruction.Init();
             OnChangeAudioClip += ResetSetting;
 			ResetSetting();
 		}

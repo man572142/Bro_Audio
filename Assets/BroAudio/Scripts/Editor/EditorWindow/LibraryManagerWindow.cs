@@ -95,7 +95,6 @@ namespace Ami.BroAudio.Editor
 		private void OnEnable()
 		{
 			_allAssetGUIDs = GetGUIDListFromJson();
-			_instruction.Init();
 
 			InitEditorDictionary();
 			InitReorderableList();

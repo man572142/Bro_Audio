@@ -299,9 +299,9 @@ namespace Ami.BroAudio.Runtime
 			{
 				case EffectType.Volume:
 					return EffectTrackName;
-				case EffectType.LowPass:
+				case EffectType.HighCut:
 					return LowPassExposedName;
-				case EffectType.HighPass:
+				case EffectType.LowCut:
 					return HighPassExposedName;
 				default:
 					return string.Empty;
@@ -314,9 +314,9 @@ namespace Ami.BroAudio.Runtime
 			{
 				case EffectType.Volume:
 					return AudioConstant.FullDecibelVolume;
-				case EffectType.LowPass:
+				case EffectType.HighCut:
 					return AudioConstant.MaxFrequence;
-				case EffectType.HighPass:
+				case EffectType.LowCut:
 					return AudioConstant.MinFrequence;
 				default:
 					return -1f;

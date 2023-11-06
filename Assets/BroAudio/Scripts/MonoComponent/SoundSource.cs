@@ -5,8 +5,8 @@ using Ami.Extension;
 
 namespace Ami.BroAudio
 {
-    [AddComponentMenu("BroAudio/" + nameof(SoundContainer))]
-    public class SoundContainer : MonoBehaviour
+    [AddComponentMenu("BroAudio/" + nameof(SoundSource))]
+    public class SoundSource : MonoBehaviour
     {
         [SerializeField] AudioID _sound = default;
 

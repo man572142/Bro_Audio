@@ -23,7 +23,23 @@ namespace Ami.Extension
 			public Action<Rect> OnDrawContent;
 		}
 
-		public static Rect GetRectAndIterateLine(IEditorDrawLineCounter drawer, Rect position)
+        public struct LabelWidthScope : IDisposable
+        {
+			private readonly float _originalLabelWidth;
+
+            public LabelWidthScope(float labelWidth)
+            {
+				_originalLabelWidth = EditorGUIUtility.labelWidth;
+				EditorGUIUtility.labelWidth = labelWidth;
+            }
+
+            public void Dispose()
+            {
+                EditorGUIUtility.labelWidth = _originalLabelWidth;
+            }
+        }
+
+        public static Rect GetRectAndIterateLine(IEditorDrawLineCounter drawer, Rect position)
 		{
 			Rect newRect = new Rect(position.x, position.y + drawer.SingleLineSpace * drawer.DrawLineCount + drawer.Offset, position.width, EditorGUIUtility.singleLineHeight);
 			drawer.DrawLineCount++;

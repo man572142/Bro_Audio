@@ -15,6 +15,7 @@ namespace Ami.BroAudio.Editor
         public const float ActionEventGap = 30f;
         public const float ParameterIndent = 5f;
         public const float ParameterLabelRatio = 0.35f;
+
         private readonly GUIContent _eventActionLabel = new GUIContent("On");
 
         // todo: using enum is a bad idea, use Reflection like Unity did with UnityAction.
@@ -104,13 +105,19 @@ namespace Ami.BroAudio.Editor
             EditorGUI.LabelField(gapLabel, _eventActionLabel, GUIStyleHelper.MiddleCenterText);
 
             var paraProp = property.FindPropertyRelative(nameof(TriggerData.Parameter));
-            int lineCountBeforeDrawing = DrawLineCount;
+            
             actionRect.width -= ParameterIndent * 2;
             actionRect.x += ParameterIndent;
-            OnDrawActionParameter(actionRect,paraProp, actionProp.enumValueIndex);
+            eventRect.width -= ParameterIndent * 2;
+            eventRect.x += ParameterIndent;
+            
+            int lineCountBeforeDrawing = DrawLineCount;
+            DrawActionParameter(actionRect,paraProp, actionProp.enumValueIndex);
             DrawLineCount = lineCountBeforeDrawing;
-
+            DrawEventParameter(eventRect, paraProp, eventProp.enumValueIndex);
+            
         }
+
 
         private void DrawBackgroundWindow(Rect position)
         {
@@ -123,7 +130,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private void OnDrawActionParameter(Rect position, SerializedProperty paraProp, int enumValueIndex)
+        private void DrawActionParameter(Rect actionRect, SerializedProperty paraProp, int enumValueIndex)
         {
             EditorGUI.BeginChangeCheck();
             BroAction broAction = ActionsValues[enumValueIndex];
@@ -140,14 +147,17 @@ namespace Ami.BroAudio.Editor
                 case BroAction.PauseFadeTime:
                 case BroAction.SetVolumeById:
                 case BroAction.SetVolumeByIdFadeTime:
-                    DrawProperty(paraProp.FindPropertyRelative(nameof(TriggerParameter.SoundContainer)), "Container");
+                    DrawDefaultProperty(actionRect, paraProp.FindPropertyRelative(nameof(TriggerParameter.SoundSource)), TriggerParameterType.Source);
                     break;
                 case BroAction.StopByType:
                 case BroAction.StopByTypeFadeTime:
                 case BroAction.SetVolumeByType:
                 case BroAction.SetVolumeByTypeFadeTime:
                 case BroAction.SetEffectByType:
-                    DrawProperty(paraProp.FindPropertyRelative(nameof(TriggerParameter.AudioType)), "AudioType");
+                    Rect audioTypeRect = GetRectAndIterateLine(actionRect);
+                    SerializedProperty audioTypeProp = paraProp.FindPropertyRelative(nameof(TriggerParameter.AudioType));
+                    BroAudioType audioType = (BroAudioType)EditorGUI.EnumPopup(audioTypeRect, BroEditorUtility.GetAudioTypeByIndex(audioTypeProp.enumValueIndex));
+                    audioTypeProp.enumValueIndex = audioType.GetSerializedEnumIndex();
                     break;
             }
 
@@ -155,27 +165,28 @@ namespace Ami.BroAudio.Editor
             switch (broAction)
             {
                 case BroAction.PlayFollowTarget:
-                    string targetName = nameof(TriggerParameter.Target);
-                    DrawProperty(paraProp.FindPropertyRelative(targetName), targetName);
+                    DrawDefaultProperty(actionRect, paraProp.FindPropertyRelative(nameof(TriggerParameter.Target)), TriggerParameterType.Follow);
                     break;
                 case BroAction.PlayInPosition:
-                    string positionName = nameof(TriggerParameter.Position);
-                    DrawProperty(paraProp.FindPropertyRelative(positionName), positionName);
+                    DrawDefaultProperty(actionRect, paraProp.FindPropertyRelative(nameof(TriggerParameter.Position)), TriggerParameterType.Position);
                     break;
                 case BroAction.StopByIdFadeTime:
                 case BroAction.StopByTypeFadeTime:
                 case BroAction.PauseFadeTime:
-                    DrawProperty(paraProp.FindPropertyRelative(nameof(TriggerParameter.FloatValue)), "FadeTime");
+                    DrawDefaultProperty(actionRect, paraProp.FindPropertyRelative(nameof(TriggerParameter.FadeTime)), TriggerParameterType.FadeTime);
                     break;
                 case BroAction.SetVolume:
                 case BroAction.SetVolumeById:
                 case BroAction.SetVolumeByIdFadeTime:
                 case BroAction.SetVolumeByType:
                 case BroAction.SetVolumeByTypeFadeTime:
-                    DrawProperty(paraProp.FindPropertyRelative(nameof(TriggerParameter.FloatValue)),"Volume");              
+                    var volProp = paraProp.FindPropertyRelative(nameof(TriggerParameter.Volume));
+                    DrawDefaultProperty(actionRect, volProp, TriggerParameterType.Volume, "1 is Full Volume, and higher is a boost");
+                    volProp.floatValue = Mathf.Clamp(volProp.floatValue, AudioConstant.MinVolume, AudioConstant.MaxVolume);
                     break;
                 case BroAction.SetEffect:
                 case BroAction.SetEffectByType:
+                    // todo: effect parameter
                     break;
             }
 
@@ -184,7 +195,7 @@ namespace Ami.BroAudio.Editor
             {
                 case BroAction.SetVolumeByIdFadeTime:
                 case BroAction.SetVolumeByTypeFadeTime:
-                    DrawProperty(paraProp.FindPropertyRelative(nameof(TriggerParameter.FloatValue)), "FadeTime");
+                    DrawDefaultProperty(actionRect, paraProp.FindPropertyRelative(nameof(TriggerParameter.FadeTime)), TriggerParameterType.FadeTime);
                     break;
             }
 
@@ -192,13 +203,55 @@ namespace Ami.BroAudio.Editor
             {
                 paraProp.serializedObject.ApplyModifiedProperties();
             }
+        }
 
-            void DrawProperty(SerializedProperty property, string label)
+        private void DrawDefaultProperty(Rect position,SerializedProperty property, TriggerParameterType parameterType, string tooltip = null)
+        {
+            using (var labelWidthScope = new LabelWidthScope(position.width * ParameterLabelRatio))
             {
                 Rect rect = GetRectAndIterateLine(position);
-                SplitRectHorizontal(rect, ParameterLabelRatio, 0f, out Rect labelRect, out Rect propRect);
-                EditorGUI.LabelField(labelRect, label);
-                EditorGUI.PropertyField(propRect, property,GUIContent.none);
+                EditorGUI.PropertyField(rect, property, new GUIContent(parameterType.ToString(), tooltip));
+            }       
+        }
+
+        private void DrawEventParameter(Rect eventRect, SerializedProperty paraProp, int enumValueIndex)
+        {
+            EditorGUI.BeginChangeCheck();
+            UnityMessage unityMessage = UnityMessageValues[enumValueIndex];
+
+            switch (unityMessage)
+            {
+                case UnityMessage.Awake:
+                case UnityMessage.Start:
+                case UnityMessage.OnEnable:
+                case UnityMessage.OnDisable:
+                case UnityMessage.OnDestroy:
+                    break;
+                case UnityMessage.Update:
+                case UnityMessage.FixedUpdate:
+                case UnityMessage.LateUpdate:
+                case UnityMessage.OnTriggerEnter:
+                case UnityMessage.OnTriggerStay:
+                case UnityMessage.OnTriggerExit:
+                case UnityMessage.OnCollisionEnter:
+                case UnityMessage.OnCollisionStay:
+                case UnityMessage.OnCollisionExit:
+                case UnityMessage.OnTriggerEnter2D:
+                case UnityMessage.OnTriggerStay2D:
+                case UnityMessage.OnTriggerExit2D:
+                case UnityMessage.OnCollisionEnter2D:
+                case UnityMessage.OnCollisionStay2D:
+                case UnityMessage.OnCollisionExit2D:
+                    Rect triggerOnceRect = GetRectAndIterateLine(eventRect);
+                    var triggerOnceProp = paraProp.FindPropertyRelative(nameof(TriggerParameter.OnlyTriggerOnce));
+                    triggerOnceProp.boolValue = EditorGUI.ToggleLeft(triggerOnceRect, TriggerParameterType.OnlyTriggerOnce.ToString(), triggerOnceProp.boolValue);
+                    break;
+            }
+
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                paraProp.serializedObject.ApplyModifiedProperties();
             }
         }
     }

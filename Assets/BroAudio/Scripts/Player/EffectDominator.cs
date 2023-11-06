@@ -33,7 +33,7 @@ namespace Ami.BroAudio.Runtime
                 return this;
             }
 
-            EffectParameter effect = new EffectParameter(EffectType.LowPass)
+            EffectParameter effect = new EffectParameter(EffectType.HighCut)
             {
                 Value = freq,
                 FadeTime = fadeTime,
@@ -50,7 +50,7 @@ namespace Ami.BroAudio.Runtime
                 return this;
             }
 
-            EffectParameter effect = new EffectParameter(EffectType.HighPass)
+            EffectParameter effect = new EffectParameter(EffectType.LowCut)
             {
                 Value = freq,
                 FadeTime = fadeTime,

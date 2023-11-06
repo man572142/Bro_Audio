@@ -4,6 +4,7 @@ using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio
 {
+	[System.Serializable]
 	public struct EffectParameter
 	{
 		private float _value;
@@ -34,7 +35,7 @@ namespace Ami.BroAudio
 						LogWarning("The value of a volume type EffectParameter should be less than 1 and greater than 0!");
 					}
 				}
-				else if (Type == EffectType.LowPass || Type == EffectType.HighPass)
+				else if (Type == EffectType.HighCut || Type == EffectType.LowCut)
 				{
 					if(AudioExtension.IsValidFrequence(value))
 					{
@@ -53,10 +54,10 @@ namespace Ami.BroAudio
 				case EffectType.Volume:
 					Value = AudioConstant.FullVolume;
 					break;
-				case EffectType.LowPass:
+				case EffectType.HighCut:
 					Value = BroAdvice.HighCutFrequence;
 					break;
-				case EffectType.HighPass:
+				case EffectType.LowCut:
 					Value = BroAdvice.LowCutFrequence;
 					break;
 			}

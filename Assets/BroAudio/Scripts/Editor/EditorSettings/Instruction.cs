@@ -46,5 +46,8 @@
         LibraryManager_NameTempAssetHint,
         LibraryManager_AssetAudioTypeNotSet,
         LibraryManager_AssetUnnamed,
+
+        // MonoComponent
+        SoundTrigger_PasteDefaultParameter,
     }
 }

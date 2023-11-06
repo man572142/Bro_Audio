@@ -6,9 +6,9 @@ namespace Ami.BroAudio
 		None = 0,
 
 		Volume = 1,
-		LowPass = 2,
-		HighPass = 4,
+		HighCut = 2,
+		LowCut = 4,
 
-		All = Volume | LowPass | HighPass,
+		All = Volume | HighCut | LowCut,
 	}
 }

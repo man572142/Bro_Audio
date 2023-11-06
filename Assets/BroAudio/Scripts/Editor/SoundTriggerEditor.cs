@@ -2,10 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using Ami.Extension;
 using UnityEditorInternal;
 using System;
-using static Ami.Extension.EditorScriptingExtension;
 
 namespace Ami.BroAudio.Editor
 {
@@ -16,13 +14,14 @@ namespace Ami.BroAudio.Editor
 		
 
 		private ReorderableList _reorderableList = null;
+		private BroInstructionHelper _instruction = new BroInstructionHelper();
 
 		private void OnEnable()
 		{
 			InitReorderableList();
 		}
 
-		private void InitReorderableList()
+        private void InitReorderableList()
 		{
 			SerializedProperty triggersProp = serializedObject.FindProperty(SoundTrigger.NameOf.Triggers);
 			_reorderableList = new ReorderableList(serializedObject, triggersProp)
@@ -50,10 +49,28 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-
         public override void OnInspectorGUI()
 		{
-			_reorderableList.DoLayoutList();
+			//var parameterProp = serializedObject.FindProperty(SoundTrigger.NameOf.DefaultParameter);
+			//EditorGUILayout.LabelField("Default Parameter", EditorStyles.boldLabel);
+
+			//var sourceProp = parameterProp.FindPropertyRelative(nameof(TriggerParameter.SoundSource));
+			//var colliderProp = parameterProp.FindPropertyRelative(nameof(TriggerParameter.Collider));
+
+			//EditorGUI.BeginChangeCheck();
+			//EditorGUI.indentLevel++;
+			
+			//EditorGUILayout.PropertyField(sourceProp);
+   //         EditorGUILayout.PropertyField(colliderProp);
+
+   //         EditorGUILayout.LabelField(_instruction.GetText(Instruction.SoundTrigger_PasteDefaultParameter), EditorStyles.centeredGreyMiniLabel);
+   //         EditorGUI.indentLevel--;
+   //         if (EditorGUI.EndChangeCheck())
+			//{
+			//	serializedObject.ApplyModifiedProperties();
+			//}
+
+            _reorderableList.DoLayoutList();
 		}
-	} 
+    }
 }

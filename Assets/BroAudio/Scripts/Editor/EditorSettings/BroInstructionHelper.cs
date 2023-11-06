@@ -15,22 +15,19 @@ namespace Ami.BroAudio.Editor
 
 		private BroInstruction _instruction = null;
 
-		public void Init()
-		{
-			if (!_instruction)
-			{
-				_instruction = Resources.Load<BroInstruction>("Editor/" + InstructionFileName);
-			}
-
-			if (!_instruction)
-			{
-				LogWarning(InstructionMissingText);
-			}
-		}
-
 		public string GetText(Instruction instruction)
 		{
-			if (_instruction && _instruction.Dictionary.TryGetValue(instruction, out string text))
+            if (!_instruction)
+            {
+                _instruction = Resources.Load<BroInstruction>("Editor/" + InstructionFileName);
+
+                if (!_instruction)
+                {
+                    LogWarning(InstructionMissingText);
+                }
+            }
+
+            if (_instruction && _instruction.Dictionary.TryGetValue(instruction, out string text))
 			{
 				return text;
 			}

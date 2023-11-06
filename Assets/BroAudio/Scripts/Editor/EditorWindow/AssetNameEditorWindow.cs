@@ -15,7 +15,7 @@ namespace Ami.BroAudio.Editor
 		public List<string> UsedAssetsName = null;
 
 		private string _assetName = string.Empty;
-		private BroInstructionHelper _instruction = null;
+		private BroInstructionHelper _instruction = new BroInstructionHelper();
 
         public static void ShowWindow(List<string> usedAssetName,Action<string> onConfirm)
 		{
@@ -25,16 +25,7 @@ namespace Ami.BroAudio.Editor
 			window.titleContent = new GUIContent("New Asset");
 			window.OnConfirm = onConfirm;
 			window.UsedAssetsName = usedAssetName;
-			window.Init();
-
 			window.ShowModal();
-		}
-
-		public void Init()
-		{
-			if(_instruction == null) 
-				_instruction = new BroInstructionHelper();
-			_instruction.Init();
 		}
 
 		private void OnGUI()

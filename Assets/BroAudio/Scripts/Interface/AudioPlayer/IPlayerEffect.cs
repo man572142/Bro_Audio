@@ -8,8 +8,8 @@ namespace Ami.BroAudio
         internal IPlayerEffect LowCutOthers(float freq, float fadeTime);
 #else
         IPlayerEffect QuietOthers(float othersVol, float fadeTime);
-        IPlayerEffect LowPassOthers(float freq, float fadeTime);
-        IPlayerEffect HighPassOthers(float freq, float fadeTime);
+        IPlayerEffect HighCutOthers(float freq, float fadeTime);
+        IPlayerEffect LowCutOthers(float freq, float fadeTime);
 #endif
     }
 }

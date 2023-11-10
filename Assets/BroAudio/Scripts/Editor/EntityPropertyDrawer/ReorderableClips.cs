@@ -96,7 +96,7 @@ namespace Ami.BroAudio.Editor
 			return list;
 		}
 
-		private MulticlipsPlayMode UpdatePlayMode()
+        private MulticlipsPlayMode UpdatePlayMode()
 		{
 			if (!IsMulticlips)
 			{
@@ -109,9 +109,31 @@ namespace Ami.BroAudio.Editor
 			return (MulticlipsPlayMode)_playModeProp.enumValueIndex;
 		}
 
+		private void HandleClipsDragAndDrop(Rect rect)
+		{
+			EventType currType = Event.current.type;
+            if((currType == EventType.DragUpdated || currType == EventType.DragPerform) && rect.Contains(Event.current.mousePosition))
+			{
+				DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+				if(currType == EventType.DragPerform && DragAndDrop.objectReferences?.Length > 0)
+				{
+					foreach(var clipObj in DragAndDrop.objectReferences)
+					{
+						SerializedProperty broClipProp = AddClip(_reorderableList);
+						SerializedProperty audioClipProp = broClipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
+						audioClipProp.objectReferenceValue = clipObj;
+					}
+					_reorderableList.serializedProperty.serializedObject.ApplyModifiedProperties();
+					DragAndDrop.AcceptDrag();
+					UpdatePlayMode();
+				}
+			}
+		}
+
 		#region ReorderableList Callback
 		private void OnDrawHeader(Rect rect)
 		{
+			HandleClipsDragAndDrop(rect);
 			float[] ratio = { 0.3f, 0.4f, 0.18f, 0.12f };
 			EditorScriptingExtension.SplitRectHorizontal(rect, 15f, out Rect[] newRects, ratio);
 
@@ -182,20 +204,24 @@ namespace Ami.BroAudio.Editor
 		}
 
 		private void OnAdd(ReorderableList list)
-		{
-			ReorderableList.defaultBehaviours.DoAddButton(list);
-			var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
-			BroEditorUtility.ResetBroAudioClipSerializedProperties(clipProp);
+        {
+			AddClip(list);
+            UpdatePlayMode();
+        }
 
-			UpdatePlayMode();
-		}
-
-		private void OnSelect(ReorderableList list)
+        private void OnSelect(ReorderableList list)
 		{
 			EditorPlayAudioClip.StopAllClips();
 		}
 
 		#endregion
 
+		private SerializedProperty AddClip(ReorderableList list)
+        {
+            ReorderableList.defaultBehaviours.DoAddButton(list);
+            var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
+            BroEditorUtility.ResetBroAudioClipSerializedProperties(clipProp);
+			return clipProp;
+        }
 	} 
 }

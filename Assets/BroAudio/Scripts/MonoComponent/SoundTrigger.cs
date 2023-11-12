@@ -46,8 +46,6 @@ namespace Ami.BroAudio
 
 		}
 
-
-
 		public static class NameOf
 		{
 			public static string Triggers => nameof(_triggers);

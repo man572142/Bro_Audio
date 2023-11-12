@@ -114,7 +114,7 @@ namespace Ami.BroAudio.Runtime
             else if (pref.HasPosition(out var position))
 			{
                 transform.position = position;
-                if(settings.SpatialBlend == null)
+                if(settings.SpatialBlend == null || settings.SpatialBlend[0].value == AudioConstant.SpatialBlend_2D)
                 {
                     AudioSource.spatialBlend = AudioConstant.SpatialBlend_3D;
                 }

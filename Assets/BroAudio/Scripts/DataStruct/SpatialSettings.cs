@@ -23,7 +23,6 @@ namespace Ami.BroAudio.Data
                 MinDistance == other.MinDistance &&
                 MaxDistance == other.MaxDistance &&
                 SpatialBlend == other.SpatialBlend &&
-                SpatialBlend == other.SpatialBlend &&
                 ReverbZoneMix == other.ReverbZoneMix &&
                 Spread == other.Spread &&
                 CustomRolloff == other.CustomRolloff;

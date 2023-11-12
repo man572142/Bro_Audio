@@ -62,5 +62,10 @@ namespace Ami.BroAudio
 					break;
 			}
 		}
+
+		public static class NameOf
+		{
+			public static string Value => nameof(_value);
+		}
 	}
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,6 +21,8 @@ namespace Ami.BroAudio.Demo
         [SerializeField] private float _pitchRotationSensitivity = 1f;
         [SerializeField] private float _yawRotationSensitivity = 1.5f;
 
+        [SerializeField] private CameraCollisionDetector _camDetector = null;
+
         [SerializeField] private float _maxPitchAngle = 60f;
         [SerializeField] private float _minPitchAngle = -20f;
 
@@ -35,8 +38,8 @@ namespace Ami.BroAudio.Demo
             Cursor.visible = false;
         }
 
-        // Update is called once per frame
-        void Update()
+		// Update is called once per frame
+		void Update()
         {
             CameraRotation();
 
@@ -47,6 +50,17 @@ namespace Ami.BroAudio.Demo
         {
             float mouseX = Input.GetAxis("Mouse X") * _yawRotationSensitivity;
             float mouseY = Input.GetAxis("Mouse Y") * _pitchRotationSensitivity;
+
+            // this can only constraint the mouse movement b
+            if (mouseX != 0f && _camDetector.HasCollisionHorizontal(mouseX))
+			{
+                mouseX = 0f;
+			}
+
+            if(mouseY != 0f && _camDetector.HasCollisionVertical(mouseY))
+			{
+                mouseY = 0f;
+			}
 
             _rotationX = ClampAngle(_rotationX - mouseY, _minPitchAngle, _maxPitchAngle);
             _rotationY = ClampAngle(_rotationY + mouseX, float.MinValue, float.MaxValue);

@@ -8,16 +8,22 @@ using static Ami.Extension.EditorScriptingExtension;
 using static Ami.Extension.FlagsExtension;
 using static Ami.BroAudio.Editor.EditorSetting;
 using static Ami.BroAudio.Data.AudioEntity;
+using static Ami.BroAudio.Utility;
 using Ami.BroAudio.Runtime;
-using System;
 
 namespace Ami.BroAudio.Editor
 {
 	[CustomPropertyDrawer(typeof(AudioEntity))]
 	public partial class AudioEntityPropertyDrawer : MiPropertyDrawer
 	{
-		private GUIContent _loopingLabel = new GUIContent("Looping");
-		private GUIContent _seamlessLabel = new GUIContent("Seamless Setting");
+		private const float Percentage = 100f;
+		private const float RandomToolBarWidth = 40f;
+		private const float MinMaxSliderFieldWidth = 50f;
+
+		private readonly GUIContent _loopingLabel = new GUIContent("Looping");
+		private readonly GUIContent _seamlessLabel = new GUIContent("Seamless Setting");
+		private readonly GUIContent _pitchLabel = new GUIContent(nameof(AudioEntity.Pitch));
+
 		private SerializedProperty[] _loopingToggles = new SerializedProperty[2];
 
 		private float[] _seamlessSettingRectRatio = new float[] { 0.2f, 0.25f, 0.2f, 0.2f, 0.15f };
@@ -86,30 +92,60 @@ namespace Ami.BroAudio.Editor
 				
 				Rect pitchRect = GetRectAndIterateLine(position);
 				pitchRect.width *= _defaultFieldRatio;
-				SerializedProperty pitchProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Pitch));
 
 				bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
 				var pitchSetting = isWebGL? PitchShiftingSetting.AudioSource : BroEditorUtility.RuntimeSetting.PitchSetting;
 				float minPitch = pitchSetting == PitchShiftingSetting.AudioMixer ? AudioConstant.MinMixerPitch : AudioConstant.MinAudioSourcePitch;
 				float maxPitch = pitchSetting == PitchShiftingSetting.AudioMixer ? AudioConstant.MaxMixerPitch : AudioConstant.MaxAudioSourcePitch;
-				GUIContent label = new GUIContent(nameof(AudioEntity.Pitch), $"Pitch will be set on [{pitchSetting}] according to the current global setting");
+				_pitchLabel.tooltip = $"Pitch will be set on [{pitchSetting}] according to the current global setting";
+
+				SerializedProperty pitchProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Pitch));
+				SerializedProperty pitchRandProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.PitchRandomRange));
+
+				Rect randButtonRect = new Rect(pitchRect.xMax + 5f, pitchRect.y, RandomToolBarWidth, pitchRect.height);
+				bool hasRandom = DrawRandomButton(randButtonRect, RandomFlags.Pitch, property);
 
 				float pitch = Mathf.Clamp(pitchProp.floatValue, minPitch, maxPitch);
+				float pitchRange = pitchRandProp.floatValue;
+
 				switch (pitchSetting)
 				{
 					case PitchShiftingSetting.AudioMixer:
-						float percentage = 100f;
-						float displayValue = EditorGUI.Slider(pitchRect, label, Mathf.Round(pitch * percentage), minPitch * percentage, maxPitch * percentage);
-						pitchProp.floatValue = displayValue / percentage;
-						Rect percentageRect = new Rect(pitchRect);
-						percentageRect.width = 15f;
-						percentageRect.x = pitchRect.xMax - percentageRect.width;
-						EditorGUI.LabelField(percentageRect, "%");
+						pitch = Mathf.Round(pitch * Percentage);
+						pitchRange = Mathf.Round(pitchRange * Percentage);
+						minPitch *= Percentage;
+						maxPitch *= Percentage;
+						if (hasRandom)
+						{
+							DrawPitchRandomRange(pitchRect, ref pitch, ref pitchRange, minPitch, maxPitch);
+							Rect minFieldRect = new Rect(pitchRect) { x = pitchRect.x + EditorGUIUtility.labelWidth + 5f, width = MinMaxSliderFieldWidth };
+							Rect maxFieldRect = new Rect(minFieldRect) { x = pitchRect.xMax - MinMaxSliderFieldWidth };
+							DrawPercentageLabel(minFieldRect);
+							DrawPercentageLabel(maxFieldRect);
+						}
+						else
+						{
+							pitch = EditorGUI.Slider(pitchRect, _pitchLabel, pitch, minPitch, maxPitch);
+							DrawPercentageLabel(pitchRect);
+						}
+						pitch /= Percentage;
+						pitchRange /= Percentage;
 						break;
+
 					case PitchShiftingSetting.AudioSource:
-						pitchProp.floatValue = EditorGUI.Slider(pitchRect, label, pitch, minPitch, maxPitch);
+						if (hasRandom)
+						{
+							DrawPitchRandomRange(pitchRect, ref pitch, ref pitchRange, minPitch, maxPitch);
+						}
+						else
+						{
+							pitch = EditorGUI.Slider(pitchRect, _pitchLabel, pitch, minPitch, maxPitch);
+						}
 						break;
 				}
+
+				pitchProp.floatValue = pitch;
+				pitchRandProp.floatValue = pitchRange;
 			}
 
 			void DrawPriorityProperty()
@@ -125,6 +161,13 @@ namespace Ami.BroAudio.Editor
 					Offset += TwoSidesLabelOffsetY;
 				}
 			}
+		}
+
+		private void DrawPercentageLabel(Rect fieldRect)
+		{
+			float width = 15f;
+			Rect percentageRect = new Rect(fieldRect) { width = width, x = fieldRect.xMax - width };
+			EditorGUI.LabelField(percentageRect, "%");
 		}
 
 		private void DrawAdditionalClipProperties(Rect position, SerializedProperty property, AudioTypeSetting setting)
@@ -174,6 +217,28 @@ namespace Ami.BroAudio.Editor
 					transitionTimeProp.floatValue = AudioPlayer.UseEntitySetting;
 					break;
 			}
+		}
+
+		private void DrawPitchRandomRange(Rect rect,ref float pitch, ref float pitchRange, float minLimit, float maxLimit)
+		{
+			float minRand = pitch - pitchRange * 0.5f;
+			float maxRand = pitch + pitchRange * 0.5f;
+			minRand = Mathf.Clamp(minRand, minLimit, maxLimit);
+			maxRand = Mathf.Clamp(maxRand, minLimit, maxLimit);
+			DrawMinMaxSlider(rect, _pitchLabel, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth);
+			pitchRange = maxRand - minRand;
+			pitch = minRand + pitchRange * 0.5f;
+		}
+
+		private bool DrawRandomButton(Rect rect,RandomFlags targetFlag, SerializedProperty property)
+		{
+			SerializedProperty randFlagsProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.RandomFlags));
+			RandomFlags randomFlags = (RandomFlags)randFlagsProp.intValue;
+			bool hasRandom = randomFlags.Contains(targetFlag);
+			hasRandom = GUI.Toggle(rect, hasRandom, "RND", EditorStyles.miniButton);
+			randomFlags = hasRandom ? randomFlags | targetFlag : randomFlags ^ targetFlag;
+			randFlagsProp.intValue = (int)randomFlags;
+			return hasRandom;
 		}
 
 		private SerializedProperty GetBackingNameAndFindProperty(SerializedProperty entityProp, string memberName)

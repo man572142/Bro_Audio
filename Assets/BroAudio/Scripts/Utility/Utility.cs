@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Ami.BroAudio.Data;
 using Ami.BroAudio.Runtime;
 
 namespace Ami.BroAudio
@@ -20,6 +19,12 @@ namespace Ami.BroAudio
 				return result;
 			}
 			return null;
+		}
+
+		public static bool Contains(this RandomFlags flags, RandomFlags targetFlag)
+		{
+			// faster than Enum.HasFlag, could be used in runtime.
+			return ((int)flags & (int)targetFlag) == 1;
 		}
 	}
 }

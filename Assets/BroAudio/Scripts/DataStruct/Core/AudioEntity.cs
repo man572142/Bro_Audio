@@ -19,6 +19,8 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public SpatialSettings SpatialSettings { get; set; }
         [field: SerializeField] public int Priority { get; set; }
         [field: SerializeField] public float Pitch { get; set; }
+        [field: SerializeField] public float PitchRandomRange { get; set; }
+        [field: SerializeField] public RandomFlags RandomFlags { get; set; }
 
         public BroAudioClip Clip => Clips.PickNewOne(MulticlipsPlayMode, ID);
 

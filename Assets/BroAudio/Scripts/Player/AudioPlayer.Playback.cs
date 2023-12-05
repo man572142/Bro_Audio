@@ -85,7 +85,7 @@ namespace Ami.BroAudio.Runtime
 
             AudioSource.clip = clip.AudioClip;
             AudioSource.priority = pref.Entity.Priority;
-            SetPitch(pref.Entity.Pitch);
+            SetPitch(pref.Entity);
             SetSpatial(pref);
             VolumeControl fader = VolumeControl.Clip;
             ClipVolume = 0f;

@@ -414,14 +414,17 @@ namespace Ami.Extension
 
 			Rect suffixRect = EditorGUI.PrefixLabel(position, title);
 
-			for(int i = 0; i < values.Length;i++)
+			using (new LabelWidthScope())
 			{
-				Rect rect = new Rect(suffixRect);
-				rect.x += i== 0? 0 : (totalFieldWidth + gap) * i;
-				rect.width = totalFieldWidth;
-				EditorGUIUtility.labelWidth = totalFieldWidth * 0.4f;
-				values[i] = EditorGUI.FloatField(rect, labels[i], values[i]);
-				EditorGUIUtility.labelWidth = 0f;
+				for (int i = 0; i < values.Length; i++)
+				{
+					Rect rect = new Rect(suffixRect);
+					rect.x += i == 0 ? 0 : (totalFieldWidth + gap) * i;
+					rect.width = totalFieldWidth;
+					EditorGUIUtility.labelWidth = totalFieldWidth * 0.4f;
+					values[i] = EditorGUI.FloatField(rect, labels[i], values[i]);
+					EditorGUIUtility.labelWidth = 0f;
+				}
 			}
 		}
 		
@@ -449,6 +452,20 @@ namespace Ami.Extension
 					return new Color(0.7f, 0.7f, 0.7f, 0.8f);
 				}
 			}
+		}
+
+		public static void DrawMinMaxSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit,float fieldWidth)
+		{
+			Rect suffixRect = EditorGUI.PrefixLabel(position,label);
+
+			float gap = 5f;
+			Rect minFieldRect = new Rect(suffixRect) { width = fieldWidth };
+			Rect sliderRect = new Rect(suffixRect) { x = minFieldRect.xMax + gap, width = suffixRect.width - (fieldWidth + gap) * 2f };
+			Rect maxFieldRect = new Rect(suffixRect) {x = sliderRect.xMax + gap, width = fieldWidth };
+
+			min = EditorGUI.FloatField(minFieldRect,min);
+			max = EditorGUI.FloatField(maxFieldRect, max);
+			EditorGUI.MinMaxSlider(sliderRect, ref min, ref max, minLimit, maxLimit);
 		}
 	}
 }

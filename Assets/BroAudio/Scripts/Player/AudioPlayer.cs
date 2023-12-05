@@ -75,8 +75,15 @@ namespace Ami.BroAudio.Runtime
             _audioMixer = mixer;
 		}
 
-        private void SetPitch(float pitch)
+        private void SetPitch(IAudioEntity entity)
         {
+            float pitch = entity.Pitch;
+            if(entity.RandomFlags.Contains(RandomFlags.Pitch))
+			{
+                float half = entity.PitchRandomRange * 0.5f;
+                pitch += UnityEngine.Random.Range(-half, half);
+			}
+
 			switch (SoundManager.PitchSetting)
 			{
 				case PitchShiftingSetting.AudioMixer:

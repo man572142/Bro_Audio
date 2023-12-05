@@ -9,5 +9,7 @@ namespace Ami.BroAudio.Data
         SpatialSettings SpatialSettings { get; }
 		int Priority { get; }
 		float Pitch { get; }
+		RandomFlags RandomFlags { get; }
+		float PitchRandomRange { get; }
     } 
 }

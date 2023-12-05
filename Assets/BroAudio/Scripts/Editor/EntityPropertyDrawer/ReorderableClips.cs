@@ -54,7 +54,7 @@ namespace Ami.BroAudio.Editor
 
 		public ReorderableClips(SerializedProperty entityProperty)
 		{
-			_playModeProp = entityProperty.FindPropertyRelative(AudioEntity.NameOf.MulticlipsPlayMode);
+			_playModeProp = entityProperty.FindPropertyRelative(AudioEntity.EditorPropertyName.MulticlipsPlayMode);
 			_reorderableList = CreateReorderabeList(entityProperty);
 			UpdatePlayMode();
 

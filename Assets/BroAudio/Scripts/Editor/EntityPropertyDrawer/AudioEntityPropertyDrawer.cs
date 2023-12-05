@@ -22,9 +22,9 @@ namespace Ami.BroAudio.Editor
 		private const float _lowVolumeSnappingThreshold = 0.05f;
 		private const float _highVolumeSnappingThreshold = 0.2f;
 		private const string _dbValueStringFormat = "0.##";
-		private const float _defaultFieldRatio = 0.8f;
+		private const float _defaultFieldRatio = 0.9f;
 
-		private GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume));
+		private GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume),"The playback volume of this clip");
 
 		private Dictionary<string, ReorderableClips> _reorderableClipsDict = new Dictionary<string, ReorderableClips>();
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper(ClipPreviewHeight);
@@ -80,9 +80,9 @@ namespace Ami.BroAudio.Editor
 			{
                 DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport,out float delay);
 				DrawAdditionalClipProperties(position, currSelectClip, setting);
-				if (setting.DrawedProperty.HasFlag(DrawedProperty.ClipPreview))
+				if (setting.DrawedProperty.Contains(DrawedProperty.ClipPreview))
 				{
-					SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview);
+					SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioEntity.EditorPropertyName.IsShowClipPreview);
                     isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
 					bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
 					if (isShowPreview)
@@ -95,7 +95,7 @@ namespace Ami.BroAudio.Editor
 			#endregion
 			
 			// todo: looks ugly now, needs upgrade
-			if (setting.DrawedProperty.HasFlag(DrawedProperty.SpatialSettings) && GUI.Button(GetRectAndIterateLine(position), "Spatial Setting"))
+			if (setting.DrawedProperty.Contains(DrawedProperty.SpatialSettings) && GUI.Button(GetRectAndIterateLine(position), "Spatial Setting"))
 			{
                 SerializedProperty settingsProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
                 SpatialSettingsEditorWindow.ShowWindow(settingsProp, OnSetSpatialSettingBack);
@@ -130,7 +130,7 @@ namespace Ami.BroAudio.Editor
 					bool isShowClipProp =
 						clipList.CurrentSelectedClip != null &&
 						clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip _);
-					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview).boolValue;
+					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioEntity.EditorPropertyName.IsShowClipPreview).boolValue;
 
                     height += clipList.Height;
                     height += isShowClipProp?  GetAdditionalClipPropertiesLineCount(property, setting) * SingleLineSpace : 0f;
@@ -183,6 +183,7 @@ namespace Ami.BroAudio.Editor
 			if (CanDraw(DrawedProperty.Volume))
 			{
                 Rect volRect = GetRectAndIterateLine(position);
+				volRect.width *= _defaultFieldRatio;
                 volumeProp.floatValue = DrawVolumeSlider(volRect, _volumeLabel, volumeProp.floatValue, snapVolProp.boolValue, () =>
                 {
                     snapVolProp.boolValue = !snapVolProp.boolValue;
@@ -212,18 +213,15 @@ namespace Ami.BroAudio.Editor
 
 			bool CanDraw(DrawedProperty drawedProperty)
 			{
-				return setting.DrawedProperty.HasFlag(drawedProperty);
+				return setting.DrawedProperty.Contains(drawedProperty);
 			}
 		}
 
-		private float DrawVolumeSlider(Rect position, GUIContent label, float currentValue,bool isSnap,Action onSwitchBoostMode)
+		private float DrawVolumeSlider(Rect position, GUIContent label, float currentValue,bool isSnap,Action onSwitchSnapMode)
 		{
 			Rect suffixRect = EditorGUI.PrefixLabel(position, label);
-            SplitRectHorizontal(suffixRect, 10f, out Rect[] rects, 0.7f, 0.1f, 0.2f);
-            Rect sliderRect = rects[0];
-            Rect fieldRect = rects[1];
-            Rect dbLabelRect = rects[2];
-
+            SplitRectHorizontal(suffixRect,0.74f ,5f, out Rect sliderRect, out Rect fieldAndDbRect);
+			SplitRectHorizontal(fieldAndDbRect, 0.45f, 3f, out Rect fieldRect, out Rect dbLabelRect);
 #if !UNITY_WEBGL
             if (BroEditorUtility.EditorSetting.ShowVUColorOnVolumeSlider)
             {
@@ -236,7 +234,7 @@ namespace Ami.BroAudio.Editor
             }
 
             float sliderFullScale = FullVolume / (FullDecibelVolume - MinDecibelVolume / DecibelVoulumeFullScale);
-            DrawFullVolumeSnapPoint(sliderRect, sliderFullScale, onSwitchBoostMode);
+            DrawFullVolumeSnapPoint(sliderRect, sliderFullScale, onSwitchSnapMode);
 
             float sliderValue = ConvertToSliderValue(currentValue, sliderFullScale);
             float newSliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
@@ -260,13 +258,6 @@ namespace Ami.BroAudio.Editor
 			}
 
 #if !UNITY_WEBGL
-			void DrawVUMeter(Rect vuRect, Color maskColor)
-			{
-				vuRect.height *= 0.5f;
-				EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent(IconConstant.HorizontalVUMeter).image);
-				EditorGUI.DrawRect(vuRect, maskColor);
-			}
-
 			void DrawFullVolumeSnapPoint(Rect sliderPosition,float sliderFullScale ,Action onSwitchSnapMode)
 			{
 				Rect rect = new Rect(sliderPosition);

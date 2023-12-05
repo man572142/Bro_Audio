@@ -32,11 +32,14 @@ namespace Ami.BroAudio.Editor
             // TODO: could use enumerator, but might have to deal with some problems
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Name))).stringValue = string.Empty;
             property.FindPropertyRelative(nameof(AudioEntity.Clips)).arraySize = 0;
-            property.FindPropertyRelative(AudioEntity.NameOf.IsShowClipPreview).boolValue = false;
-            property.FindPropertyRelative(AudioEntity.NameOf.MulticlipsPlayMode).enumValueIndex = 0;
+            property.FindPropertyRelative(AudioEntity.EditorPropertyName.IsShowClipPreview).boolValue = false;
+            property.FindPropertyRelative(AudioEntity.EditorPropertyName.MulticlipsPlayMode).enumValueIndex = 0;
+            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.MasterVolume))).floatValue = AudioConstant.FullVolume;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Loop))).boolValue = false;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SeamlessLoop))).boolValue = false;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Pitch))).floatValue = AudioConstant.DefaultPitch;
+            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.PitchRandomRange))).floatValue = 0f;
+            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.RandomFlags))).intValue = 0;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Priority))).intValue = AudioConstant.DefaultPriority;
 
             SerializedProperty spatialProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));

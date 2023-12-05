@@ -454,7 +454,7 @@ namespace Ami.Extension
 			}
 		}
 
-		public static void DrawMinMaxSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit,float fieldWidth)
+		public static void DrawMinMaxSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit,float fieldWidth,Action<Rect> onGetSliderRect = null)
 		{
 			Rect suffixRect = EditorGUI.PrefixLabel(position,label);
 
@@ -462,10 +462,19 @@ namespace Ami.Extension
 			Rect minFieldRect = new Rect(suffixRect) { width = fieldWidth };
 			Rect sliderRect = new Rect(suffixRect) { x = minFieldRect.xMax + gap, width = suffixRect.width - (fieldWidth + gap) * 2f };
 			Rect maxFieldRect = new Rect(suffixRect) {x = sliderRect.xMax + gap, width = fieldWidth };
+			onGetSliderRect?.Invoke(sliderRect);
 
 			min = EditorGUI.FloatField(minFieldRect,min);
 			max = EditorGUI.FloatField(maxFieldRect, max);
 			EditorGUI.MinMaxSlider(sliderRect, ref min, ref max, minLimit, maxLimit);
+			
+		}
+
+		public static void DrawVUMeter(Rect vuRect,Color maskColor)
+		{
+			vuRect.height *= 0.5f;
+			EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent(IconConstant.HorizontalVUMeter).image);
+			EditorGUI.DrawRect(vuRect, maskColor);
 		}
 	}
 }

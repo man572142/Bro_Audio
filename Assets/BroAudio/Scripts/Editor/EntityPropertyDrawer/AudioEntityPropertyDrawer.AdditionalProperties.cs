@@ -8,8 +8,8 @@ using static Ami.Extension.EditorScriptingExtension;
 using static Ami.Extension.FlagsExtension;
 using static Ami.BroAudio.Editor.EditorSetting;
 using static Ami.BroAudio.Data.AudioEntity;
-using static Ami.BroAudio.Utility;
 using Ami.BroAudio.Runtime;
+using System;
 
 namespace Ami.BroAudio.Editor
 {
@@ -19,7 +19,9 @@ namespace Ami.BroAudio.Editor
 		private const float Percentage = 100f;
 		private const float RandomToolBarWidth = 40f;
 		private const float MinMaxSliderFieldWidth = 50f;
+		private const int RoundedDigits = 3;
 
+		private readonly GUIContent _masterVolLabel = new GUIContent("Master Volume","Represent the master volume of all clips");
 		private readonly GUIContent _loopingLabel = new GUIContent("Looping");
 		private readonly GUIContent _seamlessLabel = new GUIContent("Seamless Setting");
 		private readonly GUIContent _pitchLabel = new GUIContent(nameof(AudioEntity.Pitch));
@@ -46,7 +48,7 @@ namespace Ami.BroAudio.Editor
 		private float GetAdditionalBasePropertiesOffest(AudioTypeSetting setting)
 		{
 			float offset = 0f;
-			if(setting.DrawedProperty.HasFlag(DrawedProperty.Priority))
+			if(setting.DrawedProperty.Contains(DrawedProperty.Priority))
 			{
 				offset += TwoSidesLabelOffsetY;
 			}
@@ -62,13 +64,52 @@ namespace Ami.BroAudio.Editor
 
 		private void DrawAdditionalBaseProperties(Rect position, SerializedProperty property, AudioTypeSetting setting)
 		{
+			DrawMasterVolume();
 			DrawLoopProperty();
 			DrawPitchProperty();
 			DrawPriorityProperty();
 
+			void DrawMasterVolume()
+			{
+				// todo: add drawed property?
+				DrawEmptyLine(1);
+				Rect masterVolRect = GetRectAndIterateLine(position);
+				masterVolRect.width *= _defaultFieldRatio;
+				SerializedProperty masterVolProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.MasterVolume));
+				SerializedProperty snapVolProp = property.FindPropertyRelative(EditorPropertyName.SnapToFullVolume);
+
+				Rect randButtonRect = new Rect(masterVolRect.xMax + 5f, masterVolRect.y, RandomToolBarWidth, masterVolRect.height);
+				if (DrawRandomButton(randButtonRect, RandomFlags.Volume, property))
+				{
+					SerializedProperty volRandProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.VolumeRandomRange));
+					float vol = masterVolProp.floatValue;
+					float volRange = volRandProp.floatValue;
+
+					Action<Rect> onDrawVU = null;
+#if !UNITY_WEBGL
+					if(BroEditorUtility.EditorSetting.ShowVUColorOnVolumeSlider)
+					{
+						onDrawVU = sliderRect => DrawVUMeter(sliderRect, Setting.BroAudioGUISetting.VUMaskColor);
+					}
+#endif
+					// todo: need logarithm
+					bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
+					DrawRandomRangeSlider(masterVolRect,_masterVolLabel,ref vol,ref volRange, AudioConstant.MinVolume, isWebGL? AudioConstant.FullVolume : AudioConstant.MaxVolume, onDrawVU);
+					masterVolProp.floatValue = vol;
+					volRandProp.floatValue = volRange;
+				}
+				else
+				{
+					masterVolProp.floatValue = DrawVolumeSlider(masterVolRect, _masterVolLabel, masterVolProp.floatValue, snapVolProp.boolValue, () =>
+					{
+						snapVolProp.boolValue = !snapVolProp.boolValue;
+					});
+				}
+			}
+
 			void DrawLoopProperty()
 			{
-				if (setting.DrawedProperty.HasFlag(DrawedProperty.Loop))
+				if (setting.DrawedProperty.Contains(DrawedProperty.Loop))
 				{
 					_loopingToggles[0] = GetBackingNameAndFindProperty(property,nameof(AudioEntity.Loop));
 					_loopingToggles[1] = GetBackingNameAndFindProperty(property,nameof(AudioEntity.SeamlessLoop));
@@ -85,7 +126,7 @@ namespace Ami.BroAudio.Editor
 
 			void DrawPitchProperty()
 			{
-				if (!setting.DrawedProperty.HasFlag(DrawedProperty.Pitch))
+				if (!setting.DrawedProperty.Contains(DrawedProperty.Pitch))
 				{
 					return;
 				}
@@ -117,7 +158,7 @@ namespace Ami.BroAudio.Editor
 						maxPitch *= Percentage;
 						if (hasRandom)
 						{
-							DrawPitchRandomRange(pitchRect, ref pitch, ref pitchRange, minPitch, maxPitch);
+							DrawRandomRangeSlider(pitchRect,_pitchLabel, ref pitch, ref pitchRange, minPitch, maxPitch);
 							Rect minFieldRect = new Rect(pitchRect) { x = pitchRect.x + EditorGUIUtility.labelWidth + 5f, width = MinMaxSliderFieldWidth };
 							Rect maxFieldRect = new Rect(minFieldRect) { x = pitchRect.xMax - MinMaxSliderFieldWidth };
 							DrawPercentageLabel(minFieldRect);
@@ -135,7 +176,7 @@ namespace Ami.BroAudio.Editor
 					case PitchShiftingSetting.AudioSource:
 						if (hasRandom)
 						{
-							DrawPitchRandomRange(pitchRect, ref pitch, ref pitchRange, minPitch, maxPitch);
+							DrawRandomRangeSlider(pitchRect, _pitchLabel,ref pitch, ref pitchRange, minPitch, maxPitch);
 						}
 						else
 						{
@@ -150,7 +191,7 @@ namespace Ami.BroAudio.Editor
 
 			void DrawPriorityProperty()
 			{
-				if (setting.DrawedProperty.HasFlag(DrawedProperty.Priority))
+				if (setting.DrawedProperty.Contains(DrawedProperty.Priority))
 				{
 					Rect priorityRect = GetRectAndIterateLine(position);
 					priorityRect.width *= _defaultFieldRatio;
@@ -184,7 +225,7 @@ namespace Ami.BroAudio.Editor
 			EditorGUI.LabelField(rects[drawIndex], "Transition By");
 			drawIndex++;
 
-			var seamlessTypeProp = property.FindPropertyRelative(NameOf.SeamlessType);
+			var seamlessTypeProp = property.FindPropertyRelative(EditorPropertyName.SeamlessType);
 			SeamlessType currentType = (SeamlessType)seamlessTypeProp.enumValueIndex;
 			currentType = (SeamlessType)EditorGUI.EnumPopup(rects[drawIndex], currentType);
 			seamlessTypeProp.enumValueIndex = (int)currentType;
@@ -198,7 +239,7 @@ namespace Ami.BroAudio.Editor
 					transitionTimeProp.floatValue = Mathf.Abs(EditorGUI.FloatField(rects[drawIndex], transitionTimeProp.floatValue));
 					break;
 				case SeamlessType.Tempo:
-					var tempoProp = property.FindPropertyRelative(NameOf.TransitionTempo);
+					var tempoProp = property.FindPropertyRelative(EditorPropertyName.TransitionTempo);
 					var bpmProp = tempoProp.FindPropertyRelative(nameof(TempoTransition.BPM));
 					var beatsProp = tempoProp.FindPropertyRelative(nameof(TempoTransition.Beats));
 
@@ -219,13 +260,13 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawPitchRandomRange(Rect rect,ref float pitch, ref float pitchRange, float minLimit, float maxLimit)
+		private void DrawRandomRangeSlider(Rect rect,GUIContent label,ref float pitch, ref float pitchRange, float minLimit, float maxLimit,Action<Rect> onGetSliderRect = null)
 		{
 			float minRand = pitch - pitchRange * 0.5f;
 			float maxRand = pitch + pitchRange * 0.5f;
-			minRand = Mathf.Clamp(minRand, minLimit, maxLimit);
-			maxRand = Mathf.Clamp(maxRand, minLimit, maxLimit);
-			DrawMinMaxSlider(rect, _pitchLabel, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth);
+			minRand = (float)Math.Round(Mathf.Clamp(minRand, minLimit, maxLimit), RoundedDigits);
+			maxRand = (float)Math.Round(Mathf.Clamp(maxRand, minLimit, maxLimit), RoundedDigits);
+			DrawMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
 			pitchRange = maxRand - minRand;
 			pitch = minRand + pitchRange * 0.5f;
 		}
@@ -236,7 +277,7 @@ namespace Ami.BroAudio.Editor
 			RandomFlags randomFlags = (RandomFlags)randFlagsProp.intValue;
 			bool hasRandom = randomFlags.Contains(targetFlag);
 			hasRandom = GUI.Toggle(rect, hasRandom, "RND", EditorStyles.miniButton);
-			randomFlags = hasRandom ? randomFlags | targetFlag : randomFlags ^ targetFlag;
+			randomFlags = hasRandom ? randomFlags | targetFlag : randomFlags & ~targetFlag;
 			randFlagsProp.intValue = (int)randomFlags;
 			return hasRandom;
 		}

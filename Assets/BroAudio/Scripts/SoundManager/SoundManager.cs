@@ -132,7 +132,7 @@ namespace Ami.BroAudio.Runtime
             GetPlaybackPrefByType(targetType, pref => pref.Volume = vol);
             GetCurrentInUsePlayers(player => 
             { 
-                if(targetType.HasFlag(GetAudioType(player.ID)))
+                if(targetType.Contains(GetAudioType(player.ID)))
 				{
                     player.SetVolume(vol, fadeTime);
                 }
@@ -218,7 +218,7 @@ namespace Ami.BroAudio.Runtime
 
 			GetCurrentInUsePlayers(player =>
 			{
-                if (targetType.HasFlag(GetAudioType(player.ID)) && !player.IsDominator)
+                if (targetType.Contains(GetAudioType(player.ID)) && !player.IsDominator)
 				{
 					player.SetEffect(effectType, mode);
 				}
@@ -231,7 +231,7 @@ namespace Ami.BroAudio.Runtime
             // For those which may be played in the future.
             ForeachConcreteAudioType((audioType) =>
             {
-                if (targetType.HasFlag(audioType) && _auidoTypePref.TryGetValue(audioType,out var pref))
+                if (targetType.Contains(audioType) && _auidoTypePref.TryGetValue(audioType,out var pref))
                 {
                     onGetPref.Invoke(pref);
                 }

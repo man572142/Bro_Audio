@@ -21,10 +21,17 @@ namespace Ami.BroAudio
 			return null;
 		}
 
+		#region Efficient HasFlag
+		// faster than Enum.HasFlag, could be used in runtime.
+		public static bool Contains(this BroAudioType flags, BroAudioType targetFlag)
+		{
+			return ((int)flags & (int)targetFlag) != 0;
+		}
+
 		public static bool Contains(this RandomFlags flags, RandomFlags targetFlag)
 		{
-			// faster than Enum.HasFlag, could be used in runtime.
-			return ((int)flags & (int)targetFlag) == 1;
+			return ((int)flags & (int)targetFlag) != 0;
 		}
+		#endregion
 	}
 }

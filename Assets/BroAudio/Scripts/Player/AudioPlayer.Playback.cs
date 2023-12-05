@@ -89,8 +89,8 @@ namespace Ami.BroAudio.Runtime
             SetSpatial(pref);
             VolumeControl fader = VolumeControl.Clip;
             ClipVolume = 0f;
+            float targetVolume = GetTargetVolume();
             RemoveFromResumablePlayer();
-
             do
             {
                 switch (_stopMode)
@@ -116,12 +116,12 @@ namespace Ami.BroAudio.Runtime
                 {
                     IsFadingIn = true;
                     //FadeIn start from here
-                    yield return Fade(clip.Volume, fadeIn, fader,pref.FadeInEase);
+                    yield return Fade(targetVolume, fadeIn, fader,pref.FadeInEase);
                     IsFadingIn = false;
                 }
                 else
                 {
-                    ClipVolume = clip.Volume;
+                    ClipVolume = targetVolume;
                 }
                 #endregion
 
@@ -157,6 +157,17 @@ namespace Ami.BroAudio.Runtime
 				AudioSource.Stop();
 				AudioSource.time = pos;
 				AudioSource.Play();
+			}
+
+            float GetTargetVolume()
+			{
+                float result = clip.Volume;
+                if(pref.Entity.RandomFlags.Contains(RandomFlags.Volume))
+				{
+                    float masterVol = pref.Entity.MasterVolume + UnityEngine.Random.Range(-pref.Entity.VolumeRandomRange, pref.Entity.VolumeRandomRange);
+                    result *= masterVol;
+				}
+                return result;
 			}
 		}
 

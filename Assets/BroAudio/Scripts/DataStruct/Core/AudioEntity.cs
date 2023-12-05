@@ -13,6 +13,7 @@ namespace Ami.BroAudio.Data
 
         public BroAudioClip[] Clips;
 
+        [field: SerializeField] public float MasterVolume { get; set; }
         [field: SerializeField] public bool Loop { get; set; }
         [field: SerializeField] public bool SeamlessLoop { get; set; }
         [field: SerializeField] public float TransitionTime { get; set; }
@@ -20,6 +21,7 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public int Priority { get; set; }
         [field: SerializeField] public float Pitch { get; set; }
         [field: SerializeField] public float PitchRandomRange { get; set; }
+        [field: SerializeField] public float VolumeRandomRange { get; set; }
         [field: SerializeField] public RandomFlags RandomFlags { get; set; }
 
         public BroAudioClip Clip => Clips.PickNewOne(MulticlipsPlayMode, ID);
@@ -44,17 +46,19 @@ namespace Ami.BroAudio.Data
             public int Beats;
         }
 
-        public static class NameOf
+        public static class EditorPropertyName
 		{
             public static string IsShowClipPreview => nameof(AudioEntity.IsShowClipPreview);
             public static string MulticlipsPlayMode => nameof(AudioEntity.MulticlipsPlayMode);
             public static string SeamlessType => nameof(AudioEntity.SeamlessTransitionType);
             public static string TransitionTempo => nameof(AudioEntity.TransitionTempo);
+            public static string SnapToFullVolume => nameof(AudioEntity.SnapToFullVolume);
         }
 
         [SerializeField] private bool IsShowClipPreview = false;
         [SerializeField] private SeamlessType SeamlessTransitionType = SeamlessType.ClipSetting;
         [SerializeField] private TempoTransition TransitionTempo = default;
+        [SerializeField] private bool SnapToFullVolume = false;
 #endif
     }
 }

@@ -2,6 +2,7 @@ namespace Ami.BroAudio.Data
 {
 	public interface IAudioEntity
 	{
+		float MasterVolume { get; }
 		bool Loop { get; }
 		bool SeamlessLoop { get; }
 		float TransitionTime { get; }
@@ -11,5 +12,6 @@ namespace Ami.BroAudio.Data
 		float Pitch { get; }
 		RandomFlags RandomFlags { get; }
 		float PitchRandomRange { get; }
+		float VolumeRandomRange { get; }
     } 
 }

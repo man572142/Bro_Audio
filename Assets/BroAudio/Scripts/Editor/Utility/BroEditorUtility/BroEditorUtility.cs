@@ -162,5 +162,10 @@ namespace Ami.BroAudio.Editor
             }
             return false;
         }
+
+        public static bool Contains(this DrawedProperty flags, DrawedProperty targetFlag)
+		{
+            return ((int)flags & (int)targetFlag) != 0;
+        }
     }
 }

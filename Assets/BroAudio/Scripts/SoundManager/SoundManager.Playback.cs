@@ -70,7 +70,7 @@ namespace Ami.BroAudio.Runtime
                 seamlessLoopHelper.SetPlayer(player);
             }
 
-            StartCoroutine(PreventCombFiltering(id, HaasEffectInSeconds));
+            StartCoroutine(PreventCombFiltering(id, CombFilteringPreventionInSeconds));
 
             return wrapper;
         }

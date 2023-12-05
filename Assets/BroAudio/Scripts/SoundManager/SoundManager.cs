@@ -55,8 +55,6 @@ namespace Ami.BroAudio.Runtime
         private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
 
-        // ����Haas Effect���ͪ�Comb Filtering����
-        // TODO: �p�G�O�C�����񳣦b���P�n�D�N����
         private Dictionary<int, bool> _combFilteringPreventer = new Dictionary<int, bool>();
 
         private Coroutine _masterVolumeCoroutine;
@@ -292,9 +290,11 @@ namespace Ami.BroAudio.Runtime
 
             if (_combFilteringPreventer.TryGetValue(id, out bool isPreventing) && isPreventing)
             {
-                // todo: add an option on Settings to let the user choose whether they need this warning or not
-                LogWarning($"One of the plays of Audio:{id.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
-                    $"Check [BroAudio > Global Setting] for more information, or change the setting.");
+                if(Setting.LogCombFilteringWarning)
+				{
+                    LogWarning($"One of the plays of Audio:{id.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
+                    $"Check documentation for further details, or change the setting in [BroAudio > Setting].");
+                }
                 return false;
             }
 

@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64cab1494eb378e4a8acf946c91c668a, type: 3}
   m_Name: BroRuntimeSetting
   m_EditorClassIdentifier: 
-  HaasEffectInSeconds: 0.04
+  CombFilteringPreventionInSeconds: 0.04
+  LogCombFilteringWarning: 0
   DefaultFadeInEase: 2
   DefaultFadeOutEase: 11
   SeamlessFadeInEase: 8

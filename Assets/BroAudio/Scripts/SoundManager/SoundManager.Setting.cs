@@ -33,6 +33,6 @@ namespace Ami.BroAudio.Runtime
 		public static Ease SeamlessFadeOut => Instance.Setting.SeamlessFadeOutEase;
 		public static PitchShiftingSetting PitchSetting => Instance.Setting.PitchSetting;
 
-		public static float HaasEffectInSeconds => Instance.Setting.HaasEffectInSeconds;
+		public static float CombFilteringPreventionInSeconds => Instance.Setting.CombFilteringPreventionInSeconds;
 	}
 }

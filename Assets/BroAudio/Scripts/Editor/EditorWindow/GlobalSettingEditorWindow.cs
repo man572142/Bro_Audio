@@ -35,8 +35,8 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string SettingText = "Setting";
 		public const float Gap = 50f;
 		
-		public const string HaasEffectLabel = "Time to prevent Comb Filtering (Haas Effect)";
-		public const string PitchShiftingLabel = "Pitch Shifting Setting";
+		public const string CombFilteringLabel = "Time to prevent Comb Filtering";
+		public const string PitchShiftingLabel = "Pitch Shift Using";
 		public const string ResetSettingButtonText = "Reset To Factory Settings";
 		public const string AutoMatchTracksButtonText = "Auto-adding tracks to match audio voices.";
 		public const string AssetOutputPathLabel = "Asset Output Path";
@@ -60,7 +60,7 @@ namespace Ami.BroAudio.Editor.Setting
 		private int _currProjectSettingVoiceCount = -1;
 		private int _currentMixerTracksCount = -1;
 		private int _broVirtualTracksCount = Tools.BroAdvice.VirtualTrackCount;
-		private GUIContent _haasEffectGUIContent , _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent;
+		private GUIContent _combFilteringGUIContent , _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 		private AudioMixerGroup _duplicateTrackSource = null;
 		private AudioMixer _mixer = null;
@@ -119,7 +119,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void InitGUIContents()
 		{
-			_haasEffectGUIContent = new GUIContent(HaasEffectLabel, _instruction.GetText(Instruction.HaasEffectTooltip));
+			_combFilteringGUIContent = new GUIContent(CombFilteringLabel, _instruction.GetText(Instruction.CombFilteringTooltip));
 			_pitchGUIContent = new GUIContent(PitchShiftingLabel, _instruction.GetText(Instruction.PitchShiftingToolTip));
 			_audioVoicesGUIContent = new GUIContent(RealVoicesParameterName, _instruction.GetText(Instruction.AudioVoicesToolTip));
 			_virtualTracksGUIContent = new GUIContent(BroVirtualTracks, _instruction.GetText(Instruction.BroVirtualToolTip));
@@ -187,12 +187,10 @@ namespace Ami.BroAudio.Editor.Setting
 			tabWindowRect.yMax = drawPosition.yMax;
 			_currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab,_tabLabelHeight, _tabLabels,_tabLabelRatios);
 
-			DrawEmptyLine(2);
-
-			EditorGUI.indentLevel++;
-			
+			EditorGUI.indentLevel++;			
 			Rect tabPageScrollRect = new Rect(tabWindowRect.x, tabWindowRect.y + _tabLabelHeight, tabWindowRect.width, tabWindowRect.height - _tabLabelHeight);
 			_scrollPos = BeginScrollView(tabPageScrollRect, _scrollPos);
+			DrawEmptyLine(2);
 			if (RuntimeSetting != null)
 			{
 				switch (_currSelectedTab)
@@ -209,6 +207,7 @@ namespace Ami.BroAudio.Editor.Setting
 				}
 			}
 			EndScrollView();
+			EditorGUI.indentLevel--;
 		}
 
 		private Instruction GetInstructionEnum(OpenMessage message)
@@ -226,7 +225,7 @@ namespace Ami.BroAudio.Editor.Setting
         private void DrawAudioSetting(Rect drawPosition)
 		{
 			drawPosition.width -= Gap;
-			DrawHaasEffectSetting();
+			DrawCombFilteringSetting();
 			DrawPitchSetting();
 			DrawEmptyLine(1);
 
@@ -235,14 +234,25 @@ namespace Ami.BroAudio.Editor.Setting
 			DrawEmptyLine(1);
 			DrawAudioProjectSettings();
 
-			void DrawHaasEffectSetting()
+			void DrawCombFilteringSetting()
 			{
-				Rect haasRect = GetRectAndIterateLine(drawPosition);
-				EditorGUI.LabelField(haasRect, _haasEffectGUIContent);
+				Rect combRect = GetRectAndIterateLine(drawPosition);
+				EditorGUI.LabelField(combRect, _combFilteringGUIContent);
 
-				haasRect.width *= 0.5f;
-				haasRect.x += 150f;
-				RuntimeSetting.HaasEffectInSeconds = EditorGUI.FloatField(haasRect, " ", RuntimeSetting.HaasEffectInSeconds);
+				Rect fieldRect = new Rect(combRect) { width = 80f, x = combRect.x + EditorGUIUtility.labelWidth + 50f};
+				RuntimeSetting.CombFilteringPreventionInSeconds = EditorGUI.FloatField(fieldRect, RuntimeSetting.CombFilteringPreventionInSeconds);
+
+				Rect defaultButtonRect = new Rect(fieldRect) { x = fieldRect.xMax + 10f, width = 60f};
+				float defaultValue = Data.RuntimeSetting.FactorySettings.CombFilteringPreventionInSeconds;
+				EditorGUI.BeginDisabledGroup(RuntimeSetting.CombFilteringPreventionInSeconds == defaultValue);
+				if (GUI.Button(defaultButtonRect, "Default"))
+				{
+					RuntimeSetting.CombFilteringPreventionInSeconds = defaultValue;
+				}
+				EditorGUI.EndDisabledGroup();
+
+				RuntimeSetting.LogCombFilteringWarning = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition),"Log Warning If Occurs", RuntimeSetting.LogCombFilteringWarning);
+				DrawEmptyLine(1);
 			}
 
 			void DrawPitchSetting()

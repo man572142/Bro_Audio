@@ -100,6 +100,7 @@ namespace Ami.Extension
 
 		private static Rect[] SplitHorizontal(Rect origin, int count, float gap, Func<int, float> getRatio)
 		{
+			// todo: optimize with preAlloc mechanic 
 			Rect[] results = new Rect[count];
 			for (int i = 0; i < count; i++)
 			{

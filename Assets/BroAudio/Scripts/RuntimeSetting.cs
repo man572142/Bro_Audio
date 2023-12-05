@@ -14,7 +14,8 @@ namespace Ami.BroAudio.Data
 		public const string FileName = "BroRuntimeSetting";
 		public const string FilePath = FileName;
 
-		public float HaasEffectInSeconds = FactorySettings.HaasEffectInSeconds;
+		public float CombFilteringPreventionInSeconds = FactorySettings.CombFilteringPreventionInSeconds;
+		public bool LogCombFilteringWarning = true;
 		public Ease DefaultFadeInEase = FactorySettings.DefaultFadeInEase;
 		public Ease DefaultFadeOutEase = FactorySettings.DefaultFadeOutEase;
 		public Ease SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;
@@ -26,7 +27,8 @@ namespace Ami.BroAudio.Data
 #if UNITY_EDITOR
 		public void ResetToFactorySettings()
 		{
-			HaasEffectInSeconds = FactorySettings.HaasEffectInSeconds;
+			CombFilteringPreventionInSeconds = FactorySettings.CombFilteringPreventionInSeconds;
+			LogCombFilteringWarning = true;
 			DefaultFadeInEase = FactorySettings.DefaultFadeInEase;
 			DefaultFadeOutEase = FactorySettings.DefaultFadeOutEase;
 			SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;
@@ -37,7 +39,7 @@ namespace Ami.BroAudio.Data
 
 		public class FactorySettings
 		{
-			public const float HaasEffectInSeconds = 0.04f;
+			public const float CombFilteringPreventionInSeconds = 0.04f;
 			public const Ease DefaultFadeInEase = Ease.InCubic;
 			public const Ease DefaultFadeOutEase = Ease.OutSine;
 			public const Ease SeamlessFadeInEase = Ease.OutCubic;

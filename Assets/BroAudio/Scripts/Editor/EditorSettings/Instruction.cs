@@ -10,7 +10,7 @@
         AssetOutputPathPanelTtile,
 
 		// Settings/Audio
-        HaasEffectTooltip = 10,
+        CombFilteringTooltip = 10,
 		TracksAndVoicesNotMatchWarning,
 		AddTracksConfirmationDialog,
         AudioVoicesToolTip,

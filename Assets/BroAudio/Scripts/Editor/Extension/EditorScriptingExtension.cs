@@ -9,18 +9,13 @@ namespace Ami.Extension
 	public static class EditorScriptingExtension
 	{
 		public const float TwoSidesLabelOffsetY = 7f;
+		public const float IndentInPixel = 15f;
 
 		public struct MultiLabel
 		{
 			public string Main;
 			public string Left;
 			public string Right;
-		}
-
-		public struct TabView
-		{
-			public string Label;
-			public Action<Rect> OnDrawContent;
 		}
 
         public struct LabelWidthScope : IDisposable
@@ -308,24 +303,24 @@ namespace Ami.Extension
 			}
 		}
 
-		public static float DrawLogarithmicSlider_Horizontal(Rect position,float currentValue, float leftValue, float rightValue)
-		{
-			const float min = 0.0001f;
-			if (leftValue <= 0f)
-			{
-				//Debug.LogWarning($"The left value of the LogarithmicSlider should be greater than 0. It has been set to the default value of {min}");
-				leftValue = Mathf.Max(min, leftValue);
-			}
+		//public static float DrawLogarithmicSlider_Horizontal(Rect position,float currentValue, float leftValue, float rightValue)
+		//{
+		//	const float min = 0.0001f;
+		//	if (leftValue <= 0f)
+		//	{
+		//		//Debug.LogWarning($"The left value of the LogarithmicSlider should be greater than 0. It has been set to the default value of {min}");
+		//		leftValue = Mathf.Max(min, leftValue);
+		//	}
 
-			currentValue = currentValue == 0 ? leftValue : currentValue;
-			float logValue = Mathf.Log10(currentValue);
-			float logLeftValue = Mathf.Log10(leftValue);
-			float logRightValue = Mathf.Log10(rightValue);
+		//	currentValue = currentValue == 0 ? leftValue : currentValue;
+		//	float logValue = Mathf.Log10(currentValue);
+		//	float logLeftValue = Mathf.Log10(leftValue);
+		//	float logRightValue = Mathf.Log10(rightValue);
 
-			float logResult = GUI.HorizontalSlider(position, logValue, logLeftValue, logRightValue);
+		//	float logResult = GUI.HorizontalSlider(position, logValue, logLeftValue, logRightValue);
 
-			return Mathf.Pow(10,logResult);
-		}
+		//	return Mathf.Pow(10,logResult);
+		//}
 
 		public static int FontSizeToPixels(int fontSize)
 		{
@@ -350,8 +345,8 @@ namespace Ami.Extension
 
 		public static void Draw2SidesLabels(Rect position, MultiLabel labels)
 		{
-			float rightWordLength = 30f; // todo: calculate by word length?
-			Rect leftRect = new Rect(EditorGUIUtility.labelWidth, position.y + TwoSidesLabelOffsetY, EditorGUIUtility.fieldWidth, position.height);
+			float rightWordLength = 30f;
+			Rect leftRect = new Rect(position.x + EditorGUIUtility.labelWidth, position.y + TwoSidesLabelOffsetY, EditorGUIUtility.fieldWidth, position.height);
 			Rect rightRect = new Rect(position.xMax - EditorGUIUtility.fieldWidth - rightWordLength, position.y + TwoSidesLabelOffsetY, EditorGUIUtility.fieldWidth, position.height);
 
 			GUIStyle lowerLeftMiniLabel = new GUIStyle(EditorStyles.centeredGreyMiniLabel);
@@ -363,10 +358,10 @@ namespace Ami.Extension
 
 		public static int DrawTabsView(Rect position,int selectedTabIndex,float labelTabHeight, GUIContent[] labels, float[] ratios)
         {
-			if(Event.current.type == EventType.Repaint)
+			if (Event.current.type == EventType.Repaint)
 			{
-                GUIStyle frameBox = "FrameBox";
-                frameBox.Draw(position, false, false, false, false);
+				GUIStyle frameBox = "FrameBox";
+				frameBox.Draw(position, false, false, false, false);
 			}
 
 			// draw tab label
@@ -469,13 +464,6 @@ namespace Ami.Extension
 			max = EditorGUI.FloatField(maxFieldRect, max);
 			EditorGUI.MinMaxSlider(sliderRect, ref min, ref max, minLimit, maxLimit);
 			
-		}
-
-		public static void DrawVUMeter(Rect vuRect,Color maskColor)
-		{
-			vuRect.height *= 0.5f;
-			EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent(IconConstant.HorizontalVUMeter).image);
-			EditorGUI.DrawRect(vuRect, maskColor);
 		}
 	}
 }

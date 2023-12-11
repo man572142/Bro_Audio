@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditorInternal;
 using Ami.Extension;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Editor.Setting;
@@ -15,23 +16,31 @@ namespace Ami.BroAudio.Editor
 	[CustomPropertyDrawer(typeof(AudioEntity))]
 	public partial class AudioEntityPropertyDrawer : MiPropertyDrawer
 	{
+		public enum Tab { Clips, Settings}
+
 		public static event Action OnEntityNameChanged;
 
-		protected const float ClipPreviewHeight = 100f;
-		protected const float ClipPreviewPadding = 6f;
-		private const float _lowVolumeSnappingThreshold = 0.05f;
-		private const float _highVolumeSnappingThreshold = 0.2f;
-		private const string _dbValueStringFormat = "0.##";
-		private const float _defaultFieldRatio = 0.9f;
+		private const float ClipPreviewHeight = 100f;
+		private const float LowVolumeSnappingThreshold = 0.05f;
+		private const float HighVolumeSnappingThreshold = 0.2f;
+		private const string DbValueStringFormat = "0.##";
+		private const float DefaultFieldRatio = 0.9f;
 
+		private readonly GUIContent[] _tabLabelGUIContents = { new GUIContent(nameof(Tab.Clips)), new GUIContent(nameof(Tab.Settings)) };
+		private readonly float[] _tabLabelRatios = new float[] { 0.5f, 0.5f };
 		private GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume),"The playback volume of this clip");
 
 		private Dictionary<string, ReorderableClips> _reorderableClipsDict = new Dictionary<string, ReorderableClips>();
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper(ClipPreviewHeight);
 		private Dictionary<string, ITransport> _clipTransport = new Dictionary<string, ITransport>();
+		private Dictionary<string, Tab> _currSelectedTabDict = new Dictionary<string, Tab>();
 		
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
+		public float ClipPreviewPadding => ReorderableList.Defaults.padding;
+		public float SnapVolumePadding => ReorderableList.Defaults.padding;
+
+		private float TabLabelHeight => SingleLineSpace * 1.5f;
 
 		protected override void OnEnable()
 		{
@@ -71,82 +80,118 @@ namespace Ami.BroAudio.Editor
 			}
 
 			DrawEntityNameField(position, nameProp);
-			DrawAdditionalBaseProperties(position, property, setting);
 
-            #region Clip Properties
-            ReorderableClips currClipList = DrawReorderableClipsList(position, property, OnClipChanged);
-			SerializedProperty currSelectClip = currClipList.CurrentSelectedClip;
-			if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
+			GetOrAddTabDict(property.propertyPath, out Tab tab);
+			Rect tabViewRect = GetRectAndIterateLine(position);
+			tabViewRect.height = GetTabWindowHeight();
+			tab = (Tab)DrawTabsView(tabViewRect, (int)tab, TabLabelHeight, _tabLabelGUIContents, _tabLabelRatios);
+			_currSelectedTabDict[property.propertyPath] = tab;
+			DrawEmptyLine(1);
+
+			position.x += IndentInPixel;
+			position.width -= IndentInPixel * 2f;
+
+			switch (tab)
 			{
-                DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport,out float delay);
-				DrawAdditionalClipProperties(position, currSelectClip, setting);
-				if (setting.DrawedProperty.Contains(DrawedProperty.ClipPreview))
-				{
-					SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioEntity.EditorPropertyName.IsShowClipPreview);
-                    isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
-					bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
-					if (isShowPreview)
+				case Tab.Clips:
+					ReorderableClips currClipList = DrawReorderableClipsList(position, property, OnClipChanged);
+					SerializedProperty currSelectClip = currClipList.CurrentSelectedClip;
+					if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
 					{
-						_clipPropHelper.DrawClipPreview(GetNextLineRect(position), transport, audioClip, currSelectClip.propertyPath);
-						Offset += ClipPreviewHeight + ClipPreviewPadding;
+						DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport, out float delay);
+						DrawAdditionalClipProperties(position, currSelectClip, setting);
+						if (setting.DrawedProperty.Contains(DrawedProperty.ClipPreview))
+						{
+							SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioEntity.EditorPropertyName.IsShowClipPreview);
+							isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
+							bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
+							if (isShowPreview)
+							{
+								_clipPropHelper.DrawClipPreview(GetNextLineRect(position), transport, audioClip, currSelectClip.propertyPath);
+								Offset += ClipPreviewHeight + ClipPreviewPadding;
+							}
+						}
 					}
-				}
+					break;
+				case Tab.Settings:
+					Offset += SnapVolumePadding;
+					DrawAdditionalBaseProperties(position, property, setting);
+					break;
 			}
-			#endregion
-			
-			// todo: looks ugly now, needs upgrade
-			if (setting.DrawedProperty.Contains(DrawedProperty.SpatialSettings) && GUI.Button(GetRectAndIterateLine(position), "Spatial Setting"))
-			{
-                SerializedProperty settingsProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
-                SpatialSettingsEditorWindow.ShowWindow(settingsProp, OnSetSpatialSettingBack);
-                GUIUtility.ExitGUI();
-            }
 
-			void OnSetSpatialSettingBack(SpatialSettings settings)
-            {
-				SerializedProperty prop = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.StereoPan).floatValue = settings.StereoPan;
-                GetSpatialSettingsProperty(prop, SpatialPropertyType.DopplerLevel).floatValue = settings.DopplerLevel;
-                GetSpatialSettingsProperty(prop, SpatialPropertyType.MinDistance).floatValue = settings.MinDistance;
-                GetSpatialSettingsProperty(prop, SpatialPropertyType.MaxDistance).floatValue = settings.MaxDistance;
-                GetSpatialSettingsProperty(prop, SpatialPropertyType.SpatialBlend).animationCurveValue = settings.SpatialBlend;
-                GetSpatialSettingsProperty(prop, SpatialPropertyType.ReverbZoneMix).animationCurveValue = settings.ReverbZoneMix;
-                GetSpatialSettingsProperty(prop, SpatialPropertyType.Spread).animationCurveValue = settings.Spread;
-                GetSpatialSettingsProperty(prop, SpatialPropertyType.CustomRolloff).animationCurveValue = settings.CustomRolloff;
-                prop.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-            }
-        }
+			float GetTabWindowHeight()
+			{
+				float height = TabLabelHeight;
+				switch (tab)
+				{
+					case Tab.Clips:
+						height += GetClipListHeight(property, setting);
+						break;
+					case Tab.Settings:
+						height += GetAdditionalBaseProtiesLineCount(property, setting) * SingleLineSpace + GetAdditionalBasePropertiesOffest(setting);
+						break; 
+				}
+				height += SingleLineSpace * 0.5f; // compensation for tab label's half line height
+				return height;
+			}
+		}
+
+		private void GetOrAddTabDict(string propertyPath, out Tab tab)
+		{
+			if(!_currSelectedTabDict.TryGetValue(propertyPath,out tab))
+			{
+				_currSelectedTabDict[propertyPath] = Tab.Clips;
+			}
+		}
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
-            float height = SingleLineSpace; // Header
+			float height = SingleLineSpace; // Header
 
 			if (property.isExpanded && TryGetAudioTypeSetting(property, out var setting))
 			{
-				height += SingleLineSpace; // Name
-                height += GetAdditionalBaseProtiesLineCount(property, setting) * SingleLineSpace + GetAdditionalBasePropertiesOffest(setting);
-				if (_reorderableClipsDict.TryGetValue(property.propertyPath, out ReorderableClips clipList))
+				height += ReorderableList.Defaults.padding; // reorderableList element padding;
+				height += TabLabelHeight + SingleLineSpace * 0.5f; // Tab View + compensation
+				GetOrAddTabDict(property.propertyPath, out Tab tab);
+				switch (tab)
 				{
-					bool isShowClipProp =
-						clipList.CurrentSelectedClip != null &&
-						clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip _);
-					bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioEntity.EditorPropertyName.IsShowClipPreview).boolValue;
-
-                    height += clipList.Height;
-                    height += isShowClipProp?  GetAdditionalClipPropertiesLineCount(property, setting) * SingleLineSpace : 0f;
-                    height += isShowClipPreview ? ClipPreviewHeight + ClipPreviewPadding : 0f;
+					case Tab.Clips:
+						height += GetClipListHeight(property, setting);
+						break;
+					case Tab.Settings:
+						height += GetAdditionalBaseProtiesLineCount(property, setting) * SingleLineSpace + GetAdditionalBasePropertiesOffest(setting);
+						break;
 				}
 			}
 			return height;
 		}
-        #endregion
 
-        private void DrawEntityNameField(Rect position, SerializedProperty nameProp)
+		private float GetClipListHeight(SerializedProperty property, EditorSetting.AudioTypeSetting setting)
+		{
+			float height = 0f;
+			if (_reorderableClipsDict.TryGetValue(property.propertyPath, out ReorderableClips clipList))
+			{
+				bool isShowClipProp =
+					clipList.CurrentSelectedClip != null &&
+					clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip _);
+				bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioEntity.EditorPropertyName.IsShowClipPreview).boolValue;
+
+				height += clipList.Height;
+				height += isShowClipProp ? GetAdditionalClipPropertiesLineCount(property, setting) * SingleLineSpace : 0f;
+				height += isShowClipPreview ? ClipPreviewHeight + ClipPreviewPadding : 0f;
+			}
+			return height;
+		}
+		#endregion
+
+		private void DrawEntityNameField(Rect position, SerializedProperty nameProp)
         {
             EditorGUI.BeginChangeCheck();
-			Rect nameRect = GetRectAndIterateLine(position);
-			nameRect.width *= _defaultFieldRatio;
-			nameProp.stringValue = EditorGUI.TextField(nameRect, nameof(AudioEntity.Name), nameProp.stringValue);
+			Rect nameRect = new Rect(position) { height = EditorGUIUtility.singleLineHeight};
+			nameRect.x += EditorGUIUtility.labelWidth;
+			nameRect.width = nameRect.width * DefaultFieldRatio - EditorGUIUtility.labelWidth;
+			nameRect.y += 1f;
+			nameProp.stringValue = EditorGUI.TextField(nameRect, nameProp.stringValue);
             if (EditorGUI.EndChangeCheck())
             {
                 OnEntityNameChanged?.Invoke();
@@ -183,7 +228,7 @@ namespace Ami.BroAudio.Editor
 			if (CanDraw(DrawedProperty.Volume))
 			{
                 Rect volRect = GetRectAndIterateLine(position);
-				volRect.width *= _defaultFieldRatio;
+				volRect.width *= DefaultFieldRatio;
                 volumeProp.floatValue = DrawVolumeSlider(volRect, _volumeLabel, volumeProp.floatValue, snapVolProp.boolValue, () =>
                 {
                     snapVolProp.boolValue = !snapVolProp.boolValue;
@@ -200,14 +245,14 @@ namespace Ami.BroAudio.Editor
 			{
 				SerializedTransport wrapper = transport as SerializedTransport;
                 Rect playbackRect = GetRectAndIterateLine(position);
-                playbackRect.width *= _defaultFieldRatio;
+                playbackRect.width *= DefaultFieldRatio;
                 _clipPropHelper.DrawPlaybackPositionField(playbackRect, transport);
 			}
 
             if (CanDraw(DrawedProperty.Fade))
 			{
                 Rect fadingRect = GetRectAndIterateLine(position);
-                fadingRect.width *= _defaultFieldRatio;
+                fadingRect.width *= DefaultFieldRatio;
                 _clipPropHelper.DrawFadingField(fadingRect, transport);
             }
 
@@ -253,7 +298,7 @@ namespace Ami.BroAudio.Editor
 			{
 				value = Mathf.Log10(value) * 20f;
 				string plusSymbol = value > 0 ? "+" : string.Empty;
-				string volText = plusSymbol + value.ToString(_dbValueStringFormat) + "dB";
+				string volText = plusSymbol + value.ToString(DbValueStringFormat) + "dB";
 				EditorGUI.LabelField(dbRect, volText);
 			}
 
@@ -300,8 +345,8 @@ namespace Ami.BroAudio.Editor
 			bool CanSnap(float value)
 			{
 				float difference = value - FullVolume;
-				bool isInLowVolumeSnappingRange = difference < 0f && difference * -1f <= _lowVolumeSnappingThreshold;
-				bool isInHighVolumeSnappingRange = difference > 0f && difference <= _highVolumeSnappingThreshold;
+				bool isInLowVolumeSnappingRange = difference < 0f && difference * -1f <= LowVolumeSnappingThreshold;
+				bool isInHighVolumeSnappingRange = difference > 0f && difference <= HighVolumeSnappingThreshold;
 				return isInLowVolumeSnappingRange || isInHighVolumeSnappingRange;
 			}
 #endif
@@ -318,5 +363,5 @@ namespace Ami.BroAudio.Editor
 		{
 			_clipTransport.Remove(clipPropPath);
 		}
-    }
+	}
 }

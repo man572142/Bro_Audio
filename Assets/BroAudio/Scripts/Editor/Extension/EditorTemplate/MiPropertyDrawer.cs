@@ -11,7 +11,6 @@ namespace Ami.Extension
 		public int DrawLineCount { get; set; }
         public float Offset { get; set; }
         public bool IsEnable { get; protected set; }
-		
 
 		protected virtual void OnEnable()
 		{

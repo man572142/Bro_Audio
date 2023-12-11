@@ -52,7 +52,6 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string BroVirtualTracks = "Bro Virtual Tracks";
 
 		private readonly string _titleText = nameof(BroAudio).ToBold().SetSize(30).SetColor(MainTitleColor);
-		private readonly float _tabLabelHeight = EditorGUIUtility.singleLineHeight * 2f;
 		private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
 		private GUIContent[] _tabLabels = null;
@@ -70,6 +69,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
 		public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
+		private float TabLabelHeight => EditorGUIUtility.singleLineHeight * 2f;
 
 		private AudioMixer AudioMixer
 		{
@@ -185,10 +185,10 @@ namespace Ami.BroAudio.Editor.Setting
 
 			Rect tabWindowRect = GetRectAndIterateLine(drawPosition);
 			tabWindowRect.yMax = drawPosition.yMax;
-			_currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab,_tabLabelHeight, _tabLabels,_tabLabelRatios);
+			_currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab, TabLabelHeight, _tabLabels,_tabLabelRatios);
 
 			EditorGUI.indentLevel++;			
-			Rect tabPageScrollRect = new Rect(tabWindowRect.x, tabWindowRect.y + _tabLabelHeight, tabWindowRect.width, tabWindowRect.height - _tabLabelHeight);
+			Rect tabPageScrollRect = new Rect(tabWindowRect.x, tabWindowRect.y + TabLabelHeight, tabWindowRect.width, tabWindowRect.height - TabLabelHeight);
 			_scrollPos = BeginScrollView(tabPageScrollRect, _scrollPos);
 			DrawEmptyLine(2);
 			if (RuntimeSetting != null)

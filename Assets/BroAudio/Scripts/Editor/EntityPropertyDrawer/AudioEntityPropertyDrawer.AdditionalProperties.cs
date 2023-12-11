@@ -8,6 +8,7 @@ using static Ami.Extension.EditorScriptingExtension;
 using static Ami.Extension.FlagsExtension;
 using static Ami.BroAudio.Editor.EditorSetting;
 using static Ami.BroAudio.Data.AudioEntity;
+using static Ami.BroAudio.Editor.BroEditorUtility;
 using Ami.BroAudio.Runtime;
 using System;
 
@@ -48,10 +49,8 @@ namespace Ami.BroAudio.Editor
 		private float GetAdditionalBasePropertiesOffest(AudioTypeSetting setting)
 		{
 			float offset = 0f;
-			if(setting.DrawedProperty.Contains(DrawedProperty.Priority))
-			{
-				offset += TwoSidesLabelOffsetY;
-			}
+			offset += setting.DrawedProperty.Contains(DrawedProperty.Priority) ? TwoSidesLabelOffsetY : 0f;
+			offset += setting.DrawedProperty.Contains(DrawedProperty.MasterVolume) ? SnapVolumePadding : 0f;
 			return offset;
 		}
 
@@ -65,16 +64,20 @@ namespace Ami.BroAudio.Editor
 		private void DrawAdditionalBaseProperties(Rect position, SerializedProperty property, AudioTypeSetting setting)
 		{
 			DrawMasterVolume();
-			DrawLoopProperty();
 			DrawPitchProperty();
 			DrawPriorityProperty();
+			DrawLoopProperty();
+			DrawSpatialSettings();
 
 			void DrawMasterVolume()
 			{
-				// todo: add drawed property?
-				DrawEmptyLine(1);
+				if (!setting.DrawedProperty.Contains(DrawedProperty.MasterVolume))
+				{
+					return;
+				}
+
 				Rect masterVolRect = GetRectAndIterateLine(position);
-				masterVolRect.width *= _defaultFieldRatio;
+				masterVolRect.width *= DefaultFieldRatio;
 				SerializedProperty masterVolProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.MasterVolume));
 				SerializedProperty snapVolProp = property.FindPropertyRelative(EditorPropertyName.SnapToFullVolume);
 
@@ -89,7 +92,7 @@ namespace Ami.BroAudio.Editor
 #if !UNITY_WEBGL
 					if(BroEditorUtility.EditorSetting.ShowVUColorOnVolumeSlider)
 					{
-						onDrawVU = sliderRect => DrawVUMeter(sliderRect, Setting.BroAudioGUISetting.VUMaskColor);
+						onDrawVU = sliderRect => BroEditorUtility.DrawVUMeter(sliderRect, Setting.BroAudioGUISetting.VUMaskColor);
 					}
 #endif
 					// todo: need logarithm
@@ -132,7 +135,7 @@ namespace Ami.BroAudio.Editor
 				}
 				
 				Rect pitchRect = GetRectAndIterateLine(position);
-				pitchRect.width *= _defaultFieldRatio;
+				pitchRect.width *= DefaultFieldRatio;
 
 				bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
 				var pitchSetting = isWebGL? PitchShiftingSetting.AudioSource : BroEditorUtility.RuntimeSetting.PitchSetting;
@@ -194,13 +197,38 @@ namespace Ami.BroAudio.Editor
 				if (setting.DrawedProperty.Contains(DrawedProperty.Priority))
 				{
 					Rect priorityRect = GetRectAndIterateLine(position);
-					priorityRect.width *= _defaultFieldRatio;
+					priorityRect.width *= DefaultFieldRatio;
 					SerializedProperty priorityProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Priority));
 
 					MultiLabel multiLabels = new MultiLabel() { Main = nameof(AudioEntity.Priority), Left = "High", Right = "Low"};
 					priorityProp.intValue = (int)Draw2SidesLabelSlider(priorityRect, multiLabels, priorityProp.intValue, AudioConstant.MinPriority, AudioConstant.MaxPriority);
 					Offset += TwoSidesLabelOffsetY;
 				}
+			}
+
+			void DrawSpatialSettings()
+			{
+				if (setting.DrawedProperty.Contains(DrawedProperty.SpatialSettings)
+					&& GUI.Button(GetRectAndIterateLine(position), "Open Spatial Setting"))
+				{
+					SerializedProperty settingsProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
+					SpatialSettingsEditorWindow.ShowWindow(settingsProp, OnSetSpatialSettingBack);
+					GUIUtility.ExitGUI();
+				}
+			}
+
+			void OnSetSpatialSettingBack(SpatialSettings settings)
+			{
+				SerializedProperty prop = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.StereoPan).floatValue = settings.StereoPan;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.DopplerLevel).floatValue = settings.DopplerLevel;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.MinDistance).floatValue = settings.MinDistance;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.MaxDistance).floatValue = settings.MaxDistance;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.SpatialBlend).animationCurveValue = settings.SpatialBlend;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.ReverbZoneMix).animationCurveValue = settings.ReverbZoneMix;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.Spread).animationCurveValue = settings.Spread;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.CustomRolloff).animationCurveValue = settings.CustomRolloff;
+				prop.serializedObject.ApplyModifiedPropertiesWithoutUndo();
 			}
 		}
 

@@ -5,7 +5,9 @@ using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using Ami.Extension;
 using static Ami.Extension.StringExtension;
+using static Ami.Extension.AudioConstant;
 
 namespace Ami.BroAudio.Editor
 {
@@ -166,6 +168,46 @@ namespace Ami.BroAudio.Editor
         public static bool Contains(this DrawedProperty flags, DrawedProperty targetFlag)
 		{
             return ((int)flags & (int)targetFlag) != 0;
+        }
+
+        public static void DrawVUMeter(Rect vuRect, Color maskColor)
+        {
+            vuRect.height *= 0.5f;
+            EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent(IconConstant.HorizontalVUMeter).image);
+            EditorGUI.DrawRect(vuRect, maskColor);
+        }
+
+        public static void DrawDbVolumeSlider(Rect sliderRect,Rect fieldRect,ref float currentValue)
+        {
+            float sliderFullScale = FullVolume / (FullDecibelVolume - MinDecibelVolume / DecibelVoulumeFullScale);
+
+            float sliderValue = ConvertToSliderValue(currentValue, sliderFullScale);
+            float newSliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
+            bool hasSliderChanged = sliderValue != newSliderValue;
+
+            float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? ConvertToNomalizedVolume(newSliderValue, sliderFullScale) : currentValue);
+            currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
+
+            float ConvertToSliderValue(float vol, float sliderFullScale)
+            {
+                if (vol > FullVolume)
+                {
+                    float db = vol.ToDecibel(true);
+                    return (db - MinDecibelVolume) / DecibelVoulumeFullScale * sliderFullScale;
+                }
+                return vol;
+
+            }
+
+            float ConvertToNomalizedVolume(float sliderValue, float sliderFullScale)
+            {
+                if (sliderValue > FullVolume)
+                {
+                    float db = MinDecibelVolume + (sliderValue / sliderFullScale) * DecibelVoulumeFullScale;
+                    return db.ToNormalizeVolume(true);
+                }
+                return sliderValue;
+            }
         }
     }
 }

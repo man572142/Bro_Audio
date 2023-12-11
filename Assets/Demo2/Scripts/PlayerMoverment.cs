@@ -51,16 +51,15 @@ namespace Ami.BroAudio.Demo
             float mouseX = Input.GetAxis("Mouse X") * _yawRotationSensitivity;
             float mouseY = Input.GetAxis("Mouse Y") * _pitchRotationSensitivity;
 
-            // this can only constraint the mouse movement b
-            if (mouseX != 0f && _camDetector.HasCollisionHorizontal(mouseX))
-			{
-                mouseX = 0f;
-			}
+   //         if (mouseX != 0f && _camDetector.HasCollisionHorizontal(mouseX))
+			//{
+   //             mouseX = 0f;
+			//}
 
-            if(mouseY != 0f && _camDetector.HasCollisionVertical(mouseY))
-			{
-                mouseY = 0f;
-			}
+   //         if(mouseY != 0f && _camDetector.HasCollisionVertical(mouseY))
+			//{
+   //             mouseY = 0f;
+			//}
 
             _rotationX = ClampAngle(_rotationX - mouseY, _minPitchAngle, _maxPitchAngle);
             _rotationY = ClampAngle(_rotationY + mouseX, float.MinValue, float.MaxValue);

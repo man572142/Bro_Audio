@@ -14,6 +14,9 @@ namespace Ami.BroAudio.Editor
 	{
 		public Action<string> OnAudioClipChanged;
 
+		private readonly float[] _headerRatio = { 0.3f, 0.4f, 0.18f, 0.12f };
+
+		private Rect[] _headerRects = null;
 		private ReorderableList _reorderableList;
 		private SerializedProperty _playModeProp;
 
@@ -23,6 +26,7 @@ namespace Ami.BroAudio.Editor
 
 		private int _currSelectedClipIndex = -1;
 		private SerializedProperty _currSelectedClip;
+		
 		public SerializedProperty CurrentSelectedClip
 		{
 			get
@@ -134,27 +138,28 @@ namespace Ami.BroAudio.Editor
 		private void OnDrawHeader(Rect rect)
 		{
 			HandleClipsDragAndDrop(rect);
-			float[] ratio = { 0.3f, 0.4f, 0.18f, 0.12f };
-			EditorScriptingExtension.SplitRectHorizontal(rect, 15f, out Rect[] newRects, ratio);
 
-            EditorGUI.LabelField(newRects[0], "Clips");
+			_headerRects = _headerRects == null ? new Rect[_headerRatio.Length] : _headerRects;
+			EditorScriptingExtension.SplitRectHorizontal(rect, 15f, _headerRects, _headerRatio);
+
+            EditorGUI.LabelField(_headerRects[0], "Clips");
             if (IsMulticlips)
             {
                 GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
                 popupStyle.alignment = TextAnchor.MiddleLeft;
                 MulticlipsPlayMode currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
-                _playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(newRects[1], currentPlayMode, popupStyle);
+                _playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(_headerRects[1], currentPlayMode, popupStyle);
                 currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
                 switch (currentPlayMode)
                 {
                     case MulticlipsPlayMode.Sequence:
-                        EditorGUI.LabelField(newRects[ratio.Length - 1], "Index");
+                        EditorGUI.LabelField(_headerRects[_headerRatio.Length - 1], "Index");
                         break;
                     case MulticlipsPlayMode.Random:
-                        EditorGUI.LabelField(newRects[ratio.Length - 1], "Weight");
+                        EditorGUI.LabelField(_headerRects[_headerRatio.Length - 1], "Weight");
                         break;
                 }
-                EditorGUI.LabelField(newRects[1].DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
+                EditorGUI.LabelField(_headerRects[1].DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
             }
         }
 

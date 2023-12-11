@@ -64,7 +64,8 @@ namespace Ami.BroAudio.Editor.Setting
 		private AudioMixerGroup _duplicateTrackSource = null;
 		private AudioMixer _mixer = null;
 		private Vector2 _scrollPos = default;
-		private float _demoSliderValue = 1f; 
+		private float _demoSliderValue = 1f;
+		private Rect[] _tabPreAllocRects = null;
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
@@ -185,7 +186,8 @@ namespace Ami.BroAudio.Editor.Setting
 
 			Rect tabWindowRect = GetRectAndIterateLine(drawPosition);
 			tabWindowRect.yMax = drawPosition.yMax;
-			_currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab, TabLabelHeight, _tabLabels,_tabLabelRatios);
+			_tabPreAllocRects = _tabLabelRatios == null ? new Rect[_tabLabelRatios.Length] : _tabPreAllocRects;
+			_currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab, TabLabelHeight, _tabLabels,_tabLabelRatios, _tabPreAllocRects);
 
 			EditorGUI.indentLevel++;			
 			Rect tabPageScrollRect = new Rect(tabWindowRect.x, tabWindowRect.y + TabLabelHeight, tabWindowRect.width, tabWindowRect.height - TabLabelHeight);

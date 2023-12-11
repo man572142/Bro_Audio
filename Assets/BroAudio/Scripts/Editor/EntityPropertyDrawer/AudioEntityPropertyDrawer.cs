@@ -29,6 +29,7 @@ namespace Ami.BroAudio.Editor
 		private readonly GUIContent[] _tabLabelGUIContents = { new GUIContent(nameof(Tab.Clips)), new GUIContent(nameof(Tab.Settings)) };
 		private readonly float[] _tabLabelRatios = new float[] { 0.5f, 0.5f };
 		private GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume),"The playback volume of this clip");
+		private Rect[] _tabPreAllocRects = null;
 
 		private Dictionary<string, ReorderableClips> _reorderableClipsDict = new Dictionary<string, ReorderableClips>();
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper(ClipPreviewHeight);
@@ -84,7 +85,8 @@ namespace Ami.BroAudio.Editor
 			GetOrAddTabDict(property.propertyPath, out Tab tab);
 			Rect tabViewRect = GetRectAndIterateLine(position);
 			tabViewRect.height = GetTabWindowHeight();
-			tab = (Tab)DrawTabsView(tabViewRect, (int)tab, TabLabelHeight, _tabLabelGUIContents, _tabLabelRatios);
+			_tabPreAllocRects = _tabLabelRatios == null ? new Rect[_tabLabelRatios.Length] : _tabPreAllocRects;
+			tab = (Tab)DrawTabsView(tabViewRect, (int)tab, TabLabelHeight, _tabLabelGUIContents, _tabLabelRatios, _tabPreAllocRects);
 			_currSelectedTabDict[property.propertyPath] = tab;
 			DrawEmptyLine(1);
 

@@ -65,9 +65,9 @@ namespace Ami.Extension
 			rect2 = new Rect(rect1.xMax + gap, origin.y, origin.width * (1 - firstRatio) - halfGap, origin.height);
 		}
 
-		public static void SplitRectHorizontal(Rect origin, int count, float gap, out Rect[] results)
+		public static void SplitRectHorizontal(Rect origin, int count, float gap, Rect[] resultRects)
 		{
-			results = SplitHorizontal(origin, count, gap, index => 
+			SplitHorizontal(origin, resultRects, gap, index => 
 			{
 				float ratio = 1f / count;
 				if (index == count - 1)
@@ -81,31 +81,32 @@ namespace Ami.Extension
 			});
 		}
 
-		public static void SplitRectHorizontal(Rect origin,float gap, out Rect[] results,params float[] ratios)
+		public static void SplitRectHorizontal(Rect origin,float gap, Rect[] resultRects,params float[] ratios)
 		{
-			results = null;
 			if (ratios.Sum() != 1)
 			{
 				Debug.LogError("[Editor] Split ratio's sum should be 1");
 				return;
 			}
 
-			results = SplitHorizontal(origin,ratios.Length,gap, index => ratios[index]);
+			SplitHorizontal(origin, resultRects, gap, index => ratios[index]);
 		}
 
-		private static Rect[] SplitHorizontal(Rect origin, int count, float gap, Func<int, float> getRatio)
+		private static void SplitHorizontal(Rect origin, Rect[] resultRects, float gap, Func<int, float> getRatio)
 		{
-			// todo: optimize with preAlloc mechanic 
-			Rect[] results = new Rect[count];
-			for (int i = 0; i < count; i++)
+			if(resultRects == null)
 			{
-				float offsetWidth = i == 0 || i == count - 1 ? gap : gap * 0.5f;
-				float newWidth = origin.width * getRatio.Invoke(i) - offsetWidth;
-				float newX = i > 0 ? results[i - 1].xMax + gap : origin.x;
-				results[i] = new Rect(newX, origin.y, newWidth, origin.height);
+				Debug.LogError("Rects array is null!");
+				return;
 			}
 
-			return results;
+			for (int i = 0; i < resultRects.Length; i++)
+			{
+				float offsetWidth = i == 0 || i == resultRects.Length - 1 ? gap : gap * 0.5f;
+				float newWidth = origin.width * getRatio.Invoke(i) - offsetWidth;
+				float newX = i > 0 ? resultRects[i - 1].xMax + gap : origin.x;
+				resultRects[i] = new Rect(newX, origin.y, newWidth, origin.height);
+			}
 		}
 
 		public static void SplitRectVertical(Rect origin, float firstRatio, float gap, out Rect rect1, out Rect rect2)
@@ -115,25 +116,22 @@ namespace Ami.Extension
 			rect2 = new Rect(origin.x, rect1.yMax + gap, origin.width, origin.height * (1 - firstRatio) - halfGap);
 		}
 
-		public static void SplitRectVertical(Rect origin, float gap, out Rect[] outputRects, params float[] ratios)
+		public static void SplitRectVertical(Rect origin, float gap, Rect[] resultRects, params float[] ratios)
 		{
 			if (ratios.Sum() != 1)
 			{
 				Debug.LogError("[Editor] Split ratio's sum should be 1");
-				outputRects = null;
 				return;
 			}
 
-			Rect[] results = new Rect[ratios.Length];
-
-			for (int i = 0; i < results.Length; i++)
+			resultRects = resultRects == null ? new Rect[ratios.Length] : resultRects;
+			for (int i = 0; i < resultRects.Length; i++)
 			{
-				float offsetHeight = i == 0 || i == results.Length - 1 ? gap : gap * 0.5f;
+				float offsetHeight = i == 0 || i == resultRects.Length - 1 ? gap : gap * 0.5f;
 				float newHeight = origin.height * ratios[i] - offsetHeight;
-				float newY = i > 0 ? results[i - 1].yMax + gap : origin.y;
-				results[i] = new Rect(origin.x,newY, origin.width,newHeight);
+				float newY = i > 0 ? resultRects[i - 1].yMax + gap : origin.y;
+				resultRects[i] = new Rect(origin.x,newY, origin.width,newHeight);
 			}
-			outputRects = results;
 		}
 
 		public static Rect DissolveHorizontal(this Rect origin,float dissolveRatio)
@@ -356,7 +354,7 @@ namespace Ami.Extension
 			EditorGUI.LabelField(rightRect, labels.Right, lowerLeftMiniLabel);
 		}
 
-		public static int DrawTabsView(Rect position,int selectedTabIndex,float labelTabHeight, GUIContent[] labels, float[] ratios)
+		public static int DrawTabsView(Rect position,int selectedTabIndex,float labelTabHeight, GUIContent[] labels, float[] ratios, Rect[] preAllocRects = null)
         {
 			if (Event.current.type == EventType.Repaint)
 			{
@@ -367,7 +365,9 @@ namespace Ami.Extension
 			// draw tab label
 			Rect tabRect = new Rect(position);
 			tabRect.height = labelTabHeight;
-            SplitRectHorizontal(tabRect, 0f, out Rect[] tabRects, ratios);
+
+			Rect[] tabRects = preAllocRects == null ? new Rect[ratios.Length] : preAllocRects;
+            SplitRectHorizontal(tabRect, 0f, tabRects, ratios);
             for (int i = 0; i < tabRects.Length; i++)
             {
                 bool oldState = selectedTabIndex == i;
@@ -463,7 +463,6 @@ namespace Ami.Extension
 			min = EditorGUI.FloatField(minFieldRect,min);
 			max = EditorGUI.FloatField(maxFieldRect, max);
 			EditorGUI.MinMaxSlider(sliderRect, ref min, ref max, minLimit, maxLimit);
-			
 		}
 	}
 }

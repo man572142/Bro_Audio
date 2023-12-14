@@ -15,7 +15,6 @@ namespace Ami.BroAudio.Runtime
         public const float UseEntitySetting = -1f;
         public const float Immediate = 0f;
 
-
         public event Action<AudioPlayer> OnRecycle;
 
         [SerializeField] private AudioSource AudioSource = null;
@@ -26,6 +25,7 @@ namespace Ami.BroAudio.Runtime
         private string _sendParaName = null;
         private string _pitchParaName = null;
         private bool _isUsingEffect = false;
+        private string _currTrackName = null;
 
         public bool IsPlaying => AudioSource.isPlaying;
         public bool IsStopping { get; private set; }
@@ -37,13 +37,13 @@ namespace Ami.BroAudio.Runtime
         {
             get
 			{
-                if(_isUsingEffect)
+                if (_isUsingEffect)
 				{
                     return _sendParaName;
 				}
                 else if(AudioTrack)
 				{
-                    return AudioTrack.name;
+                    return _currTrackName;
                 }
                 return string.Empty;
 			}
@@ -55,8 +55,9 @@ namespace Ami.BroAudio.Runtime
             set
 			{
                 AudioSource.outputAudioMixerGroup = value;
-                _sendParaName = value == null ? null : AudioSource.outputAudioMixerGroup.name + SendParaNameSuffix;
-                _pitchParaName = value == null ? null : AudioSource.outputAudioMixerGroup.name + PitchParaNameSuffix;
+                _currTrackName = value == null? null : value.name;
+                _sendParaName = value == null ? null : _currTrackName + SendParaNameSuffix;
+                _pitchParaName = value == null ? null : _currTrackName + PitchParaNameSuffix;
             }
         }
 
@@ -70,7 +71,7 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        public void SetMixer(AudioMixer mixer)
+		public void SetMixer(AudioMixer mixer)
 		{
             _audioMixer = mixer;
 		}
@@ -172,7 +173,7 @@ namespace Ami.BroAudio.Runtime
 			float mainVol = _isUsingEffect ? AudioConstant.MinDecibelVolume : MixerDecibelVolume;
 
 			_audioMixer.SetFloat(_sendParaName, sendVol);
-			_audioMixer.SetFloat(AudioTrack.name, mainVol);
+			_audioMixer.SetFloat(_currTrackName, mainVol);
 		}
 
         IMusicPlayer IMusicDecoratable.AsBGM()

@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using Ami.BroAudio.Data;
 using static Ami.BroAudio.Utility;
 using System.Collections.Generic;
 using Ami.Extension;
@@ -58,9 +57,7 @@ namespace Ami.BroAudio.Runtime
                 player.SetVolume(audioTypePref.Volume, 0f);
             }
 
-            var entity = _audioBank[id];
-            var clip = entity.Clip;
-            player.Play(id, clip, pref);
+            player.Play(id, pref.Entity.Clip, pref);
 
             AudioPlayerInstanceWrapper wrapper = new AudioPlayerInstanceWrapper(player);
 
@@ -71,7 +68,6 @@ namespace Ami.BroAudio.Runtime
             }
 
             StartCoroutine(PreventCombFiltering(id, CombFilteringPreventionInSeconds));
-
             return wrapper;
         }
 

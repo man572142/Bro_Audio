@@ -29,7 +29,7 @@ namespace Ami.BroAudio.Runtime
 
             if (prefab.TryGetComponent(out SoundManager soundSystem))
             {
-                Instance = soundSystem;
+                _instance = soundSystem;
             }
             else
             {
@@ -39,7 +39,20 @@ namespace Ami.BroAudio.Runtime
             DontDestroyOnLoad(prefab);
         }
 
-        public static SoundManager Instance = null;
+        private static SoundManager _instance;
+        public static SoundManager Instance 
+        { 
+            get 
+            {
+#if UNITY_EDITOR
+				if (!Application.isPlaying)
+				{
+					return null;
+				} 
+#endif
+				return _instance;
+            } 
+        }
 
         public const string AudioPlayerPrefabName = "AudioPlayer";
 

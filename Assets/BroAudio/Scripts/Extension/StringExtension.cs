@@ -14,6 +14,11 @@ namespace Ami.Extension
 			return $"<color=#{colorString}>{text}</color>";
 		}
 
+		public static string SetColor(this string text, string colorCode)
+		{
+			return $"<color=#{colorCode}>{text}</color>";
+		}
+
 		public static string ToWhiteBold(this string text)
 		{
 			return text.ToBold().SetColor(Color.white);

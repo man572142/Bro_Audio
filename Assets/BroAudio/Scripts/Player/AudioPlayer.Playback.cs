@@ -56,6 +56,7 @@ namespace Ami.BroAudio.Runtime
 
             void ExecuteAfterChainingMethod(Action action)
             {
+                //StartCoroutine(DelayDo(action));
                 AsyncTaskExtension.DelayDoAction(AsyncTaskExtension.MillisecondInSeconds, action);
             }
 
@@ -68,6 +69,12 @@ namespace Ami.BroAudio.Runtime
 				
 				return decoPref;
 			}
+		}
+
+        private IEnumerator DelayDo(Action action)
+		{
+            yield return null;
+            action?.Invoke();
 		}
 
         private IEnumerator PlayControl(BroAudioClip clip, PlaybackPreference pref)
@@ -91,6 +98,7 @@ namespace Ami.BroAudio.Runtime
             ClipVolume = 0f;
             float targetVolume = GetTargetVolume();
             RemoveFromResumablePlayer();
+
             do
             {
                 switch (_stopMode)
@@ -129,7 +137,7 @@ namespace Ami.BroAudio.Runtime
 				{
                     pref.ApplySeamlessFade();
 				}
-                
+
                 #region FadeOut
                 float endTime = AudioSource.clip.length - clip.EndPosition;
 
@@ -146,6 +154,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     yield return new WaitUntil(() => AudioSource.time >= endTime || !AudioSource.isPlaying);
                     OnFinishOneRound(clip, pref);
+                    
                 }
                 #endregion
             } while (pref.Entity.Loop);
@@ -166,6 +175,10 @@ namespace Ami.BroAudio.Runtime
 				{
                     float masterVol = pref.Entity.MasterVolume + UnityEngine.Random.Range(-pref.Entity.VolumeRandomRange, pref.Entity.VolumeRandomRange);
                     result *= masterVol;
+				}
+                else
+				{
+                    result *= pref.Entity.MasterVolume;
 				}
                 return result;
 			}

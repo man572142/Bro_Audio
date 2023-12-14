@@ -12,7 +12,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="id"></param>
         public static IAudioPlayer Play(AudioID id) 
-            => SoundManager.Instance.Play(id);
+            => SoundManager.Instance?.Play(id);
 
         /// <summary>
         /// Play an audio at the given position
@@ -20,7 +20,7 @@ namespace Ami.BroAudio
         /// <param name="id"></param>
         /// <param name="position"></param>
         public static IAudioPlayer Play(AudioID id, Vector3 position)
-          => SoundManager.Instance.Play(id, position);
+          => SoundManager.Instance?.Play(id, position);
 
         /// <summary>
         /// Play an audio and let it keep following the target
@@ -28,7 +28,7 @@ namespace Ami.BroAudio
         /// <param name="id"></param>
         /// <param name="followTarget"></param>
         public static IAudioPlayer Play(AudioID id, Transform followTarget)
-          => SoundManager.Instance.Play(id, followTarget);
+          => SoundManager.Instance?.Play(id, followTarget);
         #endregion
 
         #region Stop
@@ -45,14 +45,14 @@ namespace Ami.BroAudio
         /// <param name="audioType"></param>
         /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
         public static void Stop(BroAudioType audioType,float fadeOut)
-            => SoundManager.Instance.Stop(audioType, fadeOut);
+            => SoundManager.Instance?.Stop(audioType, fadeOut);
 
         /// <summary>
         /// Stop playing an audio
         /// </summary>
         /// <param name="id"></param>
         public static void Stop(AudioID id) 
-            => SoundManager.Instance.Stop(id);
+            => SoundManager.Instance?.Stop(id);
 
         /// <summary>
         /// Stop playing an audio
@@ -60,7 +60,7 @@ namespace Ami.BroAudio
         /// <param name="id"></param>
         /// /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
         public static void Stop(AudioID id,float fadeOut)
-            => SoundManager.Instance.Stop(id,fadeOut);
+            => SoundManager.Instance?.Stop(id,fadeOut);
         #endregion
 
         #region Pause
@@ -69,7 +69,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="id"></param>
         public static void Pause(AudioID id) 
-            => SoundManager.Instance.Pause(id);
+            => SoundManager.Instance?.Pause(id);
 
         /// <summary>
         /// Pause an audio
@@ -77,7 +77,7 @@ namespace Ami.BroAudio
         /// <param name="id"></param>
         /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
         public static void Pause(AudioID id, float fadeOut)
-            => SoundManager.Instance.Pause(id,fadeOut);
+            => SoundManager.Instance?.Pause(id,fadeOut);
 
         #endregion
 
@@ -104,7 +104,7 @@ namespace Ami.BroAudio
         /// <param name="audioType"></param>
         /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
         public static void SetVolume(float vol, BroAudioType audioType, float fadeTime) 
-            => SoundManager.Instance.SetVolume(vol, audioType, fadeTime);
+            => SoundManager.Instance?.SetVolume(vol, audioType, fadeTime);
 
         /// <summary>
         /// Set the volume of an audio
@@ -121,7 +121,7 @@ namespace Ami.BroAudio
         /// <param name="id"></param>
         /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
         public static void SetVolume(AudioID id, float vol, float fadeTime) 
-            => SoundManager.Instance.SetVolume(id, vol, fadeTime);
+            => SoundManager.Instance?.SetVolume(id, vol, fadeTime);
         #endregion
 
 #if !UNITY_WEBGL
@@ -132,7 +132,7 @@ namespace Ami.BroAudio
         /// <param name="effect"></param>
         /// <returns></returns>
         public static IAutoResetWaitable SetEffect(EffectParameter effect) 
-            => SoundManager.Instance.SetEffect(effect);
+            => SoundManager.Instance?.SetEffect(effect);
 
         /// <summary>
         /// Set effect for all audio that mathch the given audio type
@@ -141,7 +141,7 @@ namespace Ami.BroAudio
         /// <param name="audioType"></param>
         /// <returns></returns>
         public static IAutoResetWaitable SetEffect(EffectParameter effect, BroAudioType audioType)
-            => SoundManager.Instance.SetEffect(audioType,effect);
+            => SoundManager.Instance?.SetEffect(audioType,effect);
 #endregion
 #endif
 	}

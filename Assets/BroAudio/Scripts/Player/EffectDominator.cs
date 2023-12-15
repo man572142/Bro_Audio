@@ -16,13 +16,7 @@ namespace Ami.BroAudio.Runtime
 				return this;
 			}
 
-			EffectParameter effect = new EffectParameter(EffectType.Volume)
-			{
-				Value = othersVol,
-				FadeTime = fadeTime,
-			};
-
-			SetAllEffectExceptDominator(effect);
+			SetAllEffectExceptDominator(Effect.Volume(othersVol,fadeTime));
 			return this;
 		}
 
@@ -33,13 +27,7 @@ namespace Ami.BroAudio.Runtime
                 return this;
             }
 
-            EffectParameter effect = new EffectParameter(EffectType.HighCut)
-            {
-                Value = freq,
-                FadeTime = fadeTime,
-            };
-
-            SetAllEffectExceptDominator(effect);
+            SetAllEffectExceptDominator(Effect.HighCut(freq,fadeTime));
             return this;
         }
 
@@ -50,13 +38,7 @@ namespace Ami.BroAudio.Runtime
                 return this;
             }
 
-            EffectParameter effect = new EffectParameter(EffectType.LowCut)
-            {
-                Value = freq,
-                FadeTime = fadeTime,
-            };
-
-            SetAllEffectExceptDominator(effect);
+            SetAllEffectExceptDominator(Effect.LowCut(freq,fadeTime));
             return this;
         }
 
@@ -65,7 +47,7 @@ namespace Ami.BroAudio.Runtime
             DominatedType = dominatdType;
         }
 
-        private void SetAllEffectExceptDominator(EffectParameter effect)
+        private void SetAllEffectExceptDominator(Effect effect)
         {
            
             SoundManager.Instance.SetEffect(DominatedType, effect).While(PlayerIsPlaying);

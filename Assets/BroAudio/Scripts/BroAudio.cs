@@ -131,7 +131,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="effect"></param>
         /// <returns></returns>
-        public static IAutoResetWaitable SetEffect(EffectParameter effect) 
+        public static IAutoResetWaitable SetEffect(Effect effect) 
             => SoundManager.Instance?.SetEffect(effect);
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Ami.BroAudio
         /// <param name="effect"></param>
         /// <param name="audioType"></param>
         /// <returns></returns>
-        public static IAutoResetWaitable SetEffect(EffectParameter effect, BroAudioType audioType)
+        public static IAutoResetWaitable SetEffect(Effect effect, BroAudioType audioType)
             => SoundManager.Instance?.SetEffect(audioType,effect);
 #endregion
 #endif

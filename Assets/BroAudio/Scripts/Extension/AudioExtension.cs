@@ -99,7 +99,7 @@ namespace Ami.Extension
         {
             if (freq < MinFrequence || freq > MaxFrequence)
             {
-                Debug.LogWarning($"The given frequence should be in {MinFrequence}Hz ~ {MaxFrequence}Hz.");
+                Debug.LogError($"The given frequence should be in {MinFrequence}Hz ~ {MaxFrequence}Hz.");
                 return false;
             }
             return true;

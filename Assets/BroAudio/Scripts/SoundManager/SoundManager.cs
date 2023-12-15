@@ -195,12 +195,12 @@ namespace Ami.BroAudio.Runtime
 #endregion
 
         #region Effect
-        public IAutoResetWaitable SetEffect(EffectParameter effect)
+        public IAutoResetWaitable SetEffect(Effect effect)
 		{
             return SetEffect(BroAudioType.All,effect);
         }
 
-        public IAutoResetWaitable SetEffect(BroAudioType targetType, EffectParameter effect)
+        public IAutoResetWaitable SetEffect(BroAudioType targetType, Effect effect)
 		{
 			SetEffectMode mode = effect.Type == default ? SetEffectMode.Override : SetEffectMode.Add;
 			SetPlayersEffect(targetType, effect.Type, mode);

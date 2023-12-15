@@ -39,15 +39,15 @@ namespace Ami.BroAudio.Runtime
 
 		public interface ITweakingWaitable
 		{
-			EffectParameter Effect { get; }
+			Effect Effect { get; }
 			bool IsFinished();
 			IEnumerator GetYieldInstruction();
 		}
 
 		private class TweakingWaitable : ITweakingWaitable
 		{
-			public EffectParameter Effect { get; set; }
-			public TweakingWaitable(EffectParameter effect) => Effect = effect;
+			public Effect Effect { get; set; }
+			public TweakingWaitable(Effect effect) => Effect = effect;
 			public IEnumerator GetYieldInstruction() => null;
 			public bool IsFinished() => false;
 		}
@@ -57,7 +57,7 @@ namespace Ami.BroAudio.Runtime
 			protected ITweakingWaitable Base;
 			public void AttachTo(ITweakingWaitable waitable) => Base = waitable;
 
-			public EffectParameter Effect => Base.Effect; 
+			public Effect Effect => Base.Effect; 
 			public abstract IEnumerator GetYieldInstruction();
 			public abstract bool IsFinished();
 		}
@@ -161,7 +161,7 @@ namespace Ami.BroAudio.Runtime
 			}
 		}
 
-		public void SetEffectTrackParameter(EffectParameter effect, Action<EffectType> OnReset)
+		public void SetEffectTrackParameter(Effect effect, Action<EffectType> OnReset)
 		{
 			_latestEffect = effect.Type;
 

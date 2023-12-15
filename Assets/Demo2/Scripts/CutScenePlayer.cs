@@ -6,25 +6,18 @@ using UnityEngine.Playables;
 
 namespace Ami.BroAudio.Demo
 {
-	public class CutScenePlayer : MonoBehaviour
+	public class CutScenePlayer : InteractiveComponent
 	{
-		[SerializeField] InteractiveZone _interactiveZone = null;
 		[SerializeField] PlayableDirector _director = null;
 		[SerializeField] AudioID _openingSong = default;
 
-		private void Awake()
-		{
-			_interactiveZone.OnInZoneStateChanged += PlayCutScene;
-		}
+		protected override bool ListenToInteractiveZone() => true;
+		protected override bool IsTriggerOnce => true;
 
-		private void PlayCutScene(bool isInZone)
+		public override void OnInZoneChanged(bool isInZone)
 		{
-			if(!isInZone)
-			{
-				return;
-			}
+			base.OnInZoneChanged(isInZone);
 
-			_interactiveZone.OnInZoneStateChanged -= PlayCutScene;
 			_director.Play();
 			BroAudio.Play(_openingSong).AsBGM();
 		}

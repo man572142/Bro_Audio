@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using Ami.Extension;
 using System;
 using System.Text;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
 
 namespace Ami.BroAudio.Demo
 {
@@ -22,8 +24,11 @@ namespace Ami.BroAudio.Demo
 		public const string MethodColor = "DCDCAA";
 
 		[SerializeField] Text _component = null;
-		[Header("Please run [SetText] in the context menu")]
+
+#if UNITY_EDITOR
+		[Header("Please use [SetText] in the context menu")]
 		[SerializeField] MethodText[] _methodTexts = null;
+#endif
 
 		private void Start()
 		{
@@ -59,6 +64,8 @@ namespace Ami.BroAudio.Demo
 			}
 
 			_component.text = builder.ToString();
+			UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(_component);
+			EditorSceneManager.MarkSceneDirty(gameObject.scene);
 		}
 	} 
 }

@@ -3,27 +3,35 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InteractiveZone : MonoBehaviour
+namespace Ami.BroAudio.Demo
 {
-	public event Action<bool> OnInZoneStateChanged;
-
-	public bool IsInZone { get; private set; } = false;
-
-	private void OnTriggerEnter(Collider other)
+	[RequireComponent(typeof(Collider))]
+	public class InteractiveZone : MonoBehaviour
 	{
-		if(!IsInZone)
+		public event Action<bool> OnInZoneStateChanged;
+
+		public bool IsInZone { get; private set; } = false;
+		public GameObject InZoneObject { get; private set; }
+
+		private void OnTriggerEnter(Collider other)
 		{
-			IsInZone = true; 
-			OnInZoneStateChanged?.Invoke(true);
+			if (!IsInZone)
+			{
+				IsInZone = true;
+				InZoneObject = other.gameObject;
+				OnInZoneStateChanged?.Invoke(true);
+			}
+		}
+
+		private void OnTriggerExit(Collider other)
+		{
+			if (IsInZone)
+			{
+				IsInZone = false;
+				InZoneObject = null;
+				OnInZoneStateChanged?.Invoke(false);
+			}
 		}
 	}
 
-	private void OnTriggerExit(Collider other)
-	{
-		if(IsInZone)
-		{
-			IsInZone = false;
-			OnInZoneStateChanged?.Invoke(false);
-		}
-	}
 }

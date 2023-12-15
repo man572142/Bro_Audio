@@ -6,15 +6,15 @@ using UnityEditor;
 #if UNITY_EDITOR
 namespace Ami.BroAudio.Demo
 {
-	[RequireComponent(typeof(InteractiveZone))]
-	public class HierarchyLocator : MonoBehaviour
+	public class HierarchyLocator : InteractiveComponent
 	{
-		[SerializeField] InteractiveZone _interactiveZone = null;
 		[SerializeField] GameObject _target = null;
+
+		protected override bool ListenToInteractiveZone() => false;
 
 		private void Update()
 		{
-			if(_interactiveZone.IsInZone && Input.GetKeyDown(KeyCode.Tab))
+			if(InteractiveZone.IsInZone && Input.GetKeyDown(KeyCode.Tab))
 			{
 				Selection.activeObject = _target;
 				EditorGUIUtility.PingObject(_target);

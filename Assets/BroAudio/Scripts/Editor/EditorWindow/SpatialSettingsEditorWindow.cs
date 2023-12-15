@@ -57,14 +57,18 @@ namespace Ami.BroAudio.Editor
             SerializedProperty audioSourceProp = GetAudioSourceProperty(_audioSourceEditor.serializedObject, propType);
             SerializedProperty settingRelativeProp = GetSpatialSettingsProperty(settingsProp, propType);
 
-            if (audioSourceProp.propertyType == SerializedPropertyType.Float)
-            {
-                audioSourceProp.floatValue = settingRelativeProp.floatValue;
-            }
-            else if (audioSourceProp.propertyType == SerializedPropertyType.AnimationCurve)
-            {
-                audioSourceProp.SafeSetCurve(settingRelativeProp.animationCurveValue);
-            }
+			switch(audioSourceProp.propertyType)
+			{
+				case SerializedPropertyType.Float:
+					audioSourceProp.floatValue = settingRelativeProp.floatValue;
+					break;
+				case SerializedPropertyType.Enum:
+					audioSourceProp.enumValueIndex = settingRelativeProp.enumValueIndex;
+					break;
+				case SerializedPropertyType.AnimationCurve:
+					audioSourceProp.SafeSetCurve(settingRelativeProp.animationCurveValue);
+					break;
+			}
         }
 
         private void OnDisable()
@@ -95,7 +99,8 @@ namespace Ami.BroAudio.Editor
                 ReverbZoneMix = GetAudioSourceProperty(so, SpatialPropertyType.ReverbZoneMix).animationCurveValue,
                 Spread = GetAudioSourceProperty(so, SpatialPropertyType.Spread).animationCurveValue,
                 CustomRolloff = GetAudioSourceProperty(so, SpatialPropertyType.CustomRolloff).animationCurveValue,
-            };
+				RolloffMode = (AudioRolloffMode)GetAudioSourceProperty(so, SpatialPropertyType.RolloffMode).enumValueIndex,
+			};
             return settings;
         }
 
@@ -153,5 +158,4 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 	}
-
 }

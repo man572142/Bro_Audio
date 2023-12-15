@@ -15,6 +15,7 @@ namespace Ami.BroAudio.Data
         public AnimationCurve ReverbZoneMix;
         public AnimationCurve Spread;
         public AnimationCurve CustomRolloff;
+        public AudioRolloffMode RolloffMode;
 
         public bool Equals(SpatialSettings other)
         {

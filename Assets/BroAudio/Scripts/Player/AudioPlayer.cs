@@ -100,8 +100,8 @@ namespace Ami.BroAudio.Runtime
         {
             SpatialSettings settings = pref.Entity.SpatialSettings;
             AudioSource.panStereo = settings.StereoPan;
-            bool isDefault = settings != default;
-
+            bool isDefault = settings == default;
+            
             AudioSource.dopplerLevel = isDefault? AudioConstant.DefaultDoppler : settings.DopplerLevel;
             AudioSource.minDistance = isDefault ? AudioConstant.AttenuationMinDistance : settings.MinDistance;
             AudioSource.maxDistance = isDefault ? AudioConstant.AttenuationMaxDistance : settings.MaxDistance;
@@ -109,7 +109,11 @@ namespace Ami.BroAudio.Runtime
             AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, settings.SpatialBlend);
             AudioSource.SetCustomCurve(AudioSourceCurveType.ReverbZoneMix, settings.ReverbZoneMix);
             AudioSource.SetCustomCurve(AudioSourceCurveType.Spread, settings.Spread);
-            AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, settings.CustomRolloff);
+            AudioSource.rolloffMode = settings.RolloffMode;
+            if (settings.RolloffMode == AudioRolloffMode.Custom)
+            {
+                AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, settings.CustomRolloff);
+            }
 
             if (pref.FollowTarget != null && transform.parent != pref.FollowTarget)
 			{

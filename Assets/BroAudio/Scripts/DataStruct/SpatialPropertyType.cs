@@ -9,6 +9,7 @@ namespace Ami.BroAudio.Data
         SpatialBlend,
         ReverbZoneMix,
         Spread,
-        CustomRolloff
+        CustomRolloff,
+        RolloffMode,
     } 
 }

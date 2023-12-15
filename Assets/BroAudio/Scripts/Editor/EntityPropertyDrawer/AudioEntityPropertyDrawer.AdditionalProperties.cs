@@ -217,17 +217,18 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 
-			void OnSetSpatialSettingBack(SpatialSettings settings)
+			void OnSetSpatialSettingBack(SpatialSettings spatialSettings)
 			{
 				SerializedProperty prop = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.StereoPan).floatValue = settings.StereoPan;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.DopplerLevel).floatValue = settings.DopplerLevel;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.MinDistance).floatValue = settings.MinDistance;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.MaxDistance).floatValue = settings.MaxDistance;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.SpatialBlend).animationCurveValue = settings.SpatialBlend;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.ReverbZoneMix).animationCurveValue = settings.ReverbZoneMix;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.Spread).animationCurveValue = settings.Spread;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.CustomRolloff).animationCurveValue = settings.CustomRolloff;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.StereoPan).floatValue = spatialSettings.StereoPan;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.DopplerLevel).floatValue = spatialSettings.DopplerLevel;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.MinDistance).floatValue = spatialSettings.MinDistance;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.MaxDistance).floatValue = spatialSettings.MaxDistance;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.SpatialBlend).animationCurveValue = spatialSettings.SpatialBlend;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.ReverbZoneMix).animationCurveValue = spatialSettings.ReverbZoneMix;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.Spread).animationCurveValue = spatialSettings.Spread;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.CustomRolloff).animationCurveValue = spatialSettings.CustomRolloff;
+				GetSpatialSettingsProperty(prop, SpatialPropertyType.RolloffMode).enumValueIndex = (int)spatialSettings.RolloffMode;
 				prop.serializedObject.ApplyModifiedPropertiesWithoutUndo();
 			}
 		}

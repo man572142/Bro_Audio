@@ -28,7 +28,7 @@ namespace Ami.BroAudio.Editor
 
 		public static void ResetEntitySerializedProperties(SerializedProperty property)
         {
-            // TODO: could use enumerator, but might have to deal with some problems
+            //could use enumerator to improve this, but might have to deal with some property
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Name))).stringValue = string.Empty;
             property.FindPropertyRelative(nameof(AudioEntity.Clips)).arraySize = 0;
             property.FindPropertyRelative(AudioEntity.EditorPropertyName.IsShowClipPreview).boolValue = false;
@@ -97,6 +97,8 @@ namespace Ami.BroAudio.Editor
                     return settingProp.FindPropertyRelative(nameof(SpatialSettings.Spread));
                 case SpatialPropertyType.CustomRolloff:
                     return settingProp.FindPropertyRelative(nameof(SpatialSettings.CustomRolloff));
+                case SpatialPropertyType.RolloffMode:
+                    return settingProp.FindPropertyRelative(nameof(SpatialPropertyType.RolloffMode));
             }
             return null;
         }
@@ -121,6 +123,8 @@ namespace Ami.BroAudio.Editor
                     return sourceSO.FindProperty(AudioSourcePropertyPath.Spread);
                 case SpatialPropertyType.CustomRolloff:
                     return sourceSO.FindProperty(AudioSourcePropertyPath.CustomRolloff);
+                case SpatialPropertyType.RolloffMode:
+                    return sourceSO.FindProperty(AudioSourcePropertyPath.RolloffMode);
             }
             return null;
         }

@@ -16,7 +16,7 @@ namespace Ami.Extension
         public const string MinDistance = "MinDistance";
         public const string MaxDistance = "MaxDistance";
         public const string StereoPan = "Pan2D";
-        public const string VolumeRolloff = "rolloffMode";
+        public const string RolloffMode = "rolloffMode";
         public const string BypassEffects = "BypassEffects";
         public const string BypassListenerEffects = "BypassListenerEffects";
         public const string BypassReverbZones = "BypassReverbZones";

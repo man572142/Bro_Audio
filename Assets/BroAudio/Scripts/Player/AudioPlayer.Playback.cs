@@ -56,7 +56,7 @@ namespace Ami.BroAudio.Runtime
 
             void ExecuteAfterChainingMethod(Action action)
             {
-                AsyncTaskExtension.DelayDoAction(AsyncTaskExtension.MillisecondInSeconds, action);
+                AsyncTaskExtension.DelayInvoke(AsyncTaskExtension.MillisecondInSeconds, action);
             }
 
 			PlaybackPreference DecoratePref(ref PlaybackPreference decoPref)
@@ -284,8 +284,7 @@ namespace Ami.BroAudio.Runtime
 
         private void AddResumablePlayer()
 		{
-            if(ResumablePlayers == null)
-                ResumablePlayers = new Dictionary<int, AudioPlayer>();
+            ResumablePlayers = ResumablePlayers ?? new Dictionary<int, AudioPlayer>();
             ResumablePlayers[ID] = this;
         }
 

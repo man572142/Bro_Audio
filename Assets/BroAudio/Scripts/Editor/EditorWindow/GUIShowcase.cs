@@ -19,11 +19,8 @@ namespace Ami.Extension
 		{
 			get
 			{
-				if (_allCursorTypes == null)
-				{
-					_allCursorTypes = (IEnumerable<MouseCursor>)Enum.GetValues(typeof(MouseCursor));
-				}
-				return _allCursorTypes;
+                _allCursorTypes = _allCursorTypes ?? (IEnumerable<MouseCursor>)Enum.GetValues(typeof(MouseCursor));
+                return _allCursorTypes;
 			}
 		}
 
@@ -61,8 +58,6 @@ namespace Ami.Extension
 			}
 			EditorGUI.indentLevel--;
 			EditorGUI.indentLevel--;
-
 		}
 	}
-
 }

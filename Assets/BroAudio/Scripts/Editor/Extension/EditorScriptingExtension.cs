@@ -124,7 +124,7 @@ namespace Ami.Extension
 				return;
 			}
 
-			resultRects = resultRects == null ? new Rect[ratios.Length] : resultRects;
+			resultRects = resultRects ?? new Rect[ratios.Length];
 			for (int i = 0; i < resultRects.Length; i++)
 			{
 				float offsetHeight = i == 0 || i == resultRects.Length - 1 ? gap : gap * 0.5f;
@@ -366,7 +366,7 @@ namespace Ami.Extension
 			Rect tabRect = new Rect(position);
 			tabRect.height = labelTabHeight;
 
-			Rect[] tabRects = preAllocRects == null ? new Rect[ratios.Length] : preAllocRects;
+			Rect[] tabRects = preAllocRects ?? new Rect[ratios.Length];
             SplitRectHorizontal(tabRect, 0f, tabRects, ratios);
             for (int i = 0; i < tabRects.Length; i++)
             {

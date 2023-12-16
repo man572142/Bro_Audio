@@ -85,7 +85,7 @@ namespace Ami.BroAudio.Editor
 			GetOrAddTabDict(property.propertyPath, out Tab tab);
 			Rect tabViewRect = GetRectAndIterateLine(position);
 			tabViewRect.height = GetTabWindowHeight();
-			_tabPreAllocRects = _tabLabelRatios == null ? new Rect[_tabLabelRatios.Length] : _tabPreAllocRects;
+			_tabPreAllocRects = _tabPreAllocRects ?? new Rect[_tabLabelRatios.Length];
 			tab = (Tab)DrawTabsView(tabViewRect, (int)tab, TabLabelHeight, _tabLabelGUIContents, _tabLabelRatios, _tabPreAllocRects);
 			_currSelectedTabDict[property.propertyPath] = tab;
 			DrawEmptyLine(1);

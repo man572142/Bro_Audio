@@ -9,7 +9,7 @@ namespace Ami.Extension
 		public const int SecondInMilliseconds = 1000;
 		public const float MillisecondInSeconds = 0.001f;
 
-		public static async void DelayDoAction(float delay, Action action, CancellationToken cancellationToken = default)
+		public static async void DelayInvoke(float delay, Action action, CancellationToken cancellationToken = default)
 		{
 			float ms = delay * SecondInMilliseconds;
 			try

@@ -248,7 +248,7 @@ namespace Ami.BroAudio.Editor
 		private void DrawSeamlessSetting(Rect totalPosition, SerializedProperty property)
 		{
 			Rect suffixRect = EditorGUI.PrefixLabel(GetRectAndIterateLine(totalPosition), _seamlessLabel);
-			_seamlessRects = _seamlessRects == null ? new Rect[_seamlessSettingRectRatio.Length] : _seamlessRects;
+			_seamlessRects = _seamlessRects ?? new Rect[_seamlessSettingRectRatio.Length];
 			SplitRectHorizontal(suffixRect, 10f, _seamlessRects, _seamlessSettingRectRatio);
 
             int drawIndex = 0;

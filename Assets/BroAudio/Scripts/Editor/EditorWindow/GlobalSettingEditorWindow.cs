@@ -145,8 +145,8 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void InitTabsLabel()
 		{
-			if(_tabLabels == null) 
-				_tabLabels = new GUIContent[3];
+            _tabLabels = _tabLabels ?? new GUIContent[3];
+
 			_tabLabels[(int)Tab.Audio] = EditorGUIUtility.IconContent(AudioSettingTab);
 			_tabLabels[(int)Tab.GUI] = EditorGUIUtility.IconContent(GUISettingTab);
 			_tabLabels[(int)Tab.Info] = EditorGUIUtility.IconContent(InfoTab);
@@ -186,7 +186,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 			Rect tabWindowRect = GetRectAndIterateLine(drawPosition);
 			tabWindowRect.yMax = drawPosition.yMax;
-			_tabPreAllocRects = _tabLabelRatios == null ? new Rect[_tabLabelRatios.Length] : _tabPreAllocRects;
+			_tabPreAllocRects = _tabPreAllocRects ?? new Rect[_tabLabelRatios.Length];
 			_currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab, TabLabelHeight, _tabLabels,_tabLabelRatios, _tabPreAllocRects);
 
 			EditorGUI.indentLevel++;			

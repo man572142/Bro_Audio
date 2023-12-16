@@ -15,10 +15,7 @@ namespace Ami.Extension.Reflection
 		{
 			get
 			{
-				if (_mixerClass == null)
-				{
-					_mixerClass = GetUnityAudioEditorClass("AudioMixerController");
-				}
+                _mixerClass = _mixerClass ?? GetUnityAudioEditorClass("AudioMixerController");
 				return _mixerClass;
 			}
 		}
@@ -27,11 +24,8 @@ namespace Ami.Extension.Reflection
 		{
 			get
 			{
-				if (_mixerGroupClass == null)
-				{
-					_mixerGroupClass = GetUnityAudioEditorClass("AudioMixerGroupController");
-				}
-				return _mixerGroupClass;
+                _mixerGroupClass = _mixerGroupClass ?? GetUnityAudioEditorClass("AudioMixerGroupController");
+                return _mixerGroupClass;
 			}
 		}
 
@@ -39,11 +33,8 @@ namespace Ami.Extension.Reflection
 		{
 			get
 			{
-				if (_effectClass == null)
-				{
-					_effectClass = GetUnityAudioEditorClass("AudioMixerEffectController");
-				}
-				return _effectClass;
+                _effectClass = _effectClass ?? GetUnityAudioEditorClass("AudioMixerEffectController");
+                return _effectClass;
 			}
 		}
 
@@ -51,11 +42,8 @@ namespace Ami.Extension.Reflection
 		{
 			get
 			{
-				if (_effectParameterPath == null)
-				{
-					_effectParameterPath = GetUnityAudioEditorClass("AudioEffectParameterPath");
-				}
-				return _effectParameterPath;
+                _effectParameterPath = _effectParameterPath ?? GetUnityAudioEditorClass("AudioEffectParameterPath");
+                return _effectParameterPath;
 			}
 		}
 

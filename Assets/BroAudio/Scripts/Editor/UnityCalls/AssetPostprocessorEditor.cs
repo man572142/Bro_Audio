@@ -33,10 +33,7 @@ public class AssetPostprocessorEditor : AssetPostprocessor
         {
             if (path.Contains(BroEditorUtility.DefaultRelativeAssetOutputPath))
             {
-                if(paths == null)
-                {
-                    paths = new List<string>();
-                }
+                paths = paths ?? new List<string>();
                 paths.Add(path);
             }
         }

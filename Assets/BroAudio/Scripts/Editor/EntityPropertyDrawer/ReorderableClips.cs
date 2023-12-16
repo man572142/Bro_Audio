@@ -139,7 +139,7 @@ namespace Ami.BroAudio.Editor
 		{
 			HandleClipsDragAndDrop(rect);
 
-			_headerRects = _headerRects == null ? new Rect[_headerRatio.Length] : _headerRects;
+			_headerRects = _headerRects ?? new Rect[_headerRatio.Length];
 			EditorScriptingExtension.SplitRectHorizontal(rect, 15f, _headerRects, _headerRatio);
 
             EditorGUI.LabelField(_headerRects[0], "Clips");

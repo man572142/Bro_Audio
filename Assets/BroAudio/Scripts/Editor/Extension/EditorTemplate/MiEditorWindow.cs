@@ -32,10 +32,8 @@ namespace Ami.Extension
 
 		public Vector2 BeginScrollView(Rect position, Vector2 scrollPosition, bool alwaysShowHorizontal = false, bool alwaysShowVertical = false)
 		{
-			if(_scrollViewHelper == null)
-			{
-				_scrollViewHelper = new EditorScrollViewHelper(this);
-			}
+			_scrollViewHelper = _scrollViewHelper ?? new EditorScrollViewHelper(this);
+
 			return _scrollViewHelper.BeginScrollView(position, scrollPosition, alwaysShowHorizontal, alwaysShowVertical);
 		}
 

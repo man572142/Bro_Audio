@@ -135,10 +135,7 @@ namespace Ami.Extension.Reflection
 
 		public static void ExposeParameter(ExposedParameterType parameterType, AudioMixerGroup mixerGroup, AudioClassReflectionHelper reflection = null, params object[] additionalObjects)
 		{
-			if(reflection == null)
-			{
-				reflection = new AudioClassReflectionHelper();
-			}
+            reflection = reflection ?? new AudioClassReflectionHelper();
 			AudioMixer audioMixer = mixerGroup.audioMixer;
 
 			switch (parameterType)

@@ -65,10 +65,7 @@ namespace Ami.BroAudio.Runtime
 
         protected virtual void Awake()
         {
-            if (AudioSource == null)
-            {
-                AudioSource = GetComponent<AudioSource>();
-            }
+            AudioSource = AudioSource ?? GetComponent<AudioSource>();
         }
 
 		public void SetMixer(AudioMixer mixer)
@@ -212,9 +209,7 @@ namespace Ami.BroAudio.Runtime
                 return decoratedPalyer;
             }
 
-            if(_decorators == null)
-                _decorators = new List<AudioPlayerDecorator>();
-
+            _decorators = _decorators ?? new List<AudioPlayerDecorator>();
             decoratedPalyer = this.DecorateWith<T>();
             _decorators.Add(decoratedPalyer);
             decoratedPalyer.OnPlayerRecycle += RemoveDecorator;

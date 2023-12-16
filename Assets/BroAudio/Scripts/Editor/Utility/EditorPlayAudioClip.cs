@@ -38,13 +38,9 @@ namespace Ami.Extension
 				PlaybackIndicator.Start();
 			}
 
-			if(CurrentPlayingTaskCanceller == null)
-			{
-				CurrentPlayingTaskCanceller = new CancellationTokenSource();
-			}
-
-			float duration = audioClip.length - startTime - endTime;
-			AsyncTaskExtension.DelayDoAction(duration, StopAllClips, CurrentPlayingTaskCanceller.Token);
+            float duration = audioClip.length - startTime - endTime;
+            CurrentPlayingTaskCanceller = CurrentPlayingTaskCanceller ?? new CancellationTokenSource();
+			AsyncTaskExtension.DelayInvoke(duration, StopAllClips, CurrentPlayingTaskCanceller.Token);
 		}
 
 		public static void StopAllClips()

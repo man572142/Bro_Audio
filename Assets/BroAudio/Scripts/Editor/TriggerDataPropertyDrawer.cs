@@ -26,10 +26,7 @@ namespace Ami.BroAudio.Editor
         {
             get
             {
-                if(_actionValues == null)
-                {
-                    _actionValues = (BroAction[])Enum.GetValues(typeof(BroAction));
-                }
+                _actionValues = _actionValues ?? (BroAction[])Enum.GetValues(typeof(BroAction));
                 return _actionValues;
             }
         }
@@ -38,10 +35,7 @@ namespace Ami.BroAudio.Editor
         {
             get
             {
-                if(_unityMessageValues == null)
-                {
-                    _unityMessageValues = (UnityMessage[])Enum.GetValues(typeof(UnityMessage));
-                }
+                _unityMessageValues = _unityMessageValues ?? (UnityMessage[])Enum.GetValues(typeof(UnityMessage));
                 return _unityMessageValues;
             }
         }

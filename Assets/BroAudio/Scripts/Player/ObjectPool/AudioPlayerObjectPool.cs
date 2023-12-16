@@ -25,8 +25,7 @@ namespace Ami.BroAudio.Runtime
 			player.AudioTrack = _audioTrackPool.Extract();
 #endif
 
-			if(_inUsePlayers == null)
-				_inUsePlayers = new List<AudioPlayer>();
+            _inUsePlayers = _inUsePlayers ?? new List<AudioPlayer>();
 			_inUsePlayers.Add(player);
 			return player;
 		}

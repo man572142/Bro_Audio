@@ -75,12 +75,8 @@ namespace Ami.BroAudio.Runtime
 
 		public Waiter CreateWaiter()
 		{
-			if (PlayerWaiter == null)
-			{
-                PlayerWaiter = new Waiter();
-            }
-			
-			return PlayerWaiter;
+			PlayerWaiter = PlayerWaiter ?? new Waiter();
+            return PlayerWaiter;
 		}
 
         public void DisposeWaiter()

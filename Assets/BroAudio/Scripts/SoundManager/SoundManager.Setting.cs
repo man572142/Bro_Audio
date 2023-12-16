@@ -14,10 +14,9 @@ namespace Ami.BroAudio.Runtime
 		{
 			get
 			{
-				if(_setting == null)
-					_setting = Resources.Load<RuntimeSetting>(RuntimeSetting.FilePath);
+                _setting = _setting ?? Resources.Load<RuntimeSetting>(RuntimeSetting.FilePath);
 
-				if(!_setting)
+                if (!_setting)
 				{
 					_setting = new RuntimeSetting();
 					LogWarning("Can't load BroAudioGlobalSetting.asset, all setting values will be as default. " +

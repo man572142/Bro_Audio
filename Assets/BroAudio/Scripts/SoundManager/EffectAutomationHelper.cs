@@ -76,8 +76,7 @@ namespace Ami.BroAudio.Runtime
 
 			public override IEnumerator GetYieldInstruction()
 			{
-				if(_waitUntil == null)
-					_waitUntil = new WaitUntil(IsFinished);
+                _waitUntil = _waitUntil ?? new WaitUntil(IsFinished);
 				yield return _waitUntil;
 			}
 		}
@@ -178,8 +177,7 @@ namespace Ami.BroAudio.Runtime
 				_tweakerDict.Add(effect.Type, tweaker);
 			}
 
-			if(tweaker.WaitableList == null)
-				tweaker.WaitableList = new List<ITweakingWaitable>();
+			tweaker.WaitableList = tweaker.WaitableList ?? new List<ITweakingWaitable>();
 			tweaker.WaitableList.Add(new TweakingWaitable(effect));
 
 			StartCoroutineAndReassign(TweakTrackParameter(tweaker, OnTweakingFinished), ref tweaker.Coroutine);

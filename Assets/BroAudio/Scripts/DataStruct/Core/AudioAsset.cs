@@ -31,8 +31,7 @@ namespace Ami.BroAudio.Data
 
         public IEnumerable<IEntityIdentity> GetAllAudioEntities()
 		{
-            if (Entities == null)
-                Entities = new AudioEntity[0];
+            Entities = Entities ?? new AudioEntity[0];
 
             foreach (var data in Entities)
             {

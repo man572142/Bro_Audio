@@ -8,9 +8,10 @@ namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility
 	{
-		private const string _defaultAssetOutputPath = "Assets/BroAudio/AudioAssets";
-		public const string CoreDataResourcesPath = "Editor/BroAudioData";
-
+        public const string CoreDataResourcesPath = "Editor/BroAudioData";
+		public const string DefaultRelativeAssetOutputPath = "BroAudio/AudioAssets";
+        private const string _defaultAssetOutputPath = "Assets/" + DefaultRelativeAssetOutputPath;
+		
 		public static readonly string UnityProjectRootPath = Application.dataPath.Replace("/Assets", string.Empty);
 
 		private static string _assetOutputPath = string.Empty;
@@ -23,18 +24,20 @@ namespace Ami.BroAudio.Editor
                     return _assetOutputPath;
                 }
 
-				if(TryGetCoreData(out SerializedCoreData coreData))
+				if(TryGetCoreData(out string  coreDataPath,out SerializedCoreData coreData))
 				{
 					if(string.IsNullOrWhiteSpace(coreData.AssetOutputPath))
 					{
 						_assetOutputPath = _defaultAssetOutputPath;
+						coreData.AssetOutputPath = _defaultAssetOutputPath;
+						RewriteCoreData(coreDataPath,coreData);
 					}
 					else
 					{
 						_assetOutputPath = coreData.AssetOutputPath;
 					}
 				}
-				return _assetOutputPath;
+				return null;
 			}
 			set => _assetOutputPath = value;
 		}

@@ -34,38 +34,38 @@ namespace Ami.BroAudio.Editor
             RewriteCoreData((coreData) => coreData.AssetOutputPath = newOutputPath);
 		}
 
-        public static void RewriteCoreData(Action<SerializedCoreData> onModifyCoreData)
+        public static List<string> GetGUIDListFromJson()
+        {
+            if (TryGetCoreData(out string path, out SerializedCoreData coreData))
+            {
+                return coreData.GUIDs;
+            }
+            return null;
+        }
+
+        private static void RewriteCoreData(Action<SerializedCoreData> onModifyCoreData)
         {
             if (TryGetCoreDataTextAsset(out var coreDataAsset) && TryParseCoreData(coreDataAsset, out var coreData))
             {
                 onModifyCoreData?.Invoke(coreData);
-                RewriteCoreData(coreDataAsset, coreData);
+				string path = AssetDatabase.GetAssetPath(coreDataAsset);
+                RewriteCoreData(path, coreData);
             }
         }
 
-        public static void RewriteCoreData(TextAsset coreDataAsset, SerializedCoreData coreData)
+        private static void RewriteCoreData(string path, SerializedCoreData coreData)
 		{
-            string path = AssetDatabase.GetAssetPath(coreDataAsset);
             File.WriteAllText(path, JsonUtility.ToJson(coreData, true));
             AssetDatabase.Refresh();
         }
 
-        public static List<string> GetGUIDListFromJson()
-		{
-			if(TryGetCoreData(out SerializedCoreData coreData))
-			{
-				return coreData.GUIDs;
-			}
-			return null;
-		}
-
-		public static bool TryGetCoreDataTextAsset(out TextAsset asset)
+		private static bool TryGetCoreDataTextAsset(out TextAsset asset)
 		{
             asset = Resources.Load<TextAsset>(CoreDataResourcesPath);
 			return asset != null;
         }
 
-		public static bool TryParseCoreData(TextAsset textAsset,out SerializedCoreData coreData)
+		private static bool TryParseCoreData(TextAsset textAsset,out SerializedCoreData coreData)
 		{
 			coreData = default;
             if (textAsset != null && !string.IsNullOrEmpty(textAsset.text))
@@ -76,15 +76,17 @@ namespace Ami.BroAudio.Editor
 			return false;
 		}
 
-		public static bool TryGetCoreData(out SerializedCoreData coreData)
+		private static bool TryGetCoreData(out string path,out SerializedCoreData coreData)
 		{
 			coreData = default;
+			path = null;
 			if(!TryGetCoreDataTextAsset(out var textAsset) || !TryParseCoreData(textAsset, out coreData))
 			{
                 LogError("Can't find core data! please place [BroAudioData.json] in Resources folder or reinstall BroAudio");
 				return false;
             }
-			return true;
+            path = AssetDatabase.GetAssetPath(textAsset);
+            return true;
 		}
 
 		private static void DeleteJsonDataByAssetPath(string[] deletedAssetPaths)

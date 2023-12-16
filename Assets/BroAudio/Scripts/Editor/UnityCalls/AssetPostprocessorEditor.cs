@@ -23,31 +23,37 @@ public class AssetPostprocessorEditor : AssetPostprocessor
 
 	private static void OnDeleteAssets(string[] deletedAssets)
 	{
-		if(deletedAssets != null && deletedAssets.Length > 0)
+		if(deletedAssets == null || deletedAssets.Length == 0)
 		{
-			List<string> paths = new List<string>();
-			foreach(string path in deletedAssets)
-			{
-				if(path.Contains(BroEditorUtility.AssetOutputPath))
-				{
-					paths.Add(path);
-				}
-			}
-
-			if(paths.Count > 0)
-			{
-				BroEditorUtility.DeleteAssetRelativeData(deletedAssets);
-
-				if (HasOpenEditorWindow<LibraryManagerWindow>())
-				{
-					LibraryManagerWindow editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
-
-					foreach (string path in deletedAssets)
-					{
-					editorWindow.RemoveAssetEditor(AssetDatabase.AssetPathToGUID(path));
-					}
-				}
-			}
+            return;
 		}
-	}
+
+        List<string> paths = null;
+        foreach (string path in deletedAssets)
+        {
+            if (path.Contains(BroEditorUtility.DefaultRelativeAssetOutputPath))
+            {
+                if(paths == null)
+                {
+                    paths = new List<string>();
+                }
+                paths.Add(path);
+            }
+        }
+
+        if (paths != null && paths.Count > 0)
+        {
+            BroEditorUtility.DeleteAssetRelativeData(deletedAssets);
+
+            if (HasOpenEditorWindow<LibraryManagerWindow>())
+            {
+                LibraryManagerWindow editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
+
+                foreach (string path in deletedAssets)
+                {
+                    editorWindow.RemoveAssetEditor(AssetDatabase.AssetPathToGUID(path));
+                }
+            }
+        }
+    }
 }

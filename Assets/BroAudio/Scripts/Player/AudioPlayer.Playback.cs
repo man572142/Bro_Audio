@@ -56,7 +56,6 @@ namespace Ami.BroAudio.Runtime
 
             void ExecuteAfterChainingMethod(Action action)
             {
-                //StartCoroutine(DelayDo(action));
                 AsyncTaskExtension.DelayDoAction(AsyncTaskExtension.MillisecondInSeconds, action);
             }
 
@@ -99,6 +98,10 @@ namespace Ami.BroAudio.Runtime
             float targetVolume = GetTargetVolume();
             RemoveFromResumablePlayer();
 
+            // AudioSource.clip.samples returns the time samples length, not the data samples , so we only need normal sample rate and don't need to multiply the channel count.
+            int sampleRate = clip.AudioClip.frequency; 
+            
+
             do
             {
                 switch (_stopMode)
@@ -139,11 +142,12 @@ namespace Ami.BroAudio.Runtime
 				}
 
                 #region FadeOut
-                float endTime = AudioSource.clip.length - clip.EndPosition;
+                int endSample = (int)(AudioSource.clip.samples - (clip.EndPosition * sampleRate));
 
+                
                 if (HasFading(clip.FadeOut, pref.FadeOut, out float fadeOut))
                 {
-                    yield return new WaitUntil(() => (endTime - AudioSource.time) <= fadeOut);
+                    yield return new WaitUntil(() => endSample - AudioSource.timeSamples <= fadeOut * sampleRate);
                     IsFadingOut = true;
                     OnFinishOneRound(clip, pref);
                     //FadeOut start from here
@@ -152,9 +156,9 @@ namespace Ami.BroAudio.Runtime
                 }
                 else
                 {
-                    yield return new WaitUntil(() => AudioSource.time >= endTime || !AudioSource.isPlaying);
+                    bool hasPlayed = false;
+                    yield return new WaitUntil(() => HasEndPlaying(ref hasPlayed) || endSample - AudioSource.timeSamples <= 0);
                     OnFinishOneRound(clip, pref);
-                    
                 }
                 #endregion
             } while (pref.Entity.Loop);
@@ -164,7 +168,7 @@ namespace Ami.BroAudio.Runtime
 			void PlayFromPos(float pos)
 			{
 				AudioSource.Stop();
-				AudioSource.time = pos;
+				AudioSource.timeSamples = (int)(pos * sampleRate);
 				AudioSource.Play();
 			}
 
@@ -182,6 +186,17 @@ namespace Ami.BroAudio.Runtime
 				}
                 return result;
 			}
+
+            // more accurate than AudioSource.isPlaying
+            bool HasEndPlaying(ref bool hasPlayed)
+            {
+                int timeSample = AudioSource.timeSamples;
+                if(!hasPlayed)
+                {
+                    hasPlayed = timeSample > 0;
+                }
+                return hasPlayed && timeSample == 0;
+            }
 		}
 
 		private void OnFinishOneRound(BroAudioClip clip, PlaybackPreference pref)
@@ -226,9 +241,11 @@ namespace Ami.BroAudio.Runtime
                 IsStopping = true;
                 if (IsFadingOut)
                 {
-                    // 如果已經在FadeOut了(也就是剛剛的Play已快結束)，就等它FadeOut不強制停止
-                    float endTime = AudioSource.clip.length - CurrentClip.EndPosition;
-                    yield return new WaitUntil(() => AudioSource.time >= endTime);
+                    // if is fading out. then don't stop. just wait for it
+                    AudioClip clip = AudioSource.clip;
+                    int sampleRate = clip.frequency * clip.channels;
+                    float endSample = clip.samples - (CurrentClip.EndPosition * sampleRate);
+                    yield return new WaitUntil(() => AudioSource.timeSamples >= endSample);
                 }
                 else
                 {

@@ -59,6 +59,8 @@ namespace Ami.Extension
         public const int DefaultPriority = 128;
         public const int MinPriority = 0;
         public const float MaxPriority = 256;
+        public const float DefaultSpread = 0f;
+        public const float DefaultReverZoneMix = 1f;
 
         public static float DecibelVoulumeFullScale => MaxDecibelVolume - MinDecibelVolume;
 		public static AnimationCurve SpatialBlend => AnimationCurve.Constant(0f, 0f, 0f);

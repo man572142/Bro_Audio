@@ -106,9 +106,9 @@ namespace Ami.BroAudio.Runtime
             AudioSource.minDistance = isDefault ? AudioConstant.AttenuationMinDistance : settings.MinDistance;
             AudioSource.maxDistance = isDefault ? AudioConstant.AttenuationMaxDistance : settings.MaxDistance;
 
-            AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, settings.SpatialBlend);
-            AudioSource.SetCustomCurve(AudioSourceCurveType.ReverbZoneMix, settings.ReverbZoneMix);
-            AudioSource.SetCustomCurve(AudioSourceCurveType.Spread, settings.Spread);
+            AudioSource.SetCustomCurveOrResetDefault(settings.ReverbZoneMix, AudioSourceCurveType.ReverbZoneMix);
+            AudioSource.SetCustomCurveOrResetDefault(settings.Spread, AudioSourceCurveType.Spread);
+            
             AudioSource.rolloffMode = settings.RolloffMode;
             if (settings.RolloffMode == AudioRolloffMode.Custom)
             {
@@ -116,18 +116,29 @@ namespace Ami.BroAudio.Runtime
             }
 
             if (pref.FollowTarget != null && transform.parent != pref.FollowTarget)
-			{
+            {
                 transform.SetParent(pref.FollowTarget, false);
-                if(settings.SpatialBlend == null)
-                {
-                    AudioSource.spatialBlend = AudioConstant.SpatialBlend_3D;
-                }
+                SetSpatialBlendTo3D();
             }
             else if (pref.HasPosition(out var position))
 			{
                 transform.position = position;
-                if(settings.SpatialBlend == null || settings.SpatialBlend[0].value == AudioConstant.SpatialBlend_2D)
+                SetSpatialBlendTo3D();
+            }
+            else if(!settings.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D) && pref.Entity is IEntityIdentity entity)
+            {
+                Debug.LogWarning($"You've set a non-2D SpatialBlend for :{entity.Name}, but didn't specify a position or a follow target when playing it");
+            }
+
+            void SetSpatialBlendTo3D()
+            {
+                if (!settings.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D))
                 {
+                    AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, settings.SpatialBlend);
+                }
+                else
+                {
+                    // force to 3D if it's played with a position or a follow target, even if it has no custom curve. 
                     AudioSource.spatialBlend = AudioConstant.SpatialBlend_3D;
                 }
             }

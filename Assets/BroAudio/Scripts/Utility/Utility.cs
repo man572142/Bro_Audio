@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using Ami.BroAudio.Runtime;
+using UnityEngine;
+using Ami.Extension;
 
 namespace Ami.BroAudio
 {
@@ -33,5 +35,61 @@ namespace Ami.BroAudio
 			return ((int)flags & (int)targetFlag) != 0;
 		}
 		#endregion
-	}
+
+		public static bool IsDefaultCurve(this AnimationCurve curve , float defaultValue)
+		{
+			if(curve == null || curve.length == 0)
+			{
+				return true;
+			}
+			else if(curve.length == 1 && curve[0].value == defaultValue)
+			{
+				return true;
+			}
+			return false;
+		}
+
+		public static void SetCustomCurveOrResetDefault(this AudioSource audioSource, AnimationCurve curve, AudioSourceCurveType curveType)
+		{
+			float defaultValue = GetCurveDefaultValue(curveType);
+
+            if (!curve.IsDefaultCurve(defaultValue))
+			{
+				audioSource.SetCustomCurve(curveType,curve);
+			}
+			else
+			{
+                switch (curveType)
+                {
+                    case AudioSourceCurveType.SpatialBlend:
+						audioSource.spatialBlend = defaultValue;
+                        break;
+                    case AudioSourceCurveType.ReverbZoneMix:
+						audioSource.reverbZoneMix = defaultValue;
+                        break;
+                    case AudioSourceCurveType.Spread:
+						audioSource.spread = defaultValue;
+                        break;
+					default:
+						// todo:
+						break;
+                }
+            }
+        }
+
+        private static float GetCurveDefaultValue(AudioSourceCurveType curveType)
+		{
+            switch (curveType)
+            {
+                case AudioSourceCurveType.SpatialBlend:
+                    return AudioConstant.SpatialBlend_2D;
+                case AudioSourceCurveType.ReverbZoneMix:
+                    return AudioConstant.DefaultReverZoneMix;
+                case AudioSourceCurveType.Spread:
+                    return AudioConstant.DefaultSpread;
+                default:
+					return default;
+            }
+        }
+    }
 }

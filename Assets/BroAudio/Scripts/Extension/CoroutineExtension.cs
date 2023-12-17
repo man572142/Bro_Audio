@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -30,6 +31,27 @@ namespace Ami.Extension
             IEnumerator Enumerator()
             {
                 yield return instruction;
+            }
+        }
+
+        public static void DelayInvoke(this MonoBehaviour source, Action action, float delayTime)
+        {
+            DelayInvoke(source, action, new WaitForSeconds(delayTime));
+        }
+
+        public static void DelayInvoke(this MonoBehaviour source, Action action, WaitForSeconds waitForSeconds)
+        {
+            if(waitForSeconds == null)
+            {
+                Debug.LogError("WaitForSeconds is null !");
+                return;
+            }
+            source.StartCoroutine(DelayInvoke());
+
+            IEnumerator DelayInvoke()
+            {
+                yield return waitForSeconds;
+                action?.Invoke();
             }
         }
     } 

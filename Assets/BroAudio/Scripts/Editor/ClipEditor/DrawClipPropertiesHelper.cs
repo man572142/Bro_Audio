@@ -52,8 +52,9 @@ namespace Ami.BroAudio.Editor
 		private KeyValuePair<string, DraggablePoint> _currDraggedPoint = default;
 
 		private TransportType[] _allTransportType = Enum.GetValues(typeof(TransportType)) as TransportType[];
+		private WaveformRenderHelper _waveformHelper = new WaveformRenderHelper();
 
-		public DrawClipPropertiesHelper()
+        public DrawClipPropertiesHelper()
 		{
 		}
 
@@ -121,24 +122,25 @@ namespace Ami.BroAudio.Editor
 
 			void DrawWaveformPreview()
 			{			
-				Texture2D waveformTexture = AssetPreview.GetAssetPreview(audioClip);
-				if (waveformTexture != null)
-				{
-					if(Event.current.type == EventType.Repaint)
-					{
-						GUI.skin.window.Draw(previewRect, false, false, false, false);
-					}
+				//Texture2D waveformTexture = AssetPreview.GetAssetPreview(audioClip);
+                
+                if (Event.current.type == EventType.Repaint)
+                {
+                    GUI.skin.window.Draw(previewRect, false, false, false, false);
 
-					Rect waveformRect = new Rect(previewRect);
-					if (transport.Delay > transport.StartPosition)
-					{
-						float exceedTimeInPixels = exceedTime / (exceedTime + audioClip.length) * waveformRect.width;
-						waveformRect.width -= exceedTimeInPixels;
-						waveformRect.x += exceedTimeInPixels;
-					}
-					EditorGUI.DrawPreviewTexture(waveformRect, waveformTexture);
-				}
-			}
+                    Rect waveformRect = new Rect(previewRect);
+					// hack: don't know where da fuck are these offset coming from , just measure them by eyes
+					waveformRect.x += 4f;
+					waveformRect.width -= 6f;
+                    if (transport.Delay > transport.StartPosition)
+                    {
+                        float exceedTimeInPixels = exceedTime / (exceedTime + audioClip.length) * waveformRect.width;
+                        waveformRect.width -= exceedTimeInPixels;
+                        waveformRect.x += exceedTimeInPixels;
+                    }
+                    _waveformHelper.RenderClipWaveform(waveformRect, audioClip);
+                }
+            }
 
 			void DrawPlaybackButton()
 			{

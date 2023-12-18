@@ -77,26 +77,28 @@ namespace Ami.BroAudio
 		/// <summary>
 		/// While this audio player is playing, the volume of other audio players will be lowered to the given ratio.
 		/// </summary>
-		/// <param name="othersVol">值須介於0~1之間</param>
+		/// <param name="othersVol"></param>
 		/// <param name="fadeTime"></param>
 		public static IPlayerEffect QuietOthers(this IPlayerEffect player, float othersVol, float fadeTime = FadeTime_Quick) 
 			=> player?.QuietOthers(othersVol,fadeTime);
 
 		/// <summary>
-		/// While this audio player is playing, the higher frequencies of other audio players will be cutted off. (aka LowPassFilter) 
+		/// While this audio player is playing, a lowpass filter will be added to other audio players (i.e. their higher frequencies will be cutted off)
 		/// </summary>
-		/// <param name="freq"></param>
+		/// <param name="freq">10 Hz ~ 22000Hz</param>
 		/// <param name="fadeTime"></param>
-		public static IPlayerEffect HighCutOthers(this IPlayerEffect player, float freq = HighCutFrequence, float fadeTime = FadeTime_Quick) 
-			=> player?.HighCutOthers(freq,fadeTime);
+		public static IPlayerEffect LowPassOthers(this IPlayerEffect player, float freq = LowPassFrequency, float fadeTime = FadeTime_Quick) 
+			=> player?.LowPassOthers(freq,fadeTime);
 
 		/// <summary>
-		/// While this audio player is playing, the lower frequencies of other audio players will be cutted off. (aka HighPassFilter) 
+		/// While this audio player is playing, a highpass filter will be added to other audio players (i.e. their lower frequencies will be cutted off)
 		/// </summary>
-		/// <param name="freq"></param>
+		/// <param name="freq">10 Hz ~ 22000Hz</param>
 		/// <param name="fadeTime"></param>
-		public static IPlayerEffect LowCutOthers(this IPlayerEffect player, float freq = LowCutFrequence, float fadeTime = FadeTime_Quick) 
-			=> player?.LowCutOthers(freq,fadeTime);
+		public static IPlayerEffect HighPassOthers(this IPlayerEffect player, float freq = HighPassFrequency, float fadeTime = FadeTime_Quick) 
+			=> player?.HighPassOthers(freq,fadeTime);
+
+		// Note: LowPass == HighCut , HighPass == LowCut
 		#endregion
 #endif
 	}

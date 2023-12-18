@@ -5,10 +5,8 @@ using UnityEditor;
 using UnityEditorInternal;
 using Ami.Extension;
 using Ami.BroAudio.Data;
-using Ami.BroAudio.Editor.Setting;
 using System;
 using static Ami.Extension.EditorScriptingExtension;
-using static Ami.Extension.AudioConstant;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 
 namespace Ami.BroAudio.Editor
@@ -21,9 +19,6 @@ namespace Ami.BroAudio.Editor
 		public static event Action OnEntityNameChanged;
 
 		private const float ClipPreviewHeight = 100f;
-		private const float LowVolumeSnappingThreshold = 0.05f;
-		private const float HighVolumeSnappingThreshold = 0.2f;
-		private const string DbValueStringFormat = "0.##";
 		private const float DefaultFieldRatio = 0.9f;
 
 		private readonly GUIContent[] _tabLabelGUIContents = { new GUIContent(nameof(Tab.Clips)), new GUIContent(nameof(Tab.Settings)) };
@@ -262,96 +257,6 @@ namespace Ami.BroAudio.Editor
 			{
 				return setting.DrawedProperty.Contains(drawedProperty);
 			}
-		}
-
-		private float DrawVolumeSlider(Rect position, GUIContent label, float currentValue,bool isSnap,Action onSwitchSnapMode)
-		{
-			Rect suffixRect = EditorGUI.PrefixLabel(position, label);
-            SplitRectHorizontal(suffixRect,0.74f ,5f, out Rect sliderRect, out Rect fieldAndDbRect);
-			SplitRectHorizontal(fieldAndDbRect, 0.45f, 3f, out Rect fieldRect, out Rect dbLabelRect);
-#if !UNITY_WEBGL
-            if (BroEditorUtility.EditorSetting.ShowVUColorOnVolumeSlider)
-            {
-                DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
-            }
-
-            if (isSnap && CanSnap(currentValue))
-            {
-                currentValue = FullVolume;
-            }
-
-            float sliderFullScale = FullVolume / (FullDecibelVolume - MinDecibelVolume / DecibelVoulumeFullScale);
-            DrawFullVolumeSnapPoint(sliderRect, sliderFullScale, onSwitchSnapMode);
-
-            float sliderValue = ConvertToSliderValue(currentValue, sliderFullScale);
-            float newSliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
-            bool hasSliderChanged = sliderValue != newSliderValue;
-
-            float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? ConvertToNomalizedVolume(newSliderValue, sliderFullScale) : currentValue);
-            currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
-#else
-				currentValue = GUI.HorizontalSlider(sliderRect, currentValue, 0f, FullVolume);
-				currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue),0f,FullVolume);
-#endif
-            DrawDecibelValueLabel(dbLabelRect, currentValue);
-            return currentValue;
-
-			void DrawDecibelValueLabel(Rect dbRect, float value)
-			{
-				value = Mathf.Log10(value) * 20f;
-				string plusSymbol = value > 0 ? "+" : string.Empty;
-				string volText = plusSymbol + value.ToString(DbValueStringFormat) + "dB";
-				EditorGUI.LabelField(dbRect, volText);
-			}
-
-#if !UNITY_WEBGL
-			void DrawFullVolumeSnapPoint(Rect sliderPosition,float sliderFullScale ,Action onSwitchSnapMode)
-			{
-				Rect rect = new Rect(sliderPosition);
-				rect.width = 30f;
-				rect.x = sliderPosition.x + sliderPosition.width * (FullVolume / sliderFullScale) - (rect.width * 0.5f) + 1f; // add 1 pixel for more precise position
-				rect.y -= sliderPosition.height;
-				var icon = EditorGUIUtility.IconContent(IconConstant.VolumeSnapPointer);
-				EditorGUI.BeginDisabledGroup(!isSnap);
-				{
-					GUI.Label(rect, icon);
-				}
-				EditorGUI.EndDisabledGroup();
-				if (GUI.Button(rect, "", EditorStyles.label))
-				{
-					onSwitchSnapMode?.Invoke();
-				}
-			}
-
-			float ConvertToSliderValue(float vol, float sliderFullScale)
-			{
-				if(vol > FullVolume)
-				{
-					float db = vol.ToDecibel(true);
-					return (db - MinDecibelVolume) / DecibelVoulumeFullScale * sliderFullScale;
-				}
-				return vol;
-				
-			}
-
-			float ConvertToNomalizedVolume(float sliderValue,float sliderFullScale)
-			{
-				if(sliderValue > FullVolume)
-				{
-					float db = MinDecibelVolume + (sliderValue / sliderFullScale) * DecibelVoulumeFullScale;
-					return db.ToNormalizeVolume(true);
-				}
-				return sliderValue;
-			}
-
-			bool CanSnap(float value)
-			{
-				float difference = value - FullVolume;
-				bool isInLowVolumeSnappingRange = difference < 0f && difference * -1f <= LowVolumeSnappingThreshold;
-				bool isInHighVolumeSnappingRange = difference > 0f && difference <= HighVolumeSnappingThreshold;
-				return isInLowVolumeSnappingRange || isInHighVolumeSnappingRange;
-			}
-#endif
 		}
 
 		private bool TryGetAudioTypeSetting(SerializedProperty property, out EditorSetting.AudioTypeSetting setting)

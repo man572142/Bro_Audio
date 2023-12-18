@@ -92,7 +92,7 @@ namespace Ami.BroAudio.Editor
 #if !UNITY_WEBGL
 					if(BroEditorUtility.EditorSetting.ShowVUColorOnVolumeSlider)
 					{
-						onDrawVU = sliderRect => BroEditorUtility.DrawVUMeter(sliderRect, Setting.BroAudioGUISetting.VUMaskColor);
+						onDrawVU = sliderRect => DrawVUMeter(sliderRect, Setting.BroAudioGUISetting.VUMaskColor);
 					}
 #endif
 					// todo: need logarithm

@@ -301,25 +301,6 @@ namespace Ami.Extension
 			}
 		}
 
-		//public static float DrawLogarithmicSlider_Horizontal(Rect position,float currentValue, float leftValue, float rightValue)
-		//{
-		//	const float min = 0.0001f;
-		//	if (leftValue <= 0f)
-		//	{
-		//		//Debug.LogWarning($"The left value of the LogarithmicSlider should be greater than 0. It has been set to the default value of {min}");
-		//		leftValue = Mathf.Max(min, leftValue);
-		//	}
-
-		//	currentValue = currentValue == 0 ? leftValue : currentValue;
-		//	float logValue = Mathf.Log10(currentValue);
-		//	float logLeftValue = Mathf.Log10(leftValue);
-		//	float logRightValue = Mathf.Log10(rightValue);
-
-		//	float logResult = GUI.HorizontalSlider(position, logValue, logLeftValue, logRightValue);
-
-		//	return Mathf.Pow(10,logResult);
-		//}
-
 		public static int FontSizeToPixels(int fontSize)
 		{
 			// 16px = 12pt.
@@ -463,6 +444,45 @@ namespace Ami.Extension
 			min = EditorGUI.FloatField(minFieldRect,min);
 			max = EditorGUI.FloatField(maxFieldRect, max);
 			EditorGUI.MinMaxSlider(sliderRect, ref min, ref max, minLimit, maxLimit);
+		}
+
+		public static float DrawLogarithmicSlider_Horizontal(Rect position, float currentValue, float leftValue, float rightValue, bool isDrawField = true)
+		{
+			const float min = 0.0001f;
+			if (leftValue <= 0f)
+			{
+				//Debug.LogWarning($"The left value of the LogarithmicSlider should be greater than 0. It has been set to the default value of {min}");
+				leftValue = Mathf.Max(min, leftValue);
+			}
+
+			Rect sliderRect = new Rect(position);
+			if (isDrawField)
+			{
+				float gap = 5f;
+				sliderRect.width -= EditorGUIUtility.fieldWidth + gap;
+				Rect fieldRect = new Rect(sliderRect) { x = sliderRect.xMax + gap, width = EditorGUIUtility.fieldWidth };
+				currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue), leftValue, rightValue);
+			}
+
+			currentValue = currentValue == 0 ? leftValue : currentValue;
+			float logValue = Mathf.Log10(currentValue);
+			float logLeftValue = Mathf.Log10(leftValue);
+			float logRightValue = Mathf.Log10(rightValue);
+
+			float logResult = GUI.HorizontalSlider(sliderRect, logValue, logLeftValue, logRightValue);
+
+			if (logResult == logLeftValue)
+			{
+				return leftValue;
+			}
+			else if (logResult == logRightValue)
+			{
+				return rightValue;
+			}
+			else
+			{
+				return Mathf.Pow(10, logResult);
+			}
 		}
 	}
 }

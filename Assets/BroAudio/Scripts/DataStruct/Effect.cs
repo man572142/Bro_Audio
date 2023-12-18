@@ -11,15 +11,15 @@ namespace Ami.BroAudio
 	public struct Effect
 	{
 		// Use these static method for SetEffect() is recomended
-		public static Effect LowCut(float frequence, float fadeTime, Ease fadingEase = default) => new Effect(EffectType.LowCut, frequence, fadeTime, fadingEase);
-		public static Effect HighCut(float frequence, float fadeTime, Ease fadingEase = default) => new Effect(EffectType.HighCut, frequence, fadeTime, fadingEase);
+		public static Effect HighPass(float frequency, float fadeTime, Ease fadingEase = default) => new Effect(EffectType.HighPass, frequency, fadeTime, fadingEase);
+		public static Effect LowPass(float frequency, float fadeTime, Ease fadingEase = default) => new Effect(EffectType.LowPass, frequency, fadeTime, fadingEase);
 		public static Effect Volume(float volumeFactor, float fadeTime, Ease fadingEase = default) => new Effect(EffectType.Volume, volumeFactor, fadeTime, fadingEase);
 
 		public static class Defaults
 		{
 			public static float Volume => AudioConstant.FullVolume;
-			public static float HighCut => AudioConstant.MaxFrequence;
-			public static float LowCut => AudioConstant.MinFrequence;
+			public static float LowPass => AudioConstant.MaxFrequency;
+			public static float HighPass => AudioConstant.MinFrequency;
 		}
 		
 
@@ -58,9 +58,9 @@ namespace Ami.BroAudio
 						LogWarning("The value of a volume type EffectParameter should be less than 1 and greater than 0!");
 					}
 				}
-				else if (Type == EffectType.HighCut || Type == EffectType.LowCut)
+				else if (Type == EffectType.LowPass || Type == EffectType.HighPass)
 				{
-					if(AudioExtension.IsValidFrequence(value))
+					if(AudioExtension.IsValidFrequency(value))
 					{
 						_value = value;
 					}
@@ -77,11 +77,11 @@ namespace Ami.BroAudio
 				case EffectType.Volume:
 					Value = AudioConstant.FullVolume;
 					break;
-				case EffectType.HighCut:
-					Value = BroAdvice.HighCutFrequence;
+				case EffectType.LowPass:
+					Value = BroAdvice.LowPassFrequency;
 					break;
-				case EffectType.LowCut:
-					Value = BroAdvice.LowCutFrequence;
+				case EffectType.HighPass:
+					Value = BroAdvice.HighPassFrequency;
 					break;
 			}
 		}

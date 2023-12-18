@@ -2,29 +2,29 @@ using UnityEngine;
 
 namespace Ami.Extension
 {
-    public class BeautyEnum : PropertyAttribute
+    public class BeautifulEnum : PropertyAttribute
     {
         public readonly bool ShowSeparator;
         public readonly TextAnchor FieldTextAnchor;
 
-        public BeautyEnum()
+        public BeautifulEnum()
         {
             ShowSeparator = true;
             FieldTextAnchor = TextAnchor.MiddleCenter;
         }
 
-        public BeautyEnum(bool showSeparator)
+        public BeautifulEnum(bool showSeparator)
         {
             ShowSeparator = showSeparator;
             FieldTextAnchor = TextAnchor.MiddleLeft;
         }
 
-        public BeautyEnum(TextAnchor fieldTextAnchor)
+        public BeautifulEnum(TextAnchor fieldTextAnchor)
         {
             FieldTextAnchor = fieldTextAnchor;
         }
 
-        public BeautyEnum(bool showSeparator, TextAnchor fieldTextAnchor)
+        public BeautifulEnum(bool showSeparator, TextAnchor fieldTextAnchor)
         {
             ShowSeparator = showSeparator;
             FieldTextAnchor = fieldTextAnchor;

@@ -36,7 +36,7 @@ namespace Ami.Extension
 
         public static float ToDecibel(this float vol,bool allowBoost = false)
         {  
-            return Mathf.Log10(vol.ClampNormalize(allowBoost)) * 20f;
+            return Mathf.Log10(vol.ClampNormalize(allowBoost)) * DefaultDecibelVolumeScale;
         }
 
         public static float ToNormalizeVolume(this float dB,bool allowBoost = false)
@@ -46,7 +46,7 @@ namespace Ami.Extension
             {
                 return allowBoost ? MaxVolume : FullVolume;
             }
-            return Mathf.Pow(10, dB.ClampDecibel(allowBoost) / 20f);
+            return Mathf.Pow(10, dB.ClampDecibel(allowBoost) / DefaultDecibelVolumeScale);
         }
 
         public static float ClampNormalize(this float vol, bool allowBoost = false)
@@ -95,11 +95,11 @@ namespace Ami.Extension
             return new AudioClipSetting(audioClip);
 		}
 
-        public static bool IsValidFrequence(float freq)
+        public static bool IsValidFrequency(float freq)
         {
-            if (freq < MinFrequence || freq > MaxFrequence)
+            if (freq < MinFrequency || freq > MaxFrequency)
             {
-                Debug.LogError($"The given frequence should be in {MinFrequence}Hz ~ {MaxFrequence}Hz.");
+                Debug.LogError($"The given frequency should be in {MinFrequency}Hz ~ {MaxFrequency}Hz.");
                 return false;
             }
             return true;

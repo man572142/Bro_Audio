@@ -5,9 +5,9 @@ namespace Ami.BroAudio
     [System.Serializable]
 	public struct TriggerData
 	{
-        [BeautyEnum]
+        [BeautifulEnum]
         public UnityMessage OnEvent;
-		[BeautyEnum]
+		[BeautifulEnum]
 		public BroAction DoAction;
 
 		public TriggerParameter Parameter;

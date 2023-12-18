@@ -8,6 +8,7 @@ using UnityEngine;
 using Ami.Extension;
 using static Ami.Extension.StringExtension;
 using static Ami.Extension.AudioConstant;
+using System.Reflection;
 
 namespace Ami.BroAudio.Editor
 {
@@ -18,6 +19,10 @@ namespace Ami.BroAudio.Editor
         public const string ProjectSettingsFolderName = "ProjectSettings";
         public const string VoiceCountPropertyName = "m_RealVoiceCount";
 
+        private const float LowVolumeSnappingThreshold = 0.05f;
+        private const float HighVolumeSnappingThreshold = 0.2f;
+        private const string DbValueStringFormat = "0.##";
+        private const int VolumeFieldDigitsMultiplier = 1000; // 0.###
 
         private static RuntimeSetting _runtimeSetting = null;
         public static RuntimeSetting RuntimeSetting
@@ -172,21 +177,86 @@ namespace Ami.BroAudio.Editor
 
         public static void DrawVUMeter(Rect vuRect, Color maskColor)
         {
-            vuRect.height *= 0.5f;
+            vuRect.height *= 0.25f;
+            vuRect.y += vuRect.height * 0.5f;
             EditorGUI.DrawTextureTransparent(vuRect, EditorGUIUtility.IconContent(IconConstant.HorizontalVUMeter).image);
             EditorGUI.DrawRect(vuRect, maskColor);
         }
 
-        public static void DrawDbVolumeSlider(Rect sliderRect,Rect fieldRect,ref float currentValue)
+        public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue)
+		{
+            return DrawVolumeSlider(position, label, currentValue, false, null);
+        }
+
+        public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue, bool isSnap, Action onSwitchSnapMode)
         {
-            float sliderFullScale = FullVolume / (FullDecibelVolume - MinDecibelVolume / DecibelVoulumeFullScale);
+            Rect suffixRect = EditorGUI.PrefixLabel(position, label);
+            
+            float fieldWidth = EditorGUIUtility.fieldWidth;
+            float gap = 3f;
+            Rect sliderRect = new Rect(suffixRect) { width = suffixRect.width - fieldWidth - gap};
+            Rect fieldRect = new Rect(suffixRect) { x = sliderRect.xMax + gap, width = fieldWidth };
+
+#if !UNITY_WEBGL
+            if (EditorSetting.ShowVUColorOnVolumeSlider)
+            {
+                DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
+            }
+
+            if (isSnap && CanSnap(currentValue))
+            {
+                currentValue = FullVolume;
+            }
+
+            float sliderFullScale = FullVolume / ((FullDecibelVolume - MinDecibelVolume) / DecibelVoulumeFullScale);
+            DrawFullVolumeSnapPoint(sliderRect, sliderFullScale, onSwitchSnapMode);
 
             float sliderValue = ConvertToSliderValue(currentValue, sliderFullScale);
             float newSliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
             bool hasSliderChanged = sliderValue != newSliderValue;
 
             float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? ConvertToNomalizedVolume(newSliderValue, sliderFullScale) : currentValue);
+            newFloatFieldValue = (float)Math.Floor(newFloatFieldValue * VolumeFieldDigitsMultiplier) / VolumeFieldDigitsMultiplier;
             currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
+#else
+				currentValue = GUI.HorizontalSlider(sliderRect, currentValue, 0f, FullVolume);
+				currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue),0f,FullVolume);
+#endif
+            DrawDecibelValueLabel(suffixRect, currentValue);
+            return currentValue;
+
+            void DrawDecibelValueLabel(Rect dbRect, float value)
+            {
+                // draw an invisible label field for showing tooltip only
+                value = Mathf.Log10(value) * DefaultDecibelVolumeScale;
+                string plusSymbol = value > 0 ? "+" : string.Empty;
+                string volText = plusSymbol + value.ToString(DbValueStringFormat) + "dB";
+                EditorGUI.LabelField(suffixRect, new GUIContent() { text = string.Empty, tooltip = volText });
+            }
+
+#if !UNITY_WEBGL
+            void DrawFullVolumeSnapPoint(Rect sliderPosition, float sliderFullScale, Action onSwitchSnapMode)
+            {
+                if(onSwitchSnapMode == null)
+				{
+                    return;
+				}
+
+                Rect rect = new Rect(sliderPosition);
+                rect.width = 30f;
+                rect.x = sliderPosition.x + sliderPosition.width * (FullVolume / sliderFullScale) - (rect.width * 0.5f) + 1f; // add 1 pixel for more precise position
+                rect.y -= sliderPosition.height;
+                var icon = EditorGUIUtility.IconContent(IconConstant.VolumeSnapPointer);
+                EditorGUI.BeginDisabledGroup(!isSnap);
+                {
+                    GUI.Label(rect, icon);
+                }
+                EditorGUI.EndDisabledGroup();
+                if (GUI.Button(rect, "", EditorStyles.label))
+                {
+                    onSwitchSnapMode?.Invoke();
+                }
+            }
 
             float ConvertToSliderValue(float vol, float sliderFullScale)
             {
@@ -208,6 +278,29 @@ namespace Ami.BroAudio.Editor
                 }
                 return sliderValue;
             }
+
+            bool CanSnap(float value)
+            {
+                float difference = value - FullVolume;
+                bool isInLowVolumeSnappingRange = difference < 0f && difference * -1f <= LowVolumeSnappingThreshold;
+                bool isInHighVolumeSnappingRange = difference > 0f && difference <= HighVolumeSnappingThreshold;
+                return isInLowVolumeSnappingRange || isInHighVolumeSnappingRange;
+            }
+#endif
+        }
+
+        public static AnimationCurve SpatialBlend => AnimationCurve.Constant(0f, 0f, 0f);
+        public static AnimationCurve ReverbZoneMix => AnimationCurve.Constant(0f, 0f, 1f);
+        public static AnimationCurve Spread => AnimationCurve.Constant(0f, 0f, 0f);
+        public static AnimationCurve LogarithmicRolloff => GetLogarithmicCurve(AttenuationMinDistance / AttenuationMaxDistance, 1f, 1f);
+
+        private static AnimationCurve GetLogarithmicCurve(float timeStart, float timeEnd, float logBase)
+        {
+            Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
+            Type audioSourceInspector = unityEditorAssembly?.GetType($"UnityEditor.AudioSourceInspector");
+            MethodInfo method = audioSourceInspector?.GetMethod("Logarithmic", BindingFlags.NonPublic | BindingFlags.Static);
+
+            return method?.Invoke(null, new object[] { timeStart, timeEnd, logBase }) as AnimationCurve;
         }
     }
 }

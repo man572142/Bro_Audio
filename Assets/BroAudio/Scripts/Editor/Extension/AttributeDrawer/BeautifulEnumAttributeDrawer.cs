@@ -6,8 +6,8 @@ using System;
 
 namespace Ami.Extension.Editor
 {
-    [CustomPropertyDrawer(typeof(BeautyEnum))]
-    public class BeautyEnumEditor : PropertyDrawer
+    [CustomPropertyDrawer(typeof(BeautifulEnum))]
+    public class BeautifulEnumAttributeDrawer : PropertyDrawer
     {
         public struct EnumData
         {
@@ -17,7 +17,7 @@ namespace Ami.Extension.Editor
 
         private Dictionary<string, EnumData> _cachedEnumDatas = new Dictionary<string, EnumData>();
 
-        public BeautyEnum Setting => (BeautyEnum)attribute;
+        public BeautifulEnum Setting => (BeautifulEnum)attribute;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

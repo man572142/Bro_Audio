@@ -21,7 +21,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public static Color PlayButtonColor => new Color(0.25f, 0.9f, 0.25f, 0.4f);
 		public static Color StopButtonColor => new Color(0.9f, 0.25f, 0.25f, 0.4f);
 		public static Color ShadowMaskColor => new Color(0.05f, 0.05f, 0.05f, 0.3f);
-		public static Color VUMaskColor => new Color(0.2f, 0.2f, 0.2f, 0.8f);
+		public static Color VUMaskColor => new Color(0.2f, 0.2f, 0.2f, 0.6f);
 		public static Color FalseColor => new Color(0.5f, 0.05f, 0.05f,0.5f);
 		public static Color DefaultLabelColor => GUI.skin.label.normal.textColor;
 

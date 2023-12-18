@@ -7,7 +7,7 @@ using System;
 namespace Ami.Extension
 {
 	[CustomPropertyDrawer(typeof(ReadOnlyTextArea))]
-	public class ReadOnlyTextAreaPropertyDrawer : MiPropertyDrawer
+	public class ReadOnlyTextAreaAttributeDrawer : MiPropertyDrawer
 	{
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight;
 

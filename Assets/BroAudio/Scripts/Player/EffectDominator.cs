@@ -20,25 +20,25 @@ namespace Ami.BroAudio.Runtime
 			return this;
 		}
 
-		IPlayerEffect IPlayerEffect.HighCutOthers(float freq ,float fadeTime)
+		IPlayerEffect IPlayerEffect.LowPassOthers(float freq ,float fadeTime)
         {
-            if (!AudioExtension.IsValidFrequence(freq))
+            if (!AudioExtension.IsValidFrequency(freq))
             {
                 return this;
             }
 
-            SetAllEffectExceptDominator(Effect.HighCut(freq,fadeTime));
+            SetAllEffectExceptDominator(Effect.LowPass(freq,fadeTime));
             return this;
         }
 
-        IPlayerEffect IPlayerEffect.LowCutOthers(float freq,float fadeTime)
+        IPlayerEffect IPlayerEffect.HighPassOthers(float freq,float fadeTime)
         {
-            if (!AudioExtension.IsValidFrequence(freq))
+            if (!AudioExtension.IsValidFrequency(freq))
             {
                 return this;
             }
 
-            SetAllEffectExceptDominator(Effect.LowCut(freq,fadeTime));
+            SetAllEffectExceptDominator(Effect.HighPass(freq,fadeTime));
             return this;
         }
 

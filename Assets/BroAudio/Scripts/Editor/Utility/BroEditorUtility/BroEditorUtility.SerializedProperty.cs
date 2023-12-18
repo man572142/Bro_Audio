@@ -47,10 +47,11 @@ namespace Ami.BroAudio.Editor
             spatialProp.FindPropertyRelative(nameof(SpatialSettings.MinDistance)).floatValue = AudioConstant.AttenuationMinDistance;
             spatialProp.FindPropertyRelative(nameof(SpatialSettings.MaxDistance)).floatValue = AudioConstant.AttenuationMaxDistance;
 
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.SpatialBlend)).animationCurveValue = AudioConstant.SpatialBlend;
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.ReverbZoneMix)).animationCurveValue = AudioConstant.ReverbZoneMix;
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.Spread)).animationCurveValue = AudioConstant.Spread;
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.CustomRolloff)).animationCurveValue = AudioConstant.CustomRolloff;
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.SpatialBlend)).animationCurveValue = BroEditorUtility.SpatialBlend;
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.ReverbZoneMix)).animationCurveValue = BroEditorUtility.ReverbZoneMix;
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.Spread)).animationCurveValue = BroEditorUtility.Spread;
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.CustomRolloff)).animationCurveValue = null;
+            spatialProp.FindPropertyRelative(nameof(SpatialSettings.RolloffMode)).enumValueIndex = (int)AudioRolloffMode.Logarithmic;
             spatialProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
 		}
 

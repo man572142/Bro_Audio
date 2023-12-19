@@ -10,6 +10,7 @@ namespace Ami.Extension
 	{
 		public const float TwoSidesLabelOffsetY = 7f;
 		public const float IndentInPixel = 15f;
+		public const float LogarithmicMinValue = 0.0001f;
 
 		public struct MultiLabel
 		{
@@ -433,26 +434,46 @@ namespace Ami.Extension
 
 		public static void DrawMinMaxSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit,float fieldWidth,Action<Rect> onGetSliderRect = null)
 		{
-			Rect suffixRect = EditorGUI.PrefixLabel(position,label);
-
-			float gap = 5f;
-			Rect minFieldRect = new Rect(suffixRect) { width = fieldWidth };
-			Rect sliderRect = new Rect(suffixRect) { x = minFieldRect.xMax + gap, width = suffixRect.width - (fieldWidth + gap) * 2f };
-			Rect maxFieldRect = new Rect(suffixRect) {x = sliderRect.xMax + gap, width = fieldWidth };
+			Rect suffixRect = EditorGUI.PrefixLabel(position, label);
+			GetMinMaxRects(suffixRect, fieldWidth, out Rect minFieldRect, out Rect sliderRect, out Rect maxFieldRect);
 			onGetSliderRect?.Invoke(sliderRect);
 
-			min = EditorGUI.FloatField(minFieldRect,min);
+			min = EditorGUI.FloatField(minFieldRect, min);
 			max = EditorGUI.FloatField(maxFieldRect, max);
 			EditorGUI.MinMaxSlider(sliderRect, ref min, ref max, minLimit, maxLimit);
 		}
 
+		public static void DrawLogarithmicMinMaxSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit, float fieldWidth, Action<Rect> onGetSliderRect = null)
+		{
+			Rect suffixRect = EditorGUI.PrefixLabel(position, label);
+			GetMinMaxRects(suffixRect, fieldWidth, out Rect minFieldRect, out Rect sliderRect, out Rect maxFieldRect);
+			onGetSliderRect?.Invoke(sliderRect);
+
+			min = EditorGUI.FloatField(minFieldRect, min);
+			max = EditorGUI.FloatField(maxFieldRect, max);
+
+			min = Mathf.Log10(min);					max = Mathf.Log10(max);
+			minLimit = Mathf.Log10(minLimit);		maxLimit = Mathf.Log10(maxLimit);
+
+			EditorGUI.MinMaxSlider(sliderRect, ref min, ref max, minLimit, maxLimit);
+
+			min = Mathf.Pow(10, min);				max = Mathf.Pow(10, max);
+		}
+
+		private static void GetMinMaxRects(Rect suffixRect, float fieldWidth, out Rect minFieldRect, out Rect sliderRect, out Rect maxFieldRect)
+		{
+			float gap = 5f;
+			minFieldRect = new Rect(suffixRect) { width = fieldWidth };
+			sliderRect = new Rect(suffixRect) { x = minFieldRect.xMax + gap, width = suffixRect.width - (fieldWidth + gap) * 2f };
+			maxFieldRect = new Rect(suffixRect) { x = sliderRect.xMax + gap, width = fieldWidth };
+		}
+
 		public static float DrawLogarithmicSlider_Horizontal(Rect position, float currentValue, float leftValue, float rightValue, bool isDrawField = true)
 		{
-			const float min = 0.0001f;
 			if (leftValue <= 0f)
 			{
 				//Debug.LogWarning($"The left value of the LogarithmicSlider should be greater than 0. It has been set to the default value of {min}");
-				leftValue = Mathf.Max(min, leftValue);
+				leftValue = Mathf.Max(LogarithmicMinValue, leftValue);
 			}
 
 			Rect sliderRect = new Rect(position);

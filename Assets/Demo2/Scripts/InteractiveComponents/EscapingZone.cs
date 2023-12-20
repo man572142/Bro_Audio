@@ -17,6 +17,7 @@ namespace Ami.BroAudio.Demo
 
 		[Header("Change Light")]
 		[SerializeField] Light _directionalLight = null;
+		[SerializeField] GameObject _moodLight = null;
 		[SerializeField] Vector3 _targetRotation = default;
 		[SerializeField] Color _targetColor = default;
 		
@@ -40,6 +41,7 @@ namespace Ami.BroAudio.Demo
 
 		private IEnumerator ChangeMood()
 		{
+			_moodLight.SetActive(true);
 			Vector3 originalRotation = _directionalLight.transform.eulerAngles;
 			Color originalColor = _directionalLight.color;
 

@@ -10,7 +10,6 @@ using UnityEngine.SceneManagement;
 
 namespace Ami.BroAudio.Demo
 {
-	[RequireComponent(typeof(Text))]
 	public class APIText : MonoBehaviour
 	{
 		[Serializable]
@@ -40,7 +39,7 @@ namespace Ami.BroAudio.Demo
 		}
 		
 		[ContextMenu("SetText")]
-		public void SetText()
+		public void SetAPI()
 		{
 			StringBuilder builder = new StringBuilder("BroAudio".SetColor(ClassColor));
 			foreach (var data in _methodTexts)
@@ -64,8 +63,12 @@ namespace Ami.BroAudio.Demo
 			}
 
 			_component.text = builder.ToString();
-			UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(_component);
-			EditorSceneManager.MarkSceneDirty(gameObject.scene);
+
+			if(!Application.isPlaying)
+			{
+				UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(_component);
+				EditorSceneManager.MarkSceneDirty(gameObject.scene);
+			}
 		}
 	} 
 }

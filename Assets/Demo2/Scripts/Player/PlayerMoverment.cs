@@ -44,7 +44,7 @@ namespace Ami.BroAudio.Demo
 
 		private void Update()
         {
-            if(!_canControl)
+            if(!_canControl || PauseMenu.Instance.IsOpen)
 			{
                 return;
 			}
@@ -53,17 +53,7 @@ namespace Ami.BroAudio.Demo
             Moving();
         }
 
-  //      public void SetHardControl(bool isHardControl)
-		//{
-  //          _canControl = !isHardControl;
-  //      }
-
-  //      public void SetCameraActive(bool isActive)
-		//{
-  //          _camera.gameObject.SetActive(isActive);
-  //      }
-
-        // Trigger by Timeline
+        // Triggered by timeline system
         public void SetForceWalkSpeedRatio(float speedRatio)
 		{
             if(_forceWalkCoroutine != null)

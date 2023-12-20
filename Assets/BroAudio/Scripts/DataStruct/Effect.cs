@@ -11,8 +11,8 @@ namespace Ami.BroAudio
 	public struct Effect
 	{
 		// Use these static method for SetEffect() is recomended
-		public static Effect HighPass(float frequency, float fadeTime, Ease fadingEase = default) => new Effect(EffectType.HighPass, frequency, fadeTime, fadingEase);
-		public static Effect LowPass(float frequency, float fadeTime, Ease fadingEase = default) => new Effect(EffectType.LowPass, frequency, fadeTime, fadingEase);
+		public static Effect HighPass(float frequency, float fadeTime, Ease fadingEase = BroAdvice.HighPassEase) => new Effect(EffectType.HighPass, frequency, fadeTime, fadingEase);
+		public static Effect LowPass(float frequency, float fadeTime, Ease fadingEase = BroAdvice.LowPassEase) => new Effect(EffectType.LowPass, frequency, fadeTime, fadingEase);
 		public static Effect Volume(float volumeFactor, float fadeTime, Ease fadingEase = default) => new Effect(EffectType.Volume, volumeFactor, fadeTime, fadingEase);
 
 		public static class Defaults

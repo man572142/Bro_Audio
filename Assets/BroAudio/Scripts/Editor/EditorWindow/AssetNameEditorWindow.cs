@@ -32,7 +32,7 @@ namespace Ami.BroAudio.Editor
 		{
 			GUI.enabled = true;
 			_assetName = EditorGUILayout.TextField(_assetName, GUILayout.Height(EditorGUIUtility.singleLineHeight * 2));
-			if(!DrawAssetNameValidation(_assetName) && DrawTempNameValidation() && DrawDuplicateValidation())
+			if(DrawAssetNameValidation(_assetName) && DrawTempNameValidation() && DrawDuplicateValidation())
 			{
 				GUI.enabled = false;
 			}
@@ -48,7 +48,7 @@ namespace Ami.BroAudio.Editor
 
 		private bool DrawTempNameValidation()
 		{
-			if(BroEditorUtility.IsTempReservedName(_assetName))
+			if (BroEditorUtility.IsTempReservedName(_assetName))
 			{
 				string text = String.Format(_instruction.GetText(Instruction.AssetNaming_StartWithTemp),_assetName);
 				EditorGUILayout.HelpBox(text, MessageType.Error);
@@ -69,7 +69,6 @@ namespace Ami.BroAudio.Editor
 
 		public bool DrawAssetNameValidation(string assetName)
 		{
-			// todo: might need another helpbox validation while editing asset name
 			if (BroEditorUtility.IsInvalidName(assetName, out ValidationErrorCode code))
 			{
 				switch (code)
@@ -85,7 +84,7 @@ namespace Ami.BroAudio.Editor
 						return false;
                     case ValidationErrorCode.ContainsWhiteSpace:
                         EditorGUILayout.HelpBox(_instruction.GetText(Instruction.AssetNaming_ContainsWhiteSpace), MessageType.Error);
-                        return false;
+						return false;
                 }
 			}
 			return true;

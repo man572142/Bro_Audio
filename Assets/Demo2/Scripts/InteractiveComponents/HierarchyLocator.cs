@@ -14,7 +14,7 @@ namespace Ami.BroAudio.Demo
 
 		private void Update()
 		{
-			if(InteractiveZone.IsInZone && Input.GetKeyDown(KeyCode.Tab))
+			if(!PauseMenu.Instance.IsOpen && InteractiveZone.IsInZone && Input.GetKeyDown(KeyCode.Tab))
 			{
 				Selection.activeObject = _target;
 				EditorGUIUtility.PingObject(_target);

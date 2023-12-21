@@ -11,8 +11,6 @@ namespace Ami.BroAudio.Editor
 	[CustomPropertyDrawer(typeof(Frequency))]
 	public class FrequencyAttributeDrawer : PropertyDrawer
 	{
-		public const int Digits = 1;
-
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
 			if(property.propertyType == SerializedPropertyType.Float)

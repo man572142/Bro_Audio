@@ -11,7 +11,6 @@ namespace Ami.BroAudio.Demo
 		[SerializeField] PlayableDirector _director = null;
 		[SerializeField] AudioID _openingSong = default;
 
-		protected override bool ListenToInteractiveZone() => true;
 		protected override bool IsTriggerOnce => true;
 
 		public override void OnInZoneChanged(bool isInZone)

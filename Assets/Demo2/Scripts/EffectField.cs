@@ -11,8 +11,6 @@ namespace Ami.BroAudio.Demo
 		[SerializeField, Volume(true)] float _targetVolume = 0.5f;
 		[SerializeField, Frequency] float _lowPassFreq = 800f;
 
-		protected override bool ListenToInteractiveZone() => true;
-
 		public override void OnInZoneChanged(bool isInZone)
 		{
 			BroAudio.Play(_enterExitSound);

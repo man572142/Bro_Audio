@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Demo
 	{
 		[SerializeField] protected InteractiveZone InteractiveZone = null;
 
-		protected abstract bool ListenToInteractiveZone(); 
+		protected virtual bool ListenToInteractiveZone() => true;
 		protected virtual bool IsTriggerOnce => false;
 
 		protected virtual void Awake()

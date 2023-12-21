@@ -7,52 +7,42 @@ namespace Ami.BroAudio.Demo
 {
 	public class EscapingZone : InteractiveComponent
 	{
-		[SerializeField] AudioID _escapingBGM = default;
+		[SerializeField] AudioID _nightTimeBGM = default;
+		[SerializeField] AudioID _dayTimeBGM = default;
 		[SerializeField] float _transitionTime = default;
 
 		[Header("API Text")]
-		[SerializeField] Animator _animator = null;
-		[SerializeField] string _triggerName = null;
+		[SerializeField] Animator _apiAnimator = null;
+		[SerializeField] string _apiTriggerName = null;
 		[SerializeField] APIText _apiSetter  = null;
 
-		[Header("Change Light")]
-		[SerializeField] Light _directionalLight = null;
-		[SerializeField] GameObject _moodLight = null;
-		[SerializeField] Vector3 _targetRotation = default;
-		[SerializeField] Color _targetColor = default;
-		
-		private bool _hasChanged = false;
+		[Header("Change Mood")]
+		[SerializeField] Animator _lightAnimator = null;
+		[SerializeField] string _ligghtAnimParameterName = null;
 
-		protected override bool ListenToInteractiveZone() => true;
+		private bool _isNightTime = false;
+		private bool _canChange = true;
 
 		public override void OnInZoneChanged(bool isInZone)
 		{
-			if(isInZone && !_hasChanged)
+			if(isInZone && _canChange)
 			{
+				_isNightTime = !_isNightTime;
 				_apiSetter.SetAPI();
-				_animator.SetTrigger(_triggerName);
-				_hasChanged = true;
+				_apiAnimator.SetTrigger(_apiTriggerName);
+				_lightAnimator.SetBool(_ligghtAnimParameterName, _isNightTime);
 
-				StartCoroutine(ChangeMood());
-
-				BroAudio.Play(_escapingBGM).AsBGM().SetTransition(Transition.CrossFade, _transitionTime);
+				AudioID id = _isNightTime ? _nightTimeBGM : _dayTimeBGM;
+				BroAudio.Play(id).AsBGM().SetTransition(Transition.CrossFade, _transitionTime);
+				StartCoroutine(PreventChangePeriod());
 			}	
 		}
 
-		private IEnumerator ChangeMood()
+		private IEnumerator PreventChangePeriod()
 		{
-			_moodLight.SetActive(true);
-			Vector3 originalRotation = _directionalLight.transform.eulerAngles;
-			Color originalColor = _directionalLight.color;
-
-			float t = 0f;
-			while(t <= 1f)
-			{
-				_directionalLight.transform.eulerAngles = Vector3.Lerp(originalRotation, _targetRotation, t);
-				_directionalLight.color = Color.Lerp(originalColor, _targetColor, t);
-				yield return null;
-				t += Time.deltaTime / (_transitionTime * 2);
-			}
+			_canChange = false;
+			yield return new WaitForSeconds(_transitionTime);
+			_canChange = true;
 		}
 	}
 }

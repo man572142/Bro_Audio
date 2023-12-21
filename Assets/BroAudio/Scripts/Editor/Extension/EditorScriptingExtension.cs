@@ -482,7 +482,9 @@ namespace Ami.Extension
 				float gap = 5f;
 				sliderRect.width -= EditorGUIUtility.fieldWidth + gap;
 				Rect fieldRect = new Rect(sliderRect) { x = sliderRect.xMax + gap, width = EditorGUIUtility.fieldWidth };
+				
 				currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue), leftValue, rightValue);
+				
 			}
 
 			currentValue = currentValue == 0 ? leftValue : currentValue;
@@ -490,20 +492,26 @@ namespace Ami.Extension
 			float logLeftValue = Mathf.Log10(leftValue);
 			float logRightValue = Mathf.Log10(rightValue);
 
+			// only use logResult if the slider is changed.
+			EditorGUI.BeginChangeCheck();
 			float logResult = GUI.HorizontalSlider(sliderRect, logValue, logLeftValue, logRightValue);
+			if (EditorGUI.EndChangeCheck())
+			{
+				if (logResult == logLeftValue)
+				{
+					return leftValue;
+				}
+				else if (logResult == logRightValue)
+				{
+					return rightValue;
+				}
+				else
+				{
+					return Mathf.Pow(10, logResult);
+				}
+			}
 
-			if (logResult == logLeftValue)
-			{
-				return leftValue;
-			}
-			else if (logResult == logRightValue)
-			{
-				return rightValue;
-			}
-			else
-			{
-				return Mathf.Pow(10, logResult);
-			}
+			return currentValue;
 		}
 	}
 }

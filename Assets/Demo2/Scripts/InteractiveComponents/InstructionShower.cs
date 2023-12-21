@@ -12,7 +12,6 @@ namespace Ami.BroAudio.Demo
 
 		private Transform _instTransform = null;
 
-		protected override bool ListenToInteractiveZone() => true;
 
 		protected override void Awake()
 		{
@@ -29,6 +28,7 @@ namespace Ami.BroAudio.Demo
 				Vector3 playerPos = InteractiveZone.InZoneObject.transform.position;
 				Vector3 opppsitePos = _instTransform.position + (_instTransform.position - playerPos);
 				_instTransform.LookAt(opppsitePos, Vector3.up);
+				_instTransform.eulerAngles = new Vector3(0f, _instTransform.eulerAngles.y, _instTransform.eulerAngles.z);
 			}
 		}
 

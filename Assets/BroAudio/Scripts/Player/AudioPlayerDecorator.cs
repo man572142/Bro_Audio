@@ -23,11 +23,18 @@ namespace Ami.BroAudio.Runtime
 		{
 			Player = player;
 			OnPlayerRecycle += Dispose;
+			player.DecoratePlaybackPreference += DecoratePlayback;
 		}
 
 		protected virtual void Dispose(AudioPlayer player)
 		{
 			OnPlayerRecycle -= Dispose;
+			player.DecoratePlaybackPreference -= DecoratePlayback;
+		}
+
+		protected virtual PlaybackPreference DecoratePlayback(PlaybackPreference pref)
+		{
+			return pref;
 		}
 
 		public int ID => Player.ID;

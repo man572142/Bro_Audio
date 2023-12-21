@@ -64,16 +64,9 @@ namespace Ami.BroAudio.Runtime
                 if(DecoratePlaybackPreference != null)
 				{
                     decoPref = DecoratePlaybackPreference.Invoke(decoPref);
-                }
-				
+                }				
 				return decoPref;
 			}
-		}
-
-        private IEnumerator DelayDo(Action action)
-		{
-            yield return null;
-            action?.Invoke();
 		}
 
         private IEnumerator PlayControl(BroAudioClip clip, PlaybackPreference pref)
@@ -93,6 +86,13 @@ namespace Ami.BroAudio.Runtime
             AudioSource.priority = pref.Entity.Priority;
             SetPitch(pref.Entity);
             SetSpatial(pref);
+            if(!pref.IsDominaor)
+			{
+                SetEffect(pref.AudioTypePlaybackPref.EffectType, SetEffectMode.Override);
+                this.SafeStopCoroutine(_trackVolumeControlCoroutine);
+                TrackVolume = pref.AudioTypePlaybackPref.Volume;
+            }
+
             VolumeControl fader = VolumeControl.Clip;
             ClipVolume = 0f;
             float targetVolume = GetTargetVolume();

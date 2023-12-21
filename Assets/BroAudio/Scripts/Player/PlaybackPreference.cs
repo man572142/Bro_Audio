@@ -18,6 +18,8 @@ namespace Ami.BroAudio.Runtime
 		public float FadeIn { get; private set; }
 		public float FadeOut { get; private set; }
 		public Waiter PlayerWaiter { get; private set; }
+		public IAudioPlaybackPref AudioTypePlaybackPref { get; set; }
+		public bool IsDominaor { get; set; }
 
 		public PlaybackPreference(IAudioEntity entity,Vector3 position) : this(entity)
 		{
@@ -37,6 +39,8 @@ namespace Ami.BroAudio.Runtime
 			Position = Vector3.negativeInfinity;
 			FollowTarget = null;
 			PlayerWaiter = null;
+			AudioTypePlaybackPref = null;
+			IsDominaor = false;
 
 			FadeInEase = Entity.SeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
 			FadeOutEase = Entity.SeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;

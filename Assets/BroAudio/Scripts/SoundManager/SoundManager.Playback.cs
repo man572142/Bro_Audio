@@ -2,19 +2,11 @@ using System;
 using UnityEngine;
 using static Ami.BroAudio.Utility;
 using System.Collections.Generic;
-using Ami.Extension;
 
 namespace Ami.BroAudio.Runtime
 {
-    public partial class SoundManager : MonoBehaviour
+	public partial class SoundManager : MonoBehaviour
     {
-        public class AudioTypePlaybackPreference
-		{
-            //TODO: 跟另一個PlaybackPref整合?
-            public float Volume = AudioConstant.FullVolume;
-            public EffectType EffectType = EffectType.None;
-		}
-
         public Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
         #region Play
@@ -53,8 +45,7 @@ namespace Ami.BroAudio.Runtime
             BroAudioType audioType = GetAudioType(id);
             if (_auidoTypePref.TryGetValue(audioType, out var audioTypePref))
             {
-                player.SetEffect(audioTypePref.EffectType, SetEffectMode.Override);
-                player.SetVolume(audioTypePref.Volume, 0f);
+                pref.AudioTypePlaybackPref = audioTypePref;
             }
 
             player.Play(id, pref.Entity.Clip, pref);
@@ -70,7 +61,6 @@ namespace Ami.BroAudio.Runtime
             StartCoroutine(PreventCombFiltering(id, CombFilteringPreventionInSeconds));
             return wrapper;
         }
-
         #endregion
 
         #region Stop

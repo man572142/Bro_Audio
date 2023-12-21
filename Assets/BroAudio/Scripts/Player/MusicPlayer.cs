@@ -25,17 +25,8 @@ namespace Ami.BroAudio.Runtime
 		{
 		}
 
-		public override void Init(AudioPlayer player)
-		{
-			base.Init(player);
-
-			player.DecoratePlaybackPreference += DecoratePlayback;
-		}
-
 		protected override void Dispose(AudioPlayer player)
 		{
-			player.DecoratePlaybackPreference -= DecoratePlayback;
-
 			_transition = default;
 			_stopMode = default;
 			_overrideFade = AudioPlayer.UseEntitySetting;
@@ -49,7 +40,7 @@ namespace Ami.BroAudio.Runtime
 			return this;
 		}
 
-		private PlaybackPreference DecoratePlayback(PlaybackPreference pref)
+		protected override PlaybackPreference DecoratePlayback(PlaybackPreference pref)
 		{
 			if(CurrentPlayer != null)
 			{

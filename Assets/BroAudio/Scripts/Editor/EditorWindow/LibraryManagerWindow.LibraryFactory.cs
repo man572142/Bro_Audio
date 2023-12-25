@@ -153,6 +153,7 @@ namespace Ami.BroAudio.Editor
         private void CreateNewEntity(AudioAssetEditor editor, AudioClip clip)
         {
             SerializedProperty entity = editor.CreateNewEntity();
+			entity.FindPropertyRelative(EditorScriptingExtension.GetBackingFieldName(nameof(AudioEntity.Name))).stringValue = clip.name;
             SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioEntity.Clips));
 
 			editor.SetClipList(clipListProp, 0, clip);

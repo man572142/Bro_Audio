@@ -37,7 +37,7 @@ namespace Ami.BroAudio.Editor
 						_assetOutputPath = coreData.AssetOutputPath;
 					}
 				}
-				return null;
+				return _assetOutputPath;
 			}
 			set => _assetOutputPath = value;
 		}

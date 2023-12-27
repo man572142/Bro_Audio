@@ -63,6 +63,19 @@ namespace Ami.Extension
 				PlaybackIndicator.End();
 			}
 		}
+
+		public static void AddPlaybackIndicatorListener(Action action)
+		{
+			RemovePlaybackIndicatorListener(action);	
+			PlaybackIndicator.OnUpdate += action;
+			PlaybackIndicator.OnEnd += action;
+		}
+
+		public static void RemovePlaybackIndicatorListener(Action action)
+		{
+			PlaybackIndicator.OnUpdate -= action;
+			PlaybackIndicator.OnEnd -= action;
+		}
 	} 
 }
 #endif

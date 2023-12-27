@@ -100,7 +100,7 @@ namespace Ami.BroAudio.Editor
 			return list;
 		}
 
-        private MulticlipsPlayMode UpdatePlayMode()
+		private MulticlipsPlayMode UpdatePlayMode()
 		{
 			if (!IsMulticlips)
 			{

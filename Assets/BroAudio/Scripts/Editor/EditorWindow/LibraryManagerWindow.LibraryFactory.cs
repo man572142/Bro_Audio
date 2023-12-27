@@ -29,38 +29,42 @@ namespace Ami.BroAudio.Editor
 		private Vector2 _browseButtonSize = new Vector2(80f,30f);
 		private int _pickerID = -1;
 
-		private void DrawEntityFactory(Rect entitiesRect)
+		private void DrawEntityFactory(Rect factoryRect)
 		{
-			HandleDragAndDrop(entitiesRect);
-			DrawBackgroundLogo(entitiesRect);
-
-			GUILayout.Space(entitiesRect.height * 0.4f);
-			EditorGUILayout.LabelField("Drag & Drop".SetSize(DragAndDropFontSize).SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
-			GUILayout.Space(15f);
-			EditorGUILayout.LabelField("or".SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
-
-			Rect centerLineRect = GUILayoutUtility.GetLastRect();
-			using (new Handles.DrawingScope(Color.grey))
+			EditorGUILayout.BeginVertical();
 			{
-				float middleX = centerLineRect.xMin + centerLineRect.width * 0.5f;
-				float middleY = centerLineRect.yMin + centerLineRect.height * 0.5f;
-				Handles.DrawAAPolyLine(2f, new Vector3(middleX - CenterLineGap - CenterLength, middleY), new Vector3(middleX - CenterLineGap, middleY));
-				Handles.DrawAAPolyLine(2f, new Vector3(middleX + CenterLineGap + CenterLength, middleY), new Vector3(middleX + CenterLineGap, middleY));
-			}
+				HandleDragAndDrop(factoryRect);
+				DrawBackgroundLogo(factoryRect);
 
-			GUILayout.Space(15f);
-			EditorGUILayout.BeginHorizontal();
-			{
-				GUILayout.FlexibleSpace();
-				if (GUILayout.Button("Browse", GUILayout.Width(_browseButtonSize.x), GUILayout.Height(_browseButtonSize.y)))
+				GUILayout.Space(factoryRect.height * 0.4f);
+				EditorGUILayout.LabelField("Drag & Drop".SetSize(DragAndDropFontSize).SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
+				GUILayout.Space(15f);
+				EditorGUILayout.LabelField("or".SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
+
+				Rect centerLineRect = GUILayoutUtility.GetLastRect();
+				using (new Handles.DrawingScope(Color.grey))
 				{
-					_pickerID = EditorGUIUtility.GetControlID(FocusType.Passive);
-					EditorGUIUtility.ShowObjectPicker<AudioClip>(null, false, string.Empty, _pickerID);
+					float middleX = centerLineRect.xMin + centerLineRect.width * 0.5f;
+					float middleY = centerLineRect.yMin + centerLineRect.height * 0.5f;
+					Handles.DrawAAPolyLine(2f, new Vector3(middleX - CenterLineGap - CenterLength, middleY), new Vector3(middleX - CenterLineGap, middleY));
+					Handles.DrawAAPolyLine(2f, new Vector3(middleX + CenterLineGap + CenterLength, middleY), new Vector3(middleX + CenterLineGap, middleY));
 				}
-				GUILayout.FlexibleSpace();
+
+				GUILayout.Space(15f);
+				EditorGUILayout.BeginHorizontal();
+				{
+					GUILayout.FlexibleSpace();
+					if (GUILayout.Button("Browse", GUILayout.Width(_browseButtonSize.x), GUILayout.Height(_browseButtonSize.y)))
+					{
+						_pickerID = EditorGUIUtility.GetControlID(FocusType.Passive);
+						EditorGUIUtility.ShowObjectPicker<AudioClip>(null, false, string.Empty, _pickerID);
+					}
+					GUILayout.FlexibleSpace();
+				}
+				EditorGUILayout.EndHorizontal();
+				HandleObjectPicker();
 			}
-			EditorGUILayout.EndHorizontal();
-			HandleObjectPicker();
+			EditorGUILayout.EndVertical();
 		}
 
 		private void DrawBackgroundLogo(Rect entitiesRect)

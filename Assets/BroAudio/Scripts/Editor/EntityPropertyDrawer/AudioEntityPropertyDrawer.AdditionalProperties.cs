@@ -26,6 +26,7 @@ namespace Ami.BroAudio.Editor
 		private readonly GUIContent _loopingLabel = new GUIContent("Looping");
 		private readonly GUIContent _seamlessLabel = new GUIContent("Seamless Setting");
 		private readonly GUIContent _pitchLabel = new GUIContent(nameof(AudioEntity.Pitch));
+		private readonly GUIContent _spatialLabel = new GUIContent("Spatial (3D Sound)");
 		private readonly float[] _seamlessSettingRectRatio = new float[] { 0.2f, 0.25f, 0.2f, 0.2f, 0.15f };
 
 		private Rect[] _seamlessRects = null;
@@ -208,12 +209,15 @@ namespace Ami.BroAudio.Editor
 
 			void DrawSpatialSettings()
 			{
-				if (setting.DrawedProperty.Contains(DrawedProperty.SpatialSettings)
-					&& GUI.Button(GetRectAndIterateLine(position), "Open Spatial Setting"))
+				if (setting.DrawedProperty.Contains(DrawedProperty.SpatialSettings))
 				{
-					SerializedProperty settingsProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
-					SpatialSettingsEditorWindow.ShowWindow(settingsProp, OnSetSpatialSettingBack);
-					GUIUtility.ExitGUI();
+					Rect suffixRect = EditorGUI.PrefixLabel(GetRectAndIterateLine(position), _spatialLabel);
+					if(GUI.Button(suffixRect, "Open Setting Window"))
+					{
+						SerializedProperty settingsProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
+						SpatialSettingsEditorWindow.ShowWindow(settingsProp, OnSetSpatialSettingBack);
+						GUIUtility.ExitGUI();
+					}
 				}
 			}
 

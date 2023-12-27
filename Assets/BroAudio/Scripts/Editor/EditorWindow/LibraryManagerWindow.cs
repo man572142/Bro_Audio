@@ -15,10 +15,11 @@ using System.IO;
 
 namespace Ami.BroAudio.Editor
 {
-	public partial class LibraryManagerWindow : EditorWindow
+	public partial class LibraryManagerWindow : EditorWindow ,IHasCustomMenu
 	{
 		public const int AssetNameFontSize = 16;
 		public const float BackButtonSize = 28f;
+		private const float EntitiesFactoryRatio = 0.65f;
 
 		public static event Action OnCloseLibraryManagerWindow;
 		public static event Action OnSelectAsset;
@@ -36,6 +37,8 @@ namespace Ami.BroAudio.Editor
 		private GenericMenu _createAssetOption = null;
 		private GenericMenu _changeAudioTypeOption = null;
 		private Dictionary<string, AudioAssetEditor> _assetEditorDict = new Dictionary<string, AudioAssetEditor>();
+		private bool _hasAssetListReordered = false;
+		private bool _isInEntitiesEditMode = false;
 
 		private Vector2 _assetListScrollPos = Vector2.zero;
 		private Vector2 _entitiesScrollPos = Vector2.zero;
@@ -47,7 +50,7 @@ namespace Ami.BroAudio.Editor
 		public static LibraryManagerWindow ShowWindow()
 		{
 			EditorWindow window = GetWindow(typeof(LibraryManagerWindow));
-			window.minSize = MinWindowSize;
+			//window.minSize = MinWindowSize;
 			window.titleContent = new GUIContent(BroName.MenuItem_LibraryManager);
 			window.Show();
 			return window as LibraryManagerWindow;
@@ -75,10 +78,7 @@ namespace Ami.BroAudio.Editor
 
 		private void OnFocus()
 		{
-			EditorPlayAudioClip.PlaybackIndicator.OnUpdate -= Repaint;
-			EditorPlayAudioClip.PlaybackIndicator.OnUpdate += Repaint;
-			EditorPlayAudioClip.PlaybackIndicator.OnEnd -= Repaint;
-			EditorPlayAudioClip.PlaybackIndicator.OnEnd += Repaint;
+			EditorPlayAudioClip.AddPlaybackIndicatorListener(Repaint);
 
 			_flasingHelper.OnUpdate += Repaint;
 		}
@@ -86,8 +86,7 @@ namespace Ami.BroAudio.Editor
 		private void OnLostFocus()
 		{
 			EditorPlayAudioClip.StopAllClips();
-			EditorPlayAudioClip.PlaybackIndicator.OnUpdate -= Repaint;
-			EditorPlayAudioClip.PlaybackIndicator.OnEnd -= Repaint;
+			EditorPlayAudioClip.RemovePlaybackIndicatorListener(Repaint);
 
 			_flasingHelper.OnUpdate -= Repaint;
 		}
@@ -113,6 +112,11 @@ namespace Ami.BroAudio.Editor
 				DestroyImmediate(editor);
 			}
 			Undo.undoRedoPerformed -= Repaint;
+
+			if(_hasAssetListReordered)
+			{
+				WriteGuidToCoreData(_allAssetGUIDs);
+			}
 		}
 
 		#region Initialization
@@ -135,11 +139,13 @@ namespace Ami.BroAudio.Editor
 		private void InitReorderableList()
 		{
 			_assetReorderableList = new ReorderableList(_allAssetGUIDs, typeof(string));
+			
 			_assetReorderableList.drawHeaderCallback = OnDrawHeader;
 			_assetReorderableList.onAddDropdownCallback = OnAddDropdown;
 			_assetReorderableList.onRemoveCallback = OnRemove;
 			_assetReorderableList.drawElementCallback = OnDrawElement;
 			_assetReorderableList.onSelectCallback = OnSelect;
+			_assetReorderableList.onReorderCallback = OnReordered;
 
 			void OnDrawHeader(Rect rect)
 			{
@@ -173,6 +179,16 @@ namespace Ami.BroAudio.Editor
 					EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(editor.Asset.AudioType));
 					EditorGUI.LabelField(audioTypeRect, editor.Asset.AudioType.ToString(), GUIStyleHelper.MiddleCenterText);
 				}
+
+				if(index == _currSelectedAssetIndex && Event.current.isMouse && Event.current.clickCount >= 2)
+				{
+					_isInEntitiesEditMode = true;
+				}
+			}
+
+			void OnReordered(ReorderableList list)
+			{
+				_hasAssetListReordered = true;
 			}
 		}
 
@@ -205,7 +221,7 @@ namespace Ami.BroAudio.Editor
 			GenericMenu menu = new GenericMenu();
 			GUIContent text = new GUIContent(_instruction.GetText(instruction));
 			menu.AddItem(text, false, null);
-			menu.AddSeparator("");
+			menu.AddSeparator(string.Empty);
 
 			Utility.ForeachConcreteAudioType((audioType) =>
 			{
@@ -344,28 +360,28 @@ namespace Ami.BroAudio.Editor
 			EditorGUILayout.BeginHorizontal();
 			{
 				GUILayout.Space(_verticalGapDrawer.GetSpace());
-				EditorScriptingExtension.SplitRectHorizontal(position, 0.7f, _verticalGapDrawer.SingleLineSpace, out Rect entitiesRect, out Rect assetListRect);
 
-				float offsetX = _verticalGapDrawer.GetTotalSpace() + GUI.skin.box.padding.left;
-				float offsetY = ReorderableList.Defaults.padding + GUI.skin.box.padding.top - 1f;
-				entitiesRect = entitiesRect.Scoping(position, new Vector2(offsetX, offsetY));
-				entitiesRect.width -= _verticalGapDrawer.GetTotalSpace();
-				entitiesRect.height -= DefaultLayoutPadding * 2;
-				DrawEntitiesList(entitiesRect);
+				if(_isInEntitiesEditMode && TryGetCurrentAssetEditor(out var editor))
+				{
+					DrawEntitiesList(editor);
+				}
+				else
+				{
+					SplitRectHorizontal(position, EntitiesFactoryRatio, _verticalGapDrawer.SingleLineSpace, out Rect entitiesFactoryRect, out Rect assetListRect);
 
-				DrawClipPropertiesHelper.DrawPlaybackIndicator(entitiesRect, -_entitiesScrollPos);
+					DrawEntityFactory(entitiesFactoryRect);
+					GUILayout.Space(_verticalGapDrawer.GetSpace());
 
-				GUILayout.Space(_verticalGapDrawer.GetSpace());
-
-				assetListRect.width -= _verticalGapDrawer.GetTotalSpace() - _verticalGapDrawer.SingleLineSpace;
-				assetListRect.height -= DefaultLayoutPadding * 2;
-				DrawAssetList(assetListRect);
+					DrawAssetList(assetListRect);
+				}
 			}
 			EditorGUILayout.EndHorizontal();
 		}
 
 		private void DrawAssetList(Rect assetListRect)
 		{
+			assetListRect.width -= _verticalGapDrawer.GetTotalSpace() - _verticalGapDrawer.SingleLineSpace;
+			assetListRect.height -= DefaultLayoutPadding * 2;
 			EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(assetListRect.width), GUILayout.Height(assetListRect.height));
 			{
 				_assetListScrollPos = EditorGUILayout.BeginScrollView(_assetListScrollPos);
@@ -389,20 +405,20 @@ namespace Ami.BroAudio.Editor
 			{
 				string assetName = assetEditor.Asset.AssetName.ToBold().SetColor(Color.white);
 				string dataName = assetEditor.IssueEntityName;
-				string text = _instruction.GetText(assetEditor.CurrInstruction); ;
+				string text = _instruction.GetText(assetEditor.CurrInstruction);
 
 				switch (assetEditor.CurrInstruction)
 				{
 					case Instruction.AssetNaming_StartWithTemp:
 					case Instruction.EntityIssue_HasEmptyName:
-						EditorScriptingExtension.RichTextHelpBox(String.Format(text, assetName), MessageType.Error);
+						RichTextHelpBox(String.Format(text, assetName), MessageType.Error);
 						break;
 					case Instruction.EntityIssue_IsDuplicated:
 					case Instruction.EntityIssue_ContainsInvalidWords:
-						EditorScriptingExtension.RichTextHelpBox(String.Format(text, dataName, assetName), MessageType.Error);
+						RichTextHelpBox(String.Format(text, dataName, assetName), MessageType.Error);
 						break;
 					case Instruction.None:
-						EditorScriptingExtension.RichTextHelpBox(text, IconConstant.WorksFine);
+						EditorGUILayout.HelpBox(_instruction.GetText(Instruction.LibraryManager_ModifyAsset), MessageType.Info);
 						break;
 					default:
 						EditorGUILayout.HelpBox(text, MessageType.Error);
@@ -411,27 +427,26 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawEntitiesList(Rect entitiesRect)
+		private void DrawEntitiesList(AudioAssetEditor editor)
 		{
-			EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(entitiesRect.width), GUILayout.Height(entitiesRect.height));
+			Rect rect = new Rect(position);
+			rect.width -= _verticalGapDrawer.GetTotalSpace();
+			rect.height -= DefaultLayoutPadding * 2;
+			float offsetX = _verticalGapDrawer.GetTotalSpace() + DefaultLayoutPadding;
+			float offsetY = ReorderableList.Defaults.padding + DefaultLayoutPadding - 1f;
+
+			EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(rect.width), GUILayout.Height(rect.height));
 			{
-				if (TryGetCurrentAssetEditor(out var editor))
+				_entitiesScrollPos = EditorGUILayout.BeginScrollView(_entitiesScrollPos);
 				{
-					_entitiesScrollPos = EditorGUILayout.BeginScrollView(_entitiesScrollPos);
-					{
-						DrawEntitiesHeader(editor.Asset, newName => OnChangeAssetName(editor, newName));
-						editor.DrawEntitiesList();
-					}
-					EditorGUILayout.EndScrollView();
+					DrawEntitiesHeader(editor.Asset, newName => OnChangeAssetName(editor, newName));
+					editor.DrawEntitiesList();
 				}
-				else
-				{
-					DrawEntityFactory(entitiesRect);
-				}
+				EditorGUILayout.EndScrollView();
+				DrawClipPropertiesHelper.DrawPlaybackIndicator(rect.Scoping(position, new Vector2(offsetX, offsetY)), -_entitiesScrollPos);
 			}
 			EditorGUILayout.EndVertical();
 		}
-
 
 		// The ReorderableList default header background GUIStyle has set fixedHeight to non-0 and stretchHeight to false, which is unreasonable...
 		// Use another style or Draw it manually could solve the problem and accept more customization.
@@ -441,6 +456,7 @@ namespace Ami.BroAudio.Editor
 			{
 				if (GUILayout.Button(EditorGUIUtility.IconContent(IconConstant.BackButton), GUILayout.Width(BackButtonSize), GUILayout.Height(BackButtonSize)))
 				{
+					_isInEntitiesEditMode = false;
 					_assetReorderableList.index = -1;
 				}
 				GUILayout.Space(10f);
@@ -532,7 +548,13 @@ namespace Ami.BroAudio.Editor
 				return false;
 			}
 			return true;
-		} 
+		}
 		#endregion
+
+		public void AddItemsToMenu(GenericMenu menu)
+		{
+			menu.AddSeparator(string.Empty);
+			menu.AddItem(new GUIContent("Default Window Size"),false, () => position = new Rect(position.position, DefaultWindowSize));
+		}
 	}
 }

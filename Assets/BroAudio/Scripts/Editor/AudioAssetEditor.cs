@@ -8,7 +8,6 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 using static Ami.BroAudio.Editor.BroEditorUtility;
-using static Ami.BroAudio.Utility;
 using static Ami.Extension.EditorScriptingExtension;
 
 namespace Ami.BroAudio.Editor

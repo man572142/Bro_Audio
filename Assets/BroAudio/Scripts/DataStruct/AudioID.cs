@@ -7,7 +7,7 @@ namespace Ami.BroAudio
 	{
 		public int ID;
 #if UNITY_EDITOR
-		public ScriptableObject SourceAsset;
+		[SerializeField] private ScriptableObject _sourceAsset;
 #endif
 
 		public AudioID(int id) : this()
@@ -22,5 +22,10 @@ namespace Ami.BroAudio
 
 		public static implicit operator int(AudioID audioID) => audioID.ID;
         public static implicit operator AudioID(int id) => new AudioID(id);
+
+		public static class NameOf
+		{
+			public static string SourceAsset => nameof(_sourceAsset);
+		}
     }
 }

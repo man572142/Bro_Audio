@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Demo
 {
 	public class LetterBoxSetter : MonoBehaviour
 	{
-		public event Action OnRollFinished;
+		//public event Action OnRollFinished;
 
 		[SerializeField] RectTransform _letterBoxTop = null;
 		[SerializeField] RectTransform _letterBoxBottom = null;

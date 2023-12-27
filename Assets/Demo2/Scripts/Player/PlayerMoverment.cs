@@ -21,7 +21,7 @@ namespace Ami.BroAudio.Demo
         [SerializeField] private float _runSpeed = 6f;
         [SerializeField] private CharacterController _characterController = null;
         [SerializeField] private Transform _cameraTarget = null;
-        [SerializeField] private Camera _camera = null;
+        //[SerializeField] private Camera _camera = null;
         [SerializeField] private float _pitchRotationSensitivity = 1f;
         [SerializeField] private float _yawRotationSensitivity = 1.5f;
 

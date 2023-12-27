@@ -100,17 +100,13 @@ namespace Ami.BroAudio.Editor
 
 		private void OnFocus()
 		{
-			EditorPlayAudioClip.PlaybackIndicator.OnUpdate -= Repaint;
-			EditorPlayAudioClip.PlaybackIndicator.OnUpdate += Repaint;
-			EditorPlayAudioClip.PlaybackIndicator.OnEnd -= Repaint;
-			EditorPlayAudioClip.PlaybackIndicator.OnEnd += Repaint;
+			EditorPlayAudioClip.AddPlaybackIndicatorListener(Repaint);
 		}
 
 		private void OnLostFocus()
 		{
 			EditorPlayAudioClip.StopAllClips();
-			EditorPlayAudioClip.PlaybackIndicator.OnUpdate -= Repaint;
-			EditorPlayAudioClip.PlaybackIndicator.OnEnd -= Repaint;
+			EditorPlayAudioClip.RemovePlaybackIndicatorListener(Repaint);
 		}
 
 		protected override void OnGUI()

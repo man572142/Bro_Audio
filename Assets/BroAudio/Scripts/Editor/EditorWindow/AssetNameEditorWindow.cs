@@ -32,7 +32,7 @@ namespace Ami.BroAudio.Editor
 		{
 			GUI.enabled = true;
 			_assetName = EditorGUILayout.TextField(_assetName, GUILayout.Height(EditorGUIUtility.singleLineHeight * 2));
-			if(DrawAssetNameValidation(_assetName) && DrawTempNameValidation() && DrawDuplicateValidation())
+			if(!DrawAssetNameValidation(_assetName) || !DrawTempNameValidation() || !DrawDuplicateValidation())
 			{
 				GUI.enabled = false;
 			}

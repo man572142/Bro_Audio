@@ -79,7 +79,7 @@ namespace Ami.BroAudio.Editor
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
 			SerializedProperty idProp = property.FindPropertyRelative(nameof(AudioID.ID));
-			SerializedProperty assetProp = property.FindPropertyRelative(nameof(AudioID.SourceAsset));
+			SerializedProperty assetProp = property.FindPropertyRelative(AudioID.NameOf.SourceAsset);
 
 			if (!_isInit)
 			{

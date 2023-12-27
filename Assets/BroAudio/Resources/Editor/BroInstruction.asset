@@ -78,7 +78,7 @@ MonoBehaviour:
   - Key: 300
     Value: Add AudioClip to create AudioEntity
   - Key: 301
-    Value: Select an asset to modify existed entity.
+    Value: Double-click on an asset to edit its content.
   - Key: 302
     Value: Multiple audio clips import confirmation
   - Key: 303

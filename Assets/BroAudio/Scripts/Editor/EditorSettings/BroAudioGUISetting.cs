@@ -25,6 +25,6 @@ namespace Ami.BroAudio.Editor.Setting
 		public static Color FalseColor => new Color(0.5f, 0.05f, 0.05f,0.5f);
 		public static Color DefaultLabelColor => GUI.skin.label.normal.textColor;
 
-		public static Vector2 MinWindowSize => new Vector2(960f, 540f);
+		public static Vector2 DefaultWindowSize => new Vector2(720f, 540f);
 	}
 }

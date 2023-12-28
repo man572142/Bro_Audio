@@ -6029,6 +6029,22 @@ PrefabInstance:
       propertyPath: _methodTexts.Array.data[0].Parameters.Array.data[0]
       value: followTarget
       objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 408.91
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 74.57
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -52.19
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -1.42
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
 --- !u!224 &264622629 stripped
@@ -7173,6 +7189,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2036263653096987024, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2876047257477730840, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_SizeDelta.x
       value: 400
@@ -7329,7 +7349,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sound:
     ID: 1073741825
-    SourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 0}
 --- !u!1 &523842580
 GameObject:
   m_ObjectHideFlags: 0
@@ -8538,7 +8558,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sound:
     ID: 1073741827
-    SourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 0}
 --- !u!114 &702725847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9032,7 +9052,7 @@ MonoBehaviour:
   InteractiveZone: {fileID: 766546313}
   _enterExitSound:
     ID: 1073741828
-    SourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 0}
   _targetVolume: 0.5
   _lowPassFreq: 800
 --- !u!114 &766546313
@@ -9061,7 +9081,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sound:
     ID: 1073741827
-    SourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 0}
 --- !u!1 &774434209
 GameObject:
   m_ObjectHideFlags: 0
@@ -9887,6 +9907,26 @@ PrefabInstance:
     - target: {fileID: 8279492738536436155, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: _methodTexts.Array.data[2].Parameters.Array.data[0]
       value: frequency
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 610.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.000011683
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -54.003
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0.000020981
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
@@ -11615,6 +11655,26 @@ PrefabInstance:
       propertyPath: _methodTexts.Array.data[0].Parameters.Array.data[0]
       value: Effect.LowPass(frequency, fadeTime)
       objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 810.49
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 75.29
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -48.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 8694379711204440310, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -1.78
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
 --- !u!224 &1347922820 stripped
@@ -12000,13 +12060,13 @@ MonoBehaviour:
   InteractiveZone: {fileID: 1404378534}
   _particle: {fileID: 1381962789}
   _fog: {fileID: 2120017616}
-  _playInterval: 12
+  _playInterval: 10
   _explosion:
     ID: 1073741832
-    SourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
   _warningVoice:
     ID: 1073741833
-    SourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
   _lowPassFrequency: 700
 --- !u!1 &1409124831
 GameObject:
@@ -12220,7 +12280,7 @@ MonoBehaviour:
   _director: {fileID: 1430655739}
   _openingSong:
     ID: 1073741826
-    SourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 0}
 --- !u!4 &1430655738
 Transform:
   m_ObjectHideFlags: 0
@@ -19304,7 +19364,6 @@ MonoBehaviour:
   _runSpeed: 7
   _characterController: {fileID: 1791080166}
   _cameraTarget: {fileID: 377018149}
-  _camera: {fileID: 8944336656349189699}
   _pitchRotationSensitivity: 0.6
   _yawRotationSensitivity: 1.5
   _maxPitchAngle: 60
@@ -19351,7 +19410,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _footstep:
     ID: 1073741824
-    SourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
 --- !u!114 &1791080168
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21337,7 +21396,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sound:
     ID: 1073741831
-    SourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 0}
 --- !u!1 &1901732758 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6510980715547664423, guid: 1fb00677c5274bf48867e1402459086d, type: 3}
@@ -21358,10 +21417,10 @@ MonoBehaviour:
   InteractiveZone: {fileID: 1714271931}
   _nightTimeBGM:
     ID: 1073741830
-    SourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 0}
   _dayTimeBGM:
     ID: 1073741826
-    SourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 0}
   _transitionTime: 2
   _apiAnimator: {fileID: 677126520}
   _apiTriggerName: ShowAPI

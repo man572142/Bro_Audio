@@ -24,6 +24,11 @@ namespace Ami.BroAudio.Editor
         private const string DbValueStringFormat = "0.##";
         private const int VolumeFieldDigitsMultiplier = 1000; // 0.###
 
+        public static AnimationCurve SpatialBlend => AnimationCurve.Constant(0f, 0f, 0f);
+        public static AnimationCurve ReverbZoneMix => AnimationCurve.Constant(0f, 0f, 1f);
+        public static AnimationCurve Spread => AnimationCurve.Constant(0f, 0f, 0f);
+        public static AnimationCurve LogarithmicRolloff => GetLogarithmicCurve(AttenuationMinDistance / AttenuationMaxDistance, 1f, 1f);
+
         private static RuntimeSetting _runtimeSetting = null;
         public static RuntimeSetting RuntimeSetting
         {
@@ -59,6 +64,8 @@ namespace Ami.BroAudio.Editor
                 return _editorSetting;
             }
         }
+
+        private static float SliderFullScale => FullVolume / ((FullDecibelVolume - MinDecibelVolume) / DecibelVoulumeFullScale);
 
         private static void OnPlayModeStateChanged(PlayModeStateChange mode)
         {
@@ -175,6 +182,11 @@ namespace Ami.BroAudio.Editor
             return ((int)flags & (int)targetFlag) != 0;
         }
 
+        public static bool Contains(this VolumeSliderOptions flags, VolumeSliderOptions targetFlag)
+        {
+            return ((int)flags & (int)targetFlag) != 0;
+        }
+
         public static void DrawVUMeter(Rect vuRect, Color maskColor)
         {
             vuRect.height *= 0.25f;
@@ -190,32 +202,25 @@ namespace Ami.BroAudio.Editor
 
         public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue, bool isSnap, Action onSwitchSnapMode)
         {
-            Rect suffixRect = EditorGUI.PrefixLabel(position, label);
-            
-            float fieldWidth = EditorGUIUtility.fieldWidth;
+            Rect suffixRect = EditorGUI.PrefixLabel(position, label);        
             float gap = 3f;
-            Rect sliderRect = new Rect(suffixRect) { width = suffixRect.width - fieldWidth - gap};
-            Rect fieldRect = new Rect(suffixRect) { x = sliderRect.xMax + gap, width = fieldWidth };
+            Rect sliderRect = new Rect(suffixRect) { width = suffixRect.width - EditorGUIUtility.fieldWidth - gap};
+            Rect fieldRect = new Rect(suffixRect) { x = sliderRect.xMax + gap, width = EditorGUIUtility.fieldWidth };
 
 #if !UNITY_WEBGL
             if (EditorSetting.ShowVUColorOnVolumeSlider)
             {
                 DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
             }
+            DrawFullVolumeSnapPoint(sliderRect, SliderFullScale, onSwitchSnapMode);
 
             if (isSnap && CanSnap(currentValue))
             {
                 currentValue = FullVolume;
             }
 
-            float sliderFullScale = FullVolume / ((FullDecibelVolume - MinDecibelVolume) / DecibelVoulumeFullScale);
-            DrawFullVolumeSnapPoint(sliderRect, sliderFullScale, onSwitchSnapMode);
-
-            float sliderValue = ConvertToSliderValue(currentValue, sliderFullScale);
-            float newSliderValue = GUI.HorizontalSlider(sliderRect, sliderValue, 0f, sliderFullScale);
-            bool hasSliderChanged = sliderValue != newSliderValue;
-
-            float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? ConvertToNomalizedVolume(newSliderValue, sliderFullScale) : currentValue);
+            float newSliderValue = DrawVolumeSlider(sliderRect,currentValue, out bool hasSliderChanged);
+            float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? newSliderValue : currentValue);
             newFloatFieldValue = (float)Math.Floor(newFloatFieldValue * VolumeFieldDigitsMultiplier) / VolumeFieldDigitsMultiplier;
             currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
 #else
@@ -258,27 +263,6 @@ namespace Ami.BroAudio.Editor
                 }
             }
 
-            float ConvertToSliderValue(float vol, float sliderFullScale)
-            {
-                if (vol > FullVolume)
-                {
-                    float db = vol.ToDecibel(true);
-                    return (db - MinDecibelVolume) / DecibelVoulumeFullScale * sliderFullScale;
-                }
-                return vol;
-
-            }
-
-            float ConvertToNomalizedVolume(float sliderValue, float sliderFullScale)
-            {
-                if (sliderValue > FullVolume)
-                {
-                    float db = MinDecibelVolume + (sliderValue / sliderFullScale) * DecibelVoulumeFullScale;
-                    return db.ToNormalizeVolume(true);
-                }
-                return sliderValue;
-            }
-
             bool CanSnap(float value)
             {
                 float difference = value - FullVolume;
@@ -289,10 +273,35 @@ namespace Ami.BroAudio.Editor
 #endif
         }
 
-        public static AnimationCurve SpatialBlend => AnimationCurve.Constant(0f, 0f, 0f);
-        public static AnimationCurve ReverbZoneMix => AnimationCurve.Constant(0f, 0f, 1f);
-        public static AnimationCurve Spread => AnimationCurve.Constant(0f, 0f, 0f);
-        public static AnimationCurve LogarithmicRolloff => GetLogarithmicCurve(AttenuationMinDistance / AttenuationMaxDistance, 1f, 1f);
+        public static float DrawVolumeSlider(Rect position, float currentValue,out bool hasChanged)
+        {
+            float sliderValue = ConvertToSliderValue(currentValue);
+            EditorGUI.BeginChangeCheck();
+            float newSliderValue = GUI.HorizontalSlider(position, sliderValue, 0f, SliderFullScale);
+            hasChanged = EditorGUI.EndChangeCheck();
+            return ConvertToNomalizedVolume(newSliderValue);
+
+            float ConvertToSliderValue(float vol)
+            {
+                if (vol > FullVolume)
+                {
+                    float db = vol.ToDecibel(true);
+                    return (db - MinDecibelVolume) / DecibelVoulumeFullScale * SliderFullScale;
+                }
+                return vol;
+
+            }
+
+            float ConvertToNomalizedVolume(float sliderValue)
+            {
+                if (sliderValue > FullVolume)
+                {
+                    float db = MinDecibelVolume + (sliderValue / SliderFullScale) * DecibelVoulumeFullScale;
+                    return db.ToNormalizeVolume(true);
+                }
+                return sliderValue;
+            }
+        }
 
         private static AnimationCurve GetLogarithmicCurve(float timeStart, float timeEnd, float logBase)
         {

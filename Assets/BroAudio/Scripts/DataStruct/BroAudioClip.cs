@@ -17,10 +17,6 @@ namespace Ami.BroAudio.Data
 
 		public int Weight;
 
-#if UNITY_EDITOR
-		public bool SnapToFullVolume = true;
-#endif
-
 		AudioClip IBroAudioClip.AudioClip => AudioClip;
 		float IBroAudioClip.Volume => Volume;
 		float IBroAudioClip.Delay => Delay;

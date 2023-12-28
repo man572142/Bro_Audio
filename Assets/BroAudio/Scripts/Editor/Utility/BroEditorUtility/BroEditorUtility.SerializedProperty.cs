@@ -31,7 +31,6 @@ namespace Ami.BroAudio.Editor
             //could use enumerator to improve this, but might have to deal with some property
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Name))).stringValue = string.Empty;
             property.FindPropertyRelative(nameof(AudioEntity.Clips)).arraySize = 0;
-            property.FindPropertyRelative(AudioEntity.EditorPropertyName.IsShowClipPreview).boolValue = false;
             property.FindPropertyRelative(AudioEntity.EditorPropertyName.MulticlipsPlayMode).enumValueIndex = 0;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.MasterVolume))).floatValue = AudioConstant.FullVolume;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Loop))).boolValue = false;

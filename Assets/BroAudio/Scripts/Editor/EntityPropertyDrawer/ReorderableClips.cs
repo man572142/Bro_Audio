@@ -14,18 +14,22 @@ namespace Ami.BroAudio.Editor
 	{
 		public Action<string> OnAudioClipChanged;
 
-		private readonly float[] _headerRatio = { 0.3f, 0.4f, 0.18f, 0.12f };
+		private const float Gap = 5f;
+		private const float HeaderLabelWidth = 50f;
+		private const float MulticlipsValueLabelWidth = 60f;
+		private const float MulticlipsValueFieldWidth = 40f;
+		private const float SliderLabelWidth = 25;
+		private const float ObjectPickerRatio = 0.6f;
 
-		private Rect[] _headerRects = null;
 		private ReorderableList _reorderableList;
 		private SerializedProperty _playModeProp;
+		private int _currSelectedClipIndex = -1;
+		private SerializedProperty _currSelectedClip;
 
 		public bool IsMulticlips => _reorderableList.count > 1;
 		public int Count => _reorderableList.count;
 		public float Height => _reorderableList.GetHeight();
-
-		private int _currSelectedClipIndex = -1;
-		private SerializedProperty _currSelectedClip;
+		private Vector2 PlayButtonSize => new Vector2(30f, 20f);
 		
 		public SerializedProperty CurrentSelectedClip
 		{
@@ -139,27 +143,28 @@ namespace Ami.BroAudio.Editor
 		{
 			HandleClipsDragAndDrop(rect);
 
-			_headerRects = _headerRects ?? new Rect[_headerRatio.Length];
-			EditorScriptingExtension.SplitRectHorizontal(rect, 15f, _headerRects, _headerRatio);
+			Rect labelRect = new Rect(rect) { width = HeaderLabelWidth };
+			Rect valueRect = new Rect(rect) { width = MulticlipsValueLabelWidth , x = rect.xMax - MulticlipsValueLabelWidth};
+			Rect multiclipOptionRect = new Rect(rect) { width = (rect.width - labelRect.width - valueRect.width) * 0.5f, x = labelRect.xMax };
 
-            EditorGUI.LabelField(_headerRects[0], "Clips");
+            EditorGUI.LabelField(labelRect, "Clips");
             if (IsMulticlips)
             {
                 GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
                 popupStyle.alignment = TextAnchor.MiddleLeft;
                 MulticlipsPlayMode currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
-                _playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(_headerRects[1], currentPlayMode, popupStyle);
+                _playModeProp.enumValueIndex = (int)(MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, currentPlayMode, popupStyle);
                 currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
                 switch (currentPlayMode)
                 {
                     case MulticlipsPlayMode.Sequence:
-                        EditorGUI.LabelField(_headerRects[_headerRatio.Length - 1], "Index");
+                        EditorGUI.LabelField(valueRect, "Index", GUIStyleHelper.MiddleCenterText);
                         break;
                     case MulticlipsPlayMode.Random:
-                        EditorGUI.LabelField(_headerRects[_headerRatio.Length - 1], "Weight");
+                        EditorGUI.LabelField(valueRect, "Weight", GUIStyleHelper.MiddleCenterText);
                         break;
                 }
-                EditorGUI.LabelField(_headerRects[1].DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
+                EditorGUI.LabelField(multiclipOptionRect.DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
             }
         }
 
@@ -167,31 +172,80 @@ namespace Ami.BroAudio.Editor
 		{
 			SerializedProperty clipProp = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
 			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
-			EditorScriptingExtension.SplitRectHorizontal(rect, 0.9f, 15f, out Rect clipRect, out Rect valueRect);
-			EditorGUI.BeginChangeCheck();
-			EditorGUI.PropertyField(clipRect, audioClipProp, GUIContent.none);
-			if (EditorGUI.EndChangeCheck())
+
+            Rect buttonRect = new Rect(rect) { width = PlayButtonSize.x, height = PlayButtonSize.y };
+            buttonRect.y += (_reorderableList.elementHeight - PlayButtonSize.y) * 0.5f;
+			Rect valueRect = new Rect(rect) { width = MulticlipsValueLabelWidth, x = rect.xMax - MulticlipsValueLabelWidth };
+
+			float remainWidth = rect.width - buttonRect.width - valueRect.width;
+            Rect clipRect = new Rect(rect) { width = (remainWidth * ObjectPickerRatio) - Gap, x = buttonRect.xMax + Gap};
+			Rect sliderRect = new Rect(rect) { width = (remainWidth * (1 - ObjectPickerRatio)) - Gap, x = clipRect.xMax + Gap};
+
+			DrawPlayClipButton();
+			DrawObjectPicker();
+			DrawVolumeSlider();
+			DrawMulticlipsValue();
+
+			void DrawObjectPicker()
 			{
-				BroEditorUtility.ResetBroAudioClipPlaybackSetting(clipProp);
-				OnAudioClipChanged?.Invoke(clipProp.propertyPath);
+				EditorGUI.BeginChangeCheck();
+				EditorGUI.PropertyField(clipRect, audioClipProp, GUIContent.none);
+				if (EditorGUI.EndChangeCheck())
+				{
+					BroEditorUtility.ResetBroAudioClipPlaybackSetting(clipProp);
+					OnAudioClipChanged?.Invoke(clipProp.propertyPath);
+				}
 			}
 
-			MulticlipsPlayMode currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
-			switch (currentPlayMode)
+			void DrawPlayClipButton()
 			{
-				case MulticlipsPlayMode.Single:
-					break;
-				case MulticlipsPlayMode.Sequence:
-					EditorGUI.LabelField(valueRect, index.ToString(), GUIStyleHelper.MiddleCenterText);
-					break;
-				case MulticlipsPlayMode.Random:
-					SerializedProperty weightProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Weight));
-					GUIStyle intFieldStyle = new GUIStyle(EditorStyles.numberField);
-					intFieldStyle.alignment = TextAnchor.MiddleCenter;
-					weightProp.intValue = EditorGUI.IntField(valueRect, weightProp.intValue, intFieldStyle);
-					break;
+				if(audioClipProp.objectReferenceValue is AudioClip audioClip)
+				{
+					bool isPlaying = EditorPlayAudioClip.CurrentPlayingClip == audioClip;
+					GUIContent buttonIcon =  isPlaying ? EditorGUIUtility.IconContent(IconConstant.StopButton) : EditorGUIUtility.IconContent(IconConstant.PlayButton);
+					if (GUI.Button(buttonRect, buttonIcon))
+					{
+						EditorPlayAudioClip.StopAllClips();
+						if(!isPlaying)
+						{
+							EditorPlayAudioClip.PlayClip(audioClip);
+						}
+					}
+				}
+			}
+
+			void DrawVolumeSlider()
+			{
+				SerializedProperty volProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
+				Rect labelRect = new Rect(sliderRect) { width = SliderLabelWidth };
+				sliderRect.width -= SliderLabelWidth;
+				sliderRect.x = labelRect.xMax;
+				EditorGUI.LabelField(labelRect, EditorGUIUtility.IconContent(IconConstant.AudioSpeaker));
+				volProp.floatValue = BroEditorUtility.DrawVolumeSlider(sliderRect, volProp.floatValue, out bool _);
+			}
+
+			void DrawMulticlipsValue()
+			{
+				valueRect.width = MulticlipsValueFieldWidth;
+				valueRect.x += (MulticlipsValueLabelWidth - MulticlipsValueFieldWidth) * 0.5f;
+				MulticlipsPlayMode currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+				switch (currentPlayMode)
+				{
+					case MulticlipsPlayMode.Single:
+						break;
+					case MulticlipsPlayMode.Sequence:
+						EditorGUI.LabelField(valueRect, index.ToString(), GUIStyleHelper.MiddleCenterText);
+						break;
+					case MulticlipsPlayMode.Random:
+						SerializedProperty weightProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Weight));
+						GUIStyle intFieldStyle = new GUIStyle(EditorStyles.numberField);
+						intFieldStyle.alignment = TextAnchor.MiddleCenter;
+						weightProp.intValue = EditorGUI.IntField(valueRect, weightProp.intValue, intFieldStyle);
+						break;
+				}
 			}
 		}
+
 
 		private void OnDrawFooter(Rect rect)
 		{

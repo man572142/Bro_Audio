@@ -122,14 +122,12 @@ namespace Ami.BroAudio.Editor
 
 			void DrawWaveformPreview()
 			{			
-				//Texture2D waveformTexture = AssetPreview.GetAssetPreview(audioClip);
-                
                 if (Event.current.type == EventType.Repaint)
                 {
                     GUI.skin.window.Draw(previewRect, false, false, false, false);
 
                     Rect waveformRect = new Rect(previewRect);
-					// hack: don't know where da fuck are these offset coming from , just measure them by eyes
+					// hack: don't know where the fuck are these offset coming from , just measure them by eyes
 					waveformRect.x += 4f;
 					waveformRect.width -= 6f;
                     if (transport.Delay > transport.StartPosition)
@@ -154,16 +152,20 @@ namespace Ami.BroAudio.Editor
 
 				if (GUI.Button(playRect, EditorGUIUtility.IconContent(PlayButton)))
 				{
-					EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, transport);
 					EditorPlayAudioClip.PlayClip(audioClip, transport.StartPosition, transport.EndPosition);
 				}
+				EditorGUI.DrawRect(playRect, PlayButtonColor);
+
 				if (GUI.Button(stopRect, EditorGUIUtility.IconContent(StopButton)))
 				{
 					EditorPlayAudioClip.StopAllClips();
 				}
-
-				EditorGUI.DrawRect(playRect, PlayButtonColor);
 				EditorGUI.DrawRect(stopRect, StopButtonColor);
+
+				if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying && EditorPlayAudioClip.CurrentPlayingClip == audioClip)
+				{
+					EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, transport);
+				}
 			}
 
 			void DrawClipPlaybackLine()

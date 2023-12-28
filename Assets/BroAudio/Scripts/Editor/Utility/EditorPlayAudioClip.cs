@@ -17,6 +17,7 @@ namespace Ami.Extension
         public const string StopClipMethodName = "StopAllClips";
 #endif
 		public readonly static PlaybackIndicatorUpdater PlaybackIndicator = new PlaybackIndicatorUpdater();
+		public static AudioClip CurrentPlayingClip { get; private set; }
 
 		private static CancellationTokenSource CurrentPlayingTaskCanceller = null;
 
@@ -36,6 +37,7 @@ namespace Ami.Extension
 			{
 				method.Invoke(null,	new object[] { audioClip, startSample, loop });
 				PlaybackIndicator.Start();
+				CurrentPlayingClip = audioClip;
 			}
 
             float duration = audioClip.length - startTime - endTime;
@@ -61,6 +63,7 @@ namespace Ami.Extension
 			{
 				method.Invoke(null,new object[] { });
 				PlaybackIndicator.End();
+				CurrentPlayingClip = null;
 			}
 		}
 

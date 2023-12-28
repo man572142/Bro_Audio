@@ -14,12 +14,19 @@ namespace Ami.BroAudio.Editor
 	[CustomPropertyDrawer(typeof(AudioEntity))]
 	public partial class AudioEntityPropertyDrawer : MiPropertyDrawer
 	{
+		public class ClipData
+		{
+			public ITransport Transport;
+			public bool IsSnapToFullVolume;
+		}
+
 		public enum Tab { Clips, Settings}
 
 		public static event Action OnEntityNameChanged;
 
 		private const float ClipPreviewHeight = 100f;
 		private const float DefaultFieldRatio = 0.9f;
+		private const float PreviewPrettinessOffsetY = 7f; // for prettiness
 
 		private readonly GUIContent[] _tabLabelGUIContents = { new GUIContent(nameof(Tab.Clips)), new GUIContent(nameof(Tab.Settings)) };
 		private readonly float[] _tabLabelRatios = new float[] { 0.5f, 0.5f };
@@ -28,8 +35,9 @@ namespace Ami.BroAudio.Editor
 
 		private Dictionary<string, ReorderableClips> _reorderableClipsDict = new Dictionary<string, ReorderableClips>();
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper(ClipPreviewHeight);
-		private Dictionary<string, ITransport> _clipTransport = new Dictionary<string, ITransport>();
+		private Dictionary<string, ClipData> _clipDataDict = new Dictionary<string, ClipData>();
 		private Dictionary<string, Tab> _currSelectedTabDict = new Dictionary<string, Tab>();
+
 		
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
@@ -53,7 +61,7 @@ namespace Ami.BroAudio.Editor
 				reorderableClips.Dispose();
 			}
 			_reorderableClipsDict.Clear();
-			_clipTransport.Clear();
+			_clipDataDict.Clear();
 
 			LibraryManagerWindow.OnCloseLibraryManagerWindow -= OnDisable;
 			LibraryManagerWindow.OnSelectAsset -= OnDisable;
@@ -97,16 +105,13 @@ namespace Ami.BroAudio.Editor
 					{
 						DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport, out float delay);
 						DrawAdditionalClipProperties(position, currSelectClip, setting);
-						if (setting.DrawedProperty.Contains(DrawedProperty.ClipPreview))
+						if (setting.DrawedProperty.Contains(DrawedProperty.ClipPreview) && audioClip != null)
 						{
-							SerializedProperty isShowClipProp = property.FindPropertyRelative(AudioEntity.EditorPropertyName.IsShowClipPreview);
-							isShowClipProp.boolValue = EditorGUI.Foldout(GetRectAndIterateLine(position), isShowClipProp.boolValue, "Preview");
-							bool isShowPreview = isShowClipProp.boolValue && audioClip != null;
-							if (isShowPreview)
-							{
-								_clipPropHelper.DrawClipPreview(GetNextLineRect(position), transport, audioClip, currSelectClip.propertyPath);
-								Offset += ClipPreviewHeight + ClipPreviewPadding;
-							}
+							DrawEmptyLine(1);
+							Rect previewRect = GetNextLineRect(position);  
+							previewRect.y -= PreviewPrettinessOffsetY;
+							_clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, currSelectClip.propertyPath);
+							Offset += ClipPreviewHeight + ClipPreviewPadding;
 						}
 					}
 					break;
@@ -171,11 +176,10 @@ namespace Ami.BroAudio.Editor
 				bool isShowClipProp =
 					clipList.CurrentSelectedClip != null &&
 					clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip _);
-				bool isShowClipPreview = isShowClipProp && property.FindPropertyRelative(AudioEntity.EditorPropertyName.IsShowClipPreview).boolValue;
 
 				height += clipList.Height;
 				height += isShowClipProp ? GetAdditionalClipPropertiesLineCount(property, setting) * SingleLineSpace : 0f;
-				height += isShowClipPreview ? ClipPreviewHeight + ClipPreviewPadding : 0f;
+				height += isShowClipProp ? ClipPreviewHeight + ClipPreviewPadding : 0f;
 			}
 			return height;
 		}
@@ -219,28 +223,28 @@ namespace Ami.BroAudio.Editor
 			SerializedProperty endPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition));
 			SerializedProperty fadeInProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.FadeIn));
 			SerializedProperty fadeOutProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.FadeOut));
-			SerializedProperty snapVolProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.SnapToFullVolume));
 			delay = delayProp.floatValue;
+
+			if (!_clipDataDict.TryGetValue(clipProp.propertyPath, out var clipData))
+			{
+				clipData = new ClipData();
+				clipData.Transport = new SerializedTransport(startPosProp, endPosProp, fadeInProp, fadeOutProp, delayProp, audioClip.length); ;
+				_clipDataDict[clipProp.propertyPath] = clipData;
+			}
+			transport = clipData.Transport;
 
 			if (CanDraw(DrawedProperty.Volume))
 			{
                 Rect volRect = GetRectAndIterateLine(position);
 				volRect.width *= DefaultFieldRatio;
-                volumeProp.floatValue = DrawVolumeSlider(volRect, _volumeLabel, volumeProp.floatValue, snapVolProp.boolValue, () =>
+                volumeProp.floatValue = DrawVolumeSlider(volRect, _volumeLabel, volumeProp.floatValue, clipData.IsSnapToFullVolume, () =>
                 {
-                    snapVolProp.boolValue = !snapVolProp.boolValue;
+					clipData.IsSnapToFullVolume = !clipData.IsSnapToFullVolume;
                 });
             }
 
-			if(!_clipTransport.TryGetValue(clipProp.propertyPath,out transport))
-			{
-				transport = new SerializedTransport(startPosProp, endPosProp, fadeInProp, fadeOutProp, delayProp,audioClip.length);
-				_clipTransport.Add(clipProp.propertyPath, transport);
-			}
-
 			if (CanDraw(DrawedProperty.PlaybackPosition))
 			{
-				SerializedTransport wrapper = transport as SerializedTransport;
                 Rect playbackRect = GetRectAndIterateLine(position);
                 playbackRect.width *= DefaultFieldRatio;
                 _clipPropHelper.DrawPlaybackPositionField(playbackRect, transport);
@@ -268,7 +272,7 @@ namespace Ami.BroAudio.Editor
 
 		private void OnClipChanged(string clipPropPath)
 		{
-			_clipTransport.Remove(clipPropPath);
+			_clipDataDict.Remove(clipPropPath);
 		}
 	}
 }

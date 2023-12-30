@@ -808,7 +808,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a60781683b695ed428adc920fcacf701, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _masterVol: {fileID: 1922029189}
+  _masterVol: {fileID: 1854345500}
   _uiVol: {fileID: 1208728374}
   _musicVol: {fileID: 1922029189}
   _sfxVol: {fileID: 1545122215}
@@ -8558,7 +8558,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sound:
     ID: 1073741827
-    _sourceAsset: {fileID: 0}
+    _sourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
 --- !u!114 &702725847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8824,7 +8824,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 387, y: 40}
+  m_AnchoredPosition: {x: 387, y: 60}
   m_SizeDelta: {x: 701, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &749193668
@@ -12280,7 +12280,7 @@ MonoBehaviour:
   _director: {fileID: 1430655739}
   _openingSong:
     ID: 1073741826
-    _sourceAsset: {fileID: 0}
+    _sourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
 --- !u!4 &1430655738
 Transform:
   m_ObjectHideFlags: 0
@@ -21153,6 +21153,17 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1853445526}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1854345500 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4066489342348214458, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+  m_PrefabInstance: {fileID: 7395334061958576553}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1864972729
 GameObject:
   m_ObjectHideFlags: 0

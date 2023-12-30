@@ -29,7 +29,7 @@ namespace Ami.BroAudio.Runtime
 			player.OnFinishingOneRound += OnFinishingOneRound;
 		}
 
-		private void OnFinishingOneRound(int id, BroAudioClip clip, PlaybackPreference pref)
+		private void OnFinishingOneRound(int id, PlaybackPreference pref, EffectType previousEffect)
 		{
 			var newPlayer = _getPlayerFunc?.Invoke();
 			if(newPlayer == null)
@@ -42,11 +42,10 @@ namespace Ami.BroAudio.Runtime
 			var audioType = Utility.GetAudioType(id);
 			if(SoundManager.Instance.AudioTypePref.TryGetValue(audioType,out var audioTypePref))
 			{
-				newPlayer.SetEffect(audioTypePref.EffectType, SetEffectMode.Override);
-				newPlayer.SetVolume(audioTypePref.Volume, 0f);
+				pref.AudioTypePlaybackPref = audioTypePref;
 			}
-
-			newPlayer.Play(id, clip, pref,false);
+			newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
+            newPlayer.Play(id, pref,false);
 			newPlayer.OnFinishingOneRound += OnFinishingOneRound;
 		}
 	}

@@ -48,9 +48,9 @@ namespace Ami.BroAudio.Runtime
             return this;
         }
 
-        internal void SetDominatedType(BroAudioType dominatdType)
+        internal void SetDominatedType(BroAudioType dominatedType)
         {
-            DominatedType = dominatdType;
+            DominatedType = dominatedType;
         }
 
         private void SetAllEffectExceptDominator(Effect effect)

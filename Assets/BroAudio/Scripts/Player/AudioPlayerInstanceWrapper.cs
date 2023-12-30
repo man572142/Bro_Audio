@@ -8,6 +8,9 @@ using System;
 
 namespace Ami.BroAudio
 {
+	/// <summary>
+	/// To keep tracking the instance of an AudioPlayer
+	/// </summary>
 	public class AudioPlayerInstanceWrapper : InstanceWrapper<AudioPlayer> ,IAudioPlayer
 	{
 		public event Action<AudioPlayer> OnWrapperRecycle;

@@ -153,7 +153,7 @@ namespace Ami.BroAudio.Runtime
 
         public void SetEffect(EffectType effect,SetEffectMode mode)
 		{
-            if(effect == EffectType.None && mode != SetEffectMode.Override)
+            if(effect == EffectType.None)
             {
                 return;
             }
@@ -180,11 +180,12 @@ namespace Ami.BroAudio.Runtime
 		}
 
 		private void ChangeChannel()
-		{
+		{   
 			float sendVol = _isUsingEffect ? MixerDecibelVolume : AudioConstant.MinDecibelVolume;
 			float mainVol = _isUsingEffect ? AudioConstant.MinDecibelVolume : MixerDecibelVolume;
-
-			_audioMixer.SetFloat(_sendParaName, sendVol);
+            // ** this is the reason why we need that tiny delay before playing.
+            // ** Change channel while playing will cause a clipping sound, which I think is a Unity bug **
+            _audioMixer.SetFloat(_sendParaName, sendVol);
 			_audioMixer.SetFloat(_currTrackName, mainVol);
 		}
 
@@ -212,14 +213,7 @@ namespace Ami.BroAudio.Runtime
             _decorators = _decorators ?? new List<AudioPlayerDecorator>();
             decoratedPalyer = this.DecorateWith<T>();
             _decorators.Add(decoratedPalyer);
-            decoratedPalyer.OnPlayerRecycle += RemoveDecorator;
             return decoratedPalyer;
-
-            void RemoveDecorator(AudioPlayer player)
-            {
-                decoratedPalyer.OnPlayerRecycle -= RemoveDecorator;
-                _decorators = null;
-            }
         }
 
         private bool TryGetDecorator<T>(out T result) where T : AudioPlayerDecorator, new()
@@ -242,8 +236,11 @@ namespace Ami.BroAudio.Runtime
         private IEnumerator Recycle()
         {
             yield return null;
+            CurrentActiveEffects = EffectType.None;
             MixerDecibelVolume = AudioConstant.MinDecibelVolume;
             OnRecycle?.Invoke(this);
+            DecoratePlaybackPreference = null;
+            _decorators = null;
         }
 	}
 }

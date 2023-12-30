@@ -48,18 +48,19 @@ namespace Ami.BroAudio.Runtime
                 pref.AudioTypePlaybackPref = audioTypePref;
             }
 
-            player.Play(id, pref.Entity.Clip, pref);
-
-            AudioPlayerInstanceWrapper wrapper = new AudioPlayerInstanceWrapper(player);
+            player.Play(id, pref);
+            StartCoroutine(PreventCombFiltering(id, CombFilteringPreventionInSeconds));
 
             if (pref.Entity.SeamlessLoop)
             {
+                // to keep tracking the instance of the AudioPlayer if it changes to a new one after looping
+                // todo: maybe we can just combine them
+                AudioPlayerInstanceWrapper wrapper = new AudioPlayerInstanceWrapper(player);
                 var seamlessLoopHelper = new SeamlessLoopHelper(wrapper, GetNewAudioPlayer);
                 seamlessLoopHelper.SetPlayer(player);
+                return wrapper;
             }
-
-            StartCoroutine(PreventCombFiltering(id, CombFilteringPreventionInSeconds));
-            return wrapper;
+            return player;
         }
         #endregion
 

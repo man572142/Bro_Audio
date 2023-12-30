@@ -58,16 +58,16 @@ namespace Ami.BroAudio
 		/// <inheritdoc cref="SetTransition(IMusicPlayer, Transition,StopMode)"/>
 		public static IMusicPlayer SetTransition(this IMusicPlayer player, Transition transition, StopMode stopMode, float overrideFade)
 			=> player?.SetTransition(transition, stopMode, overrideFade);
-		#endregion
+        #endregion
 
 #if !UNITY_WEBGL
-		#region As Dominator
-		/// <summary>
-		/// To be a dominator, which will affect or change the behavior of other audio players.
-		/// </summary>
-		/// <param name="player"></param>
-		/// <param name="dominatedType"></param>
-		public static IPlayerEffect AsDominator(this IAudioPlayer player, BroAudioType dominatedType = BroAudioType.All) 
+        #region As Dominator
+        /// <summary>
+        /// To be a dominator, which will affect or change the behavior of other audio players.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="dominatedType">The audio type that being dominated</param>
+        public static IPlayerEffect AsDominator(this IAudioPlayer player, BroAudioType dominatedType = BroAudioType.All) 
 			=> player?.AsDominator(dominatedType);
 
 		/// <inheritdoc cref="AsDominator(IAudioPlayer, BroAudioType)"/>

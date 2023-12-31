@@ -23,7 +23,9 @@ namespace Ami.BroAudio.Editor
         private const float HighVolumeSnappingThreshold = 0.2f;
         private const string DbValueStringFormat = "0.##";
         private const int VolumeFieldDigitsMultiplier = 1000; // 0.###
+        private static Vector2 volumeLabelSize => new Vector2(55f,25f);
 
+        public static bool IsDraggingVolumeSlider { get; private set; }
         public static AnimationCurve SpatialBlend => AnimationCurve.Constant(0f, 0f, 0f);
         public static AnimationCurve ReverbZoneMix => AnimationCurve.Constant(0f, 0f, 1f);
         public static AnimationCurve Spread => AnimationCurve.Constant(0f, 0f, 0f);
@@ -202,10 +204,10 @@ namespace Ami.BroAudio.Editor
 
         public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue, bool isSnap, Action onSwitchSnapMode)
         {
-            Rect suffixRect = EditorGUI.PrefixLabel(position, label);        
-            float gap = 3f;
-            Rect sliderRect = new Rect(suffixRect) { width = suffixRect.width - EditorGUIUtility.fieldWidth - gap};
-            Rect fieldRect = new Rect(suffixRect) { x = sliderRect.xMax + gap, width = EditorGUIUtility.fieldWidth };
+            Rect suffixRect = EditorGUI.PrefixLabel(position, label);
+            float padding = 3f;
+            Rect sliderRect = new Rect(suffixRect) { width = suffixRect.width - EditorGUIUtility.fieldWidth - padding };
+            Rect fieldRect = new Rect(suffixRect) { x = sliderRect.xMax + padding, width = EditorGUIUtility.fieldWidth };
 
 #if !UNITY_WEBGL
             if (EditorSetting.ShowVUColorOnVolumeSlider)
@@ -219,33 +221,24 @@ namespace Ami.BroAudio.Editor
                 currentValue = FullVolume;
             }
 
-            float newSliderValue = DrawVolumeSlider(sliderRect,currentValue, out bool hasSliderChanged);
-            float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? newSliderValue : currentValue);
+            float newNormalizedValue = DrawVolumeSlider(sliderRect, currentValue, out bool hasSliderChanged, out float newSliderValue);
+            float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? newNormalizedValue : currentValue);
             newFloatFieldValue = (float)Math.Floor(newFloatFieldValue * VolumeFieldDigitsMultiplier) / VolumeFieldDigitsMultiplier;
             currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
 #else
 				currentValue = GUI.HorizontalSlider(sliderRect, currentValue, 0f, FullVolume);
 				currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue),0f,FullVolume);
 #endif
-            DrawDecibelValueLabel(suffixRect, currentValue);
+            DrawDecibelValuePeeking(currentValue, padding, sliderRect, newSliderValue);
             return currentValue;
-
-            void DrawDecibelValueLabel(Rect dbRect, float value)
-            {
-                // draw an invisible label field for showing tooltip only
-                value = Mathf.Log10(value) * DefaultDecibelVolumeScale;
-                string plusSymbol = value > 0 ? "+" : string.Empty;
-                string volText = plusSymbol + value.ToString(DbValueStringFormat) + "dB";
-                EditorGUI.LabelField(suffixRect, new GUIContent() { text = string.Empty, tooltip = volText });
-            }
 
 #if !UNITY_WEBGL
             void DrawFullVolumeSnapPoint(Rect sliderPosition, float sliderFullScale, Action onSwitchSnapMode)
             {
-                if(onSwitchSnapMode == null)
-				{
+                if (onSwitchSnapMode == null)
+                {
                     return;
-				}
+                }
 
                 Rect rect = new Rect(sliderPosition);
                 rect.width = 30f;
@@ -273,11 +266,29 @@ namespace Ami.BroAudio.Editor
 #endif
         }
 
-        public static float DrawVolumeSlider(Rect position, float currentValue,out bool hasChanged)
+        public static void DrawDecibelValuePeeking(float currentValue, float padding, Rect sliderRect, float sliderValue)
+        {
+            if (Event.current.type == EventType.Repaint)
+            {
+                float sliderHandlerPos = sliderValue / SliderFullScale * sliderRect.width - (volumeLabelSize.x * 0.5f);
+                if(sliderRect.Contains(Event.current.mousePosition))
+                {
+                    Rect valueTooltipRect = new Rect(sliderRect.x + sliderHandlerPos, sliderRect.y - volumeLabelSize.y - padding, volumeLabelSize.x, volumeLabelSize.y);
+                    GUI.skin.window.Draw(valueTooltipRect, false, false, false, false);
+                    float dBvalue = currentValue.ToDecibel();
+                    string plusSymbol = dBvalue > 0 ? "+" : string.Empty;
+                    string volText = plusSymbol + dBvalue.ToString(DbValueStringFormat) + "dB";
+                    // ** Don't use EditorGUI.Label(), it will change the keyboard focus, might be a Unity's bug **
+                    GUI.Label(valueTooltipRect, volText, GUIStyleHelper.MiddleCenterText);
+                }
+            }
+        }
+
+        public static float DrawVolumeSlider(Rect position, float currentValue,out bool hasChanged, out float newSliderValue)
         {
             float sliderValue = ConvertToSliderValue(currentValue);
             EditorGUI.BeginChangeCheck();
-            float newSliderValue = GUI.HorizontalSlider(position, sliderValue, 0f, SliderFullScale);
+            newSliderValue = GUI.HorizontalSlider(position, sliderValue, 0f, SliderFullScale);
             hasChanged = EditorGUI.EndChangeCheck();
             return ConvertToNomalizedVolume(newSliderValue);
 
@@ -285,11 +296,10 @@ namespace Ami.BroAudio.Editor
             {
                 if (vol > FullVolume)
                 {
-                    float db = vol.ToDecibel(true);
+                    float db = vol.ToDecibel();
                     return (db - MinDecibelVolume) / DecibelVoulumeFullScale * SliderFullScale;
                 }
                 return vol;
-
             }
 
             float ConvertToNomalizedVolume(float sliderValue)

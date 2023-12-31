@@ -85,14 +85,14 @@ namespace Ami.BroAudio
         /// <summary>
         /// Set the master volume
         /// </summary>
-        /// <param name="vol">0.0 to 1.0</param>
+        /// <param name="vol">values between 0.0 to 10.0</param>
         public static void SetVolume(float vol)
             => SetVolume(vol, BroAudioType.All);
 
         /// <summary>
         /// Set the volume of the given audio type
         /// </summary>
-        /// <param name="vol">0.0 to 1.0</param>
+        /// <param name="vol">values between 0.0 to 10.0</param>
         /// <param name="audioType"></param>
         public static void SetVolume(float vol, BroAudioType audioType) 
             => SetVolume(vol,audioType, BroAdvice.FadeTime_Immediate);
@@ -100,7 +100,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Set the volume of the given audio type
         /// </summary>
-        /// <param name="vol">0.0 to 1.0</param>
+        /// <param name="vol">values between 0.0 to 10.0</param>
         /// <param name="audioType"></param>
         /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
         public static void SetVolume(float vol, BroAudioType audioType, float fadeTime) 
@@ -109,7 +109,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Set the volume of an audio
         /// </summary>
-        /// <param name="vol">0.0 to 1.0</param>
+        /// <param name="vol">values between 0.0 to 10.0</param>
         /// <param name="id"></param>
         public static void SetVolume(AudioID id, float vol) 
             => SetVolume(id, vol, BroAdvice.FadeTime_Immediate);
@@ -117,7 +117,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Set the volume of an audio
         /// </summary>
-        /// <param name="vol">0.0 to 1.0</param>
+        /// <param name="vol">values between 0.0 to 10.0</param>
         /// <param name="id"></param>
         /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
         public static void SetVolume(AudioID id, float vol, float fadeTime) 

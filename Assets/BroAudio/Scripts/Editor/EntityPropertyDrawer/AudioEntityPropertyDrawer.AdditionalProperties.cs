@@ -96,7 +96,7 @@ namespace Ami.BroAudio.Editor
 						onDrawVU = sliderRect => DrawVUMeter(sliderRect, Setting.BroAudioGUISetting.VUMaskColor);
 					}
 #endif
-					// todo: need logarithm
+					// todo: change to bro volume 
 					bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
 					DrawRandomRangeSlider(masterVolRect,_masterVolLabel,ref vol,ref volRange, AudioConstant.MinVolume, isWebGL? AudioConstant.FullVolume : AudioConstant.MaxVolume,true, onDrawVU);
 					masterVolProp.floatValue = vol;

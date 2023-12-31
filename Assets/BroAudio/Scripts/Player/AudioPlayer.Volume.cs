@@ -39,7 +39,7 @@ namespace Ami.BroAudio.Runtime
 #if UNITY_WEBGL
                 WebGLSetVolume();
 #else
-                MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel(true);
+                MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
 #endif
             }
         }
@@ -56,7 +56,7 @@ namespace Ami.BroAudio.Runtime
 #if UNITY_WEBGL
                 WebGLSetVolume();
 #else
-                MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel(true);
+                MixerDecibelVolume = (_clipVolume * _trackVolume).ToDecibel();
 #endif
             }
         }

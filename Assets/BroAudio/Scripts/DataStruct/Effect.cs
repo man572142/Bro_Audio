@@ -49,14 +49,7 @@ namespace Ami.BroAudio
 
 				if(Type == EffectType.Volume)
 				{
-					if (value <= 1f && value >= 0f)
-					{
-						_value = value.ToDecibel();						
-					}
-					else
-					{
-						LogWarning("The value of a volume type EffectParameter should be less than 1 and greater than 0!");
-					}
+					_value = value.ToDecibel();
 				}
 				else if (Type == EffectType.LowPass || Type == EffectType.HighPass)
 				{

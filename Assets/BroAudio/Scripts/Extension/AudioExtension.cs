@@ -34,7 +34,7 @@ namespace Ami.Extension
 
         private const float SecondsPerMinute = 60f;
 
-        public static float ToDecibel(this float vol,bool allowBoost = false)
+        public static float ToDecibel(this float vol,bool allowBoost = true)
         {  
             return Mathf.Log10(vol.ClampNormalize(allowBoost)) * DefaultDecibelVolumeScale;
         }

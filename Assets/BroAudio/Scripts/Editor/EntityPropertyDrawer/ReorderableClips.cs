@@ -221,7 +221,8 @@ namespace Ami.BroAudio.Editor
 				sliderRect.width -= SliderLabelWidth;
 				sliderRect.x = labelRect.xMax;
 				EditorGUI.LabelField(labelRect, EditorGUIUtility.IconContent(IconConstant.AudioSpeaker));
-				volProp.floatValue = BroEditorUtility.DrawVolumeSlider(sliderRect, volProp.floatValue, out bool _);
+				volProp.floatValue = BroEditorUtility.DrawVolumeSlider(sliderRect, volProp.floatValue, out bool _, out float newSliderValue);
+				BroEditorUtility.DrawDecibelValuePeeking(volProp.floatValue, 3f, sliderRect, newSliderValue);
 			}
 
 			void DrawMulticlipsValue()

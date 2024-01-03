@@ -39,7 +39,7 @@ namespace Ami.Extension
             return Mathf.Log10(vol.ClampNormalize(allowBoost)) * DefaultDecibelVolumeScale;
         }
 
-        public static float ToNormalizeVolume(this float dB,bool allowBoost = false)
+        public static float ToNormalizeVolume(this float dB,bool allowBoost = true)
         {
             float maxVol = allowBoost ? MaxDecibelVolume : FullDecibelVolume;
             if(dB >= maxVol)

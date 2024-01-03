@@ -8,12 +8,18 @@ using UnityEngine;
 using Ami.Extension;
 using static Ami.Extension.StringExtension;
 using static Ami.Extension.AudioConstant;
+using static Ami.Extension.EditorScriptingExtension;
 using System.Reflection;
 
 namespace Ami.BroAudio.Editor
 {
     public static partial class BroEditorUtility
     {
+        public enum RandomRangeSliderType
+        {
+            Default, Logarithmic, BroVolume,
+        }
+
         public const string AudioSettingPath = "Project/Audio";
         public const string ProjectAudioSettingFileName = "AudioManager.asset";
         public const string ProjectSettingsFolderName = "ProjectSettings";
@@ -22,11 +28,11 @@ namespace Ami.BroAudio.Editor
         private const float LowVolumeSnappingThreshold = 0.05f;
         private const float HighVolumeSnappingThreshold = 0.2f;
         private const string DbValueStringFormat = "0.##";
-        private const int VolumeFieldDigitsMultiplier = 1000; // 0.###
         private static Vector2 volumeLabelSize => new Vector2(55f,25f);
+        public static readonly float[] VolumeSplitPoints = { -80f, -60f, -36f, -24f, -12f, -6f, 0f, 6f, 20f };
 
-        public static bool IsDraggingVolumeSlider { get; private set; }
-        public static AnimationCurve SpatialBlend => AnimationCurve.Constant(0f, 0f, 0f);
+        public static float VolumeScale => 1f / (VolumeSplitPoints.Length - 1);
+		public static AnimationCurve SpatialBlend => AnimationCurve.Constant(0f, 0f, 0f);
         public static AnimationCurve ReverbZoneMix => AnimationCurve.Constant(0f, 0f, 1f);
         public static AnimationCurve Spread => AnimationCurve.Constant(0f, 0f, 0f);
         public static AnimationCurve LogarithmicRolloff => GetLogarithmicCurve(AttenuationMinDistance / AttenuationMaxDistance, 1f, 1f);
@@ -214,35 +220,36 @@ namespace Ami.BroAudio.Editor
             {
                 DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
             }
-            DrawFullVolumeSnapPoint(sliderRect, SliderFullScale, onSwitchSnapMode);
-
-            if (isSnap && CanSnap(currentValue))
-            {
-                currentValue = FullVolume;
-            }
+            DrawFullVolumeSnapPoint(sliderRect, onSwitchSnapMode);
 
             float newNormalizedValue = DrawVolumeSlider(sliderRect, currentValue, out bool hasSliderChanged, out float newSliderValue);
             float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? newNormalizedValue : currentValue);
-            newFloatFieldValue = (float)Math.Floor(newFloatFieldValue * VolumeFieldDigitsMultiplier) / VolumeFieldDigitsMultiplier;
             currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
 #else
 				currentValue = GUI.HorizontalSlider(sliderRect, currentValue, 0f, FullVolume);
 				currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue),0f,FullVolume);
 #endif
-            DrawDecibelValuePeeking(currentValue, padding, sliderRect, newSliderValue);
+			if (isSnap && CanSnap(currentValue))
+			{
+				currentValue = FullVolume;
+			}
+			DrawDecibelValuePeeking(currentValue, padding, sliderRect, newSliderValue);
             return currentValue;
 
 #if !UNITY_WEBGL
-            void DrawFullVolumeSnapPoint(Rect sliderPosition, float sliderFullScale, Action onSwitchSnapMode)
+            void DrawFullVolumeSnapPoint(Rect sliderPosition, Action onSwitchSnapMode)
             {
                 if (onSwitchSnapMode == null)
                 {
                     return;
                 }
 
-                Rect rect = new Rect(sliderPosition);
+				float scale = 1f / (VolumeSplitPoints.Length - 1);
+				float sliderValue = VolumeToSlider(FullVolume);
+
+				Rect rect = new Rect(sliderPosition);
                 rect.width = 30f;
-                rect.x = sliderPosition.x + sliderPosition.width * (FullVolume / sliderFullScale) - (rect.width * 0.5f) + 1f; // add 1 pixel for more precise position
+                rect.x = sliderPosition.x + sliderPosition.width * sliderValue - (rect.width * 0.5f) + 1f; // add 1 pixel for more precise position
                 rect.y -= sliderPosition.height;
                 var icon = EditorGUIUtility.IconContent(IconConstant.VolumeSnapPointer);
                 EditorGUI.BeginDisabledGroup(!isSnap);
@@ -284,36 +291,68 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        public static float DrawVolumeSlider(Rect position, float currentValue,out bool hasChanged, out float newSliderValue)
+        public static float DrawVolumeSlider(Rect position, float currentValue,out bool hasChanged, out float newSliderInFullScale)
+		{
+			float sliderValue = VolumeToSlider(currentValue);
+
+			EditorGUI.BeginChangeCheck();
+			sliderValue = GUI.HorizontalSlider(position, sliderValue, 0f, 1f);
+			newSliderInFullScale = sliderValue * SliderFullScale;
+			hasChanged = EditorGUI.EndChangeCheck();
+			if(hasChanged)
+            {
+                return SliderToVolume(sliderValue);
+			}
+			return currentValue;
+		}
+
+        public static float DrawRandomRangeVolumeSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit, float fieldWidth, Action<Rect> onGetSliderRect = null)
         {
-            float sliderValue = ConvertToSliderValue(currentValue);
-            EditorGUI.BeginChangeCheck();
-            newSliderValue = GUI.HorizontalSlider(position, sliderValue, 0f, SliderFullScale);
-            hasChanged = EditorGUI.EndChangeCheck();
-            return ConvertToNomalizedVolume(newSliderValue);
+            Rect sliderRect = DrawMinMaxLabelAndField(position, label, ref min, ref max, fieldWidth, onGetSliderRect);
+            float minSlider = VolumeToSlider(min);
+            float maxSlider = VolumeToSlider(max);
 
-            float ConvertToSliderValue(float vol)
-            {
-                if (vol > FullVolume)
-                {
-                    float db = vol.ToDecibel();
-                    return (db - MinDecibelVolume) / DecibelVoulumeFullScale * SliderFullScale;
-                }
-                return vol;
-            }
+            EditorGUI.MinMaxSlider(sliderRect, ref minSlider, ref maxSlider, 0f, 1f);
 
-            float ConvertToNomalizedVolume(float sliderValue)
-            {
-                if (sliderValue > FullVolume)
-                {
-                    float db = MinDecibelVolume + (sliderValue / SliderFullScale) * DecibelVoulumeFullScale;
-                    return db.ToNormalizeVolume(true);
-                }
-                return sliderValue;
-            }
-        }
+            min = SliderToVolume(minSlider);
+            max = SliderToVolume(maxSlider);
+			return max;
+		}
 
-        private static AnimationCurve GetLogarithmicCurve(float timeStart, float timeEnd, float logBase)
+		private static float VolumeToSlider(float vol)
+		{
+			float decibelVol = vol.ToDecibel();
+			for (int i = 0; i < VolumeSplitPoints.Length; i++)
+			{
+				if (i + 1 >= VolumeSplitPoints.Length)
+				{
+					return 1f;
+				}
+				else if (decibelVol >= VolumeSplitPoints[i] && decibelVol < VolumeSplitPoints[i + 1])
+				{
+					float currentStageSliderValue = VolumeScale * i;
+					float range = Mathf.Abs(VolumeSplitPoints[i + 1] - VolumeSplitPoints[i]);
+					float stageProgress = Mathf.Abs(decibelVol - VolumeSplitPoints[i]) / range;
+					return currentStageSliderValue + stageProgress * VolumeScale;
+				}
+			}
+			return 0f;
+		}
+
+        private static float SliderToVolume(float sliderValue)
+        {
+			if (sliderValue == 1f)
+			{
+				return MaxVolume;
+			}
+			int newStageIndex = (int)(sliderValue / VolumeScale);
+			float progress = (sliderValue % VolumeScale) / VolumeScale;
+			float range = Mathf.Abs(VolumeSplitPoints[newStageIndex + 1] - VolumeSplitPoints[newStageIndex]);
+			float decibelResult = VolumeSplitPoints[newStageIndex] + range * progress;
+			return decibelResult.ToNormalizeVolume();
+		}
+
+		private static AnimationCurve GetLogarithmicCurve(float timeStart, float timeEnd, float logBase)
         {
             Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
             Type audioSourceInspector = unityEditorAssembly?.GetType($"UnityEditor.AudioSourceInspector");

@@ -89,7 +89,7 @@ namespace Ami.Extension
 				float db = vol.ToDecibel(false);
 				db += boostVolInDb;
 
-				Samples[i] = db.ToNormalizeVolume() * sign;
+				Samples[i] = db.ToNormalizeVolume(false) * sign;
 			}
 			HasEdited = true;
 		}

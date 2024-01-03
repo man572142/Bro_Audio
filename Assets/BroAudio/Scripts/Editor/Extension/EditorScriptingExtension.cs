@@ -434,16 +434,26 @@ namespace Ami.Extension
 
 		public static void DrawMinMaxSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit,float fieldWidth,Action<Rect> onGetSliderRect = null)
 		{
-			Rect suffixRect = EditorGUI.PrefixLabel(position, label);
-			GetMinMaxRects(suffixRect, fieldWidth, out Rect minFieldRect, out Rect sliderRect, out Rect maxFieldRect);
-			onGetSliderRect?.Invoke(sliderRect);
-
-			min = EditorGUI.FloatField(minFieldRect, min);
-			max = EditorGUI.FloatField(maxFieldRect, max);
+			Rect sliderRect = DrawMinMaxLabelAndField(position, label, ref min, ref max, fieldWidth, onGetSliderRect);
 			EditorGUI.MinMaxSlider(sliderRect, ref min, ref max, minLimit, maxLimit);
 		}
 
 		public static void DrawLogarithmicMinMaxSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit, float fieldWidth, Action<Rect> onGetSliderRect = null)
+		{
+			Rect sliderRect = DrawMinMaxLabelAndField(position, label, ref min, ref max, fieldWidth, onGetSliderRect);
+
+			min = Mathf.Log10(min); 
+			max = Mathf.Log10(max);
+			minLimit = Mathf.Log10(minLimit); 
+			maxLimit = Mathf.Log10(maxLimit);
+
+			EditorGUI.MinMaxSlider(sliderRect, ref min, ref max, minLimit, maxLimit);
+
+			min = Mathf.Pow(10, min); 
+			max = Mathf.Pow(10, max);
+		}
+
+		public static Rect DrawMinMaxLabelAndField(Rect position, GUIContent label, ref float min, ref float max, float fieldWidth, Action<Rect> onGetSliderRect)
 		{
 			Rect suffixRect = EditorGUI.PrefixLabel(position, label);
 			GetMinMaxRects(suffixRect, fieldWidth, out Rect minFieldRect, out Rect sliderRect, out Rect maxFieldRect);
@@ -451,13 +461,7 @@ namespace Ami.Extension
 
 			min = EditorGUI.FloatField(minFieldRect, min);
 			max = EditorGUI.FloatField(maxFieldRect, max);
-
-			min = Mathf.Log10(min);					max = Mathf.Log10(max);
-			minLimit = Mathf.Log10(minLimit);		maxLimit = Mathf.Log10(maxLimit);
-
-			EditorGUI.MinMaxSlider(sliderRect, ref min, ref max, minLimit, maxLimit);
-
-			min = Mathf.Pow(10, min);				max = Mathf.Pow(10, max);
+			return sliderRect;
 		}
 
 		private static void GetMinMaxRects(Rect suffixRect, float fieldWidth, out Rect minFieldRect, out Rect sliderRect, out Rect maxFieldRect)

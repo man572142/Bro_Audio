@@ -96,9 +96,8 @@ namespace Ami.BroAudio.Editor
 						onDrawVU = sliderRect => DrawVUMeter(sliderRect, Setting.BroAudioGUISetting.VUMaskColor);
 					}
 #endif
-					// todo: change to bro volume 
 					bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
-					DrawRandomRangeSlider(masterVolRect,_masterVolLabel,ref vol,ref volRange, AudioConstant.MinVolume, isWebGL? AudioConstant.FullVolume : AudioConstant.MaxVolume,true, onDrawVU);
+					DrawRandomRangeSlider(masterVolRect,_masterVolLabel,ref vol,ref volRange, AudioConstant.MinVolume, isWebGL? AudioConstant.FullVolume : AudioConstant.MaxVolume,RandomRangeSliderType.BroVolume, onDrawVU);
 					masterVolProp.floatValue = vol;
 					volRandProp.floatValue = volRange;
 				}
@@ -162,7 +161,7 @@ namespace Ami.BroAudio.Editor
 						maxPitch *= Percentage;
 						if (hasRandom)
 						{
-							DrawRandomRangeSlider(pitchRect,_pitchLabel, ref pitch, ref pitchRange, minPitch, maxPitch,false);
+							DrawRandomRangeSlider(pitchRect,_pitchLabel, ref pitch, ref pitchRange, minPitch, maxPitch,RandomRangeSliderType.Default);
 							Rect minFieldRect = new Rect(pitchRect) { x = pitchRect.x + EditorGUIUtility.labelWidth + 5f, width = MinMaxSliderFieldWidth };
 							Rect maxFieldRect = new Rect(minFieldRect) { x = pitchRect.xMax - MinMaxSliderFieldWidth };
 							DrawPercentageLabel(minFieldRect);
@@ -180,7 +179,7 @@ namespace Ami.BroAudio.Editor
 					case PitchShiftingSetting.AudioSource:
 						if (hasRandom)
 						{
-							DrawRandomRangeSlider(pitchRect, _pitchLabel,ref pitch, ref pitchRange, minPitch, maxPitch,false);
+							DrawRandomRangeSlider(pitchRect, _pitchLabel,ref pitch, ref pitchRange, minPitch, maxPitch, RandomRangeSliderType.Default);
 						}
 						else
 						{
@@ -294,21 +293,24 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawRandomRangeSlider(Rect rect,GUIContent label,ref float value, ref float valueRange, float minLimit, float maxLimit,bool isLogarithmic,Action<Rect> onGetSliderRect = null)
+		private void DrawRandomRangeSlider(Rect rect,GUIContent label,ref float value, ref float valueRange, float minLimit, float maxLimit,RandomRangeSliderType sliderType,Action<Rect> onGetSliderRect = null)
 		{
 			float minRand = value - valueRange * 0.5f;
 			float maxRand = value + valueRange * 0.5f;
 			minRand = (float)Math.Round(Mathf.Clamp(minRand, minLimit, maxLimit), RoundedDigits);
 			maxRand = (float)Math.Round(Mathf.Clamp(maxRand, minLimit, maxLimit), RoundedDigits);
-			if(isLogarithmic)
+			switch (sliderType)
 			{
-				DrawLogarithmicMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
-			}
-			else
-			{
-				DrawMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
-			}
-			
+				case RandomRangeSliderType.Default:
+					DrawMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
+					break;
+				case RandomRangeSliderType.Logarithmic:
+					DrawLogarithmicMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
+					break;
+				case RandomRangeSliderType.BroVolume:
+					DrawRandomRangeVolumeSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
+					break;
+			}			
 			valueRange = maxRand - minRand;
 			value = minRand + valueRange * 0.5f;
 		}

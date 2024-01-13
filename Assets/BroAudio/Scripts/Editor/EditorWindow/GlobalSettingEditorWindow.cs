@@ -228,8 +228,9 @@ namespace Ami.BroAudio.Editor.Setting
 		{
 			drawPosition.width -= Gap;
 			DrawCombFilteringSetting();
-			DrawPitchSetting();
-			DrawEmptyLine(1);
+            // To make a room for other functionality to use exposed parameters, we only use AudioSource.pitch for now
+            //DrawPitchSetting();
+            DrawEmptyLine(1);
 
 			DrawDefaultEasing();
 			DrawSeamlessLoopEasing();
@@ -257,23 +258,23 @@ namespace Ami.BroAudio.Editor.Setting
 				DrawEmptyLine(1);
 			}
 
-			void DrawPitchSetting()
-			{
-				Rect pitchRect = GetRectAndIterateLine(drawPosition);
-				bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
-				if(isWebGL)
-				{
-					EditorGUI.BeginDisabledGroup(isWebGL);
-					EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, PitchShiftingSetting.AudioSource);
-					EditorGUI.EndDisabledGroup();
-				}
-				else
-				{
-					RuntimeSetting.PitchSetting = (PitchShiftingSetting)EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, RuntimeSetting.PitchSetting);
-				}
-			}
+            //void DrawPitchSetting()
+            //{
+            //	Rect pitchRect = GetRectAndIterateLine(drawPosition);
+            //	bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
+            //	if(isWebGL)
+            //	{
+            //		EditorGUI.BeginDisabledGroup(isWebGL);
+            //		EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, PitchShiftingSetting.AudioSource);
+            //		EditorGUI.EndDisabledGroup();
+            //	}
+            //	else
+            //	{
+            //		RuntimeSetting.PitchSetting = (PitchShiftingSetting)EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, RuntimeSetting.PitchSetting);
+            //	}
+            //}
 
-			void DrawDefaultEasing()
+            void DrawDefaultEasing()
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Default Easing".ToWhiteBold(), GUIStyleHelper.RichText);
 				EditorGUI.indentLevel++;

@@ -99,7 +99,7 @@ namespace Ami.BroAudio.Editor
 		private void HandleDragAndDrop(Rect entitiesRect)
 		{
 			DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
-			if (Event.current.type == EventType.DragPerform && entitiesRect.Contains(Event.current.mousePosition))
+			if (Event.current.type == EventType.DragPerform && entitiesRect.Scoping(position).Contains(Event.current.mousePosition))
 			{
 				var objs = DragAndDrop.objectReferences;
 
@@ -122,7 +122,7 @@ namespace Ami.BroAudio.Editor
 
                 if (clips.Count > 1)
 				{
-					var option = (MultiClipsImportOption)EditorUtility.DisplayDialogComplex(
+                    var option = (MultiClipsImportOption)EditorUtility.DisplayDialogComplex(
 						_instruction.GetText(Instruction.LibraryManager_MultiClipsImportTitle), // Title
 						_instruction.GetText(Instruction.LibraryManager_MultiClipsImportDialog), //Message
 						MultiClipsImportOption.MultipleForEach.ToString(), // OK
@@ -161,7 +161,8 @@ namespace Ami.BroAudio.Editor
             SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioEntity.Clips));
 
 			editor.SetClipList(clipListProp, 0, clip);
-		}
+            _isInEntitiesEditMode = true;
+        }
 
 		private void CreateNewEntity(AudioAssetEditor editor, List<AudioClip> clips)
 		{
@@ -172,7 +173,9 @@ namespace Ami.BroAudio.Editor
 			{
 				editor.SetClipList(clipListProp, i, clips[i]);
 			}
-		}
+			_isInEntitiesEditMode = true;
+
+        }
 
 		private void ToggleTempGuidingFlash(bool hasAssetName)
 		{

@@ -19,4 +19,4 @@ MonoBehaviour:
   SeamlessFadeInEase: 8
   SeamlessFadeOutEase: 11
   DefaultAudioPlayerPoolSize: 5
-  PitchSetting: 0
+  PitchSetting: 1

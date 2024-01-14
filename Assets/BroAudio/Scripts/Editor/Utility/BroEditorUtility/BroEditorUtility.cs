@@ -55,6 +55,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
+#if UNITY_EDITOR
         private static EditorSetting _editorSetting = null;
         public static EditorSetting EditorSetting
         {
@@ -71,7 +72,8 @@ namespace Ami.BroAudio.Editor
                 }
                 return _editorSetting;
             }
-        }
+        } 
+#endif
 
         private static float SliderFullScale => FullVolume / ((FullDecibelVolume - MinDecibelVolume) / DecibelVoulumeFullScale);
 
@@ -252,6 +254,7 @@ namespace Ami.BroAudio.Editor
                 rect.x = sliderPosition.x + sliderPosition.width * sliderValue - (rect.width * 0.5f) + 1f; // add 1 pixel for more precise position
                 rect.y -= sliderPosition.height;
                 var icon = EditorGUIUtility.IconContent(IconConstant.VolumeSnapPointer);
+                icon.tooltip = "Toggle full volume snapping";
                 EditorGUI.BeginDisabledGroup(!isSnap);
                 {
                     GUI.Label(rect, icon);

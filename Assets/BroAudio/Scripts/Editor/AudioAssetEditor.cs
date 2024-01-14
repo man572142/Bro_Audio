@@ -40,21 +40,15 @@ namespace Ami.BroAudio.Editor
 			InitReorderableList();
 		}
 
-		public void SetData(string guid, string assetName, BroAudioType audioType)
+		public void SetData(string guid, string assetName)
 		{
 			string assetGUIDPropertyPath = GetFieldName(nameof(IAudioAsset.AssetGUID));
 			serializedObject.FindProperty(assetGUIDPropertyPath).stringValue = guid;
 
-			if(audioType != BroAudioType.None)
-			{
-				string assetNamePropertyPath = GetBackingFieldName(nameof(IAudioAsset.AssetName));
-				serializedObject.FindProperty(assetNamePropertyPath).stringValue = assetName;
+            string assetNamePropertyPath = GetBackingFieldName(nameof(IAudioAsset.AssetName));
+            serializedObject.FindProperty(assetNamePropertyPath).stringValue = assetName;
 
-				string audioTypePropertyPath = GetBackingFieldName(nameof(IAudioAsset.AudioType));
-				serializedObject.FindProperty(audioTypePropertyPath).enumValueIndex = audioType.GetSerializedEnumIndex();
-			}
-
-			serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            serializedObject.ApplyModifiedPropertiesWithoutUndo();
 		}
 
 		private void InitReorderableList()
@@ -72,10 +66,17 @@ namespace Ami.BroAudio.Editor
 
 			void OnAdd(ReorderableList list)
 			{
+                BroAudioType audioType = BroAudioType.None;
+                if (list.count > 0)
+				{
+					var lastElementProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
+                    var lastElementID = lastElementProp.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.ID))).intValue;
+					audioType = Utility.GetAudioType(lastElementID); 
+                }
 				ReorderableList.defaultBehaviours.DoAddButton(list);
 				SerializedProperty newEntity = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
 				ResetEntitySerializedProperties(newEntity);
-				AssignID(newEntity);
+				AssignID(newEntity, audioType);
 
 				Verify();
 			}
@@ -103,9 +104,9 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void AssignID(SerializedProperty entityProp)
+		private void AssignID(SerializedProperty entityProp, BroAudioType audioType)
 		{
-			AssignID(_idGenerator.GetUniqueID(Asset), entityProp);
+			AssignID(_idGenerator.GetSimpleUniqueID(audioType), entityProp);
 		}
 
 		private void AssignID(int id, SerializedProperty entityProp)
@@ -130,25 +131,25 @@ namespace Ami.BroAudio.Editor
 			_entitiesList.DoLayoutList();
 		}
 
-		public void SetAudioType(BroAudioType audioType)
-		{
-			SerializedProperty audioTypeProp = serializedObject.FindProperty(GetBackingFieldName(nameof(AudioAsset.AudioType)));
-			bool isChanged = Asset.AudioType != audioType; 
-			audioTypeProp.enumValueIndex = audioType.GetSerializedEnumIndex();
-			serializedObject.ApplyModifiedProperties();
+		//public void SetAudioType(BroAudioType audioType)
+		//{
+		//	SerializedProperty audioTypeProp = serializedObject.FindProperty(GetBackingFieldName(nameof(AudioAsset.AudioType)));
+		//	bool isChanged = Asset.AudioType != audioType; 
+		//	audioTypeProp.enumValueIndex = audioType.GetSerializedEnumIndex();
+		//	serializedObject.ApplyModifiedProperties();
 
-			if(isChanged)
-			{
-				// RegenerateID
-				int id = _idGenerator.GetUniqueID(Asset);
-				for (int i = 0; i < _entitiesList.serializedProperty.arraySize; i++)
-				{
-					SerializedProperty entity = _entitiesList.serializedProperty.GetArrayElementAtIndex(i);
-					AssignID(id, entity);
-					id++;
-				}
-			}
-		}
+		//	if(isChanged)
+		//	{
+		//		// RegenerateID
+		//		int id = _idGenerator.GetUniqueID(audioType);
+		//		for (int i = 0; i < _entitiesList.serializedProperty.arraySize; i++)
+		//		{
+		//			SerializedProperty entity = _entitiesList.serializedProperty.GetArrayElementAtIndex(i);
+		//			AssignID(id, entity);
+		//			id++;
+		//		}
+		//	}
+		//}
 
 		public void SetAssetName(string newName)
 		{
@@ -167,7 +168,7 @@ namespace Ami.BroAudio.Editor
 			SerializedProperty newEntity = entitiesProp.GetArrayElementAtIndex(_entitiesList.count - 1);
 			ResetEntitySerializedProperties(newEntity);
 
-			AssignID(newEntity);
+			AssignID(newEntity, BroAudioType.None);
 
 			return newEntity;
 		}
@@ -212,11 +213,6 @@ namespace Ami.BroAudio.Editor
 			else if (IsTempReservedName(Asset.AssetName))
 			{
 				CurrInstruction = Instruction.AssetNaming_StartWithTemp;
-				return false;
-			}
-			else if (Asset.AudioType == BroAudioType.None)
-			{
-				CurrInstruction = Instruction.LibraryManager_AssetAudioTypeNotSet;
 				return false;
 			}
 			return true;

@@ -20,12 +20,11 @@ namespace Ami.BroAudio.Editor
 		private bool _isInit = false;
 		private string _entityName = null;
 
-		private GUIStyle _dropdownStyle = new GUIStyle(EditorStyles.popup);
+		private GUIStyle _dropdownStyle = new GUIStyle(EditorStyles.popup) { richText = true};
 
 		private void Init(SerializedProperty idProp,SerializedProperty assetProp)
 		{
             _isInit = true;
-			_dropdownStyle.richText = true;
 
 			if (idProp.intValue == 0)
 			{
@@ -51,16 +50,13 @@ namespace Ami.BroAudio.Editor
 				return;
             }
 
-			// TODO: It might have performance impact if the library is huge. we should only load core data once to find entity for a script's all AudioID, not load it foreach audioID
-			// maybe use something like context menu to execute this
-			List<string> guidList = BroEditorUtility.GetGUIDListFromJson();
+            // TODO: Initializing this whenever an AudioID is created is not efficient. 
+            List<string> guidList = BroEditorUtility.GetGUIDListFromJson();
 			foreach (string guid in guidList)
 			{
-				// todo : organized guid by audioType might help improve performance, because we don't need to load that asset if audio type isn't match 
 				string assetPath = AssetDatabase.GUIDToAssetPath(guid);
 				asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath) as AudioAsset;
-				if (asset != null && asset.AudioType == audioType &&
-					BroEditorUtility.TryGetEntityName(asset, idProp.intValue, out _entityName))
+				if (asset != null && BroEditorUtility.TryGetEntityName(asset, idProp.intValue, out _entityName))
 				{
 					assetProp.objectReferenceValue = asset;
 					assetProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
@@ -97,9 +93,10 @@ namespace Ami.BroAudio.Editor
             IAudioAsset audioAsset = assetProp.objectReferenceValue as IAudioAsset;
             if (BroEditorUtility.EditorSetting.ShowAudioTypeOnAudioID && audioAsset != null && idProp.intValue > 0)
 			{
+				BroAudioType audioType = Utility.GetAudioType(idProp.intValue);
                 Rect audioTypeRect = EditorScriptingExtension.DissolveHorizontal(suffixRect, 0.7f);
-				EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(audioAsset.AudioType));
-				EditorGUI.LabelField(audioTypeRect, audioAsset.AudioType.ToString(), GUIStyleHelper.MiddleCenterText);
+				EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(audioType));
+				EditorGUI.LabelField(audioTypeRect, audioType.ToString(), GUIStyleHelper.MiddleCenterText);
 			}
 
 			void OnSelect(int id, string name, ScriptableObject asset)

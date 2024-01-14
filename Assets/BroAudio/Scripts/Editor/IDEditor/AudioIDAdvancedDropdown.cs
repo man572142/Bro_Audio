@@ -31,19 +31,19 @@ namespace Ami.BroAudio.Editor
 				string path = AssetDatabase.GUIDToAssetPath(guid);
 				var asset = AssetDatabase.LoadAssetAtPath(path, typeof(IAudioAsset)) as IAudioAsset;
 
-				if (asset != null && asset.AudioType != BroAudioType.None && !string.IsNullOrEmpty(asset.AssetName))
+				if (asset != null && !string.IsNullOrEmpty(asset.AssetName))
 				{
-					var item = new AdvancedDropdownItem(asset.AssetName);
+					AdvancedDropdownItem item = null;
 					foreach (var entity in asset.GetAllAudioEntities())
 					{
-
-						item.AddChild(new AudioIDAdvancedDropdownItem(entity.Name, entity.ID, asset as ScriptableObject));
+						item = item ?? new AdvancedDropdownItem(asset.AssetName);
+                        item.AddChild(new AudioIDAdvancedDropdownItem(entity.Name, entity.ID, asset as ScriptableObject));
 					}
+
 					root.AddChild(item);
 					childCount++;
 				}
 			}
-
 			return root;
 		}
 

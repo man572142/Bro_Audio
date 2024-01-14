@@ -42,7 +42,7 @@
 		LibraryManager_MultiClipsImportTitle,
 		LibraryManager_MultiClipsImportDialog,
 		LibraryManager_CreateAssetWithAudioType,
-		LibraryManager_ChangeAssetAudioType,
+		LibraryManager_ChangeEntityAudioType,
         LibraryManager_NameTempAssetHint,
         LibraryManager_AssetAudioTypeNotSet,
         LibraryManager_AssetUnnamed,

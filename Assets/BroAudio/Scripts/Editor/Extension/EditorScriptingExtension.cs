@@ -514,8 +514,16 @@ namespace Ami.Extension
 					return Mathf.Pow(10, logResult);
 				}
 			}
-
 			return currentValue;
 		}
-	}
+
+		public static Rect PolarCoordinates(this Rect rect, float pixel)
+		{
+			rect.width += pixel * 2;
+			rect.height += pixel * 2;
+			rect.x -= pixel;
+			rect.y -= pixel;
+			return rect;
+		}
+    }
 }

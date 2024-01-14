@@ -25,7 +25,6 @@ namespace Ami.BroAudio.Editor
 		public static event Action OnSelectAsset;
 
 		private readonly Vector2 _entitiesHeaderSize = new Vector2(200f,EditorGUIUtility.singleLineHeight * 2);
-		private readonly Vector2 _headerAudioTypeSize = new Vector2(100f, 25f);
         private readonly GapDrawingHelper _verticalGapDrawer = new GapDrawingHelper();
         private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
         private readonly EditorFlashingHelper _flasingHelper = new EditorFlashingHelper(Color.white, 1f, Ease.InCubic);
@@ -34,8 +33,6 @@ namespace Ami.BroAudio.Editor
         private List<string> _allAssetGUIDs = null;
 		private ReorderableList _assetReorderableList = null;
 		private int _currSelectedAssetIndex = -1;
-		private GenericMenu _createAssetOption = null;
-		private GenericMenu _changeAudioTypeOption = null;
 		private Dictionary<string, AudioAssetEditor> _assetEditorDict = new Dictionary<string, AudioAssetEditor>();
 		private bool _hasAssetListReordered = false;
 		private bool _isInEntitiesEditMode = false;
@@ -98,9 +95,6 @@ namespace Ami.BroAudio.Editor
 			InitEditorDictionary();
 			InitReorderableList();
 
-			_createAssetOption = CreateAudioTypeGenericMenu(Instruction.LibraryManager_CreateAssetWithAudioType, ShowCreateAssetAskName);
-			_changeAudioTypeOption = CreateAudioTypeGenericMenu(Instruction.LibraryManager_ChangeAssetAudioType, OnChangeAssetAudioType);
-
 			Undo.undoRedoPerformed += Repaint;
 		}
 
@@ -154,8 +148,8 @@ namespace Ami.BroAudio.Editor
 
 			void OnAddDropdown(Rect buttonRect, ReorderableList list)
 			{
-				_createAssetOption.DropDown(buttonRect);
-			}
+				ShowCreateAssetAskName();
+            }
 
 			void OnRemove(ReorderableList list)
 			{
@@ -172,12 +166,8 @@ namespace Ami.BroAudio.Editor
 					if(editor.Asset == null)
 						return;
 
-					EditorScriptingExtension.SplitRectHorizontal(rect, 0.7f, 0f, out Rect labelRect, out Rect audioTypeRect);
 					string displayName = string.IsNullOrEmpty(editor.Asset.AssetName)? "Temp".SetColor(FalseColor) : editor.Asset.AssetName;
-					EditorGUI.LabelField(labelRect, displayName,GUIStyleHelper.RichText);
-
-					EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(editor.Asset.AudioType));
-					EditorGUI.LabelField(audioTypeRect, editor.Asset.AudioType.ToString(), GUIStyleHelper.MiddleCenterText);
+					EditorGUI.LabelField(rect, displayName,GUIStyleHelper.RichText);
 				}
 
 				if(index == _currSelectedAssetIndex && Event.current.isMouse && Event.current.clickCount >= 2)
@@ -215,38 +205,7 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 		}
-
-		private GenericMenu CreateAudioTypeGenericMenu(Instruction instruction, GenericMenu.MenuFunction2 onClickOption)
-		{
-			GenericMenu menu = new GenericMenu();
-			GUIContent text = new GUIContent(_instruction.GetText(instruction));
-			menu.AddItem(text, false, null);
-			menu.AddSeparator(string.Empty);
-
-			Utility.ForeachConcreteAudioType((audioType) =>
-			{
-				GUIContent optionName = new GUIContent(audioType.ToString());
-				menu.AddItem(optionName, false, onClickOption, audioType);
-			});
-
-			return menu;
-		}
 		#endregion
-
-		private void OnChangeAssetAudioType(object type)
-		{
-			if (TryGetCurrentAssetEditor(out var editor))
-			{
-				bool isFirstSet = editor.Asset.AudioType == BroAudioType.None;
-				editor.SetAudioType((BroAudioType)type);
-				// todo: might need to regenerate ID
-
-				if (isFirstSet)
-				{
-					OnFirstSetAsset(editor.Asset);
-				}
-			}
-		}
 
 		private void OnChangeAssetName(AudioAssetEditor editor, string newName)
 		{
@@ -286,20 +245,20 @@ namespace Ami.BroAudio.Editor
         #region Asset Creation
         private void OnFirstSetAsset(IAudioAsset asset)
 		{
-			if (asset.AudioType != BroAudioType.None && !string.IsNullOrEmpty(asset.AssetName))
+			if (!string.IsNullOrEmpty(asset.AssetName))
 			{
 				AddToSoundManager(asset as AudioAsset);
 			}
 		}
 
-		private void ShowCreateAssetAskName(object type)
+		private void ShowCreateAssetAskName()
 		{
 			// In the following case. List has better performance than IEnumerable , even with a ToList() method.
 			List<string> assetNames = _assetEditorDict.Values.Select(x => x.Asset.AssetName).ToList();
-			AssetNameEditorWindow.ShowWindow(assetNames, (assetName) => CreateAsset(assetName, (BroAudioType)type));
+			AssetNameEditorWindow.ShowWindow(assetNames, assetName => CreateAsset(assetName));
 		}
 
-		private AudioAssetEditor CreateAsset(string entityName, BroAudioType audioType)
+		private AudioAssetEditor CreateAsset(string entityName)
 		{
 			if (!TryGetNewPath(entityName, out string path, out string fileName))
 			{
@@ -308,16 +267,13 @@ namespace Ami.BroAudio.Editor
 
 			var newAsset = ScriptableObject.CreateInstance(typeof(AudioAsset));
 			AssetDatabase.CreateAsset(newAsset, path);
-			if (audioType != BroAudioType.None)
-			{
-				AddToSoundManager(newAsset);
-			}
-			AssetDatabase.SaveAssets();
+            AddToSoundManager(newAsset);
+            AssetDatabase.SaveAssets();
 
 			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(newAsset, typeof(AudioAssetEditor)) as AudioAssetEditor;
 			string guid = AssetDatabase.AssetPathToGUID(path);
 			editor.Init(_idGenerator);
-			editor.SetData(guid, fileName, audioType);
+			editor.SetData(guid, fileName);
 
 			_assetEditorDict.Add(guid, editor);
 			_allAssetGUIDs.Add(guid);
@@ -462,42 +418,16 @@ namespace Ami.BroAudio.Editor
 				GUILayout.Space(10f);
 
 				Rect headerRect = GUILayoutUtility.GetRect(_entitiesHeaderSize.x, _entitiesHeaderSize.y);
-
-				bool hasAssetName = !string.IsNullOrEmpty(asset.AssetName);
-				ToggleTempGuidingFlash(hasAssetName);
-				if (!hasAssetName)
+                if (Event.current.type == EventType.Repaint)
 				{
-					DrawFlashingReminder(headerRect);
-					headerRect.size -= Vector2.one * 4f;
-					headerRect.position += Vector2.one * 2f;
-				}
-
-				if (Event.current.type == EventType.Repaint)
-				{
-					GUIStyle header = new GUIStyle(GUI.skin.window);
-					header.Draw(headerRect, false, false, false, false);
-				}
+					GUI.skin.window.Draw(headerRect, false, false, false, false);
+                    EditorStyles.textField.Draw(headerRect.PolarCoordinates(-1f), headerRect.Contains(Event.current.mousePosition), false, false, false);
+					EditorGUI.DrawRect(headerRect.PolarCoordinates(-2f), new Color(1f,1f,1f,0.1f));
+                }
 
 				DrawAssetNameField(headerRect, asset, onAssetNameChanged);
 
 				GUILayout.FlexibleSpace();
-
-				Rect audioTypeRect = GUILayoutUtility.GetRect(_headerAudioTypeSize.x, _headerAudioTypeSize.y);
-				audioTypeRect.y += _entitiesHeaderSize.y - audioTypeRect.height;
-				GUIContent audioTypeGUI = new GUIContent(asset.AudioType.ToString(), "Click to change audio type");
-
-				if (asset.AudioType == BroAudioType.None)
-				{
-					DrawFlashingReminder(audioTypeRect);
-					audioTypeRect.size -= Vector2.one * 4f;
-					audioTypeRect.position += Vector2.one * 2f;
-				}
-
-				if (GUI.Button(audioTypeRect, audioTypeGUI))
-				{
-					_changeAudioTypeOption.DropDown(audioTypeRect);
-				}
-				EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(asset.AudioType));
 			}
 			EditorGUILayout.EndHorizontal();
 		}

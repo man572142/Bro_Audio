@@ -4,6 +4,6 @@ namespace Ami.BroAudio.Editor
 {
 	public interface IUniqueIDGenerator
 	{
-		int GetUniqueID(IAudioAsset asset);
+		int GetSimpleUniqueID(BroAudioType audioType);
 	}
 }

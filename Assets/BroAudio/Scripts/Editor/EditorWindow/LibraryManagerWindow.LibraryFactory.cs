@@ -89,7 +89,7 @@ namespace Ami.BroAudio.Editor
 				AudioClip audioClip = EditorGUIUtility.GetObjectPickerObject() as AudioClip;
 				if (audioClip)
 				{
-					AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName, BroAudioType.None);
+					AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName);
 					CreateNewEntity(tempEditor, audioClip);
 				}
 				_pickerID = -1;
@@ -118,7 +118,7 @@ namespace Ami.BroAudio.Editor
 					return;
                 }
 
-                AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName,BroAudioType.None);	
+                AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName);	
 
                 if (clips.Count > 1)
 				{
@@ -179,7 +179,7 @@ namespace Ami.BroAudio.Editor
 
 		private void ToggleTempGuidingFlash(bool hasAssetName)
 		{
-			if(!hasAssetName && !_flasingHelper.IsUpdating)
+			if (!hasAssetName && !_flasingHelper.IsUpdating)
 			{
 				_flasingHelper.Start();
 			}
@@ -191,7 +191,7 @@ namespace Ami.BroAudio.Editor
 
 		private void DrawFlashingReminder(Rect headerRect)
 		{
-			GUI.DrawTexture(headerRect, Texture2D.whiteTexture, ScaleMode.ScaleAndCrop, true, 0f, _flasingHelper.DisplayColor, 0f, 4f);
+			GUI.DrawTexture(headerRect, Texture2D.whiteTexture, ScaleMode.ScaleAndCrop, true, 0f, Color.white, 0f, 4f);
 		}
 	}
 }

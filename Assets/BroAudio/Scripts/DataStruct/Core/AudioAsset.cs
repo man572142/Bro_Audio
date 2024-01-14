@@ -9,7 +9,6 @@ namespace Ami.BroAudio.Data
     {
         public AudioEntity[] Entities;
 
-        [field: SerializeField] public BroAudioType AudioType { get; set; }
         [field: SerializeField] public string AssetName { get; set; }
 
         [SerializeField] private string _assetGUID;

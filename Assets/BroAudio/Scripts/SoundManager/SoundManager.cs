@@ -114,13 +114,10 @@ namespace Ami.BroAudio.Runtime
                     {
                         _audioBank.Add(entity.ID, entity as IAudioEntity);
                     }
-
-                    if(!_auidoTypePref.ContainsKey(asset.AudioType))
-					{
-                        _auidoTypePref.Add(asset.AudioType, new AudioTypePlaybackPreference());
-					}
                 }
 			}
+
+            ForeachConcreteAudioType(audioType => _auidoTypePref.Add(audioType, new AudioTypePlaybackPreference()));
 		}
 		#endregion
 

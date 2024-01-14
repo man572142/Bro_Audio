@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Demo
 	public class CutScenePlayer : InteractiveComponent
 	{
 		[SerializeField] PlayableDirector _director = null;
-		[SerializeField] AudioID _openingSong = default;
+		[SerializeField] AudioID _backgroundMusic = default;
 
 		protected override bool IsTriggerOnce => true;
 
@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Demo
 			base.OnInZoneChanged(isInZone);
 
 			_director.Play();
-			BroAudio.Play(_openingSong).AsBGM();
+			BroAudio.Play(_backgroundMusic).AsBGM();
 		}
 	}
 }

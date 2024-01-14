@@ -7349,7 +7349,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sound:
     ID: 1073741825
-    _sourceAsset: {fileID: 0}
+    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
 --- !u!1 &523842580
 GameObject:
   m_ObjectHideFlags: 0
@@ -8557,8 +8557,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _sound:
-    ID: 1073741827
-    _sourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    ID: 1073741826
+    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
 --- !u!114 &702725847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9052,7 +9052,7 @@ MonoBehaviour:
   InteractiveZone: {fileID: 766546313}
   _enterExitSound:
     ID: 1073741828
-    _sourceAsset: {fileID: 0}
+    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
   _targetVolume: 0.5
   _lowPassFreq: 800
 --- !u!114 &766546313
@@ -9081,7 +9081,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sound:
     ID: 1073741827
-    _sourceAsset: {fileID: 0}
+    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
 --- !u!1 &774434209
 GameObject:
   m_ObjectHideFlags: 0
@@ -12062,11 +12062,11 @@ MonoBehaviour:
   _fog: {fileID: 2120017616}
   _playInterval: 10
   _explosion:
-    ID: 1073741832
-    _sourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    ID: 1073741827
+    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
   _warningVoice:
-    ID: 1073741833
-    _sourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    ID: 1342177280
+    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
   _lowPassFrequency: 700
 --- !u!1 &1409124831
 GameObject:
@@ -12278,9 +12278,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InteractiveZone: {fileID: 1915104251}
   _director: {fileID: 1430655739}
-  _openingSong:
-    ID: 1073741826
-    _sourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+  _backgroundMusic:
+    ID: 1342177281
+    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
 --- !u!4 &1430655738
 Transform:
   m_ObjectHideFlags: 0
@@ -19314,7 +19314,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1781944511}
   m_Layer: 0
-  m_Name: interactiveTriggers
+  m_Name: InstructionUITriggers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19410,7 +19410,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _footstep:
     ID: 1073741824
-    _sourceAsset: {fileID: 11400000, guid: 684ec663fa3556943afca4cca49e5137, type: 2}
+    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
 --- !u!114 &1791080168
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21406,8 +21406,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _sound:
-    ID: 1073741831
-    _sourceAsset: {fileID: 0}
+    ID: 1073741829
+    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
 --- !u!1 &1901732758 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6510980715547664423, guid: 1fb00677c5274bf48867e1402459086d, type: 3}
@@ -21426,12 +21426,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   InteractiveZone: {fileID: 1714271931}
-  _nightTimeBGM:
-    ID: 1073741830
-    _sourceAsset: {fileID: 0}
-  _dayTimeBGM:
-    ID: 1073741826
-    _sourceAsset: {fileID: 0}
+  _bgm:
+    ID: 1342177281
+    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
   _transitionTime: 2
   _apiAnimator: {fileID: 677126520}
   _apiTriggerName: ShowAPI

@@ -15,10 +15,10 @@ MonoBehaviour:
   Entities:
   - <Name>k__BackingField: Footsteps
     <ID>k__BackingField: 1073741824
-    MulticlipsPlayMode: 0
+    MulticlipsPlayMode: 2
     Clips:
     - AudioClip: {fileID: 8300000, guid: 72f526a6a9890f643a88e85a61c86c8a, type: 3}
-      Volume: 0.7568721
+      Volume: 1
       Delay: 0
       StartPosition: 0
       EndPosition: 0
@@ -26,7 +26,7 @@ MonoBehaviour:
       FadeOut: 0
       Weight: 0
     - AudioClip: {fileID: 8300000, guid: 85016e0f2b01da248b9663dd49a161b0, type: 3}
-      Volume: 1.2559774
+      Volume: 1
       Delay: 0
       StartPosition: 0
       EndPosition: 0
@@ -34,7 +34,7 @@ MonoBehaviour:
       FadeOut: 0
       Weight: 0
     - AudioClip: {fileID: 8300000, guid: 186de84b3207156479abe98f4958fed0, type: 3}
-      Volume: 1.3286839
+      Volume: 1
       Delay: 0
       StartPosition: 0
       EndPosition: 0
@@ -42,7 +42,7 @@ MonoBehaviour:
       FadeOut: 0
       Weight: 0
     - AudioClip: {fileID: 8300000, guid: 1a91fcd19acf1e54bba0945d9f390849, type: 3}
-      Volume: 1.1222819
+      Volume: 1
       Delay: 0
       StartPosition: 0
       EndPosition: 0
@@ -50,7 +50,7 @@ MonoBehaviour:
       FadeOut: 0
       Weight: 0
     - AudioClip: {fileID: 8300000, guid: 14e8a8d2158bec840b56c54f5266e692, type: 3}
-      Volume: 0.7784711
+      Volume: 1
       Delay: 0
       StartPosition: 0
       EndPosition: 0
@@ -66,7 +66,7 @@ MonoBehaviour:
       FadeOut: 0
       Weight: 0
     - AudioClip: {fileID: 8300000, guid: dd1af302b8902684d9381de1f2d3a5af, type: 3}
-      Volume: 0.871209
+      Volume: 1
       Delay: 0
       StartPosition: 0
       EndPosition: 0
@@ -74,7 +74,7 @@ MonoBehaviour:
       FadeOut: 0
       Weight: 0
     - AudioClip: {fileID: 8300000, guid: 67c8b33e424ccdc4486edf538ab91c5a, type: 3}
-      Volume: 0.71545553
+      Volume: 1
       Delay: 0
       StartPosition: 0
       EndPosition: 0
@@ -90,14 +90,14 @@ MonoBehaviour:
       FadeOut: 0
       Weight: 0
     - AudioClip: {fileID: 8300000, guid: a3194b8bbc96ef84fab1f98f4b7dae3e, type: 3}
-      Volume: 0.7568721
+      Volume: 1
       Delay: 0
       StartPosition: 0
       EndPosition: 0
       FadeIn: 0
       FadeOut: 0
       Weight: 0
-    <MasterVolume>k__BackingField: 1
+    <MasterVolume>k__BackingField: 0.71688175
     <Loop>k__BackingField: 0
     <SeamlessLoop>k__BackingField: 0
     <TransitionTime>k__BackingField: 0
@@ -178,13 +178,1052 @@ MonoBehaviour:
       RolloffMode: 0
     <Priority>k__BackingField: 128
     <Pitch>k__BackingField: 1
-    <PitchRandomRange>k__BackingField: 0
-    <VolumeRandomRange>k__BackingField: 0
-    <RandomFlags>k__BackingField: 0
+    <PitchRandomRange>k__BackingField: 0.20000005
+    <VolumeRandomRange>k__BackingField: 0.07124907
+    <RandomFlags>k__BackingField: 3
     SeamlessTransitionType: 0
     TransitionTempo:
       BPM: 0
       Beats: 0
     SnapToFullVolume: 0
-  <AssetName>k__BackingField: Demp
+  - <Name>k__BackingField: Torch
+    <ID>k__BackingField: 1073741825
+    MulticlipsPlayMode: 0
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: e00d65c1cb3ddee4384059e085ccba25, type: 3}
+      Volume: 0.1
+      Delay: 0
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    <MasterVolume>k__BackingField: 1
+    <Loop>k__BackingField: 0
+    <SeamlessLoop>k__BackingField: 1
+    <TransitionTime>k__BackingField: 2
+    <SpatialSettings>k__BackingField:
+      StereoPan: 0
+      DopplerLevel: 1
+      MinDistance: 1
+      MaxDistance: 50
+      SpatialBlend:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      ReverbZoneMix:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      Spread:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      CustomRolloff:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0.02
+          value: 1
+          inSlope: -50.01992
+          outSlope: -50.01992
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.04
+          value: 0.5
+          inSlope: -12.50498
+          outSlope: -12.50498
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.08
+          value: 0.25
+          inSlope: -3.126245
+          outSlope: -3.126245
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.16
+          value: 0.125
+          inSlope: -0.78156126
+          outSlope: -0.78156126
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.32
+          value: 0.0625
+          inSlope: -0.19539031
+          outSlope: -0.19539031
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.64
+          value: 0.03125
+          inSlope: -0.08686362
+          outSlope: -0.08686362
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0.43650797
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: -0.020007975
+          outSlope: -0.020007975
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      RolloffMode: 2
+    <Priority>k__BackingField: 128
+    <Pitch>k__BackingField: 1
+    <PitchRandomRange>k__BackingField: 0
+    <VolumeRandomRange>k__BackingField: 0
+    <RandomFlags>k__BackingField: 0
+    SeamlessTransitionType: 1
+    TransitionTempo:
+      BPM: 0
+      Beats: 0
+    SnapToFullVolume: 0
+  - <Name>k__BackingField: SpaceShipCube
+    <ID>k__BackingField: 1073741826
+    MulticlipsPlayMode: 0
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: 53a94199c0be37f47ac8a3be45e84c7d, type: 3}
+      Volume: 2.5
+      Delay: 0
+      StartPosition: 3.53
+      EndPosition: 6.59
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    <MasterVolume>k__BackingField: 1
+    <Loop>k__BackingField: 0
+    <SeamlessLoop>k__BackingField: 1
+    <TransitionTime>k__BackingField: 1
+    <SpatialSettings>k__BackingField:
+      StereoPan: 0
+      DopplerLevel: 3
+      MinDistance: 1
+      MaxDistance: 100
+      SpatialBlend:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      ReverbZoneMix:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0.5
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      Spread:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      CustomRolloff:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0.01
+          value: 1
+          inSlope: -100.03984
+          outSlope: -100.03984
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.02
+          value: 0.5
+          inSlope: -25.00996
+          outSlope: -25.00996
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.04
+          value: 0.25
+          inSlope: -6.25249
+          outSlope: -6.25249
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.08
+          value: 0.125
+          inSlope: -1.5631225
+          outSlope: -1.5631225
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.16
+          value: 0.0625
+          inSlope: -0.39078063
+          outSlope: -0.39078063
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.32
+          value: 0.03125
+          inSlope: -0.09769516
+          outSlope: -0.09769516
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.64
+          value: 0.015625
+          inSlope: -0.02442379
+          outSlope: -0.02442379
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: -0.010003988
+          outSlope: -0.010003988
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      RolloffMode: 2
+    <Priority>k__BackingField: 128
+    <Pitch>k__BackingField: 1
+    <PitchRandomRange>k__BackingField: 0
+    <VolumeRandomRange>k__BackingField: 0
+    <RandomFlags>k__BackingField: 0
+    SeamlessTransitionType: 1
+    TransitionTempo:
+      BPM: 0
+      Beats: 0
+    SnapToFullVolume: 0
+  - <Name>k__BackingField: Explosion
+    <ID>k__BackingField: 1073741827
+    MulticlipsPlayMode: 0
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: f2c643d9991326f44b1224002f9c61fd, type: 3}
+      Volume: 1
+      Delay: 0
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    <MasterVolume>k__BackingField: 1
+    <Loop>k__BackingField: 0
+    <SeamlessLoop>k__BackingField: 0
+    <TransitionTime>k__BackingField: 1
+    <SpatialSettings>k__BackingField:
+      StereoPan: 0
+      DopplerLevel: 1
+      MinDistance: 1
+      MaxDistance: 500
+      SpatialBlend:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      ReverbZoneMix:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      Spread:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      CustomRolloff:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0.01
+          value: 1
+          inSlope: -100.03984
+          outSlope: -100.03984
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.02
+          value: 0.5
+          inSlope: -25.00996
+          outSlope: -25.00996
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.04
+          value: 0.25
+          inSlope: -6.25249
+          outSlope: -6.25249
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.08
+          value: 0.125
+          inSlope: -1.5631225
+          outSlope: -1.5631225
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.16
+          value: 0.0625
+          inSlope: -0.39078063
+          outSlope: -0.39078063
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.32
+          value: 0.03125
+          inSlope: -0.09769516
+          outSlope: -0.09769516
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.64
+          value: 0.015625
+          inSlope: -0.02442379
+          outSlope: -0.02442379
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: -0.010003988
+          outSlope: -0.010003988
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      RolloffMode: 0
+    <Priority>k__BackingField: 128
+    <Pitch>k__BackingField: 1
+    <PitchRandomRange>k__BackingField: 0
+    <VolumeRandomRange>k__BackingField: 0
+    <RandomFlags>k__BackingField: 0
+    SeamlessTransitionType: 1
+    TransitionTempo:
+      BPM: 0
+      Beats: 0
+    SnapToFullVolume: 0
+  - <Name>k__BackingField: EnterEffectZone
+    <ID>k__BackingField: 1073741828
+    MulticlipsPlayMode: 0
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: 6e8e59803e9b63a40b44b3ffd48456e0, type: 3}
+      Volume: 1
+      Delay: 0
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    <MasterVolume>k__BackingField: 1
+    <Loop>k__BackingField: 0
+    <SeamlessLoop>k__BackingField: 0
+    <TransitionTime>k__BackingField: 1
+    <SpatialSettings>k__BackingField:
+      StereoPan: 0
+      DopplerLevel: 1
+      MinDistance: 1
+      MaxDistance: 500
+      SpatialBlend:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      ReverbZoneMix:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      Spread:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      CustomRolloff:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0.01
+          value: 1
+          inSlope: -100.03984
+          outSlope: -100.03984
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.02
+          value: 0.5
+          inSlope: -25.00996
+          outSlope: -25.00996
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.04
+          value: 0.25
+          inSlope: -6.25249
+          outSlope: -6.25249
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.08
+          value: 0.125
+          inSlope: -1.5631225
+          outSlope: -1.5631225
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.16
+          value: 0.0625
+          inSlope: -0.39078063
+          outSlope: -0.39078063
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.32
+          value: 0.03125
+          inSlope: -0.09769516
+          outSlope: -0.09769516
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.64
+          value: 0.015625
+          inSlope: -0.02442379
+          outSlope: -0.02442379
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: -0.010003988
+          outSlope: -0.010003988
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      RolloffMode: 0
+    <Priority>k__BackingField: 128
+    <Pitch>k__BackingField: 1
+    <PitchRandomRange>k__BackingField: 0
+    <VolumeRandomRange>k__BackingField: 0
+    <RandomFlags>k__BackingField: 0
+    SeamlessTransitionType: 1
+    TransitionTempo:
+      BPM: 0
+      Beats: 0
+    SnapToFullVolume: 0
+  - <Name>k__BackingField: WindChime
+    <ID>k__BackingField: 1073741829
+    MulticlipsPlayMode: 0
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: 865ea11df1cc5b0409ab851ccdce14ee, type: 3}
+      Volume: 1
+      Delay: 0
+      StartPosition: 0.73
+      EndPosition: 10.08
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    <MasterVolume>k__BackingField: 1
+    <Loop>k__BackingField: 0
+    <SeamlessLoop>k__BackingField: 1
+    <TransitionTime>k__BackingField: 1
+    <SpatialSettings>k__BackingField:
+      StereoPan: 0
+      DopplerLevel: 1
+      MinDistance: 1
+      MaxDistance: 30
+      SpatialBlend:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0.038431205
+          outSlope: 0.038431205
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.14571428
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      ReverbZoneMix:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      Spread:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      CustomRolloff:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0.033333335
+          value: 1
+          inSlope: -30.011993
+          outSlope: -30.011993
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.06666667
+          value: 0.5
+          inSlope: -7.5029984
+          outSlope: -7.5029984
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.13333334
+          value: 0.25
+          inSlope: -1.8757496
+          outSlope: -1.8757496
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.26666668
+          value: 0.125
+          inSlope: -0.4689374
+          outSlope: -0.4689374
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.53333336
+          value: 0.044891357
+          inSlope: -0.21070543
+          outSlope: -0.21070543
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0.2775509
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: -0.033346657
+          outSlope: -0.033346657
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      RolloffMode: 2
+    <Priority>k__BackingField: 128
+    <Pitch>k__BackingField: 1
+    <PitchRandomRange>k__BackingField: 0
+    <VolumeRandomRange>k__BackingField: 0
+    <RandomFlags>k__BackingField: 0
+    SeamlessTransitionType: 1
+    TransitionTempo:
+      BPM: 0
+      Beats: 0
+    SnapToFullVolume: 0
+  - <Name>k__BackingField: WarningVoice
+    <ID>k__BackingField: 1342177280
+    MulticlipsPlayMode: 0
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: 686a77153cb991e498b1f1d7c20f6d6d, type: 3}
+      Volume: 0.4
+      Delay: 0
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    <MasterVolume>k__BackingField: 1
+    <Loop>k__BackingField: 0
+    <SeamlessLoop>k__BackingField: 0
+    <TransitionTime>k__BackingField: 1
+    <SpatialSettings>k__BackingField:
+      StereoPan: 0
+      DopplerLevel: 1
+      MinDistance: 1
+      MaxDistance: 500
+      SpatialBlend:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      ReverbZoneMix:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      Spread:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      CustomRolloff:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0.033333335
+          value: 1
+          inSlope: -30.011993
+          outSlope: -30.011993
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.06666667
+          value: 0.5
+          inSlope: -7.5029984
+          outSlope: -7.5029984
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.13333334
+          value: 0.25
+          inSlope: -1.8757496
+          outSlope: -1.8757496
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.26666668
+          value: 0.125
+          inSlope: -0.4689374
+          outSlope: -0.4689374
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.53333336
+          value: 0.044891357
+          inSlope: -0.21070543
+          outSlope: -0.21070543
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0.2775509
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: -0.033346657
+          outSlope: -0.033346657
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      RolloffMode: 0
+    <Priority>k__BackingField: 128
+    <Pitch>k__BackingField: 1
+    <PitchRandomRange>k__BackingField: 0
+    <VolumeRandomRange>k__BackingField: 0
+    <RandomFlags>k__BackingField: 0
+    SeamlessTransitionType: 1
+    TransitionTempo:
+      BPM: 0
+      Beats: 0
+    SnapToFullVolume: 0
+  - <Name>k__BackingField: BGM
+    <ID>k__BackingField: 1342177281
+    MulticlipsPlayMode: 1
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: 7a5783e048cdb8e41a8c467ac570bb2f, type: 3}
+      Volume: 1
+      Delay: 0
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    - AudioClip: {fileID: 8300000, guid: 3922c1d0525c5eb499d70a74e0f1a0b6, type: 3}
+      Volume: 1
+      Delay: 0
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    <MasterVolume>k__BackingField: 0.2
+    <Loop>k__BackingField: 0
+    <SeamlessLoop>k__BackingField: 0
+    <TransitionTime>k__BackingField: 1
+    <SpatialSettings>k__BackingField:
+      StereoPan: 0
+      DopplerLevel: 1
+      MinDistance: 1
+      MaxDistance: 500
+      SpatialBlend:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      ReverbZoneMix:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      Spread:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      CustomRolloff:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0.033333335
+          value: 1
+          inSlope: -30.011993
+          outSlope: -30.011993
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.06666667
+          value: 0.5
+          inSlope: -7.5029984
+          outSlope: -7.5029984
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.13333334
+          value: 0.25
+          inSlope: -1.8757496
+          outSlope: -1.8757496
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.26666668
+          value: 0.125
+          inSlope: -0.4689374
+          outSlope: -0.4689374
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.53333336
+          value: 0.044891357
+          inSlope: -0.21070543
+          outSlope: -0.21070543
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0.2775509
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: -0.033346657
+          outSlope: -0.033346657
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      RolloffMode: 0
+    <Priority>k__BackingField: 128
+    <Pitch>k__BackingField: 1
+    <PitchRandomRange>k__BackingField: 0
+    <VolumeRandomRange>k__BackingField: 0
+    <RandomFlags>k__BackingField: 0
+    SeamlessTransitionType: 1
+    TransitionTempo:
+      BPM: 0
+      Beats: 0
+    SnapToFullVolume: 0
+  <AssetName>k__BackingField: Demo
   _assetGUID: 6ae8d9cb032bc1c40a8f7d4bd78c9337

@@ -7,8 +7,7 @@ namespace Ami.BroAudio.Demo
 {
 	public class EscapingZone : InteractiveComponent
 	{
-		[SerializeField] AudioID _nightTimeBGM = default;
-		[SerializeField] AudioID _dayTimeBGM = default;
+		[SerializeField] AudioID _bgm = default;
 		[SerializeField] float _transitionTime = default;
 
 		[Header("API Text")]
@@ -32,8 +31,8 @@ namespace Ami.BroAudio.Demo
 				_apiAnimator.SetTrigger(_apiTriggerName);
 				_lightAnimator.SetBool(_ligghtAnimParameterName, _isNightTime);
 
-				AudioID id = _isNightTime ? _nightTimeBGM : _dayTimeBGM;
-				BroAudio.Play(id).AsBGM().SetTransition(Transition.CrossFade, _transitionTime);
+				// The BGM is set to PlaybackMode.Sequence
+				BroAudio.Play(_bgm).AsBGM().SetTransition(Transition.CrossFade, _transitionTime);
 				StartCoroutine(PreventChangePeriod());
 			}	
 		}

@@ -27,6 +27,8 @@ namespace Ami.BroAudio.Editor
 		private const float ClipPreviewHeight = 100f;
 		private const float DefaultFieldRatio = 0.9f;
 		private const float PreviewPrettinessOffsetY = 7f; // for prettiness
+		private const float FoldoutArrowWidth = 15f;
+		private const float MaxTextFieldWidth = 300f;
 
 		private readonly GUIContent[] _tabLabelGUIContents = { new GUIContent(nameof(Tab.Clips)), new GUIContent(nameof(Tab.Settings)) };
 		private readonly float[] _tabLabelRatios = new float[] { 0.5f, 0.5f };
@@ -121,7 +123,7 @@ namespace Ami.BroAudio.Editor
             SplitRectHorizontal(foldoutRect, 5f, _identityLabelRects, _identityLabelRatios);
 			Rect nameRect = _identityLabelRects[0]; Rect idRect = _identityLabelRects[1]; Rect audioTypeRect = _identityLabelRects[2];
 
-            property.isExpanded = EditorGUI.Foldout(nameRect, property.isExpanded, nameProp.stringValue);
+            property.isExpanded = EditorGUI.Foldout(nameRect, property.isExpanded, property.isExpanded? string.Empty : nameProp.stringValue);
 			DrawIdText(idRect, idProp.intValue);
 			DrawAudioTypeButton(audioTypeRect, property, Utility.GetAudioType(idProp.intValue));
 			if (!property.isExpanded || !TryGetAudioTypeSetting(property, out var setting))
@@ -255,8 +257,8 @@ namespace Ami.BroAudio.Editor
         {
             EditorGUI.BeginChangeCheck();
 			Rect nameRect = new Rect(position) { height = EditorGUIUtility.singleLineHeight};
-			nameRect.x += EditorGUIUtility.labelWidth;
-			nameRect.width = nameRect.width - EditorGUIUtility.labelWidth;
+			nameRect.x += FoldoutArrowWidth;
+			nameRect.width = Mathf.Min(nameRect.width - FoldoutArrowWidth, MaxTextFieldWidth);
 			nameRect.y += 1f;
 			nameProp.stringValue = EditorGUI.TextField(nameRect, nameProp.stringValue);
             if (EditorGUI.EndChangeCheck())

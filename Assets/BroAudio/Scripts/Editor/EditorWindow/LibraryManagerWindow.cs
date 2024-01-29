@@ -24,10 +24,9 @@ namespace Ami.BroAudio.Editor
 		public static event Action OnCloseLibraryManagerWindow;
 		public static event Action OnSelectAsset;
 
-		private readonly Vector2 _entitiesHeaderSize = new Vector2(200f,EditorGUIUtility.singleLineHeight * 2);
         private readonly GapDrawingHelper _verticalGapDrawer = new GapDrawingHelper();
         private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
-        private readonly EditorFlashingHelper _flasingHelper = new EditorFlashingHelper(Color.white, 1f, Ease.InCubic);
+        //private readonly EditorFlashingHelper _flasingHelper = new EditorFlashingHelper(Color.white, 1f, Ease.InCubic);
         private readonly IUniqueIDGenerator _idGenerator = new IdGenerator();
 
         private List<string> _allAssetGUIDs = null;
@@ -40,7 +39,8 @@ namespace Ami.BroAudio.Editor
 		private Vector2 _assetListScrollPos = Vector2.zero;
 		private Vector2 _entitiesScrollPos = Vector2.zero;
 
-		public float DefaultLayoutPadding => GUI.skin.box.padding.top;
+        public Vector2 EntitiesHeaderSize => new Vector2(200f, EditorGUIUtility.singleLineHeight * 2);
+        public float DefaultLayoutPadding => GUI.skin.box.padding.top;
 		public IUniqueIDGenerator IDGenerator => _idGenerator;
 
 		[MenuItem(LibraryManagerMenuPath, false,LibraryManagerMenuIndex)]
@@ -77,7 +77,7 @@ namespace Ami.BroAudio.Editor
 		{
 			EditorPlayAudioClip.AddPlaybackIndicatorListener(Repaint);
 
-			_flasingHelper.OnUpdate += Repaint;
+			//_flasingHelper.OnUpdate += Repaint;
 		}
 
 		private void OnLostFocus()
@@ -85,7 +85,7 @@ namespace Ami.BroAudio.Editor
 			EditorPlayAudioClip.StopAllClips();
 			EditorPlayAudioClip.RemovePlaybackIndicatorListener(Repaint);
 
-			_flasingHelper.OnUpdate -= Repaint;
+			//_flasingHelper.OnUpdate -= Repaint;
 		}
 
 		private void OnEnable()
@@ -417,7 +417,7 @@ namespace Ami.BroAudio.Editor
 				}
 				GUILayout.Space(10f);
 
-				Rect headerRect = GUILayoutUtility.GetRect(_entitiesHeaderSize.x, _entitiesHeaderSize.y);
+				Rect headerRect = GUILayoutUtility.GetRect(EntitiesHeaderSize.x, EntitiesHeaderSize.y);
                 if (Event.current.type == EventType.Repaint)
 				{
 					GUI.skin.window.Draw(headerRect, false, false, false, false);

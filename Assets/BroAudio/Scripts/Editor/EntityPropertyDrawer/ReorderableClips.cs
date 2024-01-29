@@ -14,6 +14,7 @@ namespace Ami.BroAudio.Editor
 	{
 		public Action<string> OnAudioClipChanged;
 
+		public const MulticlipsPlayMode DefaultMulticlipsMode = MulticlipsPlayMode.Random;
 		private const float Gap = 5f;
 		private const float HeaderLabelWidth = 50f;
 		private const float MulticlipsValueLabelWidth = 60f;
@@ -27,7 +28,6 @@ namespace Ami.BroAudio.Editor
 		private SerializedProperty _currSelectedClip;
 
 		public bool IsMulticlips => _reorderableList.count > 1;
-		public int Count => _reorderableList.count;
 		public float Height => _reorderableList.GetHeight();
 		private Vector2 PlayButtonSize => new Vector2(30f, 20f);
 		
@@ -112,8 +112,9 @@ namespace Ami.BroAudio.Editor
 			}
 			else if (IsMulticlips && _playModeProp.enumValueIndex == 0)
 			{
-				_playModeProp.enumValueIndex = 1;
+                _playModeProp.enumValueIndex = (int)DefaultMulticlipsMode;
 			}
+			
 			return (MulticlipsPlayMode)_playModeProp.enumValueIndex;
 		}
 
@@ -131,9 +132,9 @@ namespace Ami.BroAudio.Editor
 						SerializedProperty audioClipProp = broClipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
 						audioClipProp.objectReferenceValue = clipObj;
 					}
-					_reorderableList.serializedProperty.serializedObject.ApplyModifiedProperties();
+                    UpdatePlayMode();
+                    _reorderableList.serializedProperty.serializedObject.ApplyModifiedProperties();
 					DragAndDrop.AcceptDrag();
-					UpdatePlayMode();
 				}
 			}
 		}

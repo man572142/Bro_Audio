@@ -1,7 +1,5 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Tools;
 using Ami.Extension;
@@ -26,9 +24,10 @@ namespace Ami.BroAudio.Editor
 		public const string BackgroundLogoPath = "Editor/Logo_transparent";
 		public const int DragAndDropFontSize = 35;
 
-		private Vector2 _browseButtonSize = new Vector2(80f,30f);
-		private int _pickerID = -1;
+        private int _pickerID = -1;
 
+        public Vector2 BrowseButtonSize => new Vector2(80f,30f);
+		
 		private void DrawEntityFactory(Rect factoryRect)
 		{
 			EditorGUILayout.BeginVertical();
@@ -54,7 +53,7 @@ namespace Ami.BroAudio.Editor
 				EditorGUILayout.BeginHorizontal();
 				{
 					GUILayout.FlexibleSpace();
-					if (GUILayout.Button("Browse", GUILayout.Width(_browseButtonSize.x), GUILayout.Height(_browseButtonSize.y)))
+					if (GUILayout.Button("Browse", GUILayout.Width(BrowseButtonSize.x), GUILayout.Height(BrowseButtonSize.y)))
 					{
 						_pickerID = EditorGUIUtility.GetControlID(FocusType.Passive);
 						EditorGUIUtility.ShowObjectPicker<AudioClip>(null, false, string.Empty, _pickerID);
@@ -177,21 +176,21 @@ namespace Ami.BroAudio.Editor
 
         }
 
-		private void ToggleTempGuidingFlash(bool hasAssetName)
-		{
-			if (!hasAssetName && !_flasingHelper.IsUpdating)
-			{
-				_flasingHelper.Start();
-			}
-			else if (hasAssetName && _flasingHelper.IsUpdating)
-			{
-				_flasingHelper.End();
-			}
-		}
+		//private void ToggleTempGuidingFlash(bool hasAssetName)
+		//{
+		//	if (!hasAssetName && !_flasingHelper.IsUpdating)
+		//	{
+		//		_flasingHelper.Start();
+		//	}
+		//	else if (hasAssetName && _flasingHelper.IsUpdating)
+		//	{
+		//		_flasingHelper.End();
+		//	}
+		//}
 
-		private void DrawFlashingReminder(Rect headerRect)
-		{
-			GUI.DrawTexture(headerRect, Texture2D.whiteTexture, ScaleMode.ScaleAndCrop, true, 0f, Color.white, 0f, 4f);
-		}
+		//private void DrawFlashingReminder(Rect headerRect)
+		//{
+		//	GUI.DrawTexture(headerRect, Texture2D.whiteTexture, ScaleMode.ScaleAndCrop, true, 0f, Color.white, 0f, 4f);
+		//}
 	}
 }

@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine.Audio;
 using static Ami.Extension.ReflectionExtension;
 using static Ami.BroAudio.Tools.BroLog;
+using Ami.BroAudio.Tools;
 
 namespace Ami.Extension.Reflection
 {
@@ -21,9 +22,6 @@ namespace Ami.Extension.Reflection
 			SetValueForVolume,
 			SetValueForPitch,
 		}
-
-		public const string SendExposeParameterSuffix = "_Send";
-		public const string PitchExposeParameterSuffix = "_Pitch";
 
 		public const string DefaultSnapshot = "Snapshot";
 		public const string SendEffectParameter = "Send";
@@ -87,7 +85,7 @@ namespace Ami.Extension.Reflection
 					break;
 				case ExposedParameterType.Pitch:
 					setterMethod = MethodName.SetValueForPitch;
-					getterParaName = sourceTrackName + PitchExposeParameterSuffix;
+					getterParaName = sourceTrackName + BroName.PitchParaNameSuffix;
 					break;
 				case ExposedParameterType.EffectSend:
 					UnityEngine.Debug.LogError("This method can only be used with mixerGroup only");
@@ -151,7 +149,7 @@ namespace Ami.Extension.Reflection
 					if (TryGetGUID(MethodName.GetGUIDForPitch, reflection.MixerGroupClass, mixerGroup, out GUID pitchGUID))
 					{
 						object pitchParaPath = CreateParameterPathInstance("AudioGroupParameterPath", mixerGroup, pitchGUID);
-						CustomParameterExposer.AddExposedParameter(mixerGroup.name + PitchExposeParameterSuffix, pitchParaPath, pitchGUID, audioMixer, reflection);
+						CustomParameterExposer.AddExposedParameter(mixerGroup.name + BroName.PitchParaNameSuffix, pitchParaPath, pitchGUID, audioMixer, reflection);
 					}
 					break;
 				case ExposedParameterType.EffectSend:
@@ -159,7 +157,7 @@ namespace Ami.Extension.Reflection
 					if (TryGetGUID(MethodName.GetGUIDForMixLevel, reflection.EffectClass, effect, out GUID effectGUID))
 					{
 						object effectParaPath = CreateParameterPathInstance("AudioEffectParameterPath", mixerGroup, effect, effectGUID);
-						CustomParameterExposer.AddExposedParameter(mixerGroup.name + SendExposeParameterSuffix, effectParaPath, effectGUID, audioMixer, reflection);
+						CustomParameterExposer.AddExposedParameter(mixerGroup.name + BroName.SendParaNameSuffix, effectParaPath, effectGUID, audioMixer, reflection);
 					}
 					break;
 			}

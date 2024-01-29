@@ -16,25 +16,6 @@ namespace Ami.BroAudio.Runtime
 			public Coroutine Coroutine;
 			public List<ITweakingWaitable> WaitableList;
 			public float OriginValue;
-
-			public bool TryGetLastWaitable(out ITweakingWaitable waitable)
-			{
-				if (WaitableList != null && WaitableList.Count > 0)
-				{
-					waitable = WaitableList[WaitableList.Count - 1];
-					return true;
-				}
-				waitable = default;
-				return false;
-			}
-
-			public void RemoveLastWaitable()
-			{
-				if (WaitableList != null && WaitableList.Count > 0)
-				{
-					WaitableList.RemoveAt(WaitableList.Count - 1);
-				}
-			}
 		}
 
 		public interface ITweakingWaitable
@@ -95,11 +76,6 @@ namespace Ami.BroAudio.Runtime
 			public override IEnumerator GetYieldInstruction() => Enumerator;
 			public override bool IsFinished() => Condition();
 		}
-
-
-		public const string EffectTrackName = "Effect";
-		public const string LowPassExposedName = EffectTrackName + "_LowPass";
-		public const string HighPassExposedName = EffectTrackName + "_HighPass";
 
 		private readonly AudioMixer _mixer = null;
 		private Dictionary<EffectType,Tweaker> _tweakerDict = new Dictionary<EffectType, Tweaker>();
@@ -296,11 +272,11 @@ namespace Ami.BroAudio.Runtime
 			switch (effectType)
 			{
 				case EffectType.Volume:
-					return EffectTrackName;
+					return BroName.DominatorTrackName;
 				case EffectType.LowPass:
-					return LowPassExposedName;
+					return BroName.LowPassExposedName;
 				case EffectType.HighPass:
-					return HighPassExposedName;
+					return BroName.HighPassExposedName;
 				default:
 					return string.Empty;
 			}

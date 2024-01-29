@@ -54,8 +54,6 @@ namespace Ami.BroAudio.Runtime
             } 
         }
 
-        public const string AudioPlayerPrefabName = "AudioPlayer";
-
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
         private AudioPlayerObjectPool _audioPlayerPool = null;
 

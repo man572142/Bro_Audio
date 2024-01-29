@@ -77,6 +77,7 @@ namespace Ami.BroAudio.Editor
 					return;
 				}
 
+				Offset += SnapVolumePadding;
 				Rect masterVolRect = GetRectAndIterateLine(position);
 				masterVolRect.width *= DefaultFieldRatio;
 				SerializedProperty masterVolProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.MasterVolume));

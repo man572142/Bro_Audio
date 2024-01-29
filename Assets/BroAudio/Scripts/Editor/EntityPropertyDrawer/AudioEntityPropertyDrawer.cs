@@ -162,7 +162,6 @@ namespace Ami.BroAudio.Editor
 					}
 					break;
 				case Tab.Settings:
-					Offset += SnapVolumePadding;
 					DrawAdditionalBaseProperties(position, property, setting);
 					break;
 			}

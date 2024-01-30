@@ -21,10 +21,11 @@ namespace Ami.BroAudio.Editor
 		public const float CenterLineGap = 30f;
 		public const float CenterLength = 130f;
 		public const float BackgroundLogoSize = 500f;
-		public const string BackgroundLogoPath = "Editor/Logo_transparent";
 		public const int DragAndDropFontSize = 35;
 
         private int _pickerID = -1;
+		private Texture _backgroundLogo = null;
+		private Material _backgroundLogoMat = null;
 
         public Vector2 BrowseButtonSize => new Vector2(80f,30f);
 		
@@ -74,9 +75,9 @@ namespace Ami.BroAudio.Editor
 				float offsetX = DefaultLayoutPadding * 2f;
 				Vector2 logoPos = entitiesRect.size * 0.5f - audioIconSize * 0.5f + new Vector2(offsetX, 0f);
 				Rect audioIconRect = new Rect(logoPos, audioIconSize);
-				Texture logo = Resources.Load<Texture>(BackgroundLogoPath);
-				Material mat = (Material)EditorGUIUtility.LoadRequired("Inspectors/InactiveGUI.mat");
-				EditorGUI.DrawPreviewTexture(audioIconRect, logo, mat, ScaleMode.ScaleToFit);
+                _backgroundLogo = _backgroundLogo ?? Resources.Load<Texture>(BroName.TransparentLogoPath);
+                _backgroundLogoMat = _backgroundLogoMat ?? (Material)EditorGUIUtility.LoadRequired("Inspectors/InactiveGUI.mat");
+				EditorGUI.DrawPreviewTexture(audioIconRect, _backgroundLogo, _backgroundLogoMat, ScaleMode.ScaleToFit);
 			}
 		}
 

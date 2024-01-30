@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using Ami.BroAudio.Data;
+using Ami.BroAudio.Tools;
 using Ami.Extension;
 using UnityEngine;
-using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -14,13 +14,13 @@ namespace Ami.BroAudio.Runtime
 		{
 			get
 			{
-                _setting = _setting ?? Resources.Load<RuntimeSetting>(RuntimeSetting.FilePath);
+                _setting = _setting ?? Resources.Load<RuntimeSetting>(BroName.RuntimeSettingFileName);
 
                 if (!_setting)
 				{
 					_setting = new RuntimeSetting();
-					LogWarning("Can't load BroAudioGlobalSetting.asset, all setting values will be as default. " +
-						"If your setting file is missing. Please open BroAudio/Setting to recreate it and put it under any [Resource] folder");
+                    BroLog.LogWarning($"Can't load {BroName.RuntimeSettingFileName}.asset, all setting values will be as default. " +
+						"If your setting file is missing. Please reimport it from the asset package");
 				}
 				return _setting;
 			}

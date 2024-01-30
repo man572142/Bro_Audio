@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using Ami.Extension;
 using Ami.BroAudio.Runtime;
+using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Data
 {
 #if BroAudio_DevOnly
-	[CreateAssetMenu(menuName = "BroAudio/Create Runtime Setting Asset File", fileName = FileName)]
+	[CreateAssetMenu(menuName = nameof(BroAudio) + "/Runtime Setting", fileName = BroName.RuntimeSettingFileName)]
 #endif
 	public class RuntimeSetting : ScriptableObject
 	{
-		public const string FileName = "BroRuntimeSetting";
-		public const string FilePath = FileName;
-
 		public float CombFilteringPreventionInSeconds = FactorySettings.CombFilteringPreventionInSeconds;
 		public bool LogCombFilteringWarning = true;
 		public Ease DefaultFadeInEase = FactorySettings.DefaultFadeInEase;

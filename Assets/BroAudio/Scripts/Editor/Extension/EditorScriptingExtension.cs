@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Linq;
 using Ami.BroAudio.Editor;
 using System;
+using PlasticGui;
 
 namespace Ami.Extension
 {
@@ -524,6 +525,28 @@ namespace Ami.Extension
 			rect.x -= pixel;
 			rect.y -= pixel;
 			return rect;
+		}
+
+		public static void DrawUrlLink(Rect rect, string url, TextAnchor textAnchor = TextAnchor.MiddleLeft)
+		{
+			GUIStyle style = GUIStyleHelper.LinkLabelStyle;
+			style.alignment = textAnchor;
+			EditorGUI.LabelField(rect, url, style);
+			if (GUI.Button(rect, GUIContent.none,GUIStyle.none))
+			{
+				Application.OpenURL(url);
+			}
+			EditorGUIUtility.AddCursorRect(rect, MouseCursor.Link);
+        }
+
+		public static void DrawSelectableLabelWithPrefix(Rect position, GUIContent prefixLabel, string selectableLabel, float prefixWidth = 0f)
+		{
+			prefixWidth = prefixWidth == 0 ? EditorGUIUtility.labelWidth : prefixWidth;
+			Rect prefixRect = new Rect(position) { width = prefixWidth};
+			Rect suffixRect = new Rect(position) { width = position.width - prefixWidth, x = prefixRect.xMax };
+
+			EditorGUI.LabelField(prefixRect, prefixLabel);
+			EditorGUI.SelectableLabel(suffixRect, selectableLabel);
 		}
     }
 }

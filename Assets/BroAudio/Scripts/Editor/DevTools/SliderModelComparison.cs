@@ -23,7 +23,7 @@ namespace Ami.BroAudio.Tools
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 
 #if BroAudio_DevOnly
-		[MenuItem(MenuItem_BroAudio + "/SliderModelComparison")]
+		[MenuItem(MenuItem_BroAudio + "SliderModelComparison")]
 #endif
 		public static void ShowWindow()
 		{

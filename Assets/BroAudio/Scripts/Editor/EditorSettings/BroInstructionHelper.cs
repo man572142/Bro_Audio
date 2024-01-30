@@ -19,7 +19,7 @@ namespace Ami.BroAudio.Editor
 		{
             if (!_instruction)
             {
-                _instruction = Resources.Load<BroInstruction>("Editor/" + InstructionFileName);
+                _instruction = Resources.Load<BroInstruction>(EditorResourcePath + InstructionFileName);
 
                 if (!_instruction)
                 {

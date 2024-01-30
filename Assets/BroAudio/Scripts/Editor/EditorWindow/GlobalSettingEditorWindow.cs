@@ -1,25 +1,23 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
+using Ami.BroAudio.Tools;
 using Ami.Extension;
-using Ami.BroAudio.Runtime;
 using Ami.Extension.Reflection;
-using static Ami.BroAudio.Utility;
-using static Ami.BroAudio.Editor.BroEditorUtility;
-using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
-using static Ami.Extension.EditorScriptingExtension;
-using static Ami.BroAudio.Tools.BroName;
-using static Ami.BroAudio.Tools.BroLog;
-using static Ami.BroAudio.Editor.IconConstant;
-using System.IO;
-using UnityEngine.Audio;
 using System;
+using System.IO;
 using System.Linq;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Audio;
+using static Ami.BroAudio.Editor.BroEditorUtility;
+using static Ami.BroAudio.Editor.IconConstant;
+using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
+using static Ami.BroAudio.Tools.BroLog;
+using static Ami.BroAudio.Tools.BroName;
+using static Ami.BroAudio.Utility;
+using static Ami.Extension.EditorScriptingExtension;
 
 namespace Ami.BroAudio.Editor.Setting
 {
-	public class GlobalSettingEditorWindow : MiEditorWindow
+    public class GlobalSettingEditorWindow : MiEditorWindow
 	{
 		public enum OpenMessage
 		{
@@ -34,6 +32,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string SettingFileName = "BroAudioGlobalSetting";
 		public const string SettingText = "Setting";
 		public const float Gap = 50f;
+		public const float CreditsPrefixWidth = 70f;
 		
 		public const string CombFilteringLabel = "Time to prevent Comb Filtering";
 		public const string PitchShiftingLabel = "Pitch Shift Using";
@@ -45,13 +44,11 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string AudioTypeColorLabel = "Audio Type Color";
 		public const string AudioTypeDrawedProperties = "Displayed Properties";
 		public const string GitURL = "https://github.com/man572142/Bro_Audio";
-		
 		public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
 		public const string ProjectSettings = "Project Settings";
 		public const string RealVoicesParameterName = "Max Real Voices";
 		public const string BroVirtualTracks = "Bro Virtual Tracks";
 
-		private readonly string _titleText = nameof(BroAudio).ToBold().SetSize(30).SetColor(MainTitleColor);
 		private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
 		private GUIContent[] _tabLabels = null;
@@ -66,11 +63,14 @@ namespace Ami.BroAudio.Editor.Setting
 		private Vector2 _scrollPos = default;
 		private float _demoSliderValue = 1f;
 		private Rect[] _tabPreAllocRects = null;
+		private UnityEngine.Object[] _creditsObjects = null;
+		private Texture _logo = null;
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
 		public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
 		private float TabLabelHeight => EditorGUIUtility.singleLineHeight * 2f;
+		private Vector2 LogoSize => new Vector2(100f, 100f);
 
 		private AudioMixer AudioMixer
 		{
@@ -153,66 +153,74 @@ namespace Ami.BroAudio.Editor.Setting
 		}
 
 		protected override void OnGUI()
-		{
-			base.OnGUI();
+        {
+            base.OnGUI();
+            Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
 
-			Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
+            DrawLogo(position.Scoping(position));
 
-			DrawEmptyLine(1);
-			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), _titleText, GUIStyleHelper.MiddleCenterRichText);
-			
-			if(Message != OpenMessage.None)
+            if (Message != OpenMessage.None)
+            {
+                DrawEmptyLine(1);
+                switch (Message)
+                {
+                    case OpenMessage.RuntimeSettingFileMissing:
+                    case OpenMessage.EditorSettingFileMissing:
+                        Rect errorRect = GetRectAndIterateLine(drawPosition);
+                        errorRect.height *= 2;
+                        Instruction instructionEnum = GetInstructionEnum(Message);
+                        EditorGUI.HelpBox(errorRect, _instruction.GetText(instructionEnum), MessageType.Error);
+                        DrawEmptyLine(1);
+                        break;
+                }
+            }
+
+            DrawAssetOutputPath(drawPosition);
+            DrawEmptyLine(1);
+
+            drawPosition.x += Gap;
+            drawPosition.width -= Gap * 2;
+
+            Rect tabWindowRect = GetRectAndIterateLine(drawPosition);
+            tabWindowRect.yMax = drawPosition.yMax;
+            _tabPreAllocRects = _tabPreAllocRects ?? new Rect[_tabLabelRatios.Length];
+            _currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab, TabLabelHeight, _tabLabels, _tabLabelRatios, _tabPreAllocRects);
+
+            EditorGUI.indentLevel++;
+            Rect tabPageScrollRect = new Rect(tabWindowRect.x, tabWindowRect.y + TabLabelHeight, tabWindowRect.width, tabWindowRect.height - TabLabelHeight);
+            _scrollPos = BeginScrollView(tabPageScrollRect, _scrollPos);
+            DrawEmptyLine(2);
+            if (RuntimeSetting != null)
+            {
+                switch (_currSelectedTab)
+                {
+                    case Tab.Audio:
+                        DrawAudioSetting(drawPosition);
+                        break;
+                    case Tab.GUI:
+                        DrawGUISetting(drawPosition);
+                        break;
+                    case Tab.Info:
+                        DrawInfo(drawPosition);
+                        break;
+                }
+            }
+            EndScrollView();
+            EditorGUI.indentLevel--;
+        }
+
+        private void DrawLogo(Rect rect)
+        {
+			if(_logo == null)
 			{
-				DrawEmptyLine(1);
-				switch (Message)
-				{
-					case OpenMessage.RuntimeSettingFileMissing:
-					case OpenMessage.EditorSettingFileMissing:
-						Rect errorRect = GetRectAndIterateLine(drawPosition);
-						errorRect.height *= 2;
-						Instruction instructionEnum = GetInstructionEnum(Message);
-						EditorGUI.HelpBox(errorRect, _instruction.GetText(instructionEnum), MessageType.Error);
-						break;
-				}
-			}
+                _logo = Resources.Load(TransparentLogoPath, typeof(Texture)) as Texture;
+            }
+			Rect logoRect = GetRectAndIterateLine(rect);
+			logoRect.size = LogoSize;
+            GUI.DrawTexture(logoRect, _logo, ScaleMode.ScaleToFit,true);
+        }
 
-			DrawEmptyLine(1);
-			DrawAssetOutputPath(drawPosition);
-
-			DrawEmptyLine(1);
-
-			drawPosition.x += Gap;
-			drawPosition.width -= Gap * 2;
-
-			Rect tabWindowRect = GetRectAndIterateLine(drawPosition);
-			tabWindowRect.yMax = drawPosition.yMax;
-			_tabPreAllocRects = _tabPreAllocRects ?? new Rect[_tabLabelRatios.Length];
-			_currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab, TabLabelHeight, _tabLabels,_tabLabelRatios, _tabPreAllocRects);
-
-			EditorGUI.indentLevel++;			
-			Rect tabPageScrollRect = new Rect(tabWindowRect.x, tabWindowRect.y + TabLabelHeight, tabWindowRect.width, tabWindowRect.height - TabLabelHeight);
-			_scrollPos = BeginScrollView(tabPageScrollRect, _scrollPos);
-			DrawEmptyLine(2);
-			if (RuntimeSetting != null)
-			{
-				switch (_currSelectedTab)
-				{
-					case Tab.Audio:
-						DrawAudioSetting(drawPosition);
-						break;
-					case Tab.GUI:
-						DrawGUISetting(drawPosition);
-						break;
-					case Tab.Info:
-						DrawInfo(drawPosition);
-						break;
-				}
-			}
-			EndScrollView();
-			EditorGUI.indentLevel--;
-		}
-
-		private Instruction GetInstructionEnum(OpenMessage message)
+        private Instruction GetInstructionEnum(OpenMessage message)
 		{
 			switch (message)
 			{
@@ -475,26 +483,62 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawInfo(Rect drawPosition)
 		{
-            DrawEmptyLine(2);
+            EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Info".ToWhiteBold().SetSize(20), GUIStyleHelper.MiddleCenterRichText);
+            drawPosition.x += drawPosition.width * 0.1f;
+            drawPosition.xMax -= drawPosition.width * 0.2f;
+            DrawEmptyLine(1);
             EditorGUI.SelectableLabel(GetRectAndIterateLine(drawPosition), _instruction.GetText(Instruction.Copyright), GUIStyleHelper.MiddleCenterText);
 
 			DrawEmptyLine(1);
-			Rect linkRect = GetRectAndIterateLine(drawPosition);
-			if (GUI.Button(linkRect, GitURL, GUIStyleHelper.LinkLabelStyle))
-			{
-				Application.OpenURL(GitURL);
-			}
-			EditorGUIUtility.AddCursorRect(linkRect, MouseCursor.Link);
+			DrawUrlLink(GetRectAndIterateLine(drawPosition), GitURL, TextAnchor.MiddleCenter);
 
 			DrawEmptyLine(1);
-            if (GUI.Button(GetRectAndIterateLine(drawPosition),ResetSettingButtonText))
+			Rect resetButtonRect = GetRectAndIterateLine(drawPosition);
+            resetButtonRect.height *= 1.2f;
+            if (GUI.Button(resetButtonRect, ResetSettingButtonText))
 			{
 				RuntimeSetting.ResetToFactorySettings();
 				EditorSetting.ResetToFactorySettings();
 			}
-		}
 
-		private void DrawAssetOutputPath(Rect drawPosition)
+            DrawEmptyLine(2);
+			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Demo Credits".ToWhiteBold().SetSize(20),GUIStyleHelper.MiddleCenterRichText);
+            DrawEmptyLine(1);
+            DrawAssetCredits(drawPosition);
+        }
+
+        private void DrawAssetCredits(Rect drawPosition)
+        {
+			if(_creditsObjects == null)
+			{
+                _creditsObjects = Resources.LoadAll("Editor", typeof(AssetCredits));
+				_creditsObjects = _creditsObjects ?? Array.Empty<UnityEngine.Object>();
+            }
+
+			foreach(var obj in _creditsObjects)
+			{
+				if(obj is AssetCredits creditsObj)
+				{
+                    foreach (var credit in creditsObj.Credits)
+                    {
+                        if (Event.current.type == EventType.Repaint)
+                        {
+                            Rect boxRect = GetNextLineRect(this, drawPosition);
+							boxRect.y -= 10f;
+							boxRect.height = SingleLineSpace * 4 + 10f;
+                            GUI.skin.box.Draw(boxRect, false, false, false, false);
+                        }
+                        EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), credit.Source, typeof(AudioClip), false);
+                        DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition),new GUIContent("Name"), credit.Name, CreditsPrefixWidth);
+                        DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition),new GUIContent("Author") ,credit.Author, CreditsPrefixWidth);
+                        DrawUrlLink(GetRectAndIterateLine(drawPosition), credit.Link);
+                        DrawEmptyLine(1);
+                    }
+                }
+			}
+        }
+
+        private void DrawAssetOutputPath(Rect drawPosition)
 		{
 			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AssetOutputPathLabel, GUIStyleHelper.MiddleCenterRichText);
 

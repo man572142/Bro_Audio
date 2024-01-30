@@ -1,3 +1,4 @@
+using Ami.BroAudio.Tools;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,7 +6,7 @@ using UnityEngine;
 namespace Ami.BroAudio.Editor
 {
 #if BroAudio_DevOnly
-	[CreateAssetMenu(menuName = "BroAudio/Create Editor Setting Asset File", fileName = FileName)]
+	[CreateAssetMenu(menuName = nameof(BroAudio) + "/Editor Setting", fileName = BroName.EditorSettingPath)]
 #endif
 	public class EditorSetting : ScriptableObject
 	{
@@ -23,9 +24,6 @@ namespace Ami.BroAudio.Editor
 				DrawedProperty = drawedProperty;
 			}
 		}
-
-		public const string FileName = "BroEditorSetting";
-		public const string FilePath = "Editor/" + FileName;
 
 		public bool ShowAudioTypeOnAudioID;
 		public bool ShowVUColorOnVolumeSlider;

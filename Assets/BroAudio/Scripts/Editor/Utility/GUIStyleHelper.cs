@@ -56,7 +56,6 @@ namespace Ami.Extension
 			get
 			{
 				GUIStyle style = new GUIStyle(LinkLabel);
-				style.alignment = TextAnchor.MiddleCenter;
 				return style;
 			}
 		}

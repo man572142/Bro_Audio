@@ -73,9 +73,10 @@ namespace Ami.BroAudio.Runtime
             SetPitch(pref.Entity);
             SetSpatial(pref);
 
-			if (IsBGM)
+			if (TryGetDecorator<MusicPlayer>(out var musicPlayer))
 			{
 				AudioSource.reverbZoneMix = 0f;
+                pref = musicPlayer.Transition(pref);
 			}
 
 			if (!IsDominator)

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using Ami.Extension;
 
 namespace Ami.BroAudio.Runtime
@@ -14,7 +13,6 @@ namespace Ami.BroAudio.Runtime
 		private StopMode _stopMode = default;
 		private float _overrideFade = AudioPlayer.UseEntitySetting;
 
-		public bool IsBaseNull => !Player;
 		public bool IsPlayingVirtually => IsPlaying && Player.MixerDecibelVolume <= AudioConstant.MinDecibelVolume;
 
 		public MusicPlayer()
@@ -40,20 +38,20 @@ namespace Ami.BroAudio.Runtime
 			return this;
 		}
 
-		protected override PlaybackPreference DecoratePlayback(PlaybackPreference pref)
+		public PlaybackPreference Transition(PlaybackPreference pref)
 		{
 			if(CurrentPlayer != null)
 			{
 				pref.SetFadeTime(_transition, _overrideFade);
 				switch (_transition)
 				{
-					case Transition.Immediate:
-					case Transition.OnlyFadeIn:
-					case Transition.CrossFade:
+					case Ami.BroAudio.Transition.Immediate:
+					case Ami.BroAudio.Transition.OnlyFadeIn:
+					case Ami.BroAudio.Transition.CrossFade:
 						StopCurrentMusic();
 						break;
-					case Transition.Default:
-					case Transition.OnlyFadeOut:
+					case Ami.BroAudio.Transition.Default:
+					case Ami.BroAudio.Transition.OnlyFadeOut:
 
 						var waiter = pref.CreateWaiter();
 						StopCurrentMusic(waiter.Finish);
@@ -67,7 +65,7 @@ namespace Ami.BroAudio.Runtime
 
 		private void StopCurrentMusic(Action onFinished = null)
 		{
-			bool noFadeOut = _transition == Transition.Immediate || _transition == Transition.OnlyFadeIn;
+			bool noFadeOut = _transition == Ami.BroAudio.Transition.Immediate || _transition == Ami.BroAudio.Transition.OnlyFadeIn;
 			float fadeOut =  noFadeOut? 0f : _overrideFade;
 			CurrentPlayer.Stop(fadeOut, _stopMode, onFinished);
 		}

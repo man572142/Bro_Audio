@@ -25,11 +25,6 @@ namespace Ami.BroAudio.Runtime
 			Player = null;
 		}
 
-		protected virtual PlaybackPreference DecoratePlayback(PlaybackPreference pref)
-		{
-			return pref;
-		}
-
 		public int ID => Player.ID;
 		public bool IsPlaying => Player.IsPlaying;
 

@@ -1,11 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Ami.BroAudio.Demo
 {
-	public class EscapingZone : InteractiveComponent
+	public class ThemeChangeZone : InteractiveComponent
 	{
 		[SerializeField] AudioID _bgm = default;
 		[SerializeField] float _transitionTime = default;

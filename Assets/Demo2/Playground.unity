@@ -12279,8 +12279,9 @@ MonoBehaviour:
   InteractiveZone: {fileID: 1915104251}
   _director: {fileID: 1430655739}
   _backgroundMusic:
-    ID: 1342177281
+    ID: 268435457
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+  _maxBgmVolumeDuringCutScene: 1.3
 --- !u!4 &1430655738
 Transform:
   m_ObjectHideFlags: 0
@@ -19314,7 +19315,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1781944511}
   m_Layer: 0
-  m_Name: InstructionUITriggers
+  m_Name: Triggers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -21427,7 +21428,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InteractiveZone: {fileID: 1714271931}
   _bgm:
-    ID: 1342177281
+    ID: 268435457
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
   _transitionTime: 2
   _apiAnimator: {fileID: 677126520}

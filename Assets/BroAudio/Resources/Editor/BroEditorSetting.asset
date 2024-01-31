@@ -17,13 +17,13 @@ MonoBehaviour:
   AudioTypeSettings:
   - AudioType: 1
     Color: {r: 0, g: 0.101960786, b: 0.29803923, a: 0.29803923}
-    DrawedProperty: 2063
+    DrawedProperty: 3087
   - AudioType: 2
     Color: {r: 0, g: 0.5019608, b: 0.2, a: 0.29803923}
     DrawedProperty: 1039
   - AudioType: 4
     Color: {r: 0.101960786, g: 0.5019608, b: 0.5019608, a: 0.29803923}
-    DrawedProperty: 2063
+    DrawedProperty: 3087
   - AudioType: 8
     Color: {r: 0.69032675, g: 0.4198113, b: 1, a: 0.29803923}
     DrawedProperty: 27663

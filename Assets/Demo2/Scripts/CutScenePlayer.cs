@@ -10,6 +10,7 @@ namespace Ami.BroAudio.Demo
 	{
 		[SerializeField] PlayableDirector _director = null;
 		[SerializeField] AudioID _backgroundMusic = default;
+		[SerializeField, Volume(true)] float _maxBgmVolumeDuringCutScene = default; 
 
 		protected override bool IsTriggerOnce => true;
 
@@ -18,7 +19,14 @@ namespace Ami.BroAudio.Demo
 			base.OnInZoneChanged(isInZone);
 
 			_director.Play();
-			BroAudio.Play(_backgroundMusic).AsBGM();
+			_director.stopped += OnCutSceneStopped;
+			BroAudio.Play(_backgroundMusic).AsBGM().SetVolume(_maxBgmVolumeDuringCutScene);
+		}
+
+		private void OnCutSceneStopped(PlayableDirector director)
+		{
+			_director.stopped -= OnCutSceneStopped;
+			BroAudio.SetVolume(_backgroundMusic,1f,2f);
 		}
 	}
 }

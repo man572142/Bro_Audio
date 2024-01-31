@@ -14,6 +14,7 @@ namespace Ami.BroAudio.Runtime
 	{
         public const float UseEntitySetting = -1f;
         public const float Immediate = 0f;
+        private const int DecoratorsArraySize = 2;
 
         public event Action<AudioPlayer> OnRecycle;
 
@@ -21,23 +22,25 @@ namespace Ami.BroAudio.Runtime
         private AudioMixer _audioMixer;
 
         private IBroAudioClip CurrentClip;
-        private List<AudioPlayerDecorator> _decorators = null;
+        private AudioPlayerDecorator[] _decorators = null;
         private string _sendParaName = null;
         private string _pitchParaName = null;
-        private bool _isUsingEffect = false;
         private string _currTrackName = null;
 
-        public bool IsPlaying => AudioSource.isPlaying;
+        public bool IsPlaying => ID > 0; // AudioSource.isPlaying can't represent the actual playback state in our system
         public bool IsStopping { get; private set; }
         public bool IsFadingOut { get; private set; }
         public bool IsFadingIn { get; private set; }
         public int ID { get; private set; } = -1;
         public EffectType CurrentActiveEffects { get; private set; } = EffectType.None;
-        public string VolumeParaName 
+        public bool IsUsingEffect => CurrentActiveEffects != EffectType.None;
+		public bool IsDominator => TryGetDecorator<DominatorPlayer>(out _);
+		public bool IsBGM => TryGetDecorator<MusicPlayer>(out _);
+		public string VolumeParaName 
         {
             get
 			{
-                if (_isUsingEffect)
+                if (IsUsingEffect)
 				{
                     return _sendParaName;
 				}
@@ -60,8 +63,6 @@ namespace Ami.BroAudio.Runtime
                 _pitchParaName = value == null ? null : _currTrackName + PitchParaNameSuffix;
             }
         }
-
-        public bool IsDominator => TryGetDecorator<EffectDominator>(out _);
 
         protected virtual void Awake()
         {
@@ -141,7 +142,7 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        public void ResetSpatial()
+        private void ResetSpatial()
         {
             AudioSource.spatialBlend = AudioConstant.SpatialBlend_2D;
             if (transform.parent != SoundManager.Instance)
@@ -153,11 +154,12 @@ namespace Ami.BroAudio.Runtime
 
         public void SetEffect(EffectType effect,SetEffectMode mode)
 		{
-            if(effect == EffectType.None)
+            if((effect == EffectType.None && mode != SetEffectMode.Override) || ID <= 0)
             {
                 return;
             }
 
+			bool oldUsingEffectState = IsUsingEffect;
 			switch (mode)
 			{
 				case SetEffectMode.Add:
@@ -170,26 +172,30 @@ namespace Ami.BroAudio.Runtime
                     CurrentActiveEffects = effect;
                     break;
 			}
-
-            bool newUsingEffectState = CurrentActiveEffects != EffectType.None;
-			if (_isUsingEffect != newUsingEffectState)
+			bool newUsingEffectState = IsUsingEffect;
+			if (oldUsingEffectState != newUsingEffectState)
 			{
-				_isUsingEffect = newUsingEffectState;
 				ChangeChannel();
 			}
 		}
 
 		private void ChangeChannel()
-		{   
-			float sendVol = _isUsingEffect ? MixerDecibelVolume : AudioConstant.MinDecibelVolume;
-			float mainVol = _isUsingEffect ? AudioConstant.MinDecibelVolume : MixerDecibelVolume;
+		{
+			float sendVol = IsUsingEffect ? MixerDecibelVolume : AudioConstant.MinDecibelVolume;
+			float mainVol = IsUsingEffect ? AudioConstant.MinDecibelVolume : MixerDecibelVolume;
             // ** this is the reason why we need that tiny delay before playing.
             // ** Change channel while playing will cause a clipping sound, which I think is a Unity bug **
             _audioMixer.SetFloat(_sendParaName, sendVol);
 			_audioMixer.SetFloat(_currTrackName, mainVol);
 		}
 
-        IMusicPlayer IMusicDecoratable.AsBGM()
+		private void ResetEffect()
+		{
+            CurrentActiveEffects = EffectType.None;
+			_audioMixer.SetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
+		}
+
+		IMusicPlayer IMusicDecoratable.AsBGM()
         {
             return GetOrCreateDecorator<MusicPlayer>();
         }
@@ -197,7 +203,7 @@ namespace Ami.BroAudio.Runtime
 #if !UNITY_WEBGL
         IPlayerEffect IEffectDecoratable.AsDominator(BroAudioType dominatedType)
         {
-            EffectDominator dominator = GetOrCreateDecorator<EffectDominator>();
+            DominatorPlayer dominator = GetOrCreateDecorator<DominatorPlayer>();
             dominator.SetDominatedType(dominatedType);
             return dominator;
         }
@@ -205,15 +211,28 @@ namespace Ami.BroAudio.Runtime
 
         private T GetOrCreateDecorator<T>() where T : AudioPlayerDecorator, new()
         {
-            if (_decorators != null && TryGetDecorator(out T decoratedPalyer))
+            if (_decorators != null && TryGetDecorator(out T decoratePalyer))
             {
-                return decoratedPalyer;
+                return decoratePalyer;
             }
 
-            _decorators = _decorators ?? new List<AudioPlayerDecorator>();
-            decoratedPalyer = this.DecorateWith<T>();
-            _decorators.Add(decoratedPalyer);
-            return decoratedPalyer;
+            decoratePalyer = null;
+            _decorators = _decorators ?? new AudioPlayerDecorator[DecoratorsArraySize];
+            for(int i = 0; i < _decorators.Length;i++)
+            {
+                if (_decorators[i] == null)
+                {
+                    decoratePalyer = this.DecorateWith<T>();
+                    _decorators[i] = decoratePalyer;
+                    break;
+                }
+            }
+
+            if(decoratePalyer == null)
+            {
+                Debug.LogError("Audio Player decorators array size is too small");
+            }
+            return decoratePalyer;
         }
 
         private bool TryGetDecorator<T>(out T result) where T : AudioPlayerDecorator, new()
@@ -223,9 +242,9 @@ namespace Ami.BroAudio.Runtime
             {
                 foreach (var deco in _decorators)
                 {
-                    if (deco is T targt)
+                    if (deco is T target)
                     {
-                        result = targt;
+                        result = target;
                         return true;
                     }
                 }
@@ -233,13 +252,10 @@ namespace Ami.BroAudio.Runtime
             return false;
         }
 
-        private IEnumerator Recycle()
+        private void Recycle()
         {
-            yield return null;
-            CurrentActiveEffects = EffectType.None;
-            MixerDecibelVolume = AudioConstant.MinDecibelVolume;
+			MixerDecibelVolume = AudioConstant.MinDecibelVolume;
             OnRecycle?.Invoke(this);
-            DecoratePlaybackPreference = null;
             _decorators = null;
         }
 	}

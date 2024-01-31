@@ -4,15 +4,9 @@ using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.BroAudio.Runtime
 {
-	public class EffectDominator : AudioPlayerDecorator , IPlayerEffect
+	public class DominatorPlayer : AudioPlayerDecorator , IPlayerEffect
 	{
         public BroAudioType DominatedType { get; private set; }
-
-		protected override PlaybackPreference DecoratePlayback(PlaybackPreference pref)
-		{
-            pref.IsDominaor = true;
-			return base.DecoratePlayback(pref);
-		}
 
 		IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, float fadeTime)
 		{
@@ -63,7 +57,7 @@ namespace Ami.BroAudio.Runtime
 		{
             if(Player != null)
 			{
-                return Player.IsPlaying;
+				return Player.ID > 0;
             }
             return false;
 		}

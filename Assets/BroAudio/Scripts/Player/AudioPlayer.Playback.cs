@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Ami.Extension;
-using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -13,12 +12,10 @@ namespace Ami.BroAudio.Runtime
         public static Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
         public event Action<int,PlaybackPreference,EffectType> OnFinishingOneRound = null;
-        public event Func<PlaybackPreference,PlaybackPreference> DecoratePlaybackPreference = null;
 
         private StopMode _stopMode = default;
         private Coroutine _playbackControlCoroutine = null;
         private Coroutine _trackVolumeControlCoroutine = null;
-        private Coroutine _recycleCoroutine = null;
         private bool _isReadyToPlay = false;
 
         public void Play(int id, PlaybackPreference pref,bool waitForChainingMethod = true)
@@ -27,7 +24,6 @@ namespace Ami.BroAudio.Runtime
             CurrentClip = pref.Entity.PickNewClip();
             _isReadyToPlay = true;
             IsStopping = false;
-            this.SafeStopCoroutine(_recycleCoroutine);
 
             if(waitForChainingMethod)
 			{
@@ -50,7 +46,6 @@ namespace Ami.BroAudio.Runtime
 
 			void StartPlaying()
 			{
-                DecoratePref(ref pref);
                 this.StartCoroutineAndReassign(PlayControl(pref), ref _playbackControlCoroutine);
 			}
 
@@ -58,15 +53,6 @@ namespace Ami.BroAudio.Runtime
             {
                 AsyncTaskExtension.DelayInvoke(AsyncTaskExtension.MillisecondInSeconds, action);
             }
-
-			PlaybackPreference DecoratePref(ref PlaybackPreference decoPref)
-			{
-                if(DecoratePlaybackPreference != null)
-				{
-                    decoPref = DecoratePlaybackPreference.Invoke(decoPref);
-                }				
-				return decoPref;
-			}
 		}
 
         private IEnumerator PlayControl(PlaybackPreference pref)
@@ -86,12 +72,18 @@ namespace Ami.BroAudio.Runtime
             AudioSource.priority = pref.Entity.Priority;
             SetPitch(pref.Entity);
             SetSpatial(pref);
-            if(!pref.IsDominaor)
+
+			if (IsBGM)
 			{
-                SetEffect(pref.AudioTypePlaybackPref.EffectType, SetEffectMode.Add);
-                this.SafeStopCoroutine(_trackVolumeControlCoroutine);
-                TrackVolume *= pref.AudioTypePlaybackPref.Volume;
-            }
+				AudioSource.reverbZoneMix = 0f;
+			}
+
+			if (!IsDominator)
+			{
+				SetEffect(pref.AudioTypePlaybackPref.EffectType, SetEffectMode.Add);
+				this.SafeStopCoroutine(_trackVolumeControlCoroutine);
+				TrackVolume *= pref.AudioTypePlaybackPref.Volume;
+			}
 
             VolumeControl fader = VolumeControl.Clip;
             ClipVolume = 0f;
@@ -227,7 +219,7 @@ namespace Ami.BroAudio.Runtime
 
 		private IEnumerator StopControl(float overrideFade, StopMode stopMode, Action onFinished)
         {
-            if (ID <= 0 || !IsPlaying)
+            if (ID <= 0 || !AudioSource.isPlaying)
             {
                 onFinished?.Invoke();
                 yield break;
@@ -301,10 +293,11 @@ namespace Ami.BroAudio.Runtime
             AudioSource.clip = null;
             CurrentClip = null;
             ResetSpatial();
+            ResetEffect();
 
-            this.StartCoroutineAndReassign(Recycle(), ref _recycleCoroutine);
             this.SafeStopCoroutine(_trackVolumeControlCoroutine);
             RemoveFromResumablePlayer();
-        }
-    }
+            Recycle();
+		}
+	}
 }

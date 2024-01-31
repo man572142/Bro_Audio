@@ -197,18 +197,26 @@ namespace Ami.BroAudio.Runtime
 
         public IAutoResetWaitable SetEffect(BroAudioType targetType, Effect effect)
 		{
-			SetEffectMode mode = effect.Type == default ? SetEffectMode.Override : SetEffectMode.Add;
-			SetPlayersEffect(targetType, effect.Type, mode);
+			SetEffectMode mode = SetEffectMode.Add;
+            if(effect.IsDefault())
+            {
+                mode = SetEffectMode.Remove;
+            }
+            else if(effect.Type == EffectType.None)
+            {
+                mode = SetEffectMode.Override;
+            }
+            SetEffect(targetType, effect.Type, mode);
             
-            _automationHelper.SetEffectTrackParameter(effect, (resetType) => SetPlayersEffect(targetType, resetType,SetEffectMode.Remove));
+            _automationHelper.SetEffectTrackParameter(effect, (resetType) => SetEffect(targetType, resetType,SetEffectMode.Remove));
             return _automationHelper;
         }
 
-        private void SetPlayersEffect(BroAudioType targetType, EffectType effectType,SetEffectMode mode)
+        private void SetEffect(BroAudioType targetType, EffectType effectType,SetEffectMode mode)
         {
 			GetPlaybackPrefByType(targetType, pref =>
 			{
-                switch (mode)
+				switch (mode)
 				{
 					case SetEffectMode.Add:
                         pref.EffectType |= effectType;

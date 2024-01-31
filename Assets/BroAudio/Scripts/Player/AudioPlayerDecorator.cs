@@ -12,24 +12,17 @@ namespace Ami.BroAudio.Runtime
 		{
 			Player = player;
 		}
-
-		public event Action<AudioPlayer> OnPlayerRecycle
-		{
-			add => Player.OnRecycle += value;
-			remove => Player.OnRecycle -= value;
-		}
 		
 		public virtual void Init(AudioPlayer player)
 		{
 			Player = player;
-			OnPlayerRecycle += Dispose;
-			player.DecoratePlaybackPreference += DecoratePlayback;
+			player.OnRecycle += Dispose;
 		}
 
 		protected virtual void Dispose(AudioPlayer player)
 		{
-			OnPlayerRecycle -= Dispose;
-			player.DecoratePlaybackPreference -= DecoratePlayback;
+            player.OnRecycle -= Dispose;
+			Player = null;
 		}
 
 		protected virtual PlaybackPreference DecoratePlayback(PlaybackPreference pref)

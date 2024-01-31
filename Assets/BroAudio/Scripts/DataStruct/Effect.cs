@@ -78,5 +78,19 @@ namespace Ami.BroAudio
 					break;
 			}
 		}
-	}
+
+        public bool IsDefault()
+        {
+            switch (Type)
+            {
+                case EffectType.Volume:
+                    return Value == AudioConstant.FullDecibelVolume;
+                case EffectType.LowPass:
+                    return Value == Defaults.LowPass;
+                case EffectType.HighPass:
+                    return Value == Defaults.HighPass;
+            }
+			return false;
+        }
+    }
 }

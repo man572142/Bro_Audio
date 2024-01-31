@@ -45,8 +45,8 @@ namespace Ami.BroAudio.Demo
 				}
 
 				_particle.Play();
+				BroAudio.Play(_explosion).AsDominator().LowPassOthers(_lowPassFrequency);
 				BroAudio.Play(_warningVoice).AsDominator().LowPassOthers(_lowPassFrequency);
-				BroAudio.Play(_explosion).AsDominator();
 				_fog.Stop();
 				_fog.gameObject.SetActive(false);
 				yield return new WaitForSeconds(_playInterval);

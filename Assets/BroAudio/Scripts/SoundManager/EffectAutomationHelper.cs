@@ -13,6 +13,7 @@ namespace Ami.BroAudio.Runtime
     {
 		private class Tweaker
 		{
+			public bool IsTweaking;
 			public Coroutine Coroutine;
 			public List<ITweakingWaitable> WaitableList;
 			public float OriginValue;
@@ -25,10 +26,10 @@ namespace Ami.BroAudio.Runtime
 			IEnumerator GetYieldInstruction();
 		}
 
-		private class TweakingWaitable : ITweakingWaitable
+		private class TweakingWaitableBase : ITweakingWaitable
 		{
 			public Effect Effect { get; set; }
-			public TweakingWaitable(Effect effect) => Effect = effect;
+			public TweakingWaitableBase(Effect effect) => Effect = effect;
 			public IEnumerator GetYieldInstruction() => null;
 			public bool IsFinished() => false;
 		}
@@ -115,23 +116,23 @@ namespace Ami.BroAudio.Runtime
 
 		private void DecorateTweakingWaitable(TweakingWaitableDecorator decoration)
 		{
-			EffectType effectType = _latestEffect;
-			if (effectType == EffectType.None)
+			// this should be called after the first tweak is started, the purpose of decorating is to know when will it stop.
+			if (_latestEffect == EffectType.None)
 			{
-				LogWarning("AutoResetWaitable on EffectType.None is currently not supported.");
+				LogWarning($"AutoResetWaitable on {_latestEffect} is not supported.");
 			}
-			else if (_tweakerDict.TryGetValue(effectType,out var tweaker))
+			else if (_tweakerDict.TryGetValue(_latestEffect, out var tweaker))
 			{
 				int lastIndex = tweaker.WaitableList.Count - 1;
 				var current = tweaker.WaitableList[lastIndex];
-				if(current is TweakingWaitable)
+				if(current is TweakingWaitableBase)
 				{
 					decoration.AttachTo(current);
 					tweaker.WaitableList[lastIndex] = decoration;
 				}
 				else
 				{
-					LogError($"The latest waitable isn't the base type:{nameof(TweakingWaitable)}");
+					LogError($"The latest waitable isn't the base type:{nameof(TweakingWaitableBase)}");
 				}
 			}
 		}
@@ -139,8 +140,7 @@ namespace Ami.BroAudio.Runtime
 		public void SetEffectTrackParameter(Effect effect, Action<EffectType> OnReset)
 		{
 			_latestEffect = effect.Type;
-
-			if (effect.Type == EffectType.None)
+			if (_latestEffect == EffectType.None)
 			{
 				ResetAllEffect(effect.FadeTime, effect.FadingEase, OnReset);
 				return;
@@ -154,10 +154,13 @@ namespace Ami.BroAudio.Runtime
 			}
 
 			tweaker.WaitableList = tweaker.WaitableList ?? new List<ITweakingWaitable>();
-			tweaker.WaitableList.Add(new TweakingWaitable(effect));
+			tweaker.WaitableList.Add(new TweakingWaitableBase(effect));
 
-			StartCoroutineAndReassign(TweakTrackParameter(tweaker, OnTweakingFinished), ref tweaker.Coroutine);
-
+			if(!tweaker.IsTweaking)
+			{
+				StartCoroutineAndReassign(TweakTrackParameter(tweaker, OnTweakingFinished), ref tweaker.Coroutine);
+			}
+			
 			void OnTweakingFinished()
 			{
 				if(tweaker.OriginValue == GetEffectDefaultValue(effect.Type))
@@ -169,26 +172,29 @@ namespace Ami.BroAudio.Runtime
 
 		private IEnumerator TweakTrackParameter(Tweaker tweaker,Action onFinished)
 		{
+			tweaker.IsTweaking = true;
 			while (tweaker.WaitableList.Count > 0)
 			{
 				int lastIndex = tweaker.WaitableList.Count - 1;
 				var effect = tweaker.WaitableList[lastIndex].Effect;
-
 				string paraName = GetEffectParameterName(effect.Type);
 				float currentValue = GetCurrentValue(effect.Type);
 
 				yield return Tweak(currentValue, effect.Value, effect.FadeTime, effect.FadingEase, paraName);
+				// waitable should be decorated after this tweak
 
 				var waitable = tweaker.WaitableList[lastIndex];
-				if (waitable.GetYieldInstruction() == null)
+				IEnumerator yieldInstruction = waitable.GetYieldInstruction();
+				if (yieldInstruction == null)
 				{
+					// save value if it's a normal SetEffect 
 					tweaker.OriginValue = effect.Value;
 					tweaker.WaitableList.Clear();
 					break;
 				}
 				else if (!waitable.IsFinished())
 				{
-					yield return waitable.GetYieldInstruction();
+					yield return yieldInstruction;
 				}
 
 				if(tweaker.WaitableList.Count == 1)
@@ -199,7 +205,7 @@ namespace Ami.BroAudio.Runtime
 
 				tweaker.WaitableList.RemoveAt(lastIndex);
 			}
-
+			tweaker.IsTweaking = false;
 			onFinished?.Invoke();
 		}
 

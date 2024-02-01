@@ -7344,12 +7344,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 491301272}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4651cf4108deac04aaaf2ca43fa05455, type: 3}
+  m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playOnStart: 1
   _sound:
     ID: 1073741825
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+  _positionMode: 2
 --- !u!1 &523842580
 GameObject:
   m_ObjectHideFlags: 0
@@ -8553,12 +8555,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 702725843}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dbe3b30a0efd04b4ab89f4cf1541197e, type: 3}
+  m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playOnStart: 1
   _sound:
     ID: 1073741826
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+  _positionMode: 1
 --- !u!114 &702725847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9076,12 +9080,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 766546307}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4651cf4108deac04aaaf2ca43fa05455, type: 3}
+  m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playOnStart: 1
   _sound:
-    ID: 1073741827
+    ID: 1073741825
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+  _positionMode: 2
 --- !u!1 &774434209
 GameObject:
   m_ObjectHideFlags: 0
@@ -21360,7 +21366,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1887396290}
-  - component: {fileID: 1887396291}
+  - component: {fileID: 1887396292}
   m_Layer: 0
   m_Name: Stonehenge
   m_TagString: Untagged
@@ -21394,7 +21400,7 @@ Transform:
   m_Father: {fileID: 1327619677}
   m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1887396291
+--- !u!114 &1887396292
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -21403,12 +21409,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1887396289}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4651cf4108deac04aaaf2ca43fa05455, type: 3}
+  m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playOnStart: 1
   _sound:
     ID: 1073741829
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+  _positionMode: 2
 --- !u!1 &1901732758 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6510980715547664423, guid: 1fb00677c5274bf48867e1402459086d, type: 3}

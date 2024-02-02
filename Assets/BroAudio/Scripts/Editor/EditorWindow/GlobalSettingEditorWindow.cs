@@ -33,6 +33,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string SettingText = "Setting";
 		public const float Gap = 50f;
 		public const float CreditsPrefixWidth = 70f;
+		public const int CreditsFieldCount = 5;
 		
 		public const string CombFilteringLabel = "Time to prevent Comb Filtering";
 		public const string PitchShiftingLabel = "Pitch Shift Using";
@@ -525,12 +526,13 @@ namespace Ami.BroAudio.Editor.Setting
                         {
                             Rect boxRect = GetNextLineRect(this, drawPosition);
 							boxRect.y -= 10f;
-							boxRect.height = SingleLineSpace * 4 + 10f;
+							boxRect.height = SingleLineSpace * CreditsFieldCount + 10f;
                             GUI.skin.box.Draw(boxRect, false, false, false, false);
                         }
                         EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), credit.Source, typeof(AudioClip), false);
-                        DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition),new GUIContent("Name"), credit.Name, CreditsPrefixWidth);
-                        DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition),new GUIContent("Author") ,credit.Author, CreditsPrefixWidth);
+						DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition), new GUIContent("Type"), credit.Type.ToString(), CreditsPrefixWidth);
+						DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition), new GUIContent("Name"), credit.Name, CreditsPrefixWidth);
+                        DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition), new GUIContent("Author") ,credit.Author, CreditsPrefixWidth);
                         DrawUrlLink(GetRectAndIterateLine(drawPosition), credit.Link);
                         DrawEmptyLine(1);
                     }

@@ -10,14 +10,21 @@ namespace Ami.BroAudio.Editor
 #endif
     public class AssetCredits : ScriptableObject
     {
-        public const bool CanEdit = false;
+        public enum AssetType
+        {
+            Audio, Texture, Model, Shader, Script,
+        }
+
+
+		public const bool CanEdit = true;
 
         [System.Serializable]
         public struct Credit
         {
             public Object Source;
-            [ReadOnlyTextArea(!CanEdit)]
-            public string Name;
+            public AssetType Type;
+			[ReadOnlyTextArea(!CanEdit)]
+			public string Name;
             [ReadOnlyTextArea(!CanEdit)]
             public string Author;
             [ReadOnlyTextArea(!CanEdit)]

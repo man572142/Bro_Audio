@@ -83,7 +83,7 @@ namespace Ami.BroAudio.Editor
 		{
 			EditorWindow window = GetWindow(typeof(ClipEditorWindow));
 			window.minSize = new Vector2(640f,360f);
-			window.titleContent = new GUIContent(BroName.MenuItem_ClipEditor);
+			window.titleContent = new GUIContent(BroName.MenuItem_ClipEditor, EditorGUIUtility.IconContent(IconConstant.AudioClip).image);
 			window.Show();
 		}
 

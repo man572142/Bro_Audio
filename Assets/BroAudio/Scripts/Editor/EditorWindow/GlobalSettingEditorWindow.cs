@@ -30,7 +30,6 @@ namespace Ami.BroAudio.Editor.Setting
 		public enum Tab { Audio, GUI, Info,	}
 
 		public const string SettingFileName = "BroAudioGlobalSetting";
-		public const string SettingText = "Setting";
 		public const float Gap = 50f;
 		public const float CreditsPrefixWidth = 70f;
 		public const int CreditsFieldCount = 5;
@@ -65,7 +64,6 @@ namespace Ami.BroAudio.Editor.Setting
 		private float _demoSliderValue = 1f;
 		private Rect[] _tabPreAllocRects = null;
 		private UnityEngine.Object[] _creditsObjects = null;
-		private Texture _logo = null;
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
@@ -94,7 +92,7 @@ namespace Ami.BroAudio.Editor.Setting
 		{
 			EditorWindow window = GetWindow(typeof(GlobalSettingEditorWindow));
 			window.minSize = new Vector2(640f, 480f);
-			window.titleContent = new GUIContent(SettingText);
+			window.titleContent = new GUIContent(MenuItem_Setting, EditorGUIUtility.IconContent("EditorSettings Icon").image);
 			window.Show();
 			return window as GlobalSettingEditorWindow;
 		}
@@ -158,9 +156,9 @@ namespace Ami.BroAudio.Editor.Setting
             base.OnGUI();
             Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
 
-            DrawLogo(position.Scoping(position));
+			DrawEmptyLine(1);
 
-            if (Message != OpenMessage.None)
+			if (Message != OpenMessage.None)
             {
                 DrawEmptyLine(1);
                 switch (Message)
@@ -208,17 +206,6 @@ namespace Ami.BroAudio.Editor.Setting
             }
             EndScrollView();
             EditorGUI.indentLevel--;
-        }
-
-        private void DrawLogo(Rect rect)
-        {
-			if(_logo == null)
-			{
-                _logo = Resources.Load(TransparentLogoPath, typeof(Texture)) as Texture;
-            }
-			Rect logoRect = GetRectAndIterateLine(rect);
-			logoRect.size = LogoSize;
-            GUI.DrawTexture(logoRect, _logo, ScaleMode.ScaleToFit,true);
         }
 
         private Instruction GetInstructionEnum(OpenMessage message)

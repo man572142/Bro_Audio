@@ -153,11 +153,21 @@ namespace Ami.Extension.Reflection
 					}
 					break;
 				case ExposedParameterType.EffectSend:
-					object effect = additionalObjects[0];
+					object effect;
+                    if (additionalObjects != null && additionalObjects.Length > 0)
+					{
+                        effect = additionalObjects[0];
+                    }
+					else if (!TryGetEffect(mixerGroup, SendEffectParameter, reflection, out effect))
+					{
+						UnityEngine.Debug.LogError($"Can't expose [{SendEffectParameter}] on AudioMixerGroup:{mixerGroup.name}");
+						return;
+                    }
+
 					if (TryGetGUID(MethodName.GetGUIDForMixLevel, reflection.EffectClass, effect, out GUID effectGUID))
 					{
 						object effectParaPath = CreateParameterPathInstance("AudioEffectParameterPath", mixerGroup, effect, effectGUID);
-						CustomParameterExposer.AddExposedParameter(mixerGroup.name + BroName.SendParaNameSuffix, effectParaPath, effectGUID, audioMixer, reflection);
+						CustomParameterExposer.AddExposedParameter(mixerGroup.name + BroName.EffectParaNameSuffix, effectParaPath, effectGUID, audioMixer, reflection);
 					}
 					break;
 			}

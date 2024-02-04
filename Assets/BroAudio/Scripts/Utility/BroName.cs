@@ -25,16 +25,23 @@ namespace Ami.BroAudio.Tools
 		public const string MixerName = "BroAudioMixer";
 		public const string MasterTrackName = "Master";
 		public const string GenericTrackName = "Track";
-		public const string MainTrackName = "Main"; 
+		public const string MainTrackName = "Main";
+		public const string MainDominatedTrackName = "Main_Dominated";
+		public const string EffectTrackName = "Effect";
+		public const string DominatorTrackName = "Dominator";
 		#endregion
 
 		#region Exposed Parameters Name
-		public const string SendParaNameSuffix = "_Send";
+		public const string EffectParaNameSuffix = "_Effect";
 		public const string PitchParaNameSuffix = "_Pitch";
+		public const string LowPassParaNameSuffix = "_LowPass";
+		public const string HighPassParaNameSuffix = "_HighPass";
 
-		public const string DominatorTrackName = "Effect";
-		public const string LowPassExposedName = DominatorTrackName + "_LowPass";
-		public const string HighPassExposedName = DominatorTrackName + "_HighPass"; 
-		#endregion
-	}
+        public const string LowPassParaName = EffectTrackName + LowPassParaNameSuffix;
+        public const string HighPassParaName = EffectTrackName + HighPassParaNameSuffix;
+
+        public const string Dominator_LowPassParaName = MainTrackName + LowPassParaNameSuffix;
+		public const string Dominator_HighPassParaName = MainTrackName + HighPassParaNameSuffix;
+        #endregion
+    }
 }

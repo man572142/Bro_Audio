@@ -59,13 +59,13 @@ namespace Ami.BroAudio.Demo
 
 			if(IsOpen)
 			{
-				BroAudio.SetEffect(Effect.Volume(_othersVolume, _fadeTime));
+				BroAudio.SetVolume(_othersVolume, BroAudioType.All, _fadeTime);
 				BroAudio.SetEffect(Effect.LowPass(_othersLowPasFreq, _fadeTime));
 			}
 			else
 			{
-				BroAudio.SetEffect(Effect.Volume(Effect.Defaults.Volume, _fadeTime));
-				BroAudio.SetEffect(Effect.LowPass(Effect.Defaults.LowPass, _fadeTime));
+                BroAudio.SetVolume(BroAdvice.FullVolume, BroAudioType.All, _fadeTime);
+                BroAudio.SetEffect(Effect.LowPass(Effect.Defaults.LowPass, _fadeTime));
 			}
 		}
 	} 

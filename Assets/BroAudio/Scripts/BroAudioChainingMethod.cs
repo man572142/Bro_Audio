@@ -1,4 +1,4 @@
-﻿using static Ami.BroAudio.Tools.BroAdvice;
+﻿using static Ami.BroAudio.BroAdvice;
 
 namespace Ami.BroAudio
 {

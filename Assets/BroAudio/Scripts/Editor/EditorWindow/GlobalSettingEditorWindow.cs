@@ -55,7 +55,7 @@ namespace Ami.BroAudio.Editor.Setting
 		private Tab _currSelectedTab = Tab.Audio;
 		private int _currProjectSettingVoiceCount = -1;
 		private int _currentMixerTracksCount = -1;
-		private int _broVirtualTracksCount = Tools.BroAdvice.VirtualTrackCount;
+		private int _broVirtualTracksCount = BroAdvice.VirtualTrackCount;
 		private GUIContent _combFilteringGUIContent , _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 		private AudioMixerGroup _duplicateTrackSource = null;

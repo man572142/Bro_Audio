@@ -1,3 +1,4 @@
+using Ami.BroAudio.Tools;
 using Ami.Extension;
 using UnityEngine;
 using static Ami.BroAudio.Tools.BroLog;
@@ -16,7 +17,8 @@ namespace Ami.BroAudio.Runtime
 				return this;
 			}
 
-			SetAllEffectExceptDominator(Effect.Volume(othersVol,fadeTime));
+
+			SetAllEffectExceptDominator(new Effect(EffectType.Volume, othersVol, fadeTime, Ease.Linear, true));
 			return this;
 		}
 
@@ -27,7 +29,7 @@ namespace Ami.BroAudio.Runtime
                 return this;
             }
 
-            SetAllEffectExceptDominator(Effect.LowPass(freq,fadeTime));
+            SetAllEffectExceptDominator(new Effect(EffectType.Volume, freq, fadeTime, BroAdvice.LowPassEase, true));
             return this;
         }
 
@@ -38,7 +40,7 @@ namespace Ami.BroAudio.Runtime
                 return this;
             }
 
-            SetAllEffectExceptDominator(Effect.HighPass(freq,fadeTime));
+            SetAllEffectExceptDominator(new Effect(EffectType.Volume, freq, fadeTime, BroAdvice.HighPassEase, true));
             return this;
         }
 

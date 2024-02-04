@@ -142,7 +142,7 @@ namespace Ami.BroAudio.Runtime
 			_latestEffect = effect.Type;
 			if (_latestEffect == EffectType.None)
 			{
-				ResetAllEffect(effect.FadeTime, effect.FadingEase, OnReset);
+				ResetAllEffect(effect, OnReset);
 				return;
 			}
 
@@ -177,8 +177,8 @@ namespace Ami.BroAudio.Runtime
 			{
 				int lastIndex = tweaker.WaitableList.Count - 1;
 				var effect = tweaker.WaitableList[lastIndex].Effect;
-				string paraName = GetEffectParameterName(effect.Type);
-				float currentValue = GetCurrentValue(effect.Type);
+				string paraName = GetEffectParameterName(effect);
+				float currentValue = GetCurrentValue(effect);
 
 				yield return Tweak(currentValue, effect.Value, effect.FadeTime, effect.FadingEase, paraName);
 				// waitable should be decorated after this tweak
@@ -200,7 +200,7 @@ namespace Ami.BroAudio.Runtime
 				if(tweaker.WaitableList.Count == 1)
 				{
 					// auto reset to origin after last waitable
-					yield return Tweak(GetCurrentValue(effect.Type), tweaker.OriginValue, effect.FadeTime, effect.FadingEase, paraName);
+					yield return Tweak(GetCurrentValue(effect), tweaker.OriginValue, effect.FadeTime, effect.FadingEase, paraName);
 				}
 
 				tweaker.WaitableList.RemoveAt(lastIndex);
@@ -225,9 +225,9 @@ namespace Ami.BroAudio.Runtime
 			onTweakingFinshed?.Invoke();
 		}
 
-		private bool TryGetCurrentValue(EffectType effectType, out float value)
+		private bool TryGetCurrentValue(Effect effect, out float value)
 		{
-			string paraName = GetEffectParameterName(effectType);
+			string paraName = GetEffectParameterName(effect);
 			if (!_mixer.GetFloat(paraName, out value))
 			{
 				LogError($"Can't get exposed parameter[{paraName}] Please re-import {BroName.MixerName}");
@@ -236,27 +236,27 @@ namespace Ami.BroAudio.Runtime
 			return true;
 		}
 
-		private float GetCurrentValue(EffectType effectType)
+		private float GetCurrentValue(Effect effect)
 		{
-			if(TryGetCurrentValue(effectType , out var result))
+			if(TryGetCurrentValue(effect , out var result))
 			{
 				return result;
 			}
 			return default;
 		}
 
-		private void ResetAllEffect(float fadeTime, Ease ease,Action<EffectType> OnResetFinished)
+		private void ResetAllEffect(Effect effect,Action<EffectType> OnResetFinished)
 		{
 			int tweakingCount = 0;
 			foreach (var pair in _tweakerDict)
 			{
 				Tweaker tweaker = pair.Value;
 				EffectType effectType = pair.Key;
-				if (TryGetCurrentValue(effectType, out float current))
+				if (TryGetCurrentValue(effect, out float current))
 				{
-					string paraName = GetEffectParameterName(effectType);
+					string paraName = GetEffectParameterName(effect);
 					SafeStopCoroutine(tweaker.Coroutine);
-					tweaker.Coroutine = StartCoroutine(Tweak(current, tweaker.OriginValue, fadeTime, ease, paraName,OnTweakingFinished));
+					tweaker.Coroutine = StartCoroutine(Tweak(current, tweaker.OriginValue, effect.FadeTime, effect.FadingEase, paraName,OnTweakingFinished));
 					tweaker.OriginValue = GetEffectDefaultValue(effectType);
 					tweaker.WaitableList.Clear();
 					tweakingCount++;
@@ -273,16 +273,24 @@ namespace Ami.BroAudio.Runtime
 			}
 		}
 
-		private string GetEffectParameterName(EffectType effectType)
+		private string GetEffectParameterName(Effect effect)
 		{
-			switch (effectType)
+			switch (effect.Type)
 			{
 				case EffectType.Volume:
-					return BroName.DominatorTrackName;
+					if(effect.IsDominator)
+					{
+						return BroName.MainTrackName;
+                    }
+					else
+					{
+						Debug.LogError($"{effect.Type} is only supported by Dominator");
+						return string.Empty;
+					}
 				case EffectType.LowPass:
-					return BroName.LowPassExposedName;
+					return effect.IsDominator ? BroName.Dominator_LowPassParaName : BroName.LowPassParaName;
 				case EffectType.HighPass:
-					return BroName.HighPassExposedName;
+					return effect.IsDominator ? BroName.Dominator_HighPassParaName : BroName.HighPassParaName;
 				default:
 					return string.Empty;
 			}

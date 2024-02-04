@@ -17,12 +17,12 @@ namespace Ami.BroAudio.Demo
 
 			if(isInZone)
 			{
-				BroAudio.SetEffect(Effect.Volume(_targetVolume, 1f));
+				BroAudio.SetVolume(_targetVolume, BroAudioType.All, 1f);
 				BroAudio.SetEffect(Effect.LowPass(_lowPassFreq, 0.5f));
 			}
 			else
 			{
-				BroAudio.SetEffect(Effect.Volume(Effect.Defaults.Volume, 1f));
+				BroAudio.SetVolume(BroAdvice.FullVolume, BroAudioType.All, 1f);
 				BroAudio.SetEffect(Effect.LowPass(Effect.Defaults.LowPass, 1f));
 			}
 		}

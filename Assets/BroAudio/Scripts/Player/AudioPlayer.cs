@@ -20,18 +20,19 @@ namespace Ami.BroAudio.Runtime
 
         [SerializeField] private AudioSource AudioSource = null;
         private AudioMixer _audioMixer;
+        private Func<AudioTrackType, AudioMixerGroup> _getAudioTrack;
 
         private IBroAudioClip CurrentClip;
         private AudioPlayerDecorator[] _decorators = null;
         private string _sendParaName = null;
-        private string _pitchParaName = null;
+        //private string _pitchParaName = null;
         private string _currTrackName = null;
 
+        public int ID { get; private set; } = -1;
         public bool IsPlaying => ID > 0; // AudioSource.isPlaying can't represent the actual playback state in our system
         public bool IsStopping { get; private set; }
         public bool IsFadingOut { get; private set; }
         public bool IsFadingIn { get; private set; }
-        public int ID { get; private set; } = -1;
         public EffectType CurrentActiveEffects { get; private set; } = EffectType.None;
         public bool IsUsingEffect => CurrentActiveEffects != EffectType.None;
 		public bool IsDominator => TryGetDecorator<DominatorPlayer>(out _);
@@ -52,15 +53,16 @@ namespace Ami.BroAudio.Runtime
 			}
         }
 
+        public AudioTrackType TrackType { get; private set; }
         public AudioMixerGroup AudioTrack 
         {
             get => AudioSource.outputAudioMixerGroup;
-            set
+            private set
 			{
                 AudioSource.outputAudioMixerGroup = value;
                 _currTrackName = value == null? null : value.name;
-                _sendParaName = value == null ? null : _currTrackName + SendParaNameSuffix;
-                _pitchParaName = value == null ? null : _currTrackName + PitchParaNameSuffix;
+                _sendParaName = value == null ? null : _currTrackName + EffectParaNameSuffix;
+                //_pitchParaName = value == null ? null : _currTrackName + PitchParaNameSuffix;
             }
         }
 
@@ -69,9 +71,10 @@ namespace Ami.BroAudio.Runtime
             AudioSource = AudioSource ?? GetComponent<AudioSource>();
         }
 
-		public void SetMixer(AudioMixer mixer)
+		public void SetData(AudioMixer mixer, Func<AudioTrackType, AudioMixerGroup> getAudioTrack)
 		{
             _audioMixer = mixer;
+            _getAudioTrack = getAudioTrack;
 		}
 
         private void SetPitch(IAudioEntity entity)
@@ -86,7 +89,7 @@ namespace Ami.BroAudio.Runtime
 			switch (SoundManager.PitchSetting)
 			{
 				case PitchShiftingSetting.AudioMixer:
-                    _audioMixer.SetFloat(_pitchParaName, pitch); // Don't * 100f, the value in percentage is displayed in Editor only.  
+                    //_audioMixer.SetFloat(_pitchParaName, pitch); // Don't * 100f, the value in percentage is displayed in Editor only.  
                     break;
 				case PitchShiftingSetting.AudioSource:
                     AudioSource.pitch = pitch;
@@ -254,7 +257,8 @@ namespace Ami.BroAudio.Runtime
 
         private void Recycle()
         {
-			MixerDecibelVolume = AudioConstant.MinDecibelVolume;
+            TrackType = AudioTrackType.Generic;
+            MixerDecibelVolume = AudioConstant.MinDecibelVolume;
             OnRecycle?.Invoke(this);
             _decorators = null;
         }

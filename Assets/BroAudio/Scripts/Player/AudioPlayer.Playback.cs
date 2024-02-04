@@ -79,13 +79,18 @@ namespace Ami.BroAudio.Runtime
                 pref = musicPlayer.Transition(pref);
 			}
 
-			if (!IsDominator)
+			if (IsDominator)
 			{
-				SetEffect(pref.AudioTypePlaybackPref.EffectType, SetEffectMode.Add);
-				this.SafeStopCoroutine(_trackVolumeControlCoroutine);
-				TrackVolume *= pref.AudioTypePlaybackPref.Volume;
+                TrackType = AudioTrackType.Dominator;
 			}
+            else
+            {
+                SetEffect(pref.AudioTypePlaybackPref.EffectType, SetEffectMode.Add);
+                this.SafeStopCoroutine(_trackVolumeControlCoroutine);
+                TrackVolume *= pref.AudioTypePlaybackPref.Volume;
+            }
 
+            AudioTrack = _getAudioTrack.Invoke(TrackType);
             VolumeControl fader = VolumeControl.Clip;
             ClipVolume = 0f;
             float targetVolume = GetTargetVolume();

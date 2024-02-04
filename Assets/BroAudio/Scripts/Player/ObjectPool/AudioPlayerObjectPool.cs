@@ -7,22 +7,21 @@ namespace Ami.BroAudio.Runtime
 {
 	public class AudioPlayerObjectPool : ObjectPool<AudioPlayer>
 	{
-		private ObjectPool<AudioMixerGroup> _audioTrackPool = null;
 		private Transform _parent = null;
 		private List<AudioPlayer> _inUsePlayers = null;
+		private IAudioMixer _mixer = null;
 
-		public AudioPlayerObjectPool(AudioPlayer baseObject, Transform parent, int maxInternalPoolSize,AudioMixerGroup[] audioMixerGroups) : base(baseObject, maxInternalPoolSize)
+		public AudioPlayerObjectPool(AudioPlayer baseObject, Transform parent, int maxInternalPoolSize, IAudioMixer mixer) : base(baseObject, maxInternalPoolSize)
 		{
-			_audioTrackPool = new AudioTrackObjectPool(audioMixerGroups);
 			_parent = parent;
+			_mixer = mixer;
 		}
 
 		public override AudioPlayer Extract()
 		{
 			AudioPlayer player = base.Extract();
 #if !UNITY_WEBGL
-			player.SetMixer(SoundManager.Instance.Mixer);
-			player.AudioTrack = _audioTrackPool.Extract();
+			player.SetData(_mixer.Mixer, _mixer.GetTrack);
 #endif
 
             _inUsePlayers = _inUsePlayers ?? new List<AudioPlayer>();
@@ -32,9 +31,8 @@ namespace Ami.BroAudio.Runtime
 
 		public override void Recycle(AudioPlayer player)
 		{
+			_mixer.ReturnTrack(player.TrackType,player.AudioTrack);
 			RemoveFromInUse(player);
-			_audioTrackPool.Recycle(player.AudioTrack);
-			player.AudioTrack = null;
 			base.Recycle(player);
 		}
 

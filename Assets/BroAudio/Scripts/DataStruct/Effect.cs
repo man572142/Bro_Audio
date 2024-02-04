@@ -1,6 +1,5 @@
 using Ami.Extension;
 using static Ami.BroAudio.Tools.BroLog;
-using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio
 {
@@ -10,10 +9,10 @@ namespace Ami.BroAudio
 	[System.Serializable]
 	public struct Effect
 	{
-		// Use these static methods for SetEffect() is recomended
+		// Use these static methods for SetEffect()
 		public static Effect HighPass(float frequency, float fadeTime, Ease fadingEase = BroAdvice.HighPassEase) => new Effect(EffectType.HighPass, frequency, fadeTime, fadingEase);
 		public static Effect LowPass(float frequency, float fadeTime, Ease fadingEase = BroAdvice.LowPassEase) => new Effect(EffectType.LowPass, frequency, fadeTime, fadingEase);
-		public static Effect Volume(float volumeFactor, float fadeTime, Ease fadingEase = default) => new Effect(EffectType.Volume, volumeFactor, fadeTime, fadingEase);
+		//public static Effect Volume(float volumeFactor, float fadeTime, Ease fadingEase = default) => new Effect(EffectType.Volume, volumeFactor, fadeTime, fadingEase);
 
 		public static class Defaults
 		{
@@ -28,12 +27,15 @@ namespace Ami.BroAudio
 		public readonly EffectType Type;
 		public readonly float FadeTime;
 		public readonly Ease FadingEase;
+		internal readonly bool IsDominator;
 
-		internal Effect(EffectType type, float value, float fadeTime, Ease fadingEase) : this(type)
+		// Force user to use static factory method
+		internal Effect(EffectType type, float value, float fadeTime, Ease fadingEase, bool isDominator = false) : this(type)
 		{
 			FadeTime = fadeTime;
 			Value = value;
 			FadingEase = fadingEase;
+			IsDominator = isDominator;
 		}
 
 		public float Value

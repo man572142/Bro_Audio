@@ -4,17 +4,16 @@ using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Data;
 using Ami.Extension;
+using System;
 using static Ami.BroAudio.Utility;
 using static Ami.Extension.CoroutineExtension;
 using static Ami.BroAudio.Tools.BroLog;
 using static Ami.BroAudio.Tools.BroName;
-using System.Linq;
-using System;
 
 namespace Ami.BroAudio.Runtime
 {
     [DisallowMultipleComponent, AddComponentMenu("")]
-    public partial class SoundManager : MonoBehaviour
+    public partial class SoundManager : MonoBehaviour, IAudioMixer
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
@@ -56,6 +55,8 @@ namespace Ami.BroAudio.Runtime
 
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
         private AudioPlayerObjectPool _audioPlayerPool = null;
+        private ObjectPool<AudioMixerGroup> _audioTrackPool = null;
+        private ObjectPool<AudioMixerGroup> _dominatorTrackPool = null;
 
         [SerializeField] AudioMixer _broAudioMixer = null;
 
@@ -87,10 +88,14 @@ namespace Ami.BroAudio.Runtime
                 return;
 			}
 
+            _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab, transform, Setting.DefaultAudioPlayerPoolSize, this);
             AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups(GenericTrackName);
-            _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab,transform,Setting.DefaultAudioPlayerPoolSize, mixerGroups);
+            AudioMixerGroup[] dominatorGroups = _broAudioMixer.FindMatchingGroups(DominatorTrackName);
+            
+            _audioTrackPool = new AudioTrackObjectPool(mixerGroups);
+            _dominatorTrackPool = new AudioTrackObjectPool(dominatorGroups);
 
-			InitBank();
+            InitBank();
             _automationHelper = new EffectAutomationHelper(this, _broAudioMixer);
         }
 
@@ -206,13 +211,13 @@ namespace Ami.BroAudio.Runtime
             {
                 mode = SetEffectMode.Override;
             }
-            SetEffect(targetType, effect.Type, mode);
+            SetEffectInternal(targetType, effect.Type, mode);
             
-            _automationHelper.SetEffectTrackParameter(effect, (resetType) => SetEffect(targetType, resetType,SetEffectMode.Remove));
+            _automationHelper.SetEffectTrackParameter(effect, (resetType) => SetEffectInternal(targetType, resetType,SetEffectMode.Remove));
             return _automationHelper;
         }
 
-        private void SetEffect(BroAudioType targetType, EffectType effectType,SetEffectMode mode)
+        private void SetEffectInternal(BroAudioType targetType, EffectType effectType,SetEffectMode mode)
         {
 			GetPlaybackPrefByType(targetType, pref =>
 			{
@@ -240,7 +245,32 @@ namespace Ami.BroAudio.Runtime
 		}
         #endregion
 
-		private void GetPlaybackPrefByType(BroAudioType targetType, Action<AudioTypePlaybackPreference> onGetPref)
+        AudioMixerGroup IAudioMixer.GetTrack(AudioTrackType trackType)
+        {
+            switch (trackType)
+            {
+                case AudioTrackType.Generic:
+                    return _audioTrackPool.Extract();
+                case AudioTrackType.Dominator:
+                    return _dominatorTrackPool.Extract();
+            }
+            return null;
+        }
+
+        void IAudioMixer.ReturnTrack(AudioTrackType trackType, AudioMixerGroup track)
+        {
+            switch (trackType)
+            {
+                case AudioTrackType.Generic:
+                    _audioTrackPool.Recycle(track);
+                    break;
+                case AudioTrackType.Dominator:
+                    _dominatorTrackPool.Recycle(track);
+                    break;
+            }
+        }
+
+        private void GetPlaybackPrefByType(BroAudioType targetType, Action<AudioTypePlaybackPreference> onGetPref)
         {
             // For those which may be played in the future.
             ForeachConcreteAudioType((audioType) =>
@@ -334,6 +364,6 @@ namespace Ami.BroAudio.Runtime
 			}
             return result;
         }
-	}
+    }
 }
 

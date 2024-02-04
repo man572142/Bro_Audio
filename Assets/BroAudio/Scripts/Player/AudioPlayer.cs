@@ -178,18 +178,10 @@ namespace Ami.BroAudio.Runtime
 			bool newUsingEffectState = IsUsingEffect;
 			if (oldUsingEffectState != newUsingEffectState)
 			{
-				ChangeChannel();
+                string from = IsUsingEffect ? _currTrackName : _sendParaName;
+                string to = IsUsingEffect ? _sendParaName : _currTrackName;
+                _audioMixer.ChangeChannel(from, to, MixerDecibelVolume);
 			}
-		}
-
-		private void ChangeChannel()
-		{
-			float sendVol = IsUsingEffect ? MixerDecibelVolume : AudioConstant.MinDecibelVolume;
-			float mainVol = IsUsingEffect ? AudioConstant.MinDecibelVolume : MixerDecibelVolume;
-            // ** this is the reason why we need that tiny delay before playing.
-            // ** Change channel while playing will cause a clipping sound, which I think is a Unity bug **
-            _audioMixer.SetFloat(_sendParaName, sendVol);
-			_audioMixer.SetFloat(_currTrackName, mainVol);
 		}
 
 		private void ResetEffect()

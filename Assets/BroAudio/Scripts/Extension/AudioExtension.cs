@@ -1,7 +1,9 @@
+using Ami.BroAudio.Runtime;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 using static Ami.Extension.AudioConstant;
 
 namespace Ami.Extension
@@ -113,5 +115,11 @@ namespace Ami.Extension
 			}
             return SecondsPerMinute / bpm * beats;
 		}
+
+        public static void ChangeChannel(this AudioMixer mixer, string from, string to, float targetVol)
+        {
+            mixer.SetFloat(from, MinDecibelVolume);
+            mixer.SetFloat(to, targetVol);
+        }
     }
 }

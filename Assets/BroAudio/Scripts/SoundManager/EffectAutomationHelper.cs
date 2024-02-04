@@ -159,6 +159,10 @@ namespace Ami.BroAudio.Runtime
 			if(!tweaker.IsTweaking)
 			{
 				StartCoroutineAndReassign(TweakTrackParameter(tweaker, OnTweakingFinished), ref tweaker.Coroutine);
+				if(effect.IsDominator)
+				{
+					SwitchMainTrackMode(effect.IsDominator);
+                }	
 			}
 			
 			void OnTweakingFinished()
@@ -166,9 +170,21 @@ namespace Ami.BroAudio.Runtime
 				if(tweaker.OriginValue == GetEffectDefaultValue(effect.Type))
 				{
 					OnReset?.Invoke(effect.Type);
+					if(effect.IsDominator)
+					{
+						SwitchMainTrackMode(effect.IsDominator);
+                    }
 				}
 			}
 		}
+
+		private void SwitchMainTrackMode(bool isDominatorActive)
+		{
+			string from = isDominatorActive ? BroName.MainTrackName : BroName.MainDominatedTrackName;
+			string to = isDominatorActive ? BroName.MainDominatedTrackName : BroName.MainTrackName;
+
+			_mixer.ChangeChannel(from, to, AudioConstant.FullDecibelVolume);
+        }
 
 		private IEnumerator TweakTrackParameter(Tweaker tweaker,Action onFinished)
 		{

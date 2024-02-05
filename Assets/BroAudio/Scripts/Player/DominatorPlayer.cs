@@ -29,7 +29,7 @@ namespace Ami.BroAudio.Runtime
                 return this;
             }
 
-            SetAllEffectExceptDominator(new Effect(EffectType.Volume, freq, fadeTime, BroAdvice.LowPassEase, true));
+            SetAllEffectExceptDominator(new Effect(EffectType.LowPass, freq, fadeTime, BroAdvice.LowPassEase, true));
             return this;
         }
 
@@ -40,7 +40,7 @@ namespace Ami.BroAudio.Runtime
                 return this;
             }
 
-            SetAllEffectExceptDominator(new Effect(EffectType.Volume, freq, fadeTime, BroAdvice.HighPassEase, true));
+            SetAllEffectExceptDominator(new Effect(EffectType.HighPass, freq, fadeTime, BroAdvice.HighPassEase, true));
             return this;
         }
 

@@ -59,8 +59,8 @@ namespace Ami.Extension
         public const float MinMixerPitch = 0.1f;
         public const float MaxMixerPitch = 10f;
         public const int DefaultPriority = 128;
-        public const int MinPriority = 0;
-        public const float MaxPriority = 256;
+        public const int HighestPriority = 0;
+        public const float LowestPriority = 256;
         public const float DefaultSpread = 0f;
         public const float DefaultReverZoneMix = 1f;
 

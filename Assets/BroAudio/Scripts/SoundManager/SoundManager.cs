@@ -141,7 +141,7 @@ namespace Ami.BroAudio.Runtime
 			}
 
             GetPlaybackPrefByType(targetType, pref => pref.Volume = vol);
-            GetCurrentInUsePlayers(player => 
+            GetCurrentPlayingPlayers(player => 
             { 
                 if(targetType.Contains(GetAudioType(player.ID)))
 				{
@@ -153,7 +153,7 @@ namespace Ami.BroAudio.Runtime
 		private void SetMasterVolume(float targetVol, float fadeTime)
 		{
             targetVol = targetVol.ToDecibel();
-            if(_broAudioMixer.GetFloat(MasterTrackName,out float currentVol))
+            if(_broAudioMixer.SafeGetFloat(MasterTrackName,out float currentVol))
 			{
 				if (currentVol == targetVol)
 				{
@@ -168,7 +168,7 @@ namespace Ami.BroAudio.Runtime
                 }
 				else
                 {
-                    _broAudioMixer.SetFloat(MasterTrackName, targetVol);
+                    _broAudioMixer.SafeSetFloat(MasterTrackName, targetVol);
                 }
 			}
 
@@ -176,7 +176,7 @@ namespace Ami.BroAudio.Runtime
             {
                 foreach (var vol in volumes)
                 {
-                    _broAudioMixer.SetFloat(MasterTrackName, vol);
+                    _broAudioMixer.SafeSetFloat(MasterTrackName, vol);
                     yield return null;
                 }
             }
@@ -184,7 +184,7 @@ namespace Ami.BroAudio.Runtime
 
 		public void SetVolume(int id, float vol, float fadeTime)
 		{
-            GetCurrentInUsePlayers(player =>
+            GetCurrentPlayingPlayers(player =>
             {
                 if (player.ID == id)
                 {
@@ -235,7 +235,7 @@ namespace Ami.BroAudio.Runtime
 				}				
 			});
 
-			GetCurrentInUsePlayers(player =>
+			GetCurrentPlayingPlayers(player =>
 			{
                 if (targetType.Contains(GetAudioType(player.ID)) && !player.IsDominator)
 				{
@@ -282,13 +282,16 @@ namespace Ami.BroAudio.Runtime
             });
         }
 
-        private void GetCurrentInUsePlayers(Action<AudioPlayer> onGetPlayer)
+        private void GetCurrentPlayingPlayers(Action<AudioPlayer> onGetPlayer)
         {
             // For those which are currently playing.
-            var players = _audioPlayerPool.GetInUseAudioPlayers();
+            var players = _audioPlayerPool.GetCurrentAudioPlayers();
             foreach (var player in players)
             {
-                onGetPlayer?.Invoke(player);
+                if(player.IsPlaying)
+                {
+					onGetPlayer?.Invoke(player);
+				}
             }
         }
 

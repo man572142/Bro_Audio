@@ -234,17 +234,17 @@ namespace Ami.BroAudio.Runtime
 			var values = AnimationExtension.GetLerpValuesPerFrame(from, to, fadeTime, ease);
 			foreach (float value in values)
 			{
-				_mixer.SetFloat(paraName, value);
+				_mixer.SafeSetFloat(paraName, value);
 				yield return null;
 			}
-			_mixer.SetFloat(paraName, to);
+			_mixer.SafeSetFloat(paraName, to);
 			onTweakingFinshed?.Invoke();
 		}
 
 		private bool TryGetCurrentValue(Effect effect, out float value)
 		{
 			string paraName = GetEffectParameterName(effect);
-			if (!_mixer.GetFloat(paraName, out value))
+			if (!_mixer.SafeGetFloat(paraName, out value))
 			{
 				LogError($"Can't get exposed parameter[{paraName}] Please re-import {BroName.MixerName}");
 				return false;

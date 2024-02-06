@@ -70,7 +70,7 @@ namespace Ami.BroAudio.Runtime
             {
                 if(_mixerDecibelVolume == DefaultMixerDecibelVolume)
                 {
-                    if (_audioMixer.GetFloat(VolumeParaName, out float currentVol))
+                    if (_audioMixer.SafeGetFloat(VolumeParaName, out float currentVol))
                     {
                         _mixerDecibelVolume = currentVol;
                     }
@@ -81,11 +81,8 @@ namespace Ami.BroAudio.Runtime
             private set
             {
                 _mixerDecibelVolume = value.ClampDecibel(true);
-                if(!string.IsNullOrEmpty(VolumeParaName))
-				{
-                    _audioMixer.SetFloat(VolumeParaName, _mixerDecibelVolume);
-                }
-            }
+				_audioMixer.SafeSetFloat(VolumeParaName, _mixerDecibelVolume);
+			}
         }
 
         IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime)

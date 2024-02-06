@@ -202,7 +202,7 @@ namespace Ami.BroAudio.Editor
 					SerializedProperty priorityProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Priority));
 
 					MultiLabel multiLabels = new MultiLabel() { Main = nameof(AudioEntity.Priority), Left = "High", Right = "Low"};
-					priorityProp.intValue = (int)Draw2SidesLabelSlider(priorityRect, multiLabels, priorityProp.intValue, AudioConstant.MinPriority, AudioConstant.MaxPriority);
+					priorityProp.intValue = (int)Draw2SidesLabelSlider(priorityRect, multiLabels, priorityProp.intValue, AudioConstant.HighestPriority, AudioConstant.LowestPriority);
 					Offset += TwoSidesLabelOffsetY;
 				}
 			}

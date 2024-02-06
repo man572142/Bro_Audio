@@ -118,8 +118,26 @@ namespace Ami.Extension
 
         public static void ChangeChannel(this AudioMixer mixer, string from, string to, float targetVol)
         {
-            mixer.SetFloat(from, MinDecibelVolume);
-            mixer.SetFloat(to, targetVol);
+            mixer.SafeSetFloat(from, MinDecibelVolume);
+            mixer.SafeSetFloat(to, targetVol);
+        }
+
+        public static void SafeSetFloat(this AudioMixer mixer, string parameterName, float value)
+        {
+            if(!string.IsNullOrEmpty(parameterName))
+            {
+                mixer.SetFloat(parameterName,value);
+            }
+        }
+
+        public static bool SafeGetFloat(this AudioMixer mixer, string parameterName,out float value)
+        {
+            value = default;
+            if(!string.IsNullOrEmpty(parameterName))
+            {
+                return mixer.GetFloat(parameterName, out value);
+            }
+            return false;
         }
     }
 }

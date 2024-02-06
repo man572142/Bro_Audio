@@ -87,7 +87,7 @@ namespace Ami.BroAudio.Runtime
 
         private void StopPlayer(float fadeTime,Predicate<AudioPlayer> predicate)
         {
-            var players = _audioPlayerPool.GetInUseAudioPlayers();
+            var players = _audioPlayerPool.GetCurrentAudioPlayers();
             foreach (var player in players)
             {
                 if (predicate.Invoke(player))
@@ -105,7 +105,7 @@ namespace Ami.BroAudio.Runtime
 
         public void Pause(int id,float fadeTime)
 		{
-            GetCurrentInUsePlayers((player) =>
+            GetCurrentPlayingPlayers((player) =>
             {
                 if (player.ID == id)
                 {

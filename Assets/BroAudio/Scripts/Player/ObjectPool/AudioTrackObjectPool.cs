@@ -17,7 +17,8 @@ namespace Ami.BroAudio.Runtime
 		{
 			if (_usedTrackCount >= _audioMixerGroups.Length)
 			{
-				LogWarning("You have reached the limit of audio voices count. The sound may not be audible until another voices become available!");
+				LogWarning("You have reached the limit of BroAudio tracks count, which is way beyond the MaxRealVoices count. " +
+					"That means the sound will be inaudible, and also uncontrollable. For more infomation, please check the documentation" );
 				return null;
 			}
 

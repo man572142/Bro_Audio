@@ -95,7 +95,7 @@ namespace Ami.Extension.Reflection
 			// don't know why this can't be done, it always returns 0f
 			//object value = ExecuteMethod(getterMethod.ToString(), new object[] { mixer, snapshot }, mixerGroupClass, from);
 
-			if(mixer.GetFloat(getterParaName, out float value))
+			if(mixer.SafeGetFloat(getterParaName, out float value))
 			{
 				ExecuteMethod(setterMethod.ToString(), new object[] { mixer, snapshot, value }, mixerGroupClass, to);
 			}

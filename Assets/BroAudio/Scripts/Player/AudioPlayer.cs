@@ -24,11 +24,11 @@ namespace Ami.BroAudio.Runtime
 
         private IBroAudioClip CurrentClip;
         private AudioPlayerDecorator[] _decorators = null;
-        private string _sendParaName = null;
-        //private string _pitchParaName = null;
-        private string _currTrackName = null;
+        private string _sendParaName = string.Empty;
+		private string _currTrackName = string.Empty;
+		//private string _pitchParaName = string.Empty;
 
-        public int ID { get; private set; } = -1;
+		public int ID { get; private set; } = -1;
         public bool IsPlaying => ID > 0; // AudioSource.isPlaying can't represent the actual playback state in our system
         public bool IsStopping { get; private set; }
         public bool IsFadingOut { get; private set; }
@@ -53,18 +53,18 @@ namespace Ami.BroAudio.Runtime
 			}
         }
 
-        public AudioTrackType TrackType { get; private set; }
+        public AudioTrackType TrackType { get; private set; } = AudioTrackType.Generic;
         public AudioMixerGroup AudioTrack 
         {
             get => AudioSource.outputAudioMixerGroup;
             private set
 			{
                 AudioSource.outputAudioMixerGroup = value;
-                _currTrackName = value == null? null : value.name;
-                _sendParaName = value == null ? null : _currTrackName + EffectParaNameSuffix;
-                //_pitchParaName = value == null ? null : _currTrackName + PitchParaNameSuffix;
-            }
-        }
+                _currTrackName = value == null? string.Empty : value.name;
+                _sendParaName = value == null ? string.Empty : _currTrackName + EffectParaNameSuffix;
+				//_pitchParaName = value == null ? string.Empty : _currTrackName + PitchParaNameSuffix;
+			}
+		}
 
         protected virtual void Awake()
         {
@@ -89,8 +89,8 @@ namespace Ami.BroAudio.Runtime
 			switch (SoundManager.PitchSetting)
 			{
 				case PitchShiftingSetting.AudioMixer:
-                    //_audioMixer.SetFloat(_pitchParaName, pitch); // Don't * 100f, the value in percentage is displayed in Editor only.  
-                    break;
+					//_audioMixer.SafeSetFloat(_pitchParaName, pitch); // Don't * 100f, the value in percentage is displayed in Editor only.  
+					break;
 				case PitchShiftingSetting.AudioSource:
                     AudioSource.pitch = pitch;
                     break;
@@ -187,7 +187,7 @@ namespace Ami.BroAudio.Runtime
 		private void ResetEffect()
 		{
             CurrentActiveEffects = EffectType.None;
-			_audioMixer.SetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
+			_audioMixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
 		}
 
 		IMusicPlayer IMusicDecoratable.AsBGM()

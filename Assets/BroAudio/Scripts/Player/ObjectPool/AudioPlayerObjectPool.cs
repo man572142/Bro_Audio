@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Runtime
 	public class AudioPlayerObjectPool : ObjectPool<AudioPlayer>
 	{
 		private Transform _parent = null;
-		private List<AudioPlayer> _inUsePlayers = null;
+		private List<AudioPlayer> _currentPlayers = null;
 		private IAudioMixer _mixer = null;
 
 		public AudioPlayerObjectPool(AudioPlayer baseObject, Transform parent, int maxInternalPoolSize, IAudioMixer mixer) : base(baseObject, maxInternalPoolSize)
@@ -24,15 +24,15 @@ namespace Ami.BroAudio.Runtime
 			player.SetData(_mixer.Mixer, _mixer.GetTrack);
 #endif
 
-            _inUsePlayers = _inUsePlayers ?? new List<AudioPlayer>();
-			_inUsePlayers.Add(player);
+            _currentPlayers = _currentPlayers ?? new List<AudioPlayer>();
+			_currentPlayers.Add(player);
 			return player;
 		}
 
 		public override void Recycle(AudioPlayer player)
 		{
 			_mixer.ReturnTrack(player.TrackType,player.AudioTrack);
-			RemoveFromInUse(player);
+			RemoveFromCurrent(player);
 			base.Recycle(player);
 		}
 
@@ -48,22 +48,22 @@ namespace Ami.BroAudio.Runtime
 			GameObject.Destroy(instance.gameObject);
 		}
 
-		private void RemoveFromInUse(AudioPlayer player)
+		private void RemoveFromCurrent(AudioPlayer player)
 		{
-			for(int i = _inUsePlayers.Count - 1; i >=0; i--)
+			for(int i = _currentPlayers.Count - 1; i >=0; i--)
 			{
-				if(_inUsePlayers[i] == player)
+				if(_currentPlayers[i] == player)
 				{
-					_inUsePlayers.RemoveAt(i);
+					_currentPlayers.RemoveAt(i);
 				}
 			}
 		}
 
-		public IEnumerable<AudioPlayer> GetInUseAudioPlayers()
+		public IEnumerable<AudioPlayer> GetCurrentAudioPlayers()
 		{
-			if(_inUsePlayers != null)
+			if(_currentPlayers != null)
 			{
-				foreach (var player in _inUsePlayers)
+				foreach (var player in _currentPlayers)
 				{
 					yield return player;
 				}

@@ -29,7 +29,7 @@ namespace Ami.BroAudio.Runtime
 			{
 				ExecuteAfterChainingMethod(() =>
                 {
-                    if (_isReadyToPlay)
+					if (_isReadyToPlay)
 					{
 						StartPlaying();
 					}
@@ -76,7 +76,8 @@ namespace Ami.BroAudio.Runtime
 			if (TryGetDecorator<MusicPlayer>(out var musicPlayer))
 			{
 				AudioSource.reverbZoneMix = 0f;
-                pref = musicPlayer.Transition(pref);
+                AudioSource.priority = AudioConstant.HighestPriority;
+				pref = musicPlayer.Transition(pref);
 			}
 
 			if (IsDominator)
@@ -86,20 +87,20 @@ namespace Ami.BroAudio.Runtime
             else
             {
                 SetEffect(pref.AudioTypePlaybackPref.EffectType, SetEffectMode.Add);
-                this.SafeStopCoroutine(_trackVolumeControlCoroutine);
-                TrackVolume *= pref.AudioTypePlaybackPref.Volume;
+                
             }
 
             AudioTrack = _getAudioTrack.Invoke(TrackType);
-            VolumeControl fader = VolumeControl.Clip;
+			this.SafeStopCoroutine(_trackVolumeControlCoroutine);
+			TrackVolume *= pref.AudioTypePlaybackPref.Volume;
             ClipVolume = 0f;
             float targetVolume = GetTargetVolume();
             RemoveFromResumablePlayer();
 
             // AudioSource.clip.samples returns the time samples length, not the data samples, so we don't need to multiply the channel count.
-            int sampleRate = CurrentClip.AudioClip.frequency; 
-            
-            do
+            int sampleRate = CurrentClip.AudioClip.frequency;
+			VolumeControl fader = VolumeControl.Clip;
+			do
             {
                 switch (_stopMode)
                 {

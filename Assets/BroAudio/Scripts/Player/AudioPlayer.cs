@@ -186,8 +186,11 @@ namespace Ami.BroAudio.Runtime
 
 		private void ResetEffect()
 		{
+            if(IsUsingEffect)
+            {
+				_audioMixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
+			}
             CurrentActiveEffects = EffectType.None;
-			_audioMixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
 		}
 
 		IMusicPlayer IMusicDecoratable.AsBGM()

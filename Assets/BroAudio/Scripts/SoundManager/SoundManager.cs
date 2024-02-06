@@ -211,13 +211,19 @@ namespace Ami.BroAudio.Runtime
             {
                 mode = SetEffectMode.Override;
             }
-            SetEffectInternal(targetType, effect.Type, mode);
+
+            Action<EffectType> onResetEffect = null;
+            if(!effect.IsDominator)
+            {
+				SetPlayerEffect(targetType, effect.Type, mode);
+				onResetEffect = (resetType) => SetPlayerEffect(targetType, resetType, SetEffectMode.Remove);
+			}
             
-            _automationHelper.SetEffectTrackParameter(effect, (resetType) => SetEffectInternal(targetType, resetType,SetEffectMode.Remove));
+            _automationHelper.SetEffectTrackParameter(effect, onResetEffect);
             return _automationHelper;
         }
 
-        private void SetEffectInternal(BroAudioType targetType, EffectType effectType,SetEffectMode mode)
+        private void SetPlayerEffect(BroAudioType targetType, EffectType effectType,SetEffectMode mode)
         {
 			GetPlaybackPrefByType(targetType, pref =>
 			{

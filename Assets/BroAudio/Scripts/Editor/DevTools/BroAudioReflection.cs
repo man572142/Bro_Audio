@@ -47,10 +47,10 @@ namespace Ami.Extension.Reflection
 
 				CopyColorIndex(sourceTrack, newGroup, reflection);
 				CopyMixerGroupValue(ExposedParameterType.Volume, mixer, reflection.MixerGroupClass, sourceTrack.name, newGroup);
-				CopyMixerGroupValue(ExposedParameterType.Pitch, mixer, reflection.MixerGroupClass, sourceTrack.name, newGroup);
+				//CopyMixerGroupValue(ExposedParameterType.Pitch, mixer, reflection.MixerGroupClass, sourceTrack.name, newGroup);
 
 				ExposeParameter(ExposedParameterType.Volume, newGroup, reflection);
-				ExposeParameter(ExposedParameterType.Pitch, newGroup, reflection);
+				//ExposeParameter(ExposedParameterType.Pitch, newGroup, reflection);
 
 				object effect = CopySendEffect(sourceTrack, newGroup, reflection);
 				ExposeParameter(ExposedParameterType.EffectSend, newGroup, reflection, effect);

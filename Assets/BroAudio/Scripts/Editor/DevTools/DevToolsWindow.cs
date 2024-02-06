@@ -59,7 +59,7 @@ namespace Ami.Extension.Reflection
 		{
 			if (GUILayout.Button(Function_DuplicateLastTrack, _buttonHeight) && DisplayDialog(Function_DuplicateLastTrack))
 			{
-				AudioMixerGroup mainTrack = _targetMixer.FindMatchingGroups(MainTrackName)?.FirstOrDefault();
+				AudioMixerGroup mainTrack = _targetMixer.FindMatchingGroups(MainTrackName)?.Where(x => x.name.Equals(MainTrackName)).FirstOrDefault();
 				AudioMixerGroup[] tracks = _targetMixer.FindMatchingGroups(GenericTrackName);
 				int tracksCount = tracks.Length;
 				if (mainTrack == default || tracks == default)

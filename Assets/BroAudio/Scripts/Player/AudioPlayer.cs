@@ -252,9 +252,11 @@ namespace Ami.BroAudio.Runtime
 
         private void Recycle()
         {
-            TrackType = AudioTrackType.Generic;
             MixerDecibelVolume = AudioConstant.MinDecibelVolume;
             OnRecycle?.Invoke(this);
+
+            TrackType = AudioTrackType.Generic;
+            AudioTrack = null;
             _decorators = null;
         }
 	}

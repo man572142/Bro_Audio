@@ -172,7 +172,7 @@ namespace Ami.BroAudio.Runtime
 					OnReset?.Invoke(effect.Type);
 					if(effect.IsDominator)
 					{
-						SwitchMainTrackMode(effect.IsDominator);
+						SwitchMainTrackMode(false);
                     }
 				}
 			}
@@ -300,7 +300,7 @@ namespace Ami.BroAudio.Runtime
                     }
 					else
 					{
-						Debug.LogError($"{effect.Type} is only supported by Dominator");
+						Debug.LogError($"{effect.Type} is only supported on Dominator");
 						return string.Empty;
 					}
 				case EffectType.LowPass:

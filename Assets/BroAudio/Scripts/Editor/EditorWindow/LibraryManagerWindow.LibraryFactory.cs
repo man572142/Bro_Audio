@@ -89,7 +89,7 @@ namespace Ami.BroAudio.Editor
 				AudioClip audioClip = EditorGUIUtility.GetObjectPickerObject() as AudioClip;
 				if (audioClip)
 				{
-					AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName);
+					AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName, true);
 					CreateNewEntity(tempEditor, audioClip);
 				}
 				_pickerID = -1;
@@ -118,7 +118,7 @@ namespace Ami.BroAudio.Editor
 					return;
                 }
 
-                AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName);	
+                AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName, true);	
 
                 if (clips.Count > 1)
 				{

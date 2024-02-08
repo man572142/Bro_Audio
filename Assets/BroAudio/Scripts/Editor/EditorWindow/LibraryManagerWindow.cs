@@ -167,8 +167,7 @@ namespace Ami.BroAudio.Editor
 					if(editor.Asset == null)
 						return;
 
-					string displayName = string.IsNullOrEmpty(editor.Asset.AssetName)? "Temp".SetColor(FalseColor) : editor.Asset.AssetName;
-					EditorGUI.LabelField(rect, displayName,GUIStyleHelper.RichText);
+					EditorGUI.LabelField(rect, editor.Asset.AssetName, GUIStyleHelper.RichText);
 				}
 
 				if(index == _currSelectedAssetIndex && Event.current.isMouse && Event.current.clickCount >= 2)
@@ -259,7 +258,7 @@ namespace Ami.BroAudio.Editor
 			AssetNameEditorWindow.ShowWindow(assetNames, assetName => CreateAsset(assetName));
 		}
 
-		private AudioAssetEditor CreateAsset(string entityName)
+		private AudioAssetEditor CreateAsset(string entityName, bool isTemp = false)
 		{
 			if (!TryGetNewPath(entityName, out string path, out string fileName))
 			{
@@ -274,7 +273,7 @@ namespace Ami.BroAudio.Editor
 			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(newAsset, typeof(AudioAssetEditor)) as AudioAssetEditor;
 			string guid = AssetDatabase.AssetPathToGUID(path);
 			editor.Init(_idGenerator);
-			editor.SetData(guid, fileName);
+			editor.SetData(guid, isTemp ? fileName.SetColor(FalseColor) : fileName);
 
 			_assetEditorDict.Add(guid, editor);
 			_allAssetGUIDs.Add(guid);

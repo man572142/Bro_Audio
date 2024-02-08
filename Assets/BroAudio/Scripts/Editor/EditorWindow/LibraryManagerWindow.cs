@@ -360,18 +360,12 @@ namespace Ami.BroAudio.Editor
 			void DrawIssueMessage(AudioAssetEditor assetEditor)
 			{
 				string assetName = assetEditor.Asset.AssetName.ToBold().SetColor(Color.white);
-				string dataName = assetEditor.IssueEntityName;
 				string text = _instruction.GetText(assetEditor.CurrInstruction);
 
 				switch (assetEditor.CurrInstruction)
 				{
 					case Instruction.AssetNaming_StartWithTemp:
-					case Instruction.EntityIssue_HasEmptyName:
 						RichTextHelpBox(String.Format(text, assetName), MessageType.Error);
-						break;
-					case Instruction.EntityIssue_IsDuplicated:
-					case Instruction.EntityIssue_ContainsInvalidWords:
-						RichTextHelpBox(String.Format(text, dataName, assetName), MessageType.Error);
 						break;
 					case Instruction.None:
 						EditorGUILayout.HelpBox(_instruction.GetText(Instruction.LibraryManager_ModifyAsset), MessageType.Info);

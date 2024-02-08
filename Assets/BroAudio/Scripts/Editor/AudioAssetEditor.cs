@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Editor
         private ReorderableList _entitiesList = null;
 		private IUniqueIDGenerator _idGenerator = null;
 		private ValidationErrorCode _entityIssue;
-		public string IssueEntityName { get; private set; }
+		//public string IssueEntityName { get; private set; }
 		public Instruction CurrInstruction { get; private set; }
 
 		public IAudioAsset Asset { get; private set; }
@@ -77,14 +77,11 @@ namespace Ami.BroAudio.Editor
 				SerializedProperty newEntity = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
 				ResetEntitySerializedProperties(newEntity);
 				AssignID(newEntity, audioType);
-
-				Verify();
 			}
 
 			void OnRemove(ReorderableList list)
 			{
 				ReorderableList.defaultBehaviours.DoRemoveButton(list);
-				Verify();
 			}
 
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -131,26 +128,6 @@ namespace Ami.BroAudio.Editor
 			_entitiesList.DoLayoutList();
 		}
 
-		//public void SetAudioType(BroAudioType audioType)
-		//{
-		//	SerializedProperty audioTypeProp = serializedObject.FindProperty(GetBackingFieldName(nameof(AudioAsset.AudioType)));
-		//	bool isChanged = Asset.AudioType != audioType; 
-		//	audioTypeProp.enumValueIndex = audioType.GetSerializedEnumIndex();
-		//	serializedObject.ApplyModifiedProperties();
-
-		//	if(isChanged)
-		//	{
-		//		// RegenerateID
-		//		int id = _idGenerator.GetUniqueID(audioType);
-		//		for (int i = 0; i < _entitiesList.serializedProperty.arraySize; i++)
-		//		{
-		//			SerializedProperty entity = _entitiesList.serializedProperty.GetArrayElementAtIndex(i);
-		//			AssignID(id, entity);
-		//			id++;
-		//		}
-		//	}
-		//}
-
 		public void SetAssetName(string newName)
 		{
 			var asset = Asset as AudioAsset;
@@ -183,7 +160,7 @@ namespace Ami.BroAudio.Editor
 
 		public void Verify()
 		{
-			if(VerifyAsset() && VerifyEntities())
+			if(VerifyAsset())
 			{
 				CurrInstruction = default;
 			}
@@ -215,79 +192,6 @@ namespace Ami.BroAudio.Editor
 				CurrInstruction = Instruction.AssetNaming_StartWithTemp;
 				return false;
 			}
-			return true;
-		}
-
-		private bool VerifyEntities()
-		{
-			if (!CompareWithPreviousEntity() || !CompareWithAllEntities())
-			{
-				switch (_entityIssue)
-				{
-					case ValidationErrorCode.IsNullOrEmpty:
-						CurrInstruction = Instruction.EntityIssue_HasEmptyName;
-						break;
-					case ValidationErrorCode.IsDuplicate:
-						CurrInstruction = Instruction.EntityIssue_IsDuplicated;
-						break;
-					case ValidationErrorCode.ContainsInvalidWord:
-						CurrInstruction = Instruction.EntityIssue_ContainsInvalidWords;
-						break;
-				}
-				return false;
-			}
-			return true;
-		}
-
-		private bool CompareWithPreviousEntity()
-		{
-			IEntityIdentity previousData = null;
-			foreach (IEntityIdentity data in Asset.GetAllAudioEntities())
-			{
-				IssueEntityName = data.Name;
-                if (string.IsNullOrWhiteSpace(data.Name))
-                {
-                    _entityIssue = ValidationErrorCode.IsNullOrEmpty;
-                    return false;
-                }
-                else if (previousData != null && data.Name.Equals(previousData.Name))
-				{
-					_entityIssue = ValidationErrorCode.IsDuplicate;
-					return false;
-				}
-				else
-				{
-					foreach(char word in data.Name)
-					{
-						if(!word.IsValidWord())
-						{
-							_entityIssue = ValidationErrorCode.ContainsInvalidWord;
-                            return false;
-						}
-					}
-				}
-                previousData = data;
-            }
-            _entityIssue = ValidationErrorCode.NoError;
-			IssueEntityName = string.Empty;
-			return true;
-        }
-
-        private bool CompareWithAllEntities()
-		{
-			List<string> nameList = new List<string>();
-			foreach (IEntityIdentity data in Asset.GetAllAudioEntities())
-			{
-				if (nameList.Contains(data.Name))
-				{
-					IssueEntityName = data.Name;
-					_entityIssue = ValidationErrorCode.IsDuplicate;
-					return false;
-				}
-				nameList.Add(data.Name);
-			}
-			_entityIssue = ValidationErrorCode.NoError;
-			IssueEntityName = string.Empty;
 			return true;
 		}
 	}

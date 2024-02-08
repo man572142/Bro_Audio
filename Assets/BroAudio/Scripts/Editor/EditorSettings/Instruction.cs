@@ -24,9 +24,9 @@
         ClipEditorConfirmationDialog = 30,
 
         // EntityIssue
-        EntityIssue_HasEmptyName = 100,
-        EntityIssue_IsDuplicated,
-        EntityIssue_ContainsInvalidWords,
+        //EntityIssue_HasEmptyName = 100,
+        //EntityIssue_IsDuplicated,
+        //EntityIssue_ContainsInvalidWords,
 
         // Asset Naming
         AssetNaming_IsNullOrEmpty = 200,

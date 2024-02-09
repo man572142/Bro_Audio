@@ -7,11 +7,11 @@ using System;
 using System.Linq;
 using Ami.Extension;
 using Ami.BroAudio.Data;
+using Ami.BroAudio.Tools;
+using System.IO;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.Extension.EditorScriptingExtension;
-using Ami.BroAudio.Tools;
-using System.IO;
 
 namespace Ami.BroAudio.Editor
 {

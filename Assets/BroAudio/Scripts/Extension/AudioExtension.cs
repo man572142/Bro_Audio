@@ -21,10 +21,10 @@ namespace Ami.Extension
             public readonly bool LoadInBackground;
             public readonly AudioDataLoadState LoadState;
 
-			public AudioClipSetting(AudioClip originClip)
+			public AudioClipSetting(AudioClip originClip, bool isMono)
 			{
 				Frequency = originClip.frequency;
-				Channels = originClip.channels;
+				Channels = isMono? 1 : originClip.channels;
 				Samples = originClip.samples;
 				Ambisonic = originClip.ambisonic;
 				LoadType = originClip.loadType;
@@ -87,14 +87,15 @@ namespace Ami.Extension
 
         public static AudioClip CreateAudioClip(string name,float[] samples,AudioClipSetting setting)
 		{
+            Debug.Log(setting.Channels);
             AudioClip result = AudioClip.Create(name, samples.Length, setting.Channels, setting.Frequency, setting.LoadType == AudioClipLoadType.Streaming);
             result.SetData(samples, 0);
             return result;
         }
 
-        public static AudioClipSetting GetAudioClipSetting(this AudioClip audioClip)
+        public static AudioClipSetting GetAudioClipSetting(this AudioClip audioClip, bool isMono = false)
 		{
-            return new AudioClipSetting(audioClip);
+            return new AudioClipSetting(audioClip, isMono);
 		}
 
         public static bool IsValidFrequency(float freq)

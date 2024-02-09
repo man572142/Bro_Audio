@@ -24,7 +24,9 @@ namespace Ami.Extension
 			}
 		}
 
-		[MenuItem(BroName.MenuItem_BroAudio + "GUI Showcase")]
+#if BroAudio_DevOnly
+        [MenuItem(BroName.MenuItem_BroAudio + "GUI Showcase")]
+#endif
 		public static void ShowWindow()
 		{
 			EditorWindow window = EditorWindow.GetWindow<GUIShowcase>();

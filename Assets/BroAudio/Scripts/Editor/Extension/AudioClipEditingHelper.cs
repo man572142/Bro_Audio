@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using static Ami.Extension.AudioExtension;
 
@@ -8,6 +9,7 @@ namespace Ami.Extension
 	{
 		private float[] _sampleDatas = null;
 		private AudioClip _originalClip = null;
+		private bool _isMono = false;
 		public bool HasEdited { get; private set; }
 
 		public AudioClipEditingHelper(AudioClip originalClip)
@@ -16,7 +18,6 @@ namespace Ami.Extension
 		}
 
 		public bool HasClip => _originalClip != null;
-
 		public bool CanEdit => HasClip && Samples != null;
 
 		private float[] Samples
@@ -29,6 +30,7 @@ namespace Ami.Extension
 				}
 				return _sampleDatas;
 			}
+			set => _sampleDatas = value;
 		}
 
 		public AudioClip GetResultClip()
@@ -42,10 +44,15 @@ namespace Ami.Extension
 				return _originalClip;
 			}
 
-			return CreateAudioClip(_originalClip.name, Samples, _originalClip.GetAudioClipSetting());
+            return CreateAudioClip(_originalClip.name, Samples, _originalClip.GetAudioClipSetting(_isMono));
 		}
 
-		public void Trim(float startPos, float endPos)
+        private int GetChannelCount()
+        {
+            return _isMono ? 1 : _originalClip.channels;
+        }
+
+        public void Trim(float startPos, float endPos)
 		{
 			if (!HasClip)
 			{
@@ -62,10 +69,10 @@ namespace Ami.Extension
 				return;
 			}
 
-			int slientSampleLength = (int)(time * _originalClip.frequency * _originalClip.channels);
-			float[] newSampleDatas = new float[_sampleDatas.Length + slientSampleLength];
-			Array.Copy(_sampleDatas, 0, newSampleDatas, slientSampleLength, _sampleDatas.Length);
-			_sampleDatas = newSampleDatas;
+			int slientSampleLength = (int)(time * _originalClip.frequency * GetChannelCount());
+			float[] newSampleDatas = new float[Samples.Length + slientSampleLength];
+			Array.Copy(Samples, 0, newSampleDatas, slientSampleLength, Samples.Length);
+            Samples = newSampleDatas;
 			HasEdited = true;
 		}
 
@@ -94,7 +101,28 @@ namespace Ami.Extension
 			HasEdited = true;
 		}
 
-		public void Reverse()
+        public void ConvertToMono()
+        {
+            if (!CanEdit)
+            {
+                return;
+            }
+
+			List<float> resultSamples = new List<float>();
+			for(int i = 0; i < Samples.Length;i++)
+			{
+				if(i % _originalClip.channels == 0)
+				{
+					resultSamples.Add(Samples[i]);
+				}
+			}
+			Debug.Log($"ori:{Samples.Length} result:{resultSamples.Count}");
+            Samples = resultSamples.ToArray();
+            _isMono = true;
+			HasEdited = true;
+        }
+
+        public void Reverse()
 		{
 			if (!CanEdit)
 			{
@@ -113,7 +141,7 @@ namespace Ami.Extension
 				return;
 			}
 
-			int fadeSample = Mathf.RoundToInt(fadeTime * _originalClip.frequency * _originalClip.channels);
+			int fadeSample = Mathf.RoundToInt(fadeTime * _originalClip.frequency * GetChannelCount());
 
 			// TODO: Accept more ease type
 			float volFactor = 0f;
@@ -134,7 +162,7 @@ namespace Ami.Extension
 				return;
 			}
 
-			int fadeSample = Mathf.RoundToInt(fadeTime * _originalClip.frequency * _originalClip.channels);
+			int fadeSample = Mathf.RoundToInt(fadeTime * _originalClip.frequency * GetChannelCount());
 			int startSampleIndex = Samples.Length - fadeSample;
 
 			// TODO: Accept more ease type
@@ -155,5 +183,5 @@ namespace Ami.Extension
 			_sampleDatas = null;
 			_originalClip = null;
 		}
-	} 
+    } 
 }

@@ -27,6 +27,7 @@ namespace Ami.BroAudio.Editor
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper();
 		private Transport _transport = default;
 		private bool _isReverse = false;
+		private bool _isMono = false;
 
 		private string _currSavingFilePath = null;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
@@ -39,7 +40,8 @@ namespace Ami.BroAudio.Editor
 				return _currVolumeOption != DefaultVolumeOption
 					|| _transport.HasDifferentPosition
 					|| _transport.HasFading
-					|| _isReverse;
+					|| _isReverse
+					|| _isMono;
 			}
 		}
 
@@ -138,6 +140,10 @@ namespace Ami.BroAudio.Editor
 
 			_isReverse = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition),"Reverse",_isReverse);
 
+			EditorGUI.BeginDisabledGroup(TargetClip.channels == 1);
+			_isMono = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition), "Mono", _isMono);
+			EditorGUI.EndDisabledGroup();
+
 			EditorGUI.BeginDisabledGroup(!HasEdited);
 			{
 				DrawSavingButton(drawPosition);
@@ -220,6 +226,7 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 		}
+
 		private void SaveClip(string savePath)
 		{
 			using (AudioClipEditingHelper helper = new AudioClipEditingHelper(TargetClip))
@@ -229,7 +236,12 @@ namespace Ami.BroAudio.Editor
 					helper.Trim(_transport.StartPosition, _transport.EndPosition);
 				}
 
-				if(_transport.Delay > 0f)
+                if (_isMono)
+                {
+                    helper.ConvertToMono();
+                }
+
+                if (_transport.Delay > 0f)
 				{
 					helper.AddSlient(_transport.Delay);
 				}

@@ -3,7 +3,6 @@ using UnityEngine;
 using System.Linq;
 using Ami.BroAudio.Editor;
 using System;
-using PlasticGui;
 
 namespace Ami.Extension
 {
@@ -341,8 +340,12 @@ namespace Ami.Extension
         {
 			if (Event.current.type == EventType.Repaint)
 			{
+#if UNITY_2019_3_OR_NEWER
 				GUIStyle frameBox = "FrameBox";
-				frameBox.Draw(position, false, false, false, false);
+#else
+				GUIStyle frameBox = GUI.skin.box;
+#endif
+                frameBox.Draw(position, false, false, false, false);
 			}
 
 			// draw tab label
@@ -364,23 +367,27 @@ namespace Ami.Extension
 
             GUIStyle GetTabStyle(int i, int length)
             {
-				if(length == 1)
+#if UNITY_2019_3_OR_NEWER
+				if (length == 1)
 				{
 					return "Tab onlyOne";
-                }
-                else if (i == 0)
-                {
-                    return "Tab first";
-                }
-                else if (i == length - 1)
-                {
-                    return "Tab last";
-                }
-                else
-                {
-                    return "Tab middle";
-                }
-            }
+				}
+				else if (i == 0)
+				{
+					return "Tab first";
+				}
+				else if (i == length - 1)
+				{
+					return "Tab last";
+				}
+				else
+				{
+					return "Tab middle";
+				}
+#else
+				return EditorStyles.toolbarButton;
+#endif
+			}
         }
 
 		public static void DrawMultiFloatField(Rect position,GUIContent title, GUIContent[] labels,float[] values, float totalFieldWidth = 100f, float gap = 10f)

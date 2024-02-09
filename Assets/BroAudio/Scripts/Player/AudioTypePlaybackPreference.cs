@@ -11,8 +11,8 @@ namespace Ami.BroAudio.Runtime
 
 	public interface IAudioPlaybackPref
 	{
-		public float Volume { get; }
-		public EffectType EffectType { get; }
+		float Volume { get; }
+		EffectType EffectType { get; }
 	}
 }
 

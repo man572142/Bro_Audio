@@ -136,7 +136,7 @@ namespace Ami.BroAudio.Editor
 			_assetReorderableList = new ReorderableList(_allAssetGUIDs, typeof(string));
 			
 			_assetReorderableList.drawHeaderCallback = OnDrawHeader;
-			_assetReorderableList.onAddDropdownCallback = OnAddDropdown;
+			_assetReorderableList.onAddCallback = OnAdd;
 			_assetReorderableList.onRemoveCallback = OnRemove;
 			_assetReorderableList.drawElementCallback = OnDrawElement;
 			_assetReorderableList.onSelectCallback = OnSelect;
@@ -147,9 +147,10 @@ namespace Ami.BroAudio.Editor
 				EditorGUI.LabelField(rect, "Asset List");
 			}
 
-			void OnAddDropdown(Rect buttonRect, ReorderableList list)
+			void OnAdd(ReorderableList list)
 			{
 				ShowCreateAssetAskName();
+				GUIUtility.ExitGUI();
             }
 
 			void OnRemove(ReorderableList list)
@@ -283,10 +284,10 @@ namespace Ami.BroAudio.Editor
 			return editor;
 		}
 
-		private bool TryGetNewPath(string entityName, out string path, out string fileName)
+		private bool TryGetNewPath(string entityName, out string path, out string result)
 		{
 			path = string.Empty;
-			fileName = entityName;
+			result = entityName;
 			if (!string.IsNullOrEmpty(AssetOutputPath))
 			{
 				int index = 0;
@@ -294,8 +295,8 @@ namespace Ami.BroAudio.Editor
 				while (File.Exists(path))
 				{
 					index++;
-					fileName = entityName + index.ToString();
-					path = GetNewAssetPath(fileName);
+					result = entityName + index.ToString();
+					path = GetNewAssetPath(result);
 				}
 				return true;
 			}

@@ -232,9 +232,9 @@ namespace Ami.BroAudio.Editor
             return currentValue;
 
 #if !UNITY_WEBGL
-            void DrawFullVolumeSnapPoint(Rect sliderPosition, Action onSwitchSnapMode)
+            void DrawFullVolumeSnapPoint(Rect sliderPosition, Action onSwitch)
             {
-                if (onSwitchSnapMode == null)
+                if (onSwitch == null)
                 {
                     return;
                 }
@@ -255,7 +255,7 @@ namespace Ami.BroAudio.Editor
                 EditorGUI.EndDisabledGroup();
                 if (GUI.Button(rect, "", EditorStyles.label))
                 {
-                    onSwitchSnapMode?.Invoke();
+                    onSwitch?.Invoke();
                 }
             }
 

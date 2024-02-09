@@ -40,7 +40,7 @@ namespace Ami.BroAudio.Editor
 			BroAudioType audioType = Utility.GetAudioType(idProp.intValue);
 			if (!audioType.IsConcrete())
 			{
-				SetToMissing(idProp);
+				SetToMissing();
 				return;
 			}
 
@@ -63,9 +63,9 @@ namespace Ami.BroAudio.Editor
 					return;
 				}
 			}
-			SetToMissing(idProp);
+			SetToMissing();
 
-			void SetToMissing(SerializedProperty idProp)
+			void SetToMissing()
             {
                 idProp.intValue = -1;
                 _entityName = _missingMessage;

@@ -21,7 +21,7 @@ namespace Ami.BroAudio.Editor.Setting
 			public string Value;
 		}
 
-		[SerializeField] private InstructionDictionary[] _dictionary;
+		[SerializeField] private InstructionDictionary[] _dictionary = null;
 		private Dictionary<Instruction, string> _actualDict = new Dictionary<Instruction, string>();
 
 		public Dictionary<Instruction, string> Dictionary => _actualDict;

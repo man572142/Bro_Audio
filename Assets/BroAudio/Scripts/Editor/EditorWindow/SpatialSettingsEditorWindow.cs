@@ -14,8 +14,9 @@ namespace Ami.BroAudio.Editor
 	public class SpatialSettingsEditorWindow : EditorWindow
 	{
 		public const string ReverbZoneMixLabel = "Reverb Zone Mix";
+		public Vector2 WindowSize => new Vector2(400f, 550f);
 
-		public Action<SpatialSettings> OnCloseWindow;
+        public Action<SpatialSettings> OnCloseWindow;
 
 		private MethodInfo _draw3DGUIMethod = null;
 		private UnityEditor.Editor _audioSourceEditor = null;
@@ -27,13 +28,12 @@ namespace Ami.BroAudio.Editor
 		public static void ShowWindow(SerializedProperty settingsProp, Action<SpatialSettings> onCloseWindow)
 		{
 			var window = GetWindow<SpatialSettingsEditorWindow>();
-			Vector2 size = new Vector2(400f, 550f);
-			window.minSize = size;
-			window.maxSize = size;
-			window.titleContent = new GUIContent("Spatial Settings");
+			window.minSize = window.WindowSize;
+			window.maxSize = window.WindowSize;
+            window.titleContent = new GUIContent("Spatial Settings");
 			window.OnCloseWindow = onCloseWindow;
             window.Init(settingsProp);
-            window.ShowModal();
+            window.ShowModalUtility();
 		}
 
         private void Init(SerializedProperty settingsProp)

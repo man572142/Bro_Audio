@@ -28,6 +28,8 @@ namespace Ami.BroAudio.Editor
 		private Transport _transport = default;
 		private bool _isReverse = false;
 		private bool _isMono = false;
+		private MonoConversionMode _monoMode = MonoConversionMode.Downmixing;
+		private GenericMenu _monoModeMenu = null;
 
 		private string _currSavingFilePath = null;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
@@ -140,9 +142,21 @@ namespace Ami.BroAudio.Editor
 
 			_isReverse = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition),"Reverse",_isReverse);
 
-			EditorGUI.BeginDisabledGroup(TargetClip.channels == 1);
-			_isMono = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition), "Mono", _isMono);
-			EditorGUI.EndDisabledGroup();
+            // TODO: To support multi-channel
+            using (new EditorGUI.DisabledScope(TargetClip.channels != 2))
+			{
+				Rect monoRect = GetRectAndIterateLine(drawPosition);
+                _isMono = EditorGUI.Toggle(monoRect, "Mono", _isMono);
+				using (new EditorGUI.DisabledScope(!_isMono))
+				{
+					Rect monoModeRect = monoRect.DissolveHorizontal(0.5f);
+					if(EditorGUI.DropdownButton(monoModeRect, new GUIContent(_monoMode.ToString()),FocusType.Keyboard))
+					{
+						ShowMonoModeMenu(monoModeRect);
+					}
+				}
+            }
+
 
 			EditorGUI.BeginDisabledGroup(!HasEdited);
 			{
@@ -151,7 +165,37 @@ namespace Ami.BroAudio.Editor
 			EditorGUI.EndDisabledGroup();
 		}
 
-		private void DrawVolumeChangeToolBar(Rect drawPosition)
+        private void ShowMonoModeMenu(Rect rect)
+        {
+			if(_monoModeMenu == null)
+			{
+                _monoModeMenu = new GenericMenu();
+                _monoModeMenu.AddDisabledItem(new GUIContent("Mix all channels into one"));
+                AddModeItem(MonoConversionMode.Downmixing);
+                _monoModeMenu.AddSeparator(string.Empty);
+
+                _monoModeMenu.AddDisabledItem(new GUIContent("Select one channel"));
+                AddModeItem(MonoConversionMode.Left);
+                AddModeItem(MonoConversionMode.Right);
+            }
+
+			_monoModeMenu.DropDown(rect);
+
+            void AddModeItem(MonoConversionMode mode)
+			{
+                _monoModeMenu.AddItem(new GUIContent(mode.ToString()), false, OnChangeMonoMode, mode);
+            }
+        }
+
+        private void OnChangeMonoMode(object userData)
+        {
+            if(userData is MonoConversionMode mode)
+			{
+				_monoMode = mode;
+			}
+        }
+
+        private void DrawVolumeChangeToolBar(Rect drawPosition)
 		{
 			Rect volZoneRect = GetRectAndIterateLine(drawPosition);
 			EditorScriptingExtension.SplitRectHorizontal(volZoneRect, 0.3f, 0f, out Rect labelRect, out Rect toolBarRect);
@@ -238,7 +282,7 @@ namespace Ami.BroAudio.Editor
 
                 if (_isMono)
                 {
-                    helper.ConvertToMono();
+                    helper.ConvertToMono(_monoMode);
                 }
 
                 if (_transport.Delay > 0f)

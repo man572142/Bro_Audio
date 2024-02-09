@@ -1,5 +1,3 @@
-using Ami.BroAudio.Runtime;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -87,7 +85,6 @@ namespace Ami.Extension
 
         public static AudioClip CreateAudioClip(string name,float[] samples,AudioClipSetting setting)
 		{
-            Debug.Log(setting.Channels);
             AudioClip result = AudioClip.Create(name, samples.Length, setting.Channels, setting.Frequency, setting.LoadType == AudioClipLoadType.Streaming);
             result.SetData(samples, 0);
             return result;

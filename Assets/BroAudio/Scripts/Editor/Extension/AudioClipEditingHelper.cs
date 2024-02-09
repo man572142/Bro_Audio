@@ -101,7 +101,7 @@ namespace Ami.Extension
 			HasEdited = true;
 		}
 
-        public void ConvertToMono()
+        public void ConvertToMono(MonoConversionMode monoMode)
         {
             if (!CanEdit)
             {
@@ -109,17 +109,44 @@ namespace Ami.Extension
             }
 
 			List<float> resultSamples = new List<float>();
-			for(int i = 0; i < Samples.Length;i++)
+            if(monoMode == MonoConversionMode.Downmixing)
 			{
-				if(i % _originalClip.channels == 0)
-				{
-					resultSamples.Add(Samples[i]);
-				}
+				Downmix();
+            }
+			else
+			{
+				SelectOneChannel();
 			}
-			Debug.Log($"ori:{Samples.Length} result:{resultSamples.Count}");
+
             Samples = resultSamples.ToArray();
             _isMono = true;
 			HasEdited = true;
+
+			void Downmix()
+			{
+				// Multi-Channel would require addtional weight calculation
+				float sum = 0f;
+                for (int i = 0; i < Samples.Length; i++)
+                {
+					if (i != 0 && i % _originalClip.channels == 0)
+                    {
+                        resultSamples.Add(sum / _originalClip.channels);
+						sum = 0f;
+                    }
+					sum += Samples[i];
+                }
+            }
+
+			void SelectOneChannel()
+			{
+                for (int i = 0; i < Samples.Length; i++)
+                {
+                    if (i % _originalClip.channels == (int)monoMode - 1)
+                    {
+                        resultSamples.Add(Samples[i]);
+                    }
+                }
+            }
         }
 
         public void Reverse()
@@ -183,5 +210,5 @@ namespace Ami.Extension
 			_sampleDatas = null;
 			_originalClip = null;
 		}
-    } 
+    }
 }

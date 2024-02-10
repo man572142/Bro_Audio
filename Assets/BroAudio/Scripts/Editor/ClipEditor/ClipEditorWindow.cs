@@ -142,15 +142,18 @@ namespace Ami.BroAudio.Editor
 
 			_isReverse = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition),"Reverse",_isReverse);
 
-            // TODO: To support multi-channel
             using (new EditorGUI.DisabledScope(TargetClip.channels != 2))
 			{
 				Rect monoRect = GetRectAndIterateLine(drawPosition);
-                _isMono = EditorGUI.Toggle(monoRect, "Mono", _isMono);
+                _isMono = EditorGUI.Toggle(monoRect, "Convert To Mono", _isMono);
 				using (new EditorGUI.DisabledScope(!_isMono))
 				{
 					Rect monoModeRect = monoRect.DissolveHorizontal(0.5f);
-					if(EditorGUI.DropdownButton(monoModeRect, new GUIContent(_monoMode.ToString()),FocusType.Keyboard))
+					if(TargetClip.channels > 2)
+					{
+						EditorGUI.LabelField(monoModeRect, "Surround sound is not supported");
+					}
+					else if(EditorGUI.DropdownButton(monoModeRect, new GUIContent(_monoMode.ToString()),FocusType.Keyboard))
 					{
 						ShowMonoModeMenu(monoModeRect);
 					}

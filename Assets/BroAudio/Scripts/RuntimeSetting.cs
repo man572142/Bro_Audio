@@ -34,8 +34,8 @@ namespace Ami.BroAudio.Data
 			DefaultAudioPlayerPoolSize = FactorySettings.DefaultAudioPlayerPoolSize;
 			PitchSetting = FactorySettings.PitchShifting;
         }
-
-		public class FactorySettings
+#endif
+        public class FactorySettings
 		{
 			public const float CombFilteringPreventionInSeconds = 0.04f;
 			public const Ease DefaultFadeInEase = Ease.InCubic;
@@ -46,6 +46,5 @@ namespace Ami.BroAudio.Data
 			public const int DefaultAudioPlayerPoolSize = 5;
 			public const PitchShiftingSetting PitchShifting = PitchShiftingSetting.AudioMixer;
 		}
-#endif
 	}
 }

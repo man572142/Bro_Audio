@@ -12,6 +12,7 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public string AssetName { get; set; }
 
         [SerializeField] private string _assetGUID;
+#if UNITY_EDITOR
         public string AssetGUID
         {
             get
@@ -22,11 +23,12 @@ namespace Ami.BroAudio.Data
                 }
                 return _assetGUID;
             }
-			set
-			{
+            set
+            {
                 _assetGUID = value;
-			}
-        }
+            }
+        } 
+#endif
 
         public IEnumerable<IEntityIdentity> GetAllAudioEntities()
 		{

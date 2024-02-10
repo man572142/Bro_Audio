@@ -9,11 +9,6 @@ namespace Ami.BroAudio.Demo
 		[SerializeField] AudioID _bgm = default;
 		[SerializeField] float _transitionTime = default;
 
-		[Header("API Text")]
-		[SerializeField] Animator _apiAnimator = null;
-		[SerializeField] string _apiTriggerName = null;
-		[SerializeField] APIText _apiSetter  = null;
-
 		[Header("Change Mood")]
 		[SerializeField] Animator _lightAnimator = null;
 		[SerializeField] string _ligghtAnimParameterName = null;
@@ -26,8 +21,6 @@ namespace Ami.BroAudio.Demo
 			if(isInZone && _canChange)
 			{
 				_isNightTime = !_isNightTime;
-				_apiSetter.SetAPI();
-				_apiAnimator.SetTrigger(_apiTriggerName);
 				_lightAnimator.SetBool(_ligghtAnimParameterName, _isNightTime);
 
 				// The BGM is set to PlaybackMode.Sequence

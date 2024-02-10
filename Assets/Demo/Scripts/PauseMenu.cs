@@ -20,8 +20,9 @@ namespace Ami.BroAudio.Demo
 		[SerializeField] float _fadeTime = default;
 		[SerializeField, Volume] float _othersVolume = default;
 		[SerializeField, Frequency] float _othersLowPasFreq = default;
-
-		[SerializeField] GameObject _hierarchyLocateTarget = null;
+#if UNITY_EDITOR
+        [SerializeField] GameObject _hierarchyLocateTarget = null;
+#endif
 		public bool IsOpen { get; private set; }
 
 		void Start()
@@ -67,6 +68,7 @@ namespace Ami.BroAudio.Demo
                 BroAudio.SetVolume(BroAdvice.FullVolume, BroAudioType.All, _fadeTime);
                 BroAudio.SetEffect(Effect.LowPass(Effect.Defaults.LowPass, _fadeTime));
 			}
-		}
+            Cursor.visible = IsOpen;
+        }
 	} 
 }

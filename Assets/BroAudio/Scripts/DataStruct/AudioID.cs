@@ -23,9 +23,11 @@ namespace Ami.BroAudio
 		public static implicit operator int(AudioID audioID) => audioID.ID;
         public static implicit operator AudioID(int id) => new AudioID(id);
 
+#if UNITY_EDITOR
 		public static class NameOf
 		{
 			public static string SourceAsset => nameof(_sourceAsset);
-		}
-    }
+		} 
+#endif
+	}
 }

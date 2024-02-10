@@ -5,8 +5,6 @@ using UnityEngine.UI;
 using Ami.Extension;
 using System;
 using System.Text;
-using UnityEditor.SceneManagement;
-using UnityEngine.SceneManagement;
 
 namespace Ami.BroAudio.Demo
 {
@@ -24,10 +22,8 @@ namespace Ami.BroAudio.Demo
 
 		[SerializeField] Text _component = null;
 
-#if UNITY_EDITOR
 		[Header("Please use [SetText] in the context menu")]
 		[SerializeField] MethodText[] _methodTexts = null;
-#endif
 
 		private void Start()
 		{
@@ -37,7 +33,8 @@ namespace Ami.BroAudio.Demo
 			}
 			_component.supportRichText = true;
 		}
-		
+
+
 		[ContextMenu("SetText")]
 		public void SetAPI()
 		{
@@ -47,12 +44,12 @@ namespace Ami.BroAudio.Demo
 				builder.Append(".");
 				builder.Append(data.Method.SetColor(MethodColor));
 				builder.Append("(");
-				if(data.Parameters != null && data.Parameters.Length > 0)
+				if (data.Parameters != null && data.Parameters.Length > 0)
 				{
-					for (int i = 0; i < data.Parameters.Length;i++)
+					for (int i = 0; i < data.Parameters.Length; i++)
 					{
 						string para = data.Parameters[i];
-						if(i > 0)
+						if (i > 0)
 						{
 							builder.Append(", ");
 						}
@@ -63,12 +60,14 @@ namespace Ami.BroAudio.Demo
 			}
 
 			_component.text = builder.ToString();
-
-			if(!Application.isPlaying)
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
 			{
 				UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(_component);
-				EditorSceneManager.MarkSceneDirty(gameObject.scene);
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
 			}
-		}
-	} 
+#endif
+        }
+
+    } 
 }

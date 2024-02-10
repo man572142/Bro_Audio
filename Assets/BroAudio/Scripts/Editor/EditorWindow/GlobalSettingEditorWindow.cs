@@ -344,7 +344,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void AutoMatchAudioVoices()
 		{
-			AudioMixerGroup mainTrack = AudioMixer.FindMatchingGroups(MainTrackName)?.FirstOrDefault();
+			AudioMixerGroup mainTrack = AudioMixer.FindMatchingGroups(MainTrackName)?.Where(x => x.name.Length == MainTrackName.Length).FirstOrDefault();
 			if (mainTrack == default || _currentMixerTracksCount == default)
 			{
 				LogError("Can't get the Main track or other BroAudio track");
@@ -353,7 +353,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 			if(_duplicateTrackSource)
 			{
-				for(int i = _currentMixerTracksCount +1 ; i <= _currProjectSettingVoiceCount; i++)
+				for(int i = _currentMixerTracksCount +1 ; i <= _currProjectSettingVoiceCount + _broVirtualTracksCount; i++)
 				{
 					string trackName = $"{GenericTrackName}{i}";
 					BroAudioReflection.DuplicateBroAudioTrack(AudioMixer, mainTrack, _duplicateTrackSource, trackName);

@@ -18,7 +18,7 @@ MonoBehaviour:
     MulticlipsPlayMode: 1
     Clips:
     - AudioClip: {fileID: 8300000, guid: 7a5783e048cdb8e41a8c467ac570bb2f, type: 3}
-      Volume: 1
+      Volume: 0.7
       Delay: 0
       StartPosition: 0
       EndPosition: 0
@@ -336,7 +336,7 @@ MonoBehaviour:
     MulticlipsPlayMode: 0
     Clips:
     - AudioClip: {fileID: 8300000, guid: e00d65c1cb3ddee4384059e085ccba25, type: 3}
-      Volume: 0.1
+      Volume: 0.3
       Delay: 0
       StartPosition: 0
       EndPosition: 0
@@ -496,8 +496,8 @@ MonoBehaviour:
     <SpatialSettings>k__BackingField:
       StereoPan: 0
       DopplerLevel: 3
-      MinDistance: 1
-      MaxDistance: 100
+      MinDistance: 5
+      MaxDistance: 50
       SpatialBlend:
         serializedVersion: 2
         m_Curve:
@@ -518,7 +518,7 @@ MonoBehaviour:
         m_Curve:
         - serializedVersion: 3
           time: 0
-          value: 0.5
+          value: 0
           inSlope: 0
           outSlope: 0
           tangentMode: 0
@@ -547,73 +547,46 @@ MonoBehaviour:
         serializedVersion: 2
         m_Curve:
         - serializedVersion: 3
-          time: 0.01
+          time: 0.1
           value: 1
-          inSlope: -100.03984
-          outSlope: -100.03984
+          inSlope: -10.0039835
+          outSlope: -10.0039835
           tangentMode: 0
           weightedMode: 0
           inWeight: 0
           outWeight: 0
         - serializedVersion: 3
-          time: 0.02
+          time: 0.2
           value: 0.5
-          inSlope: -25.00996
-          outSlope: -25.00996
+          inSlope: -2.5009959
+          outSlope: -2.5009959
           tangentMode: 0
           weightedMode: 0
           inWeight: 0
           outWeight: 0
         - serializedVersion: 3
-          time: 0.04
-          value: 0.25
-          inSlope: -6.25249
-          outSlope: -6.25249
+          time: 0.38857117
+          value: 0.1927948
+          inSlope: -0.86859304
+          outSlope: -0.86859304
           tangentMode: 0
           weightedMode: 0
           inWeight: 0
-          outWeight: 0
+          outWeight: 0.30770147
         - serializedVersion: 3
-          time: 0.08
-          value: 0.125
-          inSlope: -1.5631225
-          outSlope: -1.5631225
+          time: 0.79713136
+          value: 0.032577515
+          inSlope: -0.10483417
+          outSlope: -0.10483417
           tangentMode: 0
           weightedMode: 0
           inWeight: 0
-          outWeight: 0
-        - serializedVersion: 3
-          time: 0.16
-          value: 0.0625
-          inSlope: -0.39078063
-          outSlope: -0.39078063
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        - serializedVersion: 3
-          time: 0.32
-          value: 0.03125
-          inSlope: -0.09769516
-          outSlope: -0.09769516
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        - serializedVersion: 3
-          time: 0.64
-          value: 0.015625
-          inSlope: -0.02442379
-          outSlope: -0.02442379
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
+          outWeight: 0.7042421
         - serializedVersion: 3
           time: 1
           value: 0
-          inSlope: -0.010003988
-          outSlope: -0.010003988
+          inSlope: -0.10003988
+          outSlope: -0.10003988
           tangentMode: 0
           weightedMode: 0
           inWeight: 0
@@ -637,7 +610,7 @@ MonoBehaviour:
     MulticlipsPlayMode: 0
     Clips:
     - AudioClip: {fileID: 8300000, guid: f2c643d9991326f44b1224002f9c61fd, type: 3}
-      Volume: 1
+      Volume: 1.5
       Delay: 0
       StartPosition: 0
       EndPosition: 0
@@ -1518,7 +1491,7 @@ MonoBehaviour:
       StartPosition: 0
       EndPosition: 0
       FadeIn: 0
-      FadeOut: 0.5
+      FadeOut: 0.3
       Weight: 0
     - AudioClip: {fileID: 8300000, guid: ae01c0b540590bb45861f97e92bbbfc9, type: 3}
       Volume: 1
@@ -1526,7 +1499,7 @@ MonoBehaviour:
       StartPosition: 0
       EndPosition: 0
       FadeIn: 0
-      FadeOut: 0.5
+      FadeOut: 0.3
       Weight: 0
     - AudioClip: {fileID: 8300000, guid: 594637f21c415284f9765319f902eaae, type: 3}
       Volume: 1
@@ -1534,7 +1507,7 @@ MonoBehaviour:
       StartPosition: 0
       EndPosition: 0
       FadeIn: 0
-      FadeOut: 0.5
+      FadeOut: 0.3
       Weight: 0
     - AudioClip: {fileID: 8300000, guid: 1a7e0f8a3f2439345a90622c6e48f570, type: 3}
       Volume: 1
@@ -1542,7 +1515,7 @@ MonoBehaviour:
       StartPosition: 0
       EndPosition: 0
       FadeIn: 0
-      FadeOut: 0.5
+      FadeOut: 0.3
       Weight: 0
     - AudioClip: {fileID: 8300000, guid: 8cec2e26376299548a1c67b41409274d, type: 3}
       Volume: 1
@@ -1550,7 +1523,7 @@ MonoBehaviour:
       StartPosition: 0
       EndPosition: 0
       FadeIn: 0
-      FadeOut: 0.5
+      FadeOut: 0.3
       Weight: 0
     <MasterVolume>k__BackingField: 1
     <Loop>k__BackingField: 0

@@ -16,6 +16,6 @@ namespace Ami.BroAudio
 		public const Ease LowPassEase = Ease.OutCubic;
 		public const Ease HighPassEase = Ease.InCubic;
 
-		public const int VirtualTrackCount = 8;
+		public const int VirtualTrackCount = 4;
 	}
 }

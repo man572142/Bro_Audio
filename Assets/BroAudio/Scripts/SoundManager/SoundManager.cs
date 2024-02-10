@@ -186,7 +186,7 @@ namespace Ami.BroAudio.Runtime
 		{
             GetCurrentPlayingPlayers(player =>
             {
-                if (player.ID == id)
+                if (player && player.ID == id)
                 {
                     player.SetVolume(vol, fadeTime);
                 }

@@ -7,19 +7,19 @@ namespace Ami.BroAudio.Demo
 {
 	public class InstructionShower : InteractiveComponent
 	{
-		[SerializeField] Animation _instruction = null;
+		[SerializeField] CanvasGroup _instruction = null;
+		[SerializeField] float _showingTime = default;
 		[SerializeField] bool _lookAtPlayer = false;
 
 		private Transform _instTransform = null;
+		private Coroutine _coroutine = null;
 
+        private void Start()
+        {
+			_instruction.alpha = 0f;
+        }
 
-		protected override void Awake()
-		{
-			base.Awake();
-			_instruction.gameObject.SetActive(false);
-		}
-
-		private void Update()
+        private void Update()
 		{
 			if(_lookAtPlayer && InteractiveZone.IsInZone && InteractiveZone.InZoneObject)
 			{
@@ -34,7 +34,24 @@ namespace Ami.BroAudio.Demo
 
 		public override void OnInZoneChanged(bool isInZone)
 		{
-			_instruction.gameObject.SetActive(isInZone);
+			if(_coroutine != null)
+			{
+				StopCoroutine(_coroutine);
+			}
+            _coroutine = StartCoroutine(AnimateCanvasGroup(isInZone));
 		}
+
+		private IEnumerator AnimateCanvasGroup(bool isOpening)
+		{
+			_instruction.alpha = isOpening ? 0f : 1f;
+			float target = isOpening ? 1f : 0f;
+			float sign = isOpening ? 1f : -1f;
+			_showingTime = _showingTime == 0f ? 1f : _showingTime;
+			while(_instruction.alpha != target)
+			{
+				_instruction.alpha += Time.deltaTime / _showingTime * sign;
+				yield return null;
+			}
+        }
 	}
 } 

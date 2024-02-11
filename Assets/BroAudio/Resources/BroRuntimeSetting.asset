@@ -18,5 +18,6 @@ MonoBehaviour:
   DefaultFadeOutEase: 11
   SeamlessFadeInEase: 8
   SeamlessFadeOutEase: 11
+  AudioFilterSlope: 1
   DefaultAudioPlayerPoolSize: 5
   PitchSetting: 1

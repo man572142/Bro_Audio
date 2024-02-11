@@ -16,6 +16,7 @@
         AudioVoicesToolTip,
         BroVirtualToolTip,
         PitchShiftingToolTip,
+        AudioFilterSlope,
 
         // Settings/Info
         Copyright = 20,
@@ -24,9 +25,9 @@
         ClipEditorConfirmationDialog = 30,
 
         // EntityIssue
-        //EntityIssue_HasEmptyName = 100,
-        //EntityIssue_IsDuplicated,
-        //EntityIssue_ContainsInvalidWords,
+        EntityIssue_HasEmptyName = 100,
+        EntityIssue_IsDuplicated,
+        EntityIssue_ContainsInvalidWords,
 
         // Asset Naming
         AssetNaming_IsNullOrEmpty = 200,
@@ -46,8 +47,5 @@
         LibraryManager_NameTempAssetHint,
         LibraryManager_AssetAudioTypeNotSet,
         LibraryManager_AssetUnnamed,
-
-        // MonoComponent
-        SoundTrigger_PasteDefaultParameter,
     }
 }

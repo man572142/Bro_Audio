@@ -18,6 +18,7 @@ namespace Ami.BroAudio.Data
 		public Ease DefaultFadeOutEase = FactorySettings.DefaultFadeOutEase;
 		public Ease SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;
 		public Ease SeamlessFadeOutEase = FactorySettings.SeamlessFadeOutEase;
+		public FilterSlope AudioFilterSlope = FactorySettings.AudioFilterSlope;
 
 		public int DefaultAudioPlayerPoolSize = FactorySettings.DefaultAudioPlayerPoolSize;
 		public PitchShiftingSetting PitchSetting = PitchShiftingSetting.AudioMixer;
@@ -42,6 +43,7 @@ namespace Ami.BroAudio.Data
 			public const Ease DefaultFadeOutEase = Ease.OutSine;
 			public const Ease SeamlessFadeInEase = Ease.OutCubic;
 			public const Ease SeamlessFadeOutEase = Ease.OutSine;
+			public const FilterSlope AudioFilterSlope = FilterSlope.FourPole;
 
 			public const int DefaultAudioPlayerPoolSize = 5;
 			public const PitchShiftingSetting PitchShifting = PitchShiftingSetting.AudioMixer;

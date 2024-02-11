@@ -1,4 +1,3 @@
-using Ami.BroAudio.Tools;
 using Ami.Extension;
 using Ami.Extension.Reflection;
 using System;
@@ -48,15 +47,19 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string ProjectSettings = "Project Settings";
 		public const string RealVoicesParameterName = "Max Real Voices";
 		public const string BroVirtualTracks = "Bro Virtual Tracks";
+		public const string FilterSlope = "Audio Filter Slope";
+		public const string TwoPoleFilter = "12dB/Oct";
+		public const string FourPoleFilter = "24dB/Oct";
 
 		private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
-		private GUIContent[] _tabLabels = null;
+        private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent;
+
+        private GUIContent[] _tabLabels = null;
 		private Tab _currSelectedTab = Tab.Audio;
 		private int _currProjectSettingVoiceCount = -1;
 		private int _currentMixerTracksCount = -1;
 		private int _broVirtualTracksCount = BroAdvice.VirtualTrackCount;
-		private GUIContent _combFilteringGUIContent , _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 		private AudioMixerGroup _duplicateTrackSource = null;
 		private AudioMixer _mixer = null;
@@ -123,6 +126,7 @@ namespace Ami.BroAudio.Editor.Setting
 			_pitchGUIContent = new GUIContent(PitchShiftingLabel, _instruction.GetText(Instruction.PitchShiftingToolTip));
 			_audioVoicesGUIContent = new GUIContent(RealVoicesParameterName, _instruction.GetText(Instruction.AudioVoicesToolTip));
 			_virtualTracksGUIContent = new GUIContent(BroVirtualTracks, _instruction.GetText(Instruction.BroVirtualToolTip));
+			_filterSlopeGUIContent = new GUIContent(FilterSlope, _instruction.GetText(Instruction.AudioFilterSlope));
 		}
 
 		private void OnDisable()
@@ -221,38 +225,40 @@ namespace Ami.BroAudio.Editor.Setting
 		}
 
         private void DrawAudioSetting(Rect drawPosition)
-		{
-			drawPosition.width -= Gap;
-			DrawCombFilteringSetting();
-            // To make a room for other functionality to use exposed parameters, we only use AudioSource.pitch for now
+        {
+            drawPosition.width -= Gap;
+            DrawCombFilteringSetting();
+            // To make a room for other functions to use exposed parameters, we only use AudioSource.pitch for now
             //DrawPitchSetting();
             DrawEmptyLine(1);
 
-			DrawDefaultEasing();
-			DrawSeamlessLoopEasing();
-			DrawEmptyLine(1);
-			DrawAudioProjectSettings();
+            DrawDefaultEasing();
+            DrawSeamlessLoopEasing();
+            DrawEmptyLine(1);
+            DrawAudioFilterSlope();
+            DrawEmptyLine(1);
+            DrawAudioProjectSettings();
 
-			void DrawCombFilteringSetting()
-			{
-				Rect combRect = GetRectAndIterateLine(drawPosition);
-				EditorGUI.LabelField(combRect, _combFilteringGUIContent);
+            void DrawCombFilteringSetting()
+            {
+                Rect combRect = GetRectAndIterateLine(drawPosition);
+                EditorGUI.LabelField(combRect, _combFilteringGUIContent);
 
-				Rect fieldRect = new Rect(combRect) { width = 80f, x = combRect.x + EditorGUIUtility.labelWidth + 50f};
-				RuntimeSetting.CombFilteringPreventionInSeconds = EditorGUI.FloatField(fieldRect, RuntimeSetting.CombFilteringPreventionInSeconds);
+                Rect fieldRect = new Rect(combRect) { width = 80f, x = combRect.x + EditorGUIUtility.labelWidth + 50f };
+                RuntimeSetting.CombFilteringPreventionInSeconds = EditorGUI.FloatField(fieldRect, RuntimeSetting.CombFilteringPreventionInSeconds);
 
-				Rect defaultButtonRect = new Rect(fieldRect) { x = fieldRect.xMax + 10f, width = 60f};
-				float defaultValue = Data.RuntimeSetting.FactorySettings.CombFilteringPreventionInSeconds;
-				EditorGUI.BeginDisabledGroup(RuntimeSetting.CombFilteringPreventionInSeconds == defaultValue);
-				if (GUI.Button(defaultButtonRect, "Default"))
-				{
-					RuntimeSetting.CombFilteringPreventionInSeconds = defaultValue;
-				}
-				EditorGUI.EndDisabledGroup();
+                Rect defaultButtonRect = new Rect(fieldRect) { x = fieldRect.xMax + 10f, width = 60f };
+                float defaultValue = Data.RuntimeSetting.FactorySettings.CombFilteringPreventionInSeconds;
+                EditorGUI.BeginDisabledGroup(RuntimeSetting.CombFilteringPreventionInSeconds == defaultValue);
+                if (GUI.Button(defaultButtonRect, "Default"))
+                {
+                    RuntimeSetting.CombFilteringPreventionInSeconds = defaultValue;
+                }
+                EditorGUI.EndDisabledGroup();
 
-				RuntimeSetting.LogCombFilteringWarning = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition),"Log Warning If Occurs", RuntimeSetting.LogCombFilteringWarning);
-				DrawEmptyLine(1);
-			}
+                RuntimeSetting.LogCombFilteringWarning = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition), "Log Warning If Occurs", RuntimeSetting.LogCombFilteringWarning);
+                DrawEmptyLine(1);
+            }
 
             //void DrawPitchSetting()
             //{
@@ -271,78 +277,83 @@ namespace Ami.BroAudio.Editor.Setting
             //}
 
             void DrawDefaultEasing()
-			{
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Default Easing".ToWhiteBold(), GUIStyleHelper.RichText);
-				EditorGUI.indentLevel++;
-				RuntimeSetting.DefaultFadeInEase =
-					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", RuntimeSetting.DefaultFadeInEase);
-				RuntimeSetting.DefaultFadeOutEase =
-					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.DefaultFadeOutEase);
-				EditorGUI.indentLevel--;
-			}
+            {
+                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Default Easing".ToWhiteBold(), GUIStyleHelper.RichText);
+                EditorGUI.indentLevel++;
+                RuntimeSetting.DefaultFadeInEase =
+                    (Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", RuntimeSetting.DefaultFadeInEase);
+                RuntimeSetting.DefaultFadeOutEase =
+                    (Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.DefaultFadeOutEase);
+                EditorGUI.indentLevel--;
+            }
 
-			void DrawSeamlessLoopEasing()
-			{
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Seamless Loop Easing".ToWhiteBold(), GUIStyleHelper.RichText);
-				EditorGUI.indentLevel++;
-				RuntimeSetting.SeamlessFadeInEase =
-					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", RuntimeSetting.SeamlessFadeInEase);
-				RuntimeSetting.SeamlessFadeOutEase =
-					(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.SeamlessFadeOutEase);
-				EditorGUI.indentLevel--;
-			}
+            void DrawSeamlessLoopEasing()
+            {
+                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Seamless Loop Easing".ToWhiteBold(), GUIStyleHelper.RichText);
+                EditorGUI.indentLevel++;
+                RuntimeSetting.SeamlessFadeInEase =
+                    (Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", RuntimeSetting.SeamlessFadeInEase);
+                RuntimeSetting.SeamlessFadeOutEase =
+                    (Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.SeamlessFadeOutEase);
+                EditorGUI.indentLevel--;
+            }
 
-			void DrawAudioProjectSettings()
-			{
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), ProjectSettings.ToWhiteBold(), GUIStyleHelper.RichText);
+            void DrawAudioFilterSlope()
+            {
+                RuntimeSetting.AudioFilterSlope = (FilterSlope)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), _filterSlopeGUIContent, RuntimeSetting.AudioFilterSlope);
+            }
 
-				if (HasValidProjectSettingVoiceCount())
-				{
-					EditorGUI.BeginDisabledGroup(true);
-					{
-						Rect voiceRect = GetRectAndIterateLine(drawPosition);
-						EditorGUI.LabelField(voiceRect, _audioVoicesGUIContent);
-						voiceRect.x += 150f;
-						voiceRect.width = 100f;
-						EditorGUI.IntField(voiceRect, _currProjectSettingVoiceCount);
+            void DrawAudioProjectSettings()
+            {
+                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), ProjectSettings.ToWhiteBold(), GUIStyleHelper.RichText);
 
-						Rect virtualTracksRect = GetRectAndIterateLine(drawPosition);
-						EditorGUI.LabelField(virtualTracksRect, _virtualTracksGUIContent);
-						virtualTracksRect.x += 150f;
-						virtualTracksRect.width = 100f;
-						EditorGUI.IntField(virtualTracksRect, _broVirtualTracksCount);
-					}
-					EditorGUI.EndDisabledGroup();
-				}
+                if (HasValidProjectSettingVoiceCount())
+                {
+                    EditorGUI.BeginDisabledGroup(true);
+                    {
+                        Rect voiceRect = GetRectAndIterateLine(drawPosition);
+                        EditorGUI.LabelField(voiceRect, _audioVoicesGUIContent);
+                        voiceRect.x += 150f;
+                        voiceRect.width = 100f;
+                        EditorGUI.IntField(voiceRect, _currProjectSettingVoiceCount);
 
-				if (HasValidMixerTracksCount() && _currentMixerTracksCount < _currProjectSettingVoiceCount + _broVirtualTracksCount)
-				{
-					Rect warningBoxRect = GetRectAndIterateLine(drawPosition);
-					warningBoxRect.height *= 3;
-					Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
-					string text = string.Format(_instruction.GetText(Instruction.TracksAndVoicesNotMatchWarning), MixerName.ToWhiteBold(), ProjectSettingsMenuItemPath.SetColor(linkBlue));
-					RichTextHelpBox(warningBoxRect, text, MessageType.Warning);
-					if (GUI.Button(warningBoxRect, GUIContent.none, GUIStyle.none))
-					{
-						SettingsService.OpenProjectSettings(AudioSettingPath);
-					}
-					EditorGUIUtility.AddCursorRect(warningBoxRect, MouseCursor.Link);
+                        Rect virtualTracksRect = GetRectAndIterateLine(drawPosition);
+                        EditorGUI.LabelField(virtualTracksRect, _virtualTracksGUIContent);
+                        virtualTracksRect.x += 150f;
+                        virtualTracksRect.width = 100f;
+                        EditorGUI.IntField(virtualTracksRect, _broVirtualTracksCount);
+                    }
+                    EditorGUI.EndDisabledGroup();
+                }
 
-					DrawEmptyLine(2); // For Help Box
+                if (HasValidMixerTracksCount() && _currentMixerTracksCount < _currProjectSettingVoiceCount + _broVirtualTracksCount)
+                {
+                    Rect warningBoxRect = GetRectAndIterateLine(drawPosition);
+                    warningBoxRect.height *= 3;
+                    Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
+                    string text = string.Format(_instruction.GetText(Instruction.TracksAndVoicesNotMatchWarning), MixerName.ToWhiteBold(), ProjectSettingsMenuItemPath.SetColor(linkBlue));
+                    RichTextHelpBox(warningBoxRect, text, MessageType.Warning);
+                    if (GUI.Button(warningBoxRect, GUIContent.none, GUIStyle.none))
+                    {
+                        SettingsService.OpenProjectSettings(AudioSettingPath);
+                    }
+                    EditorGUIUtility.AddCursorRect(warningBoxRect, MouseCursor.Link);
 
-					Rect autoMatchBtnRect = GetRectAndIterateLine(drawPosition);
-					autoMatchBtnRect.height *= 2f;
-					if (GUI.Button(autoMatchBtnRect, AutoMatchTracksButtonText) 
-						&& EditorUtility.DisplayDialog("Confirmation", _instruction.GetText(Instruction.AddTracksConfirmationDialog), "OK", "Cancel"))
-					{
-						AutoMatchAudioVoices();
-					}
-					DrawEmptyLine(2); // For Match Button
-				}
-			}
-		}
+                    DrawEmptyLine(2); // For Help Box
 
-		private void AutoMatchAudioVoices()
+                    Rect autoMatchBtnRect = GetRectAndIterateLine(drawPosition);
+                    autoMatchBtnRect.height *= 2f;
+                    if (GUI.Button(autoMatchBtnRect, AutoMatchTracksButtonText)
+                        && EditorUtility.DisplayDialog("Confirmation", _instruction.GetText(Instruction.AddTracksConfirmationDialog), "OK", "Cancel"))
+                    {
+                        AutoMatchAudioVoices();
+                    }
+                    DrawEmptyLine(2); // For Match Button
+                }
+            }
+        }
+
+        private void AutoMatchAudioVoices()
 		{
 			AudioMixerGroup mainTrack = AudioMixer.FindMatchingGroups(MainTrackName)?.Where(x => x.name.Length == MainTrackName.Length).FirstOrDefault();
 			if (mainTrack == default || _currentMixerTracksCount == default)

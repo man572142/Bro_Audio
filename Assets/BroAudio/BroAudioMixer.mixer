@@ -214,6 +214,22 @@ AudioMixerEffectController:
   m_SendTarget: {fileID: 0}
   m_EnableWetMix: 0
   m_Bypass: 0
+--- !u!244 &-6748743686225243765
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: e0994cadff6403f40a3c435406161eed
+  m_EffectName: Lowpass Simple
+  m_MixLevel: 7d965400a8a05664ca83e1a0ff3e515c
+  m_Parameters:
+  - m_ParameterName: Cutoff freq
+    m_GUID: 0aeb31161614f2540ad1f8a321846f51
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
 --- !u!243 &-6641320916887910363
 AudioMixerGroupController:
   m_ObjectHideFlags: 0
@@ -460,6 +476,22 @@ AudioMixerEffectController:
   m_SendTarget: {fileID: 1359273693016946029}
   m_EnableWetMix: 1
   m_Bypass: 0
+--- !u!244 &-5055960711028452190
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: 4b43373caad1d064a8c78a4d21105aef
+  m_EffectName: Highpass Simple
+  m_MixLevel: fb72cf9e4c0bab64a91c3fef64aeaa4a
+  m_Parameters:
+  - m_ParameterName: Cutoff freq
+    m_GUID: 7d4288c1922ee6148875a63a0188a2f2
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
 --- !u!244 &-5054685934338373417
 AudioMixerEffectController:
   m_ObjectHideFlags: 3
@@ -524,7 +556,9 @@ AudioMixerGroupController:
   m_Effects:
   - {fileID: -2580494217201767240}
   - {fileID: 6077525008875998467}
+  - {fileID: -6748743686225243765}
   - {fileID: 5427574731233135804}
+  - {fileID: -5055960711028452190}
   - {fileID: -7624509670317542087}
   - {fileID: -5544088832002639782}
   m_UserColorIndex: 0
@@ -1201,8 +1235,12 @@ AudioMixerController:
     name: Dominator3
   - guid: b31254fa8925df04ebce44b1cf285e06
     name: Dominator4
+  - guid: 0076732db827a0c46911569717a4a545
+    name: Effect_HighPass2
   - guid: 05d8b3f4ffc340e4d87c0c9d1fbf41e0
     name: Effect_HighPass
+  - guid: 26e9d963e0d9f7545b8c3b3fd65a307d
+    name: Effect_LowPass2
   - guid: 18f724de577569e459542064a1eb8627
     name: Effect_LowPass
   - guid: 11aaa9f7cdfd46e42aedf793a65e60f3
@@ -1211,154 +1249,158 @@ AudioMixerController:
     name: Main_Dominated
   - guid: 6c39eaef7b2edb54694c09e48d4a8901
     name: Main_HighPass
+  - guid: 7d4288c1922ee6148875a63a0188a2f2
+    name: Main_HighPass2
+  - guid: 0aeb31161614f2540ad1f8a321846f51
+    name: Main_LowPass2
   - guid: 063ec1ebdaa433e44a382c5cc1a1c82d
     name: Main_LowPass
   - guid: ec766ec8e8654434294023594c162dcf
     name: Master
   - guid: 104635abdb29c0c48918a6bcf8a36460
     name: Track1
-  - guid: a2c7f557654d61542b7782b14acdfed2
-    name: Track1_Effect
-  - guid: fcf92e71a58eeb8469b6332988b651c0
-    name: Track2
-  - guid: b734b0a6ef57e0b48b32a5b568761013
-    name: Track2_Effect
-  - guid: ea83041e05259d3489a6ab24f2d7007b
-    name: Track3
-  - guid: 908c534d7fd90c7418bc8df84df0c9b7
-    name: Track3_Effect
-  - guid: 0d12fe5c05062e44e848ced0057500aa
-    name: Track4
-  - guid: e0a78a132f4b53343888e077085be847
-    name: Track4_Effect
-  - guid: c9d4bbf5dfa157e419872213e6adf23e
-    name: Track5
-  - guid: b3dd0de7d6fde5143b069d15ed0eb2be
-    name: Track5_Effect
-  - guid: ede34d3d0a0ed56499937a0c7d5f565c
-    name: Track6
-  - guid: 7246d638be67ca0478ff9f13fc176ed2
-    name: Track6_Effect
-  - guid: 8ebf547c9b8937b45b5c8ee7b6ac045f
-    name: Track7
-  - guid: 1d823c5061b2fe04bbc0ddb7dde4802b
-    name: Track7_Effect
-  - guid: fa0e1a7eb8d683844b18baa68e014fc4
-    name: Track8
-  - guid: d79859690bd835546b59760186dc9f82
-    name: Track8_Effect
-  - guid: 3b7394227636f6144bab4f699a5b8af3
-    name: Track9
-  - guid: 7b123812f231c6e40bf4c1cee25e119a
-    name: Track9_Effect
   - guid: 00326a7a4541f1d4f9459579be5f06f4
     name: Track10
-  - guid: 94e35ec3be0a022459abaecd114cb7c2
-    name: Track10_Effect
   - guid: 3d10d7ddafc5630428a42f077231e01d
     name: Track11
-  - guid: 57489563a8a549041a6603c1431d133b
-    name: Track11_Effect
   - guid: c43533d7a24fcfe4488313c9730795c2
     name: Track12
-  - guid: ec1e7e1a9afccec47a7cb0148f3ffb49
-    name: Track12_Effect
   - guid: c603167d856449244a27178a3ae23e18
     name: Track13
-  - guid: 5546b9c64ac7a7b4fbb095f857927d4e
-    name: Track13_Effect
   - guid: fca6423423597f6469a3b6ff9920101c
     name: Track14
-  - guid: f62b10e7ac57c254daeb68773b0f103b
-    name: Track14_Effect
   - guid: 8d10a54dc7388fd48a306ad94af49bcc
     name: Track15
-  - guid: cf283b27c6a11154d993be805db4cf5a
-    name: Track15_Effect
   - guid: 0169ee22b9be707449372d2213840611
     name: Track16
-  - guid: 79f49026284933542a1e6f83dbb68da1
-    name: Track16_Effect
   - guid: 58044933f7ce87c41b4f1a877add7a11
     name: Track17
-  - guid: 4ea607f11253bc64b80afc0d64054c1a
-    name: Track17_Effect
   - guid: 2c96517e05e07c54a9b474652bf8070f
     name: Track18
-  - guid: 4379dcb6844efd640975da3c873c6b8c
-    name: Track18_Effect
   - guid: beef1765b703d1c4796c110452d7db70
     name: Track19
-  - guid: fdc8c22d948592343b1fd714274d197c
-    name: Track19_Effect
+  - guid: fcf92e71a58eeb8469b6332988b651c0
+    name: Track2
   - guid: ea448a57e9bc78b4f8d97413b4f05bb2
     name: Track20
-  - guid: fc904e7572a67744fbc09c0b2743c0a6
-    name: Track20_Effect
   - guid: 563b1af22ec592a4d9b6a7bcd451488a
     name: Track21
-  - guid: 233b4621f7aa49145888074253819c49
-    name: Track21_Effect
   - guid: fc663f8375ef557489eb23b54de2839b
     name: Track22
-  - guid: 788f501a58618074eab19de2d3692e9a
-    name: Track22_Effect
   - guid: 697c49b6e5d2893469fb87e9494230c0
     name: Track23
-  - guid: bf56a7e8861212f49b9c5d26e6c69132
-    name: Track23_Effect
   - guid: e6b6413b8ebea7147a67de946b5a7fd9
     name: Track24
-  - guid: 8c7aa7f4bee9ea745b9e32b877e60e06
-    name: Track24_Effect
   - guid: 32caa9d2f4e729647832247258355e25
     name: Track25
-  - guid: 7af4d475ab6d17740a3d2653ed2b2fb9
-    name: Track25_Effect
   - guid: 9205bafef9d876f479af1fd8d8309dae
     name: Track26
-  - guid: b0971cced7f32bd44a57196977d0d3f1
-    name: Track26_Effect
   - guid: 22511f07020567d469e76a4aff58e8c3
     name: Track27
-  - guid: c9db172fea5d17947839d9a21b58e3aa
-    name: Track27_Effect
   - guid: 5a74df86330b43a4f97e484cd2352d4f
     name: Track28
-  - guid: 4f8f4dda7a8fc124c808c9badb4fbd0a
-    name: Track28_Effect
   - guid: 45db02835726e6344a4fb966704146f5
     name: Track29
-  - guid: b9e2ad8cf3af0aa479d5410f4bca148f
-    name: Track29_Effect
+  - guid: ea83041e05259d3489a6ab24f2d7007b
+    name: Track3
   - guid: 95518bef1aaaf1f47bd35dc9c23f280c
     name: Track30
-  - guid: c0578f924043e154d8eb5b610b5a7abc
-    name: Track30_Effect
   - guid: 2407ab7ea3564af4e923f93dc515617c
     name: Track31
-  - guid: 434e37b07cee4884c8eaa452d488bbf1
-    name: Track31_Effect
   - guid: 3baf95daf66e8ee49aa67349b129b5d5
     name: Track32
-  - guid: 943cab23cd1e56b45925e815c5314234
-    name: Track32_Effect
   - guid: 5725812e81e71c943bbec4126c0a585e
     name: Track33
-  - guid: 778016f2c5aaac5458a91f1c12c9a8ed
-    name: Track33_Effect
   - guid: 3544e47621dd6b54596370150e60d1a3
     name: Track34
-  - guid: 7be237d01aaa26444836cc96cf54fe5d
-    name: Track34_Effect
   - guid: 222bd9a1af3d1ce43bbb83e369a24eab
     name: Track35
-  - guid: ed46e7f060188074bab2b3cbe753f42e
-    name: Track35_Effect
   - guid: 405130ac1ae49b74b9df57bec1a0e5e5
     name: Track36
+  - guid: 0d12fe5c05062e44e848ced0057500aa
+    name: Track4
+  - guid: c9d4bbf5dfa157e419872213e6adf23e
+    name: Track5
+  - guid: ede34d3d0a0ed56499937a0c7d5f565c
+    name: Track6
+  - guid: 8ebf547c9b8937b45b5c8ee7b6ac045f
+    name: Track7
+  - guid: fa0e1a7eb8d683844b18baa68e014fc4
+    name: Track8
+  - guid: 3b7394227636f6144bab4f699a5b8af3
+    name: Track9
+  - guid: 943cab23cd1e56b45925e815c5314234
+    name: Track32_Effect
+  - guid: 908c534d7fd90c7418bc8df84df0c9b7
+    name: Track3_Effect
+  - guid: ec1e7e1a9afccec47a7cb0148f3ffb49
+    name: Track12_Effect
+  - guid: 5546b9c64ac7a7b4fbb095f857927d4e
+    name: Track13_Effect
+  - guid: b734b0a6ef57e0b48b32a5b568761013
+    name: Track2_Effect
+  - guid: f62b10e7ac57c254daeb68773b0f103b
+    name: Track14_Effect
+  - guid: cf283b27c6a11154d993be805db4cf5a
+    name: Track15_Effect
   - guid: 1f8dcea6a94d0b74fb068bb5e714b38b
     name: Track36_Effect
+  - guid: 79f49026284933542a1e6f83dbb68da1
+    name: Track16_Effect
+  - guid: a2c7f557654d61542b7782b14acdfed2
+    name: Track1_Effect
+  - guid: fdc8c22d948592343b1fd714274d197c
+    name: Track19_Effect
+  - guid: fc904e7572a67744fbc09c0b2743c0a6
+    name: Track20_Effect
+  - guid: 233b4621f7aa49145888074253819c49
+    name: Track21_Effect
+  - guid: 788f501a58618074eab19de2d3692e9a
+    name: Track22_Effect
+  - guid: 8c7aa7f4bee9ea745b9e32b877e60e06
+    name: Track24_Effect
+  - guid: 7b123812f231c6e40bf4c1cee25e119a
+    name: Track9_Effect
+  - guid: 4ea607f11253bc64b80afc0d64054c1a
+    name: Track17_Effect
+  - guid: 94e35ec3be0a022459abaecd114cb7c2
+    name: Track10_Effect
+  - guid: 57489563a8a549041a6603c1431d133b
+    name: Track11_Effect
+  - guid: e0a78a132f4b53343888e077085be847
+    name: Track4_Effect
+  - guid: ed46e7f060188074bab2b3cbe753f42e
+    name: Track35_Effect
+  - guid: c9db172fea5d17947839d9a21b58e3aa
+    name: Track27_Effect
+  - guid: c0578f924043e154d8eb5b610b5a7abc
+    name: Track30_Effect
+  - guid: 778016f2c5aaac5458a91f1c12c9a8ed
+    name: Track33_Effect
+  - guid: b0971cced7f32bd44a57196977d0d3f1
+    name: Track26_Effect
+  - guid: 434e37b07cee4884c8eaa452d488bbf1
+    name: Track31_Effect
+  - guid: 7be237d01aaa26444836cc96cf54fe5d
+    name: Track34_Effect
+  - guid: 7af4d475ab6d17740a3d2653ed2b2fb9
+    name: Track25_Effect
+  - guid: b9e2ad8cf3af0aa479d5410f4bca148f
+    name: Track29_Effect
+  - guid: b3dd0de7d6fde5143b069d15ed0eb2be
+    name: Track5_Effect
+  - guid: bf56a7e8861212f49b9c5d26e6c69132
+    name: Track23_Effect
+  - guid: 7246d638be67ca0478ff9f13fc176ed2
+    name: Track6_Effect
+  - guid: 1d823c5061b2fe04bbc0ddb7dde4802b
+    name: Track7_Effect
+  - guid: d79859690bd835546b59760186dc9f82
+    name: Track8_Effect
+  - guid: 4f8f4dda7a8fc124c808c9badb4fbd0a
+    name: Track28_Effect
+  - guid: 4379dcb6844efd640975da3c873c6b8c
+    name: Track18_Effect
   m_AudioMixerGroupViews:
   - guids:
     - 245a6a6f29e21534084e262b6ebe3a5f
@@ -1507,6 +1549,7 @@ AudioMixerSnapshotController:
     222bd9a1af3d1ce43bbb83e369a24eab: -80
     18ce8ba12ae9ddf4aa6ed1f212c9b5ea: 22000
     8a9d2cb1c8625d34db80997689f3e2e3: -80
+    7d4288c1922ee6148875a63a0188a2f2: 10
     92dcbbd14ff2aed4f89428e9b4546a23: -80
     5d26fed108db2584cb9c795c95eba672: 22000
     2ed82fd10cfcdd84bb6268c6fec9f249: -80
@@ -1559,6 +1602,7 @@ AudioMixerSnapshotController:
     000c2b43a8933f842891e30da3164c20: -80
     87ec61639f948134f960f2fc3f0f520e: 0
     57489563a8a549041a6603c1431d133b: -80
+    26e9d963e0d9f7545b8c3b3fd65a307d: 22000
     8d82797381157754ca200ee738b3d494: 0
     45db02835726e6344a4fb966704146f5: -80
     fc663f8375ef557489eb23b54de2839b: -80
@@ -1622,6 +1666,7 @@ AudioMixerSnapshotController:
     6e2203f5c531e3d4d8faccb49da8b3f4: 250
     c1c818f5fa8537b47b4ed60c7a6fb062: -80
     c9d4bbf5dfa157e419872213e6adf23e: -80
+    0aeb31161614f2540ad1f8a321846f51: 22000
     79f49026284933542a1e6f83dbb68da1: -80
     2acb6826fbaace74b86be2367618beea: -80
     edd5ca263b58c994ea6e9cad05baf804: -80
@@ -1785,6 +1830,7 @@ AudioMixerSnapshotController:
     90d4770d3b6a31642997dd6f84fbd830: -80
     9013bc1d6e2ad9940b2294f0f4e37e25: -80
     fdc8c22d948592343b1fd714274d197c: -80
+    0076732db827a0c46911569717a4a545: 10
     45b1692d72e5b414694a32f5a158ebb0: -80
     ede34d3d0a0ed56499937a0c7d5f565c: -80
     908c534d7fd90c7418bc8df84df0c9b7: -80
@@ -1869,6 +1915,22 @@ AudioMixerEffectController:
   m_EffectName: Attenuation
   m_MixLevel: 9fdc656cb564d26409b0c8bc8667c7dc
   m_Parameters: []
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
+--- !u!244 &131362928324430696
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: 97c70c9b3130c3d409f72e357ec23661
+  m_EffectName: Lowpass Simple
+  m_MixLevel: 8baffc5ba8f1c8244a79c268a4282a36
+  m_Parameters:
+  - m_ParameterName: Cutoff freq
+    m_GUID: 26e9d963e0d9f7545b8c3b3fd65a307d
   m_SendTarget: {fileID: 0}
   m_EnableWetMix: 0
   m_Bypass: 0
@@ -2015,6 +2077,22 @@ AudioMixerEffectController:
   m_Parameters: []
   m_SendTarget: {fileID: 1359273693016946029}
   m_EnableWetMix: 1
+  m_Bypass: 0
+--- !u!244 &1190437855613719250
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: 41f9eb94bf6ff974aad12cd4082f94c4
+  m_EffectName: Highpass Simple
+  m_MixLevel: 8637e62da4aaf4e43ab7f1e047bf640e
+  m_Parameters:
+  - m_ParameterName: Cutoff freq
+    m_GUID: 0076732db827a0c46911569717a4a545
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
   m_Bypass: 0
 --- !u!244 &1359273693016946029
 AudioMixerEffectController:
@@ -2688,7 +2766,9 @@ AudioMixerGroupController:
   m_Effects:
   - {fileID: 1359273693016946029}
   - {fileID: -2037953035245109030}
+  - {fileID: 131362928324430696}
   - {fileID: -3542097850365753075}
+  - {fileID: 1190437855613719250}
   - {fileID: -5879888661477976653}
   m_UserColorIndex: 1
   m_Mute: 0

@@ -193,10 +193,10 @@ namespace Ami.BroAudio.Runtime
 			{
 				int lastIndex = tweaker.WaitableList.Count - 1;
 				var effect = tweaker.WaitableList[lastIndex].Effect;
-				string paraName = GetEffectParameterName(effect);
+				string paraName = GetEffectParameterName(effect, out bool hasSecondaryParameter);
 				float currentValue = GetCurrentValue(effect);
 
-				yield return Tweak(currentValue, effect.Value, effect.FadeTime, effect.FadingEase, paraName);
+				yield return Tweak(currentValue, effect.Value, effect.FadeTime, effect.FadingEase, paraName, hasSecondaryParameter);
 				// waitable should be decorated after this tweak
 
 				var waitable = tweaker.WaitableList[lastIndex];
@@ -216,7 +216,7 @@ namespace Ami.BroAudio.Runtime
 				if(tweaker.WaitableList.Count == 1)
 				{
 					// auto reset to origin after last waitable
-					yield return Tweak(GetCurrentValue(effect), tweaker.OriginValue, effect.FadeTime, effect.FadingEase, paraName);
+					yield return Tweak(GetCurrentValue(effect), tweaker.OriginValue, effect.FadeTime, effect.FadingEase, paraName, hasSecondaryParameter);
 				}
 
 				tweaker.WaitableList.RemoveAt(lastIndex);
@@ -225,25 +225,29 @@ namespace Ami.BroAudio.Runtime
 			onFinished?.Invoke();
 		}
 
-		private IEnumerator Tweak(float from, float to, float fadeTime, Ease ease, string paraName, Action onTweakingFinshed = null)
+		private IEnumerator Tweak(float from, float to, float fadeTime, Ease ease, string paraName,bool hasSecondaryParameter = false, Action onTweakingFinshed = null)
 		{
 			if(from == to)
 			{
 				yield break;
 			}
 			var values = AnimationExtension.GetLerpValuesPerFrame(from, to, fadeTime, ease);
-			foreach (float value in values)
+			string secondaryParaName = hasSecondaryParameter ? paraName + "2" : null;
+
+            foreach (float value in values)
 			{
 				_mixer.SafeSetFloat(paraName, value);
+				_mixer.SafeSetFloat(secondaryParaName, value);
 				yield return null;
-			}
+            }
 			_mixer.SafeSetFloat(paraName, to);
-			onTweakingFinshed?.Invoke();
+            _mixer.SafeSetFloat(secondaryParaName, to);
+            onTweakingFinshed?.Invoke();
 		}
 
 		private bool TryGetCurrentValue(Effect effect, out float value)
 		{
-			string paraName = GetEffectParameterName(effect);
+			string paraName = GetEffectParameterName(effect, out bool _);
 			if (!_mixer.SafeGetFloat(paraName, out value))
 			{
 				LogError($"Can't get exposed parameter[{paraName}] Please re-import {BroName.MixerName}");
@@ -270,9 +274,9 @@ namespace Ami.BroAudio.Runtime
 				EffectType effectType = pair.Key;
 				if (TryGetCurrentValue(effect, out float current))
 				{
-					string paraName = GetEffectParameterName(effect);
+					string paraName = GetEffectParameterName(effect, out bool hasSecondaryParameter);
 					SafeStopCoroutine(tweaker.Coroutine);
-					tweaker.Coroutine = StartCoroutine(Tweak(current, tweaker.OriginValue, effect.FadeTime, effect.FadingEase, paraName,OnTweakingFinished));
+					tweaker.Coroutine = StartCoroutine(Tweak(current, tweaker.OriginValue, effect.FadeTime, effect.FadingEase, paraName, hasSecondaryParameter, OnTweakingFinished));
 					tweaker.OriginValue = GetEffectDefaultValue(effectType);
 					tweaker.WaitableList.Clear();
 					tweakingCount++;
@@ -289,9 +293,11 @@ namespace Ami.BroAudio.Runtime
 			}
 		}
 
-		private string GetEffectParameterName(Effect effect)
+		private string GetEffectParameterName(Effect effect, out bool hasSecondaryParameter)
 		{
-			switch (effect.Type)
+			hasSecondaryParameter = false;
+
+            switch (effect.Type)
 			{
 				case EffectType.Volume:
 					if(effect.IsDominator)
@@ -304,9 +310,11 @@ namespace Ami.BroAudio.Runtime
 						return string.Empty;
 					}
 				case EffectType.LowPass:
-					return effect.IsDominator ? BroName.Dominator_LowPassParaName : BroName.LowPassParaName;
+					hasSecondaryParameter = SoundManager.Instance.Setting.AudioFilterSlope == FilterSlope.FourPole;
+                    return effect.IsDominator ? BroName.Dominator_LowPassParaName : BroName.LowPassParaName;
 				case EffectType.HighPass:
-					return effect.IsDominator ? BroName.Dominator_HighPassParaName : BroName.HighPassParaName;
+                    hasSecondaryParameter = SoundManager.Instance.Setting.AudioFilterSlope == FilterSlope.FourPole;
+                    return effect.IsDominator ? BroName.Dominator_HighPassParaName : BroName.HighPassParaName;
 				default:
 					return string.Empty;
 			}

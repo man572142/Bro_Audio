@@ -1,55 +1,58 @@
 using UnityEditor;
-using Ami.BroAudio.Editor;
 using System.Collections.Generic;
 using static Ami.Extension.EditorVersionAdapter;
 
-public class AssetPostprocessorEditor : AssetPostprocessor
+namespace Ami.BroAudio.Editor
 {
-    static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
+    public class AssetPostprocessorEditor : AssetPostprocessor
     {
-        OnDeleteAssets(deletedAssets);
-        OnReimportAsset(importedAssets);
-    }
-
-    private static void OnReimportAsset(string[] importedAssets)
-    {
-        if (importedAssets.Length > 0 && HasOpenEditorWindow<ClipEditorWindow>())
+        static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
-            ClipEditorWindow window = EditorWindow.GetWindow(typeof(ClipEditorWindow)) as ClipEditorWindow;
-            window.OnPostprocessAllAssets();
-        }
-    }
-
-    private static void OnDeleteAssets(string[] deletedAssets)
-    {
-        if (deletedAssets == null || deletedAssets.Length == 0)
-        {
-            return;
+            OnDeleteAssets(deletedAssets);
+            OnReimportAsset(importedAssets);
         }
 
-        List<string> paths = null;
-        foreach (string path in deletedAssets)
+        private static void OnReimportAsset(string[] importedAssets)
         {
-            if (path.Contains(BroEditorUtility.DefaultRelativeAssetOutputPath))
+            if (importedAssets.Length > 0 && HasOpenEditorWindow<ClipEditorWindow>())
             {
-                paths = paths ?? new List<string>();
-                paths.Add(path);
+                ClipEditorWindow window = EditorWindow.GetWindow(typeof(ClipEditorWindow)) as ClipEditorWindow;
+                window.OnPostprocessAllAssets();
             }
         }
 
-        if (paths != null && paths.Count > 0)
+        private static void OnDeleteAssets(string[] deletedAssets)
         {
-            BroEditorUtility.DeleteAssetRelativeData(deletedAssets);
-
-            if (HasOpenEditorWindow<LibraryManagerWindow>())
+            if (deletedAssets == null || deletedAssets.Length == 0)
             {
-                LibraryManagerWindow editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
+                return;
+            }
 
-                foreach (string path in deletedAssets)
+            List<string> paths = null;
+            foreach (string path in deletedAssets)
+            {
+                if (path.Contains(BroEditorUtility.DefaultRelativeAssetOutputPath))
                 {
-                    editorWindow.RemoveAssetEditor(AssetDatabase.AssetPathToGUID(path));
+                    paths = paths ?? new List<string>();
+                    paths.Add(path);
+                }
+            }
+
+            if (paths != null && paths.Count > 0)
+            {
+                BroEditorUtility.DeleteAssetRelativeData(deletedAssets);
+
+                if (HasOpenEditorWindow<LibraryManagerWindow>())
+                {
+                    LibraryManagerWindow editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
+
+                    foreach (string path in deletedAssets)
+                    {
+                        editorWindow.RemoveAssetEditor(AssetDatabase.AssetPathToGUID(path));
+                    }
                 }
             }
         }
     }
+
 }

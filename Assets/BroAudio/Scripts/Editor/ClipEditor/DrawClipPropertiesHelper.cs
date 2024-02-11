@@ -34,8 +34,8 @@ namespace Ami.BroAudio.Editor
 				return Rect == default;
 			}
 		}
-		
-		public const float DragPointSizeLength = 20f;
+
+        public const float DragPointSizeLength = 20f;
 
 		private readonly GUIContent PlaybackMainLabel = new GUIContent("Playback Position");
 		private readonly GUIContent FadeMainLabel = new GUIContent("Fade");
@@ -66,11 +66,6 @@ namespace Ami.BroAudio.Editor
 		public void SetPreviewHeight(float value)
 		{
 			ClipPreviewHeight = value;
-		}
-
-		public float DrawVolumeField(Rect position, string label, float currentValue,RangeFloat range)
-		{
-			return EditorGUI.Slider(position, label, currentValue, range.Min,range.Max);
 		}
 
 		public void DrawPlaybackPositionField(Rect position, ITransport transport)

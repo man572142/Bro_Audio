@@ -4,21 +4,24 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class EditPrefabAssetScope : IDisposable
+namespace Ami.BroAudio.Editor
 {
-
-    public readonly string AssetPath;
-    public readonly GameObject PrefabRoot;
-
-    public EditPrefabAssetScope(string assetPath)
+    public class EditPrefabAssetScope : IDisposable
     {
-        AssetPath = assetPath;
-        PrefabRoot = PrefabUtility.LoadPrefabContents(assetPath);
-    }
 
-    public void Dispose()
-    {
-        PrefabUtility.SaveAsPrefabAsset(PrefabRoot, AssetPath);
-        PrefabUtility.UnloadPrefabContents(PrefabRoot);
+        public readonly string AssetPath;
+        public readonly GameObject PrefabRoot;
+
+        public EditPrefabAssetScope(string assetPath)
+        {
+            AssetPath = assetPath;
+            PrefabRoot = PrefabUtility.LoadPrefabContents(assetPath);
+        }
+
+        public void Dispose()
+        {
+            PrefabUtility.SaveAsPrefabAsset(PrefabRoot, AssetPath);
+            PrefabUtility.UnloadPrefabContents(PrefabRoot);
+        }
     }
 }

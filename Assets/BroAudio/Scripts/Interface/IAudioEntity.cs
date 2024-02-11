@@ -1,3 +1,5 @@
+using Ami.Extension;
+
 namespace Ami.BroAudio.Data
 {
 	public interface IAudioEntity

@@ -29,6 +29,7 @@ namespace Ami.BroAudio.Editor
 		public bool ShowVUColorOnVolumeSlider;
 
 		public List<AudioTypeSetting> AudioTypeSettings;
+		public Object DemoScene = null; 
 
 		public Color GetAudioTypeColor(BroAudioType audioType)
 		{

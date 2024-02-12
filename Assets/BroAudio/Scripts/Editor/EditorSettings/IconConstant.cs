@@ -22,6 +22,7 @@ namespace Ami.BroAudio.Editor
         // GlobalSettingWindow
         public const string AssetOutputBrowser = "FolderOpened Icon";
         public const string GUISettingTab = "GUISkin Icon";
+        public const string CogIcon = "_Popup@2x";
 #if UNITY_2020_2_OR_NEWER
         public const string InfoTab = "UnityEditor.InspectorWindow@2x";
         public const string AudioSettingTab = "AudioMixerController On Icon";

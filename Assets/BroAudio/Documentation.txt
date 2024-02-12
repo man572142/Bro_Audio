@@ -1,0 +1,15 @@
+For a brief understanding of BroAudio, I highly recommend playing with the demo. Apart from showcasing all the features of BroAudio, it also provides simple explanations of how each feature is implemented.
+
+
+DOCUMENTATION
+---------------------------
+Documentation can be found online here:
+
+https://man572142s-organization.gitbook.io/broaudio/
+
+
+COMMUNITY & SUPPORT
+---------------------------------------
+Join  us on  Discord!
+
+https://discord.gg/z6uNmz6Z3A

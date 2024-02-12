@@ -16,6 +16,9 @@ namespace Ami.BroAudio.Editor.Setting
         public const int GlobalSettingMenuIndex = 12;
 		public const string GlobalSettingMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_Setting;
 
+		public const int InfoWindowMenuIndex = 13;
+		public const string InfoWindowMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_Info;
+
         public static Color MainTitleColor => new Color(0.04f, 0.82f, 0.7f);
 		public static Color ClipLabelColor => new Color(0f, 0.9f, 0.5f);
 		public static Color PlayButtonColor => new Color(0.25f, 0.9f, 0.25f, 0.4f);

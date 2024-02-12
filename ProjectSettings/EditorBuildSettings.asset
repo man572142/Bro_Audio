@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Demo/Playground.unity
+    path: Assets/BroAudio/Demo/Playground.unity
     guid: e9017d5f96b9f09489b4b37e1d6eb914
   m_configObjects: {}

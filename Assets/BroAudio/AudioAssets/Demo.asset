@@ -902,8 +902,8 @@ MonoBehaviour:
     <ID>k__BackingField: 1073741828
     MulticlipsPlayMode: 0
     Clips:
-    - AudioClip: {fileID: 8300000, guid: 6e8e59803e9b63a40b44b3ffd48456e0, type: 3}
-      Volume: 1.4
+    - AudioClip: {fileID: 8300000, guid: 3e49a279ffa326149a02217838a68c54, type: 3}
+      Volume: 1
       Delay: 0
       StartPosition: 0
       EndPosition: 0
@@ -1053,134 +1053,6 @@ MonoBehaviour:
       BPM: 0
       Beats: 0
     SnapToFullVolume: 0
-  - <Name>k__BackingField: EffectZoneHum
-    <ID>k__BackingField: 1073741833
-    MulticlipsPlayMode: 0
-    Clips:
-    - AudioClip: {fileID: 8300000, guid: 3d5f4349b7c07d141a6ea7080a95118c, type: 3}
-      Volume: 1
-      Delay: 0
-      StartPosition: 0
-      EndPosition: 0
-      FadeIn: 0
-      FadeOut: 0
-      Weight: 0
-    <MasterVolume>k__BackingField: 0.9
-    <Loop>k__BackingField: 0
-    <SeamlessLoop>k__BackingField: 1
-    <TransitionTime>k__BackingField: 2
-    <SpatialSettings>k__BackingField:
-      StereoPan: 0
-      DopplerLevel: 1
-      MinDistance: 3
-      MaxDistance: 40
-      SpatialBlend:
-        serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 3
-          time: 0
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        - serializedVersion: 3
-          time: 1
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 4
-      ReverbZoneMix:
-        serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 3
-          time: 0
-          value: 0
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 4
-      Spread:
-        serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 3
-          time: 0
-          value: 0
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 4
-      CustomRolloff:
-        serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 3
-          time: 0.25
-          value: 0
-          inSlope: -0
-          outSlope: -0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0.33333334
-          outWeight: 1
-        - serializedVersion: 3
-          time: 0.375
-          value: 1
-          inSlope: -0.0079618255
-          outSlope: -0.0079618255
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0.4402692
-          outWeight: 0.61514956
-        - serializedVersion: 3
-          time: 0.6200043
-          value: 0.22799683
-          inSlope: -1.6477453
-          outSlope: -1.6477453
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0.54692876
-          outWeight: 0.19547956
-        - serializedVersion: 3
-          time: 1
-          value: 0
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0.3897062
-          outWeight: 0
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 4
-      RolloffMode: 2
-    <Priority>k__BackingField: 128
-    <Pitch>k__BackingField: 1
-    <PitchRandomRange>k__BackingField: 0
-    <VolumeRandomRange>k__BackingField: 0
-    <RandomFlags>k__BackingField: 0
-    SeamlessTransitionType: 1
-    TransitionTempo:
-      BPM: 0
-      Beats: 0
-    SnapToFullVolume: 0
   - <Name>k__BackingField: WindChime
     <ID>k__BackingField: 1073741829
     MulticlipsPlayMode: 0
@@ -1312,6 +1184,134 @@ MonoBehaviour:
           tangentMode: 0
           weightedMode: 0
           inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      RolloffMode: 2
+    <Priority>k__BackingField: 128
+    <Pitch>k__BackingField: 1
+    <PitchRandomRange>k__BackingField: 0
+    <VolumeRandomRange>k__BackingField: 0
+    <RandomFlags>k__BackingField: 0
+    SeamlessTransitionType: 1
+    TransitionTempo:
+      BPM: 0
+      Beats: 0
+    SnapToFullVolume: 0
+  - <Name>k__BackingField: EffectZoneHum
+    <ID>k__BackingField: 1073741833
+    MulticlipsPlayMode: 0
+    Clips:
+    - AudioClip: {fileID: 8300000, guid: 3d5f4349b7c07d141a6ea7080a95118c, type: 3}
+      Volume: 1
+      Delay: 0
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    <MasterVolume>k__BackingField: 0.9
+    <Loop>k__BackingField: 0
+    <SeamlessLoop>k__BackingField: 1
+    <TransitionTime>k__BackingField: 2
+    <SpatialSettings>k__BackingField:
+      StereoPan: 0
+      DopplerLevel: 1
+      MinDistance: 3
+      MaxDistance: 40
+      SpatialBlend:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      ReverbZoneMix:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      Spread:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      CustomRolloff:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0.25
+          value: 0
+          inSlope: -0
+          outSlope: -0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 1
+        - serializedVersion: 3
+          time: 0.375
+          value: 1
+          inSlope: -0.0079618255
+          outSlope: -0.0079618255
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.4402692
+          outWeight: 0.61514956
+        - serializedVersion: 3
+          time: 0.6200043
+          value: 0.22799683
+          inSlope: -1.6477453
+          outSlope: -1.6477453
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.54692876
+          outWeight: 0.19547956
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.3897062
           outWeight: 0
         m_PreInfinity: 2
         m_PostInfinity: 2

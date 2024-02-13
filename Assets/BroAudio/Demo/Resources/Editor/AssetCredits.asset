@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: AssetCredits
   m_EditorClassIdentifier: 
   Credits:
-  - Source: {fileID: 8300000, guid: 6e8e59803e9b63a40b44b3ffd48456e0, type: 3}
+  - Source: {fileID: 8300000, guid: 3e49a279ffa326149a02217838a68c54, type: 3}
     Type: 0
     Name: 651742__department64__underwater-blub-01
     Author: Department64

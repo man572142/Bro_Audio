@@ -15,9 +15,25 @@ namespace Ami.BroAudio.Demo
 		[SerializeField, Frequency] float _lowPassFrequency = default;
 
 		private Coroutine _coroutine;
+		private IAudioPlayer _explosionPlayer = null;
+		private IAudioPlayer _warningPlayer = null;
 
-		public override void OnInZoneChanged(bool isInZone)
+        private void PlayAudio()
+        {
+            _explosionPlayer = BroAudio.Play(_explosion);
+            _explosionPlayer.AsDominator().LowPassOthers(_lowPassFrequency);
+
+            _warningPlayer = BroAudio.Play(_warningVoice);
+            _warningPlayer.AsDominator().LowPassOthers(_lowPassFrequency);
+        }
+
+        public override void OnInZoneChanged(bool isInZone)
 		{
+			//if(_explosionPlayer.IsPlaying || _warningPlayer.IsPlaying)
+			//{
+			//	return;
+			//}
+
 			if(_coroutine != null)
 			{
 				StopCoroutine(_coroutine);
@@ -25,7 +41,7 @@ namespace Ami.BroAudio.Demo
 
 			if(isInZone)
 			{
-				_coroutine = StartCoroutine(KeepLooping());
+				_coroutine = StartCoroutine(KeepPlaying());
 			}
 			else
 			{
@@ -35,22 +51,23 @@ namespace Ami.BroAudio.Demo
 			}
 		}
 
-		private IEnumerator KeepLooping()
+		private IEnumerator KeepPlaying()
 		{
 			while(true)
-			{
-				if(_particle.isPlaying)
-				{
-					yield return new WaitWhile(() => _particle.isPlaying);
-				}
+            {
+                if (_particle.isPlaying)
+                {
+                    yield return new WaitWhile(() => _particle.isPlaying);
+                }
 
-				_particle.Play();
-				BroAudio.Play(_explosion).AsDominator().LowPassOthers(_lowPassFrequency);
-				BroAudio.Play(_warningVoice).AsDominator().LowPassOthers(_lowPassFrequency);
-				_fog.Stop();
-				_fog.gameObject.SetActive(false);
-				yield return new WaitForSeconds(_playInterval);
-			}
-		}
-	}
+                _particle.Play();
+                _fog.Stop();
+                _fog.gameObject.SetActive(false);
+
+                PlayAudio();
+                
+                yield return new WaitForSeconds(_playInterval);
+            }
+        }
+    }
 }

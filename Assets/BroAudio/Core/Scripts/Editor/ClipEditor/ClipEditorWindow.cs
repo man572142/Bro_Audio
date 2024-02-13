@@ -131,7 +131,7 @@ namespace Ami.BroAudio.Editor
 
 			DrawEmptyLine(1);
 			DrawClipPreview(drawPosition, position.height * 0.3f);
-			DrawClipPropertiesHelper.DrawPlaybackIndicator(position.Scoping(position));
+			DrawClipPropertiesHelper.DrawPlaybackIndicator(position.OverridePosition(0f,0f));
 
 			drawPosition.x += Gap;
 			drawPosition.width -= Gap * 2;

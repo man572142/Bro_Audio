@@ -178,6 +178,11 @@ namespace Ami.Extension
 
 		private static Vector2 ToVector2(this Vector3 vector) => vector;
 
+		public static Rect GetHorizontalCenterRect(this Rect rect, float width, float height)
+		{
+			return new Rect(rect) { x = rect.x + (rect.width * 0.5f) - (width * 0.5f) , width = width, height = height};
+		}
+
 		public static bool TryGetPropertyObject<T>(this SerializedProperty sourceProperty, string propertyPath, out T newProperty) where T : class
 		{
 			newProperty = null;

@@ -188,7 +188,7 @@ namespace Ami.BroAudio.Editor
 		private void DrawIdText(Rect position, int id)
 		{
 #if BroAudio_DevOnly
-			Rect labelRect = new Rect(position) { width = 90f, x = position.xMax -90f};
+			Rect labelRect = new Rect(position) { width = 100f, x = position.xMax -100f};
 			EditorGUI.LabelField(labelRect, $"ID: {id}", EditorStyles.label); 
 #endif
 		}
@@ -222,7 +222,10 @@ namespace Ami.BroAudio.Editor
 			{
 				height += ReorderableList.Defaults.padding; // reorderableList element padding;
 				height += TabLabelHeight + SingleLineSpace * 0.5f; // Tab View + compensation
-				GetOrAddTabDict(property.propertyPath, out Tab tab);
+#if !UNITY_2019_3_OR_NEWER
+                height += SingleLineSpace;
+#endif
+                GetOrAddTabDict(property.propertyPath, out Tab tab);
 				switch (tab)
 				{
 					case Tab.Clips:
@@ -256,11 +259,15 @@ namespace Ami.BroAudio.Editor
 		private void DrawEntityNameField(Rect position, SerializedProperty nameProp)
         {
             EditorGUI.BeginChangeCheck();
-			Rect nameRect = new Rect(position) { height = EditorGUIUtility.singleLineHeight};
+#if UNITY_2019_3_OR_NEWER
+			Rect nameRect = new Rect(position) { height = EditorGUIUtility.singleLineHeight };
 			nameRect.x += FoldoutArrowWidth;
 			nameRect.width = Mathf.Min(nameRect.width - FoldoutArrowWidth, MaxTextFieldWidth);
 			nameRect.y += 1f;
-			nameProp.stringValue = EditorGUI.TextField(nameRect, nameProp.stringValue);
+#else
+			Rect nameRect = new Rect(GetRectAndIterateLine(position));
+#endif
+            nameProp.stringValue = EditorGUI.TextField(nameRect, nameProp.stringValue);
             if (EditorGUI.EndChangeCheck())
             {
                 OnEntityNameChanged?.Invoke();

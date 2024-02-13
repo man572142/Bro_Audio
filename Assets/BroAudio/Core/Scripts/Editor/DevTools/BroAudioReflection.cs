@@ -24,14 +24,14 @@ namespace Ami.Extension.Reflection
 		}
 
 		public const string DefaultSnapshot = "Snapshot";
-		public const string SendEffectParameter = "Send";
+		public const string SendEffectName = "Send";
 		public const string AttenuationEffectParameter = "Attenuation";
 
 		public const string SendTargetProperty = "sendTarget";
 		public const string ColorIndexParameter = "userColorIndex";
 		public const string WetMixProperty = "enableWetMix";
 
-		public static AudioMixerGroup DuplicateBroAudioTrack(AudioMixer mixer, AudioMixerGroup mainTrack, AudioMixerGroup sourceTrack, string newTrackName)
+		public static AudioMixerGroup DuplicateBroAudioTrack(AudioMixer mixer, AudioMixerGroup parentTrack, AudioMixerGroup sourceTrack, string newTrackName, ExposedParameterType exposedParameterType = ExposedParameterType.All)
 		{
 			// Using [DuplicateGroupRecurse] method on AudioMixerController will cause some unexpected result.
 			// Create a new one and copy the setting manually might be better.
@@ -41,7 +41,7 @@ namespace Ami.Extension.Reflection
 			AudioMixerGroup newGroup = ExecuteMethod("CreateNewGroup", new object[] { newTrackName, false }, reflection.MixerClass, mixer) as AudioMixerGroup;
 			if (newGroup != null)
 			{
-				ExecuteMethod("AddChildToParent", new object[] { newGroup, mainTrack }, reflection.MixerClass, mixer);
+				ExecuteMethod("AddChildToParent", new object[] { newGroup, parentTrack }, reflection.MixerClass, mixer);
 				ExecuteMethod("AddGroupToCurrentView", new object[] { newGroup }, reflection.MixerClass, mixer);
 				ExecuteMethod("OnSubAssetChanged", null, reflection.MixerClass, mixer);
 
@@ -49,15 +49,22 @@ namespace Ami.Extension.Reflection
 				CopyMixerGroupValue(ExposedParameterType.Volume, mixer, reflection.MixerGroupClass, sourceTrack.name, newGroup);
 				//CopyMixerGroupValue(ExposedParameterType.Pitch, mixer, reflection.MixerGroupClass, sourceTrack.name, newGroup);
 
-				ExposeParameter(ExposedParameterType.Volume, newGroup, reflection);
-				//ExposeParameter(ExposedParameterType.Pitch, newGroup, reflection);
-
 				object effect = CopySendEffect(sourceTrack, newGroup, reflection);
-				ExposeParameter(ExposedParameterType.EffectSend, newGroup, reflection, effect);
+
+				ExposeParameterIfContains(ExposedParameterType.Volume);
+                //ExposeParameterIfContains(ExposedParameterType.Pitch);
+                ExposeParameterIfContains(ExposedParameterType.EffectSend, effect);
 			}
 			return newGroup;
-		}
 
+			void ExposeParameterIfContains(ExposedParameterType targetType,params object[] additionalObjects)
+			{
+                if (exposedParameterType.Contains(targetType))
+                {
+                    ExposeParameter(targetType, newGroup, reflection, additionalObjects);
+                }
+            }
+		}
 
 		private static object CreateParameterPathInstance(string className, params object[] parameters)
 		{
@@ -103,29 +110,31 @@ namespace Ami.Extension.Reflection
 
 		private static object CopySendEffect(AudioMixerGroup sourceGroup, AudioMixerGroup targetGroup, AudioClassReflectionHelper reflection)
 		{
-			if (TryGetEffect(sourceGroup, SendEffectParameter, reflection,out object sourceSendEffect))
+			if (TryGetFirstEffect(sourceGroup, SendEffectName, reflection,out object sourceSendEffect, out int effectIndex))
 			{
 				var sendTarget = GetProperty<object>(SendTargetProperty, reflection.EffectClass, sourceSendEffect);
 				var clonedEffect = ExecuteMethod("CopyEffect", new object[] { sourceSendEffect }, reflection.MixerClass, sourceGroup.audioMixer);
 				SetProperty(SendTargetProperty, reflection.EffectClass, clonedEffect, sendTarget);
 				SetProperty(WetMixProperty, reflection.EffectClass, clonedEffect, true);
-				ExecuteMethod("InsertEffect", new object[] { clonedEffect, 0 }, reflection.MixerGroupClass, targetGroup);
+				ExecuteMethod("InsertEffect", new object[] { clonedEffect, effectIndex }, reflection.MixerGroupClass, targetGroup);
 				return clonedEffect;
 			}
 			return null;
 		}
 
-		private static bool TryGetEffect(AudioMixerGroup mixerGroup,string targetEffectName ,AudioClassReflectionHelper reflection,out object result)
+		private static bool TryGetFirstEffect(AudioMixerGroup mixerGroup,string targetEffectName ,AudioClassReflectionHelper reflection,out object result, out int effectIndex)
 		{
 			result = null;
+			effectIndex = 0;
 			object[] effects = GetProperty<object[]>("effects", reflection.MixerGroupClass, mixerGroup);
 
-			foreach (var effect in effects)
+			for(int i = 0; i < effects.Length;i++)
 			{
-				string effectName = GetProperty<string>("effectName", reflection.EffectClass, effect);
+				string effectName = GetProperty<string>("effectName", reflection.EffectClass, effects[i]);
 				if (effectName == targetEffectName)
 				{
-					result = effect;
+					result = effects[i];
+					effectIndex = i;
 				}
 			}
 			return result != null;
@@ -158,9 +167,9 @@ namespace Ami.Extension.Reflection
 					{
                         effect = additionalObjects[0];
                     }
-					else if (!TryGetEffect(mixerGroup, SendEffectParameter, reflection, out effect))
+					else if (!TryGetFirstEffect(mixerGroup, SendEffectName, reflection, out effect, out _))
 					{
-						UnityEngine.Debug.LogError($"Can't expose [{SendEffectParameter}] on AudioMixerGroup:{mixerGroup.name}");
+						UnityEngine.Debug.LogError($"Can't expose [{SendEffectName}] on AudioMixerGroup:{mixerGroup.name}");
 						return;
                     }
 

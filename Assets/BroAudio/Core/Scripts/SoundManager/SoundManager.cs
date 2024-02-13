@@ -93,7 +93,7 @@ namespace Ami.BroAudio.Runtime
             AudioMixerGroup[] dominatorGroups = _broAudioMixer.FindMatchingGroups(DominatorTrackName);
             
             _audioTrackPool = new AudioTrackObjectPool(mixerGroups);
-            _dominatorTrackPool = new AudioTrackObjectPool(dominatorGroups);
+            _dominatorTrackPool = new AudioTrackObjectPool(dominatorGroups, true);
 
             InitBank();
             _automationHelper = new EffectAutomationHelper(this, _broAudioMixer);

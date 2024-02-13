@@ -55,9 +55,7 @@ namespace Ami.BroAudio.Editor
             {
                 DrawEmptyLine(1);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Play The Demo!".ToWhiteBold().SetSize(20), middleCenterRichText);
-                Rect demoRect = GetRectAndIterateLine(drawPosition);
-                demoRect.x = (drawPosition.width * 0.5f) - (DemoReferenceFieldWidth * 0.5f);
-                demoRect.width = DemoReferenceFieldWidth;
+                Rect demoRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(DemoReferenceFieldWidth, SingleLineSpace);
                 EditorGUI.ObjectField(demoRect, BroEditorUtility.EditorSetting.DemoScene, typeof(UnityEngine.Object),false);
 
                 DrawParagraph(drawPosition, "The demo not only shows all of the features, but also how to use the API and how they're implemented", 2);

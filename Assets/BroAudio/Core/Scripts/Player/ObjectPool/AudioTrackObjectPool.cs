@@ -8,17 +8,26 @@ namespace Ami.BroAudio.Runtime
 	{
 		private AudioMixerGroup[] _audioMixerGroups = null;
 		private int _usedTrackCount = 0;
-		public AudioTrackObjectPool(AudioMixerGroup[] audioMixerGroups) : base(null, audioMixerGroups.Length)
+		private readonly bool _isDominator = false;
+		public AudioTrackObjectPool(AudioMixerGroup[] audioMixerGroups, bool isDominator = false) : base(null, audioMixerGroups.Length)
 		{
 			_audioMixerGroups = audioMixerGroups;
+			_isDominator = isDominator;
 		}
 
 		protected override AudioMixerGroup CreateObject()
 		{
 			if (_usedTrackCount >= _audioMixerGroups.Length)
 			{
-				LogWarning("You have reached the limit of BroAudio tracks count, which is way beyond the MaxRealVoices count. " +
-					"That means the sound will be inaudible, and also uncontrollable. For more infomation, please check the documentation" );
+				if(_isDominator)
+				{
+                    LogWarning("You have used up all the [Dominator] tracks. If you need more tracks, please click the [Add Dominator Track] button in Tool/BroAudio/Settings.");
+                }
+				else
+				{
+                    LogWarning("You have reached the limit of BroAudio tracks count, which is way beyond the MaxRealVoices count. " +
+                    "That means the sound will be inaudible, and also uncontrollable. For more infomation, please check the documentation");
+                }
 				return null;
 			}
 

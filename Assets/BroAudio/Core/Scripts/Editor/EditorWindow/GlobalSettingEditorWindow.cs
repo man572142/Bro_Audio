@@ -40,7 +40,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string ShowAudioTypeToggleLabel = "Show audioType on AudioID";
 		public const string AudioTypeColorLabel = "Audio Type Color";
 		public const string AudioTypeDrawedProperties = "Displayed Properties";
-		
+		public const string AddDominatorTrackLabel = "Add Dominator Track";
 		public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
 		public const string ProjectSettings = "Project Settings";
 		public const string RealVoicesParameterName = "Max Real Voices";
@@ -372,6 +372,17 @@ namespace Ami.BroAudio.Editor.Setting
 			}
 		}
 
+		private void AddDominatorTrack()
+		{
+			AudioMixerGroup masterTrack = AudioMixer.FindMatchingGroups(MasterTrackName).FirstOrDefault();
+            AudioMixerGroup[] dominatorTracks = AudioMixer.FindMatchingGroups(DominatorTrackName);
+			if(masterTrack != null && dominatorTracks != null && dominatorTracks.Length > 0)
+			{
+				string trackName = $"{DominatorTrackName}{dominatorTracks.Length + 1}";
+				BroAudioReflection.DuplicateBroAudioTrack(AudioMixer, masterTrack, dominatorTracks[dominatorTracks.Length - 1], trackName, ExposedParameterType.Volume);
+			}
+		}
+
 		private bool HasValidProjectSettingVoiceCount()
 		{
 			if (_currProjectSettingVoiceCount < 0)
@@ -478,12 +489,24 @@ namespace Ami.BroAudio.Editor.Setting
 		{
             DrawAssetOutputPath(drawPosition);
 			DrawEmptyLine(1);
-            Rect resetButtonRect = GetRectAndIterateLine(drawPosition);
-            resetButtonRect.height *= 1.5f;
-            if (GUI.Button(resetButtonRect, ResetSettingButtonText))
-            {
+
+			if(Button(AddDominatorTrackLabel))
+			{
+				AddDominatorTrack();
+			}
+            DrawEmptyLine(1);
+
+            if (Button(ResetSettingButtonText))
+			{
                 RuntimeSetting.ResetToFactorySettings();
                 EditorSetting.ResetToFactorySettings();
+            }
+            DrawEmptyLine(1);
+
+			bool Button(string label)
+			{
+                Rect buttonRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(400f, SingleLineSpace * 1.5f);
+				return GUI.Button(buttonRect, label);
             }
         }
 
@@ -494,9 +517,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 			GUIStyle style = new GUIStyle(EditorStyles.objectField);
 			style.alignment = TextAnchor.MiddleCenter;
-			Rect rect = GetRectAndIterateLine(drawPosition);
-			rect.x += drawPosition.width * 0.15f;
-			rect.width = drawPosition.width * 0.7f;
+			Rect rect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(drawPosition.width * 0.7f, SingleLineSpace);
 			if (GUI.Button(rect, new GUIContent(AssetOutputPath), style))
 			{
 				string openPath = AssetOutputPath;

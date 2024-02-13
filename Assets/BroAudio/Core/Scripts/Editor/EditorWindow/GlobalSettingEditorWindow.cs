@@ -157,8 +157,6 @@ namespace Ami.BroAudio.Editor.Setting
             base.OnGUI();
             Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
 
-			DrawEmptyLine(1);
-
 			if (Message != OpenMessage.None)
             {
                 DrawEmptyLine(1);
@@ -175,7 +173,6 @@ namespace Ami.BroAudio.Editor.Setting
                 }
             }
 
-            DrawAssetOutputPath(drawPosition);
             DrawEmptyLine(1);
 
             drawPosition.x += Gap;
@@ -479,6 +476,8 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawMiscellaneousSetting(Rect drawPosition)
 		{
+            DrawAssetOutputPath(drawPosition);
+			DrawEmptyLine(1);
             Rect resetButtonRect = GetRectAndIterateLine(drawPosition);
             resetButtonRect.height *= 1.5f;
             if (GUI.Button(resetButtonRect, ResetSettingButtonText))

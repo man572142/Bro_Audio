@@ -90,11 +90,11 @@ namespace Ami.BroAudio.Runtime
                 
             }
 
-            AudioTrack = _getAudioTrack.Invoke(TrackType);
 			this.SafeStopCoroutine(_trackVolumeControlCoroutine);
-			TrackVolume *= pref.AudioTypePlaybackPref.Volume;
+			TrackVolume = StaticTrackVolume * pref.AudioTypePlaybackPref.Volume;           
             ClipVolume = 0f;
-            float targetVolume = GetTargetVolume();
+            float targetClipVolume = GetTargetClipVolume();
+            AudioTrack = _getAudioTrack.Invoke(TrackType);
             RemoveFromResumablePlayer();
 
             // AudioSource.clip.samples returns the time samples length, not the data samples, so we don't need to multiply the channel count.
@@ -111,7 +111,7 @@ namespace Ami.BroAudio.Runtime
                         AudioSource.UnPause();
                         break;
                     case StopMode.Mute:
-                        this.SetVolume(TrackVolumeBeforeMute);
+                        this.SetVolume(StaticTrackVolume);
                         if (!AudioSource.isPlaying)
                         {
                             PlayFromPos(CurrentClip.StartPosition);
@@ -124,12 +124,12 @@ namespace Ami.BroAudio.Runtime
                 {
                     IsFadingIn = true;
                     //FadeIn start from here
-                    yield return Fade(targetVolume, fadeIn, fader,pref.FadeInEase);
+                    yield return Fade(targetClipVolume, fadeIn, fader,pref.FadeInEase);
                     IsFadingIn = false;
                 }
                 else
                 {
-                    ClipVolume = targetVolume;
+                    ClipVolume = targetClipVolume;
                 }
                 #endregion
 
@@ -168,7 +168,7 @@ namespace Ami.BroAudio.Runtime
 				AudioSource.Play();
 			}
 
-            float GetTargetVolume()
+            float GetTargetClipVolume()
 			{
                 float result = CurrentClip.Volume;
                 if(pref.Entity.RandomFlags.Contains(RandomFlags.Volume))
@@ -260,7 +260,7 @@ namespace Ami.BroAudio.Runtime
                     AddResumablePlayer();
                     break;
 				case StopMode.Mute:
-                    TrackVolumeBeforeMute = TrackVolume;
+                    StaticTrackVolume = TrackVolume;
                     this.SetVolume(0f, 0f);
                     AddResumablePlayer();
                     break;

@@ -18,14 +18,12 @@ namespace Ami.BroAudio.Runtime
         }
 
         public const float DefaultClipVolume = 0f;
-        public const float DefaultTrackVolume = 1f;
+        public const float DefaultTrackVolume = AudioConstant.FullVolume;
         public const float DefaultMixerDecibelVolume = int.MinValue;
 
-        private float _clipVolume = DefaultClipVolume;
+        private float _clipVolume = 0f;
         private float _trackVolume = DefaultTrackVolume;
         private float _mixerDecibelVolume = DefaultMixerDecibelVolume;
-        
-        public float TrackVolumeBeforeMute { get; private set; } = DefaultTrackVolume;
 
         /// <summary>
         /// The playback volume of an audio clip, it's determined by the clip's property settings, such as Fade In/Out.   
@@ -62,6 +60,11 @@ namespace Ami.BroAudio.Runtime
         }
 
         /// <summary>
+        /// Track volume without any fading process
+        /// </summary>
+        public float StaticTrackVolume { get; private set; } = DefaultTrackVolume;
+
+        /// <summary>
         /// The final decibel volume that is set in the mixer.
         /// </summary>
         public float MixerDecibelVolume
@@ -87,6 +90,7 @@ namespace Ami.BroAudio.Runtime
 
         IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime)
         {
+            StaticTrackVolume = vol; // in case the fading process is interrupted
             this.SafeStopCoroutine(_trackVolumeControlCoroutine);
             if(fadeTime > 0)
 			{
@@ -144,7 +148,7 @@ namespace Ami.BroAudio.Runtime
             _clipVolume = DefaultClipVolume;
             _trackVolume = DefaultTrackVolume;
             _mixerDecibelVolume = DefaultMixerDecibelVolume;
-            TrackVolumeBeforeMute = DefaultTrackVolume;
+            StaticTrackVolume = DefaultTrackVolume;
         }
 
 #if UNITY_WEBGL

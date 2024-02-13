@@ -9,14 +9,11 @@ namespace Ami.BroAudio.Demo
         [SerializeField] AudioID _targetAmbience = default;
         [SerializeField, Volume] float _absorbedvolume = 0.2f;
 
-        private bool _hasStartSet = false;
-
         public override void OnInZoneChanged(bool isInZone)
         {
             if(isInZone)
             {
-                BroAudio.SetVolume(_targetAmbience, _absorbedvolume, _hasStartSet ? 1f : 0f);
-                _hasStartSet= true;
+                BroAudio.SetVolume(_targetAmbience, _absorbedvolume);
             }
             else
             {

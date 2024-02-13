@@ -1,4 +1,5 @@
-For a brief understanding of BroAudio, I highly recommend playing with the demo. Apart from showcasing all the features of BroAudio, it also provides simple explanations of how each feature is implemented.
+For a brief understanding of BroAudio, PLAY THE DEMO! 
+It's not only showcasing all the features, but also shows how to use the API and how to implement them.
 
 
 DOCUMENTATION

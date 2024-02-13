@@ -37,9 +37,45 @@ MonoBehaviour:
     Author: costaipsa
     License: CC BY 4.0 DEED | Attribution 4.0 International
     Link: https://freesound.org/people/costaipsa/sounds/113605/
-  - Source: {fileID: 2800000, guid: febbed9a8f306644bb80f1e82760cc28, type: 3}
+  - Source: {fileID: 2800000, guid: 51ed4726eea51754e872b046fc4dc9e7, type: 3}
     Type: 1
     Name: water 0342
     Author: CADHatch.com
     License: Royalty-Free Commercial License
     Link: https://www.cadhatch.com/seamless-water-textures
+  - Source: {fileID: 2800000, guid: 4509916e97249124fad9e39c028c578c, type: 3}
+    Type: 1
+    Name: Ground 033
+    Author: 'Lennart Demes '
+    License: CC0 1.0 Universal License
+    Link: https://ambientcg.com/view?id=Ground033
+  - Source: {fileID: 2800000, guid: de962d52f2b8b0d42af56b07cf26c555, type: 3}
+    Type: 1
+    Name: Rock012
+    Author: 'Lennart Demes '
+    License: CC0 1.0 Universal License
+    Link: https://ambientcg.com/view?id=Rock012
+  - Source: {fileID: 8300000, guid: 848655dc9c9ffea40801f3da92b146d6, type: 3}
+    Type: 0
+    Name: DroneMusic
+    Author: sonniss
+    License: THE #GAMEAUDIOGDC BUNDLE LICENSING
+    Link: https://sonniss.com/gameaudiogdc
+  - Source: {fileID: 8300000, guid: 31f987a22b50cfb4388695cfa0ce70a3, type: 3}
+    Type: 0
+    Name: Transition_Mystery-08
+    Author: sonniss
+    License: THE #GAMEAUDIOGDC BUNDLE LICENSING
+    Link: https://sonniss.com/gameaudiogdc
+  - Source: {fileID: 8300000, guid: 3d5f4349b7c07d141a6ea7080a95118c, type: 3}
+    Type: 0
+    Name: SBsfi2_Musical Hum 003
+    Author: sonniss
+    License: THE #GAMEAUDIOGDC BUNDLE LICENSING
+    Link: https://sonniss.com/gameaudiogdc
+  - Source: {fileID: 8300000, guid: b4281e86518cede498465899fed49af8, type: 3}
+    Type: 0
+    Name: AMBIENCE Desert Soft Day
+    Author: sonniss
+    License: THE #GAMEAUDIOGDC BUNDLE LICENSING
+    Link: https://sonniss.com/gameaudiogdc

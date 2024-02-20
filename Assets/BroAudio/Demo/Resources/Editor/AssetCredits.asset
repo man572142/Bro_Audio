@@ -31,12 +31,6 @@ MonoBehaviour:
     Author: Anomaex
     License: CC0 1.0 DEED | CC0 1.0 Universal
     Link: https://freesound.org/people/Anomaex/sounds/490253/
-  - Source: {fileID: 8300000, guid: 09f9ab16ce6a5c34f9af0e7d6c2bec6f, type: 3}
-    Type: 0
-    Name: BEACH_SMALL_SAND_DISTANT
-    Author: costaipsa
-    License: CC BY 4.0 DEED | Attribution 4.0 International
-    Link: https://freesound.org/people/costaipsa/sounds/113605/
   - Source: {fileID: 2800000, guid: 51ed4726eea51754e872b046fc4dc9e7, type: 3}
     Type: 1
     Name: water 0342
@@ -55,7 +49,7 @@ MonoBehaviour:
     Author: 'Lennart Demes '
     License: CC0 1.0 Universal License
     Link: https://ambientcg.com/view?id=Rock012
-  - Source: {fileID: 8300000, guid: 848655dc9c9ffea40801f3da92b146d6, type: 3}
+  - Source: {fileID: 8300000, guid: 7fcbf7b868366444a8fd8e3616c50ba9, type: 3}
     Type: 0
     Name: DroneMusic
     Author: sonniss
@@ -76,6 +70,12 @@ MonoBehaviour:
   - Source: {fileID: 8300000, guid: b4281e86518cede498465899fed49af8, type: 3}
     Type: 0
     Name: AMBIENCE Desert Soft Day
+    Author: sonniss
+    License: THE #GAMEAUDIOGDC BUNDLE LICENSING
+    Link: https://sonniss.com/gameaudiogdc
+  - Source: {fileID: 8300000, guid: 5fa5b0707fe528747a365bfa62913341, type: 3}
+    Type: 0
+    Name: water_lapping_sea_waves_sandy_beach_5_meters_01
     Author: sonniss
     License: THE #GAMEAUDIOGDC BUNDLE LICENSING
     Link: https://sonniss.com/gameaudiogdc

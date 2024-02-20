@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Demo
 	public class LetterBoxSetter : MonoBehaviour
 	{
 		//public event Action OnRollFinished;
-
+		[SerializeField] RectTransform _canvasRectTransform = null;
 		[SerializeField] RectTransform _letterBoxTop = null;
 		[SerializeField] RectTransform _letterBoxBottom = null;
 		[SerializeField] float _targetRatio = default;
@@ -17,21 +17,22 @@ namespace Ami.BroAudio.Demo
 
 		private void Start()
 		{
-			float screenWidth = Screen.width;
-			float screenHeight = Screen.height;
+			float screenWidth = _canvasRectTransform.rect.width;
+			float screenHeight = _canvasRectTransform.rect.height;
 			if (_targetRatio <= screenWidth / screenHeight)
 			{
 				Debug.LogError("Letterbox's target ratio should be greater than the current screen aspect ratio");
 				return;
 			}
 
-			_barHeight = (screenHeight - screenWidth / _targetRatio) * 0.5f;
+            _barHeight = (screenHeight - screenWidth / _targetRatio) * 0.5f;
 
 			_letterBoxTop.sizeDelta = new Vector2(screenWidth, _barHeight);
 			_letterBoxTop.anchoredPosition = new Vector2(0f, _barHeight);
 
 			_letterBoxBottom.sizeDelta = new Vector2(screenWidth, _barHeight);
 			_letterBoxBottom.anchoredPosition = new Vector2(0f, -_barHeight);
+
 		}
 
 		//public void Roll(float duration, bool isRollIn)

@@ -16,7 +16,7 @@ namespace Ami.BroAudio.Editor
         }
 
 
-		public const bool CanEdit = true;
+		public const bool CanEdit = false;
 
         [System.Serializable]
         public struct Credit

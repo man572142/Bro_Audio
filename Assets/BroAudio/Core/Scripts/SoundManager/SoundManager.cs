@@ -292,12 +292,15 @@ namespace Ami.BroAudio.Runtime
         {
             // For those which are currently playing.
             var players = _audioPlayerPool.GetCurrentAudioPlayers();
-            foreach (var player in players)
+            if (players != null)
             {
-                if(player.IsPlaying)
+                foreach (var player in players)
                 {
-					onGetPlayer?.Invoke(player);
-				}
+                    if (player.IsPlaying)
+                    {
+                        onGetPlayer?.Invoke(player);
+                    }
+                }
             }
         }
 

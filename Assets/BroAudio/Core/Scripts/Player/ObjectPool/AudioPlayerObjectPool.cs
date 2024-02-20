@@ -59,15 +59,9 @@ namespace Ami.BroAudio.Runtime
 			}
 		}
 
-		public IEnumerable<AudioPlayer> GetCurrentAudioPlayers()
+		public IReadOnlyList<AudioPlayer> GetCurrentAudioPlayers()
 		{
-			if(_currentPlayers != null)
-			{
-				foreach (var player in _currentPlayers)
-				{
-					yield return player;
-				}
-			}	
-		}
+			return _currentPlayers;
+        }
 	}
 }

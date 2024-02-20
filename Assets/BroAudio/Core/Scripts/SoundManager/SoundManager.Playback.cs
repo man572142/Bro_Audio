@@ -88,11 +88,14 @@ namespace Ami.BroAudio.Runtime
         private void StopPlayer(float fadeTime,Predicate<AudioPlayer> predicate)
         {
             var players = _audioPlayerPool.GetCurrentAudioPlayers();
-            foreach (var player in players)
+            if(players != null)
             {
-                if (predicate.Invoke(player))
+                foreach (var player in players)
                 {
-                    player.Stop(fadeTime);
+                    if (player.IsPlaying && predicate.Invoke(player))
+                    {
+                        player.Stop(fadeTime);
+                    }
                 }
             }
         }

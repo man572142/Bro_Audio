@@ -5,7 +5,6 @@ using System.IO;
 using System;
 using UnityEditor;
 using static Ami.BroAudio.Tools.BroLog;
-using static Ami.BroAudio.Utility;
 
 namespace Ami.BroAudio.Editor
 {
@@ -34,9 +33,9 @@ namespace Ami.BroAudio.Editor
             RewriteCoreData((coreData) => coreData.AssetOutputPath = newOutputPath);
 		}
 
-        public static List<string> GetGUIDListFromJson()
+        public static List<string> GetGUIDListFromJson(bool showError = true)
         {
-            if (TryGetCoreData(out string path, out SerializedCoreData coreData))
+            if (TryGetCoreData(out string path, out SerializedCoreData coreData, showError))
             {
                 return coreData.GUIDs;
             }
@@ -76,13 +75,16 @@ namespace Ami.BroAudio.Editor
 			return false;
 		}
 
-		private static bool TryGetCoreData(out string path,out SerializedCoreData coreData)
+		private static bool TryGetCoreData(out string path,out SerializedCoreData coreData, bool showError = true)
 		{
 			coreData = default;
 			path = null;
 			if(!TryGetCoreDataTextAsset(out var textAsset) || !TryParseCoreData(textAsset, out coreData))
 			{
-                LogError("Can't find core data! please place [BroAudioData.json] in Resources folder or reinstall BroAudio");
+				if(showError)
+				{
+                    LogError("Can't find core data! please place [BroAudioData.json] in Resources folder or reinstall BroAudio");
+                }
 				return false;
             }
             path = AssetDatabase.GetAssetPath(textAsset);
@@ -91,7 +93,7 @@ namespace Ami.BroAudio.Editor
 
 		private static void DeleteJsonDataByAssetPath(string[] deletedAssetPaths)
 		{
-			var currAssetGUIDs = GetGUIDListFromJson();
+			var currAssetGUIDs = GetGUIDListFromJson(false);
 			if(currAssetGUIDs != null)
 			{
 				foreach (string path in deletedAssetPaths)

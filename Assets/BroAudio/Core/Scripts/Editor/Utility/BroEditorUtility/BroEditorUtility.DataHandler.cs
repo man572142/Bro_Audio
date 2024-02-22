@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Runtime;
+using System.IO;
 
 #if !UNITY_2019_2_OR_NEWER
 using Ami.Extension; 
@@ -21,7 +22,12 @@ namespace Ami.BroAudio.Editor
 			DeleteJsonDataByAssetPath(deletedAssetPaths);
 
 			string assetPath = AssetDatabase.GetAssetPath(Resources.Load(nameof(SoundManager)));
-			using (var editScope = new EditPrefabAssetScope(assetPath))
+
+            if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath))
+            {
+                return;
+            }
+            using (var editScope = new EditPrefabAssetScope(assetPath))
 			{
 				if (editScope.PrefabRoot.TryGetComponent<SoundManager>(out var soundManager))
 				{

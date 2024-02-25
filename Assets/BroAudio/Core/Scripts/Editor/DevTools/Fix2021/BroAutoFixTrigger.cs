@@ -9,21 +9,42 @@ using static Ami.BroAudio.Tools.BroAutoFixProcessor;
 
 namespace Ami.BroAudio.Tools
 {
-    public class BroAutoFixTrigger
+    public class BroAutoFixTrigger : AssetPostprocessor
     {
-        [InitializeOnEnterPlayMode]
-        static void OnFix()
+        static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload)
         {
             string mixerPath = SessionState.GetString(PrefKey, string.Empty);
             if (string.IsNullOrEmpty(mixerPath))
             {
                 GameObject managerObj = Resources.Load(nameof(SoundManager)) as GameObject;
-                SoundManager manager = managerObj.GetComponent<SoundManager>();
-                if (manager.Mixer)
+                if (managerObj == null)
                 {
-                    BroAudioReflection.FixAudioReverbZoneIssue(manager.Mixer);
-                    SessionState.SetString(PrefKey, AssetDatabase.GetAssetPath(manager.Mixer));
+                    AssetDatabase.importPackageCompleted += OnPackageImportCompleted;
+                    return;
                 }
+
+                FixAudioReverbZoneIssue(managerObj);
+            }
+        }
+
+        private static void FixAudioReverbZoneIssue(GameObject managerObj)
+        {
+            SoundManager manager = managerObj.GetComponent<SoundManager>();
+            if (manager.Mixer)
+            {
+                BroAudioReflection.FixAudioReverbZoneIssue(manager.Mixer);
+                SessionState.SetString(PrefKey, AssetDatabase.GetAssetPath(manager.Mixer));
+            }
+        }
+
+        private static void OnPackageImportCompleted(string packageName)
+        {
+            GameObject managerObj = Resources.Load(nameof(SoundManager)) as GameObject;
+
+            if(managerObj != null)
+            {
+                AssetDatabase.importPackageCompleted -= OnPackageImportCompleted;
+                FixAudioReverbZoneIssue(managerObj);
             }
         }
     }

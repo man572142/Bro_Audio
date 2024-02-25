@@ -1269,7 +1269,7 @@ AudioMixerController:
   - guid: f133947fd4d533f46b137ade40f28210
     name: Main_LowPass
   - guid: 35337d6d8bcc7ca448bc5c502524327e
-    name: Main_LowPas2
+    name: Main_LowPass2
   - guid: 7f575d992554b9040ac79c4ec4db50b8
     name: Master
   - guid: ed6bac17d79e7fa41b616b835db172ec

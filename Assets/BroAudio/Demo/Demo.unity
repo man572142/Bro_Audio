@@ -502,6 +502,22 @@ PrefabInstance:
       propertyPath: m_Value
       value: 0.7
       objectReference: {fileID: 0}
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Play
+      objectReference: {fileID: 0}
+    - target: {fileID: 5035255272488921320, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: _soundSource
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 5911873715763617658, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135827}
     - target: {fileID: 7395334061734406816, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0.7
@@ -735,6 +751,26 @@ PrefabInstance:
       propertyPath: m_Value
       value: 0.9
       objectReference: {fileID: 0}
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Play
+      objectReference: {fileID: 0}
+    - target: {fileID: 5035255272488921320, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: _soundSource
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 5911873715763617658, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 5911873715763617658, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Play
+      objectReference: {fileID: 0}
     - target: {fileID: 7395334061734406816, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0.9
@@ -945,6 +981,7 @@ GameObject:
   - component: {fileID: 129135824}
   - component: {fileID: 129135826}
   - component: {fileID: 129135825}
+  - component: {fileID: 129135827}
   m_Layer: 5
   m_Name: Mixer
   m_TagString: Untagged
@@ -999,6 +1036,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 129135823}
   m_CullTransparentMesh: 1
+--- !u!114 &129135827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 129135823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _playOnStart: 0
+  _sound:
+    ID: 536870912
+    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+  _positionMode: 0
 --- !u!4 &138452908 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4220945243242932932, guid: 20f39f4d28332644eafacbfaa8b8e2cf, type: 3}
@@ -1737,6 +1791,26 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 448003136}
     m_Modifications:
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135823}
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5035255272488921320, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: _soundSource
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 5911873715763617658, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 5911873715763617658, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Play
+      objectReference: {fileID: 0}
     - target: {fileID: 7395334061734406816, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
       propertyPath: m_AnchorMax.x
       value: 1
@@ -3130,6 +3204,26 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 448003136}
     m_Modifications:
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Play
+      objectReference: {fileID: 0}
+    - target: {fileID: 5035255272488921320, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: _soundSource
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 5911873715763617658, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 5911873715763617658, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Play
+      objectReference: {fileID: 0}
     - target: {fileID: 7395334061734406816, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
       propertyPath: m_AnchorMax.x
       value: 1
@@ -4737,6 +4831,26 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 448003136}
     m_Modifications:
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Play
+      objectReference: {fileID: 0}
+    - target: {fileID: 5035255272488921320, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: _soundSource
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 5911873715763617658, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 5911873715763617658, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Play
+      objectReference: {fileID: 0}
     - target: {fileID: 7395334061734406816, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
       propertyPath: m_AnchorMax.x
       value: 1
@@ -12979,6 +13093,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 448003136}
     m_Modifications:
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 4068476115733407964, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Play
+      objectReference: {fileID: 0}
+    - target: {fileID: 5035255272488921320, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: _soundSource
+      value: 
+      objectReference: {fileID: 129135827}
     - target: {fileID: 5663927431004463875, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
       propertyPath: m_EffectColor.b
       value: 0
@@ -12998,6 +13124,14 @@ PrefabInstance:
     - target: {fileID: 5663927431004463875, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
       propertyPath: m_EffectDistance.y
       value: -2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5911873715763617658, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 129135827}
+    - target: {fileID: 5911873715763617658, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Play
       objectReference: {fileID: 0}
     - target: {fileID: 7395334061734406816, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
       propertyPath: m_AnchorMax.x

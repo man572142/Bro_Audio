@@ -10,30 +10,20 @@ namespace Ami.BroAudio.Demo
 		[SerializeField] ParticleSystem _fog = null;
 		[SerializeField] float _playInterval = default;
 		[SerializeField] AudioID _explosion = default;
-		[SerializeField] AudioID _warningVoice = default;
 
 		[SerializeField, Frequency] float _lowPassFrequency = default;
 
 		private Coroutine _coroutine;
 		private IAudioPlayer _explosionPlayer = null;
-		private IAudioPlayer _warningPlayer = null;
 
         private void PlayAudio()
         {
             _explosionPlayer = BroAudio.Play(_explosion);
             _explosionPlayer.AsDominator().LowPassOthers(_lowPassFrequency);
-
-            _warningPlayer = BroAudio.Play(_warningVoice);
-            _warningPlayer.AsDominator().LowPassOthers(_lowPassFrequency);
         }
 
         public override void OnInZoneChanged(bool isInZone)
 		{
-			//if(_explosionPlayer.IsPlaying || _warningPlayer.IsPlaying)
-			//{
-			//	return;
-			//}
-
 			if(_coroutine != null)
 			{
 				StopCoroutine(_coroutine);

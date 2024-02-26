@@ -51,9 +51,13 @@ namespace Ami.BroAudio.Runtime
 
             void ExecuteAfterChainingMethod(Action action)
             {
+#if UNITY_WEBGL
+                this.DelayInvoke(action, new WaitForEndOfFrame());
+#else
                 AsyncTaskExtension.DelayInvoke(AsyncTaskExtension.MillisecondInSeconds, action);
+#endif
             }
-		}
+        }
 
         private IEnumerator PlayControl(PlaybackPreference pref)
         {
@@ -94,7 +98,7 @@ namespace Ami.BroAudio.Runtime
 			TrackVolume = StaticTrackVolume * pref.AudioTypePlaybackPref.Volume;           
             ClipVolume = 0f;
             float targetClipVolume = GetTargetClipVolume();
-            AudioTrack = _getAudioTrack.Invoke(TrackType);
+            AudioTrack = _getAudioTrack?.Invoke(TrackType);
             RemoveFromResumablePlayer();
 
             // AudioSource.clip.samples returns the time samples length, not the data samples, so we don't need to multiply the channel count.

@@ -220,15 +220,16 @@ namespace Ami.BroAudio.Editor
             float newNormalizedValue = DrawVolumeSlider(sliderRect, currentValue, out bool hasSliderChanged, out float newSliderValue);
             float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? newNormalizedValue : currentValue);
             currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
-#else
-				currentValue = GUI.HorizontalSlider(sliderRect, currentValue, 0f, FullVolume);
-				currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue),0f,FullVolume);
-#endif
-			if (isSnap && CanSnap(currentValue))
+            if (isSnap && CanSnap(currentValue))
 			{
 				currentValue = FullVolume;
 			}
 			DrawDecibelValuePeeking(currentValue, padding, sliderRect, newSliderValue);
+#else
+            currentValue = GUI.HorizontalSlider(sliderRect, currentValue, 0f, FullVolume);
+			currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue),0f,FullVolume);
+#endif
+			
             return currentValue;
 
 #if !UNITY_WEBGL

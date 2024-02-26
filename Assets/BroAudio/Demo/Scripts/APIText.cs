@@ -24,6 +24,7 @@ namespace Ami.BroAudio.Demo
 
 		[Header("Please use [SetText] in the context menu")]
 		[SerializeField] MethodText[] _methodTexts = null;
+		[SerializeField] bool _isWebGLSupported = false;
 
 		private void Start()
 		{
@@ -32,6 +33,13 @@ namespace Ami.BroAudio.Demo
 				_component = GetComponent<Text>();
 			}
 			_component.supportRichText = true;
+
+#if UNITY_WEBGL
+			if (!_isWebGLSupported)
+			{
+				_component.text = "WebGL not supported";
+			} 
+#endif
 		}
 
 

@@ -39,9 +39,9 @@ namespace Ami.Extension
             DelayInvoke(source, action, new WaitForSeconds(delayTime));
         }
 
-        public static void DelayInvoke(this MonoBehaviour source, Action action, WaitForSeconds waitForSeconds)
+        public static void DelayInvoke(this MonoBehaviour source, Action action, YieldInstruction yieldInstruction)
         {
-            if(waitForSeconds == null)
+            if(yieldInstruction == null)
             {
                 Debug.LogError("WaitForSeconds is null !");
                 return;
@@ -50,7 +50,7 @@ namespace Ami.Extension
 
             IEnumerator DelayInvoke()
             {
-                yield return waitForSeconds;
+                yield return yieldInstruction;
                 action?.Invoke();
             }
         }

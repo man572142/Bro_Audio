@@ -19,8 +19,10 @@ namespace Ami.BroAudio.Demo
         private void PlayAudio()
         {
             _explosionPlayer = BroAudio.Play(_explosion);
-            _explosionPlayer.AsDominator().LowPassOthers(_lowPassFrequency);
-        }
+#if !UNITY_WEBGL
+			_explosionPlayer.AsDominator().LowPassOthers(_lowPassFrequency); 
+#endif
+		}
 
         public override void OnInZoneChanged(bool isInZone)
 		{

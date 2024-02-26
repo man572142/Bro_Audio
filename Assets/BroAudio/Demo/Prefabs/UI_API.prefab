@@ -98,6 +98,7 @@ MonoBehaviour:
   - Method: Play
     Parameters:
     - footsteps
+  _isWebGLSupported: 1
 --- !u!114 &3529903466689618888
 MonoBehaviour:
   m_ObjectHideFlags: 0

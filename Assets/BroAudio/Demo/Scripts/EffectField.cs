@@ -15,7 +15,8 @@ namespace Ami.BroAudio.Demo
 		{
 			BroAudio.Play(_enterExitSound);
 
-			if(isInZone)
+#if !UNITY_WEBGL
+			if (isInZone)
 			{
 				BroAudio.SetVolume(_targetVolume, BroAudioType.All, 1f);
 				BroAudio.SetEffect(Effect.LowPass(_lowPassFreq, 0.5f));
@@ -24,7 +25,8 @@ namespace Ami.BroAudio.Demo
 			{
 				BroAudio.SetVolume(BroAdvice.FullVolume, BroAudioType.All, 1f);
 				BroAudio.SetEffect(Effect.LowPass(Effect.Defaults.LowPass, 1f));
-			}
+			} 
+#endif
 		}
 	}
 }

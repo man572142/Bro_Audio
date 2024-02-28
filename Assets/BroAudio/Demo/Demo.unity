@@ -2897,8 +2897,19 @@ PrefabInstance:
       propertyPath: m_FontData.m_Alignment
       value: 3
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 8279492738536436155, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+    - target: {fileID: 8279492738536436155, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: _apiText
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8279492738536436155, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: _isWebGLSupported
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8279492738536436155, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: _methodTexts.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
 --- !u!224 &481983789 stripped
 RectTransform:
@@ -4538,14 +4549,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de4018b9787040b4e9b39c185e557b58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _component: {fileID: 749193668}
+  _apiText: {fileID: 0}
+  _sideNoteText: {fileID: 0}
+  _isWebGLSupported: 1
   _methodTexts:
   - Method: Play
     Parameters:
     - soundTrack
   - Method: AsBGM
     Parameters: []
-  _isWebGLSupported: 1
 --- !u!1 &761568436 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6510980715547664423, guid: 1fb00677c5274bf48867e1402459086d, type: 3}
@@ -5646,6 +5658,10 @@ PrefabInstance:
     - target: {fileID: 2876047257477730843, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_FontData.m_Alignment
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6947652073586710155, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: _isWebGLSupported
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8279492738536436155, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: _isWebGLSupported
@@ -7550,6 +7566,10 @@ PrefabInstance:
     - target: {fileID: 221247487175567481, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2876047257477730840, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -33.8
       objectReference: {fileID: 0}
     - target: {fileID: 2876047257477730841, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_IsActive

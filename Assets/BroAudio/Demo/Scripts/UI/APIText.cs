@@ -20,25 +20,28 @@ namespace Ami.BroAudio.Demo
 		public const string ClassColor = "4EC9B0";
 		public const string MethodColor = "DCDCAA";
 
-		[SerializeField] Text _component = null;
+		[SerializeField] Text _apiText = null;
+		[SerializeField] Text _sideNoteText = null;
+		[SerializeField] bool _isWebGLSupported = true;
 
 		[Header("Please use [SetText] in the context menu")]
 		[SerializeField] MethodText[] _methodTexts = null;
-		[SerializeField] bool _isWebGLSupported = false;
+		
 
 		private void Start()
 		{
-			if(!_component)
+			if(!_apiText)
 			{
-				_component = GetComponent<Text>();
+				_apiText = GetComponent<Text>();
 			}
-			_component.supportRichText = true;
-
+			_apiText.supportRichText = true;
 #if UNITY_WEBGL
-			if (!_isWebGLSupported)
+			if(_sideNoteText && !_isWebGLSupported)
 			{
-				_component.text = "WebGL not supported";
-			} 
+				_sideNoteText.gameObject.SetActive(true);
+				_sideNoteText.color = new Color(1, 0.3f, 0.3f);
+				_sideNoteText.text = "This feature is not supported in WebGL";
+			}
 #endif
 		}
 
@@ -67,11 +70,11 @@ namespace Ami.BroAudio.Demo
 				builder.Append(")");
 			}
 
-			_component.text = builder.ToString();
+			_apiText.text = builder.ToString();
 #if UNITY_EDITOR
             if (!Application.isPlaying)
 			{
-				UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(_component);
+				UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(_apiText);
                 UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
 			}
 #endif

@@ -7,11 +7,12 @@ namespace Ami.BroAudio.Demo
 {
 	public class EffectField : InteractiveComponent
 	{
-		[SerializeField] AudioID _enterExitSound = default;
+#pragma warning disable 414
+        [SerializeField] AudioID _enterExitSound = default;
 		[SerializeField, Volume(true)] float _targetVolume = 0.5f;
 		[SerializeField, Frequency] float _lowPassFreq = 800f;
-
-		public override void OnInZoneChanged(bool isInZone)
+#pragma warning restore 414
+        public override void OnInZoneChanged(bool isInZone)
 		{
 			BroAudio.Play(_enterExitSound);
 

@@ -10,10 +10,10 @@ namespace Ami.BroAudio.Demo
 		[SerializeField] ParticleSystem _fog = null;
 		[SerializeField] float _playInterval = default;
 		[SerializeField] AudioID _explosion = default;
-
-		[SerializeField, Frequency] float _lowPassFrequency = default;
-
-		private Coroutine _coroutine;
+#pragma warning disable 414
+        [SerializeField, Frequency] float _lowPassFrequency = default;
+#pragma warning restore 414
+        private Coroutine _coroutine;
 		private IAudioPlayer _explosionPlayer = null;
 
         private void PlayAudio()

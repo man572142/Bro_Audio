@@ -19,7 +19,9 @@ namespace Ami.BroAudio.Demo
 		[SerializeField] GameObject _ui = null;
 		[SerializeField] float _fadeTime = default;
 		[SerializeField, Volume] float _othersVolume = default;
-		[SerializeField, Frequency] float _othersLowPasFreq = default;
+#pragma warning disable 414
+        [SerializeField, Frequency] float _othersLowPasFreq = default;
+#pragma warning restore 414
 #if UNITY_EDITOR
         [SerializeField] GameObject _hierarchyLocateTarget = null;
 #endif

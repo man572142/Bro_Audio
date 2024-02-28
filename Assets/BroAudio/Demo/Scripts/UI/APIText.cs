@@ -21,10 +21,12 @@ namespace Ami.BroAudio.Demo
 		public const string MethodColor = "DCDCAA";
 
 		[SerializeField] Text _apiText = null;
-		[SerializeField] Text _sideNoteText = null;
+#pragma warning disable 414
+        [SerializeField] Text _sideNoteText = null;
 		[SerializeField] bool _isWebGLSupported = true;
+#pragma warning restore 414
 
-		[Header("Please use [SetText] in the context menu")]
+        [Header("Please use [SetText] in the context menu")]
 		[SerializeField] MethodText[] _methodTexts = null;
 		
 

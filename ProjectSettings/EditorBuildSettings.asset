@@ -7,5 +7,5 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/BroAudio/Demo/Demo.unity
-    guid: e9017d5f96b9f09489b4b37e1d6eb914
+    guid: 05a9e41d79251594aad6850fbdf49b6f
   m_configObjects: {}

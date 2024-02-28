@@ -13,7 +13,7 @@ namespace Ami.BroAudio.Runtime
 		private StopMode _stopMode = default;
 		private float _overrideFade = AudioPlayer.UseEntitySetting;
 
-		public bool IsPlayingVirtually => IsPlaying && Player.MixerDecibelVolume <= AudioConstant.MinDecibelVolume;
+		public bool IsPlayingVirtually => IsActive && Player.MixerDecibelVolume <= AudioConstant.MinDecibelVolume;
 
 		public MusicPlayer()
 		{

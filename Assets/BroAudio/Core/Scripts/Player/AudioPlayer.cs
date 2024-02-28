@@ -29,7 +29,8 @@ namespace Ami.BroAudio.Runtime
 		//private string _pitchParaName = string.Empty;
 
 		public int ID { get; private set; } = -1;
-        public bool IsPlaying => ID > 0; // AudioSource.isPlaying can't represent the actual playback state in our system
+        public bool IsPlaying => AudioSource.isPlaying;
+        public bool IsActive => ID > 0;
         public bool IsStopping { get; private set; }
         public bool IsFadingOut { get; private set; }
         public bool IsFadingIn { get; private set; }

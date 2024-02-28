@@ -2,7 +2,14 @@ namespace Ami.BroAudio
 {
 	public interface IAudioPlayer : IEffectDecoratable,IVolumeSettable,IMusicDecoratable
 	{
+		/// <summary>
+		/// The AudioID of the player is playing
+		/// </summary>
 		int ID { get; }
-		bool IsPlaying { get; }
+
+        /// <summary>
+        /// Returns true if the player is playing
+        /// </summary>
+        bool IsPlaying { get; }
 	}
 }

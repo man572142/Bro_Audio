@@ -26,6 +26,8 @@ namespace Ami.BroAudio.Runtime
 		}
 
 		public int ID => Player.ID;
+		public bool IsActive => Player.IsActive;
+
 		public bool IsPlaying => Player.IsPlaying;
 
 		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Player.SetVolume(vol, fadeTime);

@@ -6,7 +6,6 @@ namespace Ami.BroAudio
     public interface IMusicPlayer : IEffectDecoratable,IVolumeSettable
     {
 		int ID { get; }
-		bool IsPlaying { get; }
 #if UNITY_2020_2_OR_NEWER
 		internal IMusicPlayer SetTransition(Transition transition, StopMode stopMode, float overrideFade);
 #else

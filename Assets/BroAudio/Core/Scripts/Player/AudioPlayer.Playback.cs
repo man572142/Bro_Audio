@@ -21,7 +21,10 @@ namespace Ami.BroAudio.Runtime
         public void Play(int id, PlaybackPreference pref,bool waitForChainingMethod = true)
         {
             ID = id;
-            CurrentClip = pref.Entity.PickNewClip();
+            if(_stopMode == StopMode.Stop)
+            {
+                CurrentClip = pref.Entity.PickNewClip();
+            }
             _isReadyToPlay = true;
             IsStopping = false;
 
@@ -61,37 +64,39 @@ namespace Ami.BroAudio.Runtime
 
         private IEnumerator PlayControl(PlaybackPreference pref)
         {
-            if (pref.PlayerWaiter != null)
-			{
-                yield return new WaitUntil(() => pref.PlayerWaiter.IsFinished);
-                pref.DisposeWaiter();
-			}
-
-            if (CurrentClip.Delay > 0)
-			{
-                yield return new WaitForSeconds(CurrentClip.Delay);
-            }
-
-            AudioSource.clip = CurrentClip.AudioClip;
-            AudioSource.priority = pref.Entity.Priority;
-            SetPitch(pref.Entity);
-            SetSpatial(pref);
-
-			if (TryGetDecorator<MusicPlayer>(out var musicPlayer))
-			{
-				AudioSource.reverbZoneMix = 0f;
-                AudioSource.priority = AudioConstant.HighestPriority;
-				pref = musicPlayer.Transition(pref);
-			}
-
-			if (IsDominator)
-			{
-                TrackType = AudioTrackType.Dominator;
-			}
-            else
+            if(!RemoveFromResumablePlayer()) // if is not resumable (not paused)
             {
-                SetEffect(pref.AudioTypePlaybackPref.EffectType, SetEffectMode.Add);
-                
+                if (pref.PlayerWaiter != null)
+                {
+                    yield return new WaitUntil(() => pref.PlayerWaiter.IsFinished);
+                    pref.DisposeWaiter();
+                }
+
+                if (CurrentClip.Delay > 0)
+                {
+                    yield return new WaitForSeconds(CurrentClip.Delay);
+                }
+
+                AudioSource.clip = CurrentClip.AudioClip;
+                AudioSource.priority = pref.Entity.Priority;
+                SetPitch(pref.Entity);
+                SetSpatial(pref);
+
+                if (TryGetDecorator<MusicPlayer>(out var musicPlayer))
+                {
+                    AudioSource.reverbZoneMix = 0f;
+                    AudioSource.priority = AudioConstant.HighestPriority;
+                    pref = musicPlayer.Transition(pref);
+                }
+
+                if (IsDominator)
+                {
+                    TrackType = AudioTrackType.Dominator;
+                }
+                else
+                {
+                    SetEffect(pref.AudioTypePlaybackPref.EffectType, SetEffectMode.Add);
+                }
             }
 
 			this.SafeStopCoroutine(_trackVolumeControlCoroutine);
@@ -99,7 +104,6 @@ namespace Ami.BroAudio.Runtime
             ClipVolume = 0f;
             float targetClipVolume = GetTargetClipVolume();
             AudioTrack = _getAudioTrack?.Invoke(TrackType);
-            RemoveFromResumablePlayer();
 
             // AudioSource.clip.samples returns the time samples length, not the data samples, so we don't need to multiply the channel count.
             int sampleRate = CurrentClip.AudioClip.frequency;
@@ -289,9 +293,9 @@ namespace Ami.BroAudio.Runtime
             ResumablePlayers[ID] = this;
         }
 
-        private void RemoveFromResumablePlayer()
+        private bool RemoveFromResumablePlayer()
 		{
-            ResumablePlayers?.Remove(ID);
+            return ResumablePlayers != null ? ResumablePlayers.Remove(ID) : false;
         }
 
         private void EndPlaying()

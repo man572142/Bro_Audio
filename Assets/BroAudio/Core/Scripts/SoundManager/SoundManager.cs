@@ -141,7 +141,7 @@ namespace Ami.BroAudio.Runtime
 			}
 
             GetPlaybackPrefByType(targetType, pref => pref.Volume = vol);
-            GetCurrentPlayingPlayers(player => 
+            GetCurrentActivePlayers(player => 
             { 
                 if(targetType.Contains(GetAudioType(player.ID)))
 				{
@@ -184,7 +184,7 @@ namespace Ami.BroAudio.Runtime
 
 		public void SetVolume(int id, float vol, float fadeTime)
 		{
-            GetCurrentPlayingPlayers(player =>
+            GetCurrentActivePlayers(player =>
             {
                 if (player && player.ID == id)
                 {
@@ -241,7 +241,7 @@ namespace Ami.BroAudio.Runtime
 				}				
 			});
 
-			GetCurrentPlayingPlayers(player =>
+			GetCurrentActivePlayers(player =>
 			{
                 if (targetType.Contains(GetAudioType(player.ID)) && !player.IsDominator)
 				{
@@ -288,7 +288,7 @@ namespace Ami.BroAudio.Runtime
             });
         }
 
-        private void GetCurrentPlayingPlayers(Action<AudioPlayer> onGetPlayer)
+        private void GetCurrentActivePlayers(Action<AudioPlayer> onGetPlayer)
         {
             // For those which are currently playing.
             var players = _audioPlayerPool.GetCurrentAudioPlayers();
@@ -296,7 +296,7 @@ namespace Ami.BroAudio.Runtime
             {
                 foreach (var player in players)
                 {
-                    if (player.IsPlaying)
+                    if (player.IsActive)
                     {
                         onGetPlayer?.Invoke(player);
                     }
@@ -314,7 +314,6 @@ namespace Ami.BroAudio.Runtime
                     audioPlayer = newPlayer;
                 }
             }
-
             return audioPlayer != null;
         }
 

@@ -37,6 +37,8 @@ namespace Ami.BroAudio
 
 		public int ID => IsAvailable() ? Instance.ID : -1;
 
+		public bool IsActive => IsAvailable() ? Instance.IsActive : false;
+
 		public bool IsPlaying => IsAvailable() ? Instance.IsPlaying : false;
 
 		IMusicPlayer IMusicDecoratable.AsBGM() => IsAvailable() ? Instance.AsBGM() : null;

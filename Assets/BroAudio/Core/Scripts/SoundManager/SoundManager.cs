@@ -203,13 +203,13 @@ namespace Ami.BroAudio.Runtime
         public IAutoResetWaitable SetEffect(BroAudioType targetType, Effect effect)
 		{
 			SetEffectMode mode = SetEffectMode.Add;
-            if(effect.IsDefault())
+            if(effect.Type == EffectType.None)
+            {
+				mode = SetEffectMode.Override;
+			}
+            else if(effect.IsDefault())
             {
                 mode = SetEffectMode.Remove;
-            }
-            else if(effect.Type == EffectType.None)
-            {
-                mode = SetEffectMode.Override;
             }
 
             Action<EffectType> onResetEffect = null;

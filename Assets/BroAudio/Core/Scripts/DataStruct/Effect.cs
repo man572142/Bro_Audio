@@ -12,21 +12,20 @@ namespace Ami.BroAudio
 		// Use these static methods for SetEffect()
 		public static Effect HighPass(float frequency, float fadeTime, Ease fadingEase = BroAdvice.HighPassEase) => new Effect(EffectType.HighPass, frequency, fadeTime, fadingEase);
 		public static Effect LowPass(float frequency, float fadeTime, Ease fadingEase = BroAdvice.LowPassEase) => new Effect(EffectType.LowPass, frequency, fadeTime, fadingEase);
-		//public static Effect Volume(float volumeFactor, float fadeTime, Ease fadingEase = default) => new Effect(EffectType.Volume, volumeFactor, fadeTime, fadingEase);
-
+		public static Effect Custom(string exposedParameterName, float value, float fadeTime, Ease ease = Ease.Linear) => new Effect(exposedParameterName, value, fadeTime, ease);
 		public static class Defaults
 		{
 			public static float Volume => AudioConstant.FullVolume;
 			public static float LowPass => AudioConstant.MaxFrequency;
 			public static float HighPass => AudioConstant.MinFrequency;
 		}
-		
 
 		private float _value;
 
 		public readonly EffectType Type;
 		public readonly float FadeTime;
 		public readonly Ease FadingEase;
+		public readonly string CustomExposedParameter;
 		internal readonly bool IsDominator;
 
 		// Force user to use static factory method
@@ -38,27 +37,34 @@ namespace Ami.BroAudio
 			IsDominator = isDominator;
 		}
 
+		internal Effect(string exposedParaName, float value, float fadeTime, Ease ease) : this(EffectType.Custom, value, fadeTime, ease)
+		{
+			CustomExposedParameter = exposedParaName;
+		}
+
 		public float Value
 		{
 			get => _value;
 			private set
 			{
-				if(Type == EffectType.None)
+				switch (Type)
 				{
-					LogError("EffectParameter's EffectType must be set before the Value");
-					return;
-				}
-
-				if(Type == EffectType.Volume)
-				{
-					_value = value.ToDecibel();
-				}
-				else if (Type == EffectType.LowPass || Type == EffectType.HighPass)
-				{
-					if(AudioExtension.IsValidFrequency(value))
-					{
-						_value = value;
-					}
+					case EffectType.None:
+						LogError("EffectParameter's EffectType must be set before the Value");
+						break;
+					case EffectType.Volume:
+						_value = value.ToDecibel();
+						break;
+					case EffectType.LowPass:
+					case EffectType.HighPass:
+						if (AudioExtension.IsValidFrequency(value))
+						{
+							_value = value;
+						}
+						break;
+					default:
+						_value = value; 
+						break;
 				}
 			}
 		}
@@ -94,5 +100,5 @@ namespace Ami.BroAudio
             }
 			return false;
         }
-    }
+	}
 }

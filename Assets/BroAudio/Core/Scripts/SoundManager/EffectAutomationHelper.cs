@@ -250,7 +250,7 @@ namespace Ami.BroAudio.Runtime
 			string paraName = GetEffectParameterName(effect, out bool _);
 			if (!_mixer.SafeGetFloat(paraName, out value))
 			{
-				LogError($"Can't get exposed parameter[{paraName}] Please re-import {BroName.MixerName}");
+				LogError($"Can't get exposed parameter of {effect.Type}");
 				return false;
 			}
 			return true;
@@ -296,7 +296,6 @@ namespace Ami.BroAudio.Runtime
 		private string GetEffectParameterName(Effect effect, out bool hasSecondaryParameter)
 		{
 			hasSecondaryParameter = false;
-
             switch (effect.Type)
 			{
 				case EffectType.Volume:
@@ -315,6 +314,8 @@ namespace Ami.BroAudio.Runtime
 				case EffectType.HighPass:
                     hasSecondaryParameter = SoundManager.Instance.Setting.AudioFilterSlope == FilterSlope.FourPole;
                     return effect.IsDominator ? BroName.Dominator_HighPassParaName : BroName.HighPassParaName;
+				case EffectType.Custom:
+					return effect.CustomExposedParameter;
 				default:
 					return string.Empty;
 			}

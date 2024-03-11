@@ -20,7 +20,7 @@ namespace Ami.BroAudio.Editor
 			public bool IsSnapToFullVolume;
 		}
 
-		public enum Tab { Clips, Settings}
+		public enum Tab { Clips, Overall}
 
 		public static event Action OnEntityNameChanged;
 
@@ -30,7 +30,7 @@ namespace Ami.BroAudio.Editor
 		private const float FoldoutArrowWidth = 15f;
 		private const float MaxTextFieldWidth = 300f;
 
-		private readonly GUIContent[] _tabLabelGUIContents = { new GUIContent(nameof(Tab.Clips)), new GUIContent(nameof(Tab.Settings)) };
+		private readonly GUIContent[] _tabLabelGUIContents = { new GUIContent(nameof(Tab.Clips)), new GUIContent(nameof(Tab.Overall)) };
 		private readonly float[] _tabLabelRatios = new float[] { 0.5f, 0.5f };
 		private readonly float[] _identityLabelRatios = new float[] { 0.65f, 0.15f, 0.2f };
 		private readonly GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume),"The playback volume of this clip");
@@ -163,7 +163,7 @@ namespace Ami.BroAudio.Editor
 						}
 					}
 					break;
-				case Tab.Settings:
+				case Tab.Overall:
 					DrawAdditionalBaseProperties(position, property, setting);
 					break;
 			}
@@ -176,7 +176,7 @@ namespace Ami.BroAudio.Editor
 					case Tab.Clips:
 						height += GetClipListHeight(property, setting);
 						break;
-					case Tab.Settings:
+					case Tab.Overall:
 						height += GetAdditionalBaseProtiesLineCount(property, setting) * SingleLineSpace + GetAdditionalBasePropertiesOffest(setting);
 						break; 
 				}
@@ -231,7 +231,7 @@ namespace Ami.BroAudio.Editor
 					case Tab.Clips:
 						height += GetClipListHeight(property, setting);
 						break;
-					case Tab.Settings:
+					case Tab.Overall:
 						height += GetAdditionalBaseProtiesLineCount(property, setting) * SingleLineSpace + GetAdditionalBasePropertiesOffest(setting);
 						break;
 				}

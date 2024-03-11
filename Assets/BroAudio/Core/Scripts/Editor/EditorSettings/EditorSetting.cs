@@ -27,6 +27,7 @@ namespace Ami.BroAudio.Editor
 
 		public bool ShowAudioTypeOnAudioID;
 		public bool ShowVUColorOnVolumeSlider;
+		public bool AcceptAudioMixerModification;
 
 		public List<AudioTypeSetting> AudioTypeSettings;
 		public Object DemoScene = null; 

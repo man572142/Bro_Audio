@@ -26,13 +26,11 @@ namespace Ami.BroAudio.Editor.Setting
 			EditorSettingFileMissing,
 		}
 
-		public enum Tab { Audio, GUI, Miscellaneous,	}
+		public enum Tab { Audio, GUI, Miscellaneous,}
 
 		public const string SettingFileName = "BroAudioGlobalSetting";
 		public const float Gap = 50f;
 		
-		public const string CombFilteringLabel = "Time to prevent Comb Filtering";
-		public const string PitchShiftingLabel = "Pitch Shift Using";
 		public const string ResetSettingButtonText = "Reset To Factory Settings";
 		public const string AutoMatchTracksButtonText = "Auto-adding tracks to match audio voices.";
 		public const string AssetOutputPathLabel = "Asset Output Path";
@@ -43,15 +41,11 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string AddDominatorTrackLabel = "Add Dominator Track";
 		public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
 		public const string ProjectSettings = "Project Settings";
-		public const string RealVoicesParameterName = "Max Real Voices";
-		public const string BroVirtualTracks = "Bro Virtual Tracks";
-		public const string FilterSlope = "Audio Filter Slope";
-		public const string TwoPoleFilter = "12dB/Oct";
-		public const string FourPoleFilter = "24dB/Oct";
+		public const string AutoFixDocUrl = "https://man572142s-organization.gitbook.io/broaudio/core-features/audio-mixer";
 
 		private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
-        private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent;
+        private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent;
 
         private GUIContent[] _tabLabels = null;
 		private Tab _currSelectedTab = Tab.Audio;
@@ -64,12 +58,12 @@ namespace Ami.BroAudio.Editor.Setting
 		private Vector2 _scrollPos = default;
 		private float _demoSliderValue = 1f;
 		private Rect[] _tabPreAllocRects = null;
+		private bool _hasGUIContentInit = false;
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
 		public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
 		private float TabLabelHeight => EditorGUIUtility.singleLineHeight * 2f;
-		private Vector2 LogoSize => new Vector2(100f, 100f);
 
 		private AudioMixer AudioMixer
 		{
@@ -111,19 +105,14 @@ namespace Ami.BroAudio.Editor.Setting
 			Message = message;
 		}
 
-		private void OnEnable()
-		{
-			InitTabsLabel();
-			InitGUIContents();
-		}
-
 		private void InitGUIContents()
 		{
-			_combFilteringGUIContent = new GUIContent(CombFilteringLabel, _instruction.GetText(Instruction.CombFilteringTooltip));
-			_pitchGUIContent = new GUIContent(PitchShiftingLabel, _instruction.GetText(Instruction.PitchShiftingToolTip));
-			_audioVoicesGUIContent = new GUIContent(RealVoicesParameterName, _instruction.GetText(Instruction.AudioVoicesToolTip));
-			_virtualTracksGUIContent = new GUIContent(BroVirtualTracks, _instruction.GetText(Instruction.BroVirtualToolTip));
-			_filterSlopeGUIContent = new GUIContent(FilterSlope, _instruction.GetText(Instruction.AudioFilterSlope));
+			_combFilteringGUIContent = new GUIContent("Time to prevent Comb Filtering", _instruction.GetText(Instruction.CombFilteringTooltip));
+			_pitchGUIContent = new GUIContent("Pitch Shift Using", _instruction.GetText(Instruction.PitchShiftingToolTip));
+			_audioVoicesGUIContent = new GUIContent("Max Real Voices", _instruction.GetText(Instruction.AudioVoicesToolTip));
+			_virtualTracksGUIContent = new GUIContent("Bro Virtual Tracks", _instruction.GetText(Instruction.BroVirtualToolTip));
+			_filterSlopeGUIContent = new GUIContent("Audio Filter Slope", _instruction.GetText(Instruction.AudioFilterSlope));
+			_acceptAudioMixerGUIContent = new GUIContent("Accept BroAudioMixer Modification", _instruction.GetText(Instruction.AcceptAudioMixerModification));
 		}
 
 		private void OnDisable()
@@ -155,6 +144,14 @@ namespace Ami.BroAudio.Editor.Setting
 		protected override void OnGUI()
         {
             base.OnGUI();
+
+			if(!_hasGUIContentInit)
+			{
+				InitTabsLabel();
+				InitGUIContents();
+				_hasGUIContentInit = true;
+			}
+
             Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
 
 			if (Message != OpenMessage.None)
@@ -186,13 +183,15 @@ namespace Ami.BroAudio.Editor.Setting
             EditorGUI.indentLevel++;
             Rect tabPageScrollRect = new Rect(tabWindowRect.x, tabWindowRect.y + TabLabelHeight, tabWindowRect.width, tabWindowRect.height - TabLabelHeight);
             _scrollPos = BeginScrollView(tabPageScrollRect, _scrollPos);
-            DrawEmptyLine(2);
+            DrawEmptyLine(1);
             if (RuntimeSetting != null)
             {
-                switch (_currSelectedTab)
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), _currSelectedTab.ToString().SetSize(18), GUIStyleHelper.MiddleCenterRichText);
+				DrawEmptyLine(1);
+				switch (_currSelectedTab)
                 {
                     case Tab.Audio:
-                        DrawAudioSetting(drawPosition);
+						DrawAudioSetting(drawPosition);
                         break;
                     case Tab.GUI:
                         DrawGUISetting(drawPosition);
@@ -487,7 +486,9 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawMiscellaneousSetting(Rect drawPosition)
 		{
-            DrawAssetOutputPath(drawPosition);
+			DrawAutoFixOption(drawPosition);
+			DrawEmptyLine(1);
+			DrawAssetOutputPath(drawPosition);
 			DrawEmptyLine(1);
 
 			if(Button(AddDominatorTrackLabel))
@@ -510,6 +511,23 @@ namespace Ami.BroAudio.Editor.Setting
             }
         }
 
+		private void DrawAutoFixOption(Rect drawPosition)
+		{
+#if UNITY_2021 && UNITY_EDITOR
+			EditorSetting.AcceptAudioMixerModification = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), _acceptAudioMixerGUIContent, EditorSetting.AcceptAudioMixerModification);
+			Rect infoBoxRect = GetRectAndIterateLine(drawPosition);
+			infoBoxRect.height *= 3;
+			Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
+			string text = string.Format(_instruction.GetText(Instruction.AcceptAudioMixerModification), "Documentation".SetColor(linkBlue));
+			RichTextHelpBox(infoBoxRect, text, MessageType.Info);
+			if (GUI.Button(infoBoxRect, GUIContent.none, GUIStyle.none))
+			{
+				Application.OpenURL(AutoFixDocUrl);
+			}
+			EditorGUIUtility.AddCursorRect(infoBoxRect, MouseCursor.Link);
+			DrawEmptyLine(1);
+#endif
+		}
 
 		private void DrawAssetOutputPath(Rect drawPosition)
 		{

@@ -104,3 +104,9 @@ MonoBehaviour:
     Value: Choose an AudioType to properly create the asset
   - Key: 308
     Value: Please name the temp asset
+  - Key: 4
+    Value: The current Unity version has a bug, which BroAudio automatically fixes
+      each time you open the project. However, to avoid inconvenience with version
+      control for users, BroAudio skips the save process for the BroAudioMixer. But
+      if you need to modify it, you can enable this option. See the {0} for more
+      information.

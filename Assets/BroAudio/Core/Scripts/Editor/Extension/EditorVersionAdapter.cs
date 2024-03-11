@@ -22,7 +22,6 @@ namespace Ami.Extension
             }
         }
 
-        // Extract source code from a newer version of Unity for use in a older version.
         // In both newer and older versions, it's better to cache the result since this method isn't very efficient.
         public static bool HasOpenEditorWindow<T>() where T : UnityEditor.EditorWindow
         {

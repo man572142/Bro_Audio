@@ -8,8 +8,9 @@
         RuntimeSettingFileMissing = 1,
         EditorSettingFileMissing,
         AssetOutputPathPanelTtile,
+        AcceptAudioMixerModification,
 
-		// Settings/Audio
+        // Settings/Audio
         CombFilteringTooltip = 10,
 		TracksAndVoicesNotMatchWarning,
 		AddTracksConfirmationDialog,

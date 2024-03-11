@@ -5012,13 +5012,13 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1327619677}
     m_Modifications:
+    - target: {fileID: 2940562037043257005, guid: b952f0861cf9b6948b7862f5f984c6ec, type: 3}
+      propertyPath: _reflectionBoostVolume
+      value: 1.3
+      objectReference: {fileID: 0}
     - target: {fileID: 4609423196347570308, guid: b952f0861cf9b6948b7862f5f984c6ec, type: 3}
       propertyPath: m_Name
       value: Tunnel (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 4609423196347570308, guid: b952f0861cf9b6948b7862f5f984c6ec, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7172610313820586188, guid: b952f0861cf9b6948b7862f5f984c6ec, type: 3}
       propertyPath: m_RootOrder

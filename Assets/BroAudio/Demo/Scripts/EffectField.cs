@@ -19,12 +19,12 @@ namespace Ami.BroAudio.Demo
 #if !UNITY_WEBGL
 			if (isInZone)
 			{
-				BroAudio.SetVolume(_targetVolume, BroAudioType.All, 1f);
+				BroAudio.SetVolume(BroAudioType.All, _targetVolume);
 				BroAudio.SetEffect(Effect.LowPass(_lowPassFreq, 0.5f));
 			}
 			else
 			{
-				BroAudio.SetVolume(BroAdvice.FullVolume, BroAudioType.All, 1f);
+				BroAudio.SetVolume(BroAudioType.All, BroAdvice.FullVolume, 1f);
 				BroAudio.SetEffect(Effect.LowPass(Effect.Defaults.LowPass, 1f));
 			} 
 #endif

@@ -502,7 +502,7 @@ MonoBehaviour:
       FadeIn: 0
       FadeOut: 0
       Weight: 0
-    <MasterVolume>k__BackingField: 1.05
+    <MasterVolume>k__BackingField: 0.95000005
     <Loop>k__BackingField: 0
     <SeamlessLoop>k__BackingField: 0
     <TransitionTime>k__BackingField: 0
@@ -584,7 +584,7 @@ MonoBehaviour:
     <Priority>k__BackingField: 128
     <Pitch>k__BackingField: 1
     <PitchRandomRange>k__BackingField: 0.20000005
-    <VolumeRandomRange>k__BackingField: 0.100000024
+    <VolumeRandomRange>k__BackingField: 0.099999964
     <RandomFlags>k__BackingField: 3
     SeamlessTransitionType: 0
     TransitionTempo:

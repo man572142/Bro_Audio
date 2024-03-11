@@ -62,14 +62,14 @@ namespace Ami.BroAudio.Demo
 
 			if(IsOpen)
 			{
-				BroAudio.SetVolume(_othersVolume, BroAudioType.All, _fadeTime);
+				BroAudio.SetVolume(BroAudioType.All, _othersVolume);
 #if !UNITY_WEBGL
 				BroAudio.SetEffect(Effect.LowPass(_othersLowPasFreq, _fadeTime)); 
 #endif
 			}
 			else
 			{
-                BroAudio.SetVolume(BroAdvice.FullVolume, BroAudioType.All, _fadeTime);
+                BroAudio.SetVolume(BroAudioType.All, BroAdvice.FullVolume, _fadeTime);
 #if !UNITY_WEBGL
 				BroAudio.SetEffect(Effect.LowPass(Effect.Defaults.LowPass, _fadeTime)); 
 #endif

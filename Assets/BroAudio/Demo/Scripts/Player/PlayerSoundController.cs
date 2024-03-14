@@ -8,8 +8,8 @@ namespace Ami.BroAudio.Demo
 {
     public class PlayerSoundController : MonoBehaviour
     { 
-        [SerializeField] AudioID _footstep = default;
-        [SerializeField] AudioID _sandFootstep = default;
+        [SerializeField] SoundID _footstep = default;
+        [SerializeField] SoundID _sandFootstep = default;
         [SerializeField] Terrain _terrain = null;
         private float[] _terrainTextureMix = new float[3];
 

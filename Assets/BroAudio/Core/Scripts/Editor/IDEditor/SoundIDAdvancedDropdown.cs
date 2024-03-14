@@ -8,13 +8,13 @@ using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Editor
 {
-	public class AudioIDAdvancedDropdown : AdvancedDropdown
+	public class SoundIDAdvancedDropdown : AdvancedDropdown
 	{
 		private const int MinimumLinesCount = 10;
 
 		private Action<int, string, ScriptableObject> _onSelectItem = null;
 
-		public AudioIDAdvancedDropdown(AdvancedDropdownState state, Action<int, string, ScriptableObject> onSelectItem) : base(state)
+		public SoundIDAdvancedDropdown(AdvancedDropdownState state, Action<int, string, ScriptableObject> onSelectItem) : base(state)
 		{
 			_onSelectItem = onSelectItem;
 			minimumSize = new Vector2(0f, EditorGUIUtility.singleLineHeight * MinimumLinesCount);
@@ -37,7 +37,7 @@ namespace Ami.BroAudio.Editor
 					foreach (var entity in asset.GetAllAudioEntities())
 					{
 						item = item ?? new AdvancedDropdownItem(asset.AssetName);
-                        item.AddChild(new AudioIDAdvancedDropdownItem(entity.Name, entity.ID, asset as ScriptableObject));
+                        item.AddChild(new SoundIDAdvancedDropdownItem(entity.Name, entity.ID, asset as ScriptableObject));
 					}
 
 					root.AddChild(item);
@@ -49,10 +49,10 @@ namespace Ami.BroAudio.Editor
 
 		protected override void ItemSelected(AdvancedDropdownItem item)
 		{
-			var audioItem = item as AudioIDAdvancedDropdownItem;
+			var audioItem = item as SoundIDAdvancedDropdownItem;
 			if (audioItem != null)
 			{
-				_onSelectItem?.Invoke(audioItem.AudioID, audioItem.name, audioItem.SourceAsset);
+				_onSelectItem?.Invoke(audioItem.SoundID, audioItem.name, audioItem.SourceAsset);
 			}
 
 			base.ItemSelected(item);

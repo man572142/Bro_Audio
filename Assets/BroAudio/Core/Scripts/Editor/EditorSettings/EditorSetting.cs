@@ -25,7 +25,7 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public bool ShowAudioTypeOnAudioID;
+		public bool ShowAudioTypeOnSoundID;
 		public bool ShowVUColorOnVolumeSlider;
 		public bool AcceptAudioMixerModification;
 
@@ -89,7 +89,7 @@ namespace Ami.BroAudio.Editor
 		public void ResetToFactorySettings()
 		{
 			ShowVUColorOnVolumeSlider = FactorySettings.ShowVUColorOnVolumeSlider;
-			ShowAudioTypeOnAudioID = FactorySettings.ShowAudioTypeOnAudioID;
+			ShowAudioTypeOnSoundID = FactorySettings.ShowAudioTypeOnSoundID;
 			CreateNewAudioTypeSettings();
 		}
 
@@ -107,7 +107,7 @@ namespace Ami.BroAudio.Editor
 
 		public class FactorySettings
 		{
-			public const bool ShowAudioTypeOnAudioID = true;
+			public const bool ShowAudioTypeOnSoundID = true;
 
 			public const string MusicColor = "#001A4C4C";
 			public const string UIColor = "#0080334C";

@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Demo
 	public class CutScenePlayer : InteractiveComponent
 	{
 		[SerializeField] PlayableDirector _director = null;
-		[SerializeField] AudioID _backgroundMusic = default;
+		[SerializeField] SoundID _backgroundMusic = default;
 		[SerializeField, Volume(true)] float _maxBgmVolumeDuringCutScene = default; 
 
 		protected override bool IsTriggerOnce => true;

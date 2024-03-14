@@ -103,7 +103,7 @@ namespace Ami.BroAudio
 		{
 			if (id <= 0)
 			{
-				LogWarning($"There is a missing or unassigned AudioID.");
+				LogWarning($"There is a missing or unassigned SoundID.");
 				return false;
 			}
 

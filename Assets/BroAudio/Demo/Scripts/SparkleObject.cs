@@ -6,7 +6,7 @@ namespace Ami.BroAudio.Demo
 {
     public class SparkleObject : InteractiveComponent
     {
-        [SerializeField] AudioID _sound = default;
+        [SerializeField] SoundID _sound = default;
 
         protected override bool IsTriggerOnce => true;
 

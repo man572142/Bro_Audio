@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Demo
 	public class EffectField : InteractiveComponent
 	{
 #pragma warning disable 414
-        [SerializeField] AudioID _enterExitSound = default;
+        [SerializeField] SoundID _enterExitSound = default;
 		[SerializeField, Volume(true)] float _targetVolume = 0.5f;
 		[SerializeField, Frequency] float _lowPassFreq = 800f;
 #pragma warning restore 414

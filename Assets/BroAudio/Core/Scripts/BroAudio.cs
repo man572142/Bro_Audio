@@ -11,7 +11,7 @@ namespace Ami.BroAudio
         /// Play an audio
         /// </summary>
         /// <param name="id"></param>
-        public static IAudioPlayer Play(AudioID id) 
+        public static IAudioPlayer Play(SoundID id) 
             => SoundManager.Instance?.Play(id);
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="id"></param>
         /// <param name="position"></param>
-        public static IAudioPlayer Play(AudioID id, Vector3 position)
+        public static IAudioPlayer Play(SoundID id, Vector3 position)
           => SoundManager.Instance?.Play(id, position);
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="id"></param>
         /// <param name="followTarget"></param>
-        public static IAudioPlayer Play(AudioID id, Transform followTarget)
+        public static IAudioPlayer Play(SoundID id, Transform followTarget)
           => SoundManager.Instance?.Play(id, followTarget);
         #endregion
 
@@ -51,7 +51,7 @@ namespace Ami.BroAudio
         /// Stop playing an audio
         /// </summary>
         /// <param name="id"></param>
-        public static void Stop(AudioID id) 
+        public static void Stop(SoundID id) 
             => SoundManager.Instance?.Stop(id);
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="id"></param>
         /// /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
-        public static void Stop(AudioID id,float fadeOut)
+        public static void Stop(SoundID id,float fadeOut)
             => SoundManager.Instance?.Stop(id,fadeOut);
         #endregion
 
@@ -68,7 +68,7 @@ namespace Ami.BroAudio
         /// Pause an audio
         /// </summary>
         /// <param name="id"></param>
-        public static void Pause(AudioID id) 
+        public static void Pause(SoundID id) 
             => SoundManager.Instance?.Pause(id);
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="id"></param>
         /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
-        public static void Pause(AudioID id, float fadeOut)
+        public static void Pause(SoundID id, float fadeOut)
             => SoundManager.Instance?.Pause(id,fadeOut);
 
         #endregion
@@ -111,7 +111,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="vol">values between 0.0 to 10.0</param>
         /// <param name="id"></param>
-        public static void SetVolume(AudioID id, float vol) 
+        public static void SetVolume(SoundID id, float vol) 
             => SetVolume(id, vol, BroAdvice.FadeTime_Immediate);
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Ami.BroAudio
         /// <param name="vol">values between 0.0 to 10.0</param>
         /// <param name="id"></param>
         /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
-        public static void SetVolume(AudioID id, float vol, float fadeTime) 
+        public static void SetVolume(SoundID id, float vol, float fadeTime) 
             => SoundManager.Instance?.SetVolume(id, vol, fadeTime);
         #endregion
 

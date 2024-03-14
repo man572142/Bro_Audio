@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a5837b41054f254c9322a262f546dea, type: 3}
   m_Name: BroEditorSetting
   m_EditorClassIdentifier: 
-  ShowAudioTypeOnAudioID: 1
+  ShowAudioTypeOnSoundID: 1
   ShowVUColorOnVolumeSlider: 1
   AcceptAudioMixerModification: 0
   AudioTypeSettings:

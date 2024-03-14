@@ -6,7 +6,7 @@ namespace Ami.BroAudio.Demo
 {
     public class TunnelSoundModifier : InteractiveComponent
     {
-        [SerializeField] AudioID _targetAmbience = default;
+        [SerializeField] SoundID _targetAmbience = default;
         [SerializeField, Volume] float _absorbedvolume = 0.3f;
         [SerializeField, Volume(true)] float _reflectionBoostVolume = 1.3f;
         [SerializeField] BroAudioType _reflectionBoostType = default;

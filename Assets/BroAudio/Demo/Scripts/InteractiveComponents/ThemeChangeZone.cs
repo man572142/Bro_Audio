@@ -6,7 +6,7 @@ namespace Ami.BroAudio.Demo
 {
 	public class ThemeChangeZone : InteractiveComponent
 	{
-		[SerializeField] AudioID _bgm = default;
+		[SerializeField] SoundID _bgm = default;
 		[SerializeField] float _transitionTime = default;
 
 		[Header("Change Mood")]

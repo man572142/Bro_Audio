@@ -3,7 +3,7 @@ namespace Ami.BroAudio
 	public interface IAudioPlayer : IEffectDecoratable,IVolumeSettable,IMusicDecoratable
 	{
 		/// <summary>
-		/// The AudioID of the player is playing
+		/// The SoundID of the player is playing
 		/// </summary>
 		int ID { get; }
 

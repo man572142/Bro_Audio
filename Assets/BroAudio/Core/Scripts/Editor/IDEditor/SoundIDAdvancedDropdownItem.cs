@@ -5,14 +5,14 @@ using UnityEngine;
 
 namespace Ami.BroAudio.Editor
 {
-	public class AudioIDAdvancedDropdownItem : AdvancedDropdownItem
+	public class SoundIDAdvancedDropdownItem : AdvancedDropdownItem
 	{
-		public readonly int AudioID;
+		public readonly int SoundID;
 		public readonly ScriptableObject SourceAsset;
 
-		public AudioIDAdvancedDropdownItem(string name, int audioID, ScriptableObject asset) : base(name)
+		public SoundIDAdvancedDropdownItem(string name, int soundID, ScriptableObject asset) : base(name)
 		{
-			AudioID = audioID;
+			SoundID = soundID;
 			SourceAsset = asset;
 		}
 	}

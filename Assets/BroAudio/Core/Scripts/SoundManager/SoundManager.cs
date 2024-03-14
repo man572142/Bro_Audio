@@ -341,7 +341,7 @@ namespace Ami.BroAudio.Runtime
             entity = null;
             if (id <= 0 || !_audioBank.TryGetValue(id, out entity))
             {
-                LogError($"The sound is missing or it has never been assigned. No sound will be played. AudioID:{id}");
+                LogError($"The sound is missing or it has never been assigned. No sound will be played. SoundID:{id}");
                 return false;
             }
 

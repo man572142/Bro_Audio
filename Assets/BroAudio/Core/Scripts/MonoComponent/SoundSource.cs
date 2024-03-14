@@ -15,7 +15,7 @@ namespace Ami.BroAudio
         }
 
 		[SerializeField] bool _playOnStart = true;
-		[SerializeField] AudioID _sound = default;
+		[SerializeField] SoundID _sound = default;
         [SerializeField] PositionMode _positionMode = default;
 
         public void Play() => BroAudio.Play(_sound);

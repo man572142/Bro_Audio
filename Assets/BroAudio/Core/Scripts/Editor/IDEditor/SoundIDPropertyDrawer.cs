@@ -8,8 +8,8 @@ using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Editor
 {
-	[CustomPropertyDrawer(typeof(AudioID))]
-	public class AudioIDPropertyDrawer : PropertyDrawer
+	[CustomPropertyDrawer(typeof(SoundID))]
+	public class SoundIDPropertyDrawer : PropertyDrawer
 	{
 		public const string DefaultIDName = "None";
 		public const string IDMissing = "Missing";
@@ -50,7 +50,7 @@ namespace Ami.BroAudio.Editor
 				return;
             }
 
-            // TODO: Initializing this whenever an AudioID is created is not efficient. 
+            // TODO: Initializing this whenever an SoundID is created is not efficient. 
             List<string> guidList = BroEditorUtility.GetGUIDListFromJson();
 			foreach (string guid in guidList)
 			{
@@ -74,8 +74,8 @@ namespace Ami.BroAudio.Editor
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			SerializedProperty idProp = property.FindPropertyRelative(nameof(AudioID.ID));
-			SerializedProperty assetProp = property.FindPropertyRelative(AudioID.NameOf.SourceAsset);
+			SerializedProperty idProp = property.FindPropertyRelative(nameof(SoundID.ID));
+			SerializedProperty assetProp = property.FindPropertyRelative(SoundID.NameOf.SourceAsset);
 
 			if (!_isInit)
 			{
@@ -86,12 +86,12 @@ namespace Ami.BroAudio.Editor
 
 			if (EditorGUI.DropdownButton(suffixRect, new GUIContent(_entityName, ToolTip), FocusType.Keyboard, _dropdownStyle))
 			{
-				var dropdown = new AudioIDAdvancedDropdown(new AdvancedDropdownState(), OnSelect);
+				var dropdown = new SoundIDAdvancedDropdown(new AdvancedDropdownState(), OnSelect);
 				dropdown.Show(suffixRect);
 			}
 
             IAudioAsset audioAsset = assetProp.objectReferenceValue as IAudioAsset;
-            if (BroEditorUtility.EditorSetting.ShowAudioTypeOnAudioID && audioAsset != null && idProp.intValue > 0)
+            if (BroEditorUtility.EditorSetting.ShowAudioTypeOnSoundID && audioAsset != null && idProp.intValue > 0)
 			{
 				BroAudioType audioType = Utility.GetAudioType(idProp.intValue);
                 Rect audioTypeRect = EditorScriptingExtension.DissolveHorizontal(suffixRect, 0.7f);

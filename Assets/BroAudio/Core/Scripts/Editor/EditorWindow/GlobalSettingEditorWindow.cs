@@ -35,7 +35,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string AutoMatchTracksButtonText = "Auto-adding tracks to match audio voices.";
 		public const string AssetOutputPathLabel = "Asset Output Path";
 		public const string VUColorToggleLabel = "Show VU color on volume slider";
-		public const string ShowAudioTypeToggleLabel = "Show audioType on AudioID";
+		public const string ShowAudioTypeToggleLabel = "Show audioType on SoundID";
 		public const string AudioTypeColorLabel = "Audio Type Color";
 		public const string AudioTypeDrawedProperties = "Displayed Properties";
 		public const string AddDominatorTrackLabel = "Add Dominator Track";
@@ -413,9 +413,9 @@ namespace Ami.BroAudio.Editor.Setting
 			EditorSetting.ShowVUColorOnVolumeSlider = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), VUColorToggleLabel, EditorSetting.ShowVUColorOnVolumeSlider);
 			DemonstrateSlider();
 
-			EditorSetting.ShowAudioTypeOnAudioID = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), ShowAudioTypeToggleLabel, EditorSetting.ShowAudioTypeOnAudioID);
+			EditorSetting.ShowAudioTypeOnSoundID = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), ShowAudioTypeToggleLabel, EditorSetting.ShowAudioTypeOnSoundID);
 
-			if (EditorSetting.ShowAudioTypeOnAudioID)
+			if (EditorSetting.ShowAudioTypeOnSoundID)
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeColorLabel.ToWhiteBold(), GUIStyleHelper.RichText);
 				EditorGUI.indentLevel++;

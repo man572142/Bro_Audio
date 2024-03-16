@@ -31,4 +31,4 @@ MonoBehaviour:
   - AudioType: 16
     Color: {r: 0.9339623, g: 0.7765516, b: 0.21586865, a: 0.29803923}
     DrawedProperty: 9231
-  DemoScene: {fileID: 102900000, guid: e9017d5f96b9f09489b4b37e1d6eb914, type: 3}
+  DemoScene: {fileID: 102900000, guid: 05a9e41d79251594aad6850fbdf49b6f, type: 3}

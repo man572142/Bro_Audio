@@ -21,7 +21,7 @@ namespace Ami.Extension
 
 		private static CancellationTokenSource CurrentPlayingTaskCanceller = null;
 
-		public static void PlayClip(AudioClip audioClip, float startTime = 0f, float endTime = 0f, bool loop = false)
+		public static void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
 		{
 			StopAllClips();
 

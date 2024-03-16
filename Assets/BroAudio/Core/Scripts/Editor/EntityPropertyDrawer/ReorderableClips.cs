@@ -206,10 +206,12 @@ namespace Ami.BroAudio.Editor
 					GUIContent buttonIcon =  isPlaying ? EditorGUIUtility.IconContent(IconConstant.StopButton) : EditorGUIUtility.IconContent(IconConstant.PlayButton);
 					if (GUI.Button(buttonRect, buttonIcon))
 					{
-						EditorPlayAudioClip.StopAllClips();
+                        EditorPlayAudioClip.StopAllClips();
 						if(!isPlaying)
 						{
-							EditorPlayAudioClip.PlayClip(audioClip);
+                            float startPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue;
+                            float endPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue;
+                            EditorPlayAudioClip.PlayClip(audioClip, startPos, endPos);
 						}
 					}
 				}

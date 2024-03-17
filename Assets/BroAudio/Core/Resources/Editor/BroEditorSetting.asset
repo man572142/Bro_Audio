@@ -17,16 +17,16 @@ MonoBehaviour:
   AcceptAudioMixerModification: 0
   AudioTypeSettings:
   - AudioType: 1
-    Color: {r: 0, g: 0.101960786, b: 0.29803923, a: 0.29803923}
+    Color: {r: 0.002491996, g: 0.1823744, b: 0.5283019, a: 0.29803923}
     DrawedProperty: 3087
   - AudioType: 2
-    Color: {r: 0, g: 0.5019608, b: 0.2, a: 0.29803923}
+    Color: {r: 0.054901943, g: 0.6117647, b: 0.5343611, a: 0.29803923}
     DrawedProperty: 1039
   - AudioType: 4
-    Color: {r: 0.101960786, g: 0.5019608, b: 0.5019608, a: 0.29803923}
+    Color: {r: 0, g: 0.6901961, b: 0.15686275, a: 0.29803923}
     DrawedProperty: 3087
   - AudioType: 8
-    Color: {r: 0.69032675, g: 0.4198113, b: 1, a: 0.29803923}
+    Color: {r: 0.990566, g: 0.50231415, b: 0.23829652, a: 0.5882353}
     DrawedProperty: 27663
   - AudioType: 16
     Color: {r: 0.9339623, g: 0.7765516, b: 0.21586865, a: 0.29803923}

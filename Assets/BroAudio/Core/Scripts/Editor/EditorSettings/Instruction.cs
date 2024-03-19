@@ -18,6 +18,7 @@
         BroVirtualToolTip,
         PitchShiftingToolTip,
         AudioFilterSlope,
+        AlwaysPlayMusicAsBGM,
 
         // Settings/Info
         Copyright = 20,

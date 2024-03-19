@@ -24,10 +24,10 @@ MonoBehaviour:
   - Key: 3
     Value: Select BroAudio auto-generated asset file's output folder
   - Key: 10
-    Value: "If the same sound is played repeatedly in a very short period of time
-      (e.g. playing it every other frame). It may cause some quality loss or unexpected
-      behavior due to the nature of Comb Filtering (or Hass Effect). \r\n\r\nYou
-      can set it to 0 to ignore this feature, or any other shorter value as needed."
+    Value: "If the same sound is played repeatedly in a very short period. It may
+      cause a quality loss or unexpected behavior due to the nature of Comb Filtering.
+      \n\nBro will automatically prevent this issue, but if you do not need it, you
+      can set it to 0 or any other shorter value as needed."
   - Key: 11
     Value: The {0} track count should be greater than the sum of BroVirtual and the
       Max Real Voices! Click the button below to match them, or set it back to 32
@@ -110,3 +110,6 @@ MonoBehaviour:
       control for users, BroAudio skips the save process for the BroAudioMixer. But
       if you need to modify it, you can enable this option. See the {0} for more
       information.
+  - Key: 17
+    Value: If enabled, all [Music] will be played as BGM and trigger a transtion
+      from one the other automatically.

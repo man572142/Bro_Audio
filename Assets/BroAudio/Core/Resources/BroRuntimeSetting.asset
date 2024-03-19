@@ -21,3 +21,5 @@ MonoBehaviour:
   AudioFilterSlope: 1
   DefaultAudioPlayerPoolSize: 5
   PitchSetting: 1
+  AlwaysPlayMusicAsBGM: 1
+  DefaultBGMTransition: 4

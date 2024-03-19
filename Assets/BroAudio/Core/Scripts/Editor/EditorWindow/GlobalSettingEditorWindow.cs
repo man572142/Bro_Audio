@@ -45,7 +45,8 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
-        private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent;
+        private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
+			,_playMusicAsBgmGUIContent;
 
         private GUIContent[] _tabLabels = null;
 		private Tab _currSelectedTab = Tab.Audio;
@@ -107,12 +108,13 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void InitGUIContents()
 		{
-			_combFilteringGUIContent = new GUIContent("Time to prevent Comb Filtering", _instruction.GetText(Instruction.CombFilteringTooltip));
+			_combFilteringGUIContent = new GUIContent("Time To Prevent Comb Filtering", _instruction.GetText(Instruction.CombFilteringTooltip));
 			_pitchGUIContent = new GUIContent("Pitch Shift Using", _instruction.GetText(Instruction.PitchShiftingToolTip));
 			_audioVoicesGUIContent = new GUIContent("Max Real Voices", _instruction.GetText(Instruction.AudioVoicesToolTip));
 			_virtualTracksGUIContent = new GUIContent("Bro Virtual Tracks", _instruction.GetText(Instruction.BroVirtualToolTip));
 			_filterSlopeGUIContent = new GUIContent("Audio Filter Slope", _instruction.GetText(Instruction.AudioFilterSlope));
 			_acceptAudioMixerGUIContent = new GUIContent("Accept BroAudioMixer Modification", _instruction.GetText(Instruction.AcceptAudioMixerModification));
+			_playMusicAsBgmGUIContent = new GUIContent("Always Play Music As BGM", _instruction.GetText(Instruction.AlwaysPlayMusicAsBGM));
 		}
 
 		private void OnDisable()
@@ -220,21 +222,42 @@ namespace Ami.BroAudio.Editor.Setting
         private void DrawAudioSetting(Rect drawPosition)
         {
             drawPosition.width -= Gap;
-            DrawCombFilteringSetting();
+			DrawAudioFilterSlope();
+			DrawEmptyLine(1);
+			DrawBGMSetting();
+			DrawCombFilteringSetting();
             // To make a room for other functions to use exposed parameters, we only use AudioSource.pitch for now
             //DrawPitchSetting();
             DrawEmptyLine(1);
-
             DrawDefaultEasing();
             DrawSeamlessLoopEasing();
             DrawEmptyLine(1);
-            DrawAudioFilterSlope();
-            DrawEmptyLine(1);
             DrawAudioProjectSettings();
 
-            void DrawCombFilteringSetting()
+			void DrawBGMSetting()
+			{
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "BGM".ToWhiteBold(), GUIStyleHelper.RichText);
+				EditorGUI.indentLevel++;
+				Rect toggleRect = GetRectAndIterateLine(drawPosition);
+				using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.3f))
+				{
+					RuntimeSetting.AlwaysPlayMusicAsBGM = EditorGUI.Toggle(toggleRect, _playMusicAsBgmGUIContent, RuntimeSetting.AlwaysPlayMusicAsBGM);
+
+					if(RuntimeSetting.AlwaysPlayMusicAsBGM)
+					{
+						RuntimeSetting.DefaultBGMTransition =
+						(Transition)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Default Transition", RuntimeSetting.DefaultBGMTransition);
+					}
+				}
+				EditorGUI.indentLevel--;
+			}
+
+			void DrawCombFilteringSetting()
             {
-                Rect combRect = GetRectAndIterateLine(drawPosition);
+				DrawEmptyLine(1);
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Comb Filtering".ToWhiteBold(), GUIStyleHelper.RichText);
+				EditorGUI.indentLevel++;
+				Rect combRect = GetRectAndIterateLine(drawPosition);
                 EditorGUI.LabelField(combRect, _combFilteringGUIContent);
 
                 Rect fieldRect = new Rect(combRect) { width = 80f, x = combRect.x + EditorGUIUtility.labelWidth + 50f };
@@ -249,9 +272,12 @@ namespace Ami.BroAudio.Editor.Setting
                 }
                 EditorGUI.EndDisabledGroup();
 
-                RuntimeSetting.LogCombFilteringWarning = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition), "Log Warning If Occurs", RuntimeSetting.LogCombFilteringWarning);
-                DrawEmptyLine(1);
-            }
+				using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.2f))
+				{
+					RuntimeSetting.LogCombFilteringWarning = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition), "Log Warning If Occurs", RuntimeSetting.LogCombFilteringWarning);
+				}
+				EditorGUI.indentLevel--;
+			}
 
             //void DrawPitchSetting()
             //{
@@ -346,7 +372,7 @@ namespace Ami.BroAudio.Editor.Setting
             }
         }
 
-        private void AutoMatchAudioVoices()
+		private void AutoMatchAudioVoices()
 		{
 			AudioMixerGroup mainTrack = AudioMixer.FindMatchingGroups(MainTrackName)?.Where(x => x.name.Length == MainTrackName.Length).FirstOrDefault();
 			if (mainTrack == default || _currentMixerTracksCount == default)

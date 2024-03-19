@@ -13,7 +13,7 @@ namespace Ami.BroAudio.Data
 	public class RuntimeSetting : ScriptableObject
 	{
 		public float CombFilteringPreventionInSeconds = FactorySettings.CombFilteringPreventionInSeconds;
-		public bool LogCombFilteringWarning = true;
+		public bool LogCombFilteringWarning = false;
 		public Ease DefaultFadeInEase = FactorySettings.DefaultFadeInEase;
 		public Ease DefaultFadeOutEase = FactorySettings.DefaultFadeOutEase;
 		public Ease SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;
@@ -21,20 +21,25 @@ namespace Ami.BroAudio.Data
 		public FilterSlope AudioFilterSlope = FactorySettings.AudioFilterSlope;
 
 		public int DefaultAudioPlayerPoolSize = FactorySettings.DefaultAudioPlayerPoolSize;
-		public PitchShiftingSetting PitchSetting = PitchShiftingSetting.AudioMixer;
+		public PitchShiftingSetting PitchSetting = FactorySettings.PitchShifting;
+
+		public bool AlwaysPlayMusicAsBGM = true;
+		public Transition DefaultBGMTransition = FactorySettings.DefaultBGMTransition;
 
 #if UNITY_EDITOR
 		public void ResetToFactorySettings()
 		{
 			CombFilteringPreventionInSeconds = FactorySettings.CombFilteringPreventionInSeconds;
-			LogCombFilteringWarning = true;
+			LogCombFilteringWarning = false;
 			DefaultFadeInEase = FactorySettings.DefaultFadeInEase;
 			DefaultFadeOutEase = FactorySettings.DefaultFadeOutEase;
 			SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;
 			SeamlessFadeOutEase = FactorySettings.SeamlessFadeOutEase;
 			DefaultAudioPlayerPoolSize = FactorySettings.DefaultAudioPlayerPoolSize;
 			PitchSetting = FactorySettings.PitchShifting;
-        }
+			AlwaysPlayMusicAsBGM = true;
+			DefaultBGMTransition = FactorySettings.DefaultBGMTransition;
+		}
 #endif
         public class FactorySettings
 		{
@@ -46,7 +51,8 @@ namespace Ami.BroAudio.Data
 			public const FilterSlope AudioFilterSlope = FilterSlope.FourPole;
 
 			public const int DefaultAudioPlayerPoolSize = 5;
-			public const PitchShiftingSetting PitchShifting = PitchShiftingSetting.AudioMixer;
+			public const PitchShiftingSetting PitchShifting = PitchShiftingSetting.AudioSource;
+			public const Transition DefaultBGMTransition = Transition.CrossFade;
 		}
 	}
 }

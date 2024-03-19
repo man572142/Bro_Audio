@@ -26,6 +26,7 @@ namespace Ami.Extension
 
 		public static void PlayClipByAudioSource(AudioClip audioClip, float volume, float startTime, float endTime, bool loop = false)
 		{
+			StopAllClipsWithoutDestoryAudioSource();
 			if (_currentEditorAudioSource)
 			{
 				CancelTask(ref _currentDestroyAudioSourceTaskCanceller);
@@ -48,24 +49,13 @@ namespace Ami.Extension
 			audioSource.time = startTime;
 
 			audioSource.Play();
+			PlaybackIndicator.Start();
+			CurrentPlayingClip = audioClip;
 
 			float duration = audioClip.length - endTime - startTime;
 			_currentDestroyAudioSourceTaskCanceller = _currentDestroyAudioSourceTaskCanceller ?? new CancellationTokenSource();
 			AsyncTaskExtension.DelayInvoke(duration, DestroyPreviewAudioSource, _currentDestroyAudioSourceTaskCanceller.Token);
 		}
-
-		public static void DestroyPreviewAudioSource()
-		{
-			if (_currentEditorAudioSource)
-			{
-				CancelTask(ref _currentDestroyAudioSourceTaskCanceller);
-
-				_currentEditorAudioSource.Stop();
-				UnityEngine.Object.DestroyImmediate(_currentEditorAudioSource.gameObject);
-				_currentEditorAudioSource = null;
-			}
-		}
-
 
 		public static void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
 		{
@@ -93,6 +83,25 @@ namespace Ami.Extension
 
 		public static void StopAllClips()
 		{
+			StopAllClipsWithoutDestoryAudioSource();
+			DestroyPreviewAudioSource();
+		}
+
+		private static void DestroyPreviewAudioSource()
+		{
+			if (_currentEditorAudioSource)
+			{
+				CancelTask(ref _currentDestroyAudioSourceTaskCanceller);
+
+				_currentEditorAudioSource.Stop();
+				UnityEngine.Object.DestroyImmediate(_currentEditorAudioSource.gameObject);
+				_currentEditorAudioSource = null;
+				CurrentPlayingClip = null;
+			}
+		}
+
+		private static void StopAllClipsWithoutDestoryAudioSource()
+		{
 			CancelTask(ref _currentPlayingTaskCanceller);
 
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
@@ -100,14 +109,12 @@ namespace Ami.Extension
 			Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
 			MethodInfo method = audioUtilClass.GetMethod(StopClipMethodName, BindingFlags.Static | BindingFlags.Public, null, new Type[] { }, null);
 
-			if(method != null)
+			if (method != null)
 			{
-				method.Invoke(null,new object[] { });
+				method.Invoke(null, new object[] { });
 				PlaybackIndicator.End();
 				CurrentPlayingClip = null;
 			}
-
-			DestroyPreviewAudioSource();
 		}
 
 		public static void AddPlaybackIndicatorListener(Action action)

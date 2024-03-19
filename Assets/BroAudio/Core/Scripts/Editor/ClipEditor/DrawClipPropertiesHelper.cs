@@ -163,7 +163,6 @@ namespace Ami.BroAudio.Editor
 				if (GUI.Button(stopRect, EditorGUIUtility.IconContent(StopButton)))
 				{
 					EditorPlayAudioClip.StopAllClips();
-					EditorPlayAudioClip.DestroyPreviewAudioSource();
 				}
 				EditorGUI.DrawRect(stopRect, StopButtonColor);
 

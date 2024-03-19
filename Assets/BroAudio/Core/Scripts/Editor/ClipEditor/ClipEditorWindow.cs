@@ -110,7 +110,6 @@ namespace Ami.BroAudio.Editor
 		private void OnLostFocus()
 		{
 			EditorPlayAudioClip.StopAllClips();
-			EditorPlayAudioClip.DestroyPreviewAudioSource();
 			EditorPlayAudioClip.RemovePlaybackIndicatorListener(Repaint);
 		}
 

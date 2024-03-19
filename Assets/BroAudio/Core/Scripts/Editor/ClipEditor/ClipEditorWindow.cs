@@ -110,6 +110,7 @@ namespace Ami.BroAudio.Editor
 		private void OnLostFocus()
 		{
 			EditorPlayAudioClip.StopAllClips();
+			EditorPlayAudioClip.DestroyPreviewAudioSource();
 			EditorPlayAudioClip.RemovePlaybackIndicatorListener(Repaint);
 		}
 
@@ -130,7 +131,8 @@ namespace Ami.BroAudio.Editor
 			}
 
 			DrawEmptyLine(1);
-			DrawClipPreview(drawPosition, position.height * 0.3f);
+			float volume = _volumeOptions[_currVolumeOption].ToNormalizeVolume();
+			DrawClipPreview(drawPosition, position.height * 0.3f, volume);
 			DrawClipPropertiesHelper.DrawPlaybackIndicator(position.OverridePosition(0f,0f));
 
 			drawPosition.x += Gap;
@@ -217,11 +219,11 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawClipPreview(Rect drawPosition,float height)
+		private void DrawClipPreview(Rect drawPosition,float height, float volume)
 		{
 			Rect previewRect = GetRectAndIterateLine(drawPosition);
 			_clipPropHelper.SetPreviewHeight(height);
-			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip,TargetClip.name); // don't worry about any duplicate path, cause there will only one clip in editing
+			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip, volume, TargetClip.name); // don't worry about any duplicate path, cause there will only one clip in editing
 			DrawEmptyLine(GetLineCountByPixels(height));
 		}
 		private void DrawPlaybackPositionField(Rect drawPosition)

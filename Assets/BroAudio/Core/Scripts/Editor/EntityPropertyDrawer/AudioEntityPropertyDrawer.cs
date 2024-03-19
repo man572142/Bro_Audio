@@ -151,14 +151,14 @@ namespace Ami.BroAudio.Editor
 					SerializedProperty currSelectClip = currClipList.CurrentSelectedClip;
 					if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
 					{
-						DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport, out float delay);
+						DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport, out float volume);
 						DrawAdditionalClipProperties(position, currSelectClip, setting);
 						if (setting.DrawedProperty.Contains(DrawedProperty.ClipPreview) && audioClip != null)
 						{
 							DrawEmptyLine(1);
 							Rect previewRect = GetNextLineRect(position);  
 							previewRect.y -= PreviewPrettinessOffsetY;
-							_clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, currSelectClip.propertyPath);
+							_clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, volume, currSelectClip.propertyPath);
 							Offset += ClipPreviewHeight + ClipPreviewPadding;
 						}
 					}
@@ -290,7 +290,7 @@ namespace Ami.BroAudio.Editor
             return reorderableClips;
 		}
 
-		private void DrawClipProperties(Rect position,SerializedProperty clipProp, AudioClip audioClip, EditorSetting.AudioTypeSetting setting, out ITransport transport,out float delay)
+		private void DrawClipProperties(Rect position,SerializedProperty clipProp, AudioClip audioClip, EditorSetting.AudioTypeSetting setting, out ITransport transport,out float volume)
 		{
 			SerializedProperty volumeProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
 			SerializedProperty delayProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Delay));
@@ -298,7 +298,6 @@ namespace Ami.BroAudio.Editor
 			SerializedProperty endPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition));
 			SerializedProperty fadeInProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.FadeIn));
 			SerializedProperty fadeOutProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.FadeOut));
-			delay = delayProp.floatValue;
 
 			if (!_clipDataDict.TryGetValue(clipProp.propertyPath, out var clipData))
 			{
@@ -317,6 +316,7 @@ namespace Ami.BroAudio.Editor
 					clipData.IsSnapToFullVolume = !clipData.IsSnapToFullVolume;
                 });
             }
+			volume = volumeProp.floatValue;
 
 			if (CanDraw(DrawedProperty.PlaybackPosition))
 			{

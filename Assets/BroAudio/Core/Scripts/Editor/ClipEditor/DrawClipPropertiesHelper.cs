@@ -93,7 +93,7 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public void DrawClipPreview(Rect clipViewRect, ITransport transport, AudioClip audioClip,string clipPath)
+		public void DrawClipPreview(Rect clipViewRect, ITransport transport, AudioClip audioClip, float volume, string clipPath)
 		{
 			clipViewRect.height = ClipPreviewHeight;
 			SplitRectHorizontal(clipViewRect, 0.1f, 15f, out Rect playbackRect, out Rect previewRect);
@@ -145,15 +145,25 @@ namespace Ami.BroAudio.Editor
 				stopRect.width = playRect.width;
 				stopRect.height = playRect.height;
 
-				if (GUI.Button(playRect, EditorGUIUtility.IconContent(PlayButton)))
+				var guiContent = EditorGUIUtility.IconContent(PlayButton);
+				guiContent.tooltip = EditorPlayAudioClip.PlayWithVolumeSetting;
+				if (GUI.Button(playRect, guiContent))
 				{
-					EditorPlayAudioClip.PlayClip(audioClip, transport.StartPosition, transport.EndPosition);
+					if(Event.current.button == 0) // Left Click
+					{
+						EditorPlayAudioClip.PlayClip(audioClip, transport.StartPosition, transport.EndPosition);
+					}
+					else
+					{
+						EditorPlayAudioClip.PlayClipByAudioSource(audioClip, volume, transport.StartPosition, transport.EndPosition);
+					}
 				}
 				EditorGUI.DrawRect(playRect, PlayButtonColor);
 
 				if (GUI.Button(stopRect, EditorGUIUtility.IconContent(StopButton)))
 				{
 					EditorPlayAudioClip.StopAllClips();
+					EditorPlayAudioClip.DestroyPreviewAudioSource();
 				}
 				EditorGUI.DrawRect(stopRect, StopButtonColor);
 

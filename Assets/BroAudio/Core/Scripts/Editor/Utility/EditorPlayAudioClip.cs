@@ -9,6 +9,7 @@ namespace Ami.Extension
 {
 	public static class EditorPlayAudioClip
 	{
+		public const string PlayWithVolumeSetting = "[Experimental]\nRight-click to play at the current volume (maximum at 0dB)";
 #if UNITY_2020_2_OR_NEWER
 		public const string PlayClipMethodName = "PlayPreviewClip";
         public const string StopClipMethodName = "StopAllPreviewClips";
@@ -19,7 +20,52 @@ namespace Ami.Extension
 		public readonly static PlaybackIndicatorUpdater PlaybackIndicator = new PlaybackIndicatorUpdater();
 		public static AudioClip CurrentPlayingClip { get; private set; }
 
-		private static CancellationTokenSource CurrentPlayingTaskCanceller = null;
+		private static CancellationTokenSource _currentPlayingTaskCanceller = null;
+		private static CancellationTokenSource _currentDestroyAudioSourceTaskCanceller = null;
+		private static AudioSource _currentEditorAudioSource = null;
+
+		public static void PlayClipByAudioSource(AudioClip audioClip, float volume, float startTime, float endTime, bool loop = false)
+		{
+			if (_currentEditorAudioSource)
+			{
+				CancelTask(ref _currentDestroyAudioSourceTaskCanceller);
+				_currentEditorAudioSource.Stop();
+			}
+			else
+			{
+				var gameObj = new GameObject("PreviewAudioClip");
+				gameObj.tag = "EditorOnly";
+				gameObj.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector | HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;
+				_currentEditorAudioSource = gameObj.AddComponent<AudioSource>();
+			}
+
+
+			AudioSource audioSource = _currentEditorAudioSource;
+			audioSource.clip = audioClip;
+			audioSource.volume = volume;
+			audioSource.playOnAwake = false;
+			audioSource.loop = loop;
+			audioSource.time = startTime;
+
+			audioSource.Play();
+
+			float duration = audioClip.length - endTime - startTime;
+			_currentDestroyAudioSourceTaskCanceller = _currentDestroyAudioSourceTaskCanceller ?? new CancellationTokenSource();
+			AsyncTaskExtension.DelayInvoke(duration, DestroyPreviewAudioSource, _currentDestroyAudioSourceTaskCanceller.Token);
+		}
+
+		public static void DestroyPreviewAudioSource()
+		{
+			if (_currentEditorAudioSource)
+			{
+				CancelTask(ref _currentDestroyAudioSourceTaskCanceller);
+
+				_currentEditorAudioSource.Stop();
+				UnityEngine.Object.DestroyImmediate(_currentEditorAudioSource.gameObject);
+				_currentEditorAudioSource = null;
+			}
+		}
+
 
 		public static void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
 		{
@@ -41,18 +87,13 @@ namespace Ami.Extension
 			}
 
             float duration = audioClip.length - startTime - endTime;
-            CurrentPlayingTaskCanceller = CurrentPlayingTaskCanceller ?? new CancellationTokenSource();
-			AsyncTaskExtension.DelayInvoke(duration, StopAllClips, CurrentPlayingTaskCanceller.Token);
+            _currentPlayingTaskCanceller = _currentPlayingTaskCanceller ?? new CancellationTokenSource();
+			AsyncTaskExtension.DelayInvoke(duration, StopAllClips, _currentPlayingTaskCanceller.Token);
 		}
 
 		public static void StopAllClips()
 		{
-			if (CurrentPlayingTaskCanceller != null && CurrentPlayingTaskCanceller.Token.CanBeCanceled)
-			{
-				CurrentPlayingTaskCanceller.Cancel();
-				CurrentPlayingTaskCanceller?.Dispose();
-				CurrentPlayingTaskCanceller = null;
-			}
+			CancelTask(ref _currentPlayingTaskCanceller);
 
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
 
@@ -65,6 +106,8 @@ namespace Ami.Extension
 				PlaybackIndicator.End();
 				CurrentPlayingClip = null;
 			}
+
+			DestroyPreviewAudioSource();
 		}
 
 		public static void AddPlaybackIndicatorListener(Action action)
@@ -78,6 +121,16 @@ namespace Ami.Extension
 		{
 			PlaybackIndicator.OnUpdate -= action;
 			PlaybackIndicator.OnEnd -= action;
+		}
+
+		private static void CancelTask(ref CancellationTokenSource cancellation)
+		{
+			if (cancellation != null && cancellation.Token.CanBeCanceled)
+			{
+				cancellation.Cancel();
+				cancellation?.Dispose();
+				cancellation = null;
+			}
 		}
 	} 
 }

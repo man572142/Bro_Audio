@@ -173,8 +173,9 @@ namespace Ami.BroAudio.Editor
 		{
 			SerializedProperty clipProp = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
 			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
+			SerializedProperty volProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
 
-            Rect buttonRect = new Rect(rect) { width = PlayButtonSize.x, height = PlayButtonSize.y };
+			Rect buttonRect = new Rect(rect) { width = PlayButtonSize.x, height = PlayButtonSize.y };
             buttonRect.y += (_reorderableList.elementHeight - PlayButtonSize.y) * 0.5f;
 			Rect valueRect = new Rect(rect) { width = MulticlipsValueLabelWidth, x = rect.xMax - MulticlipsValueLabelWidth };
 
@@ -203,15 +204,23 @@ namespace Ami.BroAudio.Editor
 				if(audioClipProp.objectReferenceValue is AudioClip audioClip)
 				{
 					bool isPlaying = EditorPlayAudioClip.CurrentPlayingClip == audioClip;
-					GUIContent buttonIcon =  isPlaying ? EditorGUIUtility.IconContent(IconConstant.StopButton) : EditorGUIUtility.IconContent(IconConstant.PlayButton);
-					if (GUI.Button(buttonRect, buttonIcon))
+					GUIContent buttonGUIContent =  isPlaying ? EditorGUIUtility.IconContent(IconConstant.StopButton) : EditorGUIUtility.IconContent(IconConstant.PlayButton);
+					buttonGUIContent.tooltip = EditorPlayAudioClip.PlayWithVolumeSetting;
+					if (GUI.Button(buttonRect, buttonGUIContent))
 					{
                         EditorPlayAudioClip.StopAllClips();
 						if(!isPlaying)
 						{
                             float startPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue;
                             float endPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue;
-                            EditorPlayAudioClip.PlayClip(audioClip, startPos, endPos);
+							if(Event.current.button == 0)
+							{
+								EditorPlayAudioClip.PlayClip(audioClip, startPos, endPos);
+							}
+                            else
+							{
+								EditorPlayAudioClip.PlayClipByAudioSource(audioClip, volProp.floatValue, startPos, endPos);
+							}
 						}
 					}
 				}
@@ -219,7 +228,6 @@ namespace Ami.BroAudio.Editor
 
 			void DrawVolumeSlider()
 			{
-				SerializedProperty volProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
 				Rect labelRect = new Rect(sliderRect) { width = SliderLabelWidth };
 				sliderRect.width -= SliderLabelWidth;
 				sliderRect.x = labelRect.xMax;

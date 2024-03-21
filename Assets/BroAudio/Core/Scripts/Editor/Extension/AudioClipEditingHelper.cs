@@ -76,7 +76,7 @@ namespace Ami.Extension
 			HasEdited = true;
 		}
 
-		public void Boost(float boostVolInDb)
+		public void AdjustVolume(float volume)
 		{
 			if (!CanEdit)
 			{
@@ -85,18 +85,7 @@ namespace Ami.Extension
 
 			for (int i = 0; i < Samples.Length; i++)
 			{
-				int sign = 1;
-				float vol = Samples[i];
-				if (vol < 0)
-				{
-					sign = -1;
-					vol *= sign;
-				}
-
-				float db = vol.ToDecibel(false);
-				db += boostVolInDb;
-
-				Samples[i] = db.ToNormalizeVolume(false) * sign;
+				Samples[i] *= volume;
 			}
 			HasEdited = true;
 		}

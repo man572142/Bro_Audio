@@ -14,20 +14,17 @@ namespace Ami.BroAudio.Editor
 		public const string ConfirmOverwriteTitle = "Confirm overwrite";
 	
 		public const float Gap = 50f;
-		public const int DefaultVolumeOption = 2;
 		public const string DefaultFileExt = "wav";
 
 		public event Action OnChangeAudioClip;
-
-		private readonly float[] _volumeOptions = { -6, -3, 0, 3, 6 };
-		private int _currVolumeOption = DefaultVolumeOption;
-		private string[] _volumeOptionsTexts = null;
 
 		private AudioClip _targetClip = null;
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper();
 		private Transport _transport = default;
 		private bool _isReverse = false;
 		private bool _isMono = false;
+		private float _volume = AudioConstant.FullVolume;
+		private bool _isVolumeSnapped = false;
 		private MonoConversionMode _monoMode = MonoConversionMode.Downmixing;
 		private GenericMenu _monoModeMenu = null;
 
@@ -39,7 +36,7 @@ namespace Ami.BroAudio.Editor
 		{
 			get
 			{
-				return _currVolumeOption != DefaultVolumeOption
+				return _volume != AudioConstant.FullVolume
 					|| _transport.HasDifferentPosition
 					|| _transport.HasFading
 					|| _isReverse
@@ -59,26 +56,6 @@ namespace Ami.BroAudio.Editor
 				{
 					OnChangeAudioClip?.Invoke();
 				}
-			}
-		}
-
-		public string[] VolumeOptionsText
-		{
-			get
-			{
-				if(_volumeOptionsTexts == null)
-				{
-					_volumeOptionsTexts = new string[_volumeOptions.Length];
-					for (int i = 0; i < _volumeOptionsTexts.Length; i++)
-					{
-						if (_volumeOptions[i] > 0)
-						{
-							_volumeOptionsTexts[i] = "+";
-						}
-						_volumeOptionsTexts[i] += $"{_volumeOptions[i]} dB";
-					}
-				}
-				return _volumeOptionsTexts;
 			}
 		}
 
@@ -130,16 +107,16 @@ namespace Ami.BroAudio.Editor
 			}
 
 			DrawEmptyLine(1);
-			float volume = _volumeOptions[_currVolumeOption].ToNormalizeVolume();
-			DrawClipPreview(drawPosition, position.height * 0.3f, volume);
+			DrawClipPreview(drawPosition, position.height * 0.3f, _volume);
 			DrawClipPropertiesHelper.DrawPlaybackIndicator(position.OverridePosition(0f,0f));
 
 			drawPosition.x += Gap;
 			drawPosition.width -= Gap * 2;
 
+			DrawEmptyLine(1);
+			DrawVolumeSlider(drawPosition);
 			DrawPlaybackPositionField(drawPosition);
 			DrawFadingField(drawPosition);
-			DrawVolumeChangeToolBar(drawPosition);
 
 			_isReverse = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition),"Reverse",_isReverse);
 
@@ -199,12 +176,14 @@ namespace Ami.BroAudio.Editor
 			}
         }
 
-        private void DrawVolumeChangeToolBar(Rect drawPosition)
+        private void DrawVolumeSlider(Rect drawPosition)
 		{
-			Rect volZoneRect = GetRectAndIterateLine(drawPosition);
-			EditorScriptingExtension.SplitRectHorizontal(volZoneRect, 0.3f, 0f, out Rect labelRect, out Rect toolBarRect);
-			EditorGUI.LabelField(labelRect, "Volume");
-			_currVolumeOption = GUI.Toolbar(toolBarRect, _currVolumeOption, VolumeOptionsText);
+			Rect volRect = GetRectAndIterateLine(drawPosition);
+			//EditorScriptingExtension.SplitRectHorizontal(volZoneRect, 0.3f, 0f, out Rect labelRect, out Rect toolBarRect);
+			//EditorGUI.LabelField(labelRect, "Volume");
+			//_currVolumeOption = GUI.Toolbar(toolBarRect, _currVolumeOption, VolumeOptionsText);
+
+			_volume = BroEditorUtility.DrawVolumeSlider(volRect, new GUIContent("Volume"), _volume, _isVolumeSnapped, () => _isVolumeSnapped = !_isVolumeSnapped);
 		}
 
 		private void DrawAudioClipObjectField(Rect drawPosition)
@@ -294,10 +273,9 @@ namespace Ami.BroAudio.Editor
 					helper.AddSlient(_transport.Delay);
 				}
 
-				float boostVolume = _volumeOptions[_currVolumeOption];
-				if(boostVolume != 0f)
+				if(_volume != AudioConstant.FullVolume)
 				{
-					helper.Boost(boostVolume);
+					helper.AdjustVolume(_volume);
 				}
 
 				if(_transport.FadeIn != 0f)
@@ -339,7 +317,6 @@ namespace Ami.BroAudio.Editor
 		private void ResetSetting()
 		{
 			_currSavingFilePath = null;
-			_currVolumeOption = DefaultVolumeOption;
 			_transport = default;
 			_isReverse = false;
 		}

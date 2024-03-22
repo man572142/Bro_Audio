@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Tools
             {
                 string mixerPath = SessionState.GetString(PrefKey, string.Empty);
                 if (!string.IsNullOrEmpty(mixerPath) 
-                    && BroEditorUtility.EditorSetting != null && !BroEditorUtility.EditorSetting.AcceptAudioMixerModification)
+                    && BroEditorUtility.EditorSetting != null && !BroEditorUtility.EditorSetting.AcceptAudioMixerModificationIn2021)
                 {
 					// skip any changes on AudioMixer
 					return paths.Where(x => !x.Equals(mixerPath, System.StringComparison.Ordinal)).ToArray();

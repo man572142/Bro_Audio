@@ -27,7 +27,7 @@ namespace Ami.BroAudio.Tools
             }
         }
 
-        private static void FixAudioReverbZoneIssue(GameObject managerObj)
+        public static void FixAudioReverbZoneIssue(GameObject managerObj)
         {
             SoundManager manager = managerObj.GetComponent<SoundManager>();
             if (manager.Mixer)

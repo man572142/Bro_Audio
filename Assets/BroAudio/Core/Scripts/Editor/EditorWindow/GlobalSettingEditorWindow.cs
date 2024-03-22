@@ -512,7 +512,9 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawMiscellaneousSetting(Rect drawPosition)
 		{
-			DrawAutoFixOption(drawPosition);
+#if UNITY_2021
+			DrawAutoFixOption(drawPosition); 
+#endif
 			DrawEmptyLine(1);
 			DrawAssetOutputPath(drawPosition);
 			DrawEmptyLine(1);
@@ -537,10 +539,19 @@ namespace Ami.BroAudio.Editor.Setting
             }
         }
 
+#if UNITY_2021 && UNITY_EDITOR
 		private void DrawAutoFixOption(Rect drawPosition)
 		{
-#if UNITY_2021 && UNITY_EDITOR
-			EditorSetting.AcceptAudioMixerModification = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), _acceptAudioMixerGUIContent, EditorSetting.AcceptAudioMixerModification);
+			EditorSetting.AcceptAudioMixerModificationIn2021 = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), _acceptAudioMixerGUIContent, EditorSetting.AcceptAudioMixerModificationIn2021);
+			if (EditorSetting.AcceptAudioMixerModificationIn2021)
+			{
+				DrawManualFix(drawPosition);
+			}
+			else
+			{
+				EditorSetting.ManualFix = false;
+			}
+			
 			Rect infoBoxRect = GetRectAndIterateLine(drawPosition);
 			infoBoxRect.height *= 3;
 			Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
@@ -552,8 +563,26 @@ namespace Ami.BroAudio.Editor.Setting
 			}
 			EditorGUIUtility.AddCursorRect(infoBoxRect, MouseCursor.Link);
 			DrawEmptyLine(1);
-#endif
 		}
+
+		private void DrawManualFix(Rect drawPosition)
+		{
+			Rect toggleRect = GetRectAndIterateLine(drawPosition);
+			toggleRect.width = 150f;
+			EditorSetting.ManualFix = EditorGUI.ToggleLeft(toggleRect, "Manual Fix", EditorSetting.ManualFix);
+			if (EditorSetting.ManualFix)
+			{
+				Rect buttonRect = new Rect(toggleRect);
+				buttonRect.x += toggleRect.width;
+				buttonRect.width = 80f;
+				if (GUI.Button(buttonRect, "Fix"))
+				{
+					GameObject managerObj = Resources.Load(nameof(Runtime.SoundManager)) as GameObject;
+					Tools.BroAutoFixTrigger.FixAudioReverbZoneIssue(managerObj);
+				}
+			}
+		}
+#endif
 
 		private void DrawAssetOutputPath(Rect drawPosition)
 		{

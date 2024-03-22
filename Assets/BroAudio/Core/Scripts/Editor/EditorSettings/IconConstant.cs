@@ -16,7 +16,8 @@ namespace Ami.BroAudio.Editor
         public const string BackButton = "d_tab_prev@2x";
         public const string ImportFile = "Import@2x";
         public const string AudioClip = "AudioClip Icon";
-        public const string TempAssetWarning = "console.infoicon";
+        public const string AudioGroup = "d_AudioMixerGroup Icon";
+		public const string TempAssetWarning = "console.infoicon";
         public const string AudioSpeaker = "d_SceneViewAudio";
 
         // GlobalSettingWindow

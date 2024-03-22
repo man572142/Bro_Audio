@@ -62,9 +62,9 @@ namespace Ami.Extension
 			return method.Invoke(executor, parameter);
 		}
 
-		public static object CreateNewObjectWithReflection(Type type,object[] constructorParameters)
+		public static object CreateNewObjectWithReflection(Type type,object[] constructorParameters, BindingFlags flags = BindingFlags.Default)
 		{
-			var constructors = type.GetConstructors();
+			var constructors = HasBindingFlags(flags) ? type?.GetConstructors(flags) : type?.GetConstructors();
 
 			if (constructors == null)
 			{

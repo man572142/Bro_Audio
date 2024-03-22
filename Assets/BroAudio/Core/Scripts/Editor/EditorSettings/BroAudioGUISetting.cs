@@ -7,19 +7,24 @@ namespace Ami.BroAudio.Editor.Setting
 {
 	public static class BroAudioGUISetting
 	{
+		// Unity adds separator every 11 element
+
 		public const int LibraryManagerMenuIndex = 0;
 		public const string LibraryManagerMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_LibraryManager;
 
-		public const int ClipEditorMenuIndex = 11;
-		public const string ClipEditorMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_ClipEditor;
-
-        public const int GlobalSettingMenuIndex = 12;
+        public const int GlobalSettingMenuIndex = 11;
 		public const string GlobalSettingMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_Setting;
 
-		public const int InfoWindowMenuIndex = 13;
+		public const int InfoWindowMenuIndex = 12;
 		public const string InfoWindowMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_Info;
 
-        public static Color MainTitleColor => new Color(0.04f, 0.82f, 0.7f);
+		public const int ClipEditorMenuIndex = 23;
+		public const string ClipEditorMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_ClipEditor;
+
+		public const int AudioEffectEditorMenuIndex = 24;
+		public const string AudioEffectMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_EffectEditor;
+
+		public static Color MainTitleColor => new Color(0.04f, 0.82f, 0.7f);
 		public static Color ClipLabelColor => new Color(0f, 0.9f, 0.5f);
 		public static Color PlayButtonColor => new Color(0.25f, 0.9f, 0.25f, 0.4f);
 		public static Color StopButtonColor => new Color(0.9f, 0.25f, 0.25f, 0.4f);

@@ -46,20 +46,22 @@ namespace Ami.Extension
 				Rect cursorWindow = new Rect(Gap,SingleLineSpace * DrawLineCount,CursorTypeWidth,position.height - SingleLineSpace - Gap);
 				GUI.skin.window.Draw(cursorWindow, false, false, false, false);
 			}
-			EditorGUI.indentLevel++;
-			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Cursor Type".SetSize(25), GUIStyleHelper.RichText);
-			DrawEmptyLine(1);
-
-			EditorGUI.indentLevel++;
-			foreach (MouseCursor cursorType in AllCursorTypes)
+			using (new EditorGUI.IndentLevelScope())
 			{
-				Rect rect = GetRectAndIterateLine(drawPosition);
-				rect.width = CursorTypeWidth;
-				EditorGUI.LabelField(rect, cursorType.ToString());
-				EditorGUIUtility.AddCursorRect(rect, cursorType);
-			}
-			EditorGUI.indentLevel--;
-			EditorGUI.indentLevel--;
+                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Cursor Type".SetSize(25), GUIStyleHelper.RichText);
+                DrawEmptyLine(1);
+
+                using (new EditorGUI.IndentLevelScope())
+				{
+                    foreach (MouseCursor cursorType in AllCursorTypes)
+                    {
+                        Rect rect = GetRectAndIterateLine(drawPosition);
+                        rect.width = CursorTypeWidth;
+                        EditorGUI.LabelField(rect, cursorType.ToString());
+                        EditorGUIUtility.AddCursorRect(rect, cursorType);
+                    }
+                }
+            }
 		}
 	}
 }

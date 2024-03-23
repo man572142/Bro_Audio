@@ -182,29 +182,30 @@ namespace Ami.BroAudio.Editor.Setting
             _tabPreAllocRects = _tabPreAllocRects ?? new Rect[_tabLabelRatios.Length];
             _currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab, TabLabelHeight, _tabLabels, _tabLabelRatios, _tabPreAllocRects);
 
-            EditorGUI.indentLevel++;
-            Rect tabPageScrollRect = new Rect(tabWindowRect.x, tabWindowRect.y + TabLabelHeight, tabWindowRect.width, tabWindowRect.height - TabLabelHeight);
-            _scrollPos = BeginScrollView(tabPageScrollRect, _scrollPos);
-            DrawEmptyLine(1);
-            if (RuntimeSetting != null)
-            {
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), _currSelectedTab.ToString().SetSize(18), GUIStyleHelper.MiddleCenterRichText);
-				DrawEmptyLine(1);
-				switch (_currSelectedTab)
+			using (new EditorGUI.IndentLevelScope())
+			{
+                Rect tabPageScrollRect = new Rect(tabWindowRect.x, tabWindowRect.y + TabLabelHeight, tabWindowRect.width, tabWindowRect.height - TabLabelHeight);
+                _scrollPos = BeginScrollView(tabPageScrollRect, _scrollPos);
+                DrawEmptyLine(1);
+                if (RuntimeSetting != null)
                 {
-                    case Tab.Audio:
-						DrawAudioSetting(drawPosition);
-                        break;
-                    case Tab.GUI:
-                        DrawGUISetting(drawPosition);
-                        break;
-                    case Tab.Miscellaneous:
-                        DrawMiscellaneousSetting(drawPosition);
-                        break;
+                    EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), _currSelectedTab.ToString().SetSize(18), GUIStyleHelper.MiddleCenterRichText);
+                    DrawEmptyLine(1);
+                    switch (_currSelectedTab)
+                    {
+                        case Tab.Audio:
+                            DrawAudioSetting(drawPosition);
+                            break;
+                        case Tab.GUI:
+                            DrawGUISetting(drawPosition);
+                            break;
+                        case Tab.Miscellaneous:
+                            DrawMiscellaneousSetting(drawPosition);
+                            break;
+                    }
                 }
+                EndScrollView();
             }
-            EndScrollView();
-            EditorGUI.indentLevel--;
         }
 
         private Instruction GetInstructionEnum(OpenMessage message)
@@ -237,46 +238,48 @@ namespace Ami.BroAudio.Editor.Setting
 			void DrawBGMSetting()
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "BGM".ToWhiteBold(), GUIStyleHelper.RichText);
-				EditorGUI.indentLevel++;
-				Rect toggleRect = GetRectAndIterateLine(drawPosition);
-				using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.3f))
+				using (new EditorGUI.IndentLevelScope())
 				{
-					RuntimeSetting.AlwaysPlayMusicAsBGM = EditorGUI.Toggle(toggleRect, _playMusicAsBgmGUIContent, RuntimeSetting.AlwaysPlayMusicAsBGM);
+                    Rect toggleRect = GetRectAndIterateLine(drawPosition);
+                    using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.3f))
+                    {
+                        RuntimeSetting.AlwaysPlayMusicAsBGM = EditorGUI.Toggle(toggleRect, _playMusicAsBgmGUIContent, RuntimeSetting.AlwaysPlayMusicAsBGM);
 
-					if(RuntimeSetting.AlwaysPlayMusicAsBGM)
-					{
-						RuntimeSetting.DefaultBGMTransition =
-						(Transition)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Default Transition", RuntimeSetting.DefaultBGMTransition);
-					}
-				}
-				EditorGUI.indentLevel--;
+                        if (RuntimeSetting.AlwaysPlayMusicAsBGM)
+                        {
+                            RuntimeSetting.DefaultBGMTransition =
+                            (Transition)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Default Transition", RuntimeSetting.DefaultBGMTransition);
+                        }
+                    }
+                }
 			}
 
 			void DrawCombFilteringSetting()
             {
 				DrawEmptyLine(1);
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Comb Filtering".ToWhiteBold(), GUIStyleHelper.RichText);
-				EditorGUI.indentLevel++;
-				Rect combRect = GetRectAndIterateLine(drawPosition);
-                EditorGUI.LabelField(combRect, _combFilteringGUIContent);
-
-                Rect fieldRect = new Rect(combRect) { width = 80f, x = combRect.x + EditorGUIUtility.labelWidth + 50f };
-                RuntimeSetting.CombFilteringPreventionInSeconds = EditorGUI.FloatField(fieldRect, RuntimeSetting.CombFilteringPreventionInSeconds);
-
-                Rect defaultButtonRect = new Rect(fieldRect) { x = fieldRect.xMax + 10f, width = 60f };
-                float defaultValue = Data.RuntimeSetting.FactorySettings.CombFilteringPreventionInSeconds;
-                EditorGUI.BeginDisabledGroup(RuntimeSetting.CombFilteringPreventionInSeconds == defaultValue);
-                if (GUI.Button(defaultButtonRect, "Default"))
-                {
-                    RuntimeSetting.CombFilteringPreventionInSeconds = defaultValue;
-                }
-                EditorGUI.EndDisabledGroup();
-
-				using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.2f))
+				using (new EditorGUI.IndentLevelScope())
 				{
-					RuntimeSetting.LogCombFilteringWarning = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition), "Log Warning If Occurs", RuntimeSetting.LogCombFilteringWarning);
-				}
-				EditorGUI.indentLevel--;
+                    Rect combRect = GetRectAndIterateLine(drawPosition);
+                    EditorGUI.LabelField(combRect, _combFilteringGUIContent);
+
+                    Rect fieldRect = new Rect(combRect) { width = 80f, x = combRect.x + EditorGUIUtility.labelWidth + 50f };
+                    RuntimeSetting.CombFilteringPreventionInSeconds = EditorGUI.FloatField(fieldRect, RuntimeSetting.CombFilteringPreventionInSeconds);
+
+                    Rect defaultButtonRect = new Rect(fieldRect) { x = fieldRect.xMax + 10f, width = 60f };
+                    float defaultValue = Data.RuntimeSetting.FactorySettings.CombFilteringPreventionInSeconds;
+                    EditorGUI.BeginDisabledGroup(RuntimeSetting.CombFilteringPreventionInSeconds == defaultValue);
+                    if (GUI.Button(defaultButtonRect, "Default"))
+                    {
+                        RuntimeSetting.CombFilteringPreventionInSeconds = defaultValue;
+                    }
+                    EditorGUI.EndDisabledGroup();
+
+                    using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.2f))
+                    {
+                        RuntimeSetting.LogCombFilteringWarning = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition), "Log Warning If Occurs", RuntimeSetting.LogCombFilteringWarning);
+                    }
+                }	
 			}
 
             //void DrawPitchSetting()
@@ -298,23 +301,25 @@ namespace Ami.BroAudio.Editor.Setting
             void DrawDefaultEasing()
             {
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Default Easing".ToWhiteBold(), GUIStyleHelper.RichText);
-                EditorGUI.indentLevel++;
-                RuntimeSetting.DefaultFadeInEase =
+				using (new EditorGUI.IndentLevelScope())
+				{
+                    RuntimeSetting.DefaultFadeInEase =
                     (Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", RuntimeSetting.DefaultFadeInEase);
-                RuntimeSetting.DefaultFadeOutEase =
-                    (Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.DefaultFadeOutEase);
-                EditorGUI.indentLevel--;
+                    RuntimeSetting.DefaultFadeOutEase =
+                        (Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.DefaultFadeOutEase);
+                }
             }
 
             void DrawSeamlessLoopEasing()
             {
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Seamless Loop Easing".ToWhiteBold(), GUIStyleHelper.RichText);
-                EditorGUI.indentLevel++;
-                RuntimeSetting.SeamlessFadeInEase =
+                using (new EditorGUI.IndentLevelScope())
+				{
+                    RuntimeSetting.SeamlessFadeInEase =
                     (Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", RuntimeSetting.SeamlessFadeInEase);
-                RuntimeSetting.SeamlessFadeOutEase =
-                    (Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.SeamlessFadeOutEase);
-                EditorGUI.indentLevel--;
+                    RuntimeSetting.SeamlessFadeOutEase =
+                        (Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.SeamlessFadeOutEase);
+                }
             }
 
             void DrawAudioFilterSlope()
@@ -326,48 +331,54 @@ namespace Ami.BroAudio.Editor.Setting
             {
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), ProjectSettings.ToWhiteBold(), GUIStyleHelper.RichText);
 
-                if (HasValidProjectSettingVoiceCount())
-                {
-                    EditorGUI.BeginDisabledGroup(true);
+				using (new EditorGUI.IndentLevelScope())
+				{
+                    if (HasValidProjectSettingVoiceCount())
                     {
-                        Rect voiceRect = GetRectAndIterateLine(drawPosition);
-                        EditorGUI.LabelField(voiceRect, _audioVoicesGUIContent);
-                        voiceRect.x += 150f;
-                        voiceRect.width = 100f;
-                        EditorGUI.IntField(voiceRect, _currProjectSettingVoiceCount);
+                        EditorGUI.BeginDisabledGroup(true);
+                        {
+                            Rect voiceRect = GetRectAndIterateLine(drawPosition);
+                            EditorGUI.LabelField(voiceRect, _audioVoicesGUIContent);
+                            voiceRect.x += 150f;
+                            voiceRect.width = 100f;
+                            EditorGUI.IntField(voiceRect, _currProjectSettingVoiceCount);
 
-                        Rect virtualTracksRect = GetRectAndIterateLine(drawPosition);
-                        EditorGUI.LabelField(virtualTracksRect, _virtualTracksGUIContent);
-                        virtualTracksRect.x += 150f;
-                        virtualTracksRect.width = 100f;
-                        EditorGUI.IntField(virtualTracksRect, _broVirtualTracksCount);
+                            Rect virtualTracksRect = GetRectAndIterateLine(drawPosition);
+                            EditorGUI.LabelField(virtualTracksRect, _virtualTracksGUIContent);
+                            virtualTracksRect.x += 150f;
+                            virtualTracksRect.width = 100f;
+                            EditorGUI.IntField(virtualTracksRect, _broVirtualTracksCount);
+                        }
+                        EditorGUI.EndDisabledGroup();
                     }
-                    EditorGUI.EndDisabledGroup();
-                }
 
-                if (HasValidMixerTracksCount() && _currentMixerTracksCount < _currProjectSettingVoiceCount + _broVirtualTracksCount)
-                {
-                    Rect warningBoxRect = GetRectAndIterateLine(drawPosition);
-                    warningBoxRect.height *= 3;
-                    Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
-                    string text = string.Format(_instruction.GetText(Instruction.TracksAndVoicesNotMatchWarning), MixerName.ToWhiteBold(), ProjectSettingsMenuItemPath.SetColor(linkBlue));
-                    RichTextHelpBox(warningBoxRect, text, MessageType.Warning);
-                    if (GUI.Button(warningBoxRect, GUIContent.none, GUIStyle.none))
+                    if (HasValidMixerTracksCount() && _currentMixerTracksCount < _currProjectSettingVoiceCount + _broVirtualTracksCount)
                     {
-                        SettingsService.OpenProjectSettings(AudioSettingPath);
-                    }
-                    EditorGUIUtility.AddCursorRect(warningBoxRect, MouseCursor.Link);
+                        Rect warningBoxRect = GetRectAndIterateLine(drawPosition);
+                        warningBoxRect.height *= 3;
+                        warningBoxRect.width -= IndentInPixel;
+                        Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
+                        string text = string.Format(_instruction.GetText(Instruction.TracksAndVoicesNotMatchWarning), MixerName.ToWhiteBold(), ProjectSettingsMenuItemPath.SetColor(linkBlue));
+                        RichTextHelpBox(warningBoxRect, text, MessageType.Warning);
+                        if (GUI.Button(warningBoxRect, GUIContent.none, GUIStyle.none))
+                        {
+                            SettingsService.OpenProjectSettings(AudioSettingPath);
+                        }
+                        EditorGUIUtility.AddCursorRect(warningBoxRect, MouseCursor.Link);
 
-                    DrawEmptyLine(2); // For Help Box
+                        DrawEmptyLine(2); // For Help Box
 
-                    Rect autoMatchBtnRect = GetRectAndIterateLine(drawPosition);
-                    autoMatchBtnRect.height *= 2f;
-                    if (GUI.Button(autoMatchBtnRect, AutoMatchTracksButtonText)
-                        && EditorUtility.DisplayDialog("Confirmation", _instruction.GetText(Instruction.AddTracksConfirmationDialog), "OK", "Cancel"))
-                    {
-                        AutoMatchAudioVoices();
+                        Rect autoMatchBtnRect = GetRectAndIterateLine(drawPosition);
+                        autoMatchBtnRect.height *= 2f;
+						autoMatchBtnRect.x += IndentInPixel *2;
+						autoMatchBtnRect.width -= IndentInPixel *2;
+                        if (GUI.Button(autoMatchBtnRect, AutoMatchTracksButtonText)
+                            && EditorUtility.DisplayDialog("Confirmation", _instruction.GetText(Instruction.AddTracksConfirmationDialog), "OK", "Cancel"))
+                        {
+                            AutoMatchAudioVoices();
+                        }
+                        DrawEmptyLine(2); // For Match Button
                     }
-                    DrawEmptyLine(2); // For Match Button
                 }
             }
         }
@@ -444,20 +455,20 @@ namespace Ami.BroAudio.Editor.Setting
 			if (EditorSetting.ShowAudioTypeOnSoundID)
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeColorLabel.ToWhiteBold(), GUIStyleHelper.RichText);
-				EditorGUI.indentLevel++;
-				Rect colorRect = GetRectAndIterateLine(drawPosition);
-				colorRect.xMax -= 20f;
+				using (new EditorGUI.IndentLevelScope())
+				{
+                    Rect colorRect = GetRectAndIterateLine(drawPosition);
+                    colorRect.xMax -= 20f;
 
-				DrawTwoColumnAudioType(colorRect, SetAudioTypeLabelColor);
-				EditorGUI.indentLevel--;
+                    DrawTwoColumnAudioType(colorRect, SetAudioTypeLabelColor);
+                }
 			}
 
 			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeDrawedProperties.ToWhiteBold(), GUIStyleHelper.RichText);
-			EditorGUI.indentLevel++;
-			Rect drawedPropRect = GetRectAndIterateLine(drawPosition);
-
-			DrawTwoColumnAudioType(drawedPropRect, SetAudioTypeDrawedProperties);
-			EditorGUI.indentLevel--;
+			using (new EditorGUI.IndentLevelScope())
+			{
+                DrawTwoColumnAudioType(GetRectAndIterateLine(drawPosition), SetAudioTypeDrawedProperties);
+            }
 
 			void DemonstrateSlider()
 			{
@@ -543,30 +554,31 @@ namespace Ami.BroAudio.Editor.Setting
 		private void DrawAutoFixOption(Rect drawPosition)
 		{
 			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Audio Reverb Zone Issue In 2021".ToWhiteBold(), GUIStyleHelper.RichText);
-			EditorGUI.indentLevel++;
+			using (new EditorGUI.IndentLevelScope())
+			{
+                EditorSetting.AcceptAudioMixerModificationIn2021 = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), _acceptAudioMixerGUIContent, EditorSetting.AcceptAudioMixerModificationIn2021);
+                if (EditorSetting.AcceptAudioMixerModificationIn2021)
+                {
+                    DrawManualFix(drawPosition);
+                }
+                else
+                {
+                    EditorSetting.ManualFix = false;
+                }
 
-			EditorSetting.AcceptAudioMixerModificationIn2021 = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), _acceptAudioMixerGUIContent, EditorSetting.AcceptAudioMixerModificationIn2021);
-			if (EditorSetting.AcceptAudioMixerModificationIn2021)
-			{
-				DrawManualFix(drawPosition);
-			}
-			else
-			{
-				EditorSetting.ManualFix = false;
-			}
+                Rect infoBoxRect = GetRectAndIterateLine(drawPosition);
+                infoBoxRect.height *= 3;
+                infoBoxRect.width -= IndentInPixel;
+                Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
+                string text = string.Format(_instruction.GetText(Instruction.AcceptAudioMixerModification), "Documentation".SetColor(linkBlue));
+                RichTextHelpBox(infoBoxRect, text, MessageType.Info);
+                if (GUI.Button(infoBoxRect, GUIContent.none, GUIStyle.none))
+                {
+                    Application.OpenURL(AutoFixDocUrl);
+                }
+                EditorGUIUtility.AddCursorRect(infoBoxRect, MouseCursor.Link);
+            }
 			
-			Rect infoBoxRect = GetRectAndIterateLine(drawPosition);
-			infoBoxRect.height *= 3;
-			infoBoxRect.width -= IndentInPixel;
-			Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
-			string text = string.Format(_instruction.GetText(Instruction.AcceptAudioMixerModification), "Documentation".SetColor(linkBlue));
-			RichTextHelpBox(infoBoxRect, text, MessageType.Info);
-			if (GUI.Button(infoBoxRect, GUIContent.none, GUIStyle.none))
-			{
-				Application.OpenURL(AutoFixDocUrl);
-			}
-			EditorGUIUtility.AddCursorRect(infoBoxRect, MouseCursor.Link);
-            EditorGUI.indentLevel--;
             DrawEmptyLine(1);
 		}
 

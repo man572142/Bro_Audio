@@ -18,10 +18,6 @@ namespace Ami.BroAudio.Editor
 		private GUIContent _accetpModificationGUIContent = null;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 
-#if UNITY_2021
-		private bool _originalAudioMixerModificationOption = false; 
-#endif
-
 		private EditorSetting Setting => BroEditorUtility.EditorSetting;
 
 		[MenuItem(AudioEffectMenuPath, false, AudioEffectEditorMenuIndex)]

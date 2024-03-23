@@ -41,7 +41,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string AddDominatorTrackLabel = "Add Dominator Track";
 		public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
 		public const string ProjectSettings = "Project Settings";
-		public const string AutoFixDocUrl = "https://man572142s-organization.gitbook.io/broaudio/core-features/audio-mixer";
+		public const string AutoFixDocUrl = "https://man572142s-organization.gitbook.io/broaudio/core-features/audio-mixer#audio-reverb-zone-issue-in-unity-2021";
 
 		private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
@@ -113,7 +113,7 @@ namespace Ami.BroAudio.Editor.Setting
 			_audioVoicesGUIContent = new GUIContent("Max Real Voices", _instruction.GetText(Instruction.AudioVoicesToolTip));
 			_virtualTracksGUIContent = new GUIContent("Bro Virtual Tracks", _instruction.GetText(Instruction.BroVirtualToolTip));
 			_filterSlopeGUIContent = new GUIContent("Audio Filter Slope", _instruction.GetText(Instruction.AudioFilterSlope));
-			_acceptAudioMixerGUIContent = new GUIContent("Accept BroAudioMixer Modification", _instruction.GetText(Instruction.AcceptAudioMixerModification));
+			_acceptAudioMixerGUIContent = new GUIContent("Accept BroAudioMixer Modification");
 			_playMusicAsBgmGUIContent = new GUIContent("Always Play Music As BGM", _instruction.GetText(Instruction.AlwaysPlayMusicAsBGM));
 		}
 
@@ -542,6 +542,9 @@ namespace Ami.BroAudio.Editor.Setting
 #if UNITY_2021 && UNITY_EDITOR
 		private void DrawAutoFixOption(Rect drawPosition)
 		{
+			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Audio Reverb Zone Issue In 2021".ToWhiteBold(), GUIStyleHelper.RichText);
+			EditorGUI.indentLevel++;
+
 			EditorSetting.AcceptAudioMixerModificationIn2021 = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), _acceptAudioMixerGUIContent, EditorSetting.AcceptAudioMixerModificationIn2021);
 			if (EditorSetting.AcceptAudioMixerModificationIn2021)
 			{
@@ -554,6 +557,7 @@ namespace Ami.BroAudio.Editor.Setting
 			
 			Rect infoBoxRect = GetRectAndIterateLine(drawPosition);
 			infoBoxRect.height *= 3;
+			infoBoxRect.width -= IndentInPixel;
 			Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
 			string text = string.Format(_instruction.GetText(Instruction.AcceptAudioMixerModification), "Documentation".SetColor(linkBlue));
 			RichTextHelpBox(infoBoxRect, text, MessageType.Info);
@@ -562,7 +566,8 @@ namespace Ami.BroAudio.Editor.Setting
 				Application.OpenURL(AutoFixDocUrl);
 			}
 			EditorGUIUtility.AddCursorRect(infoBoxRect, MouseCursor.Link);
-			DrawEmptyLine(1);
+            EditorGUI.indentLevel--;
+            DrawEmptyLine(1);
 		}
 
 		private void DrawManualFix(Rect drawPosition)

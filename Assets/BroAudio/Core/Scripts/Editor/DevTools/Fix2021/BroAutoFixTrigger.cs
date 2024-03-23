@@ -6,6 +6,7 @@ using UnityEngine;
 using Ami.BroAudio.Runtime;
 using Ami.Extension.Reflection;
 using static Ami.BroAudio.Tools.BroAutoFixProcessor;
+using Ami.BroAudio.Editor;
 
 namespace Ami.BroAudio.Tools
 {
@@ -13,6 +14,11 @@ namespace Ami.BroAudio.Tools
     {
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload)
         {
+            if(BroEditorUtility.EditorSetting.ManualFix)
+            {
+                return;
+            }
+
             string mixerPath = SessionState.GetString(PrefKey, string.Empty);
             if (string.IsNullOrEmpty(mixerPath))
             {

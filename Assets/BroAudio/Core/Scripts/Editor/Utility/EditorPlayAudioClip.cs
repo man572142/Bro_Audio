@@ -68,7 +68,7 @@ namespace Ami.Extension
 				BindingFlags.Static | BindingFlags.Public,null,	new Type[] { typeof(AudioClip), typeof(int), typeof(bool) },null);
 
 
-			int startSample = Mathf.RoundToInt(audioClip.frequency * startTime);
+			int startSample = (int)Math.Round(audioClip.frequency * startTime, MidpointRounding.AwayFromZero);
 			if (method != null)
 			{
 				method.Invoke(null,	new object[] { audioClip, startSample, loop });

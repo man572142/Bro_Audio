@@ -5,7 +5,7 @@ namespace Ami.BroAudio.Editor
 {
 	public class Transport : ITransport
 	{
-		public const int FloatFieldDigits = 2;
+		public const int FloatFieldDigits = 3;
 
 		public virtual float StartPosition => PlaybackValues[0];
 		public virtual float EndPosition => PlaybackValues[1];
@@ -60,7 +60,7 @@ namespace Ami.BroAudio.Editor
 		private float ClampAndRound(float value, TransportType transportType)
 		{
 			float clamped = Mathf.Clamp(value, 0f, GetLengthLimit(transportType));
-			return (float)System.Math.Round(clamped, FloatFieldDigits);
+			return (float)Math.Round(clamped, FloatFieldDigits, MidpointRounding.AwayFromZero);
 		}
 
 		private float GetLengthLimit(TransportType modifiedType)

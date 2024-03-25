@@ -113,7 +113,7 @@ namespace Ami.Extension
 
 			void Downmix()
 			{
-				// Multi-Channel would require addtional weight calculation
+				// Multi-Channel would require addtional weight calculation, we only 
 				float sum = 0f;
                 for (int i = 0; i < Samples.Length; i++)
                 {
@@ -157,7 +157,7 @@ namespace Ami.Extension
 				return;
 			}
 
-			int fadeSample = Mathf.RoundToInt(fadeTime * _originalClip.frequency * GetChannelCount());
+			int fadeSample = (int)Math.Round(fadeTime * _originalClip.frequency * GetChannelCount(), MidpointRounding.AwayFromZero);
 
 			// TODO: Accept more ease type
 			float volFactor = 0f;
@@ -178,7 +178,7 @@ namespace Ami.Extension
 				return;
 			}
 
-			int fadeSample = Mathf.RoundToInt(fadeTime * _originalClip.frequency * GetChannelCount());
+			int fadeSample = (int)Math.Round(fadeTime * _originalClip.frequency * GetChannelCount(), MidpointRounding.AwayFromZero);
 			int startSampleIndex = Samples.Length - fadeSample;
 
 			// TODO: Accept more ease type

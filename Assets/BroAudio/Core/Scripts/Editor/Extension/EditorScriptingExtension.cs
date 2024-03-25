@@ -310,7 +310,7 @@ namespace Ami.Extension
 		public static int FontSizeToPixels(int fontSize)
 		{
 			// 16px = 12pt.
-			return Mathf.RoundToInt(fontSize * (16f / 12f));
+			return (int)Math.Round(fontSize * (16f / 12f), MidpointRounding.AwayFromZero);
 		}
 
 		public static float Draw2SidesLabelSliderLayout(MultiLabel labels,float value,float leftValue, float rightValue, params GUILayoutOption[] options)

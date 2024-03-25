@@ -156,8 +156,8 @@ namespace Ami.BroAudio.Editor
 				switch (pitchSetting)
 				{
 					case PitchShiftingSetting.AudioMixer:
-						pitch = Mathf.Round(pitch * Percentage);
-						pitchRange = Mathf.Round(pitchRange * Percentage);
+						pitch = (float)Math.Round(pitch * Percentage, MidpointRounding.AwayFromZero);
+						pitchRange = (float)Math.Round(pitchRange * Percentage, MidpointRounding.AwayFromZero);
 						minPitch *= Percentage;
 						maxPitch *= Percentage;
 						if (hasRandom)
@@ -268,7 +268,7 @@ namespace Ami.BroAudio.Editor
 			var transitionTimeProp = GetBackingNameAndFindProperty(property,nameof(AudioEntity.TransitionTime));
 			switch (currentType)
 			{
-				// TODO : º∆≠»§£Ø‡∂WπLClip™¯´◊
+				// TODO : Êï∏ÂÄº‰∏çËÉΩË∂ÖÈÅéClipÈï∑Â∫¶
 				case SeamlessType.Time:
 					transitionTimeProp.floatValue = Mathf.Abs(EditorGUI.FloatField(_seamlessRects[drawIndex], transitionTimeProp.floatValue));
 					break;
@@ -298,8 +298,8 @@ namespace Ami.BroAudio.Editor
 		{
 			float minRand = value - valueRange * 0.5f;
 			float maxRand = value + valueRange * 0.5f;
-			minRand = (float)Math.Round(Mathf.Clamp(minRand, minLimit, maxLimit), RoundedDigits);
-			maxRand = (float)Math.Round(Mathf.Clamp(maxRand, minLimit, maxLimit), RoundedDigits);
+			minRand = (float)Math.Round(Mathf.Clamp(minRand, minLimit, maxLimit), RoundedDigits, MidpointRounding.AwayFromZero);
+			maxRand = (float)Math.Round(Mathf.Clamp(maxRand, minLimit, maxLimit), RoundedDigits, MidpointRounding.AwayFromZero);
 			switch (sliderType)
 			{
 				case RandomRangeSliderType.Default:

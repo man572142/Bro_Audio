@@ -237,8 +237,8 @@ namespace Ami.BroAudio.Editor
 				labelRect.height = EditorGUIUtility.singleLineHeight;
 				labelRect.y = previewRect.yMax - labelRect.height;
 				float currentLength = audioClip.length - transport.StartPosition - transport.EndPosition;
-				string text = currentLength.ToString("0.00");
-				text += transport.Delay > 0 ? " + " + transport.Delay.ToString("0.00") : string.Empty;
+				string text = currentLength.ToString("0.000");
+				text += transport.Delay > 0 ? " + " + transport.Delay.ToString("0.000") : string.Empty;
 				EditorGUI.DropShadowLabel(labelRect, text + "s");
 			}
 

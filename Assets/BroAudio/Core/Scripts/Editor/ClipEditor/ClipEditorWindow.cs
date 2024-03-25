@@ -218,7 +218,7 @@ namespace Ami.BroAudio.Editor
 
 		private int GetLineCountByPixels(float pixels)
 		{
-			return Mathf.RoundToInt(pixels / SingleLineSpace);
+			return (int)Math.Round(pixels / SingleLineSpace, MidpointRounding.AwayFromZero);
 		}
 
 		private void DrawSavingButton(Rect drawPosition)

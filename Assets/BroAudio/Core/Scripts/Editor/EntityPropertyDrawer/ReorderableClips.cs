@@ -231,7 +231,7 @@ namespace Ami.BroAudio.Editor
 				Rect labelRect = new Rect(sliderRect) { width = SliderLabelWidth };
 				sliderRect.width -= SliderLabelWidth;
 				sliderRect.x = labelRect.xMax;
-				EditorGUI.LabelField(labelRect, EditorGUIUtility.IconContent(IconConstant.AudioSpeaker));
+				EditorGUI.LabelField(labelRect, IconConstant.GetAudioSpeakerOnIcon());
 				float newVol = BroEditorUtility.DrawVolumeSlider(sliderRect, volProp.floatValue, out bool hasChanged, out float newSliderValue);
 				if(hasChanged)
 				{

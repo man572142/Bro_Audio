@@ -20,16 +20,11 @@ namespace Ami.BroAudio.Editor
         public const string AudioGroup = "d_AudioMixerGroup Icon";
 		public const string TempAssetWarning = "console.infoicon";
 
-		private const string AudioSpeaker = "d_SceneViewAudio"; // could be On or Off depends on the version
-        private const string AudioSpeakerOn = "d_SceneViewAudio On"; // used in 2021
-		private const string AudioSpeakerOff = "d_SceneViewAudio Off"; // used in 2020
-		public static GUIContent GetAudioSpeakerOnIcon()
-        {
-			// Unity completely reversed the names of icons for "d_SceneViewAudio" from Unity 2020 to 2021, but idk which version number it was changed in 2021.
-			var onIcon = EditorGUIUtility.IconContent(AudioSpeakerOn);
-			bool isDefaultIconOn = onIcon == null;
-			return isDefaultIconOn ? EditorGUIUtility.IconContent(AudioSpeaker) : onIcon;
-		}
+#if UNITY_2021_2_OR_NEWER
+        public const string AudioSpeakerOn = "SceneViewAudio On";
+#else
+        public const string AudioSpeakerOn = "SceneViewAudio";
+#endif
 
         // GlobalSettingWindow
         public const string AssetOutputBrowser = "FolderOpened Icon";

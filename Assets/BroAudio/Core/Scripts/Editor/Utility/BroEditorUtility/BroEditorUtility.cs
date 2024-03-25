@@ -190,6 +190,36 @@ namespace Ami.BroAudio.Editor
             return ((int)flags & (int)targetFlag) != 0;
         }
 
+        public static void DrawAssetOutputPath(Rect rect, BroInstructionHelper instruction, Action onUpdateSuccess)
+        {
+			GUIStyle style = new GUIStyle(EditorStyles.objectField);
+			style.alignment = TextAnchor.MiddleCenter;
+			if (GUI.Button(rect, new GUIContent(AssetOutputPath), style))
+			{
+				string openPath = AssetOutputPath;
+				if (!Directory.Exists(GetFullPath(openPath)))
+				{
+					openPath = Application.dataPath;
+				}
+				string newPath = EditorUtility.OpenFolderPanel(instruction.GetText(Instruction.AssetOutputPathPanelTtile), openPath, "");
+				if (!string.IsNullOrEmpty(newPath) && IsInProjectFolder(newPath))
+				{
+					newPath = newPath.Remove(0, UnityProjectRootPath.Length + 1);
+					AssetOutputPath = newPath;
+					WriteAssetOutputPathToCoreData(newPath);
+                    onUpdateSuccess?.Invoke();
+				}
+			}
+			Rect browserIconRect = rect;
+			browserIconRect.width = EditorGUIUtility.singleLineHeight;
+			browserIconRect.height = EditorGUIUtility.singleLineHeight;
+			browserIconRect.x = rect.xMax - EditorGUIUtility.singleLineHeight;
+#if UNITY_2020_1_OR_NEWER
+			GUI.DrawTexture(browserIconRect, EditorGUIUtility.IconContent(IconConstant.AssetOutputBrowser).image);
+#endif
+			EditorGUI.DrawRect(browserIconRect, BroAudioGUISetting.ShadowMaskColor);
+		}
+
         public static void DrawVUMeter(Rect vuRect, Color maskColor)
         {
             vuRect.height *= 0.25f;

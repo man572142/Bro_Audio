@@ -34,6 +34,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string ResetSettingButtonText = "Reset To Factory Settings";
 		public const string AutoMatchTracksButtonText = "Auto-adding tracks to match audio voices.";
 		public const string AssetOutputPathLabel = "Asset Output Path";
+		public const string AssetOutputPathMissing = "The current audio asset output path is missing. Please select a new location.";
 		public const string VUColorToggleLabel = "Show VU color on volume slider";
 		public const string ShowAudioTypeToggleLabel = "Show audioType on SoundID";
 		public const string AudioTypeColorLabel = "Audio Type Color";
@@ -59,7 +60,8 @@ namespace Ami.BroAudio.Editor.Setting
 		private Vector2 _scrollPos = default;
 		private float _demoSliderValue = 1f;
 		private Rect[] _tabPreAllocRects = null;
-		private bool _hasGUIContentInit = false;
+		private bool _isInit = false;
+		private bool _hasOutputAssetPath = false;
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public OpenMessage Message { get; private set; } = OpenMessage.None;
@@ -147,11 +149,12 @@ namespace Ami.BroAudio.Editor.Setting
         {
             base.OnGUI();
 
-			if(!_hasGUIContentInit)
+			if(!_isInit)
 			{
 				InitTabsLabel();
 				InitGUIContents();
-				_hasGUIContentInit = true;
+				_hasOutputAssetPath = Directory.Exists(AssetOutputPath);
+				_isInit = true;
 			}
 
             Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
@@ -604,33 +607,14 @@ namespace Ami.BroAudio.Editor.Setting
 		private void DrawAssetOutputPath(Rect drawPosition)
 		{
 			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AssetOutputPathLabel, GUIStyleHelper.MiddleCenterRichText);
-
-			GUIStyle style = new GUIStyle(EditorStyles.objectField);
-			style.alignment = TextAnchor.MiddleCenter;
-			Rect rect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(drawPosition.width * 0.7f, SingleLineSpace);
-			if (GUI.Button(rect, new GUIContent(AssetOutputPath), style))
+			if(!_hasOutputAssetPath)
 			{
-				string openPath = AssetOutputPath;
-				if (!Directory.Exists(GetFullPath(openPath)))
-				{
-					openPath = Application.dataPath;
-				}
-				string newPath = EditorUtility.OpenFolderPanel(_instruction.GetText(Instruction.AssetOutputPathPanelTtile),openPath , "");
-				if (!string.IsNullOrEmpty(newPath) && IsInProjectFolder(newPath))
-				{
-					newPath = newPath.Remove(0, UnityProjectRootPath.Length + 1);
-					AssetOutputPath = newPath;
-                    WriteAssetOutputPathToCoreData(newPath);
-                }
+				RichTextHelpBox(GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(drawPosition.width * 0.7f, SingleLineSpace *2), AssetOutputPathMissing, MessageType.Error);
+				DrawEmptyLine(1);
 			}
-			Rect browserIconRect = rect;
-			browserIconRect.width = EditorGUIUtility.singleLineHeight;
-			browserIconRect.height = EditorGUIUtility.singleLineHeight;
-			browserIconRect.x = rect.xMax - EditorGUIUtility.singleLineHeight;
-#if UNITY_2020_1_OR_NEWER
-			GUI.DrawTexture(browserIconRect, EditorGUIUtility.IconContent(AssetOutputBrowser).image);
-#endif
-			EditorGUI.DrawRect(browserIconRect, BroAudioGUISetting.ShadowMaskColor);
+
+			Rect rect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(drawPosition.width * 0.7f, SingleLineSpace);
+			BroEditorUtility.DrawAssetOutputPath(rect, _instruction, () => _hasOutputAssetPath = true);
 		}
 	}
 }

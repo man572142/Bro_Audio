@@ -75,7 +75,7 @@ namespace Ami.BroAudio.Editor
 			return false;
 		}
 
-		private static bool TryGetCoreData(out string path,out SerializedCoreData coreData, bool showError = true)
+		public static bool TryGetCoreData(out string path,out SerializedCoreData coreData, bool showError = true)
 		{
 			coreData = default;
 			path = null;

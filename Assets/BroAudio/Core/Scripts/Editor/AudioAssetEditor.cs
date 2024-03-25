@@ -118,6 +118,10 @@ namespace Ami.BroAudio.Editor
             if(GUILayout.Button("Open " + BroName.MenuItem_LibraryManager))
 			{
 				LibraryManagerWindow window = LibraryManagerWindow.ShowWindow();
+				if(Asset == null)
+				{
+					Asset = target as IAudioAsset;
+				}
 				window.SelectAsset(Asset.AssetGUID);
 				Init(window.IDGenerator);
 			}

@@ -12,6 +12,7 @@ using System.IO;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.Extension.EditorScriptingExtension;
+using static Ami.BroAudio.Editor.Setting.GlobalSettingEditorWindow;
 
 namespace Ami.BroAudio.Editor
 {
@@ -35,6 +36,7 @@ namespace Ami.BroAudio.Editor
 		private Dictionary<string, AudioAssetEditor> _assetEditorDict = new Dictionary<string, AudioAssetEditor>();
 		private bool _hasAssetListReordered = false;
 		private bool _isInEntitiesEditMode = false;
+		private bool _hasOutputAssetPath = false;
 
 		private Vector2 _assetListScrollPos = Vector2.zero;
 		private Vector2 _entitiesScrollPos = Vector2.zero;
@@ -91,7 +93,11 @@ namespace Ami.BroAudio.Editor
 
 		private void OnEnable()
 		{
-			_allAssetGUIDs = GetGUIDListFromJson();
+			if (TryGetCoreData(out string path, out SerializedCoreData coreData))
+			{
+				_allAssetGUIDs = coreData.GUIDs;
+				_hasOutputAssetPath = Directory.Exists(coreData.AssetOutputPath);
+			}
 
 			InitEditorDictionary();
 			InitReorderableList();
@@ -314,6 +320,12 @@ namespace Ami.BroAudio.Editor
 		{
 			_verticalGapDrawer.DrawLineCount = 0;
 
+			if(!_hasOutputAssetPath)
+			{
+				DrawAssetOutputPath();
+				return;
+			}
+
 			EditorGUILayout.BeginHorizontal();
 			{
 				GUILayout.Space(_verticalGapDrawer.GetSpace());
@@ -333,6 +345,17 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 			EditorGUILayout.EndHorizontal();
+		}
+
+		private void DrawAssetOutputPath()
+		{
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField(AssetOutputPathLabel.ToBold(), GUIStyleHelper.MiddleCenterRichText);
+			Vector2 halfLineSize = new Vector2(position.width * 0.5f, EditorGUIUtility.singleLineHeight);
+			Rect helpBoxRect = GUILayoutUtility.GetRect(halfLineSize.x, EditorGUIUtility.singleLineHeight * 2).GetHorizontalCenterRect(halfLineSize.x, EditorGUIUtility.singleLineHeight * 2);
+			RichTextHelpBox(helpBoxRect, AssetOutputPathMissing, MessageType.Error);
+			Rect assetOutputRect = GUILayoutUtility.GetRect(halfLineSize.x, halfLineSize.y).GetHorizontalCenterRect(halfLineSize.x, halfLineSize.y);
+			BroEditorUtility.DrawAssetOutputPath(assetOutputRect, _instruction, () => _hasOutputAssetPath = true);
 		}
 
 		private void DrawAssetList(Rect assetListRect)

@@ -44,8 +44,8 @@ namespace Ami.BroAudio.Editor
 #endif
 
         // Message Icon
-        public const string InfoMessage = "d_console.infoicon";
-        public const string WarningMessage = "d_console.warnicon";
-        public const string ErrorMessage = "d_console.erroricon";
+        public const string InfoMessage = "console.infoicon";
+        public const string WarningMessage = "console.warnicon";
+        public const string ErrorMessage = "console.erroricon";
     }
 }

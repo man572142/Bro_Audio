@@ -77,11 +77,13 @@ namespace Ami.BroAudio.Editor
 				SerializedProperty newEntity = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
 				ResetEntitySerializedProperties(newEntity);
 				AssignID(newEntity, audioType);
+				serializedObject.ApplyModifiedProperties();
 			}
 
 			void OnRemove(ReorderableList list)
 			{
 				ReorderableList.defaultBehaviours.DoRemoveButton(list);
+				serializedObject.ApplyModifiedProperties();
 			}
 
 			void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)

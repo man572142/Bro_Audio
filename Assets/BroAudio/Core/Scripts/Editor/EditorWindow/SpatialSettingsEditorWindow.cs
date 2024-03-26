@@ -33,8 +33,18 @@ namespace Ami.BroAudio.Editor
             window.titleContent = new GUIContent("Spatial Settings");
 			window.OnCloseWindow = onCloseWindow;
             window.Init(settingsProp);
-            window.ShowModalUtility();
-		}
+#if UNITY_2021_1_OR_NEWER
+			EditorApplication.update += Show;
+#else
+			window.ShowModalUtility();
+#endif
+            void Show()
+			{
+                // When the modal window popup, the other GUI should be freezed. But this behavior ridiculously changed after Untiy2021. 
+                EditorApplication.update -= Show;
+                window.ShowModalUtility();
+            }
+        }
 
         private void Init(SerializedProperty settingsProp)
         {

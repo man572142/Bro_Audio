@@ -6,6 +6,7 @@ using UnityEngine.Audio;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using static Ami.BroAudio.Tools.BroName;
+using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -26,7 +27,7 @@ namespace Ami.BroAudio.Runtime
         private AudioPlayerDecorator[] _decorators = null;
         private string _sendParaName = string.Empty;
 		private string _currTrackName = string.Empty;
-		//private string _pitchParaName = string.Empty;
+        //private string _pitchParaName = string.Empty;
 
 		public int ID { get; private set; } = -1;
         public bool IsPlaying => AudioSource.isPlaying;
@@ -99,54 +100,75 @@ namespace Ami.BroAudio.Runtime
 		}
 
 		private void SetSpatial(PlaybackPreference pref)
-        {
-            SpatialSettings settings = pref.Entity.SpatialSettings;
-            AudioSource.panStereo = settings.StereoPan;
-            bool isDefault = settings == default;
-            
-            AudioSource.dopplerLevel = isDefault? AudioConstant.DefaultDoppler : settings.DopplerLevel;
-            AudioSource.minDistance = isDefault ? AudioConstant.AttenuationMinDistance : settings.MinDistance;
-            AudioSource.maxDistance = isDefault ? AudioConstant.AttenuationMaxDistance : settings.MaxDistance;
+		{
+			SpatialSetting setting = pref.Entity.SpatialSetting;
+			SetSpatialBlend();
 
-            AudioSource.SetCustomCurveOrResetDefault(settings.ReverbZoneMix, AudioSourceCurveType.ReverbZoneMix);
-            AudioSource.SetCustomCurveOrResetDefault(settings.Spread, AudioSourceCurveType.Spread);
-            
-            AudioSource.rolloffMode = settings.RolloffMode;
-            if (settings.RolloffMode == AudioRolloffMode.Custom)
-            {
-                AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, settings.CustomRolloff);
-            }
-
-            if (pref.FollowTarget != null && transform.parent != pref.FollowTarget)
-            {
-                transform.SetParent(pref.FollowTarget, false);
-                SetSpatialBlendTo3D();
-            }
-            else if (pref.HasPosition(out var position))
+			if (setting == null)
 			{
-                transform.position = position;
-                SetSpatialBlendTo3D();
-            }
-            else if(!settings.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D) && pref.Entity is IEntityIdentity entity)
-            {
-                Debug.LogWarning($"You've set a non-2D SpatialBlend for :{entity.Name}, but didn't specify a position or a follow target when playing it");
-            }
+				ResetAudioSourceSpatial();
+				return;
+			}
 
-            void SetSpatialBlendTo3D()
-            {
-                if (!settings.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D))
-                {
-                    AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, settings.SpatialBlend);
-                }
-                else
-                {
-                    // force to 3D if it's played with a position or a follow target, even if it has no custom curve. 
-                    AudioSource.spatialBlend = AudioConstant.SpatialBlend_3D;
-                }
-            }
-        }
+			AudioSource.panStereo = setting.StereoPan;
+			AudioSource.dopplerLevel = setting.DopplerLevel;
+			AudioSource.minDistance = setting.MinDistance;
+			AudioSource.maxDistance = setting.MaxDistance;
 
-        private void ResetSpatial()
+			AudioSource.SetCustomCurveOrResetDefault(setting.ReverbZoneMix, AudioSourceCurveType.ReverbZoneMix);
+			AudioSource.SetCustomCurveOrResetDefault(setting.Spread, AudioSourceCurveType.Spread);
+
+			AudioSource.rolloffMode = setting.RolloffMode;
+			if (setting.RolloffMode == AudioRolloffMode.Custom)
+			{
+				AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, setting.CustomRolloff);
+			}
+
+			void SetSpatialBlend()
+			{
+				if (pref.FollowTarget != null && transform.parent != pref.FollowTarget)
+				{
+					transform.SetParent(pref.FollowTarget, false);
+					SetTo3D();
+				}
+				else if (pref.HasPosition(out var position))
+				{
+					transform.position = position;
+					SetTo3D();
+				}
+				else if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D) && pref.Entity is IEntityIdentity entity)
+				{
+					BroLog.LogWarning($"You've set a non-2D SpatialBlend for :{entity.Name}, but didn't specify a position or a follow target when playing it");
+				}
+			}
+
+			void SetTo3D()
+			{
+				if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D))
+				{
+					// Don't use SetCustomCurveOrResetDefault, it will set to 2D if isDefaultCurve.
+					AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, setting.SpatialBlend);
+				}
+				else
+				{
+					// force to 3D if it's played with a position or a follow target, even if it has no custom curve. 
+					AudioSource.spatialBlend = AudioConstant.SpatialBlend_3D;
+				}
+			}
+		}
+
+		private void ResetAudioSourceSpatial()
+		{
+			AudioSource.panStereo = AudioConstant.DefaultPanStereo;
+			AudioSource.dopplerLevel = AudioConstant.DefaultDoppler;
+			AudioSource.minDistance = AudioConstant.AttenuationMinDistance;
+			AudioSource.maxDistance = AudioConstant.AttenuationMaxDistance;
+			AudioSource.reverbZoneMix = AudioConstant.DefaultReverZoneMix;
+			AudioSource.spread = AudioConstant.DefaultSpread;
+            AudioSource.rolloffMode = AudioConstant.DefaultRolloffMode;
+		}
+
+		private void ResetSpatial()
         {
             AudioSource.spatialBlend = AudioConstant.SpatialBlend_2D;
             if (transform.parent != SoundManager.Instance)
@@ -229,7 +251,7 @@ namespace Ami.BroAudio.Runtime
 
             if(decoratePalyer == null)
             {
-                Debug.LogError("Audio Player decorators array size is too small");
+                BroLog.LogError("Audio Player decorators array size is too small");
             }
             return decoratePalyer;
         }

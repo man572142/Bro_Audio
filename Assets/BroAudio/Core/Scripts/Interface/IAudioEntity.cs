@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Data
 		bool Loop { get; }
 		bool SeamlessLoop { get; }
 		float TransitionTime { get; }
-        SpatialSettings SpatialSettings { get; }
+        SpatialSetting SpatialSetting { get; }
 		int Priority { get; }
 		float Pitch { get; }
 		RandomFlags RandomFlags { get; }

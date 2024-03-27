@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Ami.BroAudio.Runtime;
 using UnityEngine;
 using Ami.Extension;
+using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio
 {
@@ -51,6 +52,12 @@ namespace Ami.BroAudio
 
 		public static void SetCustomCurveOrResetDefault(this AudioSource audioSource, AnimationCurve curve, AudioSourceCurveType curveType)
 		{
+			if(curveType == AudioSourceCurveType.CustomRolloff)
+			{
+				BroLog.LogError($"Don't use this method on {AudioSourceCurveType.CustomRolloff}, please use RolloffMode to detect if is default or not");
+				return;
+			}
+
 			float defaultValue = GetCurveDefaultValue(curveType);
 
             if (!curve.IsDefaultCurve(defaultValue))
@@ -70,14 +77,11 @@ namespace Ami.BroAudio
                     case AudioSourceCurveType.Spread:
 						audioSource.spread = defaultValue;
                         break;
-					default:
-						// todo:
-						break;
-                }
+				}
             }
         }
 
-        private static float GetCurveDefaultValue(AudioSourceCurveType curveType)
+		private static float GetCurveDefaultValue(AudioSourceCurveType curveType)
 		{
             switch (curveType)
             {
@@ -87,9 +91,8 @@ namespace Ami.BroAudio
                     return AudioConstant.DefaultReverZoneMix;
                 case AudioSourceCurveType.Spread:
                     return AudioConstant.DefaultSpread;
-                default:
-					return default;
             }
+			return default;
         }
     }
 }

@@ -63,6 +63,8 @@ namespace Ami.Extension
         public const float LowestPriority = 256;
         public const float DefaultSpread = 0f;
         public const float DefaultReverZoneMix = 1f;
+        public const float DefaultPanStereo = 0f;
+        public const AudioRolloffMode DefaultRolloffMode = AudioRolloffMode.Logarithmic;
 
         public static float DecibelVoulumeFullScale => MaxDecibelVolume - MinDecibelVolume;
     }

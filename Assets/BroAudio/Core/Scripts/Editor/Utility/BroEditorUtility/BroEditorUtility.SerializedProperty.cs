@@ -40,17 +40,8 @@ namespace Ami.BroAudio.Editor
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.RandomFlags))).intValue = 0;
             property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Priority))).intValue = AudioConstant.DefaultPriority;
 
-            SerializedProperty spatialProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.StereoPan)).floatValue = 0f;
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.DopplerLevel)).floatValue = AudioConstant.DefaultDoppler;
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.MinDistance)).floatValue = AudioConstant.AttenuationMinDistance;
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.MaxDistance)).floatValue = AudioConstant.AttenuationMaxDistance;
-
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.SpatialBlend)).animationCurveValue = BroEditorUtility.SpatialBlend;
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.ReverbZoneMix)).animationCurveValue = BroEditorUtility.ReverbZoneMix;
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.Spread)).animationCurveValue = BroEditorUtility.Spread;
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.CustomRolloff)).animationCurveValue = null;
-            spatialProp.FindPropertyRelative(nameof(SpatialSettings.RolloffMode)).enumValueIndex = (int)AudioRolloffMode.Logarithmic;
+            SerializedProperty spatialProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSetting)));
+			spatialProp.objectReferenceValue = null;
             spatialProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
 		}
 
@@ -75,58 +66,6 @@ namespace Ami.BroAudio.Editor
                 enumIndex--;
             }
             return audioType;
-        }
-
-        public static SerializedProperty GetSpatialSettingsProperty(SerializedProperty settingProp, SpatialPropertyType propertyType)
-        {
-            switch (propertyType)
-            {
-                case SpatialPropertyType.StereoPan:
-                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.StereoPan));
-                case SpatialPropertyType.DopplerLevel:
-                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.DopplerLevel));
-                case SpatialPropertyType.MinDistance:
-                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.MinDistance));
-                case SpatialPropertyType.MaxDistance:
-                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.MaxDistance));
-                case SpatialPropertyType.SpatialBlend:
-                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.SpatialBlend));
-                case SpatialPropertyType.ReverbZoneMix:
-                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.ReverbZoneMix));
-                case SpatialPropertyType.Spread:
-                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.Spread));
-                case SpatialPropertyType.CustomRolloff:
-                    return settingProp.FindPropertyRelative(nameof(SpatialSettings.CustomRolloff));
-                case SpatialPropertyType.RolloffMode:
-                    return settingProp.FindPropertyRelative(nameof(SpatialPropertyType.RolloffMode));
-            }
-            return null;
-        }
-
-        public static SerializedProperty GetAudioSourceProperty(SerializedObject sourceSO, SpatialPropertyType propertyType)
-        {
-            switch (propertyType)
-            {
-                case SpatialPropertyType.StereoPan:
-                    return sourceSO.FindProperty(AudioSourcePropertyPath.StereoPan);
-                case SpatialPropertyType.DopplerLevel:
-                    return sourceSO.FindProperty(AudioSourcePropertyPath.DopplerLevel);
-                case SpatialPropertyType.MinDistance:
-                    return sourceSO.FindProperty(AudioSourcePropertyPath.MinDistance);
-                case SpatialPropertyType.MaxDistance:
-                    return sourceSO.FindProperty(AudioSourcePropertyPath.MaxDistance);
-                case SpatialPropertyType.SpatialBlend:
-                    return sourceSO.FindProperty(AudioSourcePropertyPath.SpatialBlend);
-                case SpatialPropertyType.ReverbZoneMix:
-                    return sourceSO.FindProperty(AudioSourcePropertyPath.ReverbZoneMix);
-                case SpatialPropertyType.Spread:
-                    return sourceSO.FindProperty(AudioSourcePropertyPath.Spread);
-                case SpatialPropertyType.CustomRolloff:
-                    return sourceSO.FindProperty(AudioSourcePropertyPath.CustomRolloff);
-                case SpatialPropertyType.RolloffMode:
-                    return sourceSO.FindProperty(AudioSourcePropertyPath.RolloffMode);
-            }
-            return null;
         }
 
         public static void SafeSetCurve(this SerializedProperty property, AnimationCurve curve)

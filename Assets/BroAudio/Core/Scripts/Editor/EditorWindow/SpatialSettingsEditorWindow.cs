@@ -16,103 +16,132 @@ namespace Ami.BroAudio.Editor
 		public const string ReverbZoneMixLabel = "Reverb Zone Mix";
 		public Vector2 WindowSize => new Vector2(400f, 550f);
 
-        public Action<SpatialSettings> OnCloseWindow;
-
 		private MethodInfo _draw3DGUIMethod = null;
 		private UnityEditor.Editor _audioSourceEditor = null;
 		private readonly Keyframe[] _dummyFrameArray = new Keyframe[] { new Keyframe(0f, 0f) };
+		private GameObject _tempObj = null;
+		private SerializedProperty _spatialProp = null;
 
 		private MultiLabel _stereoPanLabels => new MultiLabel() { Main = "Stereo Pan", Left = "Left", Right = "Right" };
 		private MultiLabel _spatialBlendLabels => new MultiLabel() { Main = "Spatial Blend", Left = "2D", Right = "3D" };
 
-		public static void ShowWindow(SerializedProperty settingsProp, Action<SpatialSettings> onCloseWindow)
+		public static void ShowWindow(SerializedProperty spatialProp)
 		{
 			var window = GetWindow<SpatialSettingsEditorWindow>();
 			window.minSize = window.WindowSize;
 			window.maxSize = window.WindowSize;
             window.titleContent = new GUIContent("Spatial Settings");
-			window.OnCloseWindow = onCloseWindow;
-            window.Init(settingsProp);
+            window.Init(spatialProp);
 #if UNITY_2021_1_OR_NEWER
 			EditorApplication.update += Show;
 #else
 			window.ShowModalUtility();
 #endif
-            void Show()
+			void Show()
 			{
                 // When the modal window popup, the other GUI should be freezed. But this behavior ridiculously changed after Untiy2021. 
                 EditorApplication.update -= Show;
                 window.ShowModalUtility();
-            }
+			}
         }
 
-        private void Init(SerializedProperty settingsProp)
+        private void Init(SerializedProperty spatialProp)
         {
             Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
             Type audioSourceInspector = unityEditorAssembly?.GetType($"UnityEditor.AudioSourceInspector");
             _draw3DGUIMethod = audioSourceInspector?.GetMethod("Audio3DGUI", BindingFlags.NonPublic | BindingFlags.Instance);
 
-            GameObject prefab = Resources.Load<GameObject>("Editor/AudioSourceInspector");
-            AudioSource audioSource = prefab.AddComponent<AudioSource>();
-            _audioSourceEditor = UnityEditor.Editor.CreateEditor(audioSource);
+			_tempObj = new GameObject("AudioSourceInspector");
+			_tempObj.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
+			AudioSource audioSource = _tempObj.AddComponent<AudioSource>();
+			_audioSourceEditor = UnityEditor.Editor.CreateEditor(audioSource);
 
-			foreach(SpatialPropertyType propType in Enum.GetValues(typeof(SpatialPropertyType)))
+			if(spatialProp.objectReferenceValue != null && spatialProp.objectReferenceValue is SpatialSetting spatialSetting)
 			{
-				SetAudioSourceProperty(propType,settingsProp);
+				_spatialProp = spatialProp;
+				foreach (SpatialPropertyType propType in Enum.GetValues(typeof(SpatialPropertyType)))
+				{
+					SetAudioSourceSpatialProperty(propType, spatialSetting);
+				}
 			}
         }
 
-		private void SetAudioSourceProperty(SpatialPropertyType propType, SerializedProperty settingsProp)
+		private void SetAudioSourceSpatialProperty(SpatialPropertyType propType, SpatialSetting spatialSetting)
         {
-            SerializedProperty audioSourceProp = GetAudioSourceProperty(_audioSourceEditor.serializedObject, propType);
-            SerializedProperty settingRelativeProp = GetSpatialSettingsProperty(settingsProp, propType);
-
-			switch(audioSourceProp.propertyType)
+			var audioSource = _audioSourceEditor.serializedObject;
+			switch (propType)
 			{
-				case SerializedPropertyType.Float:
-					audioSourceProp.floatValue = settingRelativeProp.floatValue;
+				case SpatialPropertyType.StereoPan:
+					audioSource.FindProperty(AudioSourcePropertyPath.StereoPan).floatValue = spatialSetting.StereoPan;
 					break;
-				case SerializedPropertyType.Enum:
-					audioSourceProp.enumValueIndex = settingRelativeProp.enumValueIndex;
+				case SpatialPropertyType.DopplerLevel:
+					audioSource.FindProperty(AudioSourcePropertyPath.DopplerLevel).floatValue = spatialSetting.DopplerLevel;
 					break;
-				case SerializedPropertyType.AnimationCurve:
-					audioSourceProp.SafeSetCurve(settingRelativeProp.animationCurveValue);
+				case SpatialPropertyType.MinDistance:
+					audioSource.FindProperty(AudioSourcePropertyPath.MinDistance).floatValue = spatialSetting.MinDistance;
+					break;
+				case SpatialPropertyType.MaxDistance:
+					audioSource.FindProperty(AudioSourcePropertyPath.MaxDistance).floatValue = spatialSetting.MaxDistance;
+					break;
+				case SpatialPropertyType.SpatialBlend:
+					if(!spatialSetting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D))
+					{
+						audioSource.FindProperty(AudioSourcePropertyPath.SpatialBlend).animationCurveValue = spatialSetting.SpatialBlend;
+					}
+					break;
+				case SpatialPropertyType.ReverbZoneMix:
+					if (!spatialSetting.ReverbZoneMix.IsDefaultCurve(AudioConstant.DefaultReverZoneMix))
+					{
+						audioSource.FindProperty(AudioSourcePropertyPath.ReverbZoneMix).animationCurveValue = spatialSetting.ReverbZoneMix;
+					}
+					break;
+				case SpatialPropertyType.Spread:
+					if (!spatialSetting.Spread.IsDefaultCurve(AudioConstant.DefaultSpread))
+					{
+						audioSource.FindProperty(AudioSourcePropertyPath.Spread).animationCurveValue = spatialSetting.Spread;
+					}
+					break;
+				case SpatialPropertyType.CustomRolloff:
+					if(spatialSetting.RolloffMode != AudioConstant.DefaultRolloffMode)
+					{
+						audioSource.FindProperty(AudioSourcePropertyPath.CustomRolloff).animationCurveValue = spatialSetting.CustomRolloff;
+					}
+					break;
+				case SpatialPropertyType.RolloffMode:
+					audioSource.FindProperty(AudioSourcePropertyPath.RolloffMode).enumValueIndex = (int)spatialSetting.RolloffMode;
 					break;
 			}
         }
 
-        private void OnDisable()
+		private void OnDisable()
 		{
 			if(_audioSourceEditor != null)
 			{
-                OnCloseWindow?.Invoke(GetSpatialSettings());
-
-                // Unsupported.SmartReset(_audioSourceEditor.target); 
-                // The code above works too, but such a misty code is hard to trust. remove and add it back to reset it would be better. 
-                DestroyImmediate(_audioSourceEditor.target, true);
-
+				if(_spatialProp != null 
+					&& _audioSourceEditor.target is AudioSource audioSource)
+				{
+					var serializedSpatial = new SerializedObject(_spatialProp.objectReferenceValue);
+					serializedSpatial.FindProperty(nameof(SpatialSetting.StereoPan)).floatValue = audioSource.panStereo;
+					serializedSpatial.FindProperty(nameof(SpatialSetting.DopplerLevel)).floatValue = audioSource.dopplerLevel;
+					serializedSpatial.FindProperty(nameof(SpatialSetting.MinDistance)).floatValue = audioSource.minDistance;
+					serializedSpatial.FindProperty(nameof(SpatialSetting.MaxDistance)).floatValue = audioSource.maxDistance;
+					serializedSpatial.FindProperty(nameof(SpatialSetting.SpatialBlend)).animationCurveValue = audioSource.GetCustomCurve(AudioSourceCurveType.SpatialBlend);
+					serializedSpatial.FindProperty(nameof(SpatialSetting.ReverbZoneMix)).animationCurveValue = audioSource.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix);
+					serializedSpatial.FindProperty(nameof(SpatialSetting.Spread)).animationCurveValue = audioSource.GetCustomCurve(AudioSourceCurveType.Spread);
+					if (audioSource.rolloffMode != AudioConstant.DefaultRolloffMode)
+					{
+						serializedSpatial.FindProperty(nameof(SpatialSetting.CustomRolloff)).animationCurveValue = audioSource.GetCustomCurve(AudioSourceCurveType.CustomRolloff);
+					}
+					serializedSpatial.FindProperty(nameof(SpatialSetting.RolloffMode)).enumValueIndex = (int)audioSource.rolloffMode;
+					serializedSpatial.ApplyModifiedProperties();
+					_spatialProp.serializedObject.ApplyModifiedProperties();
+				}
+				
+                DestroyImmediate(_tempObj, true);
                 DestroyImmediate(_audioSourceEditor);
 				_audioSourceEditor = null;
-            }
+			}
 		}
-
-        private SpatialSettings GetSpatialSettings()
-        {
-			SerializedObject so = _audioSourceEditor.serializedObject;
-            SpatialSettings settings = new SpatialSettings()
-            {
-                StereoPan = GetAudioSourceProperty(so,SpatialPropertyType.StereoPan).floatValue,
-                DopplerLevel = GetAudioSourceProperty(so, SpatialPropertyType.DopplerLevel).floatValue,
-                MinDistance = GetAudioSourceProperty(so, SpatialPropertyType.MinDistance).floatValue,
-                MaxDistance = GetAudioSourceProperty(so, SpatialPropertyType.MaxDistance).floatValue,
-                SpatialBlend = GetAudioSourceProperty(so, SpatialPropertyType.SpatialBlend).animationCurveValue,
-                ReverbZoneMix = GetAudioSourceProperty(so, SpatialPropertyType.ReverbZoneMix).animationCurveValue,
-                Spread = GetAudioSourceProperty(so, SpatialPropertyType.Spread).animationCurveValue,
-                CustomRolloff = GetAudioSourceProperty(so, SpatialPropertyType.CustomRolloff).animationCurveValue,
-				RolloffMode = (AudioRolloffMode)GetAudioSourceProperty(so, SpatialPropertyType.RolloffMode).enumValueIndex,
-			};
-            return settings;
-        }
 
 		private void OnGUI()
 		{
@@ -137,6 +166,7 @@ namespace Ami.BroAudio.Editor
 			{
 				_draw3DGUIMethod.Invoke(_audioSourceEditor, null);
 			}
+			_audioSourceEditor.serializedObject.ApplyModifiedProperties();
 		}
 
 		private void DrawStereoPan()

@@ -68,7 +68,7 @@ namespace Ami.BroAudio.Editor
 			DrawPitchProperty();
 			DrawPriorityProperty();
 			DrawLoopProperty();
-			DrawSpatialSettings();
+			DrawSpatialSetting();
 
 			void DrawMasterVolume()
 			{
@@ -207,33 +207,41 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 
-			void DrawSpatialSettings()
+			void DrawSpatialSetting()
 			{
 				if (setting.DrawedProperty.Contains(DrawedProperty.SpatialSettings))
 				{
+					SerializedProperty spatialProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSetting)));
 					Rect suffixRect = EditorGUI.PrefixLabel(GetRectAndIterateLine(position), _spatialLabel);
-					if(GUI.Button(suffixRect, "Open Setting Window"))
+					SplitRectHorizontal(suffixRect, 0.5f, 5f, out Rect objFieldRect, out Rect buttonRect);
+					EditorGUI.ObjectField(objFieldRect, spatialProp, GUIContent.none);
+					bool hasSetting = spatialProp.objectReferenceValue != null;
+					string buttonLabel = hasSetting ? "Open Panel" : "Create And Open";
+					if(GUI.Button(buttonRect, buttonLabel))
 					{
-						SerializedProperty settingsProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
-						SpatialSettingsEditorWindow.ShowWindow(settingsProp, OnSetSpatialSettingBack);
-						GUIUtility.ExitGUI();
+						if(!hasSetting)
+						{
+							string entityName = property.FindPropertyRelative(GetBackingFieldName(nameof(IEntityIdentity.Name))).stringValue;
+							string path = EditorUtility.SaveFilePanelInProject("Save Spatial Setting", entityName + "_Spatial", "asset", "Message");
+							if(!string.IsNullOrEmpty(path))
+							{
+								var newSetting = ScriptableObject.CreateInstance<SpatialSetting>();
+								AssetDatabase.CreateAsset(newSetting, path);
+								spatialProp.objectReferenceValue = newSetting;
+								spatialProp.serializedObject.ApplyModifiedProperties();
+
+								SpatialSettingsEditorWindow.ShowWindow(spatialProp);
+								GUIUtility.ExitGUI();
+								AssetDatabase.SaveAssets();
+							}
+						}
+						else
+						{
+							SpatialSettingsEditorWindow.ShowWindow(spatialProp);
+							GUIUtility.ExitGUI();
+						}
 					}
 				}
-			}
-
-			void OnSetSpatialSettingBack(SpatialSettings spatialSettings)
-			{
-				SerializedProperty prop = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSettings)));
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.StereoPan).floatValue = spatialSettings.StereoPan;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.DopplerLevel).floatValue = spatialSettings.DopplerLevel;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.MinDistance).floatValue = spatialSettings.MinDistance;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.MaxDistance).floatValue = spatialSettings.MaxDistance;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.SpatialBlend).animationCurveValue = spatialSettings.SpatialBlend;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.ReverbZoneMix).animationCurveValue = spatialSettings.ReverbZoneMix;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.Spread).animationCurveValue = spatialSettings.Spread;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.CustomRolloff).animationCurveValue = spatialSettings.CustomRolloff;
-				GetSpatialSettingsProperty(prop, SpatialPropertyType.RolloffMode).enumValueIndex = (int)spatialSettings.RolloffMode;
-				prop.serializedObject.ApplyModifiedPropertiesWithoutUndo();
 			}
 		}
 

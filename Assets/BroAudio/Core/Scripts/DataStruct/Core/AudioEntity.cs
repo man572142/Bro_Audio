@@ -17,7 +17,7 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public bool Loop { get; set; }
         [field: SerializeField] public bool SeamlessLoop { get; set; }
         [field: SerializeField] public float TransitionTime { get; set; }
-        [field: SerializeField] public SpatialSettings SpatialSettings { get; set; }
+        [field: SerializeField] public SpatialSetting SpatialSetting { get; set; }
         [field: SerializeField] public int Priority { get; set; }
         [field: SerializeField] public float Pitch { get; set; }
         [field: SerializeField] public float PitchRandomRange { get; set; }

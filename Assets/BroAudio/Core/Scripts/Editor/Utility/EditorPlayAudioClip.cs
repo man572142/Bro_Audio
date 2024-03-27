@@ -36,7 +36,7 @@ namespace Ami.Extension
 			{
 				var gameObj = new GameObject("PreviewAudioClip");
 				gameObj.tag = "EditorOnly";
-				gameObj.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector | HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;
+				gameObj.hideFlags = HideFlags.HideAndDontSave;
 				_currentEditorAudioSource = gameObj.AddComponent<AudioSource>();
 			}
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Ami.BroAudio.Tools;
 using UnityEngine;
 
 namespace Ami.Extension
@@ -28,7 +29,7 @@ namespace Ami.Extension
 
 		protected virtual void LogInstanceIsNull()
 		{
-			Debug.LogError("The object that you are refering to is null.");
+			BroLog.LogError("The object that you are refering to is null.");
 		}
 	}
 

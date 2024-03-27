@@ -153,7 +153,6 @@ namespace Ami.Extension
 		{
 			if (!CanEdit)
 			{
-				Debug.Log("Cant edit");
 				return;
 			}
 

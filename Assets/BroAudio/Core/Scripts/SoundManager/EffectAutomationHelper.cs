@@ -305,7 +305,7 @@ namespace Ami.BroAudio.Runtime
                     }
 					else
 					{
-						Debug.LogError($"{effect.Type} is only supported on Dominator");
+						BroLog.LogError($"{effect.Type} is only supported on Dominator");
 						return string.Empty;
 					}
 				case EffectType.LowPass:

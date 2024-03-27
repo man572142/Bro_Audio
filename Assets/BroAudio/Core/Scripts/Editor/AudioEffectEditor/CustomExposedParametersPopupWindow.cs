@@ -6,6 +6,7 @@ using UnityEngine.Audio;
 using UnityEditorInternal;
 using System;
 using static Ami.BroAudio.Tools.BroName;
+using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
@@ -154,7 +155,7 @@ namespace Ami.BroAudio.Editor
 		{
 			if (newName.Length > MaxNameLength)
 			{
-				Debug.LogWarning($"Maximum name length of an exposed parameter is {MaxNameLength}");
+				BroLog.LogWarning($"Maximum name length of an exposed parameter is {MaxNameLength}");
 				return false;
 			}
 			return true;

@@ -5,7 +5,6 @@ using UnityEngine;
 using Ami.Extension;
 using Ami.Extension.Reflection;
 using System;
-using UnityEngine.Profiling;
 
 namespace Ami.BroAudio.Editor
 {

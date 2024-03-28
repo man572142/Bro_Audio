@@ -35,7 +35,7 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-        public const float DragPointSizeLength = 20f;
+		public const float DragPointSizeLength = 20f;
 
 		private readonly GUIContent PlaybackMainLabel = new GUIContent("Playback Position");
 		private readonly GUIContent FadeMainLabel = new GUIContent("Fade");
@@ -46,27 +46,13 @@ namespace Ami.BroAudio.Editor
 		private readonly Color _startEndColor = Color.white;
 		private readonly Color _fadingLineColor = Color.green;
 
-		public float ClipPreviewHeight { get; private set; }
+		private float _clipPreviewHeight = default;
 		
 		private Dictionary<string, Dictionary<TransportType, DraggablePoint>> _clipDraggablePointsDict = new Dictionary<string, Dictionary<TransportType, DraggablePoint>>();
 		private KeyValuePair<string, DraggablePoint> _currDraggedPoint = default;
 
 		private TransportType[] _allTransportType = Enum.GetValues(typeof(TransportType)) as TransportType[];
 		private WaveformRenderHelper _waveformHelper = new WaveformRenderHelper();
-
-        public DrawClipPropertiesHelper()
-		{
-		}
-
-		public DrawClipPropertiesHelper(float clipPreviewHeight)
-		{
-			ClipPreviewHeight = clipPreviewHeight;
-		}
-
-		public void SetPreviewHeight(float value)
-		{
-			ClipPreviewHeight = value;
-		}
 
 		public void DrawPlaybackPositionField(Rect position, ITransport transport)
 		{
@@ -93,82 +79,39 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public void DrawClipPreview(Rect clipViewRect, ITransport transport, AudioClip audioClip, float volume, string clipPath)
+		public void DrawClipPreview(Rect previewRect, ITransport transport, AudioClip audioClip, float volume, string clipPath)
 		{
-			clipViewRect.height = ClipPreviewHeight;
-			SplitRectHorizontal(clipViewRect, 0.1f, 15f, out Rect playbackRect, out Rect previewRect);
-			previewRect.width -= 5f;
+			_clipPreviewHeight = previewRect.height;
+			Event currEvent = Event.current;
 			float exceedTime = Mathf.Max(transport.Delay - transport.StartPosition, 0f);
 			var draggablePoints = GetOrCreateDraggablePoints(clipPath);
 
 			DrawWaveformPreview();
-			DrawPlaybackButton();
-			
-			if(Event.current.type == EventType.Layout || previewRect.width <= 0f)
-			{
-				return;
-			}
-			TransportVectorPoints points = new TransportVectorPoints(transport, new Vector2(previewRect.width,ClipPreviewHeight), audioClip.length + exceedTime);
+			TransportVectorPoints points = new TransportVectorPoints(transport, new Vector2(previewRect.width, _clipPreviewHeight), audioClip.length + exceedTime);
 			DrawClipPlaybackLine();
 			DrawExtraSlience();
 			DrawDraggable();
 			DrawClipLengthLabel();
 			HandleDraggable();
+			HandlePlayback();
 
 			void DrawWaveformPreview()
-			{			
-                if (Event.current.type == EventType.Repaint)
-                {
-                    GUI.skin.window.Draw(previewRect, false, false, false, false);
-
-                    Rect waveformRect = new Rect(previewRect);
-					// hack: don't know where the fuck are these offset coming from , just measure them by eyes
-					waveformRect.x += 4f;
-					waveformRect.width -= 6f;
-                    if (transport.Delay > transport.StartPosition)
-                    {
-                        float exceedTimeInPixels = exceedTime / (exceedTime + audioClip.length) * waveformRect.width;
-                        waveformRect.width -= exceedTimeInPixels;
-                        waveformRect.x += exceedTimeInPixels;
-                    }
-                    _waveformHelper.RenderClipWaveform(waveformRect, audioClip);
-                }
-            }
-
-			void DrawPlaybackButton()
 			{
-				SplitRectVertical(playbackRect, 0.5f, 15f, out Rect playRect, out Rect stopRect);
-				// Keep in square
-				float maxHeight = playRect.height;
-				playRect.width = Mathf.Clamp(playRect.width, playRect.width, maxHeight);
-				playRect.height = playRect.width;
-				stopRect.width = playRect.width;
-				stopRect.height = playRect.height;
-
-				var guiContent = EditorGUIUtility.IconContent(PlayButton);
-				guiContent.tooltip = EditorPlayAudioClip.PlayWithVolumeSetting;
-				if (GUI.Button(playRect, guiContent))
+				if (currEvent.type == EventType.Repaint)
 				{
-					if(Event.current.button == 0) // Left Click
+					GUI.skin.window.Draw(previewRect, false, false, false, false);
+
+					Rect waveformRect = new Rect(previewRect);
+					// The following offset is measure by eyes. Idk where they came from, not GUI.skin.window.padding or margin for sure.
+					waveformRect.x += 2f;
+					waveformRect.width -= 2f;
+					if (transport.Delay > transport.StartPosition)
 					{
-						EditorPlayAudioClip.PlayClip(audioClip, transport.StartPosition, transport.EndPosition);
+						float exceedTimeInPixels = exceedTime / (exceedTime + audioClip.length) * waveformRect.width;
+						waveformRect.width -= exceedTimeInPixels;
+						waveformRect.x += exceedTimeInPixels;
 					}
-					else
-					{
-						EditorPlayAudioClip.PlayClipByAudioSource(audioClip, volume, transport.StartPosition, transport.EndPosition);
-					}
-				}
-				EditorGUI.DrawRect(playRect, PlayButtonColor);
-
-				if (GUI.Button(stopRect, EditorGUIUtility.IconContent(StopButton)))
-				{
-					EditorPlayAudioClip.StopAllClips();
-				}
-				EditorGUI.DrawRect(stopRect, StopButtonColor);
-
-				if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying && EditorPlayAudioClip.CurrentPlayingClip == audioClip)
-				{
-					EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, transport);
+					_waveformHelper.RenderClipWaveform(waveformRect, audioClip);
 				}
 			}
 
@@ -188,7 +131,7 @@ namespace Ami.BroAudio.Editor
 					silentToStart[0] = Vector3.zero;
 					silentToStart[1] = new Vector3(points.Start.x, 0f);
 					silentToStart[2] = points.Start;
-					silentToStart[3] = new Vector3(0f, ClipPreviewHeight);
+					silentToStart[3] = new Vector3(0f, _clipPreviewHeight);
 					Handles.DrawAAConvexPolygon(silentToStart);
 
 					Handles.color = _fadingMaskColor;
@@ -209,7 +152,7 @@ namespace Ami.BroAudio.Editor
 					Vector3[] endToSilent = new Vector3[4];
 					endToSilent[0] = new Vector3(points.End.x, 0f);
 					endToSilent[1] = new Vector3(previewRect.width, 0f, 0f);
-					endToSilent[2] = new Vector3(previewRect.width, ClipPreviewHeight, 0f);
+					endToSilent[2] = new Vector3(previewRect.width, _clipPreviewHeight, 0f);
 					endToSilent[3] = points.End;
 					Handles.DrawAAConvexPolygon(endToSilent);
 				}
@@ -221,14 +164,14 @@ namespace Ami.BroAudio.Editor
 				ScaleMode scaleMode = ScaleMode.ScaleToFit;
 				foreach (var transportType in _allTransportType)
 				{
-					if(transportType != TransportType.Delay) // Delay dragging is not supported
+					if (transportType != TransportType.Delay) // Delay dragging is not supported
 					{
 						DraggablePoint point = GetDraggablePoint(previewRect, points, transport, transportType);
 						draggablePoints[transportType] = point;
 						EditorGUIUtility.AddCursorRect(point.Rect, MouseCursor.SlideArrow);
 						GUI.DrawTexture(point.Rect, point.Image, scaleMode, true, 0f, point.ColorTint, point.ImageBorder, 0f);
 					}
-				}	
+				}
 			}
 
 			void DrawClipLengthLabel()
@@ -244,7 +187,6 @@ namespace Ami.BroAudio.Editor
 
 			void HandleDraggable()
 			{
-				Event currEvent = Event.current;
 				if (currEvent.type == EventType.MouseDown)
 				{
 					foreach (DraggablePoint point in draggablePoints.Values)
@@ -285,6 +227,26 @@ namespace Ami.BroAudio.Editor
 				EditorGUI.DrawRect(slientRect, _silentMaskColor);
 				EditorGUI.DropShadowLabel(slientRect, "Add Slience");
 				return previewRect;
+			}
+
+			void HandlePlayback()
+			{
+				if ((currEvent.type == EventType.MouseDown || currEvent.type == EventType.MouseDrag)
+					&& previewRect.Contains(currEvent.mousePosition))
+				{
+					float clickedPoint = currEvent.mousePosition.Scoping(previewRect).x / previewRect.width;
+					int startSample = (int)Math.Round(clickedPoint * audioClip.samples, MidpointRounding.AwayFromZero);
+					int endSample = (int)Math.Round(transport.EndPosition * audioClip.frequency, MidpointRounding.AwayFromZero);
+					EditorPlayAudioClip.PlayClip(audioClip, startSample, endSample);
+					currEvent.Use();
+
+					if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying && EditorPlayAudioClip.CurrentPlayingClip == audioClip)
+					{
+						PreviewClip clip = new PreviewClip(transport);
+						clip.StartPosition = clickedPoint * audioClip.length;
+						EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, clip);
+					}
+				}
 			}
 		}
 

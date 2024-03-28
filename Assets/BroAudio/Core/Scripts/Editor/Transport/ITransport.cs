@@ -2,17 +2,21 @@
 
 namespace Ami.BroAudio.Editor
 {
-	public interface ITransport
+	public interface ITransport : IClip
 	{
-		float StartPosition { get; }
-		float EndPosition { get; }
 		float Delay { get; }
 		float FadeIn { get; }
 		float FadeOut { get; }
-		float Length { get; }
 		float[] PlaybackValues { get; }
 		float[] FadingValues { get; }
 		void SetValue(float value, TransportType transportType);
 		void Update();
+	}
+
+	public interface IClip
+	{
+		float StartPosition { get; }
+		float EndPosition { get; }
+		float Length { get; }
 	}
 }

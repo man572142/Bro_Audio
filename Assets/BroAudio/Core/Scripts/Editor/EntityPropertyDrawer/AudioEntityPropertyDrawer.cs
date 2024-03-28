@@ -40,7 +40,7 @@ namespace Ami.BroAudio.Editor
 		private Rect[] _identityLabelRects = null;
 
 		private Dictionary<string, ReorderableClips> _reorderableClipsDict = new Dictionary<string, ReorderableClips>();
-		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper(ClipPreviewHeight);
+		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper();
 		private Dictionary<string, ClipData> _clipDataDict = new Dictionary<string, ClipData>();
 		private Dictionary<string, Tab> _currSelectedTabDict = new Dictionary<string, Tab>();
         private GenericMenu _changeAudioTypeOption = null;
@@ -153,12 +153,14 @@ namespace Ami.BroAudio.Editor
 					{
 						DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport, out float volume);
 						DrawAdditionalClipProperties(position, currSelectClip, setting);
-						if (setting.DrawedProperty.Contains(DrawedProperty.ClipPreview) && audioClip != null)
+						if (setting.DrawedProperty.Contains(DrawedProperty.ClipPreview) && audioClip != null && Event.current.type != EventType.Layout)
 						{
 							DrawEmptyLine(1);
 							Rect previewRect = GetNextLineRect(position);  
 							previewRect.y -= PreviewPrettinessOffsetY;
+							previewRect.height = ClipPreviewHeight;
 							_clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, volume, currSelectClip.propertyPath);
+							currClipList.SetPreviewRect(previewRect);
 							Offset += ClipPreviewHeight + ClipPreviewPadding;
 						}
 					}

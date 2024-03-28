@@ -26,6 +26,7 @@ namespace Ami.BroAudio.Editor
 		private SerializedProperty _playModeProp;
 		private int _currSelectedClipIndex = -1;
 		private SerializedProperty _currSelectedClip;
+		private Rect _previewRect = default;
 
 		public bool IsMulticlips => _reorderableList.count > 1;
 		public float Height => _reorderableList.GetHeight();
@@ -72,6 +73,11 @@ namespace Ami.BroAudio.Editor
 		public void Dispose()
 		{
 			Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+		}
+
+		public void SetPreviewRect(Rect rect)
+		{
+			_previewRect = rect;
 		}
 
 		private void OnUndoRedoPerformed()
@@ -220,6 +226,18 @@ namespace Ami.BroAudio.Editor
                             else
 							{
 								EditorPlayAudioClip.PlayClipByAudioSource(audioClip, volProp.floatValue, startPos, endPos);
+							}
+
+							if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying && EditorPlayAudioClip.CurrentPlayingClip == audioClip)
+							{
+								PreviewClip clip = new PreviewClip() 
+								{
+									StartPosition = startPos,
+									EndPosition	= endPos,
+									Length = audioClip.length,
+								};
+
+								EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(_previewRect, clip);
 							}
 						}
 					}

@@ -9,15 +9,20 @@ namespace Ami.Extension
 		public const int SecondInMilliseconds = 1000;
 		public const float MillisecondInSeconds = 0.001f;
 
-		public static async void DelayInvoke(float delay, Action action, CancellationToken cancellationToken = default)
+		public static void DelayInvoke(float delay, Action action, CancellationToken cancellationToken = default)
 		{
 			float ms = delay * SecondInMilliseconds;
+			DelayInvoke(ms, action, cancellationToken);
+		}
+
+		public static async void DelayInvoke(int milliseconds, Action action, CancellationToken cancellationToken = default)
+		{
 			try
 			{
-				await Task.Delay((int)ms, cancellationToken);
+				await Task.Delay(milliseconds, cancellationToken);
 				action.Invoke();
 			}
-			catch(TaskCanceledException)
+			catch (TaskCanceledException)
 			{
 				// This exception is thrown by the task cancellation design, not an actual error.
 			}

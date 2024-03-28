@@ -59,26 +59,33 @@ namespace Ami.Extension
 
 		public static void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
 		{
+			int startSample = (int)Math.Round(audioClip.frequency * startTime, MidpointRounding.AwayFromZero);
+			int endSample = (int)Math.Round(audioClip.frequency * endTime, MidpointRounding.AwayFromZero);
+			PlayClip(audioClip, startSample, endSample, loop);
+		}
+
+		public static void PlayClip(AudioClip audioClip, int startSample, int endSample, bool loop = false)
+		{
 			StopAllClips();
 
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
 
 			Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
 			MethodInfo method = audioUtilClass.GetMethod(PlayClipMethodName,
-				BindingFlags.Static | BindingFlags.Public,null,	new Type[] { typeof(AudioClip), typeof(int), typeof(bool) },null);
+				BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(AudioClip), typeof(int), typeof(bool) }, null);
 
 
-			int startSample = (int)Math.Round(audioClip.frequency * startTime, MidpointRounding.AwayFromZero);
 			if (method != null)
 			{
-				method.Invoke(null,	new object[] { audioClip, startSample, loop });
+				method.Invoke(null, new object[] { audioClip, startSample, loop });
 				PlaybackIndicator.Start();
 				CurrentPlayingClip = audioClip;
 			}
 
-            float duration = audioClip.length - startTime - endTime;
-            _currentPlayingTaskCanceller = _currentPlayingTaskCanceller ?? new CancellationTokenSource();
-			AsyncTaskExtension.DelayInvoke(duration, StopAllClips, _currentPlayingTaskCanceller.Token);
+			int sampleLength = audioClip.samples - startSample - endSample;
+			int lengthInMs = (int)Math.Round(sampleLength / (double)audioClip.frequency * AsyncTaskExtension.SecondInMilliseconds, MidpointRounding.AwayFromZero);
+			_currentPlayingTaskCanceller = _currentPlayingTaskCanceller ?? new CancellationTokenSource();
+			AsyncTaskExtension.DelayInvoke(lengthInMs, StopAllClips, _currentPlayingTaskCanceller.Token);
 		}
 
 		public static void StopAllClips()

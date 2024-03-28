@@ -12,7 +12,8 @@ namespace Ami.Extension
 		public static void DelayInvoke(float delay, Action action, CancellationToken cancellationToken = default)
 		{
 			float ms = delay * SecondInMilliseconds;
-			DelayInvoke(ms, action, cancellationToken);
+			// Do not remove the casting; otherwise, it will call to itself, creating an infinite loop
+			DelayInvoke((int)ms, action, cancellationToken);
 		}
 
 		public static async void DelayInvoke(int milliseconds, Action action, CancellationToken cancellationToken = default)

@@ -40,7 +40,6 @@ namespace Ami.Extension
 				_currentEditorAudioSource = gameObj.AddComponent<AudioSource>();
 			}
 
-
 			AudioSource audioSource = _currentEditorAudioSource;
 			audioSource.clip = audioClip;
 			audioSource.volume = volume;

@@ -236,14 +236,17 @@ namespace Ami.BroAudio.Editor
 				{
 					float clickedPoint = currEvent.mousePosition.Scoping(previewRect).x / previewRect.width;
 					int startSample = (int)Math.Round(clickedPoint * audioClip.samples, MidpointRounding.AwayFromZero);
-					int endSample = (int)Math.Round(transport.EndPosition * audioClip.frequency, MidpointRounding.AwayFromZero);
-					EditorPlayAudioClip.PlayClip(audioClip, startSample, endSample);
+					EditorPlayAudioClip.PlayClip(audioClip, startSample, 0);
 					currEvent.Use();
 
 					if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying && EditorPlayAudioClip.CurrentPlayingClip == audioClip)
 					{
-						PreviewClip clip = new PreviewClip(transport);
-						clip.StartPosition = clickedPoint * audioClip.length;
+						PreviewClip clip = new PreviewClip() 
+						{
+							StartPosition = clickedPoint * audioClip.length,
+							EndPosition = 0f,
+							Length = audioClip.length,
+						};
 						EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, clip);
 					}
 				}

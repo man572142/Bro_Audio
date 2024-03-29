@@ -18,6 +18,11 @@ namespace Ami.Extension
 
 		public static async void DelayInvoke(int milliseconds, Action action, CancellationToken cancellationToken = default)
 		{
+			if(milliseconds <= 0)
+			{
+				return;
+			}
+
 			try
 			{
 				await Task.Delay(milliseconds, cancellationToken);

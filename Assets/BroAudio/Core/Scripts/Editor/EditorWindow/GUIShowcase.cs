@@ -4,22 +4,29 @@ using UnityEditor;
 using UnityEngine;
 using System;
 using Ami.BroAudio.Tools;
+using System.Reflection;
+using Ami.BroAudio.Editor;
 
 namespace Ami.Extension
 {
-	public class GUIShowcase : MiEditorWindow
+	public class GUIShowcase : EditorWindow
 	{
-		public const float CursorTypeWidth = 200f;
+		public const float CursorWidth = 200f;
+		public const float GUIStyleWidth = 220f;
 		public const float Gap = 10f;
-		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 5f;
 
-		private IEnumerable<MouseCursor> _allCursorTypes = null;
-
-		public IEnumerable<MouseCursor> AllCursorTypes
+		private bool _isHover = false;
+		private bool _isActive = false;
+		private bool _isOn = false;
+		private bool _hasKeyboardFocus = false;
+		private Vector2 _scrollPos = default;
+		private List<GUIStyle> _guiStyleList = new List<GUIStyle>();
+		private MouseCursor[] _allCursorTypes = null;
+		public MouseCursor[] AllCursorTypes
 		{
 			get
 			{
-                _allCursorTypes = _allCursorTypes ?? (IEnumerable<MouseCursor>)Enum.GetValues(typeof(MouseCursor));
+                _allCursorTypes = _allCursorTypes ?? (MouseCursor[])Enum.GetValues(typeof(MouseCursor));
                 return _allCursorTypes;
 			}
 		}
@@ -34,34 +41,102 @@ namespace Ami.Extension
 			window.Show();
 		}
 
-		protected override void OnGUI()
+		private void OnEnable()
 		{
-			base.OnGUI();
+			Type styleClass = typeof(EditorStyles);
+			PropertyInfo[] properties = styleClass.GetProperties();
 
-			Rect drawPosition = new Rect(Gap,0f, position.width,position.height);
-			DrawEmptyLine(1);
+			foreach (PropertyInfo property in properties)
+			{
+				_guiStyleList.Add(property.GetValue(null, null) as GUIStyle);
+			}
+		}
 
+		private void OnGUI()
+		{
 			if (Event.current.type == EventType.Repaint)
 			{
-				Rect cursorWindow = new Rect(Gap,SingleLineSpace * DrawLineCount,CursorTypeWidth,position.height - SingleLineSpace - Gap);
+				float topGap = EditorGUIUtility.singleLineHeight * 2;
+				Rect cursorWindow = new Rect(Gap, topGap - _scrollPos.y, CursorWidth, (AllCursorTypes.Length + 3) * EditorGUIUtility.singleLineHeight);
 				GUI.skin.window.Draw(cursorWindow, false, false, false, false);
-			}
-			using (new EditorGUI.IndentLevelScope())
-			{
-                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Cursor Type".SetSize(25), GUIStyleHelper.RichText);
-                DrawEmptyLine(1);
 
-                using (new EditorGUI.IndentLevelScope())
+				Rect styleWindow = new Rect(Gap * 2 + cursorWindow.width, topGap - _scrollPos.y, GUIStyleWidth * 2, (_guiStyleList.Count + 3) * EditorGUIUtility.singleLineHeight);
+				GUI.skin.window.Draw(styleWindow, false, false, false, false);
+			}
+
+			_scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
+			EditorGUILayout.BeginHorizontal();
+			{
+				EditorGUILayout.Space();
+				EditorGUILayout.BeginVertical();
 				{
-                    foreach (MouseCursor cursorType in AllCursorTypes)
-                    {
-                        Rect rect = GetRectAndIterateLine(drawPosition);
-                        rect.width = CursorTypeWidth;
-                        EditorGUI.LabelField(rect, cursorType.ToString());
-                        EditorGUIUtility.AddCursorRect(rect, cursorType);
-                    }
-                }
-            }
+					EditorGUILayout.Space();
+					EditorGUILayout.LabelField("Cursor Type".SetSize(25), GUIStyleHelper.RichText);
+					EditorGUILayout.Space();
+
+					using (new EditorGUI.IndentLevelScope())
+					{
+						foreach (MouseCursor cursorType in AllCursorTypes)
+						{
+							EditorGUILayout.LabelField(cursorType.ToString());
+							EditorGUIUtility.AddCursorRect(GUILayoutUtility.GetLastRect(), cursorType);
+						}
+					}
+				}
+				EditorGUILayout.EndVertical();
+
+				EditorGUILayout.BeginVertical();
+				{
+					EditorGUILayout.Space();
+					EditorGUILayout.BeginHorizontal();
+					{
+						EditorGUILayout.LabelField("GUIStyle".SetSize(25), GUIStyleHelper.RichText);
+						EditorGUILayout.BeginVertical();
+						{
+							_isHover = EditorGUILayout.ToggleLeft("isHover", _isHover, GUILayout.Width(80f));
+							Rect onRect = GUILayoutUtility.GetLastRect(); onRect.x += 80f;
+							_isOn = EditorGUI.ToggleLeft(onRect, "isOn", _isOn);
+							_isActive = EditorGUILayout.ToggleLeft("isActive", _isActive, GUILayout.Width(80f));
+							Rect activeRect = GUILayoutUtility.GetLastRect(); activeRect.x += 80f;
+							_hasKeyboardFocus = EditorGUI.ToggleLeft(activeRect, "hasKeyboardFocus", _hasKeyboardFocus);
+						}
+						EditorGUILayout.EndVertical();
+					}
+					EditorGUILayout.EndHorizontal();
+
+					EditorGUILayout.Space();
+					using (new EditorGUI.IndentLevelScope())
+					{
+						foreach (GUIStyle style in _guiStyleList)
+						{
+							if(style != null)
+							{
+								EditorGUILayout.LabelField(style.name.ToString());
+								if(Event.current.type == EventType.Repaint)
+								{
+									Rect styleRect = GUILayoutUtility.GetLastRect();
+									styleRect.x += GUIStyleWidth;
+									styleRect.width = GUIStyleWidth;
+									if(style.name.Contains("Label", StringComparison.Ordinal))
+									{
+										EditorGUI.LabelField(styleRect, style.name, style);
+									}
+									else
+									{
+										style.Draw(styleRect, _isHover, _isActive, false, false);
+									}
+								}
+							}
+						}
+					}
+				}
+				EditorGUILayout.EndVertical();
+				GUILayout.FlexibleSpace();
+			}
+			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.Space();
+
+			EditorGUILayout.EndScrollView();
 		}
 	}
 }

@@ -277,7 +277,7 @@ namespace Ami.BroAudio.Editor
                 rect.width = 30f;
                 rect.x = sliderPosition.x + sliderPosition.width * sliderValue - (rect.width * 0.5f) + 1f; // add 1 pixel for more precise position
                 rect.y -= sliderPosition.height;
-                var icon = EditorGUIUtility.IconContent(IconConstant.VolumeSnapPointer);
+                var icon = new GUIContent(EditorGUIUtility.IconContent(IconConstant.VolumeSnapPointer));
                 icon.tooltip = "Toggle full volume snapping";
                 EditorGUI.BeginDisabledGroup(!isSnap);
                 {

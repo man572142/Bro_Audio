@@ -210,7 +210,7 @@ namespace Ami.BroAudio.Editor
 				if(audioClipProp.objectReferenceValue is AudioClip audioClip)
 				{
 					bool isPlaying = EditorPlayAudioClip.CurrentPlayingClip == audioClip;
-					GUIContent buttonGUIContent =  isPlaying ? EditorGUIUtility.IconContent(IconConstant.StopButton) : EditorGUIUtility.IconContent(IconConstant.PlayButton);
+					GUIContent buttonGUIContent = new GUIContent(isPlaying ? EditorGUIUtility.IconContent(IconConstant.StopButton) : EditorGUIUtility.IconContent(IconConstant.PlayButton));
 					buttonGUIContent.tooltip = EditorPlayAudioClip.PlayWithVolumeSetting;
 					if (GUI.Button(buttonRect, buttonGUIContent))
 					{

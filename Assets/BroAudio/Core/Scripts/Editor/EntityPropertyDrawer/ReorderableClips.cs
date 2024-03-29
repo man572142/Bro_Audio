@@ -210,30 +210,33 @@ namespace Ami.BroAudio.Editor
 				if(audioClipProp.objectReferenceValue is AudioClip audioClip)
 				{
 					bool isPlaying = EditorPlayAudioClip.CurrentPlayingClip == audioClip;
-					GUIContent buttonGUIContent = new GUIContent(isPlaying ? EditorGUIUtility.IconContent(IconConstant.StopButton) : EditorGUIUtility.IconContent(IconConstant.PlayButton));
-					buttonGUIContent.tooltip = EditorPlayAudioClip.PlayWithVolumeSetting;
+					string icon = isPlaying ? IconConstant.StopButton : IconConstant.PlayButton;
+					GUIContent buttonGUIContent = new GUIContent(EditorGUIUtility.IconContent(icon).image, EditorPlayAudioClip.PlayWithVolumeSetting);
 					if (GUI.Button(buttonRect, buttonGUIContent))
 					{
-                        EditorPlayAudioClip.StopAllClips();
-						if(!isPlaying)
+						if(isPlaying)
 						{
-                            float startPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue;
-                            float endPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue;
-							if(Event.current.button == 0)
+							EditorPlayAudioClip.StopAllClips();
+						}
+						else
+						{
+							float startPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue;
+							float endPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue;
+							if (Event.current.button == 0)
 							{
 								EditorPlayAudioClip.PlayClip(audioClip, startPos, endPos);
 							}
-                            else
+							else
 							{
 								EditorPlayAudioClip.PlayClipByAudioSource(audioClip, volProp.floatValue, startPos, endPos);
 							}
 
 							if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying && EditorPlayAudioClip.CurrentPlayingClip == audioClip)
 							{
-								PreviewClip clip = new PreviewClip() 
+								PreviewClip clip = new PreviewClip()
 								{
 									StartPosition = startPos,
-									EndPosition	= endPos,
+									EndPosition = endPos,
 									Length = audioClip.length,
 								};
 

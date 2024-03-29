@@ -12,5 +12,10 @@ namespace Ami.BroAudio.Editor
 			EndPosition = clip.EndPosition;
 			Length = clip.Length;
 		}
+
+		public PreviewClip(float length) : this()
+		{
+			Length = length;
+		}
 	} 
 }

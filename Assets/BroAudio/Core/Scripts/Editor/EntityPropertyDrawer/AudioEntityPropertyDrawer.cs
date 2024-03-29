@@ -170,7 +170,7 @@ namespace Ami.BroAudio.Editor
 					break;
 			}
 
-			if(Event.current.type == EventType.MouseDown)
+			if(Event.current.type == EventType.MouseDown && position.Contains(Event.current.mousePosition))
 			{
 				EditorPlayAudioClip.StopAllClips();
 			}

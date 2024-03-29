@@ -19,9 +19,10 @@ namespace Ami.Extension
 #endif
 		public readonly static PlaybackIndicatorUpdater PlaybackIndicator = new PlaybackIndicatorUpdater();
 		public static AudioClip CurrentPlayingClip { get; private set; }
+		public static bool IsPlaying => CurrentPlayingClip != null;
 
 		private static CancellationTokenSource _currentPlayingTaskCanceller = null;
-		private static CancellationTokenSource _currentDestroyAudioSourceTaskCanceller = null;
+		private static CancellationTokenSource _currentAudioSourceTaskCanceller = null;
 		private static AudioSource _currentEditorAudioSource = null;
 
 		public static void PlayClipByAudioSource(AudioClip audioClip, float volume, float startTime, float endTime, bool loop = false)
@@ -29,7 +30,7 @@ namespace Ami.Extension
 			StopAllClipsWithoutDestoryAudioSource();
 			if (_currentEditorAudioSource)
 			{
-				CancelTask(ref _currentDestroyAudioSourceTaskCanceller);
+				CancelTask(ref _currentAudioSourceTaskCanceller);
 				_currentEditorAudioSource.Stop();
 			}
 			else
@@ -44,16 +45,32 @@ namespace Ami.Extension
 			audioSource.clip = audioClip;
 			audioSource.volume = volume;
 			audioSource.playOnAwake = false;
-			audioSource.loop = loop;
 			audioSource.time = startTime;
 
 			audioSource.Play();
-			PlaybackIndicator.Start();
+			PlaybackIndicator.Start(loop);
 			CurrentPlayingClip = audioClip;
 
 			float duration = audioClip.length - endTime - startTime;
-			_currentDestroyAudioSourceTaskCanceller = _currentDestroyAudioSourceTaskCanceller ?? new CancellationTokenSource();
-			AsyncTaskExtension.DelayInvoke(duration, DestroyPreviewAudioSource, _currentDestroyAudioSourceTaskCanceller.Token);
+			_currentAudioSourceTaskCanceller = _currentAudioSourceTaskCanceller ?? new CancellationTokenSource();
+			if (loop)
+			{
+				AsyncTaskExtension.DelayInvoke(duration, Replay, _currentAudioSourceTaskCanceller.Token);
+			}
+			else
+			{
+				AsyncTaskExtension.DelayInvoke(duration, DestroyPreviewAudioSource, _currentAudioSourceTaskCanceller.Token);
+			}
+
+			void Replay()
+			{
+				if(audioSource != null && _currentAudioSourceTaskCanceller != null)
+				{
+					audioSource.time = startTime;
+					audioSource.Play();
+					AsyncTaskExtension.DelayInvoke(duration, Replay, _currentAudioSourceTaskCanceller.Token);
+				}
+			}
 		}
 
 		public static void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
@@ -73,18 +90,34 @@ namespace Ami.Extension
 			MethodInfo method = audioUtilClass.GetMethod(PlayClipMethodName,
 				BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(AudioClip), typeof(int), typeof(bool) }, null);
 
-
+			var parameters = new object[] { audioClip, startSample, false };
 			if (method != null)
 			{
-				method.Invoke(null, new object[] { audioClip, startSample, loop });
-				PlaybackIndicator.Start();
+				method.Invoke(null, parameters);
+				PlaybackIndicator.Start(loop);
 				CurrentPlayingClip = audioClip;
 			}
 
 			int sampleLength = audioClip.samples - startSample - endSample;
 			int lengthInMs = (int)Math.Round(sampleLength / (double)audioClip.frequency * AsyncTaskExtension.SecondInMilliseconds, MidpointRounding.AwayFromZero);
 			_currentPlayingTaskCanceller = _currentPlayingTaskCanceller ?? new CancellationTokenSource();
-			AsyncTaskExtension.DelayInvoke(lengthInMs, StopAllClips, _currentPlayingTaskCanceller.Token);
+			if (loop)
+			{
+				AsyncTaskExtension.DelayInvoke(lengthInMs, Replay, _currentPlayingTaskCanceller.Token);
+			}
+			else
+			{
+				AsyncTaskExtension.DelayInvoke(lengthInMs, StopAllClips, _currentPlayingTaskCanceller.Token);
+			}
+
+			void Replay()
+			{
+				if(method != null && _currentPlayingTaskCanceller != null)
+				{
+					method.Invoke(null, parameters);
+					AsyncTaskExtension.DelayInvoke(lengthInMs, Replay, _currentPlayingTaskCanceller.Token);
+				}
+			}
 		}
 
 		public static void StopAllClips()
@@ -97,10 +130,11 @@ namespace Ami.Extension
 		{
 			if (_currentEditorAudioSource)
 			{
-				CancelTask(ref _currentDestroyAudioSourceTaskCanceller);
+				CancelTask(ref _currentAudioSourceTaskCanceller);
 
 				_currentEditorAudioSource.Stop();
 				UnityEngine.Object.DestroyImmediate(_currentEditorAudioSource.gameObject);
+				PlaybackIndicator.End();
 				_currentEditorAudioSource = null;
 				CurrentPlayingClip = null;
 			}

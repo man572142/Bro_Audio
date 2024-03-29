@@ -8,13 +8,14 @@ using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
-	public class ClipEditorWindow : MiEditorWindow
+	public class ClipEditorWindow : MiEditorWindow, IHasCustomMenu
 	{
 		public const string SaveFilePanelTitle = "Save as a new file";
 		public const string ConfirmOverwriteTitle = "Confirm overwrite";
 	
 		public const float Gap = 50f;
 		public const string DefaultFileExt = "wav";
+		public static Vector2 DefaultWindowSize => new Vector2(640f, 490f);
 
 		public event Action OnChangeAudioClip;
 
@@ -27,6 +28,7 @@ namespace Ami.BroAudio.Editor
 		private bool _isVolumeSnapped = false;
 		private MonoConversionMode _monoMode = MonoConversionMode.Downmixing;
 		private GenericMenu _monoModeMenu = null;
+		private bool _isLoop = false;
 
 		private string _currSavingFilePath = null;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
@@ -63,7 +65,7 @@ namespace Ami.BroAudio.Editor
 		public static void ShowWindow()
 		{
 			EditorWindow window = GetWindow(typeof(ClipEditorWindow));
-			window.minSize = new Vector2(640f,360f);
+			window.minSize = DefaultWindowSize;
 			window.titleContent = new GUIContent(BroName.MenuItem_ClipEditor, EditorGUIUtility.IconContent(IconConstant.AudioClip).image);
 			window.Show();
 		}
@@ -72,22 +74,20 @@ namespace Ami.BroAudio.Editor
 		{
             OnChangeAudioClip += ResetSetting;
 			ResetSetting();
+
+			EditorPlayAudioClip.AddPlaybackIndicatorListener(Repaint);
 		}
 
 		private void OnDisable()
 		{
 			OnChangeAudioClip -= ResetSetting;
-		}
-
-		private void OnFocus()
-		{
-			EditorPlayAudioClip.AddPlaybackIndicatorListener(Repaint);
+			EditorPlayAudioClip.RemovePlaybackIndicatorListener(Repaint);
 		}
 
 		private void OnLostFocus()
 		{
 			EditorPlayAudioClip.StopAllClips();
-			EditorPlayAudioClip.RemovePlaybackIndicatorListener(Repaint);
+			
 		}
 
 		protected override void OnGUI()
@@ -107,13 +107,13 @@ namespace Ami.BroAudio.Editor
 			}
 
 			DrawEmptyLine(1);
-			DrawClipPreview(drawPosition, position.height * 0.3f, _volume);
+			DrawClipPreview(drawPosition, position.height * 0.3f, _volume, out Rect previewRect);
 			DrawClipPropertiesHelper.DrawPlaybackIndicator(position.OverridePosition(0f,0f));
 
 			drawPosition.x += Gap;
 			drawPosition.width -= Gap * 2;
 
-			DrawEmptyLine(1);
+			DrawPlaybackBar(drawPosition, previewRect);
 			DrawVolumeSlider(drawPosition);
 			DrawPlaybackPositionField(drawPosition);
 			DrawFadingField(drawPosition);
@@ -146,7 +146,7 @@ namespace Ami.BroAudio.Editor
 			EditorGUI.EndDisabledGroup();
 		}
 
-        private void ShowMonoModeMenu(Rect rect)
+		private void ShowMonoModeMenu(Rect rect)
         {
 			if(_monoModeMenu == null)
 			{
@@ -179,10 +179,6 @@ namespace Ami.BroAudio.Editor
         private void DrawVolumeSlider(Rect drawPosition)
 		{
 			Rect volRect = GetRectAndIterateLine(drawPosition);
-			//EditorScriptingExtension.SplitRectHorizontal(volZoneRect, 0.3f, 0f, out Rect labelRect, out Rect toolBarRect);
-			//EditorGUI.LabelField(labelRect, "Volume");
-			//_currVolumeOption = GUI.Toolbar(toolBarRect, _currVolumeOption, VolumeOptionsText);
-
 			_volume = BroEditorUtility.DrawVolumeSlider(volRect, new GUIContent("Volume"), _volume, _isVolumeSnapped, () => _isVolumeSnapped = !_isVolumeSnapped);
 		}
 
@@ -197,9 +193,9 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawClipPreview(Rect drawPosition,float height, float volume)
+		private void DrawClipPreview(Rect drawPosition,float height, float volume, out Rect previewRect)
 		{
-			Rect previewRect = GetRectAndIterateLine(drawPosition);
+			previewRect = GetRectAndIterateLine(drawPosition);
 			previewRect.height = height;
 			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip, volume, TargetClip.name); // don't worry about any duplicate path, because there will only one clip in editing
 			DrawEmptyLine(GetLineCountByPixels(height));
@@ -219,6 +215,43 @@ namespace Ami.BroAudio.Editor
 		private int GetLineCountByPixels(float pixels)
 		{
 			return (int)Math.Round(pixels / SingleLineSpace, MidpointRounding.AwayFromZero);
+		}
+
+		private void DrawPlaybackBar(Rect drawPosition, Rect previewRect)
+		{
+			float buttonSize = EditorGUIUtility.singleLineHeight * 2;
+			Rect barRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(buttonSize * 2, buttonSize);
+			DrawEmptyLine(1);
+			Rect playbackButtonRect = new Rect(barRect) { width = buttonSize, height = buttonSize };
+			Rect loopButtonRect = new Rect(playbackButtonRect) { x = playbackButtonRect.x + buttonSize };
+			string icon = EditorPlayAudioClip.IsPlaying ? IconConstant.StopButton : IconConstant.PlayButton;
+			GUIContent playButtonContent = new GUIContent(EditorGUIUtility.IconContent(icon).image, EditorPlayAudioClip.PlayWithVolumeSetting);
+			if (GUI.Button(playbackButtonRect, playButtonContent))
+			{
+				if(EditorPlayAudioClip.IsPlaying)
+				{
+					EditorPlayAudioClip.StopAllClips();
+				}
+				else
+				{
+					if(Event.current.button == 0) // Left Click
+					{
+						EditorPlayAudioClip.PlayClip(_targetClip, _transport.StartPosition, _transport.EndPosition, _isLoop);
+					}
+					else
+					{
+						EditorPlayAudioClip.PlayClipByAudioSource(_targetClip, _volume,_transport.StartPosition, _transport.EndPosition, _isLoop);
+					}
+					
+					EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, new PreviewClip(_transport));
+				}
+			}
+
+			_isLoop = EditorGUI.Toggle(loopButtonRect, _isLoop, GUI.skin.button);
+			if(Event.current.type == EventType.Repaint)
+			{
+				EditorGUI.LabelField(loopButtonRect,EditorGUIUtility.IconContent(IconConstant.LoopIcon),GUIStyleHelper.MiddleCenterText);
+			}
 		}
 
 		private void DrawSavingButton(Rect drawPosition)
@@ -319,6 +352,12 @@ namespace Ami.BroAudio.Editor
 			_currSavingFilePath = null;
 			_transport = default;
 			_isReverse = false;
+		}
+
+		public void AddItemsToMenu(GenericMenu menu)
+		{
+			menu.AddSeparator(string.Empty);
+			menu.AddItem(new GUIContent("Default Window Size"), false, () => position = new Rect(position.position, DefaultWindowSize));
 		}
 	}
 }

@@ -16,6 +16,7 @@ namespace Ami.Extension
 		private double _playingStartTime = default;
 		
 		public bool IsPlaying { get; private set; }
+		public bool IsLoop { get; private set; }
 
 		public Color Color => new Color(1f,1f,1f,0.8f);
 
@@ -31,9 +32,18 @@ namespace Ami.Extension
 		{
 			if(_clip != null && _waveformRect != default)
 			{
-				float endTime = _clip.Length - _clip.EndPosition;
+				
 				double currentTime = _clip.StartPosition + (EditorApplication.timeSinceStartup - _playingStartTime);
-				currentTime = currentTime > endTime ? endTime : currentTime;
+				if(IsLoop)
+				{
+					currentTime = currentTime % (_clip.Length - _clip.StartPosition - _clip.EndPosition);
+				}
+                else
+                {
+					float endTime = _clip.Length - _clip.EndPosition;
+					currentTime = currentTime > endTime ? endTime : currentTime;
+				}
+                
 				float x = _waveformRect.x + ((float)currentTime / _clip.Length * _waveformRect.width);
 				return new Rect(x,_waveformRect.y, AudioClipIndicatorWidth,_waveformRect.height);
 			}
@@ -50,7 +60,14 @@ namespace Ami.Extension
 		{
 			_playingStartTime = EditorApplication.timeSinceStartup;
 			IsPlaying = true;
+			IsLoop = false;
 			base.Start();
+		}
+
+		public void Start(bool loop)
+		{
+			Start();
+			IsLoop = loop;
 		}
 
 		public override void End()

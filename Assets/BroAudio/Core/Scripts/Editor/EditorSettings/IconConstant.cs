@@ -19,9 +19,10 @@ namespace Ami.BroAudio.Editor
         public const string AudioClip = "AudioClip Icon";
         public const string AudioGroup = "d_AudioMixerGroup Icon";
 		public const string TempAssetWarning = "console.infoicon";
+        public const string LoopIcon = "d_preAudioLoopOff";
 
 #if UNITY_2021_2_OR_NEWER
-        public const string AudioSpeakerOn = "SceneViewAudio On";
+		public const string AudioSpeakerOn = "SceneViewAudio On";
 #else
         public const string AudioSpeakerOn = "SceneViewAudio";
 #endif

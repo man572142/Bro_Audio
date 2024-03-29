@@ -170,6 +170,11 @@ namespace Ami.BroAudio.Editor
 					break;
 			}
 
+			if(Event.current.type == EventType.MouseDown)
+			{
+				EditorPlayAudioClip.StopAllClips();
+			}
+
 			float GetTabWindowHeight()
 			{
 				float height = TabLabelHeight;

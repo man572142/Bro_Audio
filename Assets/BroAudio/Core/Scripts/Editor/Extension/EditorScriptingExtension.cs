@@ -363,10 +363,16 @@ namespace Ami.Extension
             {
                 bool oldState = selectedTabIndex == i;
                 bool newState = GUI.Toggle(tabRects[i], oldState, labels[i], GetTabStyle(i, tabRects.Length));
-                if (newState != oldState && newState)
+				bool isChanged = newState != oldState;
+				if (isChanged && newState)
                 {
                     selectedTabIndex = i;
                 }
+
+				if(isChanged)
+				{
+					EditorPlayAudioClip.StopAllClips();
+				}
             }
 			return selectedTabIndex;
 

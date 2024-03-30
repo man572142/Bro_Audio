@@ -117,7 +117,7 @@ namespace Ami.Extension
 									Rect styleRect = GUILayoutUtility.GetLastRect();
 									styleRect.x += GUIStyleWidth;
 									styleRect.width = GUIStyleWidth;
-									if(style.name.Contains("Label", StringComparison.Ordinal))
+									if(style.name.Contains("Label"))
 									{
 										EditorGUI.LabelField(styleRect, style.name, style);
 									}

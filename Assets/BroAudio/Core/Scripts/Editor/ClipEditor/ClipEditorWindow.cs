@@ -248,10 +248,7 @@ namespace Ami.BroAudio.Editor
 			}
 
 			_isLoop = EditorGUI.Toggle(loopButtonRect, _isLoop, GUI.skin.button);
-			if(Event.current.type == EventType.Repaint)
-			{
-				EditorGUI.LabelField(loopButtonRect,EditorGUIUtility.IconContent(IconConstant.LoopIcon),GUIStyleHelper.MiddleCenterText);
-			}
+            EditorGUI.LabelField(loopButtonRect, EditorGUIUtility.IconContent(IconConstant.LoopIcon), GUIStyleHelper.MiddleCenterText);
 		}
 
 		private void DrawSavingButton(Rect drawPosition)

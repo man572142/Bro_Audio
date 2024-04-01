@@ -4495,7 +4495,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 387, y: 60}
+  m_AnchoredPosition: {x: 387, y: 40}
   m_SizeDelta: {x: 701, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &749193668
@@ -11519,6 +11519,7 @@ MonoBehaviour:
   _letterBoxTop: {fileID: 1716670323}
   _letterBoxBottom: {fileID: 704412182}
   _targetRatio: 2.39
+  _minimumBoxHeight: 70
 --- !u!95 &1939977678
 Animator:
   serializedVersion: 5

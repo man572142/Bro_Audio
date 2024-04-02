@@ -16,7 +16,7 @@ using static Ami.Extension.EditorScriptingExtension;
 
 namespace Ami.BroAudio.Editor.Setting
 {
-    public class GlobalSettingEditorWindow : MiEditorWindow
+    public class PreferencesEditorWindow : MiEditorWindow
 	{
 		public enum OpenMessage
 		{
@@ -28,7 +28,6 @@ namespace Ami.BroAudio.Editor.Setting
 
 		public enum Tab { Audio, GUI, Miscellaneous,}
 
-		public const string SettingFileName = "BroAudioGlobalSetting";
 		public const float Gap = 50f;
 		
 		public const string ResetSettingButtonText = "Reset To Factory Settings";
@@ -84,19 +83,19 @@ namespace Ami.BroAudio.Editor.Setting
 			}
 		}
 
-		[MenuItem(GlobalSettingMenuPath,false,GlobalSettingMenuIndex)]
-		public static GlobalSettingEditorWindow ShowWindow()
+		[MenuItem(PreferencesMenuPath,false,PreferencesMenuIndex)]
+		public static PreferencesEditorWindow ShowWindow()
 		{
-			EditorWindow window = GetWindow(typeof(GlobalSettingEditorWindow));
+			EditorWindow window = GetWindow(typeof(PreferencesEditorWindow));
 			window.minSize = new Vector2(640f, 480f);
-			window.titleContent = new GUIContent(MenuItem_Setting, EditorGUIUtility.IconContent("EditorSettings Icon").image);
+			window.titleContent = new GUIContent(MenuItem_Preferences, EditorGUIUtility.IconContent("EditorSettings Icon").image);
 			window.Show();
-			return window as GlobalSettingEditorWindow;
+			return window as PreferencesEditorWindow;
 		}
 
 		public static void ShowWindowWithMessage(OpenMessage message)
 		{
-			GlobalSettingEditorWindow window = ShowWindow();
+			PreferencesEditorWindow window = ShowWindow();
 			if(window != null)
 			{
 				window.SetOpenMessage(message);

@@ -27,7 +27,7 @@ namespace Ami.BroAudio.Editor
         public const string AudioSpeakerOn = "SceneViewAudio";
 #endif
 
-        // GlobalSettingWindow
+        // PreferenceWindow
         public const string AssetOutputBrowser = "FolderOpened Icon";
         public const string GUISettingTab = "GUISkin Icon";
         public const string CogIcon = "_Popup@2x";

@@ -12,7 +12,7 @@ using System.IO;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.Extension.EditorScriptingExtension;
-using static Ami.BroAudio.Editor.Setting.GlobalSettingEditorWindow;
+using static Ami.BroAudio.Editor.Setting.PreferencesEditorWindow;
 
 namespace Ami.BroAudio.Editor
 {

@@ -12,8 +12,8 @@ namespace Ami.BroAudio.Editor.Setting
 		public const int LibraryManagerMenuIndex = 0;
 		public const string LibraryManagerMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_LibraryManager;
 
-        public const int GlobalSettingMenuIndex = 11;
-		public const string GlobalSettingMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_Setting;
+        public const int PreferencesMenuIndex = 11;
+		public const string PreferencesMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_Preferences;
 
 		public const int InfoWindowMenuIndex = 12;
 		public const string InfoWindowMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_Info;

@@ -32,19 +32,21 @@ namespace Ami.Extension
 		{
 			if(_clip != null && _waveformRect != default)
 			{
-				
-				double currentTime = _clip.StartPosition + (EditorApplication.timeSinceStartup - _playingStartTime);
+				double currentPlayedLength = EditorApplication.timeSinceStartup - _playingStartTime;
+				double currentPos;
 				if(IsLoop)
 				{
-					currentTime = currentTime % (_clip.Length - _clip.StartPosition - _clip.EndPosition);
+					float targetPlayLength = _clip.Length - _clip.StartPosition - _clip.EndPosition;
+                    currentPos = _clip.StartPosition + currentPlayedLength % targetPlayLength;
 				}
                 else
                 {
 					float endTime = _clip.Length - _clip.EndPosition;
-					currentTime = currentTime > endTime ? endTime : currentTime;
+					currentPos = _clip.StartPosition + currentPlayedLength;
+                    currentPos = Math.Min(currentPos, endTime);
 				}
                 
-				float x = _waveformRect.x + ((float)currentTime / _clip.Length * _waveformRect.width);
+				float x = (float)(_waveformRect.x + (currentPos / _clip.Length * _waveformRect.width));
 				return new Rect(x,_waveformRect.y, AudioClipIndicatorWidth,_waveformRect.height);
 			}
 			return default;

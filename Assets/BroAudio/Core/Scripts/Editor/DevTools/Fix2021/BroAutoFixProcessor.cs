@@ -14,7 +14,7 @@ namespace Ami.BroAudio.Tools
 
         static string[] OnWillSaveAssets(string[] paths)
         {
-            if(paths != null && paths.Length > 0)
+            if (paths != null && paths.Length > 0)
             {
                 string mixerPath = SessionState.GetString(PrefKey, string.Empty);
                 if (!string.IsNullOrEmpty(mixerPath) 

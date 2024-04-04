@@ -5,9 +5,7 @@
         None = 0,
 
         // Settings
-        RuntimeSettingFileMissing = 1,
-        EditorSettingFileMissing,
-        AssetOutputPathPanelTtile,
+        AssetOutputPathPanelTtile = 1,
         AcceptAudioMixerModification,
 
         // Settings/Audio

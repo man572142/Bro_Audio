@@ -16,13 +16,13 @@ MonoBehaviour:
   - Key: 0
     Value: Everything works great!
   - Key: 1
-    Value: BroRuntimeSetting asset file is missing! please relocate the file to any
-      [Resource] folder or recreate a new one
-  - Key: 2
-    Value: BroEditorSetting asset file is missing! please relocate the file to any
-      [Resource/Editor] folder or recreate a new one
-  - Key: 3
     Value: Select BroAudio auto-generated asset file's output folder
+  - Key: 2
+    Value: The current Unity version has a bug, which BroAudio automatically fixes
+      each time you open the project. However, to avoid inconvenience with version
+      control for users, BroAudio skips the save process for the BroAudioMixer. But
+      if you need to modify it, you can enable this option. See the {0} for more
+      information.
   - Key: 10
     Value: "If the same sound is played repeatedly in a very short period. It may
       cause a quality loss or unexpected behavior due to the nature of Comb Filtering.
@@ -104,12 +104,6 @@ MonoBehaviour:
     Value: Choose an AudioType to properly create the asset
   - Key: 308
     Value: Please name the temp asset
-  - Key: 4
-    Value: The current Unity version has a bug, which BroAudio automatically fixes
-      each time you open the project. However, to avoid inconvenience with version
-      control for users, BroAudio skips the save process for the BroAudioMixer. But
-      if you need to modify it, you can enable this option. See the {0} for more
-      information.
   - Key: 17
     Value: If enabled, all [Music] will be played as BGM and trigger a transtion
       from one the other automatically.

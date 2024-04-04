@@ -63,7 +63,6 @@ namespace Ami.BroAudio.Editor.Setting
 		private bool _hasOutputAssetPath = false;
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
-		public OpenMessage Message { get; private set; } = OpenMessage.None;
 		public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
 		private float TabLabelHeight => EditorGUIUtility.singleLineHeight * 2f;
 
@@ -91,20 +90,6 @@ namespace Ami.BroAudio.Editor.Setting
 			window.titleContent = new GUIContent(MenuItem_Preferences, EditorGUIUtility.IconContent("EditorSettings Icon").image);
 			window.Show();
 			return window as PreferencesEditorWindow;
-		}
-
-		public static void ShowWindowWithMessage(OpenMessage message)
-		{
-			PreferencesEditorWindow window = ShowWindow();
-			if(window != null)
-			{
-				window.SetOpenMessage(message);
-			}
-		}
-
-		public void SetOpenMessage(OpenMessage message)
-		{
-			Message = message;
 		}
 
 		private void InitGUIContents()
@@ -158,22 +143,6 @@ namespace Ami.BroAudio.Editor.Setting
 
             Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
 
-			if (Message != OpenMessage.None)
-            {
-                DrawEmptyLine(1);
-                switch (Message)
-                {
-                    case OpenMessage.RuntimeSettingFileMissing:
-                    case OpenMessage.EditorSettingFileMissing:
-                        Rect errorRect = GetRectAndIterateLine(drawPosition);
-                        errorRect.height *= 2;
-                        Instruction instructionEnum = GetInstructionEnum(Message);
-                        EditorGUI.HelpBox(errorRect, _instruction.GetText(instructionEnum), MessageType.Error);
-                        DrawEmptyLine(1);
-                        break;
-                }
-            }
-
             DrawEmptyLine(1);
 
             drawPosition.x += Gap;
@@ -209,18 +178,6 @@ namespace Ami.BroAudio.Editor.Setting
                 EndScrollView();
             }
         }
-
-        private Instruction GetInstructionEnum(OpenMessage message)
-		{
-			switch (message)
-			{
-				case OpenMessage.RuntimeSettingFileMissing:
-					return Instruction.RuntimeSettingFileMissing;
-				case OpenMessage.EditorSettingFileMissing:
-					return Instruction.EditorSettingFileMissing;
-			}
-			return default;
-		}
 
         private void DrawAudioSetting(Rect drawPosition)
         {

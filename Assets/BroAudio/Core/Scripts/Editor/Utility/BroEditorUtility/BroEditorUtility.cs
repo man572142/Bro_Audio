@@ -24,6 +24,7 @@ namespace Ami.BroAudio.Editor
         public const string ProjectAudioSettingFileName = "AudioManager.asset";
         public const string ProjectSettingsFolderName = "ProjectSettings";
         public const string VoiceCountPropertyName = "m_RealVoiceCount";
+        public const string SettingFileMissingMegssage = "{0} asset file is missing! please relocate the file to any [Resource] folder or recreate a new one";
 
         private const float LowVolumeSnappingThreshold = 0.05f;
         private const float HighVolumeSnappingThreshold = 0.2f;
@@ -47,15 +48,15 @@ namespace Ami.BroAudio.Editor
                     _runtimeSetting = Resources.Load<RuntimeSetting>(BroName.RuntimeSettingFileName);
                     if (!_runtimeSetting)
                     {
-                        PreferencesEditorWindow.ShowWindowWithMessage(PreferencesEditorWindow.OpenMessage.RuntimeSettingFileMissing);
+                        BroLog.LogError(string.Format(SettingFileMissingMegssage, "BroRuntimeSetting"));
                     }
+                    EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
                     EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
                 }
                 return _runtimeSetting;
             }
         }
 
-#if UNITY_EDITOR
         private static EditorSetting _editorSetting = null;
         public static EditorSetting EditorSetting
         {
@@ -66,14 +67,14 @@ namespace Ami.BroAudio.Editor
                     _editorSetting = Resources.Load<EditorSetting>(BroName.EditorSettingPath);
                     if (!_editorSetting)
                     {
-                        PreferencesEditorWindow.ShowWindowWithMessage(PreferencesEditorWindow.OpenMessage.RuntimeSettingFileMissing);
+                        BroLog.LogError(string.Format(SettingFileMissingMegssage, "BroEditorSetting"));
                     }
+                    EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
                     EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
                 }
                 return _editorSetting;
             }
         } 
-#endif
 
         private static float SliderFullScale => FullVolume / ((FullDecibelVolume - MinDecibelVolume) / DecibelVoulumeFullScale);
 
@@ -82,6 +83,7 @@ namespace Ami.BroAudio.Editor
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
             if (mode == PlayModeStateChange.ExitingEditMode || mode == PlayModeStateChange.EnteredPlayMode)
             {
+                // clear the editor only runtime setting when entering playmode
                 _runtimeSetting = null;
             }
         }

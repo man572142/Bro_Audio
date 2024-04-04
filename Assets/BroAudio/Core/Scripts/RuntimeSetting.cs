@@ -25,6 +25,7 @@ namespace Ami.BroAudio.Data
 
 		public bool AlwaysPlayMusicAsBGM = true;
 		public Transition DefaultBGMTransition = FactorySettings.DefaultBGMTransition;
+		public float DefaultBGMTransitionTime = FactorySettings.DefaultBGMTransitionTime;
 
 #if UNITY_EDITOR
 		public void ResetToFactorySettings()
@@ -53,6 +54,8 @@ namespace Ami.BroAudio.Data
 			public const int DefaultAudioPlayerPoolSize = 5;
 			public const PitchShiftingSetting PitchShifting = PitchShiftingSetting.AudioSource;
 			public const Transition DefaultBGMTransition = Transition.CrossFade;
-		}
+			public const float DefaultBGMTransitionTime = 2f;
+
+        }
 	}
 }

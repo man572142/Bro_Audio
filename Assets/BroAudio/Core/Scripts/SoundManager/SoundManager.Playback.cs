@@ -51,7 +51,7 @@ namespace Ami.BroAudio.Runtime
             player.Play(id, pref);
             if(Setting.AlwaysPlayMusicAsBGM && audioType == BroAudioType.Music)
             {
-                player.AsBGM().SetTransition(Setting.DefaultBGMTransition);
+                player.AsBGM().SetTransition(Setting.DefaultBGMTransition, Setting.DefaultBGMTransitionTime);
             }
 
             StartCoroutine(PreventCombFiltering(id, CombFilteringPreventionInSeconds));

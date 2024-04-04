@@ -250,7 +250,12 @@ namespace Ami.BroAudio.Editor.Setting
                         if (RuntimeSetting.AlwaysPlayMusicAsBGM)
                         {
                             RuntimeSetting.DefaultBGMTransition =
-                            (Transition)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Default Transition", RuntimeSetting.DefaultBGMTransition);
+								(Transition)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Default Transition", RuntimeSetting.DefaultBGMTransition);
+
+							Rect timeRect = GetRectAndIterateLine(drawPosition);
+							timeRect.width = 250f;
+                            RuntimeSetting.DefaultBGMTransitionTime = 
+								EditorGUI.FloatField(timeRect, "Default Transition Time", RuntimeSetting.DefaultBGMTransitionTime);
                         }
                     }
                 }

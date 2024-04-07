@@ -10,34 +10,42 @@ namespace Ami.BroAudio
 	public struct Effect
 	{
 		// Use these static methods for SetEffect()
-		public static Effect HighPass(float frequency, float fadeTime, Ease fadingEase = BroAdvice.HighPassInEase) => new Effect(EffectType.HighPass, frequency, fadeTime, fadingEase);
-		public static Effect LowPass(float frequency, float fadeTime, Ease fadingEase = BroAdvice.LowPassInEase) => new Effect(EffectType.LowPass, frequency, fadeTime, fadingEase);
-		public static Effect Custom(string exposedParameterName, float value, float fadeTime, Ease ease = Ease.Linear) => new Effect(exposedParameterName, value, fadeTime, ease);
-		public static class Defaults
+		public static Effect HighPass(float frequency, float fadeTime, Ease ease = BroAdvice.HighPassInEase) 
+			=> new Effect(EffectType.HighPass, frequency, SingleFading(fadeTime, ease));
+        public static Effect ResetHighPass(float fadeTime, Ease ease = BroAdvice.HighPassOutEase) 
+			=> new Effect(EffectType.HighPass, AudioConstant.MinFrequency, SingleFading(fadeTime, ease));
+        public static Effect LowPass(float frequency, float fadeTime, Ease ease = BroAdvice.LowPassInEase) 
+			=> new Effect(EffectType.LowPass, frequency, SingleFading(fadeTime, ease));
+        public static Effect ResetLowPass(float fadeTime, Ease ease = BroAdvice.LowPassOutEase) 
+			=> new Effect(EffectType.LowPass, AudioConstant.MaxFrequency, SingleFading(fadeTime, ease));
+        public static Effect Custom(string exposedParameterName, float value, float fadeTime, Ease ease = Ease.Linear) 
+			=> new Effect(exposedParameterName, value, SingleFading(fadeTime, ease));
+        public static class Defaults
 		{
 			public static float Volume => AudioConstant.FullVolume;
 			public static float LowPass => AudioConstant.MaxFrequency;
 			public static float HighPass => AudioConstant.MinFrequency;
 		}
 
-		private float _value;
+		private static Fading SingleFading(float fadeTime, Ease ease) => new Fading(fadeTime, default, ease, default);
+
+
+        private float _value;
 
 		public readonly EffectType Type;
-		public readonly float FadeTime;
-		public readonly Ease FadingEase;
+		public readonly Fading Fading;
 		public readonly string CustomExposedParameter;
 		internal readonly bool IsDominator;
 
 		// Force user to use static factory method
-		internal Effect(EffectType type, float value, float fadeTime, Ease fadingEase, bool isDominator = false) : this(type)
+		internal Effect(EffectType type, float value, Fading fading, bool isDominator = false) : this(type)
 		{
-			FadeTime = fadeTime;
 			Value = value;
-			FadingEase = fadingEase;
+			Fading = fading;
 			IsDominator = isDominator;
 		}
 
-		internal Effect(string exposedParaName, float value, float fadeTime, Ease ease) : this(EffectType.Custom, value, fadeTime, ease)
+		internal Effect(string exposedParaName, float value, Fading fading) : this(EffectType.Custom, value, fading)
 		{
 			CustomExposedParameter = exposedParaName;
 		}

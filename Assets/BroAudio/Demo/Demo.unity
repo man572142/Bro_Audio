@@ -2268,7 +2268,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playOnStart: 1
   _sound:
-    ID: 1073741830
+    ID: 805306369
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
   _positionMode: 2
 --- !u!135 &372850706
@@ -4749,7 +4749,7 @@ MonoBehaviour:
     ID: 1073741828
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
   _lowPassFreq: 800
-  _fadeTime: 1.5
+  _fadeTime: 1
 --- !u!114 &766546313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8012,6 +8012,7 @@ MonoBehaviour:
   _explosion:
     ID: 1073741827
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+  dominateFadeOut: 2
   _lowPassFrequency: 700
 --- !u!1 &1409124831
 GameObject:

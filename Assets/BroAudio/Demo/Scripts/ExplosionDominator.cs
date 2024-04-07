@@ -10,6 +10,7 @@ namespace Ami.BroAudio.Demo
 		[SerializeField] ParticleSystem _fog = null;
 		[SerializeField] float _playInterval = default;
 		[SerializeField] SoundID _explosion = default;
+		[SerializeField] float dominateFadeOut = default;
 #pragma warning disable 414
         [SerializeField, Frequency] float _lowPassFrequency = default;
 #pragma warning restore 414
@@ -20,7 +21,8 @@ namespace Ami.BroAudio.Demo
         {
             _explosionPlayer = BroAudio.Play(_explosion);
 #if !UNITY_WEBGL
-			_explosionPlayer.AsDominator().LowPassOthers(_lowPassFrequency); 
+			Fading lowPassFading = new Fading(BroAdvice.FadeTime_Quick, dominateFadeOut, EffectType.LowPass);
+            _explosionPlayer.AsDominator().LowPassOthers(_lowPassFrequency, lowPassFading); 
 #endif
 		}
 

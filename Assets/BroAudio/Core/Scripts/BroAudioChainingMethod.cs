@@ -78,28 +78,43 @@ namespace Ami.BroAudio
 		/// While this audio player is playing, the volume of other audio players will be lowered to the given ratio.
 		/// </summary>
 		/// <param name="othersVol"></param>
-		/// <param name="fadeTime"></param>
+		/// <param name="fadeTime">The time duration of the FadeIn and FadeOut</param>
 		public static IPlayerEffect QuietOthers(this IPlayerEffect player, float othersVol, float fadeTime = FadeTime_Quick) 
-			=> player?.QuietOthers(othersVol,fadeTime);
+			=> player?.QuietOthers(othersVol, fadeTime);
 
-		/// <summary>
-		/// While this audio player is playing, a lowpass filter will be added to other audio players (i.e. their higher frequencies will be cutted off)
-		/// </summary>
-		/// <param name="freq">10 Hz ~ 22000Hz</param>
-		/// <param name="fadeTime"></param>
-		public static IPlayerEffect LowPassOthers(this IPlayerEffect player, float freq = LowPassFrequency, float fadeTime = FadeTime_Quick) 
+        /// <inheritdoc cref = "QuietOthers(IPlayerEffect, float, float)" />
+        /// <param name="fading">The fading setting of this action</param>
+        public static IPlayerEffect QuietOthers(this IPlayerEffect player, float othersVol, Fading fading)
+            => player?.QuietOthers(othersVol, fading);
+
+        /// <summary>
+        /// While this audio player is playing, a lowpass filter will be added to other audio players (i.e. their higher frequencies will be cutted off)
+        /// </summary>
+        /// <param name="freq">10 Hz ~ 22000Hz</param>
+        /// <param name="fadeTime">The time duration of the FadeIn and FadeOut</param>
+        public static IPlayerEffect LowPassOthers(this IPlayerEffect player, float freq = LowPassFrequency, float fadeTime = FadeTime_Quick) 
 			=> player?.LowPassOthers(freq,fadeTime);
 
-		/// <summary>
-		/// While this audio player is playing, a highpass filter will be added to other audio players (i.e. their lower frequencies will be cutted off)
-		/// </summary>
-		/// <param name="freq">10 Hz ~ 22000Hz</param>
-		/// <param name="fadeTime"></param>
-		public static IPlayerEffect HighPassOthers(this IPlayerEffect player, float freq = HighPassFrequency, float fadeTime = FadeTime_Quick) 
+        /// <inheritdoc cref = "LowPassOthers(IPlayerEffect, float, float)" />
+        /// <param name="fading">The fading setting of this action</param>
+        public static IPlayerEffect LowPassOthers(this IPlayerEffect player, float freq, Fading fading)
+            => player?.LowPassOthers(freq, fading);
+
+        /// <summary>
+        /// While this audio player is playing, a highpass filter will be added to other audio players (i.e. their lower frequencies will be cutted off)
+        /// </summary>
+        /// <param name="freq">10 Hz ~ 22000Hz</param>
+        /// <param name="fadeTime">The time duration of the FadeIn and FadeOut</param>
+        public static IPlayerEffect HighPassOthers(this IPlayerEffect player, float freq = HighPassFrequency, float fadeTime = FadeTime_Quick) 
 			=> player?.HighPassOthers(freq,fadeTime);
 
-		// Note: LowPass == HighCut , HighPass == LowCut
-		#endregion
+        /// <inheritdoc cref = "HighPassOthers(IPlayerEffect, float, float)" />
+        /// <param name="fading">The fading setting of this action</param>
+        public static IPlayerEffect HighPassOthers(this IPlayerEffect player, float freq, Fading fading)
+            => player?.HighPassOthers(freq, fading);
+
+        // Note: LowPass == HighCut , HighPass == LowCut
+        #endregion
 #endif
-	}
+    }
 }

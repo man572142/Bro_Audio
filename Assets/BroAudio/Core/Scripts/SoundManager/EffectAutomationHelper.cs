@@ -196,7 +196,7 @@ namespace Ami.BroAudio.Runtime
 				string paraName = GetEffectParameterName(effect, out bool hasSecondaryParameter);
 				float currentValue = GetCurrentValue(effect);
 
-				yield return Tweak(currentValue, effect.Value, effect.FadeTime, effect.FadingEase, paraName, hasSecondaryParameter);
+				yield return Tweak(currentValue, effect.Value, effect.Fading.FadeIn, effect.Fading.FadeInEase, paraName, hasSecondaryParameter);
 				// waitable should be decorated after this tweak
 
 				var waitable = tweaker.WaitableList[lastIndex];
@@ -215,8 +215,8 @@ namespace Ami.BroAudio.Runtime
 
 				if(tweaker.WaitableList.Count == 1)
 				{
-					// auto reset to origin after last waitable
-					yield return Tweak(GetCurrentValue(effect), tweaker.OriginValue, effect.FadeTime, effect.FadingEase, paraName, hasSecondaryParameter);
+					// auto reset to origin after last waitable 
+					yield return Tweak(GetCurrentValue(effect), tweaker.OriginValue, effect.Fading.FadeOut, effect.Fading.FadeOutEase, paraName, hasSecondaryParameter);
 				}
 
 				tweaker.WaitableList.RemoveAt(lastIndex);
@@ -276,7 +276,7 @@ namespace Ami.BroAudio.Runtime
 				{
 					string paraName = GetEffectParameterName(effect, out bool hasSecondaryParameter);
 					SafeStopCoroutine(tweaker.Coroutine);
-					tweaker.Coroutine = StartCoroutine(Tweak(current, tweaker.OriginValue, effect.FadeTime, effect.FadingEase, paraName, hasSecondaryParameter, OnTweakingFinished));
+                    tweaker.Coroutine = StartCoroutine(Tweak(current, tweaker.OriginValue, effect.Fading.FadeOut, effect.Fading.FadeOutEase, paraName, hasSecondaryParameter, OnTweakingFinished));
 					tweaker.OriginValue = GetEffectDefaultValue(effectType);
 					tweaker.WaitableList.Clear();
 					tweakingCount++;

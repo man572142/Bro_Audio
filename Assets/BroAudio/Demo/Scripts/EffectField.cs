@@ -23,8 +23,7 @@ namespace Ami.BroAudio.Demo
 			}
 			else
 			{
-				float noLowPassFreq = Effect.Defaults.LowPass;
-                BroAudio.SetEffect(Effect.LowPass(noLowPassFreq, _fadeTime, BroAdvice.LowPassOutEase));
+                BroAudio.SetEffect(Effect.ResetLowPass(_fadeTime));
 			} 
 #endif
 		}

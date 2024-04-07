@@ -14,8 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowAudioTypeOnSoundID: 1
   ShowVUColorOnVolumeSlider: 1
-  AcceptAudioMixerModificationIn2021: 0
-  ManualFix: 0
   AudioTypeSettings:
   - AudioType: 1
     Color: {r: 0.002491996, g: 0.1823744, b: 0.5283019, a: 0.29803923}

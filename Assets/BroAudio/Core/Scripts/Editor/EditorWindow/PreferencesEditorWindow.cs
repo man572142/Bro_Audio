@@ -321,8 +321,7 @@ namespace Ami.BroAudio.Editor.Setting
                         Rect warningBoxRect = GetRectAndIterateLine(drawPosition);
                         warningBoxRect.height *= 3;
                         warningBoxRect.width -= IndentInPixel;
-                        Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
-                        string text = string.Format(_instruction.GetText(Instruction.TracksAndVoicesNotMatchWarning), MixerName.ToWhiteBold(), ProjectSettingsMenuItemPath.SetColor(linkBlue));
+                        string text = string.Format(_instruction.GetText(Instruction.TracksAndVoicesNotMatchWarning), MixerName.ToWhiteBold(), ProjectSettingsMenuItemPath.SetColor(GUIStyleHelper.LinkBlue));
                         RichTextHelpBox(warningBoxRect, text, MessageType.Warning);
                         if (GUI.Button(warningBoxRect, GUIContent.none, GUIStyle.none))
                         {
@@ -520,21 +519,10 @@ namespace Ami.BroAudio.Editor.Setting
 			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Audio Reverb Zone Issue In 2021".ToWhiteBold(), GUIStyleHelper.RichText);
 			using (new EditorGUI.IndentLevelScope())
 			{
-                EditorSetting.AcceptAudioMixerModificationIn2021 = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), _acceptAudioMixerGUIContent, EditorSetting.AcceptAudioMixerModificationIn2021);
-                if (EditorSetting.AcceptAudioMixerModificationIn2021)
-                {
-                    DrawManualFix(drawPosition);
-                }
-                else
-                {
-                    EditorSetting.ManualFix = false;
-                }
-
                 Rect infoBoxRect = GetRectAndIterateLine(drawPosition);
                 infoBoxRect.height *= 3;
                 infoBoxRect.width -= IndentInPixel;
-                Color linkBlue = GUIStyleHelper.LinkLabelStyle.normal.textColor;
-                string text = string.Format(_instruction.GetText(Instruction.AcceptAudioMixerModification), "Documentation".SetColor(linkBlue));
+                string text = string.Format(_instruction.GetText(Instruction.AudioReverbZoneIssue), "Documentation".SetColor(GUIStyleHelper.LinkBlue));
                 RichTextHelpBox(infoBoxRect, text, MessageType.Info);
                 if (GUI.Button(infoBoxRect, GUIContent.none, GUIStyle.none))
                 {
@@ -544,24 +532,6 @@ namespace Ami.BroAudio.Editor.Setting
             }
 			
             DrawEmptyLine(1);
-		}
-
-		private void DrawManualFix(Rect drawPosition)
-		{
-			Rect toggleRect = GetRectAndIterateLine(drawPosition);
-			toggleRect.width = 150f;
-			EditorSetting.ManualFix = EditorGUI.ToggleLeft(toggleRect, "Manual Fix", EditorSetting.ManualFix);
-			if (EditorSetting.ManualFix)
-			{
-				Rect buttonRect = new Rect(toggleRect);
-				buttonRect.x += toggleRect.width;
-				buttonRect.width = 80f;
-				if (GUI.Button(buttonRect, "Fix"))
-				{
-					GameObject managerObj = Resources.Load(nameof(Runtime.SoundManager)) as GameObject;
-					Tools.BroAutoFixTrigger.FixAudioReverbZoneIssue(managerObj);
-				}
-			}
 		}
 #endif
 

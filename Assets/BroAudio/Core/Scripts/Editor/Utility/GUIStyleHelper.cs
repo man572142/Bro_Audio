@@ -7,8 +7,9 @@ namespace Ami.Extension
 	public static class GUIStyleHelper
 	{
 		public static Color DefaultLabelColor => GUI.skin.label.normal.textColor;
+		public static Color LinkBlue => LinkLabelStyle.normal.textColor;
 
-		public static GUIStyle MiddleCenterText
+        public static GUIStyle MiddleCenterText
 		{
 			get
 			{

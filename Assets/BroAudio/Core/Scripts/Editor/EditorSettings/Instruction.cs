@@ -6,7 +6,7 @@
 
         // Settings
         AssetOutputPathPanelTtile = 1,
-        AcceptAudioMixerModification,
+        AudioReverbZoneIssue,
 
         // Settings/Audio
         CombFilteringTooltip = 10,

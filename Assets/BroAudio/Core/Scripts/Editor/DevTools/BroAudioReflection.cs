@@ -212,30 +212,9 @@ namespace Ami.Extension.Reflection
             }
         }
 
-        public static void FixAudioReverbZoneIssue(AudioMixer mixer)
-        {
-            if (mixer)
-            {
-                AudioMixerGroup masterGroup = mixer.FindMatchingGroups(MasterTrackName)?.FirstOrDefault();
-
-                List<AudioMixerGroup> connectedMixerGroups = new List<AudioMixerGroup>();
-                IEnumerable<AudioMixerGroup> mainGroups = mixer.FindMatchingGroups(MainTrackName).Where(x => x.name.Contains(MainTrackName));
-                IEnumerable<AudioMixerGroup> dominatorGroups = mixer.FindMatchingGroups(DominatorTrackName).Where(x => x.name.Contains(DominatorTrackName));
-                connectedMixerGroups.AddRange(mainGroups);
-                connectedMixerGroups.AddRange(dominatorGroups);
-
-                if (masterGroup != null && connectedMixerGroups != null)
-                {
-                    RenewAudioEffect(mixer, DuckVolumeEffect, masterGroup, out object newDuckVolume);
-                    AssignSendTarget(newDuckVolume, true, connectedMixerGroups);
-                }
-            }
-        }
-
-        private static void RenewAudioEffect(AudioMixer mixer, string targetEffectName, AudioMixerGroup mixerGroup, out object newEffect, AudioClassReflectionHelper reflection = null)
+        public static void RemoveAudioEffect(AudioMixer mixer, string targetEffectName, AudioMixerGroup mixerGroup, AudioClassReflectionHelper reflection = null)
         {
             reflection = reflection ?? new AudioClassReflectionHelper();
-            newEffect = null;
 
             object[] effects = GetProperty<object[]>("effects", reflection.MixerGroupClass, mixerGroup);
 
@@ -244,9 +223,6 @@ namespace Ami.Extension.Reflection
                 string effectName = GetProperty<string>("effectName", reflection.EffectClass, effects[i]);
                 if (effectName == targetEffectName)
                 {
-                    newEffect = ExecuteMethod("CopyEffect", new object[] { effects[i] }, reflection.MixerClass, mixer);
-                    ExecuteMethod("InsertEffect", new object[] { newEffect, effects.Length }, reflection.MixerGroupClass, mixerGroup);
-
                     ExecuteMethod("RemoveEffect", new object[] { effects[i], mixerGroup }, reflection.MixerClass, mixer);
                     break;
                 }

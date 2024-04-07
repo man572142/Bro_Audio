@@ -15,7 +15,6 @@ namespace Ami.BroAudio.Editor
 		private AudioMixer _mixer = null;
 		private UnityEditor.Editor _effectTrackEditor = null; 
 		private Vector2 _scrollPos = default;
-		private GUIContent _accetpModificationGUIContent = null;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 
 		private EditorSetting Setting => BroEditorUtility.EditorSetting;
@@ -31,8 +30,6 @@ namespace Ami.BroAudio.Editor
 
 		private void OnEnable()
 		{
-			_accetpModificationGUIContent = new GUIContent("Accept BroAudioMixer Modification", _instruction.GetText(Instruction.AcceptAudioMixerModification));
-
 			SoundManager manager = Resources.Load<SoundManager>(nameof(SoundManager));
 			if(manager && manager.Mixer)
 			{
@@ -49,15 +46,6 @@ namespace Ami.BroAudio.Editor
 		{
 			EditorGUILayout.BeginHorizontal(EditorStyles.toolbar, GUILayout.Height(EditorGUIUtility.singleLineHeight));
 			{
-#if UNITY_2021
-				Setting.AcceptAudioMixerModificationIn2021 = EditorGUILayout.ToggleLeft(_accetpModificationGUIContent, Setting.AcceptAudioMixerModificationIn2021, GUILayout.Width(250f));
-				if (!Setting.AcceptAudioMixerModificationIn2021)
-				{
-					EditorGUILayout.EndHorizontal();
-					return;
-				} 
-#endif
-
 				GUILayout.FlexibleSpace();
 
 				var buttonContent = new GUIContent("Effect Exposed Parameters");

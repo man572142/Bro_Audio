@@ -1,9 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Policy;
+using Ami.BroAudio.Runtime;
+using Ami.BroAudio.Tools;
 using Ami.Extension;
+using Ami.Extension.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Audio;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.BroAudio.Tools.BroName;
 using static Ami.Extension.EditorScriptingExtension;
@@ -16,8 +22,12 @@ namespace Ami.BroAudio.Editor
         public const float CreditsPrefixWidth = 70f;
         public const int CreditsFieldCount = 5;
         public const float DemoReferenceFieldWidth = 200f;
-        public const float ParagraphWidth = 300f;
+        public const float ParagraphWidth = 350f;
+        public const float ButtonWidth = 150f;
 
+        public const string RemoveDuckVolumeLabel = "Remove Duck Volume";
+        public const string RemoveDuckVolumeDialog = "Removing 'Duck Volume' can restore the Audio Reverb Zone effect, but it may lose the ability to prevent sound distortion on the 'Master' track. Are you sure you want to procced?";
+        public const string AudioReverZoneIssueDoc = "https://man572142s-organization.gitbook.io/broaudio/core-features/audio-mixer#audio-reverb-zone-issue-in-unity-2021";
         public const string GitURL = "https://github.com/man572142/Bro_Audio";
         public const string DocURL = "https://man572142s-organization.gitbook.io/broaudio";
         public const string DiscordURL = "https://discord.gg/z6uNmz6Z3A";
@@ -51,8 +61,27 @@ namespace Ami.BroAudio.Editor
             scrollViewRect.x += 20f;
             scrollViewRect.width = position.width - 40f;
 
+            DrawEmptyLine(1);
             _scrollPos = BeginScrollView(scrollViewRect, _scrollPos);
             {
+                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Audio Reverb Zone Issue In Unity 2021".ToWhiteBold(), middleCenterRichText);
+                Rect helpBoxRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(ParagraphWidth, EditorGUIUtility.singleLineHeight * 5);
+                string reverbZoneText = string.Format(_instruction.GetText(Instruction.AudioReverbZoneIssue), "More Info".SetColor(GUIStyleHelper.LinkBlue));
+                RichTextHelpBox(helpBoxRect, reverbZoneText, MessageType.Warning);
+                DrawEmptyLine(3);
+
+                if (GUI.Button(helpBoxRect, GUIContent.none, GUIStyle.none))
+                {
+                    Application.OpenURL(AudioReverZoneIssueDoc);
+                }
+                EditorGUIUtility.AddCursorRect(helpBoxRect, MouseCursor.Link);
+
+                Rect removeButtonRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(ButtonWidth, EditorGUIUtility.singleLineHeight);
+                if (GUI.Button(removeButtonRect, RemoveDuckVolumeLabel) && EditorUtility.DisplayDialog(RemoveDuckVolumeLabel, RemoveDuckVolumeDialog, "Yes", "No"))
+                {
+                    RemoveDuckVolume();
+                }
+
                 DrawEmptyLine(1);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Play The Demo!".ToWhiteBold().SetSize(20), middleCenterRichText);
                 Rect demoRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(DemoReferenceFieldWidth, SingleLineSpace);
@@ -82,6 +111,23 @@ namespace Ami.BroAudio.Editor
                 DrawAssetCredits(drawPosition);
             }
             EndScrollView();
+        }
+
+        private void RemoveDuckVolume()
+        {
+            GameObject managerObj = Resources.Load(nameof(SoundManager)) as GameObject;
+            if(managerObj && managerObj.TryGetComponent<SoundManager>(out var soundManager) && soundManager.Mixer)
+            {
+                AudioMixerGroup masterGroup = soundManager.Mixer.FindMatchingGroups(MasterTrackName)?.FirstOrDefault();
+                if(masterGroup)
+                {
+                    BroAudioReflection.RemoveAudioEffect(soundManager.Mixer, BroAudioReflection.DuckVolumeEffect, masterGroup);
+                }
+            }
+            else
+            {
+                BroLog.LogError($"Removing {BroAudioReflection.DuckVolumeEffect} is failed. The {nameof(SoundManager)} asset or the BroAudioMixer asset is missing");
+            }
         }
 
         private void DrawParagraph(Rect drawPosition, string text, int lineCount = 1)

@@ -2983,7 +2983,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2876047257477730843, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_Text
-      value: Unity Built-in Audio Component Supported
+      value: All Unity built-in features are supported
       objectReference: {fileID: 0}
     - target: {fileID: 2876047257477730843, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_Color.b
@@ -12613,7 +12613,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 221247487175567481, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 976
+      value: 977
       objectReference: {fileID: 0}
     - target: {fileID: 221247487175567481, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_LocalRotation.w
@@ -12633,11 +12633,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 221247487175567481, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -87
+      value: -91
       objectReference: {fileID: 0}
     - target: {fileID: 221247487175567481, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 99
+      value: 87.00004
       objectReference: {fileID: 0}
     - target: {fileID: 221247487175567481, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -12649,6 +12649,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 221247487175567481, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2876047257477730840, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2876047257477730840, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}

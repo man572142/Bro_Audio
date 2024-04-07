@@ -13,9 +13,11 @@ namespace Ami.BroAudio
 		public const float LowPassFrequency = 300f;
 		public const float HighPassFrequency = 2000f;
 
-		public const Ease LowPassEase = Ease.OutCubic;
-		public const Ease HighPassEase = Ease.InCubic;
+		public const Ease LowPassInEase = Ease.OutCubic;
+		public const Ease LowPassOutEase = Ease.InCubic;
+        public const Ease HighPassInEase = Ease.InCubic;
+        public const Ease HighPassOutEase = Ease.InCubic;
 
-		public const int VirtualTrackCount = 4;
+        public const int VirtualTrackCount = 4;
 	}
 }

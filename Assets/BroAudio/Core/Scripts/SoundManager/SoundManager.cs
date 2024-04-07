@@ -215,8 +215,15 @@ namespace Ami.BroAudio.Runtime
             Action<EffectType> onResetEffect = null;
             if(!effect.IsDominator)
             {
-				SetPlayerEffect(targetType, effect.Type, mode);
-				onResetEffect = (resetType) => SetPlayerEffect(targetType, resetType, SetEffectMode.Remove);
+                if(mode == SetEffectMode.Remove)
+                {
+                    // wait for reset tweaking of the previous effect
+                    onResetEffect = (resetType) => SetPlayerEffect(targetType, resetType, SetEffectMode.Remove);
+                }
+                else
+                {
+                    SetPlayerEffect(targetType, effect.Type, mode);
+                }
 			}
             
             _automationHelper.SetEffectTrackParameter(effect, onResetEffect);

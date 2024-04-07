@@ -161,7 +161,7 @@ namespace Ami.BroAudio.Runtime
 				StartCoroutineAndReassign(TweakTrackParameter(tweaker, OnTweakingFinished), ref tweaker.Coroutine);
 				if(effect.IsDominator)
 				{
-					SwitchMainTrackMode(effect.IsDominator);
+					SwitchMainTrackMode(true);
                 }	
 			}
 			

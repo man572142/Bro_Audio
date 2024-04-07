@@ -9,8 +9,8 @@ namespace Ami.BroAudio.Demo
 	{
 #pragma warning disable 414
         [SerializeField] SoundID _enterExitSound = default;
-		[SerializeField, Volume(true)] float _targetVolume = 0.5f;
 		[SerializeField, Frequency] float _lowPassFreq = 800f;
+		[SerializeField] float _fadeTime = 1f;
 #pragma warning restore 414
         public override void OnInZoneChanged(bool isInZone)
 		{
@@ -19,13 +19,12 @@ namespace Ami.BroAudio.Demo
 #if !UNITY_WEBGL
 			if (isInZone)
 			{
-				BroAudio.SetVolume(BroAudioType.All, _targetVolume);
-				BroAudio.SetEffect(Effect.LowPass(_lowPassFreq, 0.5f));
+				BroAudio.SetEffect(Effect.LowPass(_lowPassFreq, _fadeTime));
 			}
 			else
 			{
-				BroAudio.SetVolume(BroAudioType.All, BroAdvice.FullVolume, 1f);
-				BroAudio.SetEffect(Effect.LowPass(Effect.Defaults.LowPass, 1f));
+				float noLowPassFreq = Effect.Defaults.LowPass;
+                BroAudio.SetEffect(Effect.LowPass(noLowPassFreq, _fadeTime, BroAdvice.LowPassOutEase));
 			} 
 #endif
 		}

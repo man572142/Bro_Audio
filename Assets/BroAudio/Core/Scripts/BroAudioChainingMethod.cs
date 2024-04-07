@@ -67,12 +67,12 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="player"></param>
         /// <param name="dominatedType">The audio type that being dominated</param>
-        public static IPlayerEffect AsDominator(this IAudioPlayer player, BroAudioType dominatedType = BroAudioType.All) 
-			=> player?.AsDominator(dominatedType);
+        public static IPlayerEffect AsDominator(this IAudioPlayer player) 
+			=> player?.AsDominator();
 
 		/// <inheritdoc cref="AsDominator(IAudioPlayer, BroAudioType)"/>
-		public static IPlayerEffect AsDominator(this IMusicPlayer player, BroAudioType dominatedType = BroAudioType.All)
-			=> player?.AsDominator(dominatedType);
+		public static IPlayerEffect AsDominator(this IMusicPlayer player)
+			=> player?.AsDominator();
 
 		/// <summary>
 		/// While this audio player is playing, the volume of other audio players will be lowered to the given ratio.

@@ -7,9 +7,6 @@ namespace Ami.BroAudio.Runtime
 {
 	public class DominatorPlayer : AudioPlayerDecorator , IPlayerEffect
 	{
-        public BroAudioType DominatedType { get; private set; }
-
-
         #region Quiet Others
         IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, float fadeTime)
         {
@@ -65,14 +62,9 @@ namespace Ami.BroAudio.Runtime
         } 
         #endregion
 
-        internal void SetDominatedType(BroAudioType dominatedType)
-        {
-            DominatedType = dominatedType;
-        }
-
         private void SetAllEffectExceptDominator(Effect effect)
         {
-            SoundManager.Instance.SetEffect(DominatedType, effect).While(PlayerIsPlaying);
+            SoundManager.Instance.SetEffect(effect).While(PlayerIsPlaying);
             Player.SetEffect(EffectType.None,SetEffectMode.Override);
         }
 

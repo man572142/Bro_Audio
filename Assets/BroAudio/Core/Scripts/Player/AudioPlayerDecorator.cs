@@ -33,7 +33,7 @@ namespace Ami.BroAudio.Runtime
 		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Player.SetVolume(vol, fadeTime);
 		IMusicPlayer IMusicDecoratable.AsBGM() => Player.AsBGM();
 #if !UNITY_WEBGL
-		IPlayerEffect IEffectDecoratable.AsDominator(BroAudioType dominatedType) => Player.AsDominator(dominatedType);
+		IPlayerEffect IEffectDecoratable.AsDominator() => Player.AsDominator();
 #endif
 	}
 }

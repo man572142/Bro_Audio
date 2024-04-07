@@ -222,10 +222,9 @@ namespace Ami.BroAudio.Runtime
         }
 
 #if !UNITY_WEBGL
-        IPlayerEffect IEffectDecoratable.AsDominator(BroAudioType dominatedType)
+        IPlayerEffect IEffectDecoratable.AsDominator()
         {
             DominatorPlayer dominator = GetOrCreateDecorator<DominatorPlayer>();
-            dominator.SetDominatedType(dominatedType);
             return dominator;
         }
 #endif

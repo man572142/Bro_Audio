@@ -21,8 +21,7 @@ namespace Ami.BroAudio.Demo
         {
             _explosionPlayer = BroAudio.Play(_explosion);
 #if !UNITY_WEBGL
-			Fading lowPassFading = new Fading(BroAdvice.FadeTime_Quick, dominateFadeOut, EffectType.LowPass);
-            _explosionPlayer.AsDominator().LowPassOthers(_lowPassFrequency, lowPassFading); 
+            _explosionPlayer.AsDominator().LowPassOthers(_lowPassFrequency, new Fading(BroAdvice.FadeTime_Quick, dominateFadeOut, EffectType.LowPass)); 
 #endif
 		}
 

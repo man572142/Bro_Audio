@@ -64,6 +64,7 @@ namespace Ami.BroAudio.Editor
             DrawEmptyLine(1);
             _scrollPos = BeginScrollView(scrollViewRect, _scrollPos);
             {
+#if UNITY_2021
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Audio Reverb Zone Issue In Unity 2021".ToWhiteBold(), middleCenterRichText);
                 Rect helpBoxRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(ParagraphWidth, EditorGUIUtility.singleLineHeight * 5);
                 string reverbZoneText = string.Format(_instruction.GetText(Instruction.AudioReverbZoneIssue), "More Info".SetColor(GUIStyleHelper.LinkBlue));
@@ -80,7 +81,8 @@ namespace Ami.BroAudio.Editor
                 if (GUI.Button(removeButtonRect, RemoveDuckVolumeLabel) && EditorUtility.DisplayDialog(RemoveDuckVolumeLabel, RemoveDuckVolumeDialog, "Yes", "No"))
                 {
                     RemoveDuckVolume();
-                }
+                } 
+#endif
 
                 DrawEmptyLine(1);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Play The Demo!".ToWhiteBold().SetSize(20), middleCenterRichText);

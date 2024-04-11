@@ -486,10 +486,6 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawMiscellaneousSetting(Rect drawPosition)
 		{
-#if UNITY_2021
-			DrawAutoFixOption(drawPosition); 
-#endif
-			DrawEmptyLine(1);
 			DrawAssetOutputPath(drawPosition);
 			DrawEmptyLine(1);
 
@@ -512,28 +508,6 @@ namespace Ami.BroAudio.Editor.Setting
 				return GUI.Button(buttonRect, label);
             }
         }
-
-#if UNITY_2021 && UNITY_EDITOR
-		private void DrawAutoFixOption(Rect drawPosition)
-		{
-			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Audio Reverb Zone Issue In 2021".ToWhiteBold(), GUIStyleHelper.RichText);
-			using (new EditorGUI.IndentLevelScope())
-			{
-                Rect infoBoxRect = GetRectAndIterateLine(drawPosition);
-                infoBoxRect.height *= 3;
-                infoBoxRect.width -= IndentInPixel;
-                string text = string.Format(_instruction.GetText(Instruction.AudioReverbZoneIssue), "Documentation".SetColor(GUIStyleHelper.LinkBlue));
-                RichTextHelpBox(infoBoxRect, text, MessageType.Info);
-                if (GUI.Button(infoBoxRect, GUIContent.none, GUIStyle.none))
-                {
-                    Application.OpenURL(AutoFixDocUrl);
-                }
-                EditorGUIUtility.AddCursorRect(infoBoxRect, MouseCursor.Link);
-            }
-			
-            DrawEmptyLine(1);
-		}
-#endif
 
 		private void DrawAssetOutputPath(Rect drawPosition)
 		{

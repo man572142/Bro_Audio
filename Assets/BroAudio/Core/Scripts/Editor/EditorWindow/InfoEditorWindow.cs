@@ -20,7 +20,7 @@ namespace Ami.BroAudio.Editor
     {
         public const float Gap = 50f;
         public const float CreditsPrefixWidth = 70f;
-        public const int CreditsFieldCount = 5;
+        public const int CreditsFieldCount = 6;
         public const float DemoReferenceFieldWidth = 200f;
         public const float ParagraphWidth = 350f;
         public const float ButtonWidth = 150f;
@@ -168,6 +168,7 @@ namespace Ami.BroAudio.Editor
                         EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), credit.Source, typeof(AudioClip), false);
                         DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition), new GUIContent("Type"), credit.Type.ToString(), CreditsPrefixWidth);
                         DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition), new GUIContent("Name"), credit.Name, CreditsPrefixWidth);
+                        DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition), new GUIContent("License"), credit.License, CreditsPrefixWidth);
                         DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition), new GUIContent("Author"), credit.Author, CreditsPrefixWidth);
                         DrawUrlLink(GetRectAndIterateLine(drawPosition), credit.Link);
                         DrawEmptyLine(1);

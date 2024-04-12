@@ -14,3 +14,26 @@ COMMUNITY & SUPPORT
 Join  us on  Discord!
 
 https://discord.gg/z6uNmz6Z3A
+
+
+QUICK START GUIDE
+--------------------------------------
+Creating sound libraries
+1. Locate Tools/BroAudio/LibraryManager in the Unity menu bar.
+2. Drag and drop the required audio clips to the window to create an asset and entity (or entities).
+3. Choose an Audio Type by clicking the "Undefined Audio Type" label.
+4. Unfolding the entity (the element in the list) and name it. 
+4. Edit the parameters to shape the sound and design its behavior.
+
+Implementation (no-code)
+1. Add the SoundSource component to a game object
+2. Select the required sound via the dropdown menu in the inspector
+3.Choose the triggering strategy
+4. Play it!
+
+Implementation (with code)
+1. Declare a SoundID and serialize it (via [SerializedField] or 'public' in MonoBehaviour)
+2. Write: BroAudio.Play() in the section where you want it to be played.
+3. Select the required sound via the dropdown menu in the Inspector
+4. Play it!
+

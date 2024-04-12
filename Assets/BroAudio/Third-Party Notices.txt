@@ -1,0 +1,69 @@
+Component Name: SavWav
+Path: BroAudio/Core/Scripts/ThirdParty/SavWav.cs
+License Type: zlib License
+
+//	Copyright (c) 2012 Calvin Rien
+//        http://the.darktable.com
+//
+//	This software is provided 'as-is', without any express or implied warranty. In
+//	no event will the authors be held liable for any damages arising from the use
+//	of this software.
+//
+//	Permission is granted to anyone to use this software for any purpose,
+//	including commercial applications, and to alter it and redistribute it freely,
+//	subject to the following restrictions:
+//
+//	1. The origin of this software must not be misrepresented; you must not claim
+//	that you wrote the original software. If you use this software in a product,
+//	an acknowledgment in the product documentation would be appreciated but is not
+//	required.
+//
+//	2. Altered source versions must be plainly marked as such, and must not be
+//	misrepresented as being the original software.
+//
+//	3. This notice may not be removed or altered from any source distribution.
+//
+//  =============================================================================
+//
+//  derived from Gregorio Zanon's script
+//  http://forum.unity3d.com/threads/119295-Writing-AudioListener.GetOutputData-to-wav-problem?p=806734&viewfull=1#post806734
+
+
+Demo Scene Asset
+** A more detailed and better-readable version can be found in Tools/BroAudio/Info.**
+
+Asset Name: 651742__department64__underwater-blub-01
+License Type: CC BY 4.0 DEED | Attribution 4.0 International
+
+Asset Name: 688130__sami_hiltunen__spaceship-ambience
+License Type: CC0 1.0 DEED | CC0 1.0 Universal
+
+Asset Name: 490253__anomaex__sci-fi_explosion
+License Type: CC0 1.0 DEED | CC0 1.0 Universal
+
+Asset Name: water 0342
+License Type: Royalty-Free Commercial License
+
+Asset Name: Ground 033
+License Type: CC0 1.0 Universal License
+
+Asset Name: Rock012
+License Type: CC0 1.0 Universal License
+
+Asset Name: DroneMusic
+License Type: THE #GAMEAUDIOGDC BUNDLE LICENSING
+
+Asset Name: Transition_Mystery-08
+License Type: THE #GAMEAUDIOGDC BUNDLE LICENSING
+
+Asset Name: Reverse_Production Element_Sigh-Piano-Guitar-Bells-003
+License Type: THE #GAMEAUDIOGDC BUNDLE LICENSING
+
+Asset Name: AMBIENCE Desert Soft Day
+License Type: THE #GAMEAUDIOGDC BUNDLE LICENSING
+
+Asset Name: water_lapping_sea_waves_sandy_beach_5_meters_01
+License Type: THE #GAMEAUDIOGDC BUNDLE LICENSING
+
+Asset Name: FUI Hologram Ping Tone Echoed-2
+License Type: THE #GAMEAUDIOGDC BUNDLE LICENSING

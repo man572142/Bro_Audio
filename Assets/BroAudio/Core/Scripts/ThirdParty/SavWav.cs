@@ -26,8 +26,8 @@
 
 //
 // This program is an altered version of the original code.
-// It changes the input parameter to [filepath] instead of [filename] in Save() method ,and comment out the filename verification and path combination code.
-// The purpose of this modification is to allow the user to determind their own save path for more flexibility.
+// 1. Changes the input parameter to [filepath] instead of [filename] in Save() method ,and comment out the filename verification and path combination code.
+// 2. Fix sample length doesn't take channel into account when using AudioClip.GetData(); 
 //
 namespace Ami.BroAudio.Editor
 {
@@ -69,7 +69,7 @@ namespace Ami.BroAudio.Editor
 
 		public static AudioClip TrimSilence(AudioClip clip, float min)
 		{
-			var samples = new float[clip.samples];
+			var samples = new float[clip.samples * clip.channels];
 
 			clip.GetData(samples, 0);
 
@@ -105,7 +105,7 @@ namespace Ami.BroAudio.Editor
 
 			samples.RemoveRange(i, samples.Count - i);
 #pragma warning disable CS0618
-			var clip = AudioClip.Create("TempClip", samples.Count, channels, hz, _3D, stream);
+			var clip = AudioClip.Create("TempClip", samples.Count / channels, channels, hz, _3D, stream);
 #pragma warning restore
 
 			clip.SetData(samples.ToArray(), 0);
@@ -128,9 +128,7 @@ namespace Ami.BroAudio.Editor
 
 		static void ConvertAndWrite(FileStream fileStream, AudioClip clip)
 		{
-
-			var samples = new float[clip.samples];
-
+			var samples = new float[clip.samples * clip.channels];
 			clip.GetData(samples, 0);
 
 			Int16[] intData = new Int16[samples.Length];

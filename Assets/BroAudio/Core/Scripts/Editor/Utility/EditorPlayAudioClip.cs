@@ -27,7 +27,7 @@ namespace Ami.Extension
 
 		public static void PlayClipByAudioSource(AudioClip audioClip, float volume, float startTime, float endTime, bool loop = false)
 		{
-			StopAllClipsWithoutDestoryAudioSource();
+			StopAllPreviewClipsAndCancelTask();
 			if (_currentEditorAudioSource)
 			{
 				CancelTask(ref _currentAudioSourceTaskCanceller);
@@ -59,13 +59,14 @@ namespace Ami.Extension
 			}
 			else
 			{
-				AsyncTaskExtension.DelayInvoke(duration, DestroyPreviewAudioSource, _currentAudioSourceTaskCanceller.Token);
+				AsyncTaskExtension.DelayInvoke(duration, DestroyPreviewAudioSourceAndCancelTask, _currentAudioSourceTaskCanceller.Token);
 			}
 
 			void Replay()
 			{
 				if(audioSource != null && _currentAudioSourceTaskCanceller != null)
 				{
+					_currentEditorAudioSource.Stop();
 					audioSource.time = startTime;
 					audioSource.Play();
 					AsyncTaskExtension.DelayInvoke(duration, Replay, _currentAudioSourceTaskCanceller.Token);
@@ -75,8 +76,8 @@ namespace Ami.Extension
 
 		public static void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
 		{
-			int startSample = (int)Math.Round(audioClip.frequency * startTime, MidpointRounding.AwayFromZero);
-			int endSample = (int)Math.Round(audioClip.frequency * endTime, MidpointRounding.AwayFromZero);
+			int startSample = AudioExtension.GetTimeSample(audioClip, startTime);
+			int endSample = AudioExtension.GetTimeSample(audioClip, endTime);
 			PlayClip(audioClip, startSample, endSample, loop);
 		}
 
@@ -107,13 +108,14 @@ namespace Ami.Extension
 			}
 			else
 			{
-				AsyncTaskExtension.DelayInvoke(lengthInMs, StopAllClips, _currentPlayingTaskCanceller.Token);
+				AsyncTaskExtension.DelayInvoke(lengthInMs, StopAllPreviewClipsAndCancelTask, _currentPlayingTaskCanceller.Token);
 			}
 
 			void Replay()
 			{
 				if(method != null && _currentPlayingTaskCanceller != null)
 				{
+					StopAllPreviewClips();
 					method.Invoke(null, parameters);
 					AsyncTaskExtension.DelayInvoke(lengthInMs, Replay, _currentPlayingTaskCanceller.Token);
 				}
@@ -122,11 +124,11 @@ namespace Ami.Extension
 
 		public static void StopAllClips()
 		{
-			StopAllClipsWithoutDestoryAudioSource();
-			DestroyPreviewAudioSource();
+			StopAllPreviewClipsAndCancelTask();
+			DestroyPreviewAudioSourceAndCancelTask();
 		}
 
-		private static void DestroyPreviewAudioSource()
+		private static void DestroyPreviewAudioSourceAndCancelTask()
 		{
 			if (_currentEditorAudioSource)
 			{
@@ -140,21 +142,22 @@ namespace Ami.Extension
 			}
 		}
 
-		private static void StopAllClipsWithoutDestoryAudioSource()
+		private static void StopAllPreviewClipsAndCancelTask()
 		{
 			CancelTask(ref _currentPlayingTaskCanceller);
+			StopAllPreviewClips();
+			PlaybackIndicator.End();
+			CurrentPlayingClip = null;
+		}
 
+		private static void StopAllPreviewClips()
+		{
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
 
 			Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
 			MethodInfo method = audioUtilClass.GetMethod(StopClipMethodName, BindingFlags.Static | BindingFlags.Public, null, new Type[] { }, null);
 
-			if (method != null)
-			{
-				method.Invoke(null, new object[] { });
-				PlaybackIndicator.End();
-				CurrentPlayingClip = null;
-			}
+			method?.Invoke(null, new object[] { });
 		}
 
 		public static void AddPlaybackIndicatorListener(Action action)

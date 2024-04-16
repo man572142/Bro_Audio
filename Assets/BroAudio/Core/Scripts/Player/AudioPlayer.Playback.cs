@@ -105,7 +105,6 @@ namespace Ami.BroAudio.Runtime
             float targetClipVolume = GetTargetClipVolume();
             AudioTrack = _getAudioTrack?.Invoke(TrackType);
 
-            // AudioSource.clip.samples returns the time samples length, not the data samples, so we don't need to multiply the channel count.
             int sampleRate = CurrentClip.AudioClip.frequency;
 			VolumeControl fader = VolumeControl.Clip;
 			do
@@ -248,8 +247,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     // if is fading out. then don't stop. just wait for it
                     AudioClip clip = AudioSource.clip;
-                    int sampleRate = clip.frequency * clip.channels;
-                    float endSample = clip.samples - (CurrentClip.EndPosition * sampleRate);
+                    float endSample = clip.samples - (CurrentClip.EndPosition * clip.frequency);
                     yield return new WaitUntil(() => AudioSource.timeSamples >= endSample);
                 }
                 else

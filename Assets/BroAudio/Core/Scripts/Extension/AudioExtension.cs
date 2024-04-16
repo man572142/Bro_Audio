@@ -62,10 +62,10 @@ namespace Ami.Extension
 
 		public static bool TryGetSampleData(this AudioClip originClip, out float[] sampleArray, float startPosInSecond, float endPosInSecond)
 		{
-			int startSample = (int)Math.Round(startPosInSecond * originClip.frequency, MidpointRounding.AwayFromZero);
-			int sampleLength = (int)Math.Round((originClip.length - endPosInSecond - startPosInSecond) * originClip.frequency, MidpointRounding.AwayFromZero);
+			int startSample = GetDataSample(originClip, startPosInSecond);
+			int sampleLength = GetDataSample(originClip, originClip.length - endPosInSecond - startPosInSecond);
 
-			sampleArray = new float[sampleLength * originClip.channels];
+			sampleArray = new float[sampleLength];
 			bool sucess = originClip.GetData(sampleArray, startSample);
 
 			if (!sucess)
@@ -86,9 +86,19 @@ namespace Ami.Extension
 
 		public static AudioClip CreateAudioClip(string name, float[] samples, AudioClipSetting setting)
 		{
-			AudioClip result = AudioClip.Create(name, samples.Length, setting.Channels, setting.Frequency, setting.LoadType == AudioClipLoadType.Streaming);
+			AudioClip result = AudioClip.Create(name, samples.Length / setting.Channels, setting.Channels, setting.Frequency, setting.LoadType == AudioClipLoadType.Streaming);
 			result.SetData(samples, 0);
 			return result;
+		}
+
+		public static int GetDataSample(AudioClip clip, float time, MidpointRounding rounding = MidpointRounding.AwayFromZero)
+		{
+			return (int)Math.Round(clip.frequency * clip.channels * time, rounding);
+		}
+
+		public static int GetTimeSample(AudioClip clip, float time, MidpointRounding rounding = MidpointRounding.AwayFromZero)
+		{
+			return (int)Math.Round(clip.frequency * time, rounding);
 		}
 
 		public static AudioClipSetting GetAudioClipSetting(this AudioClip audioClip, bool isMono = false)

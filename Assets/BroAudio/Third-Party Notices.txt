@@ -32,17 +32,11 @@ License Type: zlib License
 Demo Scene Asset
 ** A more detailed and better-readable version can be found in Tools/BroAudio/Info.**
 
-Asset Name: 651742__department64__underwater-blub-01
-License Type: CC BY 4.0 DEED | Attribution 4.0 International
-
 Asset Name: 688130__sami_hiltunen__spaceship-ambience
-License Type: CC0 1.0 DEED | CC0 1.0 Universal
+License Type: CC0 1.0 Universal License
 
 Asset Name: 490253__anomaex__sci-fi_explosion
-License Type: CC0 1.0 DEED | CC0 1.0 Universal
-
-Asset Name: water 0342
-License Type: Royalty-Free Commercial License
+License Type: CC0 1.0 Universal License
 
 Asset Name: Ground 033
 License Type: CC0 1.0 Universal License

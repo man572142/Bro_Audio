@@ -13,12 +13,6 @@ MonoBehaviour:
   m_Name: AssetCredits
   m_EditorClassIdentifier: 
   Credits:
-  - Source: {fileID: 8300000, guid: 3e49a279ffa326149a02217838a68c54, type: 3}
-    Type: 0
-    Name: 651742__department64__underwater-blub-01
-    Author: Department64
-    License: CC BY 4.0 DEED | Attribution 4.0 International
-    Link: https://freesound.org/people/Department64/sounds/651742/
   - Source: {fileID: 8300000, guid: 53a94199c0be37f47ac8a3be45e84c7d, type: 3}
     Type: 0
     Name: 688130__sami_hiltunen__spaceship-ambience
@@ -31,12 +25,6 @@ MonoBehaviour:
     Author: Anomaex
     License: CC0 1.0 DEED | CC0 1.0 Universal
     Link: https://freesound.org/people/Anomaex/sounds/490253/
-  - Source: {fileID: 2800000, guid: 51ed4726eea51754e872b046fc4dc9e7, type: 3}
-    Type: 1
-    Name: water 0342
-    Author: CADHatch.com
-    License: Royalty-Free Commercial License
-    Link: https://www.cadhatch.com/seamless-water-textures
   - Source: {fileID: 2800000, guid: 4509916e97249124fad9e39c028c578c, type: 3}
     Type: 1
     Name: Ground 033

@@ -162,11 +162,8 @@ namespace Ami.BroAudio.Editor
 			EditorGUILayout.Space();
 
 			EditorGUILayout.LabelField("3D Sound Settings".ToBold(), GUIStyleHelper.RichText);
-			if (_draw3DGUIMethod != null)
-			{
-				_draw3DGUIMethod.Invoke(_audioSourceEditor, null);
-			}
-			_audioSourceEditor.serializedObject.ApplyModifiedProperties();
+            _draw3DGUIMethod?.Invoke(_audioSourceEditor, null);
+            _audioSourceEditor.serializedObject.ApplyModifiedProperties();
 		}
 
 		private void DrawStereoPan()

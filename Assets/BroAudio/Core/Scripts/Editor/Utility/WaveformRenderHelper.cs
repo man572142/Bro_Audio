@@ -10,8 +10,11 @@ namespace Ami.BroAudio.Editor
 {
     public class WaveformRenderHelper
     {
+        private delegate void DoRenderPreview(bool setMaterial, AudioClip clip, AudioImporter audioImporter, Rect wantedRect, float scaleFactor);
+
         private UnityEditor.Editor _editor = null;
         private Type _clipInspectorClass = null;
+        private DoRenderPreview _doRenderPreview = null;
 
         public void RenderClipWaveform(Rect rect,AudioClip clip)
         {
@@ -19,9 +22,14 @@ namespace Ami.BroAudio.Editor
             string assetPath = AssetDatabase.GetAssetPath(clip);
             AudioImporter importer = AssetImporter.GetAtPath(assetPath) as AudioImporter;
             UnityEditor.Editor.CreateCachedEditor(clip, _clipInspectorClass, ref _editor);
-            
-            // todo: should be cached to improve the performance ? but it seem not that inefficient
-            ReflectionExtension.ExecuteMethod("DoRenderPreview", new object[] { true, clip, importer, rect, 1f }, _clipInspectorClass, _editor, ReflectionExtension.PrivateFlag);
+
+            if(_doRenderPreview == null)
+            {
+                var method = _clipInspectorClass.GetMethod("DoRenderPreview", ReflectionExtension.PrivateFlag);
+                _doRenderPreview = (DoRenderPreview)method.CreateDelegate(typeof(DoRenderPreview), _editor);
+            }
+
+            _doRenderPreview?.Invoke(true, clip, importer, rect, 1f);
         }
     }
 }

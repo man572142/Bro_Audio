@@ -10,8 +10,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://thenounproject.com/icon/fist-177973/">
-    <img src="https://raw.githubusercontent.com/man572142/Bro_Audio/main/README/Logo.png" alt="Logo" width="128" height="128">
+  <a href="Bro Audio Logo">
+    <img src="https://raw.githubusercontent.com/man572142/Bro_Audio/main/Assets/BroAudio/Core/Resources/Editor/Logo_Main.png" alt="Logo" width="128" height="128">
   </a>
 
   <!-- PROJECT Title -->
@@ -19,10 +19,10 @@
 
   <p align="center">A simple and intutive Audio Middleware for Unity
     <br />
-    <a href="https://github.com/man572142/Bro_Audio"><strong>Explore the docs »</strong></a>
+    <a href="https://man572142s-organization.gitbook.io/broaudio/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/man572142/Bro_Audio">View Demo</a>
+    <a href="https://discord.com/invite/CNWRcc6Zfp">Discord</a>
     ·
     <a href="https://github.com/man572142/Bro_Audio/issues">Report Bug</a>
     ·
@@ -49,48 +49,63 @@
 
 
 <!-- ABOUT THE PROJECT -->
-## About The Project
+# About The Project
 ![Product Name Screen Shot][product-screenshot]
 
-
-BroAudio is a sound management and playback tool designed for Unity. It's unique in its focus on <a href="#sound-quality">sound quality</a> and a <a href="#developer-friendly">developer-friendly</a> experience. You can create extensive and captivating audio systems without the need for mastering complex middleware like FMOD or Wwise. Whether you're part of a large team or a solo developer, achieving the goals becomes effortless and efficient with BroAudio.
-
+BroAudio is a sound management and playback system designed for Unity. It's unique in its focus on <a href="#sound-quality">sound quality</a> and a <a href="#developer-friendly">developer-friendly</a> experience. You can create extensive and captivating audio systems without the need for mastering complex middleware like FMOD or Wwise. Whether you're part of a large team or a solo developer, achieving the goals becomes effortless and efficient with BroAudio.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Features
 
-- Fade In/Out with multiple ease function
-- Cross Fade
-- Seamless Loop
-- Random Playback (with weight)
-- Sequential Playback
-- Clip Editor for permanent clip editing
-- Dynamic audio effect
-- Enhanced Volume Control Range (up to +20dB)
-- Customizable GUI settings
-- Visualized waveform and playback lines
-- Low Code Design
-- and more…
+* Fade In/Out and Cross Fade with multiple ease function
+* Seamless Loop
+* Random Playback (with weight), Sequential Playback
+* Clip Editor for permanent clip editing
+* Dynamic audio effect
+* Enhanced Volume Control Range (up to +20dB)
+* Visualized waveform and visualized playback flow view
+* Customizable GUI settings
+* Write code in just one line
+* and more…
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- Quick Start -->
-## Quick Start
+# Quick Start
 
-### Creating sound libraries
-Locate <b><i>BroAudio/LibraryManager</i></b> in the Unity menu bar. Open it and try to create an Asset and a Library. This process doesn't involve any coding and the GUI works like a regular list you're familiar with.
+## Creating sound libraries
+* Locate <span style="color: #FF9333;"><i>Tools/BroAudio/Library Manager</i></span> in the Unity menu bar.
+* Drag and drop the required AudioClip.
+* Edit the parameters<br/>
+  edit the clip's volume, playback position... etc.
+* Name the asset and entities and choose an AudioType<br/>
+You could also skip this step. Just remember to set it before you need them in your scene.
 
-### Declare an AudioID and use BroAudio.Play() to play it 
-![BasicAPI][basic-API-screenshot]
+## Implementation 
+You can implement the sound you've created in Library Manager with or without coding.
 
-### Set the AudioID in the Inspector
-The AudioID is what you've created in <b>LibraryManager</b>
+### Without Code 
+* <b>Add <span style="color: #FF9333;">SoundSource</span> component to a game object</b>
+* <b>Select the required sound via the dropdown menu</b>
 
 &emsp;![SetAudioID][set-audioid]
 
+* <b>Choose the triggering strategy</b><br/>
+Enables "Play On Start" if you want to play it when the game object is activated at runtime. Or using <a href="https://docs.unity3d.com/2022.3/Documentation/Manual/UnityEvents.html">Unity Event</a> to trigger the Play() function like the Button's OnClick as below. 
+
+### With Code
+
+* <b>Declare a SoundID and implement `BroAudio.Play()` to play it</b>
+
+<img src="https://man572142s-organization.gitbook.io/~gitbook/image?url=https:%2F%2F886210201-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FfI79StJ3o7OKZxf9vHhb%252Fuploads%252Fq9iuTTM70cD2urGbBuDW%252FBasicAPI2.png%3Falt=media%26token=30d39bd0-4390-4ca8-ae13-d1ae64ea4a38&width=768&dpr=4&quality=100&sign=7c816015883b672221427c948189177a41fb917148c2ccf8bc12d9c2922661d3" alt="Logo" width=475 height=285>
+
+* <b>Select the required sound via the dropdown menu in the Inspector</b><br/>
+The same way as using SoundSource.
+
+
 ### Hit the Unity play button and enjoy it !
-That's all you need to start using BroAudio. Of course, there are more than just this. Check out the documentation to fully unlock all the features of BroAudio.
+That's all you need to start using BroAudio. Of course, there is more than just this. Check out the rest of the documentation to fully unlock all the features of BroAudio.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -108,60 +123,50 @@ Represent a sound associated with an AudioID that can be played. It can store ma
 Let you edit an audio clip and save it permanently in Unity.
 -->
 
-<a name="developer-friendly"></a>
-
-## What does Developer-Friendly mean in this tool?
-
-BroAudio aims to minimize the amount of information presented to developers. This means that by default, you will only see a few commonly used features, while other functions dynamically appear in the UI interface as you interact. You won't be overwhelmed by a large number of rarely used, or even completely unfamiliar settings and parameters. 
-
-What's even better is that BroAudio allows you to customize the GUI layout. You can set and select the parameters you want to display in <b><i>BroAudio/Settings</i></b>.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <a name="sound-quality"></a>
 
 ## Why is this tool related to sound quality?
 
-Indeed, apart from issues like noise and distortion that need to be repaired, there is no objective method to enhance sound quality. However, a playback system still holds significant impact over the quality of sound. This is because the loss of sound quality is relatively easy to occur and hard to avoid. That's why BroAudio consistently prioritizes preserving the original sound quality as its primary design consideration.
-
+Indeed, apart from issues like noise and distortion that need to be repaired, there is no objective method to enhance sound quality. However, a playback system still holds significant impact over the quality of sound. This is because the loss of sound quality is relatively easy to occur and hard to avoid.
 
 Here are some common issues listed along with how BroAudio addresses them:
 
 | Issues | Bro's Solutions|
 | -- | -- | 
 | Distortion caused by playing multiple sounds simultaneously. | Well-designed mixer and auto-ducking on the master track |
-|Comb Filtering / Haas Effect|Preventing rapid repetition of the same sound|
-|Unbalanced volume levels|Highly adaptable real-time volume control system|
+|Comb Filtering|Preventing rapid repetition of the same sound|
+|Unbalanced volume levels|Full range (-80dB to +20dB) and highly adaptable real-time volume control system|
 |Unnatural volume changes in Fade In, Fade Out and CrossFade|Utilizing AudioMixer for volume control|
 
  
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<a name="developer-friendly"></a>
+
+## What does Developer-Friendly mean in this tool?
+
+BroAudio aims to minimize the amount of information presented to developers. This means that by default, you will only see a few commonly used features, while other functions dynamically appear in the UI interface as you interact. You won't be overwhelmed by a large number of rarely used, or even completely unfamiliar settings and parameters.
+
+What's even better is that BroAudio allows you to customize the GUI layout. You can set and select the parameters you want to display in <span style="color: #FF9333;"><i>Tools/BroAudio/Preferences</i></span>.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Can I still use Unity's built-in audio features?
+Yes, BroAudio is an add-on plugin, all of Unity's built-in audio features are still available. 
+
+
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Add AnimationCurve settings for fade In/Out
-- [ ] More effect tracks
-- [ ] Performance Improvement
-    - [ ]  Add AudioClipLoadType settings
-    - [ ]  Improve asset loading mechanic
-
-See the [open issues](https://github.com/man572142/Bro_Audio/issues) for a full list of proposed features (and known issues).
+See the [Roadmap](https://man572142s-organization.gitbook.io/broaudio/others/roadmap) page of the documentation.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-<!-- LICENSE -->
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- CONTACT -->
-## Contact
+## Support & Contact
+
+Join us on <a href="https://discord.com/invite/CNWRcc6Zfp">Discord</a>
 
 Che Hsiang Weng - man572142@gmail.com
 
@@ -181,8 +186,6 @@ These blogs and articles have been a great source of help and inspiration for Br
 * []()[Blog | Audiokinetic](https://blog.audiokinetic.com/)
 * []()[FMOD Blog](https://www.fmod.com/blog)
 
-Logo Artist : []()[Creative Stall](https://thenounproject.com/icon/fist-177973/)
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -201,6 +204,7 @@ Logo Artist : []()[Creative Stall](https://thenounproject.com/icon/fist-177973/)
 [license-url]: https://github.com/man572142/Bro_Audio/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/哲祥-翁-577109225
-[product-screenshot]: https://raw.githubusercontent.com/man572142/Bro_Audio/main/README/LibraryManager_Shadow.png
-[basic-API-screenshot]: https://raw.githubusercontent.com/man572142/Bro_Audio/fb5cc09792fda6d9fe5dac65fc4178d6ae3cf77a/README/BasicAPI.svg
-[set-audioid]: https://raw.githubusercontent.com/man572142/Bro_Audio/main/README/AudioID.gif
+
+[product-screenshot]: https://man572142s-organization.gitbook.io/~gitbook/image?url=https:%2F%2F886210201-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FfI79StJ3o7OKZxf9vHhb%252Fuploads%252FUhzDSjEL4KixTmABleCK%252FUnity_j0cQdDpL3G.png%3Falt=media%26token=b16a7854-259a-492a-83e8-104a0f78ba46&width=1248&dpr=1&quality=100&sign=b1ab21666607303b6d4612999dc58c39888f9262550f796cb6e0d068c0a5f804
+
+[set-audioid]: https://man572142s-organization.gitbook.io/~gitbook/image?url=https:%2F%2F886210201-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FfI79StJ3o7OKZxf9vHhb%252Fuploads%252FL6ysT8NV3kDCNG8BoB9A%252FUnity_VVf8IWAV8o.gif%3Falt=media%26token=94af1bae-086b-453c-8732-d2255deb6577&width=768&dpr=1&quality=100&sign=8e7a2bdb695270ce0bc523ef03fb270eb1ea8777b1db39d894e4bc49e6ecb410

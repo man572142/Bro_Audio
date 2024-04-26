@@ -61,6 +61,7 @@ namespace Ami.BroAudio.Editor
 					onRemoveCallback = OnRemove,
 					drawElementCallback = OnDrawElement,
 					elementHeightCallback = OnGetPropertyHeight,
+					onReorderCallback = OnReorder,
 				};
 			}
 
@@ -95,6 +96,11 @@ namespace Ami.BroAudio.Editor
 				{
 					elementProp.serializedObject.ApplyModifiedProperties();
 				}
+			}
+
+			void OnReorder(ReorderableList list)
+			{
+				list.serializedProperty.serializedObject.ApplyModifiedProperties();
 			}
 
 			float OnGetPropertyHeight(int index)

@@ -36,10 +36,12 @@ namespace Ami.BroAudio.Data
 			DefaultFadeOutEase = FactorySettings.DefaultFadeOutEase;
 			SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;
 			SeamlessFadeOutEase = FactorySettings.SeamlessFadeOutEase;
+			AudioFilterSlope = FactorySettings.AudioFilterSlope;
 			DefaultAudioPlayerPoolSize = FactorySettings.DefaultAudioPlayerPoolSize;
 			PitchSetting = FactorySettings.PitchShifting;
 			AlwaysPlayMusicAsBGM = true;
 			DefaultBGMTransition = FactorySettings.DefaultBGMTransition;
+			DefaultBGMTransitionTime = FactorySettings.DefaultBGMTransitionTime;
 		}
 #endif
         public class FactorySettings

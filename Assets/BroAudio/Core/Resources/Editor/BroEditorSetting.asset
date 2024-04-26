@@ -23,7 +23,7 @@ MonoBehaviour:
     DrawedProperty: 1039
   - AudioType: 4
     Color: {r: 0, g: 0.6901961, b: 0.15686275, a: 0.29803923}
-    DrawedProperty: 3087
+    DrawedProperty: 11279
   - AudioType: 8
     Color: {r: 0.990566, g: 0.50231415, b: 0.23829652, a: 0.5882353}
     DrawedProperty: 27663

@@ -107,22 +107,21 @@ namespace Ami.BroAudio.Editor
 		public class FactorySettings
 		{
 			public const bool ShowAudioTypeOnSoundID = true;
+			public const bool ShowVUColorOnVolumeSlider = true;
 
-			public const string MusicColor = "#001A4C4C";
-			public const string UIColor = "#0080334C";
-			public const string AmbienceColor = "#1A80804C";
-			public const string SFXColor = "#B233334C";
-			public const string VoiceOverColor = "#CC99004C";
+			public const string MusicColor = "#012F874C";
+			public const string UIColor = "#0E9C884C";
+			public const string AmbienceColor = "#00B0284C";
+			public const string SFXColor = "#FD803D96";
+			public const string VoiceOverColor = "#EEC6374C";
 
-			public const DrawedProperty BasicDrawedProperty = DrawedProperty.Volume | DrawedProperty.PlaybackPosition | DrawedProperty.Fade | DrawedProperty.ClipPreview;
+			public const DrawedProperty BasicDrawedProperty = DrawedProperty.Volume | DrawedProperty.PlaybackPosition | DrawedProperty.Fade | DrawedProperty.ClipPreview | DrawedProperty.MasterVolume;
 
 			public const DrawedProperty MusicDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop;
 			public const DrawedProperty UIDrawedProperties = BasicDrawedProperty;
-			public const DrawedProperty AmbienceDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop;
-			public const DrawedProperty SFXDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop;
+			public const DrawedProperty AmbienceDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop | DrawedProperty.SpatialSettings;
+			public const DrawedProperty SFXDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop | DrawedProperty.SpatialSettings | DrawedProperty.Pitch;
 			public const DrawedProperty VoiceOverDrawedProperties = BasicDrawedProperty;
-
-			public const bool ShowVUColorOnVolumeSlider = true;
 		}
 	}
 }

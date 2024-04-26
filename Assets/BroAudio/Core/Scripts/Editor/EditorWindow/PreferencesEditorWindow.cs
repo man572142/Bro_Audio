@@ -41,7 +41,6 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string AddDominatorTrackLabel = "Add Dominator Track";
 		public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
 		public const string ProjectSettings = "Project Settings";
-		public const string AutoFixDocUrl = "https://man572142s-organization.gitbook.io/broaudio/core-features/audio-mixer#audio-reverb-zone-issue-in-unity-2021";
 
 		private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 

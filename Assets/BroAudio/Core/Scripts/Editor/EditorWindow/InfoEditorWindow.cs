@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
 using Ami.BroAudio.Runtime;
 using Ami.BroAudio.Tools;
 using Ami.Extension;
@@ -25,9 +24,6 @@ namespace Ami.BroAudio.Editor
         public const float ParagraphWidth = 350f;
         public const float ButtonWidth = 150f;
 
-        public const string RemoveDuckVolumeLabel = "Remove Duck Volume";
-        public const string RemoveDuckVolumeDialog = "Removing 'Duck Volume' can restore the Audio Reverb Zone effect, but it may lose the ability to prevent sound distortion on the 'Master' track. Are you sure you want to procced?";
-        public const string AudioReverZoneIssueDoc = "https://man572142s-organization.gitbook.io/broaudio/core-features/audio-mixer#audio-reverb-zone-issue-in-unity-2021";
         public const string GitURL = "https://github.com/man572142/Bro_Audio";
         public const string DocURL = "https://man572142s-organization.gitbook.io/broaudio";
         public const string DiscordURL = "https://discord.gg/z6uNmz6Z3A";
@@ -64,27 +60,6 @@ namespace Ami.BroAudio.Editor
             DrawEmptyLine(1);
             _scrollPos = BeginScrollView(scrollViewRect, _scrollPos);
             {
-#if UNITY_2021
-                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Audio Reverb Zone Issue In Unity 2021".ToWhiteBold(), middleCenterRichText);
-                Rect helpBoxRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(ParagraphWidth, EditorGUIUtility.singleLineHeight * 5);
-                string reverbZoneText = string.Format(_instruction.GetText(Instruction.AudioReverbZoneIssue), "More Info".SetColor(GUIStyleHelper.LinkBlue));
-                RichTextHelpBox(helpBoxRect, reverbZoneText, MessageType.Warning);
-                DrawEmptyLine(3);
-
-                if (GUI.Button(helpBoxRect, GUIContent.none, GUIStyle.none))
-                {
-                    Application.OpenURL(AudioReverZoneIssueDoc);
-                }
-                EditorGUIUtility.AddCursorRect(helpBoxRect, MouseCursor.Link);
-
-                Rect removeButtonRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(ButtonWidth, EditorGUIUtility.singleLineHeight);
-                if (GUI.Button(removeButtonRect, RemoveDuckVolumeLabel) && EditorUtility.DisplayDialog(RemoveDuckVolumeLabel, RemoveDuckVolumeDialog, "Yes", "No"))
-                {
-                    RemoveDuckVolume();
-                } 
-#endif
-
-                DrawEmptyLine(1);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Play The Demo!".ToWhiteBold().SetSize(20), middleCenterRichText);
                 Rect demoRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(DemoReferenceFieldWidth, SingleLineSpace);
                 EditorGUI.ObjectField(demoRect, BroEditorUtility.EditorSetting.DemoScene, typeof(UnityEngine.Object),false);
@@ -176,6 +151,5 @@ namespace Ami.BroAudio.Editor
                 }
             }
         }
-
     }
 }

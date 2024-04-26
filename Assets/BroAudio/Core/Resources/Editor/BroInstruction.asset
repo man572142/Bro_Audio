@@ -17,12 +17,6 @@ MonoBehaviour:
     Value: Everything works great!
   - Key: 1
     Value: Select BroAudio auto-generated asset file's output folder
-  - Key: 2
-    Value: "\rUnity 2021 has a confirmed bug where AudioReverbZone doesn't work properly
-      with 'Receive' and 'Duck Volume' units in the AudioMixer ({0}). If you need
-      to use AudioReverbZone, choose one of the following solutions:\r\n\r\n1. Use
-      a version other than 2021 (RECOMMENDED).\r\n2. Click the button below to remove
-      the Duck Volume component."
   - Key: 10
     Value: "If the same sound is played repeatedly in a very short period. It may
       cause a quality loss or unexpected behavior due to the nature of Comb Filtering.

@@ -103,7 +103,7 @@ namespace Ami.BroAudio.Editor
             }
             else
             {
-                BroLog.LogError($"Removing {BroAudioReflection.DuckVolumeEffect} is failed. The {nameof(SoundManager)} asset or the BroAudioMixer asset is missing");
+                Debug.LogError(Utility.LogTitle + $"Removing {BroAudioReflection.DuckVolumeEffect} is failed. The {nameof(SoundManager)} asset or the BroAudioMixer asset is missing");
             }
         }
 

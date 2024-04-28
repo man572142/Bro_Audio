@@ -2,13 +2,14 @@ using System.Collections.Generic;
 using Ami.BroAudio.Runtime;
 using UnityEngine;
 using Ami.Extension;
-using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio
 {
 	public static partial class Utility
 	{
-		public static string ToName(this int id)
+        public const string LogTitle = "<b><color=#add8e6ff>[BroAudio] </color></b>";
+
+        public static string ToName(this int id)
 		{
 			return SoundManager.Instance.GetNameByID(id);
 		}
@@ -54,7 +55,7 @@ namespace Ami.BroAudio
 		{
 			if(curveType == AudioSourceCurveType.CustomRolloff)
 			{
-				BroLog.LogError($"Don't use this method on {AudioSourceCurveType.CustomRolloff}, please use RolloffMode to detect if is default or not");
+				Debug.LogError(LogTitle + $"Don't use this method on {AudioSourceCurveType.CustomRolloff}, please use RolloffMode to detect if is default or not");
 				return;
 			}
 

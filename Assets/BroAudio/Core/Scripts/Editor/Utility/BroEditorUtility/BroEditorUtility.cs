@@ -48,7 +48,7 @@ namespace Ami.BroAudio.Editor
                     _runtimeSetting = Resources.Load<RuntimeSetting>(BroName.RuntimeSettingFileName);
                     if (!_runtimeSetting)
                     {
-                        BroLog.LogError(string.Format(SettingFileMissingMegssage, "BroRuntimeSetting"));
+                        Debug.LogError(Utility.LogTitle + string.Format(SettingFileMissingMegssage, "BroRuntimeSetting"));
                     }
                     EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
                     EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
@@ -67,7 +67,7 @@ namespace Ami.BroAudio.Editor
                     _editorSetting = Resources.Load<EditorSetting>(BroName.EditorSettingPath);
                     if (!_editorSetting)
                     {
-                        BroLog.LogError(string.Format(SettingFileMissingMegssage, "BroEditorSetting"));
+                        Debug.LogError(Utility.LogTitle + string.Format(SettingFileMissingMegssage, "BroEditorSetting"));
                     }
                     EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
                     EditorApplication.playModeStateChanged += OnPlayModeStateChanged;

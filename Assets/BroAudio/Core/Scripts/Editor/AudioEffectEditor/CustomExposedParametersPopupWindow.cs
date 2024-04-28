@@ -155,7 +155,7 @@ namespace Ami.BroAudio.Editor
 		{
 			if (newName.Length > MaxNameLength)
 			{
-				BroLog.LogWarning($"Maximum name length of an exposed parameter is {MaxNameLength}");
+				Debug.LogWarning(Utility.LogTitle + $"Maximum name length of an exposed parameter is {MaxNameLength}");
 				return false;
 			}
 			return true;

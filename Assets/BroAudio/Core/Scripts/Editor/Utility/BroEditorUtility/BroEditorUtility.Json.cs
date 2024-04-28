@@ -4,7 +4,6 @@ using UnityEngine;
 using System.IO;
 using System;
 using UnityEditor;
-using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.BroAudio.Editor
 {
@@ -83,7 +82,7 @@ namespace Ami.BroAudio.Editor
 			{
 				if(showError)
 				{
-                    LogError("Can't find core data! please place [BroAudioData.json] in Resources folder or reinstall BroAudio");
+                    Debug.LogError(Utility.LogTitle + "Can't find core data! please place [BroAudioData.json] in Resources folder or reinstall BroAudio");
                 }
 				return false;
             }

@@ -1,10 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using Ami.BroAudio.Runtime;
-using UnityEngine;
 using Ami.Extension;
-using static Ami.BroAudio.Tools.BroLog;
 using System;
+using static UnityEngine.Debug;
 
 namespace Ami.BroAudio
 {
@@ -50,7 +49,7 @@ namespace Ami.BroAudio
 
 		protected override void LogInstanceIsNull()
 		{
-			LogError("The audio player that you are refering to has been recycled");
+			LogError(Utility.LogTitle + "The audio player that you are refering to has been recycled");
 		}
 	}
 }

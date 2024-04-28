@@ -1,7 +1,5 @@
-using Ami.BroAudio.Tools;
 using Ami.Extension;
-using UnityEngine;
-using static Ami.BroAudio.Tools.BroLog;
+using static UnityEngine.Debug;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -17,7 +15,7 @@ namespace Ami.BroAudio.Runtime
         {
             if (othersVol <= 0f || othersVol > 1f)
             {
-                LogWarning($"Stand out ratio should be less than 1 and greater than 0.");
+                LogWarning(Utility.LogTitle + "Stand out ratio should be less than 1 and greater than 0.");
                 return this;
             }
 

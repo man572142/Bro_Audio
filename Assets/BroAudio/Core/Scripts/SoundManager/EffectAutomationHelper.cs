@@ -5,7 +5,6 @@ using Ami.Extension;
 using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Tools;
-using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -119,7 +118,7 @@ namespace Ami.BroAudio.Runtime
 			// this should be called after the first tweak is started, the purpose of decorating is to know when will it stop.
 			if (_latestEffect == EffectType.None)
 			{
-				LogWarning($"AutoResetWaitable on {_latestEffect} is not supported.");
+				Debug.LogWarning(Utility.LogTitle + $"AutoResetWaitable on {_latestEffect} is not supported.");
 			}
 			else if (_tweakerDict.TryGetValue(_latestEffect, out var tweaker))
 			{
@@ -132,7 +131,7 @@ namespace Ami.BroAudio.Runtime
 				}
 				else
 				{
-					LogError($"The latest waitable isn't the base type:{nameof(TweakingWaitableBase)}");
+					Debug.LogError(Utility.LogTitle + $"The latest waitable isn't the base type:{nameof(TweakingWaitableBase)}");
 				}
 			}
 		}
@@ -250,7 +249,7 @@ namespace Ami.BroAudio.Runtime
 			string paraName = GetEffectParameterName(effect, out bool _);
 			if (!_mixer.SafeGetFloat(paraName, out value))
 			{
-				LogError($"Can't get exposed parameter of {effect.Type}");
+				Debug.LogError(Utility.LogTitle + $"Can't get exposed parameter of {effect.Type}");
 				return false;
 			}
 			return true;
@@ -305,7 +304,7 @@ namespace Ami.BroAudio.Runtime
                     }
 					else
 					{
-						BroLog.LogError($"{effect.Type} is only supported on Dominator");
+						Debug.LogError(Utility.LogTitle + $"{effect.Type} is only supported on Dominator");
 						return string.Empty;
 					}
 				case EffectType.LowPass:

@@ -1,6 +1,6 @@
 using Ami.Extension;
 using UnityEngine.Audio;
-using static Ami.BroAudio.Tools.BroLog;
+using static UnityEngine.Debug;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -21,11 +21,11 @@ namespace Ami.BroAudio.Runtime
 			{
 				if(_isDominator)
 				{
-                    LogWarning("You have used up all the [Dominator] tracks. If you need more tracks, please click the [Add Dominator Track] button in Tool/BroAudio/Settings.");
+                    LogWarning(Utility.LogTitle + "You have used up all the [Dominator] tracks. If you need more tracks, please click the [Add Dominator Track] button in Tool/BroAudio/Settings.");
                 }
 				else
 				{
-                    LogWarning("You have reached the limit of BroAudio tracks count, which is way beyond the MaxRealVoices count. " +
+                    LogWarning(Utility.LogTitle + "You have reached the limit of BroAudio tracks count, which is way beyond the MaxRealVoices count. " +
                     "That means the sound will be inaudible, and also uncontrollable. For more infomation, please check the documentation");
                 }
 				return null;

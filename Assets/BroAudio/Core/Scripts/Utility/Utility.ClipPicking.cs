@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Ami.BroAudio.Data;
-using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.BroAudio
 {
@@ -15,7 +14,7 @@ namespace Ami.BroAudio
 		{
 			if (clips == null || clips.Length <= 0)
 			{
-				LogError("There is no AudioClip in asset");
+				Debug.LogError(LogTitle + "There is no AudioClip in asset");
 				return null;
 			}
 			else if (clips.Length == 1)

@@ -317,7 +317,7 @@ namespace Ami.BroAudio.Editor
 						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.Length - posInSec, transportType),
 					};
 				default:
-					Tools.BroLog.LogError($"No corresponding point for transport type {transportType}");
+					Debug.LogError(Utility.LogTitle + $"No corresponding point for transport type {transportType}");
 					return default;
 			}
 		}

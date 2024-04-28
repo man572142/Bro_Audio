@@ -1,8 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using Ami.BroAudio.Tools;
-using UnityEngine;
-
 namespace Ami.Extension
 {
 	public abstract class InstanceWrapper<T>
@@ -29,7 +24,7 @@ namespace Ami.Extension
 
 		protected virtual void LogInstanceIsNull()
 		{
-			BroLog.LogError("The object that you are refering to is null.");
+			UnityEngine.Debug.LogError(BroAudio.Utility.LogTitle +  "The object that you are refering to is null.");
 		}
 	}
 

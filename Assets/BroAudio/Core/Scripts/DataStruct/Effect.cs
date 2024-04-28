@@ -1,5 +1,5 @@
 using Ami.Extension;
-using static Ami.BroAudio.Tools.BroLog;
+using static UnityEngine.Debug;
 
 namespace Ami.BroAudio
 {
@@ -58,7 +58,7 @@ namespace Ami.BroAudio
 				switch (Type)
 				{
 					case EffectType.None:
-						LogError("EffectParameter's EffectType must be set before the Value");
+						LogError(Utility.LogTitle + "EffectParameter's EffectType must be set before the Value");
 						break;
 					case EffectType.Volume:
 						_value = value.ToDecibel();

@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
-using static Ami.BroAudio.Tools.BroLog;
 
 namespace Ami.BroAudio.Editor
 {
@@ -59,7 +58,7 @@ namespace Ami.BroAudio.Editor
 		{
 			if (!path.Contains(Application.dataPath))
 			{
-				LogError("The path must be under Assets folder or its sub-folder");
+				Debug.LogError(Utility.LogTitle + "The path must be under Assets folder or its sub-folder");
 				return false;
 			}
 			return true;

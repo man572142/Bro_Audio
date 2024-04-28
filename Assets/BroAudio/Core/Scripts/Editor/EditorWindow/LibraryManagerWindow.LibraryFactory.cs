@@ -114,7 +114,7 @@ namespace Ami.BroAudio.Editor
 
 				if(clips.Count == 0 && objs.Length > 0)
 				{
-                    BroLog.LogWarning("The file isn't an Audio Clip");
+                    Debug.LogWarning(Utility.LogTitle + "The file isn't an Audio Clip");
 					return;
                 }
 

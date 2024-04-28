@@ -19,7 +19,7 @@ namespace Ami.BroAudio.Runtime
                 if (!_setting)
 				{
 					_setting = new RuntimeSetting();
-                    BroLog.LogWarning($"Can't load {BroName.RuntimeSettingFileName}.asset, all setting values will be as default. " +
+                    Debug.LogWarning(Utility.LogTitle + $"Can't load {BroName.RuntimeSettingFileName}.asset, all setting values will be as default. " +
 						"If your setting file is missing. Please reimport it from the asset package");
 				}
 				return _setting;

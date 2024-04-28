@@ -9,7 +9,6 @@ using UnityEngine.Audio;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.IconConstant;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
-using static Ami.BroAudio.Tools.BroLog;
 using static Ami.BroAudio.Tools.BroName;
 using static Ami.BroAudio.Utility;
 using static Ami.Extension.EditorScriptingExtension;
@@ -350,7 +349,7 @@ namespace Ami.BroAudio.Editor.Setting
 			AudioMixerGroup mainTrack = AudioMixer.FindMatchingGroups(MainTrackName)?.Where(x => x.name.Length == MainTrackName.Length).FirstOrDefault();
 			if (mainTrack == default || _currentMixerTracksCount == default)
 			{
-				LogError("Can't get the Main track or other BroAudio track");
+				Debug.LogError(LogTitle + "Can't get the Main track or other BroAudio track");
 				return;
 			}
 
@@ -366,7 +365,7 @@ namespace Ami.BroAudio.Editor.Setting
 			}
 			else
 			{
-				LogError("No valid track for duplicating");
+				Debug.LogError(LogTitle + "No valid track for duplicating");
 			}
 		}
 

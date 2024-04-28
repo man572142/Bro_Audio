@@ -138,7 +138,7 @@ namespace Ami.BroAudio.Runtime
 				}
 				else if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D) && pref.Entity is IEntityIdentity entity)
 				{
-					BroLog.LogWarning($"You've set a non-2D SpatialBlend for :{entity.Name}, but didn't specify a position or a follow target when playing it");
+					Debug.LogWarning(Utility.LogTitle + $"You've set a non-2D SpatialBlend for :{entity.Name}, but didn't specify a position or a follow target when playing it");
 				}
 			}
 
@@ -250,7 +250,7 @@ namespace Ami.BroAudio.Runtime
 
             if(decoratePalyer == null)
             {
-                BroLog.LogError("Audio Player decorators array size is too small");
+                Debug.LogError(Utility.LogTitle + "Audio Player decorators array size is too small");
             }
             return decoratePalyer;
         }

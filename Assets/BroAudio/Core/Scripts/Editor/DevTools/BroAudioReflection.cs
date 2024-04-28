@@ -4,10 +4,9 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.Audio;
 using static Ami.Extension.ReflectionExtension;
-using static Ami.BroAudio.Tools.BroLog;
-using static Ami.BroAudio.Tools.BroName;
 using Ami.BroAudio.Tools;
 using System.Linq;
+using Ami.BroAudio;
 
 namespace Ami.Extension.Reflection
 {
@@ -263,7 +262,7 @@ namespace Ami.Extension.Reflection
             }
             catch (InvalidCastException)
             {
-                LogError($"Cast GUID failed! object :{obj}");
+                UnityEngine.Debug.LogError(Utility.LogTitle + $"Cast GUID failed! object :{obj}");
             }
             return guid != default && !guid.Empty();
         }

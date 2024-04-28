@@ -1,7 +1,7 @@
 using System;
-using static Ami.BroAudio.Tools.BroLog;
 using Ami.BroAudio.Data;
 using Ami.Extension;
+using static UnityEngine.Debug;
 
 namespace Ami.BroAudio
 {
@@ -103,13 +103,13 @@ namespace Ami.BroAudio
 		{
 			if (id <= 0)
 			{
-				LogWarning($"There is a missing or unassigned SoundID.");
+				LogWarning(LogTitle + $"There is a missing or unassigned SoundID.");
 				return false;
 			}
 
 			if(clips == null || clips.Length == 0)
 			{
-				LogWarning($"{name} has no audio clips, please assign or delete the entity.");
+				LogWarning(LogTitle + $"{name} has no audio clips, please assign or delete the entity.");
 				return false;
 			}
 
@@ -118,13 +118,13 @@ namespace Ami.BroAudio
 				var clipData = clips[i];
 				if (clipData.AudioClip == null)
 				{
-					LogError($"Audio clip has not been assigned! please check {name} in Library Manager.");
+					LogError(LogTitle + $"Audio clip has not been assigned! please check {name} in Library Manager.");
 					return false;
 				}
 				float controlLength = (clipData.FadeIn > 0f ? clipData.FadeIn : 0f) + (clipData.FadeOut > 0f ? clipData.FadeOut : 0f) + clipData.StartPosition;
 				if (controlLength > clipData.AudioClip.length)
 				{
-					LogError($"Time control value should not greater than clip's length! please check clips element:{i} in {name}.");
+					LogError(LogTitle + $"Time control value should not greater than clip's length! please check clips element:{i} in {name}.");
 					return false;
 				}
 			}

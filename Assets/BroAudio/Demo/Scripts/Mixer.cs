@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Demo
 {
@@ -51,7 +50,7 @@ namespace Ami.BroAudio.Demo
 				case BroAudioType.All:
 					return _masterVol.value;
 				default:
-					BroLog.LogError($"Can't get value from {audioType}");
+					Debug.LogError($"Can't get value from {audioType}");
 					return -1f;
 			}
 		}

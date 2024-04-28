@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.Audio;
 using System.Linq;
-using static Ami.BroAudio.Tools.BroLog;
+using Ami.BroAudio;
 using static Ami.BroAudio.Tools.BroName;
 
 namespace Ami.Extension.Reflection
@@ -64,7 +64,7 @@ namespace Ami.Extension.Reflection
 				int tracksCount = tracks.Length;
 				if (mainTrack == default || tracks == default)
 				{
-					LogError($"Can't get the Main track or other BroAudio track");
+					Debug.LogError(Utility.LogTitle + $"Can't get the Main track or other BroAudio track");
 					return;
 				}
 

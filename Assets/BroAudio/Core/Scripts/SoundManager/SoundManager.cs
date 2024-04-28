@@ -7,7 +7,6 @@ using Ami.Extension;
 using System;
 using static Ami.BroAudio.Utility;
 using static Ami.Extension.CoroutineExtension;
-using static Ami.BroAudio.Tools.BroLog;
 using static Ami.BroAudio.Tools.BroName;
 
 namespace Ami.BroAudio.Runtime
@@ -22,7 +21,7 @@ namespace Ami.BroAudio.Runtime
 
             if (prefab == null)
             {
-                LogError($"Initialize failed ,please check {nameof(SoundManager)}.prefab in your Resources folder!");
+                Debug.LogError(Utility.LogTitle + $"Initialize failed ,please check {nameof(SoundManager)}.prefab in your Resources folder!");
                 return;
             }
 
@@ -32,7 +31,7 @@ namespace Ami.BroAudio.Runtime
             }
             else
             {
-                LogError($"Initialize failed ,please add {nameof(SoundManager)} component to {nameof(SoundManager)}.prefab");
+                Debug.LogError(Utility.LogTitle + $"Initialize failed ,please add {nameof(SoundManager)} component to {nameof(SoundManager)}.prefab");
             }
 
             DontDestroyOnLoad(prefab);
@@ -76,15 +75,15 @@ namespace Ami.BroAudio.Runtime
 
         private void Awake()
 		{
-            string nullRefLog = $"Please assign {{0}} in {nameof(SoundManager)}.prefab";
+            string nullRefLog = LogTitle + $"Please assign {{0}} in {nameof(SoundManager)}.prefab";
             if(!_broAudioMixer)
 			{
-                LogError(string.Format(nullRefLog, MixerName));
+                Debug.LogError(string.Format(nullRefLog, MixerName));
                 return;
 			}
             else if(!_audioPlayerPrefab)
 			{
-                LogError(string.Format(nullRefLog, AudioPlayerPrefabName));
+                Debug.LogError(string.Format(nullRefLog, AudioPlayerPrefabName));
                 return;
 			}
 
@@ -136,7 +135,7 @@ namespace Ami.BroAudio.Runtime
 #endif
             if (targetType == BroAudioType.None)
 			{
-                LogWarning($"SetVolume with {targetType} is meaningless");
+                Debug.LogWarning(LogTitle + $"SetVolume with {targetType} is meaningless");
                 return;
 			}
 
@@ -348,7 +347,7 @@ namespace Ami.BroAudio.Runtime
             entity = null;
             if (id <= 0 || !_audioBank.TryGetValue(id, out entity))
             {
-                LogError($"The sound is missing or it has never been assigned. No sound will be played. SoundID:{id}");
+                Debug.LogError(LogTitle + $"The sound is missing or it has never been assigned. No sound will be played. SoundID:{id}");
                 return false;
             }
 
@@ -356,7 +355,7 @@ namespace Ami.BroAudio.Runtime
             {
                 if(Setting.LogCombFilteringWarning)
 				{
-                    LogWarning($"One of the plays of Audio:{id.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
+                    Debug.LogWarning(LogTitle + $"One of the plays of Audio:{id.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
                     $"Check documentation for further details, or change the setting in [BroAudio > Setting].");
                 }
                 return false;
@@ -370,7 +369,7 @@ namespace Ami.BroAudio.Runtime
 		{
             if(!Application.isPlaying)
 			{
-                LogError($"The method {"GetNameByID".ToWhiteBold()} is {"Runtime Only".ToBold().SetColor(Color.green)}");
+               Debug.LogError(LogTitle + $"The method {"GetNameByID".ToWhiteBold()} is {"Runtime Only".ToBold().SetColor(Color.green)}");
                 return null;
 			}
 

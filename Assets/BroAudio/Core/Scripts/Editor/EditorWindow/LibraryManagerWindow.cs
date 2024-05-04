@@ -97,10 +97,10 @@ namespace Ami.BroAudio.Editor
 			{
 				_allAssetGUIDs = coreData.GUIDs;
 				_hasOutputAssetPath = Directory.Exists(coreData.AssetOutputPath);
-			}
 
-			InitEditorDictionary();
-			InitReorderableList();
+                InitEditorDictionary();
+                InitReorderableList();
+            }
 
 			Undo.undoRedoPerformed += Repaint;
 		}
@@ -124,17 +124,34 @@ namespace Ami.BroAudio.Editor
 		private void InitEditorDictionary()
 		{
 			_assetEditorDict.Clear();
+			List<string> missingGUIDs = null;
 			foreach (string guid in _allAssetGUIDs)
 			{
 				if (!string.IsNullOrEmpty(guid) && !_assetEditorDict.ContainsKey(guid))
 				{
 					string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-					var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
+                    var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
+                    if (string.IsNullOrEmpty(assetPath) || asset == null)
+					{
+						missingGUIDs = missingGUIDs ?? new List<string>();
+						missingGUIDs.Add(guid);
+                        continue;
+					}
+					
 					AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(asset, typeof(AudioAssetEditor)) as AudioAssetEditor;
 					editor.Init(_idGenerator);
 					_assetEditorDict.Add(guid, editor);
 				}
 			}
+
+			if(missingGUIDs != null)
+			{
+				foreach(string guid in missingGUIDs)
+				{
+					_allAssetGUIDs.Remove(guid);
+				}
+                WriteGuidToCoreData(_allAssetGUIDs);
+            }
 		}
 
 		private void InitReorderableList()

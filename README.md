@@ -50,6 +50,11 @@
 
 <!-- ABOUT THE PROJECT -->
 # About The Project
+
+<a href="https://youtu.be/HtjgdIc9ons?si=OwSPlDb3wNZUFVNP">
+  <img src="https://markdown-videos-api.jorgenkh.no/url?url=https%3A%2F%2Fyoutu.be%2FHtjgdIc9ons%3Fsi%3DOwSPlDb3wNZUFVNP" alt="Official Tralier" width="700" title="Official Tralier"/>
+</a>
+
 ![Product Name Screen Shot][product-screenshot]
 
 BroAudio is a sound management and playback system designed for Unity. It's unique in its focus on <a href="#sound-quality">sound quality</a> and a <a href="#developer-friendly">developer-friendly</a> experience. You can create extensive and captivating audio systems without the need for mastering complex middleware like FMOD or Wwise. Whether you're part of a large team or a solo developer, achieving the goals becomes effortless and efficient with BroAudio.

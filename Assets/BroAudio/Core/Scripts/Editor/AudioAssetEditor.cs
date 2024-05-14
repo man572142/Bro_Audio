@@ -146,6 +146,7 @@ namespace Ami.BroAudio.Editor
 			string path = AssetDatabase.GetAssetPath(asset);
 			AssetDatabase.RenameAsset(path, newName);
 
+			serializedObject.Update();
 			serializedObject.FindProperty(GetBackingFieldName(nameof(AudioAsset.AssetName))).stringValue = newName;
 			serializedObject.ApplyModifiedProperties();
 		}

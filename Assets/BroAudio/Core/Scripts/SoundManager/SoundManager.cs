@@ -357,7 +357,7 @@ namespace Ami.BroAudio.Runtime
                 if(Setting.LogCombFilteringWarning)
 				{
                     Debug.LogWarning(LogTitle + $"One of the plays of Audio:{id.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
-                    $"Check documentation for further details, or change the setting in [BroAudio > Setting].");
+                    $"Check documentation for further details, or change the setting in [Tools/BroAudio/Preference].");
                 }
                 return false;
             }

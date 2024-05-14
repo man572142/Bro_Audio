@@ -15,6 +15,8 @@ namespace AssetStoreTools.Exporter
         protected const string ProgressBarStepGatheringFiles = "Gathering files...";
         protected const string ProgressBarStepCompressingPackage = "Compressing package...";
 
+        private static readonly string[] PluginFolderExtensions = { "androidlib", "bundle", "plugin", "framework", "xcframework" };
+
         public static async Task<ExportResult> ExportPackage(ExporterSettings exportSettings)
         {
             if (!IsSettingsValid(exportSettings, out Exception e))
@@ -68,7 +70,7 @@ namespace AssetStoreTools.Exporter
             return paths.ToArray();
         }
 
-        protected string GetAssetGuid(string assetPath, bool hiddenSearch)
+        protected string GetAssetGuid(string assetPath, bool generateForPlugin, bool hiddenSearch)
         {
             // Skip meta files as they do not have guids
             if (assetPath.EndsWith(".meta"))
@@ -88,6 +90,11 @@ namespace AssetStoreTools.Exporter
             var guid = AssetDatabase.AssetPathToGUID(assetPath);
             if (guid != string.Empty)
                 return guid;
+
+            // Some special folders (e.g. SomeName.framework) do not have meta files inside them.
+            // Their contents should be exported with any arbitrary GUID so that Unity Importer could pick them up
+            if (generateForPlugin && PathBelongsToPlugin(assetPath))
+                return GUID.Generate().ToString();
 
             // Files in hidden folders (e.g. Samples~) are not part of the Asset Database,
             // therefore GUIDs need to be scraped from the .meta file.
@@ -115,6 +122,11 @@ namespace AssetStoreTools.Exporter
             }
 
             return string.Empty;
+        }
+
+        private bool PathBelongsToPlugin(string assetPath)
+        {
+            return PluginFolderExtensions.Any(extension => assetPath.ToLower().Contains($".{extension}/"));
         }
 
         protected virtual void PostExportCleanup()

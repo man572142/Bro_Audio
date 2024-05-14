@@ -86,6 +86,9 @@ namespace AssetStoreTools.Validator
                 test.Result.Result = updatedStatus;
 
                 ValidationState.Instance.ChangeResult(test.Id, test.Result);
+#if AB_BUILDER
+                EditorUtility.UnloadUnusedAssetsImmediate();
+#endif
             }
 
             EditorUtility.UnloadUnusedAssetsImmediate();

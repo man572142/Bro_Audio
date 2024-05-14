@@ -32,12 +32,27 @@ namespace AssetStoreTools.Validator.Data
                 Messages = new List<TestResultMessage>();
 
             var message = new TestResultMessage(msg, clickAction);
-            if (messageObjects != null)
-                foreach (var obj in messageObjects)
-                    message.AddMessageObject(obj);
-
+            AddMessageObjects(messageObjects, message);
             Messages.Add(message);
         }
+
+        private void AddMessageObjects(Object[] messageObjects, TestResultMessage message)
+        {
+            if (messageObjects == null)
+                return;
+            
+            foreach (var obj in messageObjects)
+            {
+#if AB_BUILDER
+                string path = AssetDatabase.GetAssetPath(obj);
+                message.AppendText($"\nAsset at: {path}");
+#else
+                message.AddMessageObject(obj);
+#endif
+
+            }
+        }
+
 
         public TestResultMessage GetMessage(int index)
         {
@@ -144,6 +159,11 @@ namespace AssetStoreTools.Validator.Data
                 }
             }
 
+            public void AppendText(string value)
+            {
+                Text += value;
+            }
+            
             public string GetText()
             {
                 return Text;

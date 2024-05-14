@@ -1,11 +1,9 @@
 using AssetStoreTools.Validator.Data;
 using AssetStoreTools.Validator.TestDefinitions;
 using AssetStoreTools.Validator.TestMethods.Utility;
-using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
 namespace AssetStoreTools.Validator.TestMethods

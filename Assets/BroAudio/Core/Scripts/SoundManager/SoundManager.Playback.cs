@@ -94,14 +94,15 @@ namespace Ami.BroAudio.Runtime
             var players = _audioPlayerPool.GetCurrentAudioPlayers();
             if(players != null)
             {
-                foreach (var player in players)
+                for (int i = players.Count - 1; i >= 0; i--)
                 {
+                    var player = players[i];
                     if (player.IsActive && predicate.Invoke(player))
                     {
                         player.Stop(fadeTime);
                     }
                 }
-            }
+			}
         }
         #endregion
 

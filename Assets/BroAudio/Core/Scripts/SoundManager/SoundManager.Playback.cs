@@ -54,7 +54,10 @@ namespace Ami.BroAudio.Runtime
                 player.AsBGM().SetTransition(Setting.DefaultBGMTransition, Setting.DefaultBGMTransitionTime);
             }
 
-            StartCoroutine(PreventCombFiltering(id, CombFilteringPreventionInSeconds));
+            if(CombFilteringPreventionInSeconds > 0f)
+            {
+				StartCoroutine(PreventCombFiltering(id, CombFilteringPreventionInSeconds));
+			}
 
             if (pref.Entity.SeamlessLoop)
             {

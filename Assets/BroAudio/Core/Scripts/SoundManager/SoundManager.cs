@@ -336,9 +336,10 @@ namespace Ami.BroAudio.Runtime
 
         private IEnumerator PreventCombFiltering(int id,float preventTime)
         {
-            _combFilteringPreventer[id] = true;
-            yield return new WaitForSeconds(preventTime);
-            _combFilteringPreventer[id] = false;
+			_combFilteringPreventer[id] = true;
+			var waitInstruction = preventTime > Time.deltaTime ? new WaitForSeconds(preventTime) : null;
+			yield return waitInstruction;
+			_combFilteringPreventer[id] = false;
         }
 
         #region NullChecker

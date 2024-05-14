@@ -159,7 +159,7 @@ namespace AssetStoreTools.Exporter
 
                 foreach (var assetPath in assetPaths)
                 {
-                    var guid = GetAssetGuid(assetPath, true);
+                    var guid = GetAssetGuid(assetPath, true, true);
                     if (string.IsNullOrEmpty(guid))
                         continue;
 

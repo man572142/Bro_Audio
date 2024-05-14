@@ -81,7 +81,7 @@ namespace AssetStoreTools.Utility
             try
             {
                 var latestVersionStr = latestVersionResult.Response["version"].AsString();
-                var currentVersionStr = PackageUtility.GetAllLocalPackages().FirstOrDefault(x => x.name == "com.unity.asset-store-tools").version;
+                var currentVersionStr = PackageUtility.GetAllPackages().FirstOrDefault(x => x.name == "com.unity.asset-store-tools").version;
 
                 currentVersion = new Version(currentVersionStr);
                 latestVersion = new Version(latestVersionStr);

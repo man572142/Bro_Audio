@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Ami.Extension;
 using Ami.BroAudio.Runtime;
-using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Data
 {
@@ -13,7 +12,7 @@ namespace Ami.BroAudio.Data
 	public class RuntimeSetting : ScriptableObject
 	{
 		public float CombFilteringPreventionInSeconds = FactorySettings.CombFilteringPreventionInSeconds;
-		public bool LogCombFilteringWarning = false;
+		public bool LogCombFilteringWarning = true;
 		public Ease DefaultFadeInEase = FactorySettings.DefaultFadeInEase;
 		public Ease DefaultFadeOutEase = FactorySettings.DefaultFadeOutEase;
 		public Ease SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;
@@ -31,7 +30,7 @@ namespace Ami.BroAudio.Data
 		public void ResetToFactorySettings()
 		{
 			CombFilteringPreventionInSeconds = FactorySettings.CombFilteringPreventionInSeconds;
-			LogCombFilteringWarning = false;
+			LogCombFilteringWarning = true;
 			DefaultFadeInEase = FactorySettings.DefaultFadeInEase;
 			DefaultFadeOutEase = FactorySettings.DefaultFadeOutEase;
 			SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;

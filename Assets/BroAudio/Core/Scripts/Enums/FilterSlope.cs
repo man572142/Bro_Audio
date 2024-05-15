@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Ami
+namespace Ami.BroAudio
 {
     public enum FilterSlope
     {

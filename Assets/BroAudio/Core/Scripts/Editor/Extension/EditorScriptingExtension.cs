@@ -545,11 +545,11 @@ namespace Ami.Extension
 			return rect;
 		}
 
-		public static void DrawUrlLink(Rect rect, string url, TextAnchor textAnchor = TextAnchor.MiddleLeft)
+		public static void DrawUrlLink(Rect rect, string label,string url, TextAnchor textAnchor = TextAnchor.MiddleLeft)
 		{
 			GUIStyle style = GUIStyleHelper.LinkLabelStyle;
 			style.alignment = textAnchor;
-			EditorGUI.LabelField(rect, url, style);
+			EditorGUI.LabelField(rect, label, style);
 			if (GUI.Button(rect, GUIContent.none,GUIStyle.none))
 			{
 				Application.OpenURL(url);

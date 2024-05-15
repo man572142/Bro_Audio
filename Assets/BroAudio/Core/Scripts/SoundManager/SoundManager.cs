@@ -354,11 +354,13 @@ namespace Ami.BroAudio.Runtime
 
             if (_combFilteringPreventer.TryGetValue(id, out bool isPreventing) && isPreventing)
             {
-                if(Setting.LogCombFilteringWarning)
-				{
+#if UNITY_EDITOR
+                if (Setting.LogCombFilteringWarning)
+                {
                     Debug.LogWarning(LogTitle + $"One of the plays of Audio:{id.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
-                    $"Check documentation for further details, or change the setting in [Tools/BroAudio/Preference].");
-                }
+                    $"For more information, please go to the [Comb Filtering] section in Tools/BroAudio/Preference.");
+                } 
+#endif
                 return false;
             }
 

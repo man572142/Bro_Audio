@@ -40,8 +40,9 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string AddDominatorTrackLabel = "Add Dominator Track";
 		public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
 		public const string ProjectSettings = "Project Settings";
+		public const string CombFilteringDocUrl = "https://man572142s-organization.gitbook.io/broaudio/reference/technical-details#preventing-comb-filtering";
 
-		private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
+        private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
         private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
 			,_playMusicAsBgmGUIContent;
@@ -241,6 +242,9 @@ namespace Ami.BroAudio.Editor.Setting
                     {
                         RuntimeSetting.LogCombFilteringWarning = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition), "Log Warning If Occurs", RuntimeSetting.LogCombFilteringWarning);
                     }
+
+                    Rect docLinkRect = GetRectAndIterateLine(drawPosition);
+                    DrawUrlLink(docLinkRect, "Click for more information", CombFilteringDocUrl);
                 }	
 			}
 

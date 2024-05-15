@@ -72,14 +72,14 @@ namespace Ami.BroAudio.Editor
 
                 DrawEmptyLine(1);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Documentation".ToWhiteBold().SetSize(20), middleCenterRichText);
-                DrawUrlLink(GetRectAndIterateLine(drawPosition), DocURL, TextAnchor.MiddleCenter);
+                DrawUrlLink(GetRectAndIterateLine(drawPosition), DocURL, DocURL, TextAnchor.MiddleCenter);
 
                 DrawEmptyLine(1);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Support & Community".ToWhiteBold().SetSize(20), middleCenterRichText);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "GitHub Page", middleCenterStyle);
-                DrawUrlLink(GetRectAndIterateLine(drawPosition), GitURL, TextAnchor.MiddleCenter);
+                DrawUrlLink(GetRectAndIterateLine(drawPosition), GitURL, GitURL, TextAnchor.MiddleCenter);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Discord", middleCenterStyle);
-                DrawUrlLink(GetRectAndIterateLine(drawPosition), DiscordURL, TextAnchor.MiddleCenter);
+                DrawUrlLink(GetRectAndIterateLine(drawPosition), DiscordURL, DiscordURL, TextAnchor.MiddleCenter);
                 DrawEmptyLine(1);
 
                 DrawEmptyLine(2);
@@ -145,7 +145,7 @@ namespace Ami.BroAudio.Editor
                         DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition), new GUIContent("Name"), credit.Name, CreditsPrefixWidth);
                         DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition), new GUIContent("License"), credit.License, CreditsPrefixWidth);
                         DrawSelectableLabelWithPrefix(GetRectAndIterateLine(drawPosition), new GUIContent("Author"), credit.Author, CreditsPrefixWidth);
-                        DrawUrlLink(GetRectAndIterateLine(drawPosition), credit.Link);
+                        DrawUrlLink(GetRectAndIterateLine(drawPosition), credit.Link, credit.Link);
                         DrawEmptyLine(1);
                     }
                 }

@@ -34,6 +34,12 @@ namespace Ami.BroAudio.Runtime
 		IMusicPlayer IMusicDecoratable.AsBGM() => Player.AsBGM();
 #if !UNITY_WEBGL
 		IPlayerEffect IEffectDecoratable.AsDominator() => Player.AsDominator();
+
+        public void Stop() => Player.Stop();
+        public void Stop(float fadeOut) => Player.Stop(fadeOut);
+        public void Stop(float fadeOut, Action onFinished) => Player.Stop(fadeOut, onFinished);
+        public void Pause() => Player.Pause();
+        public void Pause(float fadeOut) => Player.Pause(fadeOut);
 #endif
-	}
+    }
 }

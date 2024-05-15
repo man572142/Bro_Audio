@@ -34,7 +34,9 @@ namespace Ami.BroAudio
 			Instance = null;
 		}
 
-		public int ID => IsAvailable() ? Instance.ID : -1;
+		private AudioPlayer GetInstance() => IsAvailable() ? Instance : null;
+
+        public int ID => IsAvailable() ? Instance.ID : -1;
 
 		public bool IsActive => IsAvailable() ? Instance.IsActive : false;
 
@@ -51,5 +53,11 @@ namespace Ami.BroAudio
 		{
 			LogError(Utility.LogTitle + "The audio player that you are refering to has been recycled");
 		}
-	}
+
+        public void Stop() => GetInstance()?.Stop();
+        public void Stop(float fadeOut) => GetInstance()?.Stop(fadeOut);
+        public void Stop(float fadeOut, Action onFinished) => GetInstance()?.Stop(fadeOut, onFinished);
+        public void Pause() => GetInstance()?.Pause();
+        public void Pause(float fadeOut) => GetInstance()?.Pause(fadeOut);
+    }
 }

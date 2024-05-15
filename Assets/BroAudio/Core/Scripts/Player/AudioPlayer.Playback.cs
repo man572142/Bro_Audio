@@ -210,6 +210,10 @@ namespace Ami.BroAudio.Runtime
         }
 
         #region Stop Overloads
+        public void Pause()
+            => Pause(UseEntitySetting);
+        public void Pause(float fadeOut)
+            => Stop(fadeOut, StopMode.Pause, null);
         public void Stop() 
             => Stop(UseEntitySetting);
         public void Stop(float fadeOut) 
@@ -217,7 +221,7 @@ namespace Ami.BroAudio.Runtime
         public void Stop(Action onFinished) 
             => Stop(UseEntitySetting, onFinished);
         public void Stop(float fadeOut, Action onFinished) 
-            => Stop(fadeOut, default, onFinished);
+            => Stop(fadeOut, StopMode.Stop, onFinished);
         #endregion
         public void Stop(float overrideFade, StopMode stopMode,Action onFinished)
         {

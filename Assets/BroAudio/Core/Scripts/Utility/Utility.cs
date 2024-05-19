@@ -7,7 +7,7 @@ namespace Ami.BroAudio
 {
 	public static partial class Utility
 	{
-        public const string LogTitle = "<b><color=#add8e6ff>[BroAudio] </color></b>";
+        public const string LogTitle = "<b><color=#F3E9D7>[BroAudio] </color></b>";
 
         public static string ToName(this int id)
 		{

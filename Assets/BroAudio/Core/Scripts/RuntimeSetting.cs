@@ -7,7 +7,7 @@ using Ami.BroAudio.Runtime;
 namespace Ami.BroAudio.Data
 {
 #if BroAudio_DevOnly
-	[CreateAssetMenu(menuName = nameof(BroAudio) + "/Runtime Setting", fileName = BroName.RuntimeSettingFileName)]
+	[CreateAssetMenu(menuName = nameof(BroAudio) + "/Runtime Setting", fileName = Tools.BroName.RuntimeSettingFileName)]
 #endif
 	public class RuntimeSetting : ScriptableObject
 	{

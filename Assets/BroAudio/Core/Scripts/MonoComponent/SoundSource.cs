@@ -18,12 +18,15 @@ namespace Ami.BroAudio
 		[SerializeField] SoundID _sound = default;
         [SerializeField] PositionMode _positionMode = default;
 
-        public void Play() => BroAudio.Play(_sound);
-        public void Play(Transform followTarget) => BroAudio.Play(_sound, followTarget);
-        public void Play(Vector3 positon) => BroAudio.Play(_sound, positon);
-        public void Stop() => BroAudio.Stop(_sound);
-		public void Stop(float fadeTime) => BroAudio.Stop(_sound,fadeTime);
-        public void SetVolume(float vol) => BroAudio.SetVolume(_sound,vol);
+        public void Play() => _currentPlayer = BroAudio.Play(_sound);
+        public void Play(Transform followTarget) => _currentPlayer = BroAudio.Play(_sound, followTarget);
+        public void Play(Vector3 positon) => _currentPlayer = BroAudio.Play(_sound, positon);
+        public void Stop() =>  _currentPlayer?.Stop();
+		public void Stop(float fadeTime) => _currentPlayer?.Stop(fadeTime);
+        public void SetVolume(float vol) => _currentPlayer?.SetVolume(vol);
+        public void SetVolume(float vol, float fadeTime) => _currentPlayer?.SetVolume(vol, fadeTime);
+
+        private IAudioPlayer _currentPlayer;
 
 
 		private void Start()

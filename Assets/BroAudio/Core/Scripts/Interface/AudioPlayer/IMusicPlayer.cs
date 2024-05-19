@@ -1,9 +1,6 @@
-using System;
-using Ami.BroAudio.Runtime;
-
 namespace Ami.BroAudio
 {
-    public interface IMusicPlayer : IEffectDecoratable,IVolumeSettable
+    public interface IMusicPlayer : IEffectDecoratable, IVolumeSettable, IAudioStoppable
     {
 		int ID { get; }
 #if UNITY_2020_2_OR_NEWER

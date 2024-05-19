@@ -13,6 +13,7 @@ namespace Ami.BroAudio.Data
 	{
 		public float CombFilteringPreventionInSeconds = FactorySettings.CombFilteringPreventionInSeconds;
 		public bool LogCombFilteringWarning = true;
+		public bool LogAccessRecycledPlayerWarning = true;
 		public Ease DefaultFadeInEase = FactorySettings.DefaultFadeInEase;
 		public Ease DefaultFadeOutEase = FactorySettings.DefaultFadeOutEase;
 		public Ease SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;

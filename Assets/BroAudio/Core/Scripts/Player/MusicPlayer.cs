@@ -5,7 +5,7 @@ using Ami.Extension;
 
 namespace Ami.BroAudio.Runtime
 {
-	public class MusicPlayer : AudioPlayerDecorator , IMusicPlayer
+	public class MusicPlayer : AudioPlayerDecorator, IMusicPlayer
 	{
 		public static AudioPlayer CurrentPlayer = null;
 
@@ -13,18 +13,15 @@ namespace Ami.BroAudio.Runtime
 		private StopMode _stopMode = default;
 		private float _overrideFade = AudioPlayer.UseEntitySetting;
 
-		public bool IsPlayingVirtually => IsActive && Player.MixerDecibelVolume <= AudioConstant.MinDecibelVolume;
-
-		public MusicPlayer()
-		{
-		}
+		public bool IsPlayingVirtually => IsActive && Instance?.MixerDecibelVolume <= AudioConstant.MinDecibelVolume;
 
 		public MusicPlayer(AudioPlayer audioPlayer) : base(audioPlayer)
 		{
 		}
 
-		protected override void Dispose(AudioPlayer player)
+		protected override void Recycle (AudioPlayer player)
 		{
+			base.Recycle(player);
 			_transition = default;
 			_stopMode = default;
 			_overrideFade = AudioPlayer.UseEntitySetting;
@@ -59,7 +56,7 @@ namespace Ami.BroAudio.Runtime
 				}
 			}
 			
-			CurrentPlayer = Player;
+			CurrentPlayer = Instance;
 			return pref;
 		}
 

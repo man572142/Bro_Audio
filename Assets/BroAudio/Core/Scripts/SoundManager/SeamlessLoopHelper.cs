@@ -1,8 +1,4 @@
-using Ami.BroAudio.Data;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -15,12 +11,12 @@ namespace Ami.BroAudio.Runtime
 		{
 			_getPlayerFunc = getPlayerFunc;
 			_playerWrapper = playerWrapper;
-			_playerWrapper.OnWrapperRecycle += OnRecycle;
+			_playerWrapper.OnRecycle += Recycle;
 		}
 
-        private void OnRecycle(AudioPlayer player)
+        private void Recycle(AudioPlayer player)
         {
-            _playerWrapper.OnWrapperRecycle -= OnRecycle;
+            _playerWrapper.OnRecycle -= Recycle;
             player.OnFinishingOneRound -= OnFinishingOneRound;
         }
 
@@ -38,6 +34,7 @@ namespace Ami.BroAudio.Runtime
 			}
 
 			_playerWrapper.UpdateInstance(newPlayer);
+			
 
 			var audioType = Utility.GetAudioType(id);
 			if(SoundManager.Instance.AudioTypePref.TryGetValue(audioType,out var audioTypePref))

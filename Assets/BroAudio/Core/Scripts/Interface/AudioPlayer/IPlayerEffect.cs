@@ -1,6 +1,6 @@
 namespace Ami.BroAudio
 {
-    public interface IPlayerEffect : IVolumeSettable,IMusicDecoratable
+    public interface IPlayerEffect : IVolumeSettable, IMusicDecoratable, IAudioStoppable
     {
 #if !UNITY_WEBGL
 #if UNITY_2020_2_OR_NEWER

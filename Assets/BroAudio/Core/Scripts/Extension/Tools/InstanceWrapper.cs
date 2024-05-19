@@ -1,31 +1,77 @@
+using System;
+using UnityEngine;
+
 namespace Ami.Extension
 {
-	public abstract class InstanceWrapper<T>
+	public abstract class InstanceWrapper<T> where T : UnityEngine.Object, IRecyclable<T>
 	{
-		protected T Instance;
-
-		protected InstanceWrapper(T instance)
+		private T _instance = null;
+		protected T Instance
 		{
-			Instance = instance;
+			get
+			{
+                if (_instance)
+                {
+                    return _instance;
+                }
+                LogInstanceIsNull();
+				return null;
+            }
 		}
 
-		protected virtual bool IsAvailable()
+        public event Action<T> OnRecycle
+        {
+            add
+            {
+                if(_instance)
+                {
+                    _instance.OnRecycle += value;
+                }
+            }
+            remove
+            {
+                if (_instance)
+                {
+                    _instance.OnRecycle -= value;
+                }
+            }
+        }
+
+        protected InstanceWrapper(T instance)
 		{
-			if (Instance != null)
-			{
-				return true;
-			}
-			else
-			{
-				LogInstanceIsNull();
-				return false;
-			}
+            _instance = instance;
+			_instance.OnRecycle += Recycle;
 		}
+
+        protected bool IsAvailable()
+        {
+            return _instance != null;
+        }
+
+        public void UpdateInstance(T newInstance)
+        {
+            ClearEvent();
+            _instance = newInstance;
+            _instance.OnRecycle += Recycle;
+        }
+
+        protected virtual void Recycle(T t)
+        {
+            ClearEvent();
+            _instance = null;
+        }
+
+		private void ClearEvent()
+		{
+            if (_instance)
+            {
+                _instance.OnRecycle -= Recycle;
+            }
+        }
 
 		protected virtual void LogInstanceIsNull()
 		{
-			UnityEngine.Debug.LogError(BroAudio.Utility.LogTitle +  "The object that you are refering to is null.");
+			Debug.LogError(BroAudio.Utility.LogTitle +  "The object that you are refering to is null.");
 		}
 	}
-
 }

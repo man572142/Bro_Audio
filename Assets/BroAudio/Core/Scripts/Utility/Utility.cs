@@ -14,17 +14,6 @@ namespace Ami.BroAudio
 			return SoundManager.Instance.GetNameByID(id);
 		}
 
-		public static T DecorateWith<T>(this AudioPlayer origin) where T : AudioPlayerDecorator, new()
-		{
-			if (origin != null)
-			{
-				T result = new T();
-				result.Init(origin);
-				return result;
-			}
-			return null;
-		}
-
 		#region Efficient HasFlag
 		// faster than Enum.HasFlag, could be used in runtime.
 		public static bool Contains(this BroAudioType flags, BroAudioType targetFlag)

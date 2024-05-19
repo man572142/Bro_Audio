@@ -6,7 +6,6 @@ using UnityEngine.Audio;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using static Ami.BroAudio.Tools.BroName;
-using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -218,18 +217,17 @@ namespace Ami.BroAudio.Runtime
 
 		IMusicPlayer IMusicDecoratable.AsBGM()
         {
-            return GetOrCreateDecorator<MusicPlayer>();
+            return GetOrCreateDecorator(() => new MusicPlayer(this));
         }
 
 #if !UNITY_WEBGL
         IPlayerEffect IEffectDecoratable.AsDominator()
         {
-            DominatorPlayer dominator = GetOrCreateDecorator<DominatorPlayer>();
-            return dominator;
+            return GetOrCreateDecorator(() => new DominatorPlayer(this)); ;
         }
 #endif
 
-        private T GetOrCreateDecorator<T>() where T : AudioPlayerDecorator, new()
+        private T GetOrCreateDecorator<T>(Func<T> onCreateDecorator) where T : AudioPlayerDecorator
         {
             if (_decorators != null && TryGetDecorator(out T decoratePalyer))
             {
@@ -242,7 +240,7 @@ namespace Ami.BroAudio.Runtime
             {
                 if (_decorators[i] == null)
                 {
-                    decoratePalyer = this.DecorateWith<T>();
+                    decoratePalyer = onCreateDecorator.Invoke();
                     _decorators[i] = decoratePalyer;
                     break;
                 }
@@ -255,7 +253,7 @@ namespace Ami.BroAudio.Runtime
             return decoratePalyer;
         }
 
-        private bool TryGetDecorator<T>(out T result) where T : AudioPlayerDecorator, new()
+        private bool TryGetDecorator<T>(out T result) where T : AudioPlayerDecorator
         {
             result = null;
             if(_decorators != null)

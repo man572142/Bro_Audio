@@ -10,54 +10,38 @@ namespace Ami.BroAudio
 	/// <summary>
 	/// To keep tracking the instance of an AudioPlayer
 	/// </summary>
-	public class AudioPlayerInstanceWrapper : InstanceWrapper<AudioPlayer> ,IAudioPlayer
+	public class AudioPlayerInstanceWrapper : InstanceWrapper<AudioPlayer>, IAudioPlayer
 	{
-		public event Action<AudioPlayer> OnWrapperRecycle;
-
 		public AudioPlayerInstanceWrapper(AudioPlayer instance) : base(instance)
 		{
-			Instance.OnRecycle += OnRecycle;
 		}
 
-		public void UpdateInstance(AudioPlayer newInstance)
-		{
-			Instance.OnRecycle -= OnRecycle;
-			Instance = newInstance;
-			newInstance.OnRecycle += OnRecycle;
-		}
+        public int ID => Instance ? Instance.ID : -1;
 
-		private void OnRecycle(AudioPlayer player)
-		{
-			OnWrapperRecycle?.Invoke(player);
+		public bool IsActive => Instance ? Instance.IsActive : false;
 
-            Instance.OnRecycle -= OnRecycle;
-			Instance = null;
-		}
+		public bool IsPlaying => Instance ? Instance.IsPlaying : false;
 
-		private AudioPlayer GetInstance() => IsAvailable() ? Instance : null;
-
-        public int ID => IsAvailable() ? Instance.ID : -1;
-
-		public bool IsActive => IsAvailable() ? Instance.IsActive : false;
-
-		public bool IsPlaying => IsAvailable() ? Instance.IsPlaying : false;
-
-		IMusicPlayer IMusicDecoratable.AsBGM() => IsAvailable() ? Instance.AsBGM() : null;
+		IMusicPlayer IMusicDecoratable.AsBGM() => Instance ? Instance.AsBGM() : null;
 
 #if !UNITY_WEBGL
-		IPlayerEffect IEffectDecoratable.AsDominator() => IsAvailable() ? Instance.AsDominator() : null;
+		IPlayerEffect IEffectDecoratable.AsDominator() => Instance ? Instance.AsDominator() : null;
 #endif
-		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => IsAvailable() ? Instance.SetVolume(vol, fadeTime) : null;
+		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Instance ? Instance.SetVolume(vol, fadeTime) : null;
 
 		protected override void LogInstanceIsNull()
 		{
-			LogError(Utility.LogTitle + "The audio player that you are refering to has been recycled");
+			if(SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)
+			{
+                LogWarning(Utility.LogTitle + "The audio player that you are refering to has been recycled");
+            }
 		}
 
-        public void Stop() => GetInstance()?.Stop();
-        public void Stop(float fadeOut) => GetInstance()?.Stop(fadeOut);
-        public void Stop(float fadeOut, Action onFinished) => GetInstance()?.Stop(fadeOut, onFinished);
-        public void Pause() => GetInstance()?.Pause();
-        public void Pause(float fadeOut) => GetInstance()?.Pause(fadeOut);
+        public void Stop() => Instance?.Stop();
+        public void Stop(Action onFinished) => Instance?.Stop(onFinished);
+        public void Stop(float fadeOut) => Instance?.Stop(fadeOut);
+        public void Stop(float fadeOut, Action onFinished) => Instance?.Stop(fadeOut, onFinished);
+        public void Pause() => Instance?.Pause();
+        public void Pause(float fadeOut) => Instance?.Pause(fadeOut);
     }
 }

@@ -3,9 +3,12 @@ using static UnityEngine.Debug;
 
 namespace Ami.BroAudio.Runtime
 {
-	public class DominatorPlayer : AudioPlayerDecorator , IPlayerEffect
+	public class DominatorPlayer : AudioPlayerDecorator, IPlayerEffect
 	{
-#if !UNITY_WEBGL
+        public DominatorPlayer(AudioPlayer instance) : base(instance)
+        {
+        }
+
         #region Quiet Others
         IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, float fadeTime)
         {
@@ -16,7 +19,7 @@ namespace Ami.BroAudio.Runtime
         {
             if (othersVol <= 0f || othersVol > 1f)
             {
-                LogWarning(Utility.LogTitle + "Stand out ratio should be less than 1 and greater than 0.");
+                LogWarning(Utility.LogTitle + "othersVol should be less than 1 and greater than 0.");
                 return this;
             }
 
@@ -64,17 +67,9 @@ namespace Ami.BroAudio.Runtime
         private void SetAllEffectExceptDominator(Effect effect)
         {
             SoundManager.Instance.SetEffect(effect).While(PlayerIsPlaying);
-            Player.SetEffect(EffectType.None, SetEffectMode.Override);
+            Instance?.SetEffect(EffectType.None,SetEffectMode.Override);
         }
 
-        private bool PlayerIsPlaying()
-        {
-            if (Player != null)
-            {
-                return Player.ID > 0;
-            }
-            return false;
-        } 
-#endif
+        private bool PlayerIsPlaying() => IsAvailable() && IsActive;
     }
 }

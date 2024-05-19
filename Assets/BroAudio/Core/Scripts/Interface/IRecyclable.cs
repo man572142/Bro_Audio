@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Ami.BroAudio.Runtime
+namespace Ami.Extension
 {
 	public interface IRecyclable<T> where T : IRecyclable<T>
 	{

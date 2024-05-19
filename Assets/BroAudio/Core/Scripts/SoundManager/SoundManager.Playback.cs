@@ -49,7 +49,9 @@ namespace Ami.BroAudio.Runtime
             }
 
             player.Play(id, pref);
-            if(Setting.AlwaysPlayMusicAsBGM && audioType == BroAudioType.Music)
+            var wrapper = new AudioPlayerInstanceWrapper(player);
+
+            if (Setting.AlwaysPlayMusicAsBGM && audioType == BroAudioType.Music)
             {
                 player.AsBGM().SetTransition(Setting.DefaultBGMTransition, Setting.DefaultBGMTransitionTime);
             }
@@ -61,13 +63,10 @@ namespace Ami.BroAudio.Runtime
 
             if (pref.Entity.SeamlessLoop)
             {
-                // to keep tracking the instance of the AudioPlayer if it changes to a new one after looping
-                AudioPlayerInstanceWrapper wrapper = new AudioPlayerInstanceWrapper(player);
                 var seamlessLoopHelper = new SeamlessLoopHelper(wrapper, GetNewAudioPlayer);
                 seamlessLoopHelper.SetPlayer(player);
-                return wrapper;
             }
-            return player;
+            return wrapper;
         }
         #endregion
 

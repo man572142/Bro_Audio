@@ -10,8 +10,8 @@ namespace Ami.BroAudio.Demo
 		[SerializeField] ParticleSystem _fog = null;
 		[SerializeField] float _playInterval = default;
 		[SerializeField] SoundID _explosion = default;
-		[SerializeField] float dominateFadeOut = default;
 #pragma warning disable 414
+        [SerializeField] float dominateFadeOut = default;
         [SerializeField, Frequency] float _lowPassFrequency = default;
 #pragma warning restore 414
         private Coroutine _coroutine;

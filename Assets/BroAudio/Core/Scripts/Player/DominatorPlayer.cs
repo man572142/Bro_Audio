@@ -8,6 +8,7 @@ namespace Ami.BroAudio.Runtime
         public DominatorPlayer(AudioPlayer instance) : base(instance)
         {
         }
+#if !UNITY_WEBGL
 
         #region Quiet Others
         IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, float fadeTime)
@@ -71,5 +72,6 @@ namespace Ami.BroAudio.Runtime
         }
 
         private bool PlayerIsPlaying() => IsAvailable() && IsActive;
+#endif
     }
 }

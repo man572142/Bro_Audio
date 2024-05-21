@@ -45,7 +45,7 @@ namespace Ami.BroAudio.Editor.Setting
         private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
         private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
-			,_playMusicAsBgmGUIContent;
+			,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent;
 
         private GUIContent[] _tabLabels = null;
 		private Tab _currSelectedTab = Tab.Audio;
@@ -100,7 +100,9 @@ namespace Ami.BroAudio.Editor.Setting
 			_filterSlopeGUIContent = new GUIContent("Audio Filter Slope", _instruction.GetText(Instruction.AudioFilterSlope));
 			_acceptAudioMixerGUIContent = new GUIContent("Accept BroAudioMixer Modification");
 			_playMusicAsBgmGUIContent = new GUIContent("Always Play Music As BGM", _instruction.GetText(Instruction.AlwaysPlayMusicAsBGM));
-		}
+			_logAccessRecycledWarningGUIContent = new GUIContent("Log Access Recycled Player Warning", _instruction.GetText(Instruction.LogAccessRecycledWarning));
+
+        }
 
 		private void OnDisable()
 		{
@@ -238,7 +240,7 @@ namespace Ami.BroAudio.Editor.Setting
                     }
                     EditorGUI.EndDisabledGroup();
 
-                    using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.2f))
+                    using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.3f))
                     {
                         RuntimeSetting.LogCombFilteringWarning = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition), "Log Warning If Occurs", RuntimeSetting.LogCombFilteringWarning);
                     }
@@ -487,31 +489,39 @@ namespace Ami.BroAudio.Editor.Setting
 		}
 
 		private void DrawMiscellaneousSetting(Rect drawPosition)
-		{
-			DrawAssetOutputPath(drawPosition);
+        {
+            DrawToggle(drawPosition);
 			DrawEmptyLine(1);
+            DrawAssetOutputPath(drawPosition);
+            DrawEmptyLine(1);
 
-			if(Button(AddDominatorTrackLabel))
-			{
-				AddDominatorTrack();
-			}
+            if (Button(AddDominatorTrackLabel))
+            {
+                AddDominatorTrack();
+            }
             DrawEmptyLine(1);
 
             if (Button(ResetSettingButtonText))
-			{
+            {
                 RuntimeSetting.ResetToFactorySettings();
                 EditorSetting.ResetToFactorySettings();
             }
             DrawEmptyLine(1);
 
-			bool Button(string label)
-			{
+            bool Button(string label)
+            {
                 Rect buttonRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(400f, SingleLineSpace * 1.5f);
-				return GUI.Button(buttonRect, label);
+                return GUI.Button(buttonRect, label);
+            }
+
+            void DrawToggle(Rect drawPosition)
+            {
+				Rect accessRecycledWarnRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(400f, SingleLineSpace);
+                RuntimeSetting.LogAccessRecycledPlayerWarning = EditorGUI.ToggleLeft(accessRecycledWarnRect, _logAccessRecycledWarningGUIContent, RuntimeSetting.LogAccessRecycledPlayerWarning);
             }
         }
 
-		private void DrawAssetOutputPath(Rect drawPosition)
+        private void DrawAssetOutputPath(Rect drawPosition)
 		{
 			EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AssetOutputPathLabel, GUIStyleHelper.MiddleCenterRichText);
 			if(!_hasOutputAssetPath)

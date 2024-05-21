@@ -33,7 +33,7 @@ namespace Ami.BroAudio
 		{
 			if(SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)
 			{
-                LogWarning(Utility.LogTitle + "The audio player that you are refering to has been recycled");
+                LogWarning(Utility.LogTitle + "Invalid operation. The audio player you're accessing has finished playing and has been recycled.");
             }
 		}
 

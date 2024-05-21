@@ -101,3 +101,6 @@ MonoBehaviour:
   - Key: 17
     Value: If enabled, all [Music] will be played as BGM and trigger a transtion
       from one the other automatically.
+  - Key: 2
+    Value: Whether to log a warning when trying to access an AudioPlayer that has
+      finished playing and has been recycled into the Object Pool.

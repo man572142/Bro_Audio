@@ -5,6 +5,7 @@ namespace Ami.BroAudio.Runtime
 {
 	public class DominatorPlayer : AudioPlayerDecorator , IPlayerEffect
 	{
+#if !UNITY_WEBGL
         #region Quiet Others
         IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, float fadeTime)
         {
@@ -57,22 +58,23 @@ namespace Ami.BroAudio.Runtime
 
             SetAllEffectExceptDominator(new Effect(EffectType.HighPass, freq, fading, true));
             return this;
-        } 
+        }
         #endregion
 
         private void SetAllEffectExceptDominator(Effect effect)
         {
             SoundManager.Instance.SetEffect(effect).While(PlayerIsPlaying);
-            Player.SetEffect(EffectType.None,SetEffectMode.Override);
+            Player.SetEffect(EffectType.None, SetEffectMode.Override);
         }
 
         private bool PlayerIsPlaying()
-		{
-            if(Player != null)
-			{
-				return Player.ID > 0;
+        {
+            if (Player != null)
+            {
+                return Player.ID > 0;
             }
             return false;
-		}
+        } 
+#endif
     }
 }

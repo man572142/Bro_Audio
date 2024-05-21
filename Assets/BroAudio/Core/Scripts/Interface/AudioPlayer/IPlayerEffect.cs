@@ -2,6 +2,7 @@ namespace Ami.BroAudio
 {
     public interface IPlayerEffect : IVolumeSettable,IMusicDecoratable
     {
+#if !UNITY_WEBGL
 #if UNITY_2020_2_OR_NEWER
         internal IPlayerEffect QuietOthers(float othersVol, float fadeTime);
         internal IPlayerEffect QuietOthers(float othersVol, Fading fading);
@@ -16,6 +17,7 @@ namespace Ami.BroAudio
         IPlayerEffect LowPassOthers(float freq, Fading fading);
         IPlayerEffect HighPassOthers(float freq, float fadeTime);
         IPlayerEffect HighPassOthers(float freq, Fading fading);
+#endif  
 #endif
     }
 }

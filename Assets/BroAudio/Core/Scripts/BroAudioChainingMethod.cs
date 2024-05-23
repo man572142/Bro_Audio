@@ -1,9 +1,29 @@
-﻿using static Ami.BroAudio.BroAdvice;
+﻿using System;
+using static Ami.BroAudio.BroAdvice;
 
 namespace Ami.BroAudio
 {
 	public static class BroAudioChainingMethod
 	{
+		#region Stop
+		public static void Stop(this IAudioStoppable player)
+	=> player?.Stop();
+		public static void Stop(this IAudioStoppable player, Action onFinished)
+			=> player?.Stop(onFinished);
+
+		public static void Stop(this IAudioStoppable player, float fadeOut)
+			=> player?.Stop(fadeOut);
+
+		public static void Stop(this IAudioStoppable player, float fadeOut, Action onFinished)
+			=> player?.Stop(fadeOut, onFinished);
+
+		public static void Pause(this IAudioStoppable player)
+			=> player?.Pause();
+
+		public static void Pause(this IAudioStoppable player, float fadeOut)
+			=> player?.Pause(fadeOut); 
+		#endregion
+
 		#region Set Volume
 		/// <summary>
 		/// Set the player's volume (0~1)

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Ami.Extension;
 using static UnityEngine.Debug;
 
@@ -7,20 +9,22 @@ namespace Ami.BroAudio
 	/// Parameters for setting effects. Please use the static factory methods within this class.
 	/// </summary>
 	[System.Serializable]
-	public struct Effect
+	public struct Effect : IComparable<Effect>
 	{
 		// Use these static methods for SetEffect()
-		public static Effect HighPass(float frequency, float fadeTime, Ease ease = BroAdvice.HighPassInEase) 
-			=> new Effect(EffectType.HighPass, frequency, SingleFading(fadeTime, ease));
-        public static Effect ResetHighPass(float fadeTime, Ease ease = BroAdvice.HighPassOutEase) 
+		#region Static Factory Methods
+		public static Effect HighPass(float frequency, float fadeTime, Ease ease = BroAdvice.HighPassInEase)
+	=> new Effect(EffectType.HighPass, frequency, SingleFading(fadeTime, ease));
+		public static Effect ResetHighPass(float fadeTime, Ease ease = BroAdvice.HighPassOutEase)
 			=> new Effect(EffectType.HighPass, AudioConstant.MinFrequency, SingleFading(fadeTime, ease));
-        public static Effect LowPass(float frequency, float fadeTime, Ease ease = BroAdvice.LowPassInEase) 
+		public static Effect LowPass(float frequency, float fadeTime, Ease ease = BroAdvice.LowPassInEase)
 			=> new Effect(EffectType.LowPass, frequency, SingleFading(fadeTime, ease));
-        public static Effect ResetLowPass(float fadeTime, Ease ease = BroAdvice.LowPassOutEase) 
+		public static Effect ResetLowPass(float fadeTime, Ease ease = BroAdvice.LowPassOutEase)
 			=> new Effect(EffectType.LowPass, AudioConstant.MaxFrequency, SingleFading(fadeTime, ease));
-        public static Effect Custom(string exposedParameterName, float value, float fadeTime, Ease ease = Ease.Linear) 
-			=> new Effect(exposedParameterName, value, SingleFading(fadeTime, ease));
-        public static class Defaults
+		public static Effect Custom(string exposedParameterName, float value, float fadeTime, Ease ease = Ease.Linear)
+			=> new Effect(exposedParameterName, value, SingleFading(fadeTime, ease)); 
+		#endregion
+		public static class Defaults
 		{
 			public static float Volume => AudioConstant.FullVolume;
 			public static float LowPass => AudioConstant.MaxFrequency;
@@ -28,7 +32,6 @@ namespace Ami.BroAudio
 		}
 
 		private static Fading SingleFading(float fadeTime, Ease ease) => new Fading(fadeTime, default, ease, default);
-
 
         private float _value;
 
@@ -108,5 +111,31 @@ namespace Ami.BroAudio
             }
 			return false;
         }
+
+		public int CompareTo(Effect other)
+		{
+			if (Type != other.Type)
+			{
+				return ((int)Type).CompareTo((int)other.Type);
+			}
+
+			switch (Type)
+			{
+				case EffectType.Volume:
+				case EffectType.HighPass:
+					return Value.CompareTo(other.Value);
+				case EffectType.LowPass:
+					return Value.CompareTo(other.Value) * -1;
+			}
+			return 0;
+		}
+	}
+
+	public static class EffectExtension
+	{
+		public static bool IsMoreIntenseThan(this Effect x, Effect y)
+		{
+			return x.CompareTo(y) > 0;
+		}
 	}
 }

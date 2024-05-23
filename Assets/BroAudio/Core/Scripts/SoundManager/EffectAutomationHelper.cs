@@ -14,11 +14,11 @@ namespace Ami.BroAudio.Runtime
 		{
 			public bool IsTweaking;
 			public Coroutine Coroutine;
+			// The list is very small, there's no need to use other collection type.
 			public List<ITweakingWaitable> WaitableList;
-			public float OriginValue;
 		}
 
-		public interface ITweakingWaitable
+		public interface ITweakingWaitable : IComparable<ITweakingWaitable>
 		{
 			Effect Effect { get; }
 			bool IsFinished();
@@ -31,6 +31,8 @@ namespace Ami.BroAudio.Runtime
 			public TweakingWaitableBase(Effect effect) => Effect = effect;
 			public IEnumerator GetYieldInstruction() => null;
 			public bool IsFinished() => false;
+
+			public int CompareTo(ITweakingWaitable other) => Effect.CompareTo(other.Effect);
 		}
 
 		private abstract class TweakingWaitableDecorator : ITweakingWaitable
@@ -41,6 +43,8 @@ namespace Ami.BroAudio.Runtime
 			public Effect Effect => Base.Effect; 
 			public abstract IEnumerator GetYieldInstruction();
 			public abstract bool IsFinished();
+
+			public int CompareTo(ITweakingWaitable other) => Base.Effect.CompareTo(other.Effect);
 		}
 
 		private class TweakAndWaitSeconds : TweakingWaitableDecorator
@@ -148,31 +152,30 @@ namespace Ami.BroAudio.Runtime
 			if (!_tweakerDict.TryGetValue(effect.Type, out var tweaker))
 			{
 				tweaker = new Tweaker();
-				tweaker.OriginValue = GetEffectDefaultValue(effect.Type);
 				_tweakerDict.Add(effect.Type, tweaker);
 			}
 
+			bool isNullOrEmpty = tweaker.WaitableList == null || tweaker.WaitableList.Count == 0;
+			bool isMoreIntense = !isNullOrEmpty && effect.IsMoreIntenseThan(tweaker.WaitableList[tweaker.WaitableList.Count - 1].Effect);
 			tweaker.WaitableList = tweaker.WaitableList ?? new List<ITweakingWaitable>();
 			tweaker.WaitableList.Add(new TweakingWaitableBase(effect));
+			tweaker.WaitableList.Sort();
 
-			if(!tweaker.IsTweaking)
+			if (!tweaker.IsTweaking || isMoreIntense)
 			{
 				StartCoroutineAndReassign(TweakTrackParameter(tweaker, OnTweakingFinished), ref tweaker.Coroutine);
-				if(effect.IsDominator)
+				if (effect.IsDominator)
 				{
 					SwitchMainTrackMode(true);
-                }	
+				}
 			}
 			
 			void OnTweakingFinished()
 			{
-				if(tweaker.OriginValue == GetEffectDefaultValue(effect.Type))
+				OnReset?.Invoke(effect.Type);
+				if (effect.IsDominator)
 				{
-					OnReset?.Invoke(effect.Type);
-					if(effect.IsDominator)
-					{
-						SwitchMainTrackMode(false);
-                    }
+					SwitchMainTrackMode(false);
 				}
 			}
 		}
@@ -196,28 +199,24 @@ namespace Ami.BroAudio.Runtime
 				float currentValue = GetCurrentValue(effect);
 
 				yield return Tweak(currentValue, effect.Value, effect.Fading.FadeIn, effect.Fading.FadeInEase, paraName, hasSecondaryParameter);
-				// waitable should be decorated after this tweak
+				// if there's waitable, it should be decorated after this tweak
 
 				var waitable = tweaker.WaitableList[lastIndex];
 				IEnumerator yieldInstruction = waitable.GetYieldInstruction();
-				if (yieldInstruction == null)
-				{
-					// save value if it's a normal SetEffect 
-					tweaker.OriginValue = effect.Value;
-					tweaker.WaitableList.Clear();
-					break;
-				}
-				else if (!waitable.IsFinished())
-				{
-					yield return yieldInstruction;
-				}
 
-				if(tweaker.WaitableList.Count == 1)
+				if(yieldInstruction != null)
 				{
-					// auto reset to origin after last waitable 
-					yield return Tweak(GetCurrentValue(effect), tweaker.OriginValue, effect.Fading.FadeOut, effect.Fading.FadeOutEase, paraName, hasSecondaryParameter);
-				}
+					if (!waitable.IsFinished())
+					{
+						yield return yieldInstruction;
+					}
 
+					if (tweaker.WaitableList.Count == 1)
+					{
+						// auto reset to origin after last waitable 
+						yield return Tweak(GetCurrentValue(effect), GetEffectDefaultValue(effect.Type), effect.Fading.FadeOut, effect.Fading.FadeOutEase, paraName, hasSecondaryParameter);
+					}
+				}
 				tweaker.WaitableList.RemoveAt(lastIndex);
 			}
 			tweaker.IsTweaking = false;
@@ -275,8 +274,7 @@ namespace Ami.BroAudio.Runtime
 				{
 					string paraName = GetEffectParameterName(effect, out bool hasSecondaryParameter);
 					SafeStopCoroutine(tweaker.Coroutine);
-                    tweaker.Coroutine = StartCoroutine(Tweak(current, tweaker.OriginValue, effect.Fading.FadeOut, effect.Fading.FadeOutEase, paraName, hasSecondaryParameter, OnTweakingFinished));
-					tweaker.OriginValue = GetEffectDefaultValue(effectType);
+                    tweaker.Coroutine = StartCoroutine(Tweak(current, GetEffectDefaultValue(effectType), effect.Fading.FadeOut, effect.Fading.FadeOutEase, paraName, hasSecondaryParameter, OnTweakingFinished));
 					tweaker.WaitableList.Clear();
 					tweakingCount++;
 				}

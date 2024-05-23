@@ -65,8 +65,9 @@ namespace Ami.BroAudio.Runtime
 
         private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
+		private EffectAutomationHelper _dominatorAutomationHelper = null;
 
-        private Dictionary<int, bool> _combFilteringPreventer = new Dictionary<int, bool>();
+		private Dictionary<int, bool> _combFilteringPreventer = new Dictionary<int, bool>();
 
         private Coroutine _masterVolumeCoroutine;
 
@@ -96,6 +97,7 @@ namespace Ami.BroAudio.Runtime
 
             InitBank();
             _automationHelper = new EffectAutomationHelper(this, _broAudioMixer);
+            _dominatorAutomationHelper = new EffectAutomationHelper(this, _broAudioMixer);
         }
 
 		#region InitBank
@@ -212,21 +214,26 @@ namespace Ami.BroAudio.Runtime
             }
 
             Action<EffectType> onResetEffect = null;
-            if(!effect.IsDominator)
+            EffectAutomationHelper automationHelper = null;
+            if(effect.IsDominator)
             {
-                if(mode == SetEffectMode.Remove)
-                {
-                    // wait for reset tweaking of the previous effect
-                    onResetEffect = (resetType) => SetPlayerEffect(targetType, resetType, SetEffectMode.Remove);
-                }
-                else
-                {
-                    SetPlayerEffect(targetType, effect.Type, mode);
-                }
+				automationHelper = _dominatorAutomationHelper;
 			}
-            
-            _automationHelper.SetEffectTrackParameter(effect, onResetEffect);
-            return _automationHelper;
+            else
+            {
+				if (mode == SetEffectMode.Remove)
+				{
+					// wait for reset tweaking of the previous effect
+					onResetEffect = (resetType) => SetPlayerEffect(targetType, resetType, SetEffectMode.Remove);
+				}
+				else
+				{
+					SetPlayerEffect(targetType, effect.Type, mode);
+				}
+                automationHelper = _automationHelper;
+			}
+			automationHelper.SetEffectTrackParameter(effect, onResetEffect);
+			return automationHelper;
         }
 
         private void SetPlayerEffect(BroAudioType targetType, EffectType effectType,SetEffectMode mode)

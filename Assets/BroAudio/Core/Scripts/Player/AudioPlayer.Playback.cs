@@ -210,17 +210,17 @@ namespace Ami.BroAudio.Runtime
         }
 
         #region Stop Overloads
-        public void Pause()
-            => Pause(UseEntitySetting);
-        public void Pause(float fadeOut)
+        void IAudioStoppable.Pause()
+            => this.Pause(UseEntitySetting);
+        void IAudioStoppable.Pause(float fadeOut)
             => Stop(fadeOut, StopMode.Pause, null);
-        public void Stop() 
-            => Stop(UseEntitySetting);
-        public void Stop(float fadeOut) 
-            => Stop(fadeOut, null);
-        public void Stop(Action onFinished) 
-            => Stop(UseEntitySetting, onFinished);
-        public void Stop(float fadeOut, Action onFinished) 
+        void IAudioStoppable.Stop() 
+            => this.Stop(UseEntitySetting);
+        void IAudioStoppable.Stop(float fadeOut) 
+            => this.Stop(fadeOut, null);
+        void IAudioStoppable.Stop(Action onFinished) 
+            => this.Stop(UseEntitySetting, onFinished);
+        void IAudioStoppable.Stop(float fadeOut, Action onFinished) 
             => Stop(fadeOut, StopMode.Stop, onFinished);
         #endregion
         public void Stop(float overrideFade, StopMode stopMode,Action onFinished)

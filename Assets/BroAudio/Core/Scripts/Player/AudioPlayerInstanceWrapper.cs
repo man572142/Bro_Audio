@@ -37,11 +37,11 @@ namespace Ami.BroAudio
             }
 		}
 
-        public void Stop() => Instance?.Stop();
-        public void Stop(Action onFinished) => Instance?.Stop(onFinished);
-        public void Stop(float fadeOut) => Instance?.Stop(fadeOut);
-        public void Stop(float fadeOut, Action onFinished) => Instance?.Stop(fadeOut, onFinished);
-        public void Pause() => Instance?.Pause();
-        public void Pause(float fadeOut) => Instance?.Pause(fadeOut);
+        void IAudioStoppable.Stop() => Instance?.Stop();
+        void IAudioStoppable.Stop(Action onFinished) => Instance?.Stop(onFinished);
+        void IAudioStoppable.Stop(float fadeOut) => Instance?.Stop(fadeOut);
+        void IAudioStoppable.Stop(float fadeOut, Action onFinished) => Instance?.Stop(fadeOut, onFinished);
+        void IAudioStoppable.Pause() => Instance?.Pause();
+        void IAudioStoppable.Pause(float fadeOut) => Instance?.Pause(fadeOut);
     }
 }

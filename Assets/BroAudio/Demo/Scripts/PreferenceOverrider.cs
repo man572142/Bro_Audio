@@ -11,6 +11,7 @@ namespace Ami.BroAudio.Demo
         [SerializeField] private float _combFilteringPreventTime = 0.04f;
         [SerializeField] private FilterSlope _audioFilterSlope = FilterSlope.FourPole;
 
+#if UNITY_EDITOR
         void Start()
         {
             var preference = SoundManager.Instance.Setting;
@@ -22,6 +23,7 @@ namespace Ami.BroAudio.Demo
         private void OnDestroy()
         {
             SoundManager.Instance.Setting.ResetToFactorySettings();
-        }
+        } 
+#endif
     } 
 }

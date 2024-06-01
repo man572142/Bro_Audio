@@ -11,7 +11,8 @@ namespace Ami.BroAudio.Runtime
 	{
         public static Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
-        public event Action<int,PlaybackPreference,EffectType> OnFinishingOneRound = null;
+        public event Action<int,PlaybackPreference,EffectType> OnFinishingOneRound;
+        public event Action<SoundID> OnEndPlaying;
 
         private StopMode _stopMode = default;
         private Coroutine _playbackControlCoroutine = null;
@@ -301,8 +302,7 @@ namespace Ami.BroAudio.Runtime
         }
 
         private void EndPlaying()
-        {
-            ID = -1;
+        {   
             _stopMode = default;
             ResetVolume();
 
@@ -314,6 +314,9 @@ namespace Ami.BroAudio.Runtime
 
             this.SafeStopCoroutine(_trackVolumeControlCoroutine);
             RemoveFromResumablePlayer();
+            OnEndPlaying?.Invoke(ID);
+            OnEndPlaying = null;
+            ID = -1;
             Recycle();
 		}
 	}

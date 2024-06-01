@@ -28,7 +28,7 @@ namespace Ami.BroAudio.Runtime
 		private string _currTrackName = string.Empty;
         //private string _pitchParaName = string.Empty;
 
-		public int ID { get; private set; } = -1;
+		public SoundID ID { get; private set; } = -1;
         public bool IsPlaying => AudioSource.isPlaying;
         public bool IsActive => ID > 0;
         public bool IsStopping { get; private set; }

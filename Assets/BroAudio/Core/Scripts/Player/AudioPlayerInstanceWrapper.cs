@@ -12,17 +12,35 @@ namespace Ami.BroAudio
 	/// </summary>
 	public class AudioPlayerInstanceWrapper : InstanceWrapper<AudioPlayer>, IAudioPlayer
 	{
-		public AudioPlayerInstanceWrapper(AudioPlayer instance) : base(instance)
+        public AudioPlayerInstanceWrapper(AudioPlayer instance) : base(instance)
 		{
 		}
 
-        public int ID => Instance ? Instance.ID : -1;
+        public event Action<SoundID> OnEndPlaying
+		{
+			add
+			{
+				if(IsAvailable())
+				{
+					Instance.OnEndPlaying += value;
+				}
+			}
+			remove
+			{
+				if(IsAvailable())
+				{
+					Instance.OnEndPlaying -= value;
+				}
+			}
+		}
+
+        public SoundID ID => Instance ? Instance.ID : -1;
 
 		public bool IsActive => Instance ? Instance.IsActive : false;
 
 		public bool IsPlaying => Instance ? Instance.IsPlaying : false;
 
-		IMusicPlayer IMusicDecoratable.AsBGM() => Instance ? Instance.AsBGM() : null;
+        IMusicPlayer IMusicDecoratable.AsBGM() => Instance ? Instance.AsBGM() : null;
 
 #if !UNITY_WEBGL
 		IPlayerEffect IEffectDecoratable.AsDominator() => Instance ? Instance.AsDominator() : null;

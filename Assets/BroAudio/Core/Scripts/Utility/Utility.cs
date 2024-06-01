@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Ami.BroAudio.Runtime;
 using UnityEngine;
 using Ami.Extension;
 
@@ -8,11 +7,6 @@ namespace Ami.BroAudio
 	public static partial class Utility
 	{
         public const string LogTitle = "<b><color=#F3E9D7>[BroAudio] </color></b>";
-
-        public static string ToName(this int id)
-		{
-			return SoundManager.Instance.GetNameByID(id);
-		}
 
 		#region Efficient HasFlag
 		// faster than Enum.HasFlag, could be used in runtime.

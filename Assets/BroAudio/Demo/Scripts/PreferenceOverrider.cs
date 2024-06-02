@@ -8,22 +8,21 @@ namespace Ami.BroAudio.Demo
     public class PreferenceOverrider : MonoBehaviour
     {
         [SerializeField] private bool _logCombFilteringWarning = false;
-        [SerializeField] private float _combFilteringPreventTime = 0.04f;
-        [SerializeField] private FilterSlope _audioFilterSlope = FilterSlope.FourPole;
+
+        private bool _originLogCombFilteringWarning = false;
 
 #if UNITY_EDITOR
         void Start()
         {
             var preference = SoundManager.Instance.Setting;
+            _originLogCombFilteringWarning = preference.LogCombFilteringWarning;
             preference.LogCombFilteringWarning = _logCombFilteringWarning;
-            preference.CombFilteringPreventionInSeconds = _combFilteringPreventTime;
-            preference.AudioFilterSlope = _audioFilterSlope;
         }
 
         private void OnDestroy()
         {
-            SoundManager.Instance.Setting.ResetToFactorySettings();
-        } 
+            SoundManager.Instance.Setting.LogCombFilteringWarning = _originLogCombFilteringWarning;
+        }
 #endif
     } 
 }

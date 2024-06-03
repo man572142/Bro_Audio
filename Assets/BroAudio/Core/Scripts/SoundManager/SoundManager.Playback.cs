@@ -1,46 +1,46 @@
 using System;
-using UnityEngine;
-using static Ami.BroAudio.Utility;
 using System.Collections.Generic;
+using UnityEngine;
+using Ami.BroAudio.Data;
+using Ami.Extension;
+using static Ami.BroAudio.Utility;
 
 namespace Ami.BroAudio.Runtime
 {
 	public partial class SoundManager : MonoBehaviour
     {
-        public Dictionary<int, AudioPlayer> ResumablePlayers = null;
-
         #region Play
         public IAudioPlayer Play(int id)
         {
-            if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
+            if (IsPlayable(id,out var entity, out var previousPlayer) && TryGetAvailablePlayer(id, out var player))
             {
                 var pref = new PlaybackPreference(entity);
-                return PlayerToPlay(id, player, pref);
+                return PlayerToPlay(id, player, pref, previousPlayer);
             }
             return null;
         }
 
         public IAudioPlayer Play(int id, Vector3 position)
         {
-            if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
+            if (IsPlayable(id,out var entity, out var previousPlayer) && TryGetAvailablePlayer(id, out var player))
             {
                 var pref = new PlaybackPreference(entity,position);
-                return PlayerToPlay(id, player,pref);
+                return PlayerToPlay(id, player,pref, previousPlayer);
             }
             return null;
         }
 
         public IAudioPlayer Play(int id, Transform followTarget)
         {
-            if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
+            if (IsPlayable(id,out var entity, out var previousPlayer) && TryGetAvailablePlayer(id, out var player))
             {
                 var pref = new PlaybackPreference(entity,followTarget);
-                return PlayerToPlay(id, player,pref);
+                return PlayerToPlay(id, player,pref, previousPlayer);
             }
             return null;
         }
 
-		private IAudioPlayer PlayerToPlay(int id, AudioPlayer player,PlaybackPreference pref)
+		private IAudioPlayer PlayerToPlay(int id, AudioPlayer player,PlaybackPreference pref, IAudioPlayer previousPlayer = null)
         {
             BroAudioType audioType = GetAudioType(id);
             if (_auidoTypePref.TryGetValue(audioType, out var audioTypePref))
@@ -58,8 +58,15 @@ namespace Ami.BroAudio.Runtime
 
             if(CombFilteringPreventionInSeconds > 0f)
             {
-				StartCoroutine(PreventCombFiltering(id, CombFilteringPreventionInSeconds));
-			}
+                _combFilteringPreventer = _combFilteringPreventer ?? new Dictionary<SoundID, IAudioPlayer>();
+                if(previousPlayer != null)
+                {
+                    previousPlayer.OnEndPlaying -= RemoveFromPreventer;
+                }
+                player.OnEndPlaying += RemoveFromPreventer;
+                _combFilteringPreventer[id] = player;
+                Debug.Log($"Play at:{player.PlaybackStartingTime}");
+            }
 
             if (pref.Entity.SeamlessLoop)
             {
@@ -67,6 +74,14 @@ namespace Ami.BroAudio.Runtime
                 seamlessLoopHelper.SetPlayer(player);
             }
             return wrapper;
+        }
+
+        private void RemoveFromPreventer(SoundID id)
+        {
+            if(_combFilteringPreventer != null)
+            {
+                _combFilteringPreventer.Remove(id);
+            }
         }
         #endregion
 
@@ -122,6 +137,39 @@ namespace Ami.BroAudio.Runtime
                     player.Stop(fadeTime, StopMode.Pause,null);
                 }
             });
+        }
+
+        private bool IsPlayable(int id, out IAudioEntity entity, out IAudioPlayer previousPlayer)
+        {
+            entity = null;
+            previousPlayer = null;
+            if (id <= 0 || !_audioBank.TryGetValue(id, out entity))
+            {
+                Debug.LogError(LogTitle + $"The sound is missing or it has never been assigned. No sound will be played. SoundID:{id}");
+                return false;
+            }
+
+            SoundID soundID = id;
+            if (_combFilteringPreventer != null && _combFilteringPreventer.TryGetValue(soundID, out previousPlayer) 
+                && !HasPassPreventionTime(previousPlayer.PlaybackStartingTime))
+            {
+#if UNITY_EDITOR
+                if (Setting.LogCombFilteringWarning)
+                {
+                    Debug.LogWarning(LogTitle + $"One of the plays of Audio:{soundID.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
+                    $"For more information, please go to the [Comb Filtering] section in Tools/BroAudio/Preference.");
+                }
+#endif
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool HasPassPreventionTime(int ms)
+        {
+            int time = TimeExtension.UnscaledCurrentFrameBeganTime;
+            return time - ms >= TimeExtension.SecToMs(Setting.CombFilteringPreventionInSeconds);
         }
     }
 }

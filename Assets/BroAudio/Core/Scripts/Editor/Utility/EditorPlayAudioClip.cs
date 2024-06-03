@@ -100,7 +100,7 @@ namespace Ami.Extension
 			}
 
 			int sampleLength = audioClip.samples - startSample - endSample;
-			int lengthInMs = (int)Math.Round(sampleLength / (double)audioClip.frequency * AsyncTaskExtension.SecondInMilliseconds, MidpointRounding.AwayFromZero);
+			int lengthInMs = (int)Math.Round(sampleLength / (double)audioClip.frequency * TimeExtension.SecondInMilliseconds, MidpointRounding.AwayFromZero);
 			_currentPlayingTaskCanceller = _currentPlayingTaskCanceller ?? new CancellationTokenSource();
 			if (loop)
 			{

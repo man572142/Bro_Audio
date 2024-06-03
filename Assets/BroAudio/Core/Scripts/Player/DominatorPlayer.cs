@@ -71,7 +71,7 @@ namespace Ami.BroAudio.Runtime
             Instance?.SetEffect(EffectType.None,SetEffectMode.Override);
         }
 
-        private bool PlayerIsPlaying() => IsAvailable() && IsActive;
+        private bool PlayerIsPlaying() => IsActive;
 #endif
     }
 }

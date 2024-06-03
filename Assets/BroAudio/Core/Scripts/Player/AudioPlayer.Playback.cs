@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
 	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>
-	{
+    {
         public static Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
         public event Action<int,PlaybackPreference,EffectType> OnFinishingOneRound;
@@ -19,7 +19,9 @@ namespace Ami.BroAudio.Runtime
         private Coroutine _trackVolumeControlCoroutine = null;
         private bool _isReadyToPlay = false;
 
-        public void Play(int id, PlaybackPreference pref,bool waitForChainingMethod = true)
+        public int PlaybackStartingTime { get; private set; }
+
+        public IAudioPlaybackTime Play(int id, PlaybackPreference pref,bool waitForChainingMethod = true)
         {
             ID = id;
             if(_stopMode == StopMode.Stop)
@@ -28,8 +30,9 @@ namespace Ami.BroAudio.Runtime
             }
             _isReadyToPlay = true;
             IsStopping = false;
+            PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
 
-            if(waitForChainingMethod)
+            if (waitForChainingMethod)
 			{
 				ExecuteAfterChainingMethod(() =>
                 {
@@ -47,6 +50,7 @@ namespace Ami.BroAudio.Runtime
 			{
                 StartPlaying();
             }
+            return this;
 
 			void StartPlaying()
 			{

@@ -1,8 +1,9 @@
+using Ami.BroAudio.Runtime;
 using System;
 
 namespace Ami.BroAudio
 {
-	public interface IAudioPlayer : IEffectDecoratable, IVolumeSettable, IMusicDecoratable, IAudioStoppable
+	public interface IAudioPlayer : IEffectDecoratable, IVolumeSettable, IMusicDecoratable, IAudioStoppable, IAudioPlaybackTime
     {
 		/// <summary>
 		/// The SoundID of the player is playing

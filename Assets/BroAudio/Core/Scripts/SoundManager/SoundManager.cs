@@ -66,7 +66,7 @@ namespace Ami.BroAudio.Runtime
         private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
 
-        private Dictionary<int, bool> _combFilteringPreventer = new Dictionary<int, bool>();
+        private Dictionary<SoundID, IAudioPlayer> _combFilteringPreventer = null;
 
         private Coroutine _masterVolumeCoroutine;
 
@@ -333,41 +333,6 @@ namespace Ami.BroAudio.Runtime
 		{
             return _audioPlayerPool.Extract();
         }
-
-        private IEnumerator PreventCombFiltering(int id,float preventTime)
-        {
-			_combFilteringPreventer[id] = true;
-			var waitInstruction = preventTime > Time.deltaTime ? new WaitForSeconds(preventTime) : null;
-			yield return waitInstruction;
-			_combFilteringPreventer[id] = false;
-        }
-
-        #region NullChecker
-        private bool IsPlayable(int id,out IAudioEntity entity)
-        {
-            entity = null;
-            if (id <= 0 || !_audioBank.TryGetValue(id, out entity))
-            {
-                Debug.LogError(LogTitle + $"The sound is missing or it has never been assigned. No sound will be played. SoundID:{id}");
-                return false;
-            }
-
-            if (_combFilteringPreventer.TryGetValue(id, out bool isPreventing) && isPreventing)
-            {
-#if UNITY_EDITOR
-                if (Setting.LogCombFilteringWarning)
-                {
-                    SoundID soundID = id;
-                    Debug.LogWarning(LogTitle + $"One of the plays of Audio:{soundID.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
-                    $"For more information, please go to the [Comb Filtering] section in Tools/BroAudio/Preference.");
-                } 
-#endif
-                return false;
-            }
-
-            return true;
-        }
-        #endregion
 
         public string GetNameByID(int id)
 		{

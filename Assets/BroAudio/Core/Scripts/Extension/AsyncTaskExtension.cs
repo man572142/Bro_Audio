@@ -6,14 +6,13 @@ namespace Ami.Extension
 {
 	public static class AsyncTaskExtension
 	{
-		public const int SecondInMilliseconds = 1000;
 		public const float MillisecondInSeconds = 0.001f;
 
 		public static void DelayInvoke(float delay, Action action, CancellationToken cancellationToken = default)
 		{
-			float ms = delay * SecondInMilliseconds;
+			int ms = TimeExtension.SecToMs(delay);
 			// Do not remove the casting; otherwise, it will call to itself, creating an infinite loop
-			DelayInvoke((int)ms, action, cancellationToken);
+			DelayInvoke(ms, action, cancellationToken);
 		}
 
 		public static async void DelayInvoke(int milliseconds, Action action, CancellationToken cancellationToken = default)

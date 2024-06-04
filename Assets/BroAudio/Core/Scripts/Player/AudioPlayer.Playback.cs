@@ -17,54 +17,25 @@ namespace Ami.BroAudio.Runtime
         private StopMode _stopMode = default;
         private Coroutine _playbackControlCoroutine = null;
         private Coroutine _trackVolumeControlCoroutine = null;
-        private bool _isReadyToPlay = false;
 
         public int PlaybackStartingTime { get; private set; }
 
-        public void Play(int id, PlaybackPreference pref,bool waitForChainingMethod = true)
+        public void Play(int id, PlaybackPreference pref)
         {
+            if(IsStopping)
+            {
+                return;
+            }
+
             ID = id;
-            if(_stopMode == StopMode.Stop)
+			PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
+			if (_stopMode == default)
             {
                 CurrentClip = pref.Entity.PickNewClip();
             }
-            _isReadyToPlay = true;
-            IsStopping = false;
-            PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
 
-            if (waitForChainingMethod)
-			{
-				ExecuteAfterChainingMethod(() =>
-                {
-					if (_isReadyToPlay)
-					{
-						StartPlaying();
-					}
-					else
-                    {
-                        EndPlaying();
-                    }
-                });
-            }
-            else
-			{
-                StartPlaying();
-            }
-
-			void StartPlaying()
-			{
-                this.StartCoroutineAndReassign(PlayControl(pref), ref _playbackControlCoroutine);
-			}
-
-            void ExecuteAfterChainingMethod(Action action)
-            {
-#if UNITY_WEBGL
-                this.DelayInvoke(action, new WaitForEndOfFrame());
-#else
-                AsyncTaskExtension.DelayInvoke(AsyncTaskExtension.MillisecondInSeconds, action);
-#endif
-            }
-        }
+			this.StartCoroutineAndReassign(PlayControl(pref), ref _playbackControlCoroutine);
+		}
 
         private IEnumerator PlayControl(PlaybackPreference pref)
         {
@@ -234,23 +205,23 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            _isReadyToPlay = false;
-            _stopMode = stopMode;
-            this.StartCoroutineAndReassign(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);
+			if (ID <= 0 || !AudioSource.isPlaying)
+			{
+				onFinished?.Invoke();
+				return;
+			}
+
+			this.StartCoroutineAndReassign(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);
         }
 
 		private IEnumerator StopControl(float overrideFade, StopMode stopMode, Action onFinished)
         {
-            if (ID <= 0 || !AudioSource.isPlaying)
-            {
-                onFinished?.Invoke();
-                yield break;
-            }
+			_stopMode = stopMode;
+			IsStopping = true;
 
 			#region FadeOut
 			if (HasFading(CurrentClip.FadeOut,overrideFade,out float fadeTime))
             {
-                IsStopping = true;
                 if (IsFadingOut)
                 {
                     // if is fading out. then don't stop. just wait for it

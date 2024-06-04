@@ -42,7 +42,7 @@ namespace Ami.BroAudio.Runtime
 				pref.AudioTypePlaybackPref = audioTypePref;
 			}
 			newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
-            newPlayer.Play(id, pref,false);
+            newPlayer.Play(id, pref);
 			newPlayer.OnFinishingOneRound += OnFinishingOneRound;
 		}
 	}

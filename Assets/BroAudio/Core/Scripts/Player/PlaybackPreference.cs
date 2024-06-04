@@ -12,8 +12,8 @@ namespace Ami.BroAudio.Runtime
 		public readonly Vector3 Position;
 		public readonly Transform FollowTarget;
 
-		public readonly Ease FadeInEase;
-		public readonly Ease FadeOutEase;
+		public Ease FadeInEase => Entity.SeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
+		public Ease FadeOutEase => Entity.SeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
 
 		public float FadeIn { get; private set; }
 		public float FadeOut { get; private set; }
@@ -39,9 +39,6 @@ namespace Ami.BroAudio.Runtime
 			FollowTarget = null;
 			PlayerWaiter = null;
 			AudioTypePlaybackPref = null;
-
-			FadeInEase = Entity.SeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
-			FadeOutEase = Entity.SeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
 		}
 
 

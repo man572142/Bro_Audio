@@ -9,6 +9,8 @@ namespace Ami.BroAudio.Runtime
 {
 	public partial class SoundManager : MonoBehaviour
     {
+		private Queue<Action> _playbackQueue = new Queue<Action>();
+
         #region Play
         public IAudioPlayer Play(int id)
         {
@@ -40,7 +42,7 @@ namespace Ami.BroAudio.Runtime
             return null;
         }
 
-		private IAudioPlayer PlayerToPlay(int id, AudioPlayer player,PlaybackPreference pref, AudioPlayer previousPlayer = null)
+		private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref, AudioPlayer previousPlayer = null)
         {
             BroAudioType audioType = GetAudioType(id);
             if (_auidoTypePref.TryGetValue(audioType, out var audioTypePref))
@@ -48,7 +50,7 @@ namespace Ami.BroAudio.Runtime
                 pref.AudioTypePlaybackPref = audioTypePref;
             }
 
-            player.Play(id, pref);
+			_playbackQueue.Enqueue(() => player.Play(id, pref));
             var wrapper = new AudioPlayerInstanceWrapper(player);
 
             if (Setting.AlwaysPlayMusicAsBGM && audioType == BroAudioType.Music)
@@ -82,10 +84,18 @@ namespace Ami.BroAudio.Runtime
                 _combFilteringPreventer.Remove(id);
             }
         }
-        #endregion
 
-        #region Stop
-        public void Stop(BroAudioType targetType)
+		private void LateUpdate()
+		{
+			while (_playbackQueue.Count > 0)
+			{
+				_playbackQueue.Dequeue()?.Invoke();
+			}
+		}
+		#endregion
+
+		#region Stop
+		public void Stop(BroAudioType targetType)
         {
             Stop(targetType,AudioPlayer.UseEntitySetting);
         }

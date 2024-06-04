@@ -8002,7 +8002,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1400717100}
   - component: {fileID: 1400717099}
-  - component: {fileID: 1400717101}
   m_Layer: 0
   m_Name: Preference
   m_TagString: Untagged
@@ -8022,7 +8021,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b197cc0d9c8d824582e1a2c4ec31322, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _logCombFilteringWarning: 1
+  _logCombFilteringWarning: 0
 --- !u!4 &1400717100
 Transform:
   m_ObjectHideFlags: 0
@@ -8038,21 +8037,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1400717101
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1400717098}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a407ac7670174b44d9cb1fb04bb44a12, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _sound:
-    ID: 268435457
-    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
 --- !u!4 &1401136311 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5699927781620790252, guid: bc167543835742746a1840ce53386fed, type: 3}
@@ -11208,6 +11192,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -12129,6 +12114,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0

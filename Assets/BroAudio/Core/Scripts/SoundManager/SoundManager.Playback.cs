@@ -40,7 +40,7 @@ namespace Ami.BroAudio.Runtime
             return null;
         }
 
-		private IAudioPlayer PlayerToPlay(int id, AudioPlayer player,PlaybackPreference pref, IAudioPlayer previousPlayer = null)
+		private IAudioPlayer PlayerToPlay(int id, AudioPlayer player,PlaybackPreference pref, AudioPlayer previousPlayer = null)
         {
             BroAudioType audioType = GetAudioType(id);
             if (_auidoTypePref.TryGetValue(audioType, out var audioTypePref))
@@ -58,14 +58,13 @@ namespace Ami.BroAudio.Runtime
 
             if(CombFilteringPreventionInSeconds > 0f)
             {
-                _combFilteringPreventer = _combFilteringPreventer ?? new Dictionary<SoundID, IAudioPlayer>();
+                _combFilteringPreventer = _combFilteringPreventer ?? new Dictionary<SoundID, AudioPlayer>();
                 if(previousPlayer != null)
                 {
                     previousPlayer.OnEndPlaying -= RemoveFromPreventer;
                 }
                 player.OnEndPlaying += RemoveFromPreventer;
                 _combFilteringPreventer[id] = player;
-                Debug.Log($"Play at:{player.PlaybackStartingTime}");
             }
 
             if (pref.Entity.SeamlessLoop)
@@ -139,7 +138,7 @@ namespace Ami.BroAudio.Runtime
             });
         }
 
-        private bool IsPlayable(int id, out IAudioEntity entity, out IAudioPlayer previousPlayer)
+        private bool IsPlayable(int id, out IAudioEntity entity, out AudioPlayer previousPlayer)
         {
             entity = null;
             previousPlayer = null;

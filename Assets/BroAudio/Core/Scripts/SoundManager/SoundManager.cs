@@ -66,7 +66,7 @@ namespace Ami.BroAudio.Runtime
         private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
 
-        private Dictionary<SoundID, IAudioPlayer> _combFilteringPreventer = null;
+        private Dictionary<SoundID, AudioPlayer> _combFilteringPreventer = null;
 
         private Coroutine _masterVolumeCoroutine;
 
@@ -352,4 +352,3 @@ namespace Ami.BroAudio.Runtime
         }
     }
 }
-

@@ -21,7 +21,7 @@ namespace Ami.BroAudio.Runtime
 
         public int PlaybackStartingTime { get; private set; }
 
-        public IAudioPlaybackTime Play(int id, PlaybackPreference pref,bool waitForChainingMethod = true)
+        public void Play(int id, PlaybackPreference pref,bool waitForChainingMethod = true)
         {
             ID = id;
             if(_stopMode == StopMode.Stop)
@@ -50,7 +50,6 @@ namespace Ami.BroAudio.Runtime
 			{
                 StartPlaying();
             }
-            return this;
 
 			void StartPlaying()
 			{

@@ -40,8 +40,6 @@ namespace Ami.BroAudio
 
 		public bool IsPlaying => IsAvailable() ? Instance.IsPlaying : false;
 
-		public int PlaybackStartingTime => IsAvailable() ? Instance.PlaybackStartingTime : 0;
-
         IMusicPlayer IMusicDecoratable.AsBGM() => Instance ? Instance.AsBGM() : null;
 
 #if !UNITY_WEBGL

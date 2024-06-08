@@ -21,7 +21,7 @@ namespace Ami.BroAudio.Runtime
 			{
 				if(_isDominator)
 				{
-                    LogWarning(Utility.LogTitle + "You have used up all the [Dominator] tracks. If you need more tracks, please click the [Add Dominator Track] button in Tool/BroAudio/Settings.");
+                    LogWarning(Utility.LogTitle + "You have used up all the [Dominator] tracks. If you need more tracks, please click the [Add Dominator Track] button in Tool/BroAudio/Preference.");
                 }
 				else
 				{

@@ -7,6 +7,7 @@
         // Settings
         AssetOutputPathPanelTtile = 1,
         LogAccessRecycledWarning,
+        AudioPlayerPoolSize,
 
         // Settings/Audio
         CombFilteringTooltip = 10,

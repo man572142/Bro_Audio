@@ -45,7 +45,7 @@ namespace Ami.BroAudio.Editor.Setting
         private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
         private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
-			,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent;
+			,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent;
 
         private GUIContent[] _tabLabels = null;
 		private Tab _currSelectedTab = Tab.Audio;
@@ -101,7 +101,7 @@ namespace Ami.BroAudio.Editor.Setting
 			_acceptAudioMixerGUIContent = new GUIContent("Accept BroAudioMixer Modification");
 			_playMusicAsBgmGUIContent = new GUIContent("Always Play Music As BGM", _instruction.GetText(Instruction.AlwaysPlayMusicAsBGM));
 			_logAccessRecycledWarningGUIContent = new GUIContent("Log Access Recycled Player Warning", _instruction.GetText(Instruction.LogAccessRecycledWarning));
-
+			_poolSizeCountGUIContent = new GUIContent("Audio Player Object Pool Size", _instruction.GetText(Instruction.AudioPlayerPoolSize));
         }
 
 		private void OnDisable()
@@ -193,6 +193,8 @@ namespace Ami.BroAudio.Editor.Setting
             DrawDefaultEasing();
             DrawSeamlessLoopEasing();
             DrawEmptyLine(1);
+			DrawAudioPlayerSetting();
+			DrawEmptyLine(1);
             DrawAudioProjectSettings();
 
 			void DrawBGMSetting()
@@ -293,6 +295,24 @@ namespace Ami.BroAudio.Editor.Setting
             void DrawAudioFilterSlope()
             {
                 RuntimeSetting.AudioFilterSlope = (FilterSlope)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), _filterSlopeGUIContent, RuntimeSetting.AudioFilterSlope);
+            }
+
+            void DrawAudioPlayerSetting()
+            {
+                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Audio Player".ToWhiteBold(), GUIStyleHelper.RichText);
+                using (new EditorGUI.IndentLevelScope())
+                {
+                    using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.65f))
+                    {
+                        Rect accessRecycledWarnRect = GetRectAndIterateLine(drawPosition);
+                        RuntimeSetting.LogAccessRecycledPlayerWarning = EditorGUI.Toggle(accessRecycledWarnRect, _logAccessRecycledWarningGUIContent, RuntimeSetting.LogAccessRecycledPlayerWarning);
+
+                        Rect maxPoolSizeRect = GetRectAndIterateLine(drawPosition);
+                        float fieldWidth = maxPoolSizeRect.width - EditorGUIUtility.labelWidth;
+                        maxPoolSizeRect.width -= fieldWidth - 50f;
+                        RuntimeSetting.DefaultAudioPlayerPoolSize = EditorGUI.IntField(maxPoolSizeRect, _poolSizeCountGUIContent, RuntimeSetting.DefaultAudioPlayerPoolSize);
+                    }
+                }
             }
 
             void DrawAudioProjectSettings()
@@ -490,7 +510,6 @@ namespace Ami.BroAudio.Editor.Setting
 
 		private void DrawMiscellaneousSetting(Rect drawPosition)
         {
-            DrawToggle(drawPosition);
 			DrawEmptyLine(1);
             DrawAssetOutputPath(drawPosition);
             DrawEmptyLine(1);
@@ -512,12 +531,6 @@ namespace Ami.BroAudio.Editor.Setting
             {
                 Rect buttonRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(400f, SingleLineSpace * 1.5f);
                 return GUI.Button(buttonRect, label);
-            }
-
-            void DrawToggle(Rect drawPosition)
-            {
-				Rect accessRecycledWarnRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(400f, SingleLineSpace);
-                RuntimeSetting.LogAccessRecycledPlayerWarning = EditorGUI.ToggleLeft(accessRecycledWarnRect, _logAccessRecycledWarningGUIContent, RuntimeSetting.LogAccessRecycledPlayerWarning);
             }
         }
 

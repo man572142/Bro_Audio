@@ -36,17 +36,17 @@ namespace Ami.Extension
 				double currentPos;
 				if(IsLoop)
 				{
-					float targetPlayLength = _clip.Length - _clip.StartPosition - _clip.EndPosition;
+					float targetPlayLength = _clip.FullLength - _clip.StartPosition - _clip.EndPosition;
                     currentPos = _clip.StartPosition + currentPlayedLength % targetPlayLength;
 				}
                 else
                 {
-					float endTime = _clip.Length - _clip.EndPosition;
+					float endTime = _clip.FullLength - _clip.EndPosition;
 					currentPos = _clip.StartPosition + currentPlayedLength;
                     currentPos = Math.Min(currentPos, endTime);
 				}
                 
-				float x = (float)(_waveformRect.x + (currentPos / _clip.Length * _waveformRect.width));
+				float x = (float)(_waveformRect.x + (currentPos / _clip.FullLength * _waveformRect.width));
 				return new Rect(x,_waveformRect.y, AudioClipIndicatorWidth,_waveformRect.height);
 			}
 			return default;
@@ -54,8 +54,8 @@ namespace Ami.Extension
 
 		public Rect GetEndPos()
 		{
-			float endTime = _clip.Length - _clip.EndPosition;
-			return new Rect(_waveformRect.x + (endTime / _clip.Length * _waveformRect.width), _waveformRect.y, AudioClipIndicatorWidth, _waveformRect.height);
+			float endTime = _clip.FullLength - _clip.EndPosition;
+			return new Rect(_waveformRect.x + (endTime / _clip.FullLength * _waveformRect.width), _waveformRect.y, AudioClipIndicatorWidth, _waveformRect.height);
 		}
 
 		public override void Start()

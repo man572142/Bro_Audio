@@ -25,7 +25,7 @@ namespace Ami.Extension
 		private static CancellationTokenSource _currentAudioSourceTaskCanceller = null;
 		private static AudioSource _currentEditorAudioSource = null;
 
-		public static void PlayClipByAudioSource(AudioClip audioClip, float volume, float startTime, float endTime, bool loop = false)
+		public static void PlayClipByAudioSource(AudioClip audioClip, float volume, float startTime, float endTime, bool loop = false, float pitch = 1f)
 		{
 			StopAllPreviewClipsAndCancelTask();
 			if (_currentEditorAudioSource)
@@ -46,6 +46,7 @@ namespace Ami.Extension
 			audioSource.volume = volume;
 			audioSource.playOnAwake = false;
 			audioSource.time = startTime;
+			audioSource.pitch = pitch;
 
 			audioSource.Play();
 			PlaybackIndicator.Start(loop);

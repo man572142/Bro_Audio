@@ -12,13 +12,13 @@ namespace Ami.BroAudio.Editor
 		public virtual float Delay => PlaybackValues[2];
 		public virtual float FadeIn => FadingValues[0];
 		public virtual float FadeOut => FadingValues[1];
-		public float Length { get; private set; }
+		public float FullLength { get; private set; }
 		public float[] PlaybackValues { get; private set; }
 		public float[] FadingValues { get; private set; }
 
 		public Transport(float length)
 		{
-			Length = length;
+			FullLength = length;
 			PlaybackValues = new float[3]; // StartPosition, EndPosition, Delay
 			FadingValues = new float[2]; // FadeIn, FadeOut
 		}
@@ -65,7 +65,7 @@ namespace Ami.BroAudio.Editor
 
 		private float GetLengthLimit(TransportType modifiedType)
 		{
-			return Length - GetLength(TransportType.Start, StartPosition) - GetLength(TransportType.End, EndPosition) - GetLength(TransportType.FadeIn, FadeIn) - GetLength(TransportType.FadeOut, FadeOut);
+			return FullLength - GetLength(TransportType.Start, StartPosition) - GetLength(TransportType.End, EndPosition) - GetLength(TransportType.FadeIn, FadeIn) - GetLength(TransportType.FadeOut, FadeOut);
 
 			float GetLength(TransportType transportType, float value)
 			{

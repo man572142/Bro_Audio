@@ -10,9 +10,10 @@ namespace Ami.BroAudio
 		public static Dictionary<int, int> ClipsSequencer = new Dictionary<int, int>();
 
 
-		public static BroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id)
+		public static BroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index)
 		{
-			if (clips == null || clips.Length <= 0)
+			index = 0;
+            if (clips == null || clips.Length <= 0)
 			{
 				Debug.LogError(LogTitle + "There is no AudioClip in asset");
 				return null;
@@ -27,36 +28,38 @@ namespace Ami.BroAudio
 				case MulticlipsPlayMode.Single:
 					return clips[0];
 				case MulticlipsPlayMode.Sequence:
-					return clips.PickNextClip(id);
+					return clips.PickNextClip(id, out index);
 				case MulticlipsPlayMode.Random:
-					return clips.PickRandomClip();
+					return clips.PickRandomClip(out index);
 			}
 			return default;
 		}
 
-		private static BroAudioClip PickNextClip(this BroAudioClip[] clips, int id)
+		private static BroAudioClip PickNextClip(this BroAudioClip[] clips, int id, out int index)
 		{
-			int resultIndex = 0;
+			index = 0;
 			if (ClipsSequencer.ContainsKey(id))
 			{
 				ClipsSequencer[id] = ClipsSequencer[id] + 1 >= clips.Length ? 0 : ClipsSequencer[id] + 1;
-				resultIndex = ClipsSequencer[id];
+				index = ClipsSequencer[id];
 			}
 			else
 			{
 				ClipsSequencer.Add(id, 0);
 			}
-			return clips[resultIndex];
+			return clips[index];
 		}
 
-		public static BroAudioClip PickRandomClip(this BroAudioClip[] clips)
+		public static BroAudioClip PickRandomClip(this BroAudioClip[] clips, out int index)
 		{
-			int totalWeight = clips.Sum(x => x.Weight);
+            index = 0;
+            int totalWeight = clips.Sum(x => x.Weight);
 
 			// No Weight
 			if (totalWeight == 0)
 			{
-				return clips[Random.Range(0, clips.Length)];
+				index = Random.Range(0, clips.Length);
+                return clips[index];
 			}
 
 			// Use Weight
@@ -68,6 +71,7 @@ namespace Ami.BroAudio
 				sum += clips[i].Weight;
 				if (targetWeight < sum)
 				{
+					index = i;
 					return clips[i]; ;
 				}
 			}

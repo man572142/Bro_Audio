@@ -14,10 +14,17 @@ namespace Ami.BroAudio.Editor
 	[CustomPropertyDrawer(typeof(AudioEntity))]
 	public partial class AudioEntityPropertyDrawer : MiPropertyDrawer
 	{
-		public class ClipData
+		private class ClipData
 		{
 			public ITransport Transport;
 			public bool IsSnapToFullVolume;
+		}
+
+		private class EntityData
+		{
+			public Tab SelectedTab;
+			public bool IsPlaying;
+			public bool IsLoop;
 		}
 
 		public enum Tab { Clips, Overall}
@@ -32,28 +39,28 @@ namespace Ami.BroAudio.Editor
 
 		private readonly GUIContent[] _tabLabelGUIContents = { new GUIContent(nameof(Tab.Clips)), new GUIContent(nameof(Tab.Overall)) };
 		private readonly float[] _tabLabelRatios = new float[] { 0.5f, 0.5f };
-		private readonly float[] _identityLabelRatios = new float[] { 0.65f, 0.15f, 0.2f };
+		private readonly float[] _headerRatios = new float[] { 0.55f, 0.2f, 0.25f };
 		private readonly GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume),"The playback volume of this clip");
         private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
         private readonly IUniqueIDGenerator _idGenerator = new IdGenerator();
         private Rect[] _tabPreAllocRects = null;
-		private Rect[] _identityLabelRects = null;
+		private Rect[] _headerRects = null;
 
 		private Dictionary<string, ReorderableClips> _reorderableClipsDict = new Dictionary<string, ReorderableClips>();
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper();
 		private Dictionary<string, ClipData> _clipDataDict = new Dictionary<string, ClipData>();
-		private Dictionary<string, Tab> _currSelectedTabDict = new Dictionary<string, Tab>();
+        private Dictionary<string, EntityData> _entityDataDict = new Dictionary<string, EntityData>();
         private GenericMenu _changeAudioTypeOption = null;
 		private SerializedProperty _entityThatIsModifyingAudioType = null;
-        
+
         public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
 		public float ClipPreviewPadding => ReorderableList.Defaults.padding;
 		public float SnapVolumePadding => ReorderableList.Defaults.padding;
+		private float TabLabelHeight => SingleLineSpace * 1.3f;
+		private float TabLabelCompensation => SingleLineSpace * 2 - TabLabelHeight;
 
-		private float TabLabelHeight => SingleLineSpace * 1.5f;
-
-		protected override void OnEnable()
+        protected override void OnEnable()
 		{
 			base.OnEnable();
 
@@ -118,33 +125,34 @@ namespace Ami.BroAudio.Editor
 			SerializedProperty idProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IEntityIdentity.ID)));
 
             Rect foldoutRect = GetRectAndIterateLine(position);
-			_identityLabelRects = _identityLabelRects ?? new Rect[_identityLabelRatios.Length];
+			_headerRects = _headerRects ?? new Rect[_headerRatios.Length];
 
-            SplitRectHorizontal(foldoutRect, 5f, _identityLabelRects, _identityLabelRatios);
-			Rect nameRect = _identityLabelRects[0]; Rect idRect = _identityLabelRects[1]; Rect audioTypeRect = _identityLabelRects[2];
+			float gap = 50f;
+            SplitRectHorizontal(foldoutRect, gap, _headerRects, _headerRatios);
+			Rect nameRect = _headerRects[0]; Rect previewButtonRect = _headerRects[1]; Rect audioTypeRect = _headerRects[2];
+			audioTypeRect.x += gap * 0.5f;
 
             property.isExpanded = EditorGUI.Foldout(nameRect, property.isExpanded, property.isExpanded? string.Empty : nameProp.stringValue);
-			DrawIdText(idRect, idProp.intValue);
 			DrawAudioTypeButton(audioTypeRect, property, Utility.GetAudioType(idProp.intValue));
 			if (!property.isExpanded || !TryGetAudioTypeSetting(property, out var setting))
 			{
 				return;
 			}
 
-			DrawEntityNameField(nameRect, nameProp);
+            GetOrAddEntityDataDict(property.propertyPath, out var data);
+            DrawEntityNameField(nameRect, nameProp, idProp.intValue);
+			DrawEntityPreviewButton(previewButtonRect, property, data);
 
-			GetOrAddTabDict(property.propertyPath, out Tab tab);
-			Rect tabViewRect = GetRectAndIterateLine(position);
-			tabViewRect.height = GetTabWindowHeight();
+			Rect tabViewRect = GetRectAndIterateLine(position).SetHeight(GetTabWindowHeight());
 			_tabPreAllocRects = _tabPreAllocRects ?? new Rect[_tabLabelRatios.Length];
-			tab = (Tab)DrawTabsView(tabViewRect, (int)tab, TabLabelHeight, _tabLabelGUIContents, _tabLabelRatios, _tabPreAllocRects);
-			_currSelectedTabDict[property.propertyPath] = tab;
+            data.SelectedTab = (Tab)DrawTabsView(tabViewRect, (int)data.SelectedTab, TabLabelHeight, _tabLabelGUIContents, _tabLabelRatios, _tabPreAllocRects);
+			
 			DrawEmptyLine(1);
 
 			position.x += IndentInPixel;
 			position.width -= IndentInPixel * 2f;
 
-			switch (tab)
+			switch (data.SelectedTab)
 			{
 				case Tab.Clips:
 					ReorderableClips currClipList = DrawReorderableClipsList(position, property, OnClipChanged);
@@ -178,7 +186,7 @@ namespace Ami.BroAudio.Editor
 			float GetTabWindowHeight()
 			{
 				float height = TabLabelHeight;
-				switch (tab)
+				switch (data.SelectedTab)
 				{
 					case Tab.Clips:
 						height += GetClipListHeight(property, setting);
@@ -187,37 +195,17 @@ namespace Ami.BroAudio.Editor
 						height += GetAdditionalBaseProtiesLineCount(property, setting) * SingleLineSpace + GetAdditionalBasePropertiesOffest(setting);
 						break; 
 				}
-				height += SingleLineSpace * 0.5f; // compensation for tab label's half line height
-				return height;
+				height += TabLabelCompensation;
+                return height;
 			}
 		}
 
-		private void DrawIdText(Rect position, int id)
+        private void GetOrAddEntityDataDict(string propertyPath, out EntityData data)
 		{
-#if BroAudio_DevOnly
-			Rect labelRect = new Rect(position) { width = 100f, x = position.xMax -100f};
-			EditorGUI.LabelField(labelRect, $"ID: {id}", EditorStyles.label); 
-#endif
-		}
-
-        private void DrawAudioTypeButton(Rect position, SerializedProperty property, BroAudioType audioType)
-        {
-			if(GUI.Button(position, string.Empty))
+			if(!_entityDataDict.TryGetValue(propertyPath, out data))
 			{
-				_entityThatIsModifyingAudioType = property;
-                _changeAudioTypeOption.DropDown(position);
-            }
-            string audioTypeName = audioType == BroAudioType.None ? "Undefined Type" : audioType.ToString();
-            EditorGUI.DrawRect(position.PolarCoordinates(-1f), EditorSetting.GetAudioTypeColor(audioType));
-			EditorGUI.LabelField(position, audioTypeName, GUIStyleHelper.MiddleCenterText);
-        }
-
-
-        private void GetOrAddTabDict(string propertyPath, out Tab tab)
-		{
-			if(!_currSelectedTabDict.TryGetValue(propertyPath,out tab))
-			{
-				_currSelectedTabDict[propertyPath] = Tab.Clips;
+                data = new EntityData() { SelectedTab = Tab.Clips};
+                _entityDataDict[propertyPath] = data;
 			}
 		}
 
@@ -228,12 +216,12 @@ namespace Ami.BroAudio.Editor
 			if (property.isExpanded && TryGetAudioTypeSetting(property, out var setting))
 			{
 				height += ReorderableList.Defaults.padding; // reorderableList element padding;
-				height += TabLabelHeight + SingleLineSpace * 0.5f; // Tab View + compensation
+				height += TabLabelHeight + TabLabelCompensation;
 #if !UNITY_2019_3_OR_NEWER
                 height += SingleLineSpace;
 #endif
-                GetOrAddTabDict(property.propertyPath, out Tab tab);
-				switch (tab)
+                GetOrAddEntityDataDict(property.propertyPath, out var data);
+				switch (data.SelectedTab)
 				{
 					case Tab.Clips:
 						height += GetClipListHeight(property, setting);
@@ -263,7 +251,7 @@ namespace Ami.BroAudio.Editor
 		}
 		#endregion
 
-		private void DrawEntityNameField(Rect position, SerializedProperty nameProp)
+		private void DrawEntityNameField(Rect position, SerializedProperty nameProp, int id)
         {
             EditorGUI.BeginChangeCheck();
 #if UNITY_2019_3_OR_NEWER
@@ -274,11 +262,45 @@ namespace Ami.BroAudio.Editor
 #else
 			Rect nameRect = new Rect(GetRectAndIterateLine(position));
 #endif
-            nameProp.stringValue = EditorGUI.TextField(nameRect, nameProp.stringValue);
+			GUIContent content = new GUIContent();
+#if !BroAudio_DevOnly
+			content.tooltip = id.ToString(); 
+#endif
+            nameProp.stringValue = EditorGUI.TextField(nameRect, content, nameProp.stringValue);
             if (EditorGUI.EndChangeCheck())
             {
                 OnEntityNameChanged?.Invoke();
             }
+        }
+
+        private void DrawEntityPreviewButton(Rect rect, SerializedProperty property, EntityData data)
+        {
+			if(!_reorderableClipsDict.TryGetValue(property.propertyPath, out var clipList) 
+				|| clipList.CurrentSelectedClip == null 
+				|| !clipList.CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip _))
+			{
+				return;
+            }
+
+			rect = rect.SetHeight(h => h * 1.1f);
+			SplitRectHorizontal(rect, 0.5f, 5f, out Rect playButtonRect, out Rect loopToggleRect);
+			data.IsLoop = DrawButtonToggle(loopToggleRect, data.IsLoop, EditorGUIUtility.IconContent(IconConstant.LoopIcon));
+			if(GUI.Button(playButtonRect, GetPlaybackButtonIcon(data.IsPlaying)))
+			{
+				PreviewEntity(property, data, clipList);
+			}
+        }
+
+        private void DrawAudioTypeButton(Rect position, SerializedProperty property, BroAudioType audioType)
+        {
+            if (GUI.Button(position, string.Empty))
+            {
+                _entityThatIsModifyingAudioType = property;
+                _changeAudioTypeOption.DropDown(position);
+            }
+            string audioTypeName = audioType == BroAudioType.None ? "Undefined Type" : audioType.ToString();
+            EditorGUI.DrawRect(position.PolarCoordinates(-1f), EditorSetting.GetAudioTypeColor(audioType));
+            EditorGUI.LabelField(position, audioTypeName, GUIStyleHelper.MiddleCenterText);
         }
 
         private ReorderableClips DrawReorderableClipsList(Rect position, SerializedProperty property,Action<string> onClipChanged)
@@ -316,8 +338,7 @@ namespace Ami.BroAudio.Editor
 
 			if (CanDraw(DrawedProperty.Volume))
 			{
-                Rect volRect = GetRectAndIterateLine(position);
-				volRect.width *= DefaultFieldRatio;
+                Rect volRect = GetRectAndIterateLine(position).SetWidth(w => w * DefaultFieldRatio);
                 volumeProp.floatValue = DrawVolumeSlider(volRect, _volumeLabel, volumeProp.floatValue, clipData.IsSnapToFullVolume, () =>
                 {
 					clipData.IsSnapToFullVolume = !clipData.IsSnapToFullVolume;
@@ -327,15 +348,13 @@ namespace Ami.BroAudio.Editor
 
 			if (CanDraw(DrawedProperty.PlaybackPosition))
 			{
-                Rect playbackRect = GetRectAndIterateLine(position);
-                playbackRect.width *= DefaultFieldRatio;
+                Rect playbackRect = GetRectAndIterateLine(position).SetWidth(w => w * DefaultFieldRatio);
                 _clipPropHelper.DrawPlaybackPositionField(playbackRect, transport);
 			}
 
             if (CanDraw(DrawedProperty.Fade))
 			{
-                Rect fadingRect = GetRectAndIterateLine(position);
-                fadingRect.width *= DefaultFieldRatio;
+                Rect fadingRect = GetRectAndIterateLine(position).SetWidth(w => w * DefaultFieldRatio);
                 _clipPropHelper.DrawFadingField(fadingRect, transport);
             }
 
@@ -355,5 +374,51 @@ namespace Ami.BroAudio.Editor
 		{
 			_clipDataDict.Remove(clipPropPath);
 		}
-	}
+
+		private void PreviewEntity(SerializedProperty property, EntityData data, ReorderableClips clipList)
+		{
+			if(data.IsPlaying)
+			{
+				EditorPlayAudioClip.StopAllClips();
+			}
+			else
+			{
+                if (TryGetEntityInstance(property, out var entity))
+                {
+					var clip = entity.PickNewClip(out int index);
+                    clipList.SelectElement(index);
+
+                    float volume = clip.Volume * entity.GetMasterVolume();
+					float pitch = entity.GetPitch();
+					EditorPlayAudioClip.PlayClipByAudioSource(clip.AudioClip, volume, clip.StartPosition, clip.EndPosition, data.IsLoop, pitch);
+                    EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(clipList.PreviewRect, new PreviewClip(clip));
+					EditorPlayAudioClip.PlaybackIndicator.OnEnd += EndPreview;
+                }
+            }
+
+			data.IsPlaying = !data.IsPlaying;
+
+			void EndPreview()
+			{
+                EditorPlayAudioClip.PlaybackIndicator.OnEnd -= EndPreview;
+				data.IsPlaying = false;
+            }
+		}
+
+		private bool TryGetEntityInstance(SerializedProperty property,out AudioEntity entity)
+		{
+			entity = null;
+            object obj = fieldInfo.GetValue(property.serializedObject.targetObject);
+            if (obj is AudioEntity[] entities)
+            {
+                string baseName = nameof(AudioAsset.Entities) + ".Array.data[";
+                string num = property.propertyPath.Remove(property.propertyPath.Length - 1).Remove(0, baseName.Length);
+                if (int.TryParse(num, out int index) && index < entities.Length)
+                {
+                    entity = entities[index];
+                }
+            }
+			return entity != null;
+        }
+    }
 }

@@ -4,6 +4,7 @@ using Ami.Extension;
 using System;
 using System.IO;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
+using static Ami.Extension.EditorScriptingExtension;
 using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
@@ -108,7 +109,7 @@ namespace Ami.BroAudio.Editor
 
 			DrawEmptyLine(1);
 			DrawClipPreview(drawPosition, position.height * 0.3f, _volume, out Rect previewRect);
-			DrawClipPropertiesHelper.DrawPlaybackIndicator(position.OverridePosition(0f,0f));
+			DrawClipPropertiesHelper.DrawPlaybackIndicator(position.SetPosition(0f,0f));
 
 			drawPosition.x += Gap;
 			drawPosition.width -= Gap * 2;
@@ -246,9 +247,7 @@ namespace Ami.BroAudio.Editor
 					EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, new PreviewClip(_transport));
 				}
 			}
-
-			_isLoop = EditorGUI.Toggle(loopButtonRect, _isLoop, GUI.skin.button);
-            EditorGUI.LabelField(loopButtonRect, EditorGUIUtility.IconContent(IconConstant.LoopIcon), GUIStyleHelper.MiddleCenterText);
+			_isLoop = DrawButtonToggle(loopButtonRect, _isLoop, EditorGUIUtility.IconContent(IconConstant.LoopIcon));
 		}
 
 		private void DrawSavingButton(Rect drawPosition)
@@ -261,7 +260,7 @@ namespace Ami.BroAudio.Editor
 			savingZoneRect.width -= Gap * 4;
 			savingZoneRect.height = SingleLineSpace * 2;
 
-			EditorScriptingExtension.SplitRectHorizontal(savingZoneRect, 0.5f, Gap, out Rect saveButton, out Rect saveAsButton);
+			SplitRectHorizontal(savingZoneRect, 0.5f, Gap, out Rect saveButton, out Rect saveAsButton);
 
 			if (GUI.Button(saveButton, new GUIContent("Save")))
 			{

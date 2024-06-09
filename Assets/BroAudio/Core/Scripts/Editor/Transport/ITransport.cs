@@ -17,6 +17,6 @@ namespace Ami.BroAudio.Editor
 	{
 		float StartPosition { get; }
 		float EndPosition { get; }
-		float Length { get; }
+		float FullLength { get; }
 	}
 }

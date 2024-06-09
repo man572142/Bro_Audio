@@ -49,17 +49,37 @@ namespace Ami.Extension
             return newRect;
         }
 
-		public static Rect OverrideSize(this Rect rect, float width, float height)
+		public static Rect SetSize(this Rect rect, float width, float height)
 		{
 			return new Rect(rect.x, rect.y, width, height);
 		}
 
-		public static Rect OverridePosition(this Rect rect, float x, float y)
+        public static Rect SetWidth(this Rect rect, float width)
+        {
+            return new Rect(rect.x, rect.y, width, rect.height);
+        }
+
+        public static Rect SetWidth(this Rect rect, Func<float,float> onModify)
+        {
+            return new Rect(rect.x, rect.y, onModify(rect.width), rect.height);
+        }
+
+        public static Rect SetHeight(this Rect rect, float height)
+        {
+            return new Rect(rect.x, rect.y, rect.width, height);
+        }
+
+        public static Rect SetHeight(this Rect rect, Func<float, float> onModify)
+        {
+            return new Rect(rect.x, rect.y, rect.width, onModify(rect.height));
+        }
+
+        public static Rect SetPosition(this Rect rect, float x, float y)
 		{
             return new Rect(x, y, rect.width, rect.height);
         }
 
-		public static void SplitRectHorizontal(Rect origin, float firstRatio, float gap, out Rect rect1, out Rect rect2)
+        public static void SplitRectHorizontal(Rect origin, float firstRatio, float gap, out Rect rect1, out Rect rect2)
 		{
 			float halfGap = gap * 0.5f;
 			rect1 = new Rect(origin.x, origin.y, origin.width * firstRatio - halfGap, origin.height);
@@ -566,5 +586,12 @@ namespace Ami.Extension
 			EditorGUI.LabelField(prefixRect, prefixLabel);
 			EditorGUI.SelectableLabel(suffixRect, selectableLabel);
 		}
+
+		public static bool DrawButtonToggle(Rect position, bool state, GUIContent guiContent)
+		{
+            state = EditorGUI.Toggle(position, state, GUI.skin.button);
+            EditorGUI.LabelField(position, guiContent, GUIStyleHelper.MiddleCenterText);
+			return state;
+        }
     }
 }

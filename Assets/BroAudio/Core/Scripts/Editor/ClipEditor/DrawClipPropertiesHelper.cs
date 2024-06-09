@@ -245,7 +245,7 @@ namespace Ami.BroAudio.Editor
 						{
 							StartPosition = clickedPoint * audioClip.length,
 							EndPosition = 0f,
-							Length = audioClip.length,
+							FullLength = audioClip.length,
 						};
 						EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, clip);
 					}
@@ -306,7 +306,7 @@ namespace Ami.BroAudio.Editor
 					{
 						Image = EditorGUIUtility.IconContent(FadeOutIcon).image,
 						ColorTint = _fadingLineColor,
-						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.Length - transport.EndPosition - posInSec, transportType),
+						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.FullLength - transport.EndPosition - posInSec, transportType),
 					};
 				case TransportType.End:
 					return new DraggablePoint(rect)
@@ -314,7 +314,7 @@ namespace Ami.BroAudio.Editor
 						Image = EditorGUIUtility.IconContent(PlaybackPosIcon).image,
 						ImageBorder = new Vector4(0f, 0f, DragPointSizeLength * 0.5f, 0f),
 						ColorTint = _startEndColor,
-						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.Length - posInSec, transportType),
+						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.FullLength - posInSec, transportType),
 					};
 				default:
 					Debug.LogError(Utility.LogTitle + $"No corresponding point for transport type {transportType}");

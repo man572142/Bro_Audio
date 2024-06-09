@@ -83,9 +83,15 @@ namespace Ami.BroAudio.Editor
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
             if (mode == PlayModeStateChange.ExitingEditMode || mode == PlayModeStateChange.EnteredPlayMode)
             {
-                // clear the editor only runtime setting when entering playmode
+                // clear the editor-only runtime setting when entering playmode
                 _runtimeSetting = null;
             }
+        }
+
+        public static GUIContent GetPlaybackButtonIcon(bool isPlaying)
+        {
+            string icon = isPlaying ? IconConstant.StopButton : IconConstant.PlayButton;
+            return EditorGUIUtility.IconContent(icon);
         }
 
         public static int GetProjectSettingRealAudioVoices()

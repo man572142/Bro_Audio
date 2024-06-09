@@ -31,6 +31,22 @@ namespace Ami.BroAudio.Data
             return Utility.Validate(Name.ToWhiteBold(), Clips, ID);
         }
 
+        public float GetMasterVolume()
+        {
+            return GetRandomValue(MasterVolume, RandomFlags.Volume, VolumeRandomRange);
+        }
+
+        public float GetPitch()
+        {
+            return GetRandomValue(Pitch, RandomFlags.Pitch, PitchRandomRange);
+        }
+
+        private float GetRandomValue(float baseValue, RandomFlags flags, float range)
+        {
+            float half = range * 0.5f;
+            return RandomFlags.Contains(flags) ? baseValue + Random.Range(-half, half) : baseValue;
+        }
+
 #if UNITY_EDITOR
         public enum SeamlessType
         {

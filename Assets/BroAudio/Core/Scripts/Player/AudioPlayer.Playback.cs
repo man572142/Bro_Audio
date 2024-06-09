@@ -77,7 +77,7 @@ namespace Ami.BroAudio.Runtime
 			this.SafeStopCoroutine(_trackVolumeControlCoroutine);
 			TrackVolume = StaticTrackVolume * pref.AudioTypePlaybackPref.Volume;           
             ClipVolume = 0f;
-            float targetClipVolume = GetTargetClipVolume();
+            float targetClipVolume = CurrentClip.Volume * pref.Entity.GetMasterVolume();
             AudioTrack = _getAudioTrack?.Invoke(TrackType);
 
             int sampleRate = CurrentClip.AudioClip.frequency;
@@ -148,21 +148,6 @@ namespace Ami.BroAudio.Runtime
 				AudioSource.Stop();
 				AudioSource.timeSamples = (int)(pos * sampleRate);
 				AudioSource.Play();
-			}
-
-            float GetTargetClipVolume()
-			{
-                float result = CurrentClip.Volume;
-                if(pref.Entity.RandomFlags.Contains(RandomFlags.Volume))
-				{
-                    float masterVol = pref.Entity.MasterVolume + UnityEngine.Random.Range(-pref.Entity.VolumeRandomRange, pref.Entity.VolumeRandomRange);
-                    result *= masterVol;
-				}
-                else
-				{
-                    result *= pref.Entity.MasterVolume;
-				}
-                return result;
 			}
 
             // more accurate than AudioSource.isPlaying

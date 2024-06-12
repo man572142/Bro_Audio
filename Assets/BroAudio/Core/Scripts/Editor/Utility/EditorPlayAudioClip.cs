@@ -18,16 +18,17 @@ namespace Ami.Extension
         public const string StopClipMethodName = "StopAllClips";
 #endif
 		public readonly static PlaybackIndicatorUpdater PlaybackIndicator = new PlaybackIndicatorUpdater();
-		public static AudioClip CurrentPlayingClip { get; private set; }
-		public static bool IsPlaying => CurrentPlayingClip != null;
+
+		public static Action OnFinished;
 
 		private static CancellationTokenSource _currentPlayingTaskCanceller = null;
 		private static CancellationTokenSource _currentAudioSourceTaskCanceller = null;
 		private static AudioSource _currentEditorAudioSource = null;
+		private static bool _isReplaying = false;
 
-		public static void PlayClipByAudioSource(AudioClip audioClip, float volume, float startTime, float endTime, bool loop = false, float pitch = 1f)
+		public static void PlayClipByAudioSource(AudioClip audioClip, float volume, float startTime, float endTime, bool selfLoop = false, Action onReplay = null, float pitch = 1f)
 		{
-			StopAllPreviewClipsAndCancelTask();
+			StopStaticPreviewClipsAndCancelTask();
 			if (_currentEditorAudioSource)
 			{
 				CancelTask(ref _currentAudioSourceTaskCanceller);
@@ -49,21 +50,20 @@ namespace Ami.Extension
 			audioSource.pitch = pitch;
 
 			audioSource.Play();
-			PlaybackIndicator.Start(loop);
-			CurrentPlayingClip = audioClip;
+			PlaybackIndicator.Start(selfLoop);
 
 			float duration = audioClip.length - endTime - startTime;
 			_currentAudioSourceTaskCanceller = _currentAudioSourceTaskCanceller ?? new CancellationTokenSource();
-			if (loop)
+
+			_isReplaying = onReplay != null;
+            if (!_isReplaying)
 			{
-				AsyncTaskExtension.DelayInvoke(duration, Replay, _currentAudioSourceTaskCanceller.Token);
-			}
-			else
-			{
-				AsyncTaskExtension.DelayInvoke(duration, DestroyPreviewAudioSourceAndCancelTask, _currentAudioSourceTaskCanceller.Token);
+				onReplay = selfLoop ? Replay : DestroyPreviewAudioSourceAndCancelTask;
 			}
 
-			void Replay()
+            AsyncTaskExtension.DelayInvoke(duration, onReplay, _currentAudioSourceTaskCanceller.Token);
+
+            void Replay()
 			{
 				if(audioSource != null && _currentAudioSourceTaskCanceller != null)
 				{
@@ -75,7 +75,7 @@ namespace Ami.Extension
 			}
 		}
 
-		public static void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
+        public static void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
 		{
 			int startSample = AudioExtension.GetTimeSample(audioClip, startTime);
 			int endSample = AudioExtension.GetTimeSample(audioClip, endTime);
@@ -97,7 +97,6 @@ namespace Ami.Extension
 			{
 				method.Invoke(null, parameters);
 				PlaybackIndicator.Start(loop);
-				CurrentPlayingClip = audioClip;
 			}
 
 			int sampleLength = audioClip.samples - startSample - endSample;
@@ -109,7 +108,7 @@ namespace Ami.Extension
 			}
 			else
 			{
-				AsyncTaskExtension.DelayInvoke(lengthInMs, StopAllPreviewClipsAndCancelTask, _currentPlayingTaskCanceller.Token);
+				AsyncTaskExtension.DelayInvoke(lengthInMs, StopStaticPreviewClipsAndCancelTask, _currentPlayingTaskCanceller.Token);
 			}
 
 			void Replay()
@@ -125,7 +124,8 @@ namespace Ami.Extension
 
 		public static void StopAllClips()
 		{
-			StopAllPreviewClipsAndCancelTask();
+            _isReplaying = false;
+            StopStaticPreviewClipsAndCancelTask();
 			DestroyPreviewAudioSourceAndCancelTask();
 		}
 
@@ -139,19 +139,28 @@ namespace Ami.Extension
 				UnityEngine.Object.DestroyImmediate(_currentEditorAudioSource.gameObject);
 				PlaybackIndicator.End();
 				_currentEditorAudioSource = null;
-				CurrentPlayingClip = null;
-			}
+				TriggerOnFinished();
+            }
 		}
 
-		private static void StopAllPreviewClipsAndCancelTask()
-		{
-			CancelTask(ref _currentPlayingTaskCanceller);
-			StopAllPreviewClips();
-			PlaybackIndicator.End();
-			CurrentPlayingClip = null;
-		}
+		private static void StopStaticPreviewClipsAndCancelTask()
+        {
+            CancelTask(ref _currentPlayingTaskCanceller);
+            StopAllPreviewClips();
+            PlaybackIndicator.End();
+            TriggerOnFinished();
+        }
 
-		private static void StopAllPreviewClips()
+        private static void TriggerOnFinished()
+        {
+			if(!_isReplaying)
+			{
+                OnFinished?.Invoke();
+                OnFinished = null;
+            }	
+        }
+
+        private static void StopAllPreviewClips()
 		{
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
 

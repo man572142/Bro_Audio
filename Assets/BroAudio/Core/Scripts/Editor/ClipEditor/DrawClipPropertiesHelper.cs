@@ -239,7 +239,7 @@ namespace Ami.BroAudio.Editor
 					EditorPlayAudioClip.PlayClip(audioClip, startSample, 0);
 					currEvent.Use();
 
-					if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying && EditorPlayAudioClip.CurrentPlayingClip == audioClip)
+					if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying)
 					{
 						PreviewClip clip = new PreviewClip() 
 						{

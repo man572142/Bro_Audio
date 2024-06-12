@@ -30,6 +30,7 @@ namespace Ami.BroAudio.Editor
 		private MonoConversionMode _monoMode = MonoConversionMode.Downmixing;
 		private GenericMenu _monoModeMenu = null;
 		private bool _isLoop = false;
+		private bool _isPlaying = false;
 
 		private string _currSavingFilePath = null;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
@@ -225,11 +226,11 @@ namespace Ami.BroAudio.Editor
 			DrawEmptyLine(1);
 			Rect playbackButtonRect = new Rect(barRect) { width = buttonSize, height = buttonSize };
 			Rect loopButtonRect = new Rect(playbackButtonRect) { x = playbackButtonRect.x + buttonSize };
-			string icon = EditorPlayAudioClip.IsPlaying ? IconConstant.StopButton : IconConstant.PlayButton;
+			string icon = _isPlaying ? IconConstant.StopButton : IconConstant.PlayButton;
 			GUIContent playButtonContent = new GUIContent(EditorGUIUtility.IconContent(icon).image, EditorPlayAudioClip.PlayWithVolumeSetting);
 			if (GUI.Button(playbackButtonRect, playButtonContent))
 			{
-				if(EditorPlayAudioClip.IsPlaying)
+				if(_isPlaying)
 				{
 					EditorPlayAudioClip.StopAllClips();
 				}
@@ -243,8 +244,11 @@ namespace Ami.BroAudio.Editor
 					{
 						EditorPlayAudioClip.PlayClipByAudioSource(_targetClip, _volume,_transport.StartPosition, _transport.EndPosition, _isLoop);
 					}
-					
-					EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, new PreviewClip(_transport));
+
+                    _isPlaying = true;
+                    EditorPlayAudioClip.OnFinished = () => _isPlaying = false; ;
+
+                    EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, new PreviewClip(_transport));
 				}
 			}
 			_isLoop = DrawButtonToggle(loopButtonRect, _isLoop, EditorGUIUtility.IconContent(IconConstant.LoopIcon));

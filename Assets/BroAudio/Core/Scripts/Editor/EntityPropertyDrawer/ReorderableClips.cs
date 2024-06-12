@@ -27,13 +27,17 @@ namespace Ami.BroAudio.Editor
 		private int _currSelectedClipIndex = -1;
 		private SerializedProperty _currSelectedClip;
 		private Rect _previewRect = default;
+		private string _currentPlayingClipPath;
 
-		public bool IsMulticlips => _reorderableList.count > 1;
+        private Vector2 PlayButtonSize => new Vector2(30f, 20f);
+        public bool IsMulticlips => _reorderableList.count > 1;
 		public float Height => _reorderableList.GetHeight();
 		public Rect PreviewRect => _previewRect;
-		private Vector2 PlayButtonSize => new Vector2(30f, 20f);
-		
-		public SerializedProperty CurrentSelectedClip
+		public bool IsPlaying => _currentPlayingClipPath != null;
+		public bool HasValidClipSelected => CurrentSelectedClip != null 
+			&& CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip _);
+
+        public SerializedProperty CurrentSelectedClip
 		{
 			get
 			{
@@ -81,12 +85,17 @@ namespace Ami.BroAudio.Editor
 			_previewRect = rect;
 		}
 
-		public void SelectElement(int index)
+		public void SelectAndSetPlayingElement(int index)
 		{
-			if(_reorderableList != null)
+			if(index >= 0)
 			{
 				_reorderableList.index = index;
+				_currentPlayingClipPath = _reorderableList.serializedProperty.GetArrayElementAtIndex(index).propertyPath;
 			}
+			else
+			{
+                _currentPlayingClipPath = null;
+            }
 		}
 
 		private void OnUndoRedoPerformed()
@@ -214,7 +223,7 @@ namespace Ami.BroAudio.Editor
 			{
 				if(audioClipProp.objectReferenceValue is AudioClip audioClip)
 				{
-					bool isPlaying = EditorPlayAudioClip.CurrentPlayingClip == audioClip;
+					bool isPlaying = string.Equals(_currentPlayingClipPath, clipProp.propertyPath);
 					var image = BroEditorUtility.GetPlaybackButtonIcon(isPlaying).image;
                     GUIContent buttonGUIContent = new GUIContent(image, EditorPlayAudioClip.PlayWithVolumeSetting);
 					if (GUI.Button(buttonRect, buttonGUIContent))
@@ -230,13 +239,16 @@ namespace Ami.BroAudio.Editor
 							if (Event.current.button == 0)
 							{
 								EditorPlayAudioClip.PlayClip(audioClip, startPos, endPos);
-							}
+                            }
 							else
 							{
 								EditorPlayAudioClip.PlayClipByAudioSource(audioClip, volProp.floatValue, startPos, endPos);
-							}
+                            }
 
-							if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying && EditorPlayAudioClip.CurrentPlayingClip == audioClip)
+							_currentPlayingClipPath = clipProp.propertyPath;
+							EditorPlayAudioClip.OnFinished = () => _currentPlayingClipPath = null;
+
+                            if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying)
 							{
 								PreviewClip clip = new PreviewClip()
 								{
@@ -287,7 +299,6 @@ namespace Ami.BroAudio.Editor
 				}
 			}
 		}
-
 
 		private void OnDrawFooter(Rect rect)
 		{

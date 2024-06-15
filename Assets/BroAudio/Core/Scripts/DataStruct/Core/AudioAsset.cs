@@ -33,7 +33,7 @@ namespace Ami.BroAudio.Data
 
         public IEnumerable<IEntityIdentity> GetAllAudioEntities()
 		{
-            Entities = Entities ?? new AudioEntity[0];
+            Entities = Entities ?? System.Array.Empty<AudioEntity>();
 
             foreach (var data in Entities)
             {

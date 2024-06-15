@@ -58,7 +58,14 @@ namespace Ami.Extension
 			_isReplaying = onReplay != null;
             if (!_isReplaying)
 			{
-				onReplay = selfLoop ? Replay : DestroyPreviewAudioSourceAndCancelTask;
+				if(selfLoop)
+				{
+					onReplay = Replay;
+				}
+				else
+				{
+					onReplay = DestroyPreviewAudioSourceAndCancelTask;
+                }
 			}
 
             AsyncTaskExtension.DelayInvoke(duration, onReplay, _currentAudioSourceTaskCanceller.Token);

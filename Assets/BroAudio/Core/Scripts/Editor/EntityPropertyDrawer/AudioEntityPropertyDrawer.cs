@@ -45,7 +45,6 @@ namespace Ami.BroAudio.Editor
 		public enum Tab { Clips, Overall}
 
 		public static event Action OnEntityNameChanged;
-		private static EntityData _currentPlayingEntity;
 
 		private const float ClipPreviewHeight = 100f;
 		private const float DefaultFieldRatio = 0.9f;
@@ -182,7 +181,7 @@ namespace Ami.BroAudio.Editor
 							Rect previewRect = GetNextLineRect(position);  
 							previewRect.y -= PreviewPrettinessOffsetY;
 							previewRect.height = ClipPreviewHeight;
-							_clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, volume, currSelectClip.propertyPath);
+							_clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, volume, currSelectClip.propertyPath, data.Clips.SetPlayingClip);
                             data.Clips.SetPreviewRect(previewRect);
 							Offset += ClipPreviewHeight + ClipPreviewPadding;
 						}
@@ -383,17 +382,23 @@ namespace Ami.BroAudio.Editor
 
 		private void PreviewEntity(SerializedProperty property, EntityData data)
 		{
+			AudioEntity entity;
 			if(data.IsPlaying)
 			{
 				EditorPlayAudioClip.StopAllClips();
 			}
-            else if(TryGetEntityInstance(property, out var entity))
+            else if(TryGetEntityInstance(property, out entity))
             {
                 StartPreview(entity);
             }
 
             void StartPreview(AudioEntity entity)
             {
+				if(entity == null)
+				{
+					return;
+				}
+
                 var clip = entity.PickNewClip(out int index);
                 data.Clips.SelectAndSetPlayingElement(index);
 
@@ -408,16 +413,13 @@ namespace Ami.BroAudio.Editor
 
 			void ReplayPreview()
 			{
-                if (TryGetEntityInstance(property, out var entity))
-				{
-					StartPreview(entity);
-				}
+                StartPreview(entity);
             }
 
             void OnPreviewFinished()
             {
                 data.IsPreviewing = false;
-                data.Clips.SelectAndSetPlayingElement(-1);
+                data.Clips.SetPlayingClip(null);
             }
         }
 

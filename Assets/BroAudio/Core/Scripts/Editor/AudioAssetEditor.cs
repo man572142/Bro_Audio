@@ -17,10 +17,8 @@ namespace Ami.BroAudio.Editor
 	{
         private ReorderableList _entitiesList = null;
 		private IUniqueIDGenerator _idGenerator = null;
-		private ValidationErrorCode _entityIssue;
-		//public string IssueEntityName { get; private set; }
-		public Instruction CurrInstruction { get; private set; }
 
+		public Instruction CurrInstruction { get; private set; }
 		public IAudioAsset Asset { get; private set; }
 
 		public void AddEntitiesNameChangeListener()
@@ -33,7 +31,12 @@ namespace Ami.BroAudio.Editor
 			AudioEntityPropertyDrawer.OnEntityNameChanged -= Verify;
 		}
 
-		public void Init(IUniqueIDGenerator idGenerator)
+        private void OnDestroy()
+        {
+			RemoveEntitiesNameChangeListener();
+        }
+
+        public void Init(IUniqueIDGenerator idGenerator)
 		{
 			Asset = target as IAudioAsset;
 			_idGenerator = idGenerator;

@@ -219,7 +219,8 @@ namespace Ami.BroAudio.Editor
 					var editor = pair.Value;
 					if(guid == _allAssetGUIDs[list.index])
 					{
-						editor.AddEntitiesNameChangeListener();
+                        editor.RemoveEntitiesNameChangeListener();
+                        editor.AddEntitiesNameChangeListener();
 						editor.Verify();
 					}
 					else

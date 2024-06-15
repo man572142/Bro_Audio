@@ -90,13 +90,14 @@ namespace Ami.BroAudio.Editor
 			if(index >= 0)
 			{
 				_reorderableList.index = index;
-				_currentPlayingClipPath = _reorderableList.serializedProperty.GetArrayElementAtIndex(index).propertyPath;
+                SetPlayingClip(_reorderableList.serializedProperty.GetArrayElementAtIndex(index).propertyPath);
 			}
-			else
-			{
-                _currentPlayingClipPath = null;
-            }
 		}
+
+		public void SetPlayingClip(string clipPath)
+		{
+            _currentPlayingClipPath = clipPath;
+        }
 
 		private void OnUndoRedoPerformed()
 		{

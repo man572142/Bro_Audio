@@ -199,9 +199,10 @@ namespace Ami.BroAudio.Editor
 		{
 			previewRect = GetRectAndIterateLine(drawPosition);
 			previewRect.height = height;
-			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip, volume, TargetClip.name); // don't worry about any duplicate path, because there will only one clip in editing
+			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip, volume, TargetClip.name, _ => _isPlaying = true); // don't worry about any duplicate path, because there will only one clip in editing
 			DrawEmptyLine(GetLineCountByPixels(height));
 		}
+
 		private void DrawPlaybackPositionField(Rect drawPosition)
 		{
 			Rect playbackRect = GetRectAndIterateLine(drawPosition);

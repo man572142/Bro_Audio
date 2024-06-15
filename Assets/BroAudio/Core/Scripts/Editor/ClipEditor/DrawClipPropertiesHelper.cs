@@ -53,6 +53,7 @@ namespace Ami.BroAudio.Editor
 
 		private TransportType[] _allTransportType = Enum.GetValues(typeof(TransportType)) as TransportType[];
 		private WaveformRenderHelper _waveformHelper = new WaveformRenderHelper();
+		private Action<string> _onPreviewingClip = null;
 
 		public void DrawPlaybackPositionField(Rect position, ITransport transport)
 		{
@@ -79,7 +80,7 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public void DrawClipPreview(Rect previewRect, ITransport transport, AudioClip audioClip, float volume, string clipPath)
+		public void DrawClipPreview(Rect previewRect, ITransport transport, AudioClip audioClip, float volume, string clipPath, Action<string> onPreviewClip)
 		{
 			_clipPreviewHeight = previewRect.height;
 			Event currEvent = Event.current;
@@ -237,7 +238,8 @@ namespace Ami.BroAudio.Editor
 					float clickedPoint = currEvent.mousePosition.Scoping(previewRect).x / previewRect.width;
 					int startSample = (int)Math.Round(clickedPoint * audioClip.samples, MidpointRounding.AwayFromZero);
 					EditorPlayAudioClip.PlayClip(audioClip, startSample, 0);
-					currEvent.Use();
+					EditorPlayAudioClip.OnFinished = () => _onPreviewingClip?.Invoke(null);
+                    currEvent.Use();
 
 					if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying)
 					{
@@ -249,7 +251,9 @@ namespace Ami.BroAudio.Editor
 						};
 						EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, clip);
 					}
-				}
+                    _onPreviewingClip = onPreviewClip;
+                    _onPreviewingClip?.Invoke(clipPath);
+                }
 			}
 		}
 

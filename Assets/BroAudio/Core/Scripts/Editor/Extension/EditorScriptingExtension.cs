@@ -361,7 +361,7 @@ namespace Ami.Extension
 			EditorGUI.LabelField(rightRect, labels.Right, lowerLeftMiniLabel);
 		}
 
-		public static int DrawTabsView(Rect position,int selectedTabIndex,float labelTabHeight, GUIContent[] labels, float[] ratios, Rect[] preAllocRects = null)
+		public static int DrawTabsView(Rect position,int selectedTabIndex,float labelTabHeight, GUIContent[] labels, float[] ratios, Rect[] preAllocRects = null, Action onTabChanged = null)
         {
 			if (Event.current.type == EventType.Repaint)
 			{
@@ -391,7 +391,7 @@ namespace Ami.Extension
 
 				if(isChanged)
 				{
-					EditorPlayAudioClip.StopAllClips();
+					onTabChanged?.Invoke();
 				}
             }
 			return selectedTabIndex;

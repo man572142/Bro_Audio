@@ -7,8 +7,10 @@ using System.Threading;
 #if UNITY_EDITOR
 namespace Ami.Extension
 {
-	public static class EditorPlayAudioClip
+    public class EditorPlayAudioClip
 	{
+		public delegate void StopAllPreviewClips();
+
 		public const string PlayWithVolumeSetting = "[Experimental]\nRight-click to play at the current volume (maximum at 0dB)";
 #if UNITY_2020_2_OR_NEWER
 		public const string PlayClipMethodName = "PlayPreviewClip";
@@ -17,16 +19,35 @@ namespace Ami.Extension
 		public const string PlayClipMethodName = "PlayClip";
         public const string StopClipMethodName = "StopAllClips";
 #endif
-		public readonly static PlaybackIndicatorUpdater PlaybackIndicator = new PlaybackIndicatorUpdater();
 
-		public static Action OnFinished;
+		private static EditorPlayAudioClip _instance = null;
+		public static EditorPlayAudioClip Instance
+		{
+			get
+			{
+				_instance = _instance ?? new EditorPlayAudioClip();
+				return _instance;
+            }
+		}
 
-		private static CancellationTokenSource _currentPlayingTaskCanceller = null;
-		private static CancellationTokenSource _currentAudioSourceTaskCanceller = null;
-		private static AudioSource _currentEditorAudioSource = null;
-		private static bool _isReplaying = false;
+        public PlaybackIndicatorUpdater PlaybackIndicator { get; private set; }
 
-		public static void PlayClipByAudioSource(AudioClip audioClip, float volume, float startTime, float endTime, bool selfLoop = false, Action onReplay = null, float pitch = 1f)
+		public Action OnFinished;
+
+		private StopAllPreviewClips _stopAllPreviewClipsDelegate = null;
+		private CancellationTokenSource _currentPlayingTaskCanceller = null;
+		private CancellationTokenSource _currentAudioSourceTaskCanceller = null;
+		private AudioSource _currentEditorAudioSource = null;
+		private bool _isReplaying = false;
+
+        public EditorPlayAudioClip()
+        {
+            PlaybackIndicator = new PlaybackIndicatorUpdater();
+			_stopAllPreviewClipsDelegate = GetStopAllPreviewClipsDelegate();
+			EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        public void PlayClipByAudioSource(AudioClip audioClip, float volume, float startTime, float endTime, bool selfLoop = false, Action onReplay = null, float pitch = 1f)
 		{
 			StopStaticPreviewClipsAndCancelTask();
 			if (_currentEditorAudioSource)
@@ -82,14 +103,14 @@ namespace Ami.Extension
 			}
 		}
 
-        public static void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
+        public void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
 		{
 			int startSample = AudioExtension.GetTimeSample(audioClip, startTime);
 			int endSample = AudioExtension.GetTimeSample(audioClip, endTime);
 			PlayClip(audioClip, startSample, endSample, loop);
 		}
 
-		public static void PlayClip(AudioClip audioClip, int startSample, int endSample, bool loop = false)
+		public void PlayClip(AudioClip audioClip, int startSample, int endSample, bool loop = false)
 		{
 			StopAllClips();
 
@@ -122,21 +143,21 @@ namespace Ami.Extension
 			{
 				if(method != null && _currentPlayingTaskCanceller != null)
 				{
-					StopAllPreviewClips();
+					_stopAllPreviewClipsDelegate.Invoke();
 					method.Invoke(null, parameters);
 					AsyncTaskExtension.DelayInvoke(lengthInMs, Replay, _currentPlayingTaskCanceller.Token);
 				}
 			}
 		}
 
-		public static void StopAllClips()
+		public void StopAllClips()
 		{
             _isReplaying = false;
             StopStaticPreviewClipsAndCancelTask();
 			DestroyPreviewAudioSourceAndCancelTask();
 		}
 
-		private static void DestroyPreviewAudioSourceAndCancelTask()
+		private void DestroyPreviewAudioSourceAndCancelTask()
 		{
 			if (_currentEditorAudioSource)
 			{
@@ -150,15 +171,15 @@ namespace Ami.Extension
             }
 		}
 
-		private static void StopStaticPreviewClipsAndCancelTask()
+		private void StopStaticPreviewClipsAndCancelTask()
         {
             CancelTask(ref _currentPlayingTaskCanceller);
-            StopAllPreviewClips();
+            _stopAllPreviewClipsDelegate.Invoke();
             PlaybackIndicator.End();
             TriggerOnFinished();
         }
 
-        private static void TriggerOnFinished()
+        private void TriggerOnFinished()
         {
 			if(!_isReplaying)
 			{
@@ -167,30 +188,29 @@ namespace Ami.Extension
             }	
         }
 
-        private static void StopAllPreviewClips()
+        private StopAllPreviewClips GetStopAllPreviewClipsDelegate()
 		{
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
 
 			Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
 			MethodInfo method = audioUtilClass.GetMethod(StopClipMethodName, BindingFlags.Static | BindingFlags.Public, null, new Type[] { }, null);
-
-			method?.Invoke(null, new object[] { });
+			return Delegate.CreateDelegate(typeof(StopAllPreviewClips), method) as StopAllPreviewClips;
 		}
 
-		public static void AddPlaybackIndicatorListener(Action action)
+		public void AddPlaybackIndicatorListener(Action action)
 		{
 			RemovePlaybackIndicatorListener(action);	
 			PlaybackIndicator.OnUpdate += action;
 			PlaybackIndicator.OnEnd += action;
 		}
 
-		public static void RemovePlaybackIndicatorListener(Action action)
+		public void RemovePlaybackIndicatorListener(Action action)
 		{
 			PlaybackIndicator.OnUpdate -= action;
 			PlaybackIndicator.OnEnd -= action;
 		}
 
-		private static void CancelTask(ref CancellationTokenSource cancellation)
+		private void CancelTask(ref CancellationTokenSource cancellation)
 		{
 			if (cancellation != null && cancellation.Token.CanBeCanceled)
 			{
@@ -199,6 +219,25 @@ namespace Ami.Extension
 				cancellation = null;
 			}
 		}
-	} 
+
+        private void Dispose()
+        {
+			OnFinished = null;
+            StopStaticPreviewClipsAndCancelTask();
+            DestroyPreviewAudioSourceAndCancelTask();
+			PlaybackIndicator = null;
+			_instance = null;
+        }
+
+        private void OnPlayModeStateChanged(PlayModeStateChange mode)
+        {
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+
+            if (mode == PlayModeStateChange.ExitingEditMode || mode == PlayModeStateChange.ExitingPlayMode)
+            {
+				Dispose();
+            }
+        }
+    } 
 }
 #endif

@@ -8,7 +8,6 @@ using Ami.BroAudio.Data;
 using System;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.BroAudio.Editor.BroEditorUtility;
-using static UnityEngine.EventSystems.EventTrigger;
 
 namespace Ami.BroAudio.Editor
 {
@@ -159,7 +158,7 @@ namespace Ami.BroAudio.Editor
 
 			Rect tabViewRect = GetRectAndIterateLine(position).SetHeight(GetTabWindowHeight());
 			_tabPreAllocRects = _tabPreAllocRects ?? new Rect[_tabLabelRatios.Length];
-            data.SelectedTab = (Tab)DrawTabsView(tabViewRect, (int)data.SelectedTab, TabLabelHeight, _tabLabelGUIContents, _tabLabelRatios, _tabPreAllocRects);
+            data.SelectedTab = (Tab)DrawTabsView(tabViewRect, (int)data.SelectedTab, TabLabelHeight, _tabLabelGUIContents, _tabLabelRatios, _tabPreAllocRects, EditorPlayAudioClip.Instance.StopAllClips);
 			
 			DrawEmptyLine(1);
 
@@ -299,7 +298,7 @@ namespace Ami.BroAudio.Editor
 
 			if(data.IsPlaying && data.SelectedTab != Tab.Clips)
 			{
-				EditorPlayAudioClip.PlaybackIndicator.End();
+				EditorPlayAudioClip.Instance.PlaybackIndicator.End();
 			}
         }
 
@@ -385,7 +384,7 @@ namespace Ami.BroAudio.Editor
 			AudioEntity entity;
 			if(data.IsPlaying)
 			{
-				EditorPlayAudioClip.StopAllClips();
+				EditorPlayAudioClip.Instance.StopAllClips();
 			}
             else if(TryGetEntityInstance(property, out entity))
             {
@@ -405,10 +404,10 @@ namespace Ami.BroAudio.Editor
                 float volume = clip.Volume * entity.GetMasterVolume();
                 float pitch = entity.GetPitch();
                 Action onReplay = data.IsLoop ? ReplayPreview : null;
-                EditorPlayAudioClip.PlayClipByAudioSource(clip.AudioClip, volume, clip.StartPosition, clip.EndPosition, data.IsLoop, onReplay, pitch);
-                EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip));
+                EditorPlayAudioClip.Instance.PlayClipByAudioSource(clip.AudioClip, volume, clip.StartPosition, clip.EndPosition, data.IsLoop, onReplay, pitch);
+                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip));
                 data.IsPreviewing = true;
-                EditorPlayAudioClip.OnFinished = OnPreviewFinished;
+                EditorPlayAudioClip.Instance.OnFinished = OnPreviewFinished;
             }
 
 			void ReplayPreview()

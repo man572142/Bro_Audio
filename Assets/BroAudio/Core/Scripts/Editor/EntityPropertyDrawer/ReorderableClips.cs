@@ -231,7 +231,7 @@ namespace Ami.BroAudio.Editor
 					{
 						if(isPlaying)
 						{
-							EditorPlayAudioClip.StopAllClips();
+							EditorPlayAudioClip.Instance.StopAllClips();
 						}
 						else
 						{
@@ -239,17 +239,17 @@ namespace Ami.BroAudio.Editor
 							float endPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue;
 							if (Event.current.button == 0)
 							{
-								EditorPlayAudioClip.PlayClip(audioClip, startPos, endPos);
+								EditorPlayAudioClip.Instance.PlayClip(audioClip, startPos, endPos);
                             }
 							else
 							{
-								EditorPlayAudioClip.PlayClipByAudioSource(audioClip, volProp.floatValue, startPos, endPos);
+								EditorPlayAudioClip.Instance.PlayClipByAudioSource(audioClip, volProp.floatValue, startPos, endPos);
                             }
 
 							_currentPlayingClipPath = clipProp.propertyPath;
-							EditorPlayAudioClip.OnFinished = () => _currentPlayingClipPath = null;
+							EditorPlayAudioClip.Instance.OnFinished = () => _currentPlayingClipPath = null;
 
-                            if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying)
+                            if (EditorPlayAudioClip.Instance.PlaybackIndicator.IsPlaying)
 							{
 								PreviewClip clip = new PreviewClip()
 								{
@@ -258,7 +258,7 @@ namespace Ami.BroAudio.Editor
 									FullLength = audioClip.length,
 								};
 
-								EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(_previewRect, clip);
+								EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, clip);
 							}
 						}
 					}
@@ -324,7 +324,7 @@ namespace Ami.BroAudio.Editor
 
         private void OnSelect(ReorderableList list)
 		{
-			EditorPlayAudioClip.StopAllClips();
+			EditorPlayAudioClip.Instance.StopAllClips();
 		}
 
 		#endregion

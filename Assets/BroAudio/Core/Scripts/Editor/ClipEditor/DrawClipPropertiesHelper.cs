@@ -1,7 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 using static Ami.Extension.EditorScriptingExtension;
-using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.BroAudio.Editor.IconConstant;
 using Ami.Extension;
 using System;
@@ -237,11 +236,11 @@ namespace Ami.BroAudio.Editor
 				{
 					float clickedPoint = currEvent.mousePosition.Scoping(previewRect).x / previewRect.width;
 					int startSample = (int)Math.Round(clickedPoint * audioClip.samples, MidpointRounding.AwayFromZero);
-					EditorPlayAudioClip.PlayClip(audioClip, startSample, 0);
-					EditorPlayAudioClip.OnFinished = () => _onPreviewingClip?.Invoke(null);
+					EditorPlayAudioClip.Instance.PlayClip(audioClip, startSample, 0);
+					EditorPlayAudioClip.Instance.OnFinished = () => _onPreviewingClip?.Invoke(null);
                     currEvent.Use();
 
-					if (EditorPlayAudioClip.PlaybackIndicator.IsPlaying)
+					if (EditorPlayAudioClip.Instance.PlaybackIndicator.IsPlaying)
 					{
 						PreviewClip clip = new PreviewClip() 
 						{
@@ -249,7 +248,7 @@ namespace Ami.BroAudio.Editor
 							EndPosition = 0f,
 							FullLength = audioClip.length,
 						};
-						EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, clip);
+						EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, clip);
 					}
                     _onPreviewingClip = onPreviewClip;
                     _onPreviewingClip?.Invoke(clipPath);
@@ -259,8 +258,8 @@ namespace Ami.BroAudio.Editor
 
 		public static void DrawPlaybackIndicator(Rect scope, Vector2 positionOffset = default)
 		{
-			var indicator = EditorPlayAudioClip.PlaybackIndicator;
-			if (indicator.IsPlaying)
+			var indicator = EditorPlayAudioClip.Instance.PlaybackIndicator;
+			if (indicator != null && indicator.IsPlaying)
 			{
 				GUI.BeginClip(scope);
 				{

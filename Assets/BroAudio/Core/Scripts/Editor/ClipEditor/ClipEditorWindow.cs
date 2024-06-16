@@ -77,18 +77,18 @@ namespace Ami.BroAudio.Editor
             OnChangeAudioClip += ResetSetting;
 			ResetSetting();
 
-			EditorPlayAudioClip.AddPlaybackIndicatorListener(Repaint);
+			EditorPlayAudioClip.Instance.AddPlaybackIndicatorListener(Repaint);
 		}
 
 		private void OnDisable()
 		{
 			OnChangeAudioClip -= ResetSetting;
-			EditorPlayAudioClip.RemovePlaybackIndicatorListener(Repaint);
+			EditorPlayAudioClip.Instance.RemovePlaybackIndicatorListener(Repaint);
 		}
 
 		private void OnLostFocus()
 		{
-			EditorPlayAudioClip.StopAllClips();
+			EditorPlayAudioClip.Instance.StopAllClips();
 			
 		}
 
@@ -233,23 +233,22 @@ namespace Ami.BroAudio.Editor
 			{
 				if(_isPlaying)
 				{
-					EditorPlayAudioClip.StopAllClips();
+					EditorPlayAudioClip.Instance.StopAllClips();
 				}
 				else
 				{
 					if(Event.current.button == 0) // Left Click
 					{
-						EditorPlayAudioClip.PlayClip(_targetClip, _transport.StartPosition, _transport.EndPosition, _isLoop);
+						EditorPlayAudioClip.Instance.PlayClip(_targetClip, _transport.StartPosition, _transport.EndPosition, _isLoop);
 					}
 					else
 					{
-						EditorPlayAudioClip.PlayClipByAudioSource(_targetClip, _volume,_transport.StartPosition, _transport.EndPosition, _isLoop);
+						EditorPlayAudioClip.Instance.PlayClipByAudioSource(_targetClip, _volume,_transport.StartPosition, _transport.EndPosition, _isLoop);
 					}
 
                     _isPlaying = true;
-                    EditorPlayAudioClip.OnFinished = () => _isPlaying = false; ;
-
-                    EditorPlayAudioClip.PlaybackIndicator.SetClipInfo(previewRect, new PreviewClip(_transport));
+                    EditorPlayAudioClip.Instance.OnFinished = () => _isPlaying = false; ;
+                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, new PreviewClip(_transport));
 				}
 			}
 			_isLoop = DrawButtonToggle(loopButtonRect, _isLoop, EditorGUIUtility.IconContent(IconConstant.LoopIcon));

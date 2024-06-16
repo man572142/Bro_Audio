@@ -78,15 +78,15 @@ namespace Ami.BroAudio.Editor
 
 		private void OnFocus()
 		{
-			EditorPlayAudioClip.AddPlaybackIndicatorListener(Repaint);
+			EditorPlayAudioClip.Instance.AddPlaybackIndicatorListener(Repaint);
 
 			//_flasingHelper.OnUpdate += Repaint;
 		}
 
 		private void OnLostFocus()
 		{
-			EditorPlayAudioClip.StopAllClips();
-			EditorPlayAudioClip.RemovePlaybackIndicatorListener(Repaint);
+			EditorPlayAudioClip.Instance.StopAllClips();
+			EditorPlayAudioClip.Instance.RemovePlaybackIndicatorListener(Repaint);
 
 			//_flasingHelper.OnUpdate -= Repaint;
 		}
@@ -212,7 +212,7 @@ namespace Ami.BroAudio.Editor
 			{
 				OnSelectAsset?.Invoke();
 				_currSelectedAssetIndex = list.index;
-				EditorPlayAudioClip.StopAllClips();
+				EditorPlayAudioClip.Instance.StopAllClips();
 				foreach(var pair in _assetEditorDict)
 				{
 					string guid = pair.Key;

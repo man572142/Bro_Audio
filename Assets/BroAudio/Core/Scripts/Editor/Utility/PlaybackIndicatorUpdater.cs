@@ -12,7 +12,7 @@ namespace Ami.Extension
 		public event Action OnEnd;
 
 		private Rect _waveformRect = default;
-		private IClip _clip = null;
+		private PreviewClip _clip = default;
 		private double _playingStartTime = default;
 		
 		public bool IsPlaying { get; private set; }
@@ -22,7 +22,7 @@ namespace Ami.Extension
 
 		protected override float UpdateInterval => 0.02f;  // 50 FPS
 
-		public void SetClipInfo(Rect waveformRect, IClip clip)
+		public void SetClipInfo(Rect waveformRect, PreviewClip clip) 
 		{
 			_waveformRect = waveformRect;
 			_clip = clip;
@@ -30,7 +30,7 @@ namespace Ami.Extension
 
 		public Rect GetIndicatorPosition()
 		{
-			if(_clip != null && _waveformRect != default)
+			if(_clip.FullLength != 0f && _waveformRect != default)
 			{
 				double currentPlayedLength = EditorApplication.timeSinceStartup - _playingStartTime;
 				double currentPos;

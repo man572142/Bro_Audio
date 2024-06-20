@@ -1,8 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using Ami.BroAudio.Data;
-using Ami.BroAudio.Runtime;
-using System.IO;
+using System.Collections.Generic;
 
 #if !UNITY_2019_2_OR_NEWER
 using Ami.Extension; 
@@ -19,45 +18,16 @@ namespace Ami.BroAudio.Editor
 				return;
 			}
 
-			DeleteJsonDataByAssetPath(deletedAssetPaths);
-
-			string assetPath = AssetDatabase.GetAssetPath(Resources.Load(nameof(SoundManager)));
-
-            if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath))
-            {
-                return;
-            }
-            using (var editScope = new EditPrefabAssetScope(assetPath))
+			if (TryGetCoreData(out BroAudioData coreData))
 			{
-				if (editScope.PrefabRoot.TryGetComponent<SoundManager>(out var soundManager))
-				{
-					foreach (string path in deletedAssetPaths)
-					{
-						if (!string.IsNullOrEmpty(path) && TryGetAssetByPath(path, out var asset))
-						{
-							ScriptableObject scriptableObject = asset as ScriptableObject;
-							soundManager.RemoveDeletedAsset(scriptableObject);
-						}
-						else
-						{
-							soundManager.RemoveDeletedAsset(null);
-						}
-					}
-				}
+				coreData.RemoveEmpty();
 			}
 		}
 
-		public static void AddToSoundManager(ScriptableObject asset)
+		public static bool TryGetCoreData(out BroAudioData coreData)
 		{
-			string assetPath = AssetDatabase.GetAssetPath(Resources.Load(nameof(SoundManager)));
-			using (var editScope = new EditPrefabAssetScope(assetPath))
-			{
-				if(editScope.PrefabRoot.TryGetComponent<SoundManager>(out var soundManager))
-				{
-					soundManager.AddAsset(asset);
-				}
-				editScope.PrefabRoot.transform.position = Vector3.one;
-			}
+			coreData = Resources.Load<BroAudioData>(CoreDataResourcesPath);
+			return coreData;
 		}
 
 		public static bool TryGetAssetByGUID(string assetGUID,out IAudioAsset asset)
@@ -69,6 +39,32 @@ namespace Ami.BroAudio.Editor
 		{
 			asset = AssetDatabase.LoadAssetAtPath(assetPath, typeof(ScriptableObject)) as IAudioAsset;
 			return asset != null;
+		}
+
+		public static void WriteAssetOutputPathToCoreData(string path)
+		{
+			if (TryGetCoreData(out BroAudioData coreData))
+			{
+				coreData.AssetOutputPath = path;
+				EditorUtility.SetDirty(coreData);
+				AssetDatabase.SaveAssets();
+			}
+		}
+
+		public static void AddNewAssetToCoreData(ScriptableObject asset)
+		{
+			if(TryGetCoreData(out var coreData))
+			{
+				coreData.AddAsset(asset as AudioAsset);
+			}
+		}
+
+		public static void ReorderAssets(List<string> _allAssetGUIDs)
+		{
+			if (TryGetCoreData(out var coreData))
+			{
+				coreData.ReorderAssets(_allAssetGUIDs);
+			}
 		}
 	}
 }

@@ -58,9 +58,8 @@ namespace Ami.BroAudio.Runtime
         private ObjectPool<AudioMixerGroup> _dominatorTrackPool = null;
 
         [SerializeField] AudioMixer _broAudioMixer = null;
+        [SerializeField] BroAudioData _data = null;
 
-        [Header("Assets")]
-        [SerializeField] private List<ScriptableObject> _soundAssets = new List<ScriptableObject>();
         private Dictionary<int, IAudioEntity> _audioBank = new Dictionary<int, IAudioEntity>();
 
         private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
@@ -101,9 +100,8 @@ namespace Ami.BroAudio.Runtime
 		#region InitBank
 		private void InitBank()
 		{
-			foreach (var scriptableObj in _soundAssets)
+			foreach (var asset in _data.Assets)
 			{
-                IAudioAsset asset = scriptableObj as IAudioAsset;
                 if (asset == null)
                     continue;
 
@@ -350,5 +348,12 @@ namespace Ami.BroAudio.Runtime
 			}
             return result;
         }
+
+#if UNITY_EDITOR
+        public void SetCoreData(BroAudioData data)
+        {
+            _data = data;
+        } 
+#endif
     }
 }

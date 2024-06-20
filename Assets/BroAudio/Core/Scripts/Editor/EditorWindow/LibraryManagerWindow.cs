@@ -89,9 +89,9 @@ namespace Ami.BroAudio.Editor
 
 		private void OnEnable()
 		{
-			if (TryGetCoreData(out string path, out SerializedCoreData coreData))
+			if (TryGetCoreData(out var coreData))
 			{
-				_allAssetGUIDs = coreData.GUIDs;
+				_allAssetGUIDs = coreData.GetGUIDList();
 				_hasOutputAssetPath = Directory.Exists(coreData.AssetOutputPath);
 
                 InitEditorDictionary();
@@ -112,7 +112,7 @@ namespace Ami.BroAudio.Editor
 
 			if(_hasAssetListReordered)
 			{
-				WriteGuidToCoreData(_allAssetGUIDs);
+				ReorderAssets(_allAssetGUIDs);
 			}
 		}
 
@@ -120,34 +120,18 @@ namespace Ami.BroAudio.Editor
 		private void InitEditorDictionary()
 		{
 			_assetEditorDict.Clear();
-			List<string> missingGUIDs = null;
 			foreach (string guid in _allAssetGUIDs)
 			{
 				if (!string.IsNullOrEmpty(guid) && !_assetEditorDict.ContainsKey(guid))
 				{
 					string assetPath = AssetDatabase.GUIDToAssetPath(guid);
                     var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
-                    if (string.IsNullOrEmpty(assetPath) || asset == null)
-					{
-						missingGUIDs = missingGUIDs ?? new List<string>();
-						missingGUIDs.Add(guid);
-                        continue;
-					}
 					
 					AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(asset, typeof(AudioAssetEditor)) as AudioAssetEditor;
 					editor.Init(_idGenerator);
 					_assetEditorDict.Add(guid, editor);
 				}
 			}
-
-			if(missingGUIDs != null)
-			{
-				foreach(string guid in missingGUIDs)
-				{
-					_allAssetGUIDs.Remove(guid);
-				}
-                WriteGuidToCoreData(_allAssetGUIDs);
-            }
 		}
 
 		private void InitReorderableList()
@@ -228,18 +212,6 @@ namespace Ami.BroAudio.Editor
 		}
 		#endregion
 
-		private void OnChangeAssetName(AudioAssetEditor editor, string newName)
-		{
-			bool isFirstSet = string.IsNullOrEmpty(editor.Asset.AssetName);
-
-			editor.SetAssetName(newName);
-
-			if (isFirstSet)
-			{
-				OnFirstSetAsset(editor.Asset);
-			}
-		}
-
         private bool TryGetCurrentAssetEditor(out AudioAssetEditor editor)
         {
             editor = null;
@@ -264,14 +236,6 @@ namespace Ami.BroAudio.Editor
         }
 
         #region Asset Creation
-        private void OnFirstSetAsset(IAudioAsset asset)
-		{
-			if (!string.IsNullOrEmpty(asset.AssetName))
-			{
-				AddToSoundManager(asset as AudioAsset);
-			}
-		}
-
 		private void ShowCreateAssetAskName()
 		{
 			// In the following case. List has better performance than IEnumerable , even with a ToList() method.
@@ -288,8 +252,8 @@ namespace Ami.BroAudio.Editor
 
 			var newAsset = ScriptableObject.CreateInstance(typeof(AudioAsset));
 			AssetDatabase.CreateAsset(newAsset, path);
-            AddToSoundManager(newAsset);
-            AssetDatabase.SaveAssets();
+			AddNewAssetToCoreData(newAsset);
+			AssetDatabase.SaveAssets();
 
 			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(newAsset, typeof(AudioAssetEditor)) as AudioAssetEditor;
 			string guid = AssetDatabase.AssetPathToGUID(path);
@@ -298,8 +262,7 @@ namespace Ami.BroAudio.Editor
 
 			_assetEditorDict.Add(guid, editor);
 			_allAssetGUIDs.Add(guid);
-
-			WriteGuidToCoreData(_allAssetGUIDs);
+			
 			_assetReorderableList.index = _assetReorderableList.count - 1;
 			return editor;
 		}
@@ -427,7 +390,7 @@ namespace Ami.BroAudio.Editor
 			{
 				_entitiesScrollPos = EditorGUILayout.BeginScrollView(_entitiesScrollPos);
 				{
-					DrawEntitiesHeader(editor.Asset, newName => OnChangeAssetName(editor, newName));
+					DrawEntitiesHeader(editor.Asset, newName => editor.SetAssetName(newName));
 					editor.DrawEntitiesList();
 				}
 				EditorGUILayout.EndScrollView();

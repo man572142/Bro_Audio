@@ -10,6 +10,10 @@ namespace Ami.BroAudio.Editor
         {
             OnDeleteAssets(deletedAssets);
             OnReimportAsset(importedAssets);
+            if(importedAssets.Length > 0)
+            {
+                BroUserDataGenerator.CheckAndGenerateUserData();
+            }
         }
 
         private static void OnReimportAsset(string[] importedAssets)

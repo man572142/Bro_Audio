@@ -1,32 +1,32 @@
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine;
 using Ami.BroAudio.Data;
 using static Ami.BroAudio.Editor.BroEditorUtility;
-using UnityEditor.VersionControl;
+using System;
 
 namespace Ami.BroAudio.Editor
 {
 	public class IdGenerator : IUniqueIDGenerator
 	{
 		private bool _isInit = false;
-        //private Dictionary<BroAudioType, List<IAudioAsset>> _dataDict = null;
-        private List<IAudioAsset> _assetList = null;
+        private IReadOnlyList<AudioAsset> _assetList = null;
 
         private void Init()
 		{
-            _assetList = new List<IAudioAsset>();
-            List<string> guidList = GetGUIDListFromJson();
+			int value = 0;
+            object obj = new object();
+			Action action = () => 
+            {
+				value++;
+			};
+            action();
 
-            foreach(string guid in guidList)
-			{
-                string path = AssetDatabase.GUIDToAssetPath(guid);
-                IAudioAsset asset = AssetDatabase.LoadAssetAtPath(path,typeof(IAudioAsset)) as IAudioAsset;
-                if(asset != null)
-				{              
-                    _assetList.Add(asset);
-                }
+            if(!TryGetCoreData(out var coreData))
+            {
+                return;
             }
+
+            _assetList = coreData.Assets;
 			_isInit = true;
 		}
 

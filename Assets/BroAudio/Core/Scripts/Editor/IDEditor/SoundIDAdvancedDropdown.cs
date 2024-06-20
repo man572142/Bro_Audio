@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using UnityEditor;
-using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Editor
 {
@@ -25,19 +24,21 @@ namespace Ami.BroAudio.Editor
 			var root = new AdvancedDropdownItem(nameof(BroAudio));
 
 			int childCount = 0;
-			List<string> guids = GetGUIDListFromJson();
-			foreach (string guid in guids)
-			{
-				string path = AssetDatabase.GUIDToAssetPath(guid);
-				var asset = AssetDatabase.LoadAssetAtPath(path, typeof(IAudioAsset)) as IAudioAsset;
 
+			if(!TryGetCoreData(out var coreData))
+			{
+				return null;
+			}
+
+			foreach (var asset in coreData.Assets)
+			{
 				if (asset != null && !string.IsNullOrEmpty(asset.AssetName))
 				{
 					AdvancedDropdownItem item = null;
 					foreach (var entity in asset.GetAllAudioEntities())
 					{
 						item = item ?? new AdvancedDropdownItem(asset.AssetName);
-                        item.AddChild(new SoundIDAdvancedDropdownItem(entity.Name, entity.ID, asset as ScriptableObject));
+                        item.AddChild(new SoundIDAdvancedDropdownItem(entity.Name, entity.ID, asset));
 					}
 
 					root.AddChild(item);

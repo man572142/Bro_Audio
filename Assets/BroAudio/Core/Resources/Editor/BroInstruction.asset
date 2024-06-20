@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e3d9656167abb84bbe211433938026f, type: 3}
   m_Name: BroInstruction
   m_EditorClassIdentifier: 
+  DemoScene: {fileID: 102900000, guid: 05a9e41d79251594aad6850fbdf49b6f, type: 3}
   _dictionary:
   - Key: 0
     Value: Everything works great!

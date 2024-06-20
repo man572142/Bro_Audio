@@ -1,4 +1,3 @@
-using Ami.BroAudio.Tools;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,7 +5,7 @@ using UnityEngine;
 namespace Ami.BroAudio.Editor
 {
 #if BroAudio_DevOnly
-	[CreateAssetMenu(menuName = nameof(BroAudio) + "/Editor Setting", fileName = BroName.EditorSettingPath)]
+	[CreateAssetMenu(menuName = nameof(BroAudio) + "/Editor Setting", fileName = Tools.BroName.EditorSettingPath)]
 #endif
 	public class EditorSetting : ScriptableObject
 	{
@@ -29,7 +28,6 @@ namespace Ami.BroAudio.Editor
 		public bool ShowVUColorOnVolumeSlider;
 
 		public List<AudioTypeSetting> AudioTypeSettings;
-		public Object DemoScene = null; 
 
 		public Color GetAudioTypeColor(BroAudioType audioType)
 		{

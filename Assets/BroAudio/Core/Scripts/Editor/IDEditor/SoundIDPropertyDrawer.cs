@@ -50,19 +50,20 @@ namespace Ami.BroAudio.Editor
 				return;
             }
 
-            // TODO: Initializing this whenever an SoundID is created is not efficient. 
-            List<string> guidList = BroEditorUtility.GetGUIDListFromJson();
-			foreach (string guid in guidList)
+			if(BroEditorUtility.TryGetCoreData(out var coreData))
 			{
-				string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-				asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath) as AudioAsset;
-				if (asset != null && BroEditorUtility.TryGetEntityName(asset, idProp.intValue, out _entityName))
+				foreach (var coreAsset in coreData.Assets)
 				{
-					assetProp.objectReferenceValue = asset;
-					assetProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-					return;
+					asset = coreAsset;
+					if (asset != null && BroEditorUtility.TryGetEntityName(asset, idProp.intValue, out _entityName))
+					{
+						assetProp.objectReferenceValue = asset;
+						assetProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+						return;
+					}
 				}
 			}
+			
 			SetToMissing();
 
 			void SetToMissing()

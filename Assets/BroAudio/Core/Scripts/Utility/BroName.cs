@@ -12,6 +12,8 @@ namespace Ami.BroAudio.Tools
 		public const string MainLogoPath = EditorResourcePath + "Logo_Main";
 		public const string TransparentLogoPath = EditorResourcePath + "Logo_Transparent";
 		public const string EditorResourcePath = "Editor/";
+		public const string EditorAudioMixerName = "EditorBroAudioMixer";
+		public const string EditorAudioMixerPath = EditorResourcePath + EditorAudioMixerName;
 		#endregion
 
 		#region MenuItem

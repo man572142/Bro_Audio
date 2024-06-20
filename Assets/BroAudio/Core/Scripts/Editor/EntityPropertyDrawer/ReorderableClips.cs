@@ -78,7 +78,8 @@ namespace Ami.BroAudio.Editor
 		public void Dispose()
 		{
 			Undo.undoRedoPerformed -= OnUndoRedoPerformed;
-		}
+			_currentPlayingClipPath = null;
+        }
 
 		public void SetPreviewRect(Rect rect)
 		{
@@ -222,48 +223,52 @@ namespace Ami.BroAudio.Editor
 
 			void DrawPlayClipButton()
 			{
-				if(audioClipProp.objectReferenceValue is AudioClip audioClip)
+                AudioClip audioClip = audioClipProp.objectReferenceValue as AudioClip;
+                if (audioClip == null)
 				{
-					bool isPlaying = string.Equals(_currentPlayingClipPath, clipProp.propertyPath);
-					var image = BroEditorUtility.GetPlaybackButtonIcon(isPlaying).image;
-                    GUIContent buttonGUIContent = new GUIContent(image, EditorPlayAudioClip.PlayWithVolumeSetting);
-					if (GUI.Button(buttonRect, buttonGUIContent))
-					{
-						if(isPlaying)
-						{
-							EditorPlayAudioClip.Instance.StopAllClips();
-						}
-						else
-						{
-							float startPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue;
-							float endPos = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue;
-							if (Event.current.button == 0)
-							{
-								EditorPlayAudioClip.Instance.PlayClip(audioClip, startPos, endPos);
-                            }
-							else
-							{
-								EditorPlayAudioClip.Instance.PlayClipByAudioSource(audioClip, volProp.floatValue, startPos, endPos);
-                            }
-
-							_currentPlayingClipPath = clipProp.propertyPath;
-							EditorPlayAudioClip.Instance.OnFinished = () => _currentPlayingClipPath = null;
-
-                            if (EditorPlayAudioClip.Instance.PlaybackIndicator.IsPlaying)
-							{
-								PreviewClip clip = new PreviewClip()
-								{
-									StartPosition = startPos,
-									EndPosition = endPos,
-									FullLength = audioClip.length,
-								};
-
-								EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, clip);
-							}
-						}
-					}
+					return;
 				}
-			}
+
+                bool isPlaying = string.Equals(_currentPlayingClipPath, clipProp.propertyPath);
+                var image = BroEditorUtility.GetPlaybackButtonIcon(isPlaying).image;
+                GUIContent buttonGUIContent = new GUIContent(image, EditorPlayAudioClip.IgnoreSettingTooltip);
+                if (GUI.Button(buttonRect, buttonGUIContent))
+                {
+                    if (isPlaying)
+                    {
+                        EditorPlayAudioClip.Instance.StopAllClips();
+                    }
+                    else
+                    {
+						PreviewAudio(audioClip);
+                    }
+                }
+            }
+
+			void PreviewAudio(AudioClip audioClip)
+			{
+                PreviewClip previewClipGUI;
+                if (Event.current.button == 0) // Left Click
+                {
+                    var transport = new SerializedTransport(clipProp, audioClip.length);
+                    var clipData = new EditorPlayAudioClip.Data(audioClip, volProp.floatValue, transport);
+                    EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData);
+					previewClipGUI = new PreviewClip(transport);
+                }
+                else
+                {
+                    EditorPlayAudioClip.Instance.PlayClip(audioClip, 0f, 0f);
+					previewClipGUI = new PreviewClip(audioClip.length);
+                }
+
+                _currentPlayingClipPath = clipProp.propertyPath;
+                EditorPlayAudioClip.Instance.OnFinished = () => _currentPlayingClipPath = null;
+
+                if (EditorPlayAudioClip.Instance.PlaybackIndicator.IsPlaying)
+                {
+                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, previewClipGUI);
+                }
+            }
 
 			void DrawVolumeSlider()
 			{

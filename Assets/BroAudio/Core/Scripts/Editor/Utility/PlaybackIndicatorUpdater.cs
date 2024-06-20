@@ -82,5 +82,11 @@ namespace Ami.Extension
 			_playingStartTime = default;
 			base.End();
 		}
-	}
+
+        public override void Dispose()
+        {
+			OnEnd = null;
+            base.Dispose();
+        }
+    }
 }

@@ -3,15 +3,54 @@ using UnityEditor;
 using System;
 using System.Reflection;
 using System.Threading;
+using Ami.BroAudio.Editor;
+using Ami.BroAudio.Data;
+using UnityEngine.Audio;
+using Ami.BroAudio.Tools;
+using Ami.Extension.Reflection;
 
 #if UNITY_EDITOR
 namespace Ami.Extension
 {
     public class EditorPlayAudioClip
 	{
-		public delegate void StopAllPreviewClips();
+		public class Data
+		{
+			public AudioClip AudioClip;
+			public float Volume;
+			public float StartPosition;
+			public float EndPosition;
+			public float FadeIn;
+			public float FadeOut;
 
-		public const string PlayWithVolumeSetting = "[Experimental]\nRight-click to play at the current volume (maximum at 0dB)";
+            public Data(AudioClip audioClip, float volume,Transport transport)
+            {
+				AudioClip = audioClip;
+				Volume = volume;
+				StartPosition = transport.StartPosition; 
+				EndPosition = transport.EndPosition;
+				FadeIn = transport.FadeIn;
+				FadeOut = transport.FadeOut;
+            }
+
+			public Data(BroAudioClip broAudioClip)
+			{
+				AudioClip = broAudioClip.AudioClip; 
+				Volume = broAudioClip.Volume;
+				StartPosition = broAudioClip.StartPosition;
+				EndPosition = broAudioClip.EndPosition;
+				FadeIn = broAudioClip.FadeIn;
+				FadeOut = broAudioClip.FadeOut;
+			}
+
+            public float Duration => AudioClip.length - EndPosition - StartPosition;
+        }
+
+        public delegate void PlayPreviewClip(AudioClip audioClip, int startSample, bool loop);
+        public delegate void StopAllPreviewClips();
+
+		public const string AudioUtilClassName = "AudioUtil";
+        public const string IgnoreSettingTooltip = "Right-click to play the audio clip directly";
 #if UNITY_2020_2_OR_NEWER
 		public const string PlayClipMethodName = "PlayPreviewClip";
         public const string StopClipMethodName = "StopAllPreviewClips";
@@ -35,19 +74,53 @@ namespace Ami.Extension
 		public Action OnFinished;
 
 		private StopAllPreviewClips _stopAllPreviewClipsDelegate = null;
+		private PlayPreviewClip _playPreviewClipDelegate = null;
 		private CancellationTokenSource _currentPlayingTaskCanceller = null;
 		private CancellationTokenSource _currentAudioSourceTaskCanceller = null;
 		private AudioSource _currentEditorAudioSource = null;
+		private Data _currentPlayingClip = null;
 		private bool _isReplaying = false;
+		private AudioMixer _mixer;
+		private EditorAudioPreviewer _volumeTransporter = null;
+
+		public StopAllPreviewClips StopAllPreviewClipsDelegate
+		{
+			get
+			{
+                if(_stopAllPreviewClipsDelegate == null)
+				{
+                    Type audioUtilClass = AudioClassReflectionHelper.GetUnityEditorClass(AudioUtilClassName);
+                    MethodInfo stopMethod = audioUtilClass.GetMethod(StopClipMethodName, BindingFlags.Static | BindingFlags.Public);
+                    _stopAllPreviewClipsDelegate = Delegate.CreateDelegate(typeof(StopAllPreviewClips), stopMethod) as StopAllPreviewClips;
+                }
+				return _stopAllPreviewClipsDelegate;
+            }
+		}
+
+        public PlayPreviewClip PlayPreviewClipDelegate
+        {
+            get
+            {
+                if (_playPreviewClipDelegate == null)
+                {
+                    Type audioUtilClass = AudioClassReflectionHelper.GetUnityEditorClass(AudioUtilClassName);
+                    MethodInfo playMethod = audioUtilClass.GetMethod(PlayClipMethodName, BindingFlags.Static | BindingFlags.Public);
+                    _playPreviewClipDelegate = Delegate.CreateDelegate(typeof(PlayPreviewClip), playMethod) as PlayPreviewClip;
+                }
+                return _playPreviewClipDelegate;
+            }
+        }
 
         public EditorPlayAudioClip()
         {
+            _mixer = Resources.Load<AudioMixer>(BroName.EditorAudioMixerPath);
             PlaybackIndicator = new PlaybackIndicatorUpdater();
-			_stopAllPreviewClipsDelegate = GetStopAllPreviewClipsDelegate();
-			EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+			_volumeTransporter = new EditorAudioPreviewer(_mixer);
+
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
-        public void PlayClipByAudioSource(AudioClip audioClip, float volume, float startTime, float endTime, bool selfLoop = false, Action onReplay = null, float pitch = 1f)
+        public void PlayClipByAudioSource(Data clip, bool selfLoop = false, Action onReplay = null, float pitch = 1f)
 		{
 			StopStaticPreviewClipsAndCancelTask();
 			if (_currentEditorAudioSource)
@@ -63,18 +136,21 @@ namespace Ami.Extension
 				_currentEditorAudioSource = gameObj.AddComponent<AudioSource>();
 			}
 
-			AudioSource audioSource = _currentEditorAudioSource;
-			audioSource.clip = audioClip;
-			audioSource.volume = volume;
+			_currentPlayingClip = clip;
+            AudioSource audioSource = _currentEditorAudioSource;
+			audioSource.clip = clip.AudioClip;
 			audioSource.playOnAwake = false;
-			audioSource.time = startTime;
+			audioSource.time = clip.StartPosition;
 			audioSource.pitch = pitch;
+            audioSource.outputAudioMixerGroup = GetEditorMasterTrack();
 
-			audioSource.Play();
+            _volumeTransporter.SetData(clip);
+
+            audioSource.Play();
 			PlaybackIndicator.Start(selfLoop);
+			_volumeTransporter.Start();
 
-			float duration = audioClip.length - endTime - startTime;
-			_currentAudioSourceTaskCanceller = _currentAudioSourceTaskCanceller ?? new CancellationTokenSource();
+            _currentAudioSourceTaskCanceller = _currentAudioSourceTaskCanceller ?? new CancellationTokenSource();
 
 			_isReplaying = onReplay != null;
             if (!_isReplaying)
@@ -89,19 +165,39 @@ namespace Ami.Extension
                 }
 			}
 
-            AsyncTaskExtension.DelayInvoke(duration, onReplay, _currentAudioSourceTaskCanceller.Token);
+            AsyncTaskExtension.DelayInvoke(clip.Duration, onReplay, _currentAudioSourceTaskCanceller.Token);
 
-            void Replay()
+			AudioMixerGroup GetEditorMasterTrack()
 			{
-				if(audioSource != null && _currentAudioSourceTaskCanceller != null)
+				var tracks = _mixer != null ? _mixer.FindMatchingGroups("Master") : null;
+				if(tracks != null && tracks.Length > 0)
 				{
-					_currentEditorAudioSource.Stop();
-					audioSource.time = startTime;
-					audioSource.Play();
-					AsyncTaskExtension.DelayInvoke(duration, Replay, _currentAudioSourceTaskCanceller.Token);
+					return tracks[0];
 				}
-			}
+				else
+				{
+					Debug.LogError("Can't find EditorBroAudioMixer's Master audioMixerGroup, the fading and extra volume is not applied to the preview");
+                    return null;
+                }
+            }
 		}
+
+        private void Replay()
+        {
+            if (_currentEditorAudioSource != null && _currentAudioSourceTaskCanceller != null)
+            {
+				_volumeTransporter.End();
+				PlaybackIndicator.End();
+
+                _currentEditorAudioSource.Stop();
+                _currentEditorAudioSource.time = _currentPlayingClip.StartPosition;
+                _currentEditorAudioSource.Play();
+
+                _volumeTransporter.Start();
+                PlaybackIndicator.Start();
+                AsyncTaskExtension.DelayInvoke(_currentPlayingClip.Duration, Replay, _currentAudioSourceTaskCanceller.Token);
+            }
+        }
 
         public void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
 		{
@@ -114,20 +210,10 @@ namespace Ami.Extension
 		{
 			StopAllClips();
 
-			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
+            PlayPreviewClipDelegate.Invoke(audioClip, startSample, loop);
+            PlaybackIndicator.Start(loop);
 
-			Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
-			MethodInfo method = audioUtilClass.GetMethod(PlayClipMethodName,
-				BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(AudioClip), typeof(int), typeof(bool) }, null);
-
-			var parameters = new object[] { audioClip, startSample, false };
-			if (method != null)
-			{
-				method.Invoke(null, parameters);
-				PlaybackIndicator.Start(loop);
-			}
-
-			int sampleLength = audioClip.samples - startSample - endSample;
+            int sampleLength = audioClip.samples - startSample - endSample;
 			int lengthInMs = (int)Math.Round(sampleLength / (double)audioClip.frequency * TimeExtension.SecondInMilliseconds, MidpointRounding.AwayFromZero);
 			_currentPlayingTaskCanceller = _currentPlayingTaskCanceller ?? new CancellationTokenSource();
 			if (loop)
@@ -141,10 +227,12 @@ namespace Ami.Extension
 
 			void Replay()
 			{
-				if(method != null && _currentPlayingTaskCanceller != null)
+				if(_currentPlayingTaskCanceller != null)
 				{
-					_stopAllPreviewClipsDelegate.Invoke();
-					method.Invoke(null, parameters);
+					StopAllPreviewClipsDelegate.Invoke();
+                    PlayPreviewClipDelegate.Invoke(audioClip, startSample, loop);
+					PlaybackIndicator.End();
+					PlaybackIndicator.Start();
 					AsyncTaskExtension.DelayInvoke(lengthInMs, Replay, _currentPlayingTaskCanceller.Token);
 				}
 			}
@@ -166,7 +254,8 @@ namespace Ami.Extension
 				_currentEditorAudioSource.Stop();
 				UnityEngine.Object.DestroyImmediate(_currentEditorAudioSource.gameObject);
 				PlaybackIndicator.End();
-				_currentEditorAudioSource = null;
+                _volumeTransporter.End();
+                _currentEditorAudioSource = null;
 				TriggerOnFinished();
             }
 		}
@@ -174,7 +263,7 @@ namespace Ami.Extension
 		private void StopStaticPreviewClipsAndCancelTask()
         {
             CancelTask(ref _currentPlayingTaskCanceller);
-            _stopAllPreviewClipsDelegate.Invoke();
+            StopAllPreviewClipsDelegate.Invoke();
             PlaybackIndicator.End();
             TriggerOnFinished();
         }
@@ -188,16 +277,7 @@ namespace Ami.Extension
             }	
         }
 
-        private StopAllPreviewClips GetStopAllPreviewClipsDelegate()
-		{
-			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
-
-			Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
-			MethodInfo method = audioUtilClass.GetMethod(StopClipMethodName, BindingFlags.Static | BindingFlags.Public, null, new Type[] { }, null);
-			return Delegate.CreateDelegate(typeof(StopAllPreviewClips), method) as StopAllPreviewClips;
-		}
-
-		public void AddPlaybackIndicatorListener(Action action)
+        public void AddPlaybackIndicatorListener(Action action)
 		{
 			RemovePlaybackIndicatorListener(action);	
 			PlaybackIndicator.OnUpdate += action;
@@ -223,8 +303,13 @@ namespace Ami.Extension
         private void Dispose()
         {
 			OnFinished = null;
+			_currentPlayingClip = null;
+			_mixer = null;
+			_volumeTransporter.Dispose();
+            _volumeTransporter = null;
             StopStaticPreviewClipsAndCancelTask();
             DestroyPreviewAudioSourceAndCancelTask();
+			PlaybackIndicator.Dispose();
 			PlaybackIndicator = null;
 			_instance = null;
         }

@@ -326,16 +326,11 @@ namespace Ami.BroAudio.Editor
 		private void DrawClipProperties(Rect position,SerializedProperty clipProp, AudioClip audioClip, EditorSetting.AudioTypeSetting setting, out ITransport transport,out float volume)
 		{
 			SerializedProperty volumeProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
-			SerializedProperty delayProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Delay));
-			SerializedProperty startPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition));
-			SerializedProperty endPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition));
-			SerializedProperty fadeInProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.FadeIn));
-			SerializedProperty fadeOutProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.FadeOut));
 
 			if (!_clipDataDict.TryGetValue(clipProp.propertyPath, out var clipData))
 			{
 				clipData = new ClipData();
-				clipData.Transport = new SerializedTransport(startPosProp, endPosProp, fadeInProp, fadeOutProp, delayProp, audioClip.length); ;
+				clipData.Transport = new SerializedTransport(clipProp, audioClip.length); ;
 				_clipDataDict[clipProp.propertyPath] = clipData;
 			}
 			transport = clipData.Transport;
@@ -404,7 +399,8 @@ namespace Ami.BroAudio.Editor
                 float volume = clip.Volume * entity.GetMasterVolume();
                 float pitch = entity.GetPitch();
                 Action onReplay = data.IsLoop ? ReplayPreview : null;
-                EditorPlayAudioClip.Instance.PlayClipByAudioSource(clip.AudioClip, volume, clip.StartPosition, clip.EndPosition, data.IsLoop, onReplay, pitch);
+				var clipData = new EditorPlayAudioClip.Data(clip) { Volume = volume};
+                EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, data.IsLoop, onReplay, pitch);
                 EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip));
                 data.IsPreviewing = true;
                 EditorPlayAudioClip.Instance.OnFinished = OnPreviewFinished;

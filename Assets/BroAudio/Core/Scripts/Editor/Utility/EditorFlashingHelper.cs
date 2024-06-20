@@ -34,7 +34,6 @@ namespace Ami.Extension
 			base.Start();
 			_currentTime = 0f;
 
-			OnUpdate += UpdateColor;
 			IsUpdating = true;
 		}
 
@@ -43,11 +42,10 @@ namespace Ami.Extension
 			base.End();
 			_currentTime = 0f;
 
-			OnUpdate -= UpdateColor;
 			IsUpdating = false;
 		}
 
-		private void UpdateColor()
+		protected override void Update()
 		{
 			if(_currentTime <= _flashInterval && _currentTime >= 0f)
 			{
@@ -67,7 +65,7 @@ namespace Ami.Extension
 				_currentTime = Mathf.Clamp(_currentTime,0f,_flashInterval);
 				_isReverse = !_isReverse;
 			}
-			
+			base.Update();
 		}
 
 		private Color GetTransparent(Color color)

@@ -76,21 +76,25 @@ namespace Ami.BroAudio.Editor
 		{
             OnChangeAudioClip += ResetSetting;
 			ResetSetting();
-
-			EditorPlayAudioClip.Instance.AddPlaybackIndicatorListener(Repaint);
 		}
 
 		private void OnDisable()
 		{
 			OnChangeAudioClip -= ResetSetting;
-			EditorPlayAudioClip.Instance.RemovePlaybackIndicatorListener(Repaint);
 		}
 
-		private void OnLostFocus()
+        private void OnFocus()
+        {
+            EditorPlayAudioClip.Instance.AddPlaybackIndicatorListener(Repaint);
+        }
+
+        private void OnLostFocus()
 		{
-			EditorPlayAudioClip.Instance.StopAllClips();
-			
-		}
+            EditorPlayAudioClip.Instance.RemovePlaybackIndicatorListener(Repaint);
+            EditorPlayAudioClip.Instance.StopAllClips();
+			_isPlaying = false;
+
+        }
 
 		protected override void OnGUI()
 		{
@@ -199,7 +203,7 @@ namespace Ami.BroAudio.Editor
 		{
 			previewRect = GetRectAndIterateLine(drawPosition);
 			previewRect.height = height;
-			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip, volume, TargetClip.name, _ => _isPlaying = true); // don't worry about any duplicate path, because there will only one clip in editing
+			_clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip, volume, TargetClip.name, clipPath => _isPlaying = clipPath != null); // don't worry about any duplicate path, because there will only one clip in editing
 			DrawEmptyLine(GetLineCountByPixels(height));
 		}
 
@@ -228,7 +232,7 @@ namespace Ami.BroAudio.Editor
 			Rect playbackButtonRect = new Rect(barRect) { width = buttonSize, height = buttonSize };
 			Rect loopButtonRect = new Rect(playbackButtonRect) { x = playbackButtonRect.x + buttonSize };
 			string icon = _isPlaying ? IconConstant.StopButton : IconConstant.PlayButton;
-			GUIContent playButtonContent = new GUIContent(EditorGUIUtility.IconContent(icon).image, EditorPlayAudioClip.PlayWithVolumeSetting);
+			GUIContent playButtonContent = new GUIContent(EditorGUIUtility.IconContent(icon).image, EditorPlayAudioClip.IgnoreSettingTooltip);
 			if (GUI.Button(playbackButtonRect, playButtonContent))
 			{
 				if(_isPlaying)
@@ -237,18 +241,22 @@ namespace Ami.BroAudio.Editor
 				}
 				else
 				{
+					PreviewClip previewGUIClip;
 					if(Event.current.button == 0) // Left Click
 					{
-						EditorPlayAudioClip.Instance.PlayClip(_targetClip, _transport.StartPosition, _transport.EndPosition, _isLoop);
-					}
+                        var clipData = new EditorPlayAudioClip.Data(_targetClip, _volume, _transport);
+                        EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, _isLoop);
+						previewGUIClip = new PreviewClip(_transport);
+                    }
 					else
 					{
-						EditorPlayAudioClip.Instance.PlayClipByAudioSource(_targetClip, _volume,_transport.StartPosition, _transport.EndPosition, _isLoop);
-					}
+                        EditorPlayAudioClip.Instance.PlayClip(_targetClip, 0f, 0f, _isLoop);
+                        previewGUIClip = new PreviewClip(_targetClip.length);
+                    }
 
                     _isPlaying = true;
                     EditorPlayAudioClip.Instance.OnFinished = () => _isPlaying = false; ;
-                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, new PreviewClip(_transport));
+                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, previewGUIClip);
 				}
 			}
 			_isLoop = DrawButtonToggle(loopButtonRect, _isLoop, EditorGUIUtility.IconContent(IconConstant.LoopIcon));

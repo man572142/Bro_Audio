@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ami.BroAudio.Data;
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,13 +13,13 @@ namespace Ami.BroAudio.Editor
 		private readonly SerializedProperty FadeInProp;
 		private readonly SerializedProperty FadeOutProp;
 
-		public SerializedTransport(SerializedProperty startPosProp, SerializedProperty endPosProp, SerializedProperty fadeInProp, SerializedProperty fadeOutProp, SerializedProperty delayProp,float fullLength) : base(fullLength)
+		public SerializedTransport(SerializedProperty clipProp,float fullLength) : base(fullLength)
 		{
-			DelayProp = delayProp;
-			StartPosProp = startPosProp;
-			EndPosProp = endPosProp;
-			FadeInProp = fadeInProp;
-			FadeOutProp = fadeOutProp;
+            DelayProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Delay));
+            StartPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.StartPosition));
+            EndPosProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.EndPosition));
+            FadeInProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.FadeIn));
+            FadeOutProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.FadeOut));
 		}
 		public override float Delay => DelayProp.floatValue;
 		public override float StartPosition => StartPosProp.floatValue;

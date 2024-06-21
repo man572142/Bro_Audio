@@ -34,7 +34,7 @@ namespace Ami.BroAudio
 			}
 		}
 
-        public SoundID ID => Instance ? Instance.ID : new SoundID(-1);
+        public SoundID ID => Instance ? Instance.ID : SoundID.Invalid;
 
 		public bool IsActive => IsAvailable() ? Instance.IsActive : false;
 

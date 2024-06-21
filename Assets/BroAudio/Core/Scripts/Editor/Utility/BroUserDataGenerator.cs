@@ -10,25 +10,39 @@ namespace Ami.BroAudio.Editor
 #if UNITY_EDITOR
 	public static class BroUserDataGenerator
 	{
+		private static bool _isGenerating = false;
+
 		public static void CheckAndGenerateUserData()
 		{
-			if (TryGetCoreData(out var coreData))
+			if (_isGenerating || TryGetCoreData(out var coreData))
 			{
 				return;
 			}
+			_isGenerating = true;
 
 			string resourcePath = DefaultResoucesFolderPath;
-			if (TryLoadResources<SoundManager>(nameof(SoundManager), out var soundManager))
+			if (!TryLoadResources<SoundManager>(nameof(SoundManager), out var soundManager))
 			{
-				string pathWithFileName = AssetDatabase.GetAssetPath(soundManager);
-				resourcePath = Path.GetDirectoryName(pathWithFileName);
+				Debug.LogError(Utility.LogTitle + $"{nameof(SoundManager)} is missing, please import it and place it in the Resources folder");
+				return;
 			}
+			resourcePath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(soundManager));
 
 			coreData = CreateCoreData(GetAssetSavePath(resourcePath, CoreDataResourcesPath));
+			AssignCoreData(soundManager, coreData);
+
 			CreateSettingIfNotExist<EditorSetting>(GetAssetSavePath(resourcePath, EditorSettingPath));
 			CreateSettingIfNotExist<RuntimeSetting>(GetAssetSavePath(resourcePath, RuntimeSettingPath));
 
+			AssetDatabase.importPackageCompleted -= OnPackageImportComplete;
+			AssetDatabase.importPackageCompleted += OnPackageImportComplete;
+		}
+
+		private static void OnPackageImportComplete(string packageName)
+		{
+			AssetDatabase.importPackageCompleted -= OnPackageImportComplete;
 			AssetDatabase.SaveAssets();
+			_isGenerating = false;
 		}
 
 		private static string GetAssetSavePath(string resourcesPath, string relativePath)
@@ -68,12 +82,17 @@ namespace Ami.BroAudio.Editor
 			return coreData;
 		}
 
+		private static void AssignCoreData(SoundManager soundManager, BroAudioData coreData)
+		{
+			soundManager.AssignCoreData(coreData);
+			PrefabUtility.SavePrefabAsset(soundManager.gameObject);
+		}
+
 		private static void CreateSettingIfNotExist<T>(string path) where T : ScriptableObject
 		{
 			if (!TryLoadResources<T>(path, out _))
 			{
 				var setting = ScriptableObject.CreateInstance<T>();
-				AssetDatabase.CreateAsset(setting, path);
 				if (setting is EditorSetting editorSetting)
 				{
 					editorSetting.ResetToFactorySettings();
@@ -82,7 +101,7 @@ namespace Ami.BroAudio.Editor
 				{
 					runtimeSetting.ResetToFactorySettings();
 				}
-				EditorUtility.SetDirty(setting);
+				AssetDatabase.CreateAsset(setting, path);
 			}
 		}
 

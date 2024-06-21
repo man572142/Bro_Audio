@@ -16,6 +16,8 @@ namespace Ami.BroAudio
 			ID = id;
 		}
 
+		public static SoundID Invalid => new SoundID(-1);
+
         public override string ToString() => ID.ToString();
         public override bool Equals(object obj) => obj is SoundID soundID && Equals(soundID);
         public override int GetHashCode() => ID;

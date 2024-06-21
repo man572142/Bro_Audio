@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using UnityEditor;
 
 namespace Ami.BroAudio.Editor
 {
@@ -37,17 +36,5 @@ namespace Ami.BroAudio.Editor
             }
 			return false;
 		}
-
-		//public static bool TryGetOldCoreData(out string path,out SerializedCoreData coreData)
-		//{
-		//	coreData = default;
-		//	path = null;
-		//	if(!TryGetOldCoreDataTextAsset(out var textAsset) || !TryParseCoreData(textAsset, out coreData))
-		//	{
-		//		return false;
-  //          }
-  //          path = AssetDatabase.GetAssetPath(textAsset);
-  //          return true;
-		//}
 	}
 }

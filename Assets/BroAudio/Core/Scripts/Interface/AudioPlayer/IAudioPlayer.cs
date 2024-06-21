@@ -2,8 +2,8 @@ using System;
 
 namespace Ami.BroAudio
 {
-	public interface IAudioPlayer : IEffectDecoratable, IVolumeSettable, IMusicDecoratable, IAudioStoppable
-    {
+	public interface IAudioPlayer : IEffectDecoratable, IVolumeSettable, IMusicDecoratable, IAudioStoppable, IPitchSettable
+	{
 		/// <summary>
 		/// The SoundID of the player is playing
 		/// </summary>

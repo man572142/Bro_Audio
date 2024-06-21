@@ -15,7 +15,6 @@ namespace Ami.BroAudio.Demo
             base.OnInZoneChanged(isInZone);
             BroAudio.Play(_sound);
             Destroy(gameObject);
-            // todo: SetEffect reverb
         }
     } 
 }

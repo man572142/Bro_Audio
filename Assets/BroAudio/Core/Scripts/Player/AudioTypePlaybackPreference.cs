@@ -6,13 +6,15 @@ namespace Ami.BroAudio.Runtime
 	{
 		// Each audio type will only have one instance
 		public float Volume { get; set; } = AudioConstant.FullVolume;
+		public float Pitch { get; set; } = AudioConstant.DefaultPitch;
 		public EffectType EffectType { get; set; }
 	}
 
 	public interface IAudioPlaybackPref
 	{
 		float Volume { get; }
-		EffectType EffectType { get; }
+        public float Pitch { get; }
+        EffectType EffectType { get; }
 	}
 }
 

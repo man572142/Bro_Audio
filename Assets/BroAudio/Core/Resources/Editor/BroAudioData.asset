@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: BroAudioData
   m_EditorClassIdentifier: 
   AssetOutputPath: Assets/BroAudio/AudioAssets
-  _assets: []
+  _assets:
+  - {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}

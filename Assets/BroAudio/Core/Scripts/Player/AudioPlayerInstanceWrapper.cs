@@ -47,6 +47,8 @@ namespace Ami.BroAudio
 #endif
 		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Instance ? Instance.SetVolume(vol, fadeTime) : null;
 
+		IAudioPlayer IPitchSettable.SetPitch(float pitch, float fadeTime) => Instance ? Instance.SetPitch(pitch, fadeTime) : null;
+
 		protected override void LogInstanceIsNull()
 		{
 			if(SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)
@@ -61,5 +63,7 @@ namespace Ami.BroAudio
         void IAudioStoppable.Stop(float fadeOut, Action onFinished) => Instance?.Stop(fadeOut, onFinished);
         void IAudioStoppable.Pause() => Instance?.Pause();
         void IAudioStoppable.Pause(float fadeOut) => Instance?.Pause(fadeOut);
-    }
+
+		
+	}
 }

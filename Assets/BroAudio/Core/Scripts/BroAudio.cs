@@ -85,14 +85,14 @@ namespace Ami.BroAudio
         /// <summary>
         /// Set the master volume
         /// </summary>
-        /// <param name="vol">values between 0.0 to 10.0</param>
+        /// <param name="vol">Accepts values from 0 to 10, default is 1</param>
         public static void SetVolume(float vol)
             => SetVolume(BroAudioType.All, vol);
 
         /// <summary>
         /// Set the volume of the given audio type
         /// </summary>
-        /// <param name="vol">values between 0.0 to 10.0</param>
+        /// <param name="vol">Accepts values from 0 to 10, default is 1</param>
         /// <param name="audioType"></param>
         public static void SetVolume(BroAudioType audioType, float vol) 
             => SetVolume(audioType, vol, BroAdvice.FadeTime_Immediate);
@@ -100,7 +100,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Set the volume of the given audio type
         /// </summary>
-        /// <param name="vol">values between 0.0 to 10.0</param>
+        /// <param name="vol">Accepts values from 0 to 10, default is 1</param>
         /// <param name="audioType"></param>
         /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
         public static void SetVolume(BroAudioType audioType, float vol, float fadeTime) 
@@ -109,7 +109,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Set the volume of an audio
         /// </summary>
-        /// <param name="vol">values between 0.0 to 10.0</param>
+        /// <param name="vol">Accepts values from 0 to 10, default is 1</param>
         /// <param name="id"></param>
         public static void SetVolume(SoundID id, float vol) 
             => SetVolume(id, vol, BroAdvice.FadeTime_Immediate);
@@ -117,12 +117,44 @@ namespace Ami.BroAudio
         /// <summary>
         /// Set the volume of an audio
         /// </summary>
-        /// <param name="vol">values between 0.0 to 10.0</param>
+        /// <param name="vol">Accepts values from 0 to 10, default is 1</param>
         /// <param name="id"></param>
         /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
         public static void SetVolume(SoundID id, float vol, float fadeTime) 
             => SoundManager.Instance?.SetVolume(id, vol, fadeTime);
         #endregion
+
+        /// <summary>
+        /// Set all audio's pitch immediately
+        /// </summary>
+        /// <param name="pitch">values between -3 to 3, default is 1</param>
+        public static void SetPitch(float pitch)
+            => SoundManager.Instance?.SetPitch(pitch, BroAudioType.All, BroAdvice.FadeTime_Immediate);
+
+        /// <summary>
+        /// Set the pitch of the given audio type immediately
+        /// </summary>
+        /// <param name="pitch">values between -3 to 3, default is 1</param>
+        /// <param name="audioType"></param>
+        public static void SetPitch(float pitch, BroAudioType audioType)
+            => SoundManager.Instance?.SetPitch(pitch, audioType, BroAdvice.FadeTime_Immediate);
+
+        /// <summary>
+        /// Set all audio's pitch
+        /// </summary>
+        /// <param name="pitch">values between -3 to 3, default is 1</param>
+        /// <param name="fadeTime"></param>
+        public static void SetPitch(float pitch,float fadeTime)
+            => SoundManager.Instance?.SetPitch(pitch, BroAudioType.All, fadeTime);
+
+        /// <summary>
+        /// Set the pitch of the given audio type
+        /// </summary>
+        /// <param name="pitch">values between -3 to 3, default is 1</param>
+        /// <param name="audioType"></param>
+        /// <param name="fadeTime"></param>
+        public static void SetPitch(float pitch, BroAudioType audioType, float fadeTime)
+            => SoundManager.Instance?.SetPitch(pitch, audioType, fadeTime);
 
 #if !UNITY_WEBGL
 #region Effect

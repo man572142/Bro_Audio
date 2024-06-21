@@ -27,6 +27,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1, y: 1, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -45,5 +46,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _audioPlayerPrefab: {fileID: 6105327489893945761, guid: 0e38aee583c6cf742b55a07d23ff515a, type: 3}
   _broAudioMixer: {fileID: 24100000, guid: 861ab5778322a8f42ada9413dc6c9f01, type: 2}
-  _soundAssets:
-  - {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+  _data: {fileID: 11400000, guid: cfafb131d16d1bf43a9107de37dcc4a6, type: 2}

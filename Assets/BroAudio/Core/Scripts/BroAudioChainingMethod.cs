@@ -42,6 +42,24 @@ namespace Ami.BroAudio
 			=> player?.SetVolume(vol, fadeTime);
 		#endregion
 
+		#region Set Pitch
+		/// <summary>
+		/// Set the player's pitch (-3 ~ 3).
+		/// </summary>
+		/// <param name="pitch">The target pitch</param>
+		/// <param name="fadeTime">Time to reach the target volume from the current volume.</param>
+		public static IAudioPlayer SetPitch(this IAudioPlayer player, float pitch, float fadeTime = FadeTime_Immediate)
+			=> player?.SetPitch(pitch, fadeTime);
+
+		/// <inheritdoc cref="SetPitch(IAudioPlayer,float,float)"/>
+		public static IAudioPlayer SetPitch(this IMusicPlayer player, float pitch, float fadeTime = FadeTime_Immediate)
+			=> player?.SetPitch(pitch, fadeTime);
+
+		/// <inheritdoc cref="SetPitch(IAudioPlayer,float,float)"/>
+		public static IAudioPlayer SetPitch(this IPlayerEffect player, float pitch, float fadeTime = FadeTime_Immediate)
+			=> player?.SetPitch(pitch, fadeTime);
+		#endregion
+
 		#region As Background Music
 		/// <summary>
 		/// As a background music, which will transition automatically if another BGM is played after it.

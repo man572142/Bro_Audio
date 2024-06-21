@@ -54,7 +54,7 @@ namespace Ami.BroAudio.Runtime
 
                 AudioSource.clip = CurrentClip.AudioClip;
                 AudioSource.priority = pref.Entity.Priority;
-                SetPitch(pref.Entity);
+                SetInitialPitch(pref.Entity);
                 SetSpatial(pref);
 
                 if (TryGetDecorator<MusicPlayer>(out var musicPlayer))

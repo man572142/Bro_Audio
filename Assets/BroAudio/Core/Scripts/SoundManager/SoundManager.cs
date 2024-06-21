@@ -255,6 +255,24 @@ namespace Ami.BroAudio.Runtime
 		}
         #endregion
 
+        public void SetPitch(float pitch, BroAudioType targetType, float fadeTime)
+        {
+            if (targetType == BroAudioType.None)
+            {
+                Debug.LogWarning(LogTitle + $"SetPitch with {targetType} is meaningless");
+                return;
+            }
+
+            GetPlaybackPrefByType(targetType, pref => pref.Pitch = pitch);
+            GetCurrentActivePlayers(player =>
+            {
+                if (targetType.Contains(GetAudioType(player.ID)))
+                {
+                    player.SetPitch(pitch, fadeTime);
+                }
+            });
+        }
+
         AudioMixerGroup IAudioMixer.GetTrack(AudioTrackType trackType)
         {
             switch (trackType)

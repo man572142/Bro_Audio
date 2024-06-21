@@ -10,7 +10,7 @@ using static Ami.BroAudio.Tools.BroName;
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource)), AddComponentMenu("")]
-	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>
+	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IRecyclable<AudioPlayer>
 	{
         public const float UseEntitySetting = -1f;
         public const float Immediate = 0f;
@@ -76,20 +76,6 @@ namespace Ami.BroAudio.Runtime
 		{
             _audioMixer = mixer;
             _getAudioTrack = getAudioTrack;
-		}
-
-        private void SetPitch(IAudioEntity entity)
-        {
-            float pitch = entity.GetPitch();
-			switch (SoundManager.PitchSetting)
-			{
-				case PitchShiftingSetting.AudioMixer:
-					//_audioMixer.SafeSetFloat(_pitchParaName, pitch); // Don't * 100f, the value in percentage is displayed in Editor only.  
-					break;
-				case PitchShiftingSetting.AudioSource:
-                    AudioSource.pitch = pitch;
-                    break;
-			}
 		}
 
 		private void SetSpatial(PlaybackPreference pref)

@@ -254,7 +254,6 @@ namespace Ami.BroAudio.Editor
 
 		private void DrawAdditionalClipProperties(Rect position, SerializedProperty property, AudioTypeSetting setting)
 		{
-
 		}
 
 		private void DrawSeamlessSetting(Rect totalPosition, SerializedProperty property)
@@ -276,7 +275,6 @@ namespace Ami.BroAudio.Editor
 			var transitionTimeProp = GetBackingNameAndFindProperty(property,nameof(AudioEntity.TransitionTime));
 			switch (currentType)
 			{
-				// TODO : 數值不能超過Clip長度
 				case SeamlessType.Time:
 					transitionTimeProp.floatValue = Mathf.Abs(EditorGUI.FloatField(_seamlessRects[drawIndex], transitionTimeProp.floatValue));
 					break;

@@ -158,7 +158,6 @@ namespace Ami.Extension
 
 			int fadeSample = (int)Math.Round(fadeTime * _originalClip.frequency * GetChannelCount(), MidpointRounding.AwayFromZero);
 
-			// TODO: Accept more ease type
 			float volFactor = 0f;
 			float volIncrement = 1f / fadeSample;
 
@@ -180,7 +179,6 @@ namespace Ami.Extension
 			int fadeSample = (int)Math.Round(fadeTime * _originalClip.frequency * GetChannelCount(), MidpointRounding.AwayFromZero);
 			int startSampleIndex = Samples.Length - fadeSample;
 
-			// TODO: Accept more ease type
 			float volFactor = 1f;
 			float volIncrement = 1f / fadeSample * -1f;
 

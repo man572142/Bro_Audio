@@ -293,8 +293,15 @@ namespace Ami.BroAudio.Editor
 			data.IsLoop = DrawButtonToggle(loopToggleRect, data.IsLoop, EditorGUIUtility.IconContent(IconConstant.LoopIcon));
 			if(GUI.Button(playButtonRect, GetPlaybackButtonIcon(data.IsPlaying)))
 			{
-				PreviewEntity(property, data);
-			}
+                if (data.IsPlaying)
+                {
+                    EditorPlayAudioClip.Instance.StopAllClips();
+                }
+                else if (TryGetEntityInstance(property, out var entity))
+                {
+                    StartPreview(data, entity);
+                }
+            }
 
 			if(data.IsPlaying && data.SelectedTab != Tab.Clips)
 			{
@@ -374,41 +381,32 @@ namespace Ami.BroAudio.Editor
 			_clipDataDict.Remove(clipPropPath);
 		}
 
-		private void PreviewEntity(SerializedProperty property, EntityData data)
-		{
-			AudioEntity entity;
-			if(data.IsPlaying)
-			{
-				EditorPlayAudioClip.Instance.StopAllClips();
-			}
-            else if(TryGetEntityInstance(property, out entity))
+        private void StartPreview(EntityData data, AudioEntity entity)
+        {
+            if (entity == null)
             {
-                StartPreview(entity);
+                return;
             }
 
-            void StartPreview(AudioEntity entity)
+            var clip = entity.PickNewClip(out int index);
+            data.Clips.SelectAndSetPlayingElement(index);
+
+            float volume = clip.Volume * entity.GetMasterVolume();
+            float pitch = entity.GetPitch();
+            Action onReplay = null;
+            if (data.IsLoop)
             {
-				if(entity == null)
-				{
-					return;
-				}
-
-                var clip = entity.PickNewClip(out int index);
-                data.Clips.SelectAndSetPlayingElement(index);
-
-                float volume = clip.Volume * entity.GetMasterVolume();
-                float pitch = entity.GetPitch();
-                Action onReplay = data.IsLoop ? ReplayPreview : null;
-				var clipData = new EditorPlayAudioClip.Data(clip) { Volume = volume};
-                EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, data.IsLoop, onReplay, pitch);
-                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip));
-                data.IsPreviewing = true;
-                EditorPlayAudioClip.Instance.OnFinished = OnPreviewFinished;
+                onReplay = ReplayPreview;
             }
+            var clipData = new EditorPlayAudioClip.Data(clip) { Volume = volume };
+            EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, data.IsLoop, onReplay, pitch);
+            EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip));
+            data.IsPreviewing = true;
+            EditorPlayAudioClip.Instance.OnFinished = OnPreviewFinished;
 
-			void ReplayPreview()
-			{
-                StartPreview(entity);
+            void ReplayPreview()
+            {
+                StartPreview(data, entity);
             }
 
             void OnPreviewFinished()
@@ -418,7 +416,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-		private bool TryGetEntityInstance(SerializedProperty property,out AudioEntity entity)
+        private bool TryGetEntityInstance(SerializedProperty property,out AudioEntity entity)
 		{
 			entity = null;
             object obj = fieldInfo.GetValue(property.serializedObject.targetObject);

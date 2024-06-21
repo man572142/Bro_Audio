@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Ami.BroAudio.Data
 {
-#if !BroAudio_DevOnly
+#if BroAudio_DevOnly
 	[CreateAssetMenu(menuName = nameof(BroAudio) + "/BroAudioData", fileName = "BroAudioData")]
 #endif
 	public class BroAudioData : ScriptableObject
@@ -15,6 +15,7 @@ namespace Ami.BroAudio.Data
 
 		public IReadOnlyList<AudioAsset> Assets => _assets;
 
+#if UNITY_EDITOR
 		public List<string> GetGUIDList()
 		{
 			List<string> list = new List<string>();
@@ -32,7 +33,7 @@ namespace Ami.BroAudio.Data
 
 		public void RemoveEmpty()
 		{
-			for(int i = _assets.Count -1; i >= 0;i--)
+			for (int i = _assets.Count - 1; i >= 0; i--)
 			{
 				if (!_assets[i])
 				{
@@ -43,12 +44,13 @@ namespace Ami.BroAudio.Data
 
 		public void ReorderAssets(List<string> guids)
 		{
-			if(_assets.Count != guids.Count)
+			if (_assets.Count != guids.Count)
 			{
 				Debug.LogError(Utility.LogTitle + "Asset count is not match!");
 				return;
 			}
 			_assets = _assets.OrderBy(x => guids.IndexOf(x.AssetGUID)).ToList();
-		}
+		} 
+#endif
 	} 
 }

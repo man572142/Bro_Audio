@@ -64,7 +64,7 @@ namespace Ami.BroAudio.Editor
 				WriteHeader(fileStream, clip);
 			}
 
-			return true; // TODO: return false if there's a failure saving the file
+			return true;
 		}
 
 		public static AudioClip TrimSilence(AudioClip clip, float min)

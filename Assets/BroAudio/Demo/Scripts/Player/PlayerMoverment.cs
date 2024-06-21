@@ -118,7 +118,6 @@ namespace Ami.BroAudio.Demo
 
         private void Moving()
         {
-            // todo: use custom lerp instead of InputManager to ensure compatibility
             float moveForward = Input.GetAxis("Vertical");
             float moveX = Input.GetAxis("Horizontal");
             float currMotionSpeed = Mathf.Clamp01(Mathf.Abs(moveForward) + Mathf.Abs(moveX));

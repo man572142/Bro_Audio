@@ -71,12 +71,7 @@ namespace Ami.Extension.Reflection
 			exposedParameterList.Add(newParam);
 
 			AddElementTo(ref exposedParameters, newParam.Instance, parameterType);
-
-			// TODO: sort it in bro's way?
-			//parameters.Sort(SortFuncForExposedParameters);
-
 			SetProperty(ExposedParametersPropName, reflection.MixerClass, audioMixer, exposedParameters);
-
 			ExecuteMethod("OnChangedExposedParameter", ReflectionExtension.Void, reflection.MixerClass, audioMixer);
 
 			var exposedParamCache = GetProperty<IDictionary>(CachedExposedParametersGetterName, reflection.MixerClass, audioMixer,PrivateFlag);

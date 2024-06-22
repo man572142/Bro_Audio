@@ -4,6 +4,7 @@ using UnityEditor;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Runtime;
 using static Ami.BroAudio.Editor.BroEditorUtility;
+using System;
 
 namespace Ami.BroAudio.Editor
 {
@@ -38,7 +39,7 @@ namespace Ami.BroAudio.Editor
 			AssetDatabase.importPackageCompleted += OnPackageImportComplete;
 		}
 
-		private static void OnPackageImportComplete(string packageName)
+        private static void OnPackageImportComplete(string packageName)
 		{
 			AssetDatabase.importPackageCompleted -= OnPackageImportComplete;
 			AssetDatabase.SaveAssets();
@@ -51,38 +52,45 @@ namespace Ami.BroAudio.Editor
 		}
 
 		private static BroAudioData CreateCoreData(string path)
-		{
-			BroAudioData coreData = ScriptableObject.CreateInstance<BroAudioData>();
-			coreData.AssetOutputPath = DefaultAssetOutputPath;
+        {
+            BroAudioData coreData = ScriptableObject.CreateInstance<BroAudioData>();
+            coreData.AssetOutputPath = DefaultAssetOutputPath;
+            GetInitialData(coreData.AddAsset, path => coreData.AssetOutputPath = path);
 
-			#region Copy Old Core Data Value
-			if (TryGetOldCoreDataTextAsset(out var oldTextAsset) && TryParseCoreData(oldTextAsset, out var oldCoreData))
-			{
-				coreData.AssetOutputPath = oldCoreData.AssetOutputPath;
-				foreach (string guid in oldCoreData.GUIDs)
-				{
-					string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-					var asset = AssetDatabase.LoadAssetAtPath<AudioAsset>(assetPath);
-					coreData.AddAsset(asset);
-				}
+            AssetDatabase.CreateAsset(coreData, path);
+            return coreData;
+        }
 
-				string oldCoreDataPath = AssetDatabase.GetAssetPath(oldTextAsset);
-				string fileName = Path.GetFileName(oldCoreDataPath);
-				string deprecatedKeyword = "_deprecated.json";
-				if (!fileName.EndsWith(deprecatedKeyword))
-				{
-					fileName = fileName.Replace(".json", deprecatedKeyword);
-				}
-				AssetDatabase.RenameAsset(oldCoreDataPath, fileName);
-				EditorUtility.SetDirty(oldTextAsset);
-			} 
-			#endregion
+        private static void GetInitialData(Action<AudioAsset> onGetAsset, Action<string> onGetOutputPath)
+        {
+            if (TryGetOldCoreDataTextAsset(out var oldTextAsset) && TryParseCoreData(oldTextAsset, out var oldCoreData))
+            {
+                onGetOutputPath?.Invoke(oldCoreData.AssetOutputPath);
+                foreach (string guid in oldCoreData.GUIDs)
+                {
+                    string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                    var asset = AssetDatabase.LoadAssetAtPath<AudioAsset>(assetPath);
+                    onGetAsset?.Invoke(asset);
+                }
 
-			AssetDatabase.CreateAsset(coreData, path);
-			return coreData;
-		}
+                string oldCoreDataPath = AssetDatabase.GetAssetPath(oldTextAsset);
+                string fileName = Path.GetFileName(oldCoreDataPath);
+                string deprecatedKeyword = "_deprecated.json";
+                if (!fileName.EndsWith(deprecatedKeyword))
+                {
+                    fileName = fileName.Replace(".json", deprecatedKeyword);
+                }
+                AssetDatabase.RenameAsset(oldCoreDataPath, fileName);
+                EditorUtility.SetDirty(oldTextAsset);
+            }
+            else
+            {
+                var demoAsset = AssetDatabase.LoadAssetAtPath<AudioAsset>(DefaultAssetOutputPath + "/Demo.asset");
+                onGetAsset?.Invoke(demoAsset);
+            }
+        }
 
-		private static void AssignCoreData(SoundManager soundManager, BroAudioData coreData)
+        private static void AssignCoreData(SoundManager soundManager, BroAudioData coreData)
 		{
 			soundManager.AssignCoreData(coreData);
 			PrefabUtility.SavePrefabAsset(soundManager.gameObject);
@@ -105,11 +113,11 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private static bool TryLoadResources<T>(string path, out T resouece) where T : Object
+		private static bool TryLoadResources<T>(string path, out T resouece) where T : UnityEngine.Object
 		{
 			resouece = Resources.Load<T>(path);
 			return resouece != null;
 		}
-	}  
+    }  
 #endif
 }

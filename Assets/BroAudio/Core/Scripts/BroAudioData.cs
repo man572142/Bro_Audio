@@ -28,7 +28,10 @@ namespace Ami.BroAudio.Data
 
 		public void AddAsset(AudioAsset asset)
 		{
-			_assets.Add(asset);
+			if(asset)
+			{
+                _assets.Add(asset);
+            }	
 		}
 
 		public void RemoveEmpty()

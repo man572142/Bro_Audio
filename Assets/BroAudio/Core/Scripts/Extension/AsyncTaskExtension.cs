@@ -32,5 +32,27 @@ namespace Ami.Extension
 				// This exception is thrown by the task cancellation design, not an actual error.
 			}
 		}
+
+		public static async Task DelaySeconds(float seconds, CancellationToken cancellationToken = default)
+		{
+			await Delay(TimeExtension.SecToMs(seconds), cancellationToken);
+		}
+
+		public static async Task Delay(int milliseconds, CancellationToken cancellationToken = default)
+		{
+            try
+            {
+                await Task.Delay(milliseconds, cancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                // This exception is thrown by the task cancellation design, not an actual error.
+            }
+        }
+
+		public static bool IsCanceled(this CancellationTokenSource source)
+		{
+			return source == null || source.IsCancellationRequested;
+		}
 	}
 }

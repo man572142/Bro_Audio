@@ -8,6 +8,7 @@ using Ami.BroAudio.Data;
 using UnityEngine.Audio;
 using Ami.BroAudio.Tools;
 using Ami.Extension.Reflection;
+using static Ami.Extension.AsyncTaskExtension;
 
 #if UNITY_EDITOR
 namespace Ami.Extension
@@ -45,6 +46,7 @@ namespace Ami.Extension
 
             public float Duration => AudioClip.length - EndPosition - StartPosition;
         }
+		public enum MuteState { None, On, Off }
 
         public delegate void PlayPreviewClip(AudioClip audioClip, int startSample, bool loop);
         public delegate void StopAllPreviewClips();
@@ -58,6 +60,8 @@ namespace Ami.Extension
 		public const string PlayClipMethodName = "PlayClip";
         public const string StopClipMethodName = "StopAllClips";
 #endif
+        // This is used to avoid the popup sound at the beginning of the fade-in due to the delay of mixer volume change
+        public const float SetVolumeOffsetTime = 0.05f; 
 
 		private static EditorPlayAudioClip _instance = null;
 		public static EditorPlayAudioClip Instance
@@ -75,24 +79,20 @@ namespace Ami.Extension
 
 		private StopAllPreviewClips _stopAllPreviewClipsDelegate = null;
 		private PlayPreviewClip _playPreviewClipDelegate = null;
-		private CancellationTokenSource _currentPlayingTaskCanceller = null;
-		private CancellationTokenSource _currentAudioSourceTaskCanceller = null;
+		private CancellationTokenSource _playClipTaskCanceller = null;
+		private CancellationTokenSource _audioSourceTaskCanceller = null;
 		private AudioSource _currentEditorAudioSource = null;
 		private Data _currentPlayingClip = null;
-		private bool _isReplaying = false;
-		private AudioMixer _mixer;
+		private bool _isRecursionOutside = false;
+		private AudioMixer _mixer = null;
 		private EditorAudioPreviewer _volumeTransporter = null;
+		private MuteState _previousMuteState = MuteState.None;
 
 		public StopAllPreviewClips StopAllPreviewClipsDelegate
 		{
 			get
 			{
-                if(_stopAllPreviewClipsDelegate == null)
-				{
-                    Type audioUtilClass = AudioClassReflectionHelper.GetUnityEditorClass(AudioUtilClassName);
-                    MethodInfo stopMethod = audioUtilClass.GetMethod(StopClipMethodName, BindingFlags.Static | BindingFlags.Public);
-                    _stopAllPreviewClipsDelegate = Delegate.CreateDelegate(typeof(StopAllPreviewClips), stopMethod) as StopAllPreviewClips;
-                }
+                _stopAllPreviewClipsDelegate = _stopAllPreviewClipsDelegate ?? GetAudioUtilMethodDelegate<StopAllPreviewClips>(StopClipMethodName);
 				return _stopAllPreviewClipsDelegate;
             }
 		}
@@ -101,12 +101,7 @@ namespace Ami.Extension
         {
             get
             {
-                if (_playPreviewClipDelegate == null)
-                {
-                    Type audioUtilClass = AudioClassReflectionHelper.GetUnityEditorClass(AudioUtilClassName);
-                    MethodInfo playMethod = audioUtilClass.GetMethod(PlayClipMethodName, BindingFlags.Static | BindingFlags.Public);
-                    _playPreviewClipDelegate = Delegate.CreateDelegate(typeof(PlayPreviewClip), playMethod) as PlayPreviewClip;
-                }
+				_playPreviewClipDelegate = _playPreviewClipDelegate ?? GetAudioUtilMethodDelegate<PlayPreviewClip>(PlayClipMethodName);
                 return _playPreviewClipDelegate;
             }
         }
@@ -120,12 +115,12 @@ namespace Ami.Extension
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
-        public void PlayClipByAudioSource(Data clip, bool selfLoop = false, Action onReplay = null, float pitch = 1f)
+        public async void PlayClipByAudioSource(Data clip, bool selfLoop = false, Action onReplay = null, float pitch = 1f)
 		{
 			StopStaticPreviewClipsAndCancelTask();
 			if (_currentEditorAudioSource)
 			{
-				CancelTask(ref _currentAudioSourceTaskCanceller);
+				CancelTask(ref _audioSourceTaskCanceller);
 				_currentEditorAudioSource.Stop();
 			}
 			else
@@ -136,55 +131,67 @@ namespace Ami.Extension
 				_currentEditorAudioSource = gameObj.AddComponent<AudioSource>();
 			}
 
-			_currentPlayingClip = clip;
+            _currentPlayingClip = clip;
             AudioSource audioSource = _currentEditorAudioSource;
 			audioSource.clip = clip.AudioClip;
 			audioSource.playOnAwake = false;
 			audioSource.time = clip.StartPosition;
 			audioSource.pitch = pitch;
             audioSource.outputAudioMixerGroup = GetEditorMasterTrack();
+			audioSource.reverbZoneMix = 0f;
+            _previousMuteState = EditorUtility.audioMasterMute ? MuteState.On : MuteState.Off;
 
             _volumeTransporter.SetData(clip);
 
             audioSource.Play();
 			PlaybackIndicator.Start(selfLoop);
 			_volumeTransporter.Start();
+			EditorUtility.audioMasterMute = false;
 
-            _currentAudioSourceTaskCanceller = _currentAudioSourceTaskCanceller ?? new CancellationTokenSource();
+            _audioSourceTaskCanceller = _audioSourceTaskCanceller ?? new CancellationTokenSource();
 
-			_isReplaying = onReplay != null;
-            if (!_isReplaying)
-			{
-				if(selfLoop)
-				{
-					onReplay = Replay;
-				}
-				else
-				{
-					onReplay = DestroyPreviewAudioSourceAndCancelTask;
+			float waitTime = clip.Duration;
+            if (clip.FadeIn >= SetVolumeOffsetTime)
+            {
+				audioSource.volume = 0f;
+				await DelaySeconds(SetVolumeOffsetTime, _audioSourceTaskCanceller.Token);
+                audioSource.volume = 1f;
+                waitTime -= SetVolumeOffsetTime;
+
+                if (_audioSourceTaskCanceller.IsCanceled())
+                {
+                    return;
                 }
-			}
+            }
+			
+            await DelaySeconds(waitTime, _audioSourceTaskCanceller.Token);
 
-            AsyncTaskExtension.DelayInvoke(clip.Duration, onReplay, _currentAudioSourceTaskCanceller.Token);
+            if (_audioSourceTaskCanceller.IsCanceled())
+            {
+                return;
+            }
 
-			AudioMixerGroup GetEditorMasterTrack()
+            _isRecursionOutside = onReplay != null;
+            if (_isRecursionOutside)
 			{
-				var tracks = _mixer != null ? _mixer.FindMatchingGroups("Master") : null;
-				if(tracks != null && tracks.Length > 0)
-				{
-					return tracks[0];
-				}
-				else
-				{
-					Debug.LogError("Can't find EditorBroAudioMixer's Master audioMixerGroup, the fading and extra volume is not applied to the preview");
-                    return null;
+				onReplay.Invoke();
+			}
+			else
+			{
+                if (selfLoop)
+                {
+                    AudioSourceReplay();
+                }
+                else
+                {
+                    DestroyPreviewAudioSourceAndCancelTask();
                 }
             }
 		}
 
-        private void Replay()
+        private async void AudioSourceReplay()
         {
-            if (_currentEditorAudioSource != null && _currentAudioSourceTaskCanceller != null)
+            if (_currentEditorAudioSource != null && _audioSourceTaskCanceller != null)
             {
 				_volumeTransporter.End();
 				PlaybackIndicator.End();
@@ -195,7 +202,12 @@ namespace Ami.Extension
 
                 _volumeTransporter.Start();
                 PlaybackIndicator.Start();
-                AsyncTaskExtension.DelayInvoke(_currentPlayingClip.Duration, Replay, _currentAudioSourceTaskCanceller.Token);
+                await DelaySeconds(_currentPlayingClip.Duration, _audioSourceTaskCanceller.Token);
+                if(!_audioSourceTaskCanceller.IsCanceled())
+                {
+                    // Recursive
+                    AudioSourceReplay();
+                }
             }
         }
 
@@ -206,7 +218,7 @@ namespace Ami.Extension
 			PlayClip(audioClip, startSample, endSample, loop);
 		}
 
-		public void PlayClip(AudioClip audioClip, int startSample, int endSample, bool loop = false)
+		public async void PlayClip(AudioClip audioClip, int startSample, int endSample, bool loop = false)
 		{
 			StopAllClips();
 
@@ -215,41 +227,60 @@ namespace Ami.Extension
 
             int sampleLength = audioClip.samples - startSample - endSample;
 			int lengthInMs = (int)Math.Round(sampleLength / (double)audioClip.frequency * TimeExtension.SecondInMilliseconds, MidpointRounding.AwayFromZero);
-			_currentPlayingTaskCanceller = _currentPlayingTaskCanceller ?? new CancellationTokenSource();
-			if (loop)
+			_playClipTaskCanceller = _playClipTaskCanceller ?? new CancellationTokenSource();
+            await Delay(lengthInMs, _playClipTaskCanceller.Token);
+
+            if(_playClipTaskCanceller.IsCanceled())
+            {
+                return;
+            }
+
+            if (loop)
 			{
-				AsyncTaskExtension.DelayInvoke(lengthInMs, Replay, _currentPlayingTaskCanceller.Token);
+                AudioClipReplay(audioClip, startSample, loop, lengthInMs);
 			}
 			else
 			{
-				AsyncTaskExtension.DelayInvoke(lengthInMs, StopStaticPreviewClipsAndCancelTask, _currentPlayingTaskCanceller.Token);
-			}
-
-			void Replay()
-			{
-				if(_currentPlayingTaskCanceller != null)
-				{
-					StopAllPreviewClipsDelegate.Invoke();
-                    PlayPreviewClipDelegate.Invoke(audioClip, startSample, loop);
-					PlaybackIndicator.End();
-					PlaybackIndicator.Start();
-					AsyncTaskExtension.DelayInvoke(lengthInMs, Replay, _currentPlayingTaskCanceller.Token);
-				}
-			}
+				StopStaticPreviewClipsAndCancelTask();
+            }
 		}
 
-		public void StopAllClips()
-		{
-            _isReplaying = false;
+        private async void AudioClipReplay(AudioClip audioClip, int startSample, bool loop, int lengthInMs)
+        {
+            if (_playClipTaskCanceller != null)
+            {
+                StopAllPreviewClipsDelegate.Invoke();
+                PlayPreviewClipDelegate.Invoke(audioClip, startSample, loop);
+                PlaybackIndicator.End();
+                PlaybackIndicator.Start();
+
+                await Delay(lengthInMs, _playClipTaskCanceller.Token);
+                if(!_playClipTaskCanceller.IsCanceled())
+                {
+                    // Recursive
+                    AudioClipReplay(audioClip, startSample, loop, lengthInMs);
+                }
+            }
+        }
+
+        public void StopAllClips()
+        {
+            _isRecursionOutside = false;
             StopStaticPreviewClipsAndCancelTask();
-			DestroyPreviewAudioSourceAndCancelTask();
-		}
+            DestroyPreviewAudioSourceAndCancelTask();
 
-		private void DestroyPreviewAudioSourceAndCancelTask()
+            if (_previousMuteState != MuteState.None)
+            {
+                EditorUtility.audioMasterMute = _previousMuteState == MuteState.On;
+                _previousMuteState = MuteState.None;
+            }
+        }
+
+        private void DestroyPreviewAudioSourceAndCancelTask()
 		{
 			if (_currentEditorAudioSource)
 			{
-				CancelTask(ref _currentAudioSourceTaskCanceller);
+				CancelTask(ref _audioSourceTaskCanceller);
 
 				_currentEditorAudioSource.Stop();
 				UnityEngine.Object.DestroyImmediate(_currentEditorAudioSource.gameObject);
@@ -262,7 +293,7 @@ namespace Ami.Extension
 
 		private void StopStaticPreviewClipsAndCancelTask()
         {
-            CancelTask(ref _currentPlayingTaskCanceller);
+            CancelTask(ref _playClipTaskCanceller);
             StopAllPreviewClipsDelegate.Invoke();
             PlaybackIndicator.End();
             TriggerOnFinished();
@@ -270,7 +301,7 @@ namespace Ami.Extension
 
         private void TriggerOnFinished()
         {
-			if(!_isReplaying)
+			if(!_isRecursionOutside)
 			{
                 OnFinished?.Invoke();
                 OnFinished = null;
@@ -321,6 +352,27 @@ namespace Ami.Extension
             if (mode == PlayModeStateChange.ExitingEditMode || mode == PlayModeStateChange.ExitingPlayMode)
             {
 				Dispose();
+            }
+        }
+
+        private T GetAudioUtilMethodDelegate<T>(string methodName) where T : Delegate
+        {
+            Type audioUtilClass = AudioClassReflectionHelper.GetUnityEditorClass(AudioUtilClassName);
+            MethodInfo method = audioUtilClass.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public);
+            return Delegate.CreateDelegate(typeof(T), method) as T;
+        }
+
+        private AudioMixerGroup GetEditorMasterTrack()
+        {
+            var tracks = _mixer != null ? _mixer.FindMatchingGroups("Master") : null;
+            if (tracks != null && tracks.Length > 0)
+            {
+                return tracks[0];
+            }
+            else
+            {
+                Debug.LogError("Can't find EditorBroAudioMixer's Master audioMixerGroup, the fading and extra volume is not applied to the preview");
+                return null;
             }
         }
     } 

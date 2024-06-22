@@ -75,6 +75,12 @@ namespace Ami.BroAudio.Editor
             base.Start();
         }
 
+        public override void End()
+        {
+            SetVolume(1f);
+            base.End();
+        }
+
         protected override void Update()
         {
             if (!_isInitSuccessfully)

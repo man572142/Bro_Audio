@@ -8,11 +8,17 @@ namespace Ami.BroAudio.Runtime
 {
 	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IRecyclable<AudioPlayer>
 	{
-		private Coroutine _pitchCoroutine;
+        /// <summary>
+        /// Pitch value without any fading process
+        /// </summary>
+        public float StaticPitch { get; private set; } = AudioConstant.DefaultPitch;
 
-		IAudioPlayer IPitchSettable.SetPitch(float pitch, float fadeTime)
+        private Coroutine _pitchCoroutine;
+
+        IAudioPlayer IPitchSettable.SetPitch(float pitch, float fadeTime)
 		{
-			switch (SoundManager.PitchSetting)
+            StaticPitch = pitch;
+            switch (SoundManager.PitchSetting)
 			{
 				case PitchShiftingSetting.AudioMixer:
 					//_audioMixer.SafeSetFloat(_pitchParaName, pitch); // Don't * 100f, the value in percentage is displayed in Editor only.  
@@ -27,7 +33,7 @@ namespace Ami.BroAudio.Runtime
 					{
 						AudioSource.pitch = pitch;
 					}
-					break;
+                    break;
 			}
 			return this;
 		}

@@ -17,15 +17,15 @@ namespace Ami.BroAudio.Runtime
         private void Recycle(AudioPlayer player)
         {
             _playerWrapper.OnRecycle -= Recycle;
-            player.OnFinishingOneRound -= OnFinishingOneRound;
+            player.OnSeamlessLoopReplay -= Replay;
         }
 
-        public void SetPlayer(AudioPlayer player)
+        public void AddReplayListener(AudioPlayer player)
 		{
-			player.OnFinishingOneRound += OnFinishingOneRound;
+			player.OnSeamlessLoopReplay += Replay;
 		}
 
-		private void OnFinishingOneRound(int id, PlaybackPreference pref, EffectType previousEffect)
+		private void Replay(int id, PlaybackPreference pref, EffectType previousEffect, float trackVolume, float pitch)
 		{
 			var newPlayer = _getPlayerFunc?.Invoke();
 			if(newPlayer == null)
@@ -34,16 +34,13 @@ namespace Ami.BroAudio.Runtime
 			}
 
 			_playerWrapper.UpdateInstance(newPlayer);
-			
 
-			var audioType = Utility.GetAudioType(id);
-			if(SoundManager.Instance.AudioTypePref.TryGetValue(audioType,out var audioTypePref))
-			{
-				pref.AudioTypePlaybackPref = audioTypePref;
-			}
-			newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
+            newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
+			newPlayer.SetVolume(trackVolume);
+            newPlayer.SetPitch(pitch);
             newPlayer.Play(id, pref);
-			newPlayer.OnFinishingOneRound += OnFinishingOneRound;
+            
+            newPlayer.OnSeamlessLoopReplay += Replay;
 		}
 	}
 }

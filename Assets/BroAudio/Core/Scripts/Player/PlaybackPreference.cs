@@ -18,7 +18,6 @@ namespace Ami.BroAudio.Runtime
 		public float FadeIn { get; private set; }
 		public float FadeOut { get; private set; }
 		public Waiter PlayerWaiter { get; private set; }
-		public IAudioPlaybackPref AudioTypePlaybackPref { get; set; }
 
 		public PlaybackPreference(IAudioEntity entity,Vector3 position) : this(entity)
 		{
@@ -38,9 +37,7 @@ namespace Ami.BroAudio.Runtime
 			Position = Vector3.negativeInfinity;
 			FollowTarget = null;
 			PlayerWaiter = null;
-			AudioTypePlaybackPref = null;
 		}
-
 
 		public void SetFadeTime(Transition transition,float fadeTime)
 		{

@@ -45,10 +45,6 @@ namespace Ami.BroAudio.Runtime
 		private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref, AudioPlayer previousPlayer = null)
         {
             BroAudioType audioType = GetAudioType(id);
-            if (_auidoTypePref.TryGetValue(audioType, out var audioTypePref))
-            {
-                pref.AudioTypePlaybackPref = audioTypePref;
-            }
 
 			_playbackQueue.Enqueue(() => player.Play(id, pref));
             var wrapper = new AudioPlayerInstanceWrapper(player);
@@ -72,7 +68,7 @@ namespace Ami.BroAudio.Runtime
             if (pref.Entity.SeamlessLoop)
             {
                 var seamlessLoopHelper = new SeamlessLoopHelper(wrapper, GetNewAudioPlayer);
-                seamlessLoopHelper.SetPlayer(player);
+                seamlessLoopHelper.AddReplayListener(player);
             }
             return wrapper;
         }

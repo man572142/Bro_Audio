@@ -149,6 +149,7 @@ namespace Ami.BroAudio.Runtime
             _trackVolume = DefaultTrackVolume;
             _mixerDecibelVolume = DefaultMixerDecibelVolume;
             StaticTrackVolume = DefaultTrackVolume;
+            StaticPitch = AudioConstant.DefaultPitch;
         }
 
 #if UNITY_WEBGL

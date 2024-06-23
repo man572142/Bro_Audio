@@ -12,7 +12,8 @@ namespace Ami.BroAudio.Editor
 		[System.Serializable]
 		public struct AudioTypeSetting
 		{
-			public BroAudioType AudioType;
+            // AudioEntityPropertyDrawer rely on the immutability, don't chagne to class without modifying it
+            public BroAudioType AudioType;
 			public Color Color;
 			public DrawedProperty DrawedProperty;
 

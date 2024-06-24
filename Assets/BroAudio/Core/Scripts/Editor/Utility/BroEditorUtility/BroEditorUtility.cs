@@ -188,6 +188,24 @@ namespace Ami.BroAudio.Editor
             return false;
         }
 
+        public static void ForeachConcreteDrawedProperty(Action<DrawedProperty> onGetDrawedProperty)
+        {
+            for (int i = 0; i < 32; i++) // int32
+            {
+                DrawedProperty drawFlag = (DrawedProperty)(1 << i);
+                if (drawFlag > DrawedProperty.All)
+                {
+                    break;
+                }
+                else if (!DrawedProperty.All.Contains(drawFlag))
+                {
+                    continue;
+                }
+
+                onGetDrawedProperty?.Invoke(drawFlag);
+            }
+        }
+
         public static bool Contains(this DrawedProperty flags, DrawedProperty targetFlag)
 		{
             return ((int)flags & (int)targetFlag) != 0;

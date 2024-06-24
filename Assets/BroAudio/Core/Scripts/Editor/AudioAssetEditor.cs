@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Ami.BroAudio.Data;
@@ -21,26 +20,34 @@ namespace Ami.BroAudio.Editor
 		public Instruction CurrInstruction { get; private set; }
 		public IAudioAsset Asset { get; private set; }
 
-		public void AddEntitiesNameChangeListener()
+		public void AddEntitiesListener()
 		{
 			AudioEntityPropertyDrawer.OnEntityNameChanged += Verify;
+			AudioEntityPropertyDrawer.OnRemoveEntity += OnRemoveSelectedEntity;
 		}
 
-		public void RemoveEntitiesNameChangeListener()
+		public void RemoveEntitiesListener()
 		{
 			AudioEntityPropertyDrawer.OnEntityNameChanged -= Verify;
+			AudioEntityPropertyDrawer.OnRemoveEntity -= OnRemoveSelectedEntity;
 		}
 
-        private void OnDestroy()
+		private void OnDestroy()
         {
-			RemoveEntitiesNameChangeListener();
-        }
+			RemoveEntitiesListener();
+		}
 
         public void Init(IUniqueIDGenerator idGenerator)
 		{
 			Asset = target as IAudioAsset;
 			_idGenerator = idGenerator;
-			InitReorderableList();
+			InitReorderableList(); 
+		}
+
+		private void OnRemoveSelectedEntity()
+		{
+			ReorderableList.defaultBehaviours.DoRemoveButton(_entitiesList);
+			serializedObject.ApplyModifiedProperties();
 		}
 
 		public void SetData(string guid, string assetName)

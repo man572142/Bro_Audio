@@ -44,6 +44,7 @@ namespace Ami.BroAudio.Editor
 		public enum Tab { Clips, Overall}
 
 		public static event Action OnEntityNameChanged;
+		public static event Action OnRemoveEntity;
 
 		private const float ClipPreviewHeight = 100f;
 		private const float DefaultFieldRatio = 0.9f;
@@ -51,14 +52,17 @@ namespace Ami.BroAudio.Editor
 		private const float FoldoutArrowWidth = 15f;
 		private const float MaxTextFieldWidth = 300f;
 
-		private readonly GUIContent[] _tabLabelGUIContents = { new GUIContent(nameof(Tab.Clips)), new GUIContent(nameof(Tab.Overall)) };
-		private readonly float[] _tabLabelRatios = new float[] { 0.5f, 0.5f };
 		private readonly float[] _headerRatios = new float[] { 0.55f, 0.2f, 0.25f };
 		private readonly GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume),"The playback volume of this clip");
         private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
         private readonly IUniqueIDGenerator _idGenerator = new IdGenerator();
-        private Rect[] _tabPreAllocRects = null;
-		private Rect[] _headerRects = null;
+		private TabViewData[] _tabViewDatas = new TabViewData[]
+            {
+                new TabViewData(0.475f, new GUIContent(nameof(Tab.Clips)), EditorPlayAudioClip.Instance.StopAllClips, null),
+                new TabViewData(0.475f, new GUIContent(nameof(Tab.Overall)), EditorPlayAudioClip.Instance.StopAllClips, null),
+                new TabViewData(0.05f, EditorGUIUtility.IconContent("pane options"), null, OnClickChangeDrawedProperties),
+            };
+        private Rect[] _headerRects = null;
 
 		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper();
 		private Dictionary<string, ClipData> _clipDataDict = new Dictionary<string, ClipData>();
@@ -96,6 +100,8 @@ namespace Ami.BroAudio.Editor
 			LibraryManagerWindow.OnCloseLibraryManagerWindow -= OnDisable;
 			LibraryManagerWindow.OnSelectAsset -= OnDisable;
 
+			OnEntityNameChanged = null;
+			OnRemoveEntity = null;
 			IsEnable = false;
 		}
 
@@ -157,8 +163,7 @@ namespace Ami.BroAudio.Editor
 			DrawEntityPreviewButton(previewButtonRect, property, data);
 
 			Rect tabViewRect = GetRectAndIterateLine(position).SetHeight(GetTabWindowHeight());
-			_tabPreAllocRects = _tabPreAllocRects ?? new Rect[_tabLabelRatios.Length];
-            data.SelectedTab = (Tab)DrawTabsView(tabViewRect, (int)data.SelectedTab, TabLabelHeight, _tabLabelGUIContents, _tabLabelRatios, _tabPreAllocRects, EditorPlayAudioClip.Instance.StopAllClips);
+            data.SelectedTab = (Tab)DrawButtonTabsMixedView(tabViewRect, property,(int)data.SelectedTab, TabLabelHeight, _tabViewDatas);
 			
 			DrawEmptyLine(1);
 
@@ -430,6 +435,59 @@ namespace Ami.BroAudio.Editor
                 }
             }
 			return entity != null;
+        }
+
+		//private static void OnClickRemoveButton(SerializedProperty property)
+		//{
+		//	var nameProp = property.FindBackingFieldProperty(nameof(AudioEntity.Name));
+		//	bool isRemove = EditorUtility.DisplayDialog("Remove Entity", $"Do you want to remove [{nameProp.stringValue}]?", "Yes", "No");
+		//	if (isRemove)
+		//	{
+		//		// todo: trigger remove entity
+		//	}
+		//}
+
+		private static void OnClickChangeDrawedProperties(Rect rect, SerializedProperty property)
+		{
+			var idProp = property.FindBackingFieldProperty(nameof(AudioEntity.ID));
+			var nameProp = property.FindBackingFieldProperty(nameof(AudioEntity.Name));
+
+			GenericMenu menu = new GenericMenu();
+			menu.AddItem(new GUIContent($"Remove [{nameProp.stringValue}]"), false, () => OnRemoveEntity?.Invoke());
+
+			var audioType = Utility.GetAudioType(idProp.intValue);
+			if (!BroEditorUtility.EditorSetting.TryGetAudioTypeSetting(audioType, out var typeSetting))
+			{
+				return;
+			}
+
+			menu.AddSeparator(string.Empty);
+			menu.AddDisabledItem(new GUIContent($"Displayed properties of {audioType}"));
+			ForeachConcreteDrawedProperty(OnAddMenuItem);
+			menu.DropDown(rect);
+
+			void OnAddMenuItem(DrawedProperty target)
+			{
+				menu.AddItem(new GUIContent(target.ToString()), typeSetting.DrawedProperty.Contains(target), OnChangeFlags, target);
+			}
+
+			void OnChangeFlags(object userData)
+			{
+				if(userData is DrawedProperty target)
+				{
+					bool hasFlag = typeSetting.DrawedProperty.Contains(target);
+					if(hasFlag)
+					{
+						typeSetting.DrawedProperty &= ~target;
+					}
+					else
+					{
+						typeSetting.DrawedProperty |= target;
+					}
+
+					BroEditorUtility.EditorSetting.WriteAudioTypeSetting(typeSetting.AudioType, typeSetting);
+				}
+			}
         }
     }
 }

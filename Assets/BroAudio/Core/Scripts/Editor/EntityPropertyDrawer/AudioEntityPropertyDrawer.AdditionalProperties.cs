@@ -48,8 +48,8 @@ namespace Ami.BroAudio.Editor
 			}
 
 			float offset = 0f;
-			offset += IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.Priority) ? TwoSidesLabelOffsetY : 0f;
-			offset += IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.MasterVolume) ? SnapVolumePadding : 0f;
+			offset += IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.Priority) ? 0f : TwoSidesLabelOffsetY;
+			offset += IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.MasterVolume) ? 0f : SnapVolumePadding;
 
 			return lineCount * SingleLineSpace + offset;
 		}
@@ -99,7 +99,8 @@ namespace Ami.BroAudio.Editor
 			void DrawMasterVolume()
 			{
                 SerializedProperty masterVolProp = property.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume));
-                if (IsDefaultValueAndCanNotDraw(masterVolProp, drawFlags, DrawedProperty.MasterVolume))
+				SerializedProperty volRandProp = property.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
+				if (IsDefaultValueAndCanNotDraw(masterVolProp, drawFlags, DrawedProperty.MasterVolume) && volRandProp.floatValue == 0f)
 				{
 					return;
 				}
@@ -113,7 +114,7 @@ namespace Ami.BroAudio.Editor
 				Rect randButtonRect = new Rect(masterVolRect.xMax + 5f, masterVolRect.y, RandomToolBarWidth, masterVolRect.height);
 				if (DrawRandomButton(randButtonRect, RandomFlags.Volume, property))
 				{
-					SerializedProperty volRandProp = property.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
+					
 					float vol = masterVolProp.floatValue;
 					float volRange = volRandProp.floatValue;
 
@@ -146,7 +147,6 @@ namespace Ami.BroAudio.Editor
                 if (IsDefaultValueAndCanNotDraw(_loopingToggles[0], drawFlags, DrawedProperty.Loop)
 					&& IsDefaultValueAndCanNotDraw(_loopingToggles[1], drawFlags, DrawedProperty.Loop))
 				{
-					
 					return;
 				}
 
@@ -285,8 +285,7 @@ namespace Ami.BroAudio.Editor
 			{
 				case DrawedProperty.MasterVolume:
 					var masterVolProp = DigPropertyIfNeeded(nameof(AudioEntity.MasterVolume));
-					var masterVolRandProp = DigPropertyIfNeeded(nameof(AudioEntity.VolumeRandomRange));
-					return masterVolProp.floatValue == AudioConstant.FullVolume && masterVolRandProp.floatValue == 0f;
+					return masterVolProp.floatValue == AudioConstant.FullVolume;
 				case DrawedProperty.Loop:
 					property = DigPropertyIfNeeded(nameof(AudioEntity.Loop));
 					return property.boolValue == false;
@@ -298,8 +297,7 @@ namespace Ami.BroAudio.Editor
 					return property.objectReferenceValue == null;
 				case DrawedProperty.Pitch:
 					var pitchProp = DigPropertyIfNeeded(nameof(AudioEntity.Pitch));
-					var pitchRandProp = DigPropertyIfNeeded(nameof(AudioEntity.PitchRandomRange));
-					return pitchProp.floatValue == AudioConstant.DefaultPitch && pitchRandProp.floatValue == 0f;
+					return pitchProp.floatValue == AudioConstant.DefaultPitch;
 			}
 			return true;
 

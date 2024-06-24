@@ -199,13 +199,13 @@ namespace Ami.BroAudio.Editor
 					var editor = pair.Value;
 					if(guid == _allAssetGUIDs[list.index])
 					{
-                        editor.RemoveEntitiesNameChangeListener();
-                        editor.AddEntitiesNameChangeListener();
+                        editor.RemoveEntitiesListener();
+                        editor.AddEntitiesListener();
 						editor.Verify();
 					}
 					else
 					{
-						editor.RemoveEntitiesNameChangeListener();
+						editor.RemoveEntitiesListener();
 					}
 				}
 			}

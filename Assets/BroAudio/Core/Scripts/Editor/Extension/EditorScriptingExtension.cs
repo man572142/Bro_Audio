@@ -35,6 +35,22 @@ namespace Ami.Extension
             }
         }
 
+		public struct TabViewData
+		{
+            public float Ratio;
+            public GUIContent Label;
+			public Action OnTabChanged;
+			public Action<Rect, SerializedProperty> OnButtonClick;
+
+            public TabViewData(float ratio, GUIContent label, Action onTabChanged, Action<Rect, SerializedProperty> onButtonClick)
+            {
+                Ratio = ratio;
+                Label = label;
+                OnTabChanged = onTabChanged;
+                OnButtonClick = onButtonClick;
+            }
+        }
+
         public static Rect GetRectAndIterateLine(IEditorDrawLineCounter drawer, Rect position)
 		{
 			Rect newRect = new Rect(position.x, position.y + drawer.SingleLineSpace * drawer.DrawLineCount + drawer.Offset, position.width, EditorGUIUtility.singleLineHeight);
@@ -363,65 +379,113 @@ namespace Ami.Extension
 
 		public static int DrawTabsView(Rect position,int selectedTabIndex,float labelTabHeight, GUIContent[] labels, float[] ratios, Rect[] preAllocRects = null, Action onTabChanged = null)
         {
-			if (Event.current.type == EventType.Repaint)
-			{
-#if UNITY_2019_3_OR_NEWER
-				GUIStyle frameBox = "FrameBox";
-#else
-				GUIStyle frameBox = GUI.skin.box;
-#endif
-                frameBox.Draw(position, false, false, false, false);
-			}
+            DrawFrameBox(position);
 
-			// draw tab label
-			Rect tabRect = new Rect(position);
-			tabRect.height = labelTabHeight;
+            // draw tab label
+            Rect tabRect = new Rect(position);
+            tabRect.height = labelTabHeight;
 
-			Rect[] tabRects = preAllocRects ?? new Rect[ratios.Length];
+            Rect[] tabRects = preAllocRects ?? new Rect[ratios.Length];
             SplitRectHorizontal(tabRect, 0f, tabRects, ratios);
             for (int i = 0; i < tabRects.Length; i++)
             {
                 bool oldState = selectedTabIndex == i;
                 bool newState = GUI.Toggle(tabRects[i], oldState, labels[i], GetTabStyle(i, tabRects.Length));
-				bool isChanged = newState != oldState;
-				if (isChanged && newState)
+                bool isChanged = newState != oldState;
+                if (isChanged && newState)
                 {
                     selectedTabIndex = i;
                 }
 
-				if(isChanged)
+                if (isChanged)
+                {
+                    onTabChanged?.Invoke();
+                }
+            }
+            return selectedTabIndex;
+        }
+
+        public static int DrawButtonTabsMixedView(Rect position, SerializedProperty property, int selectedTabIndex, float labelTabHeight, TabViewData[] datas)
+        {
+            DrawFrameBox(position);
+
+			float accumulatedWidth = 0f;
+            for (int i = 0; i < datas.Length; i++)
+            {
+				var data = datas[i];
+				Rect rect = new Rect(position) 
 				{
-					onTabChanged?.Invoke();
+					height = labelTabHeight,
+					width = position.width * data.Ratio,
+					x = position.x + accumulatedWidth,
+                };
+				accumulatedWidth += rect.width;
+
+                GUIStyle style = GetTabStyle(i, datas.Length);
+                if (data.OnTabChanged != null)
+				{
+                    bool oldState = selectedTabIndex == i;
+                    bool newState = GUI.Toggle(rect, oldState, data.Label, style);
+                    bool isChanged = newState != oldState;
+                    if (isChanged && newState)
+                    {
+                        selectedTabIndex = i;
+                    }
+
+                    if (isChanged)
+                    {
+                        data.OnTabChanged.Invoke();
+                    }
+                }
+				else if (data.OnButtonClick != null)
+				{
+					if(GUI.Button(rect, data.Label, style))
+					{
+						data.OnButtonClick.Invoke(rect, property);
+					}
 				}
             }
-			return selectedTabIndex;
+            return selectedTabIndex;
+        }
 
-            GUIStyle GetTabStyle(int i, int length)
+        public static void DrawFrameBox(Rect position)
+        {
+            if (Event.current.type == EventType.Repaint)
             {
 #if UNITY_2019_3_OR_NEWER
-				if (length == 1)
-				{
-					return "Tab onlyOne";
-				}
-				else if (i == 0)
-				{
-					return "Tab first";
-				}
-				else if (i == length - 1)
-				{
-					return "Tab last";
-				}
-				else
-				{
-					return "Tab middle";
-				}
+                GUIStyle frameBox = "FrameBox";
+#else
+				GUIStyle frameBox = GUI.skin.box;
+#endif
+                frameBox.Draw(position, false, false, false, false);
+            }
+        }
+
+		public static GUIStyle GetTabStyle(int i, int length)
+        {
+#if UNITY_2019_3_OR_NEWER
+            if (length == 1)
+            {
+                return "Tab onlyOne";
+            }
+            else if (i == 0)
+            {
+                return "Tab first";
+            }
+            else if (i == length - 1)
+            {
+                return "Tab last";
+            }
+            else
+            {
+                return "Tab middle";
+            }
 #else
 				return EditorStyles.toolbarButton;
 #endif
-			}
         }
 
-		public static void DrawMultiFloatField(Rect position,GUIContent title, GUIContent[] labels,float[] values, float totalFieldWidth = 100f, float gap = 10f)
+        public static void DrawMultiFloatField(Rect position,GUIContent title, GUIContent[] labels,float[] values, float totalFieldWidth = 100f, float gap = 10f)
 		{
 			if (labels == null || values == null || labels.Length != values.Length)
 			{

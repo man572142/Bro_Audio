@@ -33,94 +33,63 @@ namespace Ami.BroAudio.Editor
 		private Rect[] _seamlessRects = null;
 		private SerializedProperty[] _loopingToggles = new SerializedProperty[2];
 
-		private int GetAdditionalBaseProtiesLineCount(SerializedProperty property, AudioTypeSetting setting)
+		private static int OverallDrawedPropStartIndex => DrawedPropertyConstant.OverallPropertyStartIndex;
+
+		private float GetAdditionalBasePropertiesHeight(SerializedProperty property, AudioTypeSetting setting)
 		{
-			int filterRange = GetFlagsRange(0, DrawedPropertyConstant.AdditionalPropertyStartIndex -1 ,FlagsRangeType.Excluded);
-			ConvertUnityEverythingFlagsToAll(ref setting.DrawedProperty);
-			int count = GetDrawingLineCount(property, (int)setting.DrawedProperty & filterRange, IsDefaultValue);
-			var seamlessProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.SeamlessLoop));
+			var drawFlags = setting.DrawedProperty;
+			ConvertUnityEverythingFlagsToAll(ref drawFlags);
+			int intBits = 32;
+			int lineCount = GetDrawingLineCount(property, drawFlags, OverallDrawedPropStartIndex, intBits, IsDefaultValue);
+			var seamlessProp = property.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop));
             if (seamlessProp.boolValue)
 			{
-				count++;
+				lineCount++;
 			}
 
-			return count; 
+			float offset = 0f;
+			offset += IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.Priority) ? TwoSidesLabelOffsetY : 0f;
+			offset += IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.MasterVolume) ? SnapVolumePadding : 0f;
+
+			return lineCount * SingleLineSpace + offset;
 		}
 
-        private int GetDrawingLineCount(SerializedProperty property, int flags, Func<SerializedProperty, DrawedProperty, bool> onGetIsDefaultValue)
+		private float GetAdditionalClipPropertiesHeight(SerializedProperty property, AudioTypeSetting setting)
+		{
+			var drawFlags = setting.DrawedProperty;
+			ConvertUnityEverythingFlagsToAll(ref drawFlags);
+			int lineCount = GetDrawingLineCount(property, drawFlags, 0, OverallDrawedPropStartIndex - 1, IsDefaultValue);
+			return lineCount * SingleLineSpace;
+		}
+
+		private int GetDrawingLineCount(SerializedProperty property, DrawedProperty flags, int startIndex, int lastIndex, Func<SerializedProperty, DrawedProperty, bool> onGetIsDefaultValue)
 		{
 			int count = 0;
-			for (int i = 0; i < 32; i++) // int32
+			for (int i = startIndex; i <= lastIndex; i++)
 			{
-                int drawFlag = (1 << i);
-                if (drawFlag > (int)DrawedProperty.All)
-                {
+				int drawFlag = (1 << i);
+				if(drawFlag > (int)DrawedProperty.All)
+				{
 					break;
-                }
-				else if(!DrawedProperty.All.Contains((DrawedProperty)drawFlag))
+				}
+				if(!DrawedProperty.All.Contains((DrawedProperty)drawFlag))
 				{
 					continue;
 				}
-                
-                bool canDraw = (flags & drawFlag) != 0;
-				if(canDraw || !onGetIsDefaultValue.Invoke(property, (DrawedProperty)drawFlag))
+				
+                bool canDraw = ((int)flags & drawFlag) != 0;
+				if (canDraw || !onGetIsDefaultValue.Invoke(property, (DrawedProperty)drawFlag))
 				{
 					count++;
                 }
-            }
+			}
 			return count;
 		}
 
-        private bool IsDefaultValue(SerializedProperty property, DrawedProperty drawedProperty)
-        {
-            switch (drawedProperty)
-            {
-                case DrawedProperty.MasterVolume:
-                    DigPropertyIfNeeded(nameof(AudioEntity.MasterVolume));
-                    return property.floatValue == AudioConstant.FullVolume;
-                case DrawedProperty.Loop:
-                    DigPropertyIfNeeded(nameof(AudioEntity.Loop));
-                    return property.boolValue == false;
-                case DrawedProperty.Priority:
-                    DigPropertyIfNeeded(nameof(AudioEntity.Priority));
-                    return property.intValue == AudioConstant.DefaultPriority;
-                case DrawedProperty.SpatialSettings:
-                    DigPropertyIfNeeded(nameof(AudioEntity.SpatialSetting));
-                    return property.objectReferenceValue == null;
-                case DrawedProperty.Pitch:
-                    DigPropertyIfNeeded(nameof(AudioEntity.Pitch));
-                    return property.floatValue == AudioConstant.DefaultPitch;
-            }
-            return true;
-
-            void DigPropertyIfNeeded(string path, bool isBackingField = true)
-            {
-                if (property.depth < EntityPropertyDepth)
-                {
-                    property = property.FindPropertyRelative(isBackingField ? GetBackingFieldName(path) : path);
-                }
-            }
-        }
-
-		// TODO:
-        private float GetAdditionalBasePropertiesOffest(AudioTypeSetting setting)
-		{
-			float offset = 0f;
-			offset += setting.DrawedProperty.Contains(DrawedProperty.Priority) ? TwoSidesLabelOffsetY : 0f;
-			offset += setting.DrawedProperty.Contains(DrawedProperty.MasterVolume) ? SnapVolumePadding : 0f;
-			return offset;
-		}
-
-        // TODO:
-        private int GetAdditionalClipPropertiesLineCount(SerializedProperty property, AudioTypeSetting setting)
-		{
-            int filterRange = GetFlagsRange(0, DrawedPropertyConstant.AdditionalPropertyStartIndex - 1, FlagsRangeType.Included);
-			ConvertUnityEverythingFlagsToAll(ref setting.DrawedProperty);
-			return GetFlagsOnCount((int)setting.DrawedProperty & filterRange);
-        }
-
 		private void DrawAdditionalBaseProperties(Rect position, SerializedProperty property, AudioTypeSetting setting)
 		{
+			var drawFlags = setting.DrawedProperty;
+			ConvertUnityEverythingFlagsToAll(ref drawFlags);
 			DrawMasterVolume();
 			DrawPitchProperty();
 			DrawPriorityProperty();
@@ -129,8 +98,8 @@ namespace Ami.BroAudio.Editor
 
 			void DrawMasterVolume()
 			{
-                SerializedProperty masterVolProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.MasterVolume));
-                if (IsDefaultValueAndCanNotDraw(masterVolProp, DrawedProperty.MasterVolume))
+                SerializedProperty masterVolProp = property.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume));
+                if (IsDefaultValueAndCanNotDraw(masterVolProp, drawFlags, DrawedProperty.MasterVolume))
 				{
 					return;
 				}
@@ -144,7 +113,7 @@ namespace Ami.BroAudio.Editor
 				Rect randButtonRect = new Rect(masterVolRect.xMax + 5f, masterVolRect.y, RandomToolBarWidth, masterVolRect.height);
 				if (DrawRandomButton(randButtonRect, RandomFlags.Volume, property))
 				{
-					SerializedProperty volRandProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.VolumeRandomRange));
+					SerializedProperty volRandProp = property.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
 					float vol = masterVolProp.floatValue;
 					float volRange = volRandProp.floatValue;
 
@@ -171,12 +140,13 @@ namespace Ami.BroAudio.Editor
 
 			void DrawLoopProperty()
 			{
-                _loopingToggles[0] = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Loop));
-                _loopingToggles[1] = GetBackingNameAndFindProperty(property, nameof(AudioEntity.SeamlessLoop));
+                _loopingToggles[0] = property.FindBackingFieldProperty(nameof(AudioEntity.Loop));
+                _loopingToggles[1] = property.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop));
 
-                if (IsDefaultValueAndCanNotDraw(_loopingToggles[0], DrawedProperty.Loop)
-					&& IsDefaultValueAndCanNotDraw(_loopingToggles[1], DrawedProperty.Loop))
+                if (IsDefaultValueAndCanNotDraw(_loopingToggles[0], drawFlags, DrawedProperty.Loop)
+					&& IsDefaultValueAndCanNotDraw(_loopingToggles[1], drawFlags, DrawedProperty.Loop))
 				{
+					
 					return;
 				}
 
@@ -191,9 +161,9 @@ namespace Ami.BroAudio.Editor
 
 			void DrawPitchProperty()
 			{
-                SerializedProperty pitchProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Pitch));
-                SerializedProperty pitchRandProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.PitchRandomRange));
-                if (IsDefaultValueAndCanNotDraw(pitchProp, DrawedProperty.Pitch) && pitchRandProp.floatValue == 0f)
+                SerializedProperty pitchProp = property.FindBackingFieldProperty(nameof(AudioEntity.Pitch));
+                SerializedProperty pitchRandProp = property.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
+                if (IsDefaultValueAndCanNotDraw(pitchProp, drawFlags, DrawedProperty.Pitch) && pitchRandProp.floatValue == 0f)
 				{
 					return;
 				}
@@ -255,8 +225,8 @@ namespace Ami.BroAudio.Editor
 
 			void DrawPriorityProperty()
 			{
-                SerializedProperty priorityProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.Priority));
-                if (IsDefaultValueAndCanNotDraw(priorityProp, DrawedProperty.Priority))
+                SerializedProperty priorityProp = property.FindBackingFieldProperty(nameof(AudioEntity.Priority));
+                if (IsDefaultValueAndCanNotDraw(priorityProp, drawFlags, DrawedProperty.Priority))
 				{
 					return;
 				}
@@ -272,7 +242,7 @@ namespace Ami.BroAudio.Editor
 			void DrawSpatialSetting()
 			{
                 SerializedProperty spatialProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSetting)));
-                if (IsDefaultValueAndCanNotDraw(spatialProp, DrawedProperty.SpatialSettings))
+                if (IsDefaultValueAndCanNotDraw(spatialProp, drawFlags, DrawedProperty.SpatialSettings))
 				{
 					return;
 				}
@@ -307,11 +277,45 @@ namespace Ami.BroAudio.Editor
                     }
                 }
             }
+		}
 
-			bool IsDefaultValueAndCanNotDraw(SerializedProperty checkedProp, DrawedProperty target)
+		private bool IsDefaultValue(SerializedProperty property, DrawedProperty drawedProperty)
+		{
+			switch (drawedProperty)
 			{
-				return IsDefaultValue(checkedProp, target) && !setting.DrawedProperty.Contains(target);
-            }
+				case DrawedProperty.MasterVolume:
+					var masterVolProp = DigPropertyIfNeeded(nameof(AudioEntity.MasterVolume));
+					var masterVolRandProp = DigPropertyIfNeeded(nameof(AudioEntity.VolumeRandomRange));
+					return masterVolProp.floatValue == AudioConstant.FullVolume && masterVolRandProp.floatValue == 0f;
+				case DrawedProperty.Loop:
+					property = DigPropertyIfNeeded(nameof(AudioEntity.Loop));
+					return property.boolValue == false;
+				case DrawedProperty.Priority:
+					property = DigPropertyIfNeeded(nameof(AudioEntity.Priority));
+					return property.intValue == AudioConstant.DefaultPriority;
+				case DrawedProperty.SpatialSettings:
+					property = DigPropertyIfNeeded(nameof(AudioEntity.SpatialSetting));
+					return property.objectReferenceValue == null;
+				case DrawedProperty.Pitch:
+					var pitchProp = DigPropertyIfNeeded(nameof(AudioEntity.Pitch));
+					var pitchRandProp = DigPropertyIfNeeded(nameof(AudioEntity.PitchRandomRange));
+					return pitchProp.floatValue == AudioConstant.DefaultPitch && pitchRandProp.floatValue == 0f;
+			}
+			return true;
+
+			SerializedProperty DigPropertyIfNeeded(string path, bool isBackingField = true)
+			{
+				if (property.depth < EntityPropertyDepth)
+				{
+					return property.FindPropertyRelative(isBackingField ? GetBackingFieldName(path) : path);
+				}
+				return property;
+			}
+		}
+
+		private bool IsDefaultValueAndCanNotDraw(SerializedProperty checkedProp, DrawedProperty drawFlags, DrawedProperty drawTarget)
+		{
+			return IsDefaultValue(checkedProp, drawTarget) && !drawFlags.Contains(drawTarget);
 		}
 
 		private void DrawPercentageLabel(Rect fieldRect)
@@ -341,7 +345,7 @@ namespace Ami.BroAudio.Editor
 			seamlessTypeProp.enumValueIndex = (int)currentType;
 			drawIndex++;
 
-			var transitionTimeProp = GetBackingNameAndFindProperty(property,nameof(AudioEntity.TransitionTime));
+			var transitionTimeProp = property.FindBackingFieldProperty(nameof(AudioEntity.TransitionTime));
 			switch (currentType)
 			{
 				case SeamlessType.Time:
@@ -393,18 +397,13 @@ namespace Ami.BroAudio.Editor
 
 		private bool DrawRandomButton(Rect rect,RandomFlags targetFlag, SerializedProperty property)
 		{
-			SerializedProperty randFlagsProp = GetBackingNameAndFindProperty(property, nameof(AudioEntity.RandomFlags));
+			SerializedProperty randFlagsProp = property.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags));
 			RandomFlags randomFlags = (RandomFlags)randFlagsProp.intValue;
 			bool hasRandom = randomFlags.Contains(targetFlag);
 			hasRandom = GUI.Toggle(rect, hasRandom, "RND", EditorStyles.miniButton);
 			randomFlags = hasRandom ? randomFlags | targetFlag : randomFlags & ~targetFlag;
 			randFlagsProp.intValue = (int)randomFlags;
 			return hasRandom;
-		}
-
-		private SerializedProperty GetBackingNameAndFindProperty(SerializedProperty entityProp, string memberName)
-		{
-			return entityProp.FindPropertyRelative(GetBackingFieldName(memberName));
 		}
 
 		private void ConvertUnityEverythingFlagsToAll(ref DrawedProperty drawedProperty)

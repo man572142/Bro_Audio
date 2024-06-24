@@ -119,7 +119,7 @@ namespace Ami.BroAudio.Editor
         {
             if (type is BroAudioType audioType && _entityThatIsModifyingAudioType != null)
             {
-                var idProp = _entityThatIsModifyingAudioType.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.ID)));
+                var idProp = _entityThatIsModifyingAudioType.FindBackingFieldProperty(nameof(AudioEntity.ID));
 				if(Utility.GetAudioType(idProp.intValue) != audioType)
 				{
                     idProp.intValue = _idGenerator.GetSimpleUniqueID(audioType);
@@ -134,8 +134,8 @@ namespace Ami.BroAudio.Editor
 			base.OnGUI(position, property, label);
 			property.serializedObject.Update();
 
-            SerializedProperty nameProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IEntityIdentity.Name)));
-			SerializedProperty idProp = property.FindPropertyRelative(GetBackingFieldName(nameof(IEntityIdentity.ID)));
+            SerializedProperty nameProp = property.FindBackingFieldProperty(nameof(IEntityIdentity.Name));
+			SerializedProperty idProp = property.FindBackingFieldProperty(nameof(IEntityIdentity.ID));
 
             Rect foldoutRect = GetRectAndIterateLine(position);
 			_headerRects = _headerRects ?? new Rect[_headerRatios.Length];
@@ -200,7 +200,7 @@ namespace Ami.BroAudio.Editor
 						height += GetClipListHeight(property, setting);
 						break;
 					case Tab.Overall:
-						height += GetAdditionalBaseProtiesLineCount(property, setting) * SingleLineSpace + GetAdditionalBasePropertiesOffest(setting);
+						height += GetAdditionalBasePropertiesHeight(property, setting);
 						break; 
 				}
 				height += TabLabelCompensation;
@@ -237,7 +237,7 @@ namespace Ami.BroAudio.Editor
 						height += GetClipListHeight(property, setting);
 						break;
 					case Tab.Overall:
-						height += GetAdditionalBaseProtiesLineCount(property, setting) * SingleLineSpace + GetAdditionalBasePropertiesOffest(setting);
+						height += GetAdditionalBasePropertiesHeight(property, setting);
 						break;
 				}
 			}
@@ -252,7 +252,7 @@ namespace Ami.BroAudio.Editor
 				bool isShowClipProp = data.Clips.HasValidClipSelected;
 
 				height += data.Clips.Height;
-				height += isShowClipProp ? GetAdditionalClipPropertiesLineCount(property, setting) * SingleLineSpace : 0f;
+				height += isShowClipProp ? GetAdditionalClipPropertiesHeight(property, setting) : 0f;
 				height += isShowClipProp ? ClipPreviewHeight + ClipPreviewPadding : 0f;
 			}
 			return height;
@@ -372,7 +372,7 @@ namespace Ami.BroAudio.Editor
 
 		private bool TryGetAudioTypeSetting(SerializedProperty property, out EditorSetting.AudioTypeSetting setting)
 		{
-			int id = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.ID))).intValue;
+			int id = property.FindBackingFieldProperty(nameof(AudioEntity.ID)).intValue;
 			return EditorSetting.TryGetAudioTypeSetting(Utility.GetAudioType(id), out setting);
 		}
 

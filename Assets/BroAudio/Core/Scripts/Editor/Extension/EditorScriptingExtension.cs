@@ -593,5 +593,10 @@ namespace Ami.Extension
             EditorGUI.LabelField(position, guiContent, GUIStyleHelper.MiddleCenterText);
 			return state;
         }
-    }
+
+		public static SerializedProperty FindBackingFieldProperty(this SerializedProperty property, string fieldName)
+		{
+			return property.FindPropertyRelative(GetBackingFieldName(fieldName));
+		}
+	}
 }

@@ -21,7 +21,6 @@ namespace Ami.BroAudio.Editor
 		private const float RandomToolBarWidth = 40f;
 		private const float MinMaxSliderFieldWidth = 50f;
 		private const int RoundedDigits = 3;
-		private const int EntityPropertyDepth = 2; // e.g AudioEntity.MasterVolume
 
 		private readonly GUIContent _masterVolLabel = new GUIContent("Master Volume","Represent the master volume of all clips");
 		private readonly GUIContent _loopingLabel = new GUIContent("Looping");
@@ -98,9 +97,7 @@ namespace Ami.BroAudio.Editor
 
 			void DrawMasterVolume()
 			{
-                SerializedProperty masterVolProp = property.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume));
-				SerializedProperty volRandProp = property.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
-				if (IsDefaultValueAndCanNotDraw(masterVolProp, drawFlags, DrawedProperty.MasterVolume) && volRandProp.floatValue == 0f)
+				if (IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.MasterVolume, out var masterVolProp, out var volRandProp))
 				{
 					return;
 				}
@@ -141,19 +138,18 @@ namespace Ami.BroAudio.Editor
 
 			void DrawLoopProperty()
 			{
-                _loopingToggles[0] = property.FindBackingFieldProperty(nameof(AudioEntity.Loop));
-                _loopingToggles[1] = property.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop));
-
-                if (IsDefaultValueAndCanNotDraw(_loopingToggles[0], drawFlags, DrawedProperty.Loop)
-					&& IsDefaultValueAndCanNotDraw(_loopingToggles[1], drawFlags, DrawedProperty.Loop))
+				if (IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.Loop, out var loopProp, out var seamlessProp))
 				{
 					return;
 				}
 
+				_loopingToggles[0] = loopProp;
+                _loopingToggles[1] = seamlessProp;
+
                 Rect loopRect = GetRectAndIterateLine(position);
                 DrawToggleGroup(loopRect, _loopingLabel, _loopingToggles);
 
-                if (_loopingToggles[1].boolValue)
+                if (seamlessProp.boolValue)
                 {
                     DrawSeamlessSetting(position, property);
                 }
@@ -161,9 +157,7 @@ namespace Ami.BroAudio.Editor
 
 			void DrawPitchProperty()
 			{
-                SerializedProperty pitchProp = property.FindBackingFieldProperty(nameof(AudioEntity.Pitch));
-                SerializedProperty pitchRandProp = property.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
-                if (IsDefaultValueAndCanNotDraw(pitchProp, drawFlags, DrawedProperty.Pitch) && pitchRandProp.floatValue == 0f)
+                if (IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.Pitch, out var pitchProp, out var pitchRandProp))
 				{
 					return;
 				}
@@ -225,8 +219,7 @@ namespace Ami.BroAudio.Editor
 
 			void DrawPriorityProperty()
 			{
-                SerializedProperty priorityProp = property.FindBackingFieldProperty(nameof(AudioEntity.Priority));
-                if (IsDefaultValueAndCanNotDraw(priorityProp, drawFlags, DrawedProperty.Priority))
+                if (IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.Priority, out var priorityProp, out _))
 				{
 					return;
 				}
@@ -241,8 +234,7 @@ namespace Ami.BroAudio.Editor
 
 			void DrawSpatialSetting()
 			{
-                SerializedProperty spatialProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSetting)));
-                if (IsDefaultValueAndCanNotDraw(spatialProp, drawFlags, DrawedProperty.SpatialSettings))
+                if (IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.SpatialSettings, out var spatialProp, out _))
 				{
 					return;
 				}
@@ -281,40 +273,47 @@ namespace Ami.BroAudio.Editor
 
 		private bool IsDefaultValue(SerializedProperty property, DrawedProperty drawedProperty)
 		{
+			return IsDefaultValue(property, drawedProperty, out _, out _);
+		}
+
+
+        private bool IsDefaultValue(SerializedProperty property, DrawedProperty drawedProperty, out SerializedProperty mainProp, out SerializedProperty secondaryProp)
+		{
+			mainProp = null;
+			secondaryProp = null;
 			switch (drawedProperty)
 			{
 				case DrawedProperty.MasterVolume:
-					var masterVolProp = DigPropertyIfNeeded(nameof(AudioEntity.MasterVolume));
-					return masterVolProp.floatValue == AudioConstant.FullVolume;
-				case DrawedProperty.Loop:
-					property = DigPropertyIfNeeded(nameof(AudioEntity.Loop));
-					return property.boolValue == false;
+                    mainProp = property.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume));
+					secondaryProp = property.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
+					return mainProp.floatValue == AudioConstant.FullVolume && secondaryProp.floatValue == 0f;
+                case DrawedProperty.Loop:
+					mainProp = property.FindBackingFieldProperty(nameof(AudioEntity.Loop));
+					secondaryProp = property.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop));
+					return !mainProp.boolValue && !secondaryProp.boolValue;
 				case DrawedProperty.Priority:
-					property = DigPropertyIfNeeded(nameof(AudioEntity.Priority));
-					return property.intValue == AudioConstant.DefaultPriority;
+					mainProp = property.FindBackingFieldProperty(nameof(AudioEntity.Priority));
+					return mainProp.intValue == AudioConstant.DefaultPriority;
 				case DrawedProperty.SpatialSettings:
-					property = DigPropertyIfNeeded(nameof(AudioEntity.SpatialSetting));
-					return property.objectReferenceValue == null;
+					mainProp = property.FindBackingFieldProperty(nameof(AudioEntity.SpatialSetting));
+					return mainProp.objectReferenceValue == null;
 				case DrawedProperty.Pitch:
-					var pitchProp = DigPropertyIfNeeded(nameof(AudioEntity.Pitch));
-					return pitchProp.floatValue == AudioConstant.DefaultPitch;
+					mainProp = property.FindBackingFieldProperty(nameof(AudioEntity.Pitch));
+					secondaryProp = property.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
+					return mainProp.floatValue == AudioConstant.DefaultPitch && secondaryProp.floatValue == 0f;
 			}
 			return true;
-
-			SerializedProperty DigPropertyIfNeeded(string path, bool isBackingField = true)
-			{
-				if (property.depth < EntityPropertyDepth)
-				{
-					return property.FindPropertyRelative(isBackingField ? GetBackingFieldName(path) : path);
-				}
-				return property;
-			}
 		}
 
-		private bool IsDefaultValueAndCanNotDraw(SerializedProperty checkedProp, DrawedProperty drawFlags, DrawedProperty drawTarget)
+        private bool IsDefaultValueAndCanNotDraw(SerializedProperty checkedProp, DrawedProperty drawFlags, DrawedProperty drawTarget)
+        {
+            return IsDefaultValueAndCanNotDraw(checkedProp, drawFlags, drawTarget, out _, out _);
+        }
+
+        private bool IsDefaultValueAndCanNotDraw(SerializedProperty checkedProp, DrawedProperty drawFlags, DrawedProperty drawTarget, out SerializedProperty mainProp, out SerializedProperty secondaryProp)
 		{
-			return IsDefaultValue(checkedProp, drawTarget) && !drawFlags.Contains(drawTarget);
-		}
+            return IsDefaultValue(checkedProp, drawTarget, out mainProp, out secondaryProp) && !drawFlags.Contains(drawTarget);
+        }
 
 		private void DrawPercentageLabel(Rect fieldRect)
 		{

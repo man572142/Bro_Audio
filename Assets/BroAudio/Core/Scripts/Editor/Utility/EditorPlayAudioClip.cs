@@ -118,6 +118,61 @@ namespace Ami.Extension
         public async void PlayClipByAudioSource(Data clip, bool selfLoop = false, Action onReplay = null, float pitch = 1f)
 		{
 			StopStaticPreviewClipsAndCancelTask();
+			ResetAndGetAudioSource(out var audioSource);
+
+			SetAudioSource(ref audioSource, clip, pitch);
+			_currentPlayingClip = clip;
+			_previousMuteState = EditorUtility.audioMasterMute ? MuteState.On : MuteState.Off;
+
+			_volumeTransporter.SetData(clip);
+
+			audioSource.Play();
+			PlaybackIndicator.Start(selfLoop);
+			_volumeTransporter.Start();
+			EditorUtility.audioMasterMute = false;
+
+			_audioSourceTaskCanceller = _audioSourceTaskCanceller ?? new CancellationTokenSource();
+
+			float waitTime = clip.Duration;
+			if (clip.FadeIn >= SetVolumeOffsetTime)
+			{
+				audioSource.volume = 0f;
+				await DelaySeconds(SetVolumeOffsetTime, _audioSourceTaskCanceller.Token);
+				audioSource.volume = 1f;
+				waitTime -= SetVolumeOffsetTime;
+
+				if (_audioSourceTaskCanceller.IsCanceled())
+				{
+					return;
+				}
+			}
+
+			await DelaySeconds(waitTime, _audioSourceTaskCanceller.Token);
+			if (_audioSourceTaskCanceller.IsCanceled())
+			{
+				return;
+			}
+
+			_isRecursionOutside = onReplay != null;
+			if (_isRecursionOutside)
+			{
+				onReplay.Invoke();
+			}
+			else
+			{
+				if (selfLoop)
+				{
+					AudioSourceReplay();
+				}
+				else
+				{
+					DestroyPreviewAudioSourceAndCancelTask();
+				}
+			}
+		}
+
+		private void ResetAndGetAudioSource(out AudioSource result)
+		{
 			if (_currentEditorAudioSource)
 			{
 				CancelTask(ref _audioSourceTaskCanceller);
@@ -130,66 +185,20 @@ namespace Ami.Extension
 				gameObj.hideFlags = HideFlags.HideAndDontSave;
 				_currentEditorAudioSource = gameObj.AddComponent<AudioSource>();
 			}
+			result = _currentEditorAudioSource;
+		}
 
-            _currentPlayingClip = clip;
-            AudioSource audioSource = _currentEditorAudioSource;
+		private void SetAudioSource(ref AudioSource audioSource, Data clip, float pitch)
+		{
 			audioSource.clip = clip.AudioClip;
 			audioSource.playOnAwake = false;
 			audioSource.time = clip.StartPosition;
 			audioSource.pitch = pitch;
-            audioSource.outputAudioMixerGroup = GetEditorMasterTrack();
+			audioSource.outputAudioMixerGroup = GetEditorMasterTrack();
 			audioSource.reverbZoneMix = 0f;
-            _previousMuteState = EditorUtility.audioMasterMute ? MuteState.On : MuteState.Off;
-
-            _volumeTransporter.SetData(clip);
-
-            audioSource.Play();
-			PlaybackIndicator.Start(selfLoop);
-			_volumeTransporter.Start();
-			EditorUtility.audioMasterMute = false;
-
-            _audioSourceTaskCanceller = _audioSourceTaskCanceller ?? new CancellationTokenSource();
-
-			float waitTime = clip.Duration;
-            if (clip.FadeIn >= SetVolumeOffsetTime)
-            {
-				audioSource.volume = 0f;
-				await DelaySeconds(SetVolumeOffsetTime, _audioSourceTaskCanceller.Token);
-                audioSource.volume = 1f;
-                waitTime -= SetVolumeOffsetTime;
-
-                if (_audioSourceTaskCanceller.IsCanceled())
-                {
-                    return;
-                }
-            }
-			
-            await DelaySeconds(waitTime, _audioSourceTaskCanceller.Token);
-
-            if (_audioSourceTaskCanceller.IsCanceled())
-            {
-                return;
-            }
-
-            _isRecursionOutside = onReplay != null;
-            if (_isRecursionOutside)
-			{
-				onReplay.Invoke();
-			}
-			else
-			{
-                if (selfLoop)
-                {
-                    AudioSourceReplay();
-                }
-                else
-                {
-                    DestroyPreviewAudioSourceAndCancelTask();
-                }
-            }
 		}
 
-        private async void AudioSourceReplay()
+		private async void AudioSourceReplay()
         {
             if (_currentEditorAudioSource != null && _audioSourceTaskCanceller != null)
             {
@@ -227,9 +236,9 @@ namespace Ami.Extension
 
             int sampleLength = audioClip.samples - startSample - endSample;
 			int lengthInMs = (int)Math.Round(sampleLength / (double)audioClip.frequency * TimeExtension.SecondInMilliseconds, MidpointRounding.AwayFromZero);
+
 			_playClipTaskCanceller = _playClipTaskCanceller ?? new CancellationTokenSource();
             await Delay(lengthInMs, _playClipTaskCanceller.Token);
-
             if(_playClipTaskCanceller.IsCanceled())
             {
                 return;

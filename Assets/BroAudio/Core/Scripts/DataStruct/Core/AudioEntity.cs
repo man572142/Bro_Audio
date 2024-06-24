@@ -6,23 +6,23 @@ namespace Ami.BroAudio.Data
     [System.Serializable]
     public class AudioEntity : IEntityIdentity, IAudioEntity
     {
-        [field: SerializeField] public string Name { get; set; }
-        [field: SerializeField] public int ID { get; set; }
+        [field: SerializeField] public string Name { get; private set; }
+        [field: SerializeField] public int ID { get; private set; }
 
         [SerializeField] private MulticlipsPlayMode MulticlipsPlayMode = MulticlipsPlayMode.Single;
 
         public BroAudioClip[] Clips;
 
-        [field: SerializeField] public float MasterVolume { get; set; }
-        [field: SerializeField] public bool Loop { get; set; }
-        [field: SerializeField] public bool SeamlessLoop { get; set; }
-        [field: SerializeField] public float TransitionTime { get; set; }
-        [field: SerializeField] public SpatialSetting SpatialSetting { get; set; }
-        [field: SerializeField] public int Priority { get; set; }
-        [field: SerializeField] public float Pitch { get; set; }
-        [field: SerializeField] public float PitchRandomRange { get; set; }
-        [field: SerializeField] public float VolumeRandomRange { get; set; }
-        [field: SerializeField] public RandomFlags RandomFlags { get; set; }
+        [field: SerializeField] public float MasterVolume { get; private set; }
+        [field: SerializeField] public bool Loop { get; private set; }
+        [field: SerializeField] public bool SeamlessLoop { get; private set; }
+        [field: SerializeField] public float TransitionTime { get; private set; }
+        [field: SerializeField] public SpatialSetting SpatialSetting { get; private set; }
+        [field: SerializeField] public int Priority { get; private set; }
+        [field: SerializeField] public float Pitch { get; private set; }
+        [field: SerializeField] public float PitchRandomRange { get; private set; }
+        [field: SerializeField] public float VolumeRandomRange { get; private set; }
+        [field: SerializeField] public RandomFlags RandomFlags { get; private set; }
 
         public BroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);
         public BroAudioClip PickNewClip(out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index);

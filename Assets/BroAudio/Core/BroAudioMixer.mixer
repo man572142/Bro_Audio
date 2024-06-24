@@ -1167,7 +1167,7 @@ AudioMixerController:
   m_StartSnapshot: {fileID: 24500006}
   m_SuspendThreshold: -80
   m_EnableSuspend: 1
-  m_UpdateMode: 1
+  m_UpdateMode: 0
   m_ExposedParameters:
   - guid: 32f3086a60c84c14195c21e3465e5306
     name: Dominator1

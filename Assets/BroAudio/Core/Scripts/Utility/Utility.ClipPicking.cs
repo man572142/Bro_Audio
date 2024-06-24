@@ -9,7 +9,6 @@ namespace Ami.BroAudio
 	{
 		public static Dictionary<int, int> ClipsSequencer = new Dictionary<int, int>();
 
-
 		public static BroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index)
 		{
 			index = 0;

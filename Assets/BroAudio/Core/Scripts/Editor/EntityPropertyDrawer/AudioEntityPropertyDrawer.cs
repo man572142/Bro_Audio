@@ -179,7 +179,7 @@ namespace Ami.BroAudio.Editor
 					{
 						DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport, out float volume);
 						DrawAdditionalClipProperties(position, currSelectClip, setting);
-						if (setting.DrawedProperty.Contains(DrawedProperty.ClipPreview) && audioClip != null && Event.current.type != EventType.Layout)
+						if (setting.CanDraw(DrawedProperty.ClipPreview) && audioClip != null && Event.current.type != EventType.Layout)
 						{
 							DrawEmptyLine(1);
 							Rect previewRect = GetNextLineRect(position);  
@@ -258,7 +258,7 @@ namespace Ami.BroAudio.Editor
 
 				height += data.Clips.Height;
 				height += isShowClipProp ? GetAdditionalClipPropertiesHeight(property, setting) : 0f;
-				height += isShowClipProp ? ClipPreviewHeight + ClipPreviewPadding : 0f;
+				height += isShowClipProp && setting.CanDraw(DrawedProperty.ClipPreview) ? ClipPreviewHeight + ClipPreviewPadding : 0f;
 			}
 			return height;
 		}
@@ -301,6 +301,7 @@ namespace Ami.BroAudio.Editor
                 if (data.IsPlaying)
                 {
                     EditorPlayAudioClip.Instance.StopAllClips();
+					Utility.ClipsSequencer.Clear();
                 }
                 else if (TryGetEntityInstance(property, out var entity))
                 {
@@ -347,7 +348,7 @@ namespace Ami.BroAudio.Editor
 			}
 			transport = clipData.Transport;
 
-			if (CanDraw(DrawedProperty.Volume))
+			if (setting.CanDraw(DrawedProperty.Volume))
 			{
                 Rect volRect = GetRectAndIterateLine(position).SetWidth(w => w * DefaultFieldRatio);
                 volumeProp.floatValue = DrawVolumeSlider(volRect, _volumeLabel, volumeProp.floatValue, clipData.IsSnapToFullVolume, () =>
@@ -357,22 +358,17 @@ namespace Ami.BroAudio.Editor
             }
 			volume = volumeProp.floatValue;
 
-			if (CanDraw(DrawedProperty.PlaybackPosition))
+			if (setting.CanDraw(DrawedProperty.PlaybackPosition))
 			{
                 Rect playbackRect = GetRectAndIterateLine(position).SetWidth(w => w * DefaultFieldRatio);
                 _clipPropHelper.DrawPlaybackPositionField(playbackRect, transport);
 			}
 
-            if (CanDraw(DrawedProperty.Fade))
+            if (setting.CanDraw(DrawedProperty.Fade))
 			{
                 Rect fadingRect = GetRectAndIterateLine(position).SetWidth(w => w * DefaultFieldRatio);
                 _clipPropHelper.DrawFadingField(fadingRect, transport);
             }
-
-			bool CanDraw(DrawedProperty drawedProperty)
-			{
-				return setting.DrawedProperty.Contains(drawedProperty);
-			}
 		}
 
 		private bool TryGetAudioTypeSetting(SerializedProperty property, out EditorSetting.AudioTypeSetting setting)
@@ -437,16 +433,6 @@ namespace Ami.BroAudio.Editor
 			return entity != null;
         }
 
-		//private static void OnClickRemoveButton(SerializedProperty property)
-		//{
-		//	var nameProp = property.FindBackingFieldProperty(nameof(AudioEntity.Name));
-		//	bool isRemove = EditorUtility.DisplayDialog("Remove Entity", $"Do you want to remove [{nameProp.stringValue}]?", "Yes", "No");
-		//	if (isRemove)
-		//	{
-		//		// todo: trigger remove entity
-		//	}
-		//}
-
 		private static void OnClickChangeDrawedProperties(Rect rect, SerializedProperty property)
 		{
 			var idProp = property.FindBackingFieldProperty(nameof(AudioEntity.ID));
@@ -462,20 +448,20 @@ namespace Ami.BroAudio.Editor
 			}
 
 			menu.AddSeparator(string.Empty);
-			menu.AddDisabledItem(new GUIContent($"Displayed properties of {audioType}"));
+			menu.AddDisabledItem(new GUIContent($"Displayed properties of AudioType.{audioType}"));
 			ForeachConcreteDrawedProperty(OnAddMenuItem);
 			menu.DropDown(rect);
 
 			void OnAddMenuItem(DrawedProperty target)
 			{
-				menu.AddItem(new GUIContent(target.ToString()), typeSetting.DrawedProperty.Contains(target), OnChangeFlags, target);
+				menu.AddItem(new GUIContent(target.ToString()), typeSetting.CanDraw(target), OnChangeFlags, target);
 			}
 
 			void OnChangeFlags(object userData)
 			{
 				if(userData is DrawedProperty target)
 				{
-					bool hasFlag = typeSetting.DrawedProperty.Contains(target);
+					bool hasFlag = typeSetting.CanDraw(target);
 					if(hasFlag)
 					{
 						typeSetting.DrawedProperty &= ~target;

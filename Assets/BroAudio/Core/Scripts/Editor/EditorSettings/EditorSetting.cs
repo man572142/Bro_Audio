@@ -23,6 +23,8 @@ namespace Ami.BroAudio.Editor
 				ColorUtility.TryParseHtmlString(colorString, out Color);
 				DrawedProperty = drawedProperty;
 			}
+
+			public bool CanDraw(DrawedProperty target) => DrawedProperty.Contains(target);
 		}
 
 		public bool ShowAudioTypeOnSoundID;

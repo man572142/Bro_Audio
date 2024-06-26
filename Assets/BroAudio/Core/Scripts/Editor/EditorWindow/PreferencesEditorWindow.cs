@@ -35,6 +35,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string AssetOutputPathMissing = "The current audio asset output path is missing. Please select a new location.";
 		public const string VUColorToggleLabel = "Show VU color on volume slider";
 		public const string ShowAudioTypeToggleLabel = "Show audioType on SoundID";
+		public const string ShowMasterVolumeLabel = "Show master volume on clip list header";
 		public const string AudioTypeColorLabel = "Audio Type Color";
 		public const string AudioTypeDrawedProperties = "Displayed Properties";
 		public const string AddDominatorTrackLabel = "Add Dominator Track";
@@ -437,9 +438,9 @@ namespace Ami.BroAudio.Editor.Setting
 			EditorSetting.ShowVUColorOnVolumeSlider = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), VUColorToggleLabel, EditorSetting.ShowVUColorOnVolumeSlider);
 			DemonstrateSlider();
 
-			EditorSetting.ShowAudioTypeOnSoundID = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), ShowAudioTypeToggleLabel, EditorSetting.ShowAudioTypeOnSoundID);
-
-			if (EditorSetting.ShowAudioTypeOnSoundID)
+            EditorSetting.ShowMasterVolumeOnClipListHeader = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), ShowMasterVolumeLabel, EditorSetting.ShowMasterVolumeOnClipListHeader);
+            EditorSetting.ShowAudioTypeOnSoundID = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), ShowAudioTypeToggleLabel, EditorSetting.ShowAudioTypeOnSoundID);
+            if (EditorSetting.ShowAudioTypeOnSoundID)
 			{
 				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), AudioTypeColorLabel.ToWhiteBold(), GUIStyleHelper.RichText);
 				using (new EditorGUI.IndentLevelScope())

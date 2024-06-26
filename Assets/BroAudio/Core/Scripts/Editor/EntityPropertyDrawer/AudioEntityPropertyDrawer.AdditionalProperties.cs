@@ -19,9 +19,7 @@ namespace Ami.BroAudio.Editor
 	{
 		private const float Percentage = 100f;
 		private const float RandomToolBarWidth = 40f;
-		private const float MinMaxSliderFieldWidth = 50f;
-		private const int RoundedDigits = 3;
-
+		
 		private readonly GUIContent _masterVolLabel = new GUIContent("Master Volume","Represent the master volume of all clips");
 		private readonly GUIContent _loopingLabel = new GUIContent("Looping");
 		private readonly GUIContent _seamlessLabel = new GUIContent("Seamless Setting");
@@ -122,8 +120,8 @@ namespace Ami.BroAudio.Editor
 						onDrawVU = sliderRect => DrawVUMeter(sliderRect, Setting.BroAudioGUISetting.VUMaskColor);
 					}
 #endif
-					bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
-					DrawRandomRangeSlider(masterVolRect,_masterVolLabel,ref vol,ref volRange, AudioConstant.MinVolume, isWebGL? AudioConstant.FullVolume : AudioConstant.MaxVolume,RandomRangeSliderType.BroVolume, onDrawVU);
+					GetMixerMinMaxVolume(out float minVol, out float maxVol);
+					DrawRandomRangeSlider(masterVolRect,_masterVolLabel,ref vol,ref volRange, minVol, maxVol, RandomRangeSliderType.BroVolume, onDrawVU);
 					masterVolProp.floatValue = vol;
 					volRandProp.floatValue = volRange;
 				}
@@ -368,28 +366,6 @@ namespace Ami.BroAudio.Editor
 					transitionTimeProp.floatValue = AudioPlayer.UseEntitySetting;
 					break;
 			}
-		}
-
-		private void DrawRandomRangeSlider(Rect rect,GUIContent label,ref float value, ref float valueRange, float minLimit, float maxLimit,RandomRangeSliderType sliderType,Action<Rect> onGetSliderRect = null)
-		{
-			float minRand = value - valueRange * 0.5f;
-			float maxRand = value + valueRange * 0.5f;
-			minRand = (float)Math.Round(Mathf.Clamp(minRand, minLimit, maxLimit), RoundedDigits, MidpointRounding.AwayFromZero);
-			maxRand = (float)Math.Round(Mathf.Clamp(maxRand, minLimit, maxLimit), RoundedDigits, MidpointRounding.AwayFromZero);
-			switch (sliderType)
-			{
-				case RandomRangeSliderType.Default:
-					DrawMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
-					break;
-				case RandomRangeSliderType.Logarithmic:
-					DrawLogarithmicMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
-					break;
-				case RandomRangeSliderType.BroVolume:
-					DrawRandomRangeVolumeSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
-					break;
-			}			
-			valueRange = maxRand - minRand;
-			value = minRand + valueRange * 0.5f;
 		}
 
 		private bool DrawRandomButton(Rect rect,RandomFlags targetFlag, SerializedProperty property)

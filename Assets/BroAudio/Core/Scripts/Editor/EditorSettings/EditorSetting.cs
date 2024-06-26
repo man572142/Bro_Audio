@@ -29,6 +29,7 @@ namespace Ami.BroAudio.Editor
 
 		public bool ShowAudioTypeOnSoundID;
 		public bool ShowVUColorOnVolumeSlider;
+		public bool ShowMasterVolumeOnClipListHeader;
 
 		public List<AudioTypeSetting> AudioTypeSettings;
 
@@ -90,6 +91,7 @@ namespace Ami.BroAudio.Editor
 		{
 			ShowVUColorOnVolumeSlider = FactorySettings.ShowVUColorOnVolumeSlider;
 			ShowAudioTypeOnSoundID = FactorySettings.ShowAudioTypeOnSoundID;
+			ShowMasterVolumeOnClipListHeader = FactorySettings.ShowMasterVolumeOnClipListHeader;
 			CreateNewAudioTypeSettings();
 		}
 
@@ -109,6 +111,7 @@ namespace Ami.BroAudio.Editor
 		{
 			public const bool ShowAudioTypeOnSoundID = true;
 			public const bool ShowVUColorOnVolumeSlider = true;
+			public const bool ShowMasterVolumeOnClipListHeader = false;
 
 			public const string MusicColor = "#012F874C";
 			public const string UIColor = "#0E9C884C";

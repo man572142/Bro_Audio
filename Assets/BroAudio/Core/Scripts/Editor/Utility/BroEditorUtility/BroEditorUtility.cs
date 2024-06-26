@@ -17,7 +17,7 @@ namespace Ami.BroAudio.Editor
     {
         public enum RandomRangeSliderType
         {
-            Default, Logarithmic, BroVolume,
+            Default, Logarithmic, BroVolume, BroVolumeNoField,
         }
 
         public const string AudioSettingPath = "Project/Audio";
@@ -29,7 +29,12 @@ namespace Ami.BroAudio.Editor
         private const float LowVolumeSnappingThreshold = 0.05f;
         private const float HighVolumeSnappingThreshold = 0.2f;
         private const string DbValueStringFormat = "0.##";
-        private static Vector2 volumeLabelSize => new Vector2(55f,25f);
+
+		public const int RoundedDigits = 4;
+		public const float MinMaxSliderFieldWidth = 50f;
+
+		private static Vector2 DecibelLabelSize => new Vector2(55f,25f);
+        private static Vector2 MinMaxDecibelLabelSize => new Vector2(115f, 25f);
         public static readonly float[] VolumeSplitPoints = { -80f, -60f, -36f, -24f, -12f, -6f, 0f, 6f, 20f };
 
         public static float VolumeScale => 1f / (VolumeSplitPoints.Length - 1);
@@ -254,12 +259,12 @@ namespace Ami.BroAudio.Editor
             EditorGUI.DrawRect(vuRect, maskColor);
         }
 
-        public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue)
+        public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue, bool canDrawVU = true)
 		{
-            return DrawVolumeSlider(position, label, currentValue, false, null);
+            return DrawVolumeSlider(position, label, currentValue, false, null, canDrawVU);
         }
 
-        public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue, bool isSnap, Action onSwitchSnapMode)
+        public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue, bool isSnap, Action onSwitchSnapMode, bool canDrawVU = true)
         {
             Rect suffixRect = EditorGUI.PrefixLabel(position, label);
             float padding = 3f;
@@ -267,7 +272,7 @@ namespace Ami.BroAudio.Editor
             Rect fieldRect = new Rect(suffixRect) { x = sliderRect.xMax + padding, width = EditorGUIUtility.fieldWidth };
 
 #if !UNITY_WEBGL
-            if (EditorSetting.ShowVUColorOnVolumeSlider)
+            if (canDrawVU && EditorSetting.ShowVUColorOnVolumeSlider)
             {
                 DrawVUMeter(sliderRect, BroAudioGUISetting.VUMaskColor);
             }
@@ -326,21 +331,36 @@ namespace Ami.BroAudio.Editor
 #endif
         }
 
+        private static string GetDecibelText(float value)
+        {
+            float dBvalue = value.ToDecibel();
+            string plusSymbol = dBvalue > 0 ? "+" : string.Empty;
+            return plusSymbol + dBvalue.ToString(DbValueStringFormat) + "dB";
+        }
+
         public static void DrawDecibelValuePeeking(float currentValue, float padding, Rect sliderRect, float sliderValue)
         {
-            if (Event.current.type == EventType.Repaint)
+            string volText = GetDecibelText(currentValue);
+            DrawDecibelValuePeeking(volText, padding, sliderRect, sliderValue, DecibelLabelSize);
+        }
+
+        public static void DrawDecibelValuePeeking(float minValue, float maxValue, float padding, Rect sliderRect, float sliderValue)
+        {
+            string minDB = GetDecibelText(minValue);
+            string maxDB = GetDecibelText(maxValue);
+            string volText = minDB + " ~ " + maxDB;
+            DrawDecibelValuePeeking(volText, padding, sliderRect, sliderValue, MinMaxDecibelLabelSize);
+        }
+
+        public static void DrawDecibelValuePeeking(string text, float padding, Rect sliderRect, float sliderValue, Vector2 size)
+        {
+            if (Event.current.type == EventType.Repaint && sliderRect.Contains(Event.current.mousePosition))
             {
-                float sliderHandlerPos = sliderValue / SliderFullScale * sliderRect.width - (volumeLabelSize.x * 0.5f);
-                if(sliderRect.Contains(Event.current.mousePosition))
-                {
-                    Rect valueTooltipRect = new Rect(sliderRect.x + sliderHandlerPos, sliderRect.y - volumeLabelSize.y - padding, volumeLabelSize.x, volumeLabelSize.y);
-                    GUI.skin.window.Draw(valueTooltipRect, false, false, false, false);
-                    float dBvalue = currentValue.ToDecibel();
-                    string plusSymbol = dBvalue > 0 ? "+" : string.Empty;
-                    string volText = plusSymbol + dBvalue.ToString(DbValueStringFormat) + "dB";
-                    // ** Don't use EditorGUI.Label(), it will change the keyboard focus, might be a Unity's bug **
-                    GUI.Label(valueTooltipRect, volText, GUIStyleHelper.MiddleCenterText);
-                }
+                float sliderHandlerPos = sliderValue / SliderFullScale * sliderRect.width - (size.x * 0.5f);
+                Rect valueTooltipRect = new Rect(sliderRect.x + sliderHandlerPos, sliderRect.y - size.y - padding, size.x, size.y);
+                GUI.skin.window.Draw(valueTooltipRect, false, false, false, false);
+                // ** Don't use EditorGUI.Label(), it will change the keyboard focus, might be a Unity's bug **
+                GUI.Label(valueTooltipRect, text, GUIStyleHelper.MiddleCenterText);
             }
         }
 
@@ -359,20 +379,61 @@ namespace Ami.BroAudio.Editor
 			return currentValue;
 		}
 
-        public static float DrawRandomRangeVolumeSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit, float fieldWidth, Action<Rect> onGetSliderRect = null)
+        public static void GetMixerMinMaxVolume(out float minVol, out float maxVol)
+        {
+			bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
+            minVol = MinVolume;
+            maxVol = isWebGL ? FullVolume : MaxVolume;
+		}
+
+		public static void DrawRandomRangeSlider(Rect rect, GUIContent label, ref float value, ref float valueRange, float minLimit, float maxLimit, RandomRangeSliderType sliderType, Action<Rect> onGetSliderRect = null)
+		{
+			float minRand = value - valueRange * 0.5f;
+			float maxRand = value + valueRange * 0.5f;
+			minRand = (float)Math.Round(Mathf.Clamp(minRand, minLimit, maxLimit), RoundedDigits, MidpointRounding.AwayFromZero);
+			maxRand = (float)Math.Round(Mathf.Clamp(maxRand, minLimit, maxLimit), RoundedDigits, MidpointRounding.AwayFromZero);
+			switch (sliderType)
+			{
+				case RandomRangeSliderType.Default:
+					DrawMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
+					break;
+				case RandomRangeSliderType.Logarithmic:
+					DrawLogarithmicMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
+					break;
+				case RandomRangeSliderType.BroVolume:
+					DrawRandomRangeVolumeSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
+					break;
+                case RandomRangeSliderType.BroVolumeNoField:
+                    DrawRandomRangeVolumeSliderNoField(rect, label, ref minRand, ref maxRand, minLimit, maxLimit);
+                    break;
+			}
+			valueRange = maxRand - minRand;
+			value = minRand + valueRange * 0.5f;
+		}
+
+		public static float DrawRandomRangeVolumeSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit, float fieldWidth, Action<Rect> onGetSliderRect = null)
         {
             Rect sliderRect = DrawMinMaxLabelAndField(position, label, ref min, ref max, fieldWidth, onGetSliderRect);
+            DrawRandomRangeVolumeSliderNoField(sliderRect, label, ref min, ref max, minLimit, maxLimit);
+            return max;
+		}
+
+        public static float DrawRandomRangeVolumeSliderNoField(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit)
+        {
             float minSlider = VolumeToSlider(min);
             float maxSlider = VolumeToSlider(max);
 
-            EditorGUI.MinMaxSlider(sliderRect, ref minSlider, ref maxSlider, 0f, 1f);
+            EditorGUI.MinMaxSlider(position, ref minSlider, ref maxSlider, 0f, 1f);
 
             min = SliderToVolume(minSlider);
             max = SliderToVolume(maxSlider);
-			return max;
-		}
 
-		private static float VolumeToSlider(float vol)
+            float midPoint = (minSlider + maxSlider) / 2f;
+            DrawDecibelValuePeeking(min, max, 3f, position, midPoint);
+            return max;
+        }
+
+        private static float VolumeToSlider(float vol)
 		{
 			float decibelVol = vol.ToDecibel();
 			for (int i = 0; i < VolumeSplitPoints.Length; i++)

@@ -69,6 +69,7 @@ namespace Ami.BroAudio.Editor
         private Dictionary<string, EntityData> _entityDataDict = new Dictionary<string, EntityData>();
         private GenericMenu _changeAudioTypeOption = null;
 		private SerializedProperty _entityThatIsModifyingAudioType = null;
+		private AudioEntity _currentPreviewingEntity = null;
 
         public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 		public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
@@ -83,12 +84,17 @@ namespace Ami.BroAudio.Editor
 
 			LibraryManagerWindow.OnCloseLibraryManagerWindow += OnDisable;
 			LibraryManagerWindow.OnSelectAsset += OnDisable;
+			LibraryManagerWindow.OnLostFocusEvent += OnLostFocus;
 
             _changeAudioTypeOption = CreateAudioTypeGenericMenu(Instruction.LibraryManager_ChangeEntityAudioType, OnChangeEntityAudioType);
-
         }
 
-        private void OnDisable()
+		private void OnLostFocus()
+		{
+			ResetPreview();
+		}
+
+		private void OnDisable()
 		{
 			foreach(var data in _entityDataDict.Values)
 			{
@@ -99,6 +105,9 @@ namespace Ami.BroAudio.Editor
 
 			LibraryManagerWindow.OnCloseLibraryManagerWindow -= OnDisable;
 			LibraryManagerWindow.OnSelectAsset -= OnDisable;
+			LibraryManagerWindow.OnLostFocusEvent -= OnLostFocus;
+
+			ResetPreview();
 
 			OnEntityNameChanged = null;
 			OnRemoveEntity = null;
@@ -296,14 +305,15 @@ namespace Ami.BroAudio.Editor
 			rect = rect.SetHeight(h => h * 1.1f);
 			SplitRectHorizontal(rect, 0.5f, 5f, out Rect playButtonRect, out Rect loopToggleRect);
 			data.IsLoop = DrawButtonToggle(loopToggleRect, data.IsLoop, EditorGUIUtility.IconContent(IconConstant.LoopIcon));
-			if(GUI.Button(playButtonRect, GetPlaybackButtonIcon(data.IsPlaying)))
+			if(GUI.Button(playButtonRect, GetPlaybackButtonIcon(data.IsPlaying)) && TryGetEntityInstance(property, out var entity))
 			{
                 if (data.IsPlaying)
                 {
                     EditorPlayAudioClip.Instance.StopAllClips();
-					Utility.ClipsSequencer.Clear();
-                }
-                else if (TryGetEntityInstance(property, out var entity))
+					Utility.ClearPreviewAudioData();
+					entity.Clips.ResetIsUse();
+				}
+                else
                 {
                     StartPreview(data, entity);
                 }
@@ -389,7 +399,8 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
-            var clip = entity.PickNewClip(out int index);
+			_currentPreviewingEntity = entity;
+			var clip = entity.PickNewClip(out int index);
             data.Clips.SelectAndSetPlayingElement(index);
 
             float volume = clip.Volume * entity.GetMasterVolume();
@@ -416,6 +427,12 @@ namespace Ami.BroAudio.Editor
                 data.Clips.SetPlayingClip(null);
             }
         }
+
+		private void ResetPreview()
+		{
+			Utility.ClearPreviewAudioData();
+			_currentPreviewingEntity?.Clips?.ResetIsUse();
+		}
 
         private bool TryGetEntityInstance(SerializedProperty property,out AudioEntity entity)
 		{

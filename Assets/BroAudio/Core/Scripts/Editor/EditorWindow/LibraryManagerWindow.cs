@@ -23,6 +23,7 @@ namespace Ami.BroAudio.Editor
 		private const float EntitiesFactoryRatio = 0.65f;
 
 		public static event Action OnCloseLibraryManagerWindow;
+		public static event Action OnLostFocusEvent;
 		public static event Action OnSelectAsset;
 
         private readonly GapDrawingHelper _verticalGapDrawer = new GapDrawingHelper();
@@ -85,6 +86,7 @@ namespace Ami.BroAudio.Editor
 		{
 			EditorPlayAudioClip.Instance.StopAllClips();
 			EditorPlayAudioClip.Instance.RemovePlaybackIndicatorListener(Repaint);
+			OnLostFocusEvent?.Invoke();
 		}
 
 		private void OnEnable()
@@ -114,6 +116,10 @@ namespace Ami.BroAudio.Editor
 			{
 				ReorderAssets(_allAssetGUIDs);
 			}
+
+			OnCloseLibraryManagerWindow = null;
+			OnSelectAsset = null;
+			OnLostFocusEvent = null;
 		}
 
 		#region Initialization

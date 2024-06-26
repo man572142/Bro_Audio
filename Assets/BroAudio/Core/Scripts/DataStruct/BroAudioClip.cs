@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Ami.BroAudio.Data
@@ -15,7 +13,12 @@ namespace Ami.BroAudio.Data
 		public float FadeIn;
 		public float FadeOut;
 
+		// For random
 		public int Weight;
+
+		// For shuffle
+		[System.NonSerialized]
+		public bool IsUsed;
 
 		AudioClip IBroAudioClip.AudioClip => AudioClip;
 		float IBroAudioClip.Volume => Volume;

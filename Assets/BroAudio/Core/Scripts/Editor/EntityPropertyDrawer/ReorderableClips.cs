@@ -28,6 +28,7 @@ namespace Ami.BroAudio.Editor
 		private SerializedProperty _currSelectedClip;
 		private Rect _previewRect = default;
 		private string _currentPlayingClipPath;
+		private GUIContent _weightGUIContent = new GUIContent("Weight", "Probability = Weight / Total Weight");
 
         private Vector2 PlayButtonSize => new Vector2(30f, 20f);
         public bool IsMulticlips => _reorderableList.count > 1;
@@ -178,16 +179,26 @@ namespace Ami.BroAudio.Editor
                 var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
                 playMode = (MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, playMode);
 				_playModeProp.enumValueIndex = (int)playMode;
+				GUIContent guiContent = new GUIContent(string.Empty);
                 switch (playMode)
                 {
+					case MulticlipsPlayMode.Single:
+						guiContent.tooltip = "Always play the first clip";
+						break;
                     case MulticlipsPlayMode.Sequence:
                         EditorGUI.LabelField(valueRect, "Index", GUIStyleHelper.MiddleCenterText);
+                        guiContent.tooltip = "Plays the next clip each time"; 
                         break;
                     case MulticlipsPlayMode.Random:
-                        EditorGUI.LabelField(valueRect, "Weight", GUIStyleHelper.MiddleCenterText);
+                        EditorGUI.LabelField(valueRect, _weightGUIContent, GUIStyleHelper.MiddleCenterText);
+                        guiContent.tooltip = "Plays a clip randomly";
+                        break;
+                    case MulticlipsPlayMode.Shuffle:
+                        guiContent.tooltip = "Plays a clip randomly without repeating the previous one.";
                         break;
                 }
                 EditorGUI.LabelField(multiclipOptionRect.DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
+				EditorGUI.LabelField(multiclipOptionRect, guiContent);
             }
         }
 

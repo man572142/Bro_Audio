@@ -9,8 +9,6 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: GroundFog
   m_Shader: {fileID: 210, guid: 0000000000000000f000000000000000, type: 0}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ALPHABLEND_ON
   - _EMISSION
@@ -24,7 +22,6 @@ Material:
     RenderType: Transparent
   disabledShaderPasses:
   - GRABPASS
-  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -105,4 +102,3 @@ Material:
     - _EmissionColor: {r: 0.7924528, g: 0.7924528, b: 0.7924528, a: 1}
     - _SoftParticleFadeParams: {r: 0, g: 0.5, b: 0, a: 0}
   m_BuildTextureStacks: []
-  m_AllowLocking: 1

@@ -24,6 +24,8 @@ namespace Ami.BroAudio.Editor.Setting
 		public const int AudioEffectEditorMenuIndex = 24;
 		public const string AudioEffectMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_EffectEditor;
 
+		public const int DevToolsMenuIndex = 35;
+
 		public static Color MainTitleColor => new Color(0.04f, 0.82f, 0.7f);
 		public static Color ClipLabelColor => new Color(0f, 0.9f, 0.5f);
 		public static Color PlayButtonColor => new Color(0.25f, 0.9f, 0.25f, 0.4f);

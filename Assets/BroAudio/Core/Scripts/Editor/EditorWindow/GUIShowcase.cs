@@ -1,11 +1,11 @@
-using System.Collections;
+#if BroAudio_DevOnly
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using System;
 using Ami.BroAudio.Tools;
 using System.Reflection;
-using Ami.BroAudio.Editor;
+using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 
 namespace Ami.Extension
 {
@@ -31,9 +31,7 @@ namespace Ami.Extension
 			}
 		}
 
-#if BroAudio_DevOnly
-        [MenuItem(BroName.MenuItem_BroAudio + "GUI Showcase")]
-#endif
+        [MenuItem(BroName.MenuItem_BroAudio + "GUI Showcase", priority = DevToolsMenuIndex + 1)]
 		public static void ShowWindow()
 		{
 			EditorWindow window = EditorWindow.GetWindow<GUIShowcase>();
@@ -140,3 +138,4 @@ namespace Ami.Extension
 		}
 	}
 }
+#endif

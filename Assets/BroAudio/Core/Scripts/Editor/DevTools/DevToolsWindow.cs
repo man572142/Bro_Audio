@@ -1,11 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿#if BroAudio_DevOnly
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.Audio;
 using System.Linq;
 using Ami.BroAudio;
 using static Ami.BroAudio.Tools.BroName;
+using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 
 namespace Ami.Extension.Reflection
 {
@@ -25,9 +25,7 @@ namespace Ami.Extension.Reflection
 		private AudioMixerGroup _targetExposeMixerGroup = null;
 		private bool _exposeAllMixerGroup = false;
 
-#if BroAudio_DevOnly
-		[MenuItem(MenuItem_BroAudio + "Dev Only Tools")]
-#endif
+		[MenuItem(MenuItem_BroAudio + "Dev Only Tools", priority = DevToolsMenuIndex)]
 		public static void ShowWindow()
 		{
 			EditorWindow window = GetWindow(typeof(DevToolsWindow));
@@ -122,3 +120,4 @@ namespace Ami.Extension.Reflection
 		}
 	}
 }
+#endif

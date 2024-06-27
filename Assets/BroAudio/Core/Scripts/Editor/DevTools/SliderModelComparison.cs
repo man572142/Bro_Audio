@@ -1,15 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
+#if BroAudio_DevOnly
 using UnityEngine;
 using UnityEditor;
 using Ami.Extension;
 using System;
-using Ami.BroAudio.Editor;
 using Ami.Extension.Reflection;
 using static Ami.BroAudio.Tools.BroName;
 using System.Reflection;
+using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 
-namespace Ami.BroAudio.Tools
+namespace Ami.BroAudio.Editor.DevTool
 {
 	public class SliderModelComparison : MiEditorWindow
 	{
@@ -22,9 +21,8 @@ namespace Ami.BroAudio.Tools
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 
-#if BroAudio_DevOnly
-		[MenuItem(MenuItem_BroAudio + "SliderModelComparison")]
-#endif
+		[MenuItem(MenuItem_BroAudio + "SliderModelComparison", priority = DevToolsMenuIndex + 2)]
+
 		public static void ShowWindow()
 		{
 			var window = GetWindow<SliderModelComparison>();
@@ -115,5 +113,6 @@ namespace Ami.BroAudio.Tools
 			_currentValue = BroEditorUtility.DrawVolumeSlider(rect, _currentValue, out bool hasChanged, out float newSliderValue);
 			_currentValue = EditorGUI.FloatField(fieldRect, _currentValue);
 		}
-	} 
+	}
 }
+#endif

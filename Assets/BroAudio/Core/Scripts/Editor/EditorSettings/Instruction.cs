@@ -8,6 +8,8 @@
         AssetOutputPathPanelTtile = 1,
         LogAccessRecycledWarning,
         AudioPlayerPoolSize,
+        AddDominatorTrack,
+        RegenerateUserData,
 
         // Settings/Audio
         CombFilteringTooltip = 10,

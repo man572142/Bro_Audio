@@ -109,3 +109,10 @@ MonoBehaviour:
     Value: "The capacity of the Audio Player Object Pool. \nIt's recommended to set
       to the average number of Audio Players that your game would use most of the
       time."
+  - Key: 4
+    Value: Click here to add more Dominator tracks to avoid exceeding the maximum
+      number of tracks and losing their functionality
+  - Key: 5
+    Value: "Click here if you failed to generate the user data when importing BroAudio
+      or if you accidentally deleted them. The user data files are as follows:\n   
+      BroAudioData.asset\n    BroRuntimeSetting.asset\n    BroEditorSetting.asset"

@@ -30,6 +30,7 @@ namespace Ami.BroAudio.Editor.Setting
 		public const float Gap = 50f;
 		
 		public const string ResetSettingButtonText = "Reset To Factory Settings";
+		public const string RegenerateUserData = "Regenerate User Data";
 		public const string AutoMatchTracksButtonText = "Auto-adding tracks to match audio voices.";
 		public const string AssetOutputPathLabel = "Asset Output Path";
 		public const string AssetOutputPathMissing = "The current audio asset output path is missing. Please select a new location.";
@@ -38,7 +39,6 @@ namespace Ami.BroAudio.Editor.Setting
 		public const string ShowMasterVolumeLabel = "Show master volume on clip list header";
 		public const string AudioTypeColorLabel = "Audio Type Color";
 		public const string AudioTypeDrawedProperties = "Displayed Properties";
-		public const string AddDominatorTrackLabel = "Add Dominator Track";
 		public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
 		public const string ProjectSettings = "Project Settings";
 		public const string CombFilteringDocUrl = "https://man572142s-organization.gitbook.io/broaudio/reference/technical-details#preventing-comb-filtering";
@@ -46,7 +46,7 @@ namespace Ami.BroAudio.Editor.Setting
         private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
         private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
-			,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent;
+			,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent,_dominatorTrackGUIContent, _regenerateUserDataGUIContent;
 
         private GUIContent[] _tabLabels = null;
 		private Tab _currSelectedTab = Tab.Audio;
@@ -103,6 +103,8 @@ namespace Ami.BroAudio.Editor.Setting
 			_playMusicAsBgmGUIContent = new GUIContent("Always Play Music As BGM", _instruction.GetText(Instruction.AlwaysPlayMusicAsBGM));
 			_logAccessRecycledWarningGUIContent = new GUIContent("Log Access Recycled Player Warning", _instruction.GetText(Instruction.LogAccessRecycledWarning));
 			_poolSizeCountGUIContent = new GUIContent("Audio Player Object Pool Size", _instruction.GetText(Instruction.AudioPlayerPoolSize));
+			_dominatorTrackGUIContent = new GUIContent("Add Dominator Track", _instruction.GetText(Instruction.AddDominatorTrack));
+			_regenerateUserDataGUIContent = new GUIContent("Regenerate User Data", _instruction.GetText(Instruction.RegenerateUserData));
         }
 
 		private void OnDisable()
@@ -515,20 +517,27 @@ namespace Ami.BroAudio.Editor.Setting
             DrawAssetOutputPath(drawPosition);
             DrawEmptyLine(1);
 
-            if (Button(AddDominatorTrackLabel))
+            if (Button(_dominatorTrackGUIContent))
             {
                 AddDominatorTrack();
             }
             DrawEmptyLine(1);
 
-            if (Button(ResetSettingButtonText))
+			if (Button(_regenerateUserDataGUIContent))
+			{
+				RuntimeSetting.ResetToFactorySettings();
+				EditorSetting.ResetToFactorySettings();
+			}
+			DrawEmptyLine(1);
+
+			if (Button(new GUIContent(ResetSettingButtonText)))
             {
                 RuntimeSetting.ResetToFactorySettings();
                 EditorSetting.ResetToFactorySettings();
             }
             DrawEmptyLine(1);
 
-            bool Button(string label)
+            bool Button(GUIContent label)
             {
                 Rect buttonRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(400f, SingleLineSpace * 1.5f);
                 return GUI.Button(buttonRect, label);

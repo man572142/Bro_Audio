@@ -15,21 +15,41 @@ namespace Ami.BroAudio.Editor
 
 		public static void CheckAndGenerateUserData()
 		{
-			if (_isGenerating || TryGetCoreData(out var coreData))
+			if (_isGenerating || TryGetCoreData(out _))
 			{
 				return;
 			}
 			_isGenerating = true;
 
-			string resourcePath = DefaultResoucesFolderPath;
-			if (!TryLoadResources<SoundManager>(nameof(SoundManager), out var soundManager))
+			GenerateUserData();
+		}
+
+		public static void GenerateUserData()
+		{
+			var request = Resources.LoadAsync<SoundManager>(nameof(SoundManager));
+			request.completed += OnRequestComplete;
+
+			void OnRequestComplete(AsyncOperation operation)
 			{
-				Debug.LogError(Utility.LogTitle + $"{nameof(SoundManager)} is missing, please import it and place it in the Resources folder");
-				return;
+				request.completed -= OnRequestComplete;
+				if (request.asset is SoundManager soundManager)
+				{
+					StartGenerateUserData(soundManager);
+				}
+				else
+				{
+					Debug.LogError(Utility.LogTitle + $"Load {nameof(SoundManager)} fail, " +
+						$"please import it and place it in the Resources folder, and go to Tools/Preference, switch to the last tab and hit [Regenerate User Data]");
+				}
 			}
+		}
+
+		private static void StartGenerateUserData(SoundManager soundManager)
+		{
+			string resourcePath = DefaultResoucesFolderPath;
 			resourcePath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(soundManager));
 
-			coreData = CreateCoreData(GetAssetSavePath(resourcePath, CoreDataResourcesPath));
+			var coreData = CreateCoreData(GetAssetSavePath(resourcePath, CoreDataResourcesPath));
 			AssignCoreData(soundManager, coreData);
 
 			CreateSettingIfNotExist<EditorSetting>(GetAssetSavePath(resourcePath, EditorSettingPath));
@@ -39,7 +59,7 @@ namespace Ami.BroAudio.Editor
 			AssetDatabase.importPackageCompleted += OnPackageImportComplete;
 		}
 
-        private static void OnPackageImportComplete(string packageName)
+		private static void OnPackageImportComplete(string packageName)
 		{
 			AssetDatabase.importPackageCompleted -= OnPackageImportComplete;
 			AssetDatabase.SaveAssets();
@@ -52,45 +72,45 @@ namespace Ami.BroAudio.Editor
 		}
 
 		private static BroAudioData CreateCoreData(string path)
-        {
-            BroAudioData coreData = ScriptableObject.CreateInstance<BroAudioData>();
-            coreData.AssetOutputPath = DefaultAssetOutputPath;
-            GetInitialData(coreData.AddAsset, path => coreData.AssetOutputPath = path);
+		{
+			BroAudioData coreData = ScriptableObject.CreateInstance<BroAudioData>();
+			coreData.AssetOutputPath = DefaultAssetOutputPath;
+			GetInitialData(coreData.AddAsset, path => coreData.AssetOutputPath = path);
 
-            AssetDatabase.CreateAsset(coreData, path);
-            return coreData;
-        }
+			AssetDatabase.CreateAsset(coreData, path);
+			return coreData;
+		}
 
-        private static void GetInitialData(Action<AudioAsset> onGetAsset, Action<string> onGetOutputPath)
-        {
-            if (TryGetOldCoreDataTextAsset(out var oldTextAsset) && TryParseCoreData(oldTextAsset, out var oldCoreData))
-            {
-                onGetOutputPath?.Invoke(oldCoreData.AssetOutputPath);
-                foreach (string guid in oldCoreData.GUIDs)
-                {
-                    string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-                    var asset = AssetDatabase.LoadAssetAtPath<AudioAsset>(assetPath);
-                    onGetAsset?.Invoke(asset);
-                }
+		private static void GetInitialData(Action<AudioAsset> onGetAsset, Action<string> onGetOutputPath)
+		{
+			if (TryGetOldCoreDataTextAsset(out var oldTextAsset) && TryParseCoreData(oldTextAsset, out var oldCoreData))
+			{
+				onGetOutputPath?.Invoke(oldCoreData.AssetOutputPath);
+				foreach (string guid in oldCoreData.GUIDs)
+				{
+					string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+					var asset = AssetDatabase.LoadAssetAtPath<AudioAsset>(assetPath);
+					onGetAsset?.Invoke(asset);
+				}
 
-                string oldCoreDataPath = AssetDatabase.GetAssetPath(oldTextAsset);
-                string fileName = Path.GetFileName(oldCoreDataPath);
-                string deprecatedKeyword = "_deprecated.json";
-                if (!fileName.EndsWith(deprecatedKeyword))
-                {
-                    fileName = fileName.Replace(".json", deprecatedKeyword);
-                }
-                AssetDatabase.RenameAsset(oldCoreDataPath, fileName);
-                EditorUtility.SetDirty(oldTextAsset);
-            }
-            else
-            {
-                var demoAsset = AssetDatabase.LoadAssetAtPath<AudioAsset>(DefaultAssetOutputPath + "/Demo.asset");
-                onGetAsset?.Invoke(demoAsset);
-            }
-        }
+				string oldCoreDataPath = AssetDatabase.GetAssetPath(oldTextAsset);
+				string fileName = Path.GetFileName(oldCoreDataPath);
+				string deprecatedKeyword = "_deprecated.json";
+				if (!fileName.EndsWith(deprecatedKeyword))
+				{
+					fileName = fileName.Replace(".json", deprecatedKeyword);
+				}
+				AssetDatabase.RenameAsset(oldCoreDataPath, fileName);
+				EditorUtility.SetDirty(oldTextAsset);
+			}
+			else
+			{
+				var demoAsset = AssetDatabase.LoadAssetAtPath<AudioAsset>(DefaultAssetOutputPath + "/Demo.asset");
+				onGetAsset?.Invoke(demoAsset);
+			}
+		}
 
-        private static void AssignCoreData(SoundManager soundManager, BroAudioData coreData)
+		private static void AssignCoreData(SoundManager soundManager, BroAudioData coreData)
 		{
 			soundManager.AssignCoreData(coreData);
 			PrefabUtility.SavePrefabAsset(soundManager.gameObject);
@@ -118,6 +138,6 @@ namespace Ami.BroAudio.Editor
 			resouece = Resources.Load<T>(path);
 			return resouece != null;
 		}
-    }  
+	}
 #endif
 }

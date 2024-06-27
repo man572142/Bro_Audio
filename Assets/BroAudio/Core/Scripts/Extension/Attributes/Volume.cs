@@ -10,7 +10,11 @@ namespace Ami.BroAudio
 
 		public Volume()
 		{
-			CanBoost = false;
+#if UNITY_WEBGL
+			CanBoost = false; 
+#else
+			CanBoost = true;
+#endif
 		}
 
 		public Volume(bool canBoost)

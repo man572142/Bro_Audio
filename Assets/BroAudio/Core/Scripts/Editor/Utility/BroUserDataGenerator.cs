@@ -75,7 +75,7 @@ namespace Ami.BroAudio.Editor
 		{
 			BroAudioData coreData = ScriptableObject.CreateInstance<BroAudioData>();
 			coreData.AssetOutputPath = DefaultAssetOutputPath;
-			GetInitialData(coreData.AddAsset, path => coreData.AssetOutputPath = path);
+			GetInitialData(coreData.AddAsset, p => coreData.AssetOutputPath = p);
 
 			AssetDatabase.CreateAsset(coreData, path);
 			return coreData;

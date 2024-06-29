@@ -22,7 +22,7 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public float Pitch { get; private set; }
         [field: SerializeField] public float PitchRandomRange { get; private set; }
         [field: SerializeField] public float VolumeRandomRange { get; private set; }
-        [field: SerializeField] public RandomFlags RandomFlags { get; private set; }
+        [field: SerializeField] public RandomFlag RandomFlags { get; private set; }
 
         public BroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);
         public BroAudioClip PickNewClip(out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index);
@@ -34,18 +34,37 @@ namespace Ami.BroAudio.Data
 
         public float GetMasterVolume()
         {
-            return GetRandomValue(MasterVolume, RandomFlags.Volume, VolumeRandomRange);
+            return GetRandomValue(MasterVolume, RandomFlag.Volume);
         }
 
         public float GetPitch()
         {
-            return GetRandomValue(Pitch, RandomFlags.Pitch, PitchRandomRange);
+            return GetRandomValue(Pitch, RandomFlag.Pitch);
         }
 
-        private float GetRandomValue(float baseValue, RandomFlags flags, float range)
+        public float GetRandomValue(float baseValue, RandomFlag flag)
         {
+            if(!RandomFlags.Contains(flag))
+            {
+                return baseValue;
+            }
+
+            float range = 0f;
+            switch (flag)
+            {
+                case RandomFlag.Pitch:
+                    range = PitchRandomRange;
+                    break;
+                case RandomFlag.Volume:
+                    range = VolumeRandomRange;
+                    break;
+                default:
+                    Debug.LogError(Utility.LogTitle + "Invalid approach with multiple flags on GetRandomValue()");
+                    break;
+            }
+
             float half = range * 0.5f;
-            return RandomFlags.Contains(flags) ? baseValue + Random.Range(-half, half) : baseValue;
+            return baseValue + Random.Range(-half, half);
         }
 
 #if UNITY_EDITOR

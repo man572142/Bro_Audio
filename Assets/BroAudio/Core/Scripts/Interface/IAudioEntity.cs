@@ -12,5 +12,6 @@ namespace Ami.BroAudio.Data
         BroAudioClip PickNewClip();
 		float GetMasterVolume();
 		float GetPitch();
+		float GetRandomValue(float baseValue, RandomFlag flags);
     } 
 }

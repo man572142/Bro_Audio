@@ -15,7 +15,7 @@ namespace Ami.BroAudio
 			return ((int)flags & (int)targetFlag) != 0;
 		}
 
-		public static bool Contains(this RandomFlags flags, RandomFlags targetFlag)
+		public static bool Contains(this RandomFlag flags, RandomFlag targetFlag)
 		{
 			return ((int)flags & (int)targetFlag) != 0;
 		}

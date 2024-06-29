@@ -1,7 +1,7 @@
 namespace Ami.Extension
 {
     [System.Flags]
-    public enum RandomFlags
+    public enum RandomFlag
     {
         None = 0,
         Pitch = 1 << 0,

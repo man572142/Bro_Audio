@@ -222,13 +222,13 @@ namespace Ami.BroAudio.Editor
             var masterRandProp = _entityProp.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
             float masterVol = masterProp.floatValue;
             float masterVolRand = masterRandProp.floatValue;
-            RandomFlags flags = (RandomFlags)_entityProp.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags)).intValue;
+            RandomFlag flags = (RandomFlag)_entityProp.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags)).intValue;
             GetMixerMinMaxVolume(out float minVol, out float maxVol);
             Rect masterVolLabelRect = new Rect(masterVolRect) { width = SliderLabelWidth };
             Rect masterVolSldierRect = new Rect(masterVolRect) { width = masterVolRect.width - SliderLabelWidth, x = masterVolLabelRect.xMax };
 
             EditorGUI.LabelField(masterVolLabelRect, EditorGUIUtility.IconContent(IconConstant.AudioSpeakerOn));
-            if (flags.Contains(RandomFlags.Volume))
+            if (flags.Contains(RandomFlag.Volume))
             {
                 DrawRandomRangeSlider(masterVolSldierRect, GUIContent.none, ref masterVol, ref masterVolRand, minVol, maxVol, RandomRangeSliderType.BroVolumeNoField);
             }

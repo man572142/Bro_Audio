@@ -38,9 +38,21 @@ namespace Ami.BroAudio.Runtime
 			return this;
 		}
 
-		private void SetInitialPitch(IAudioEntity entity)
+		private void SetInitialPitch(IAudioEntity entity, IAudioPlaybackPref audioTypePlaybackPref)
 		{
-			float pitch = entity.GetPitch();
+			float pitch;
+			if(StaticPitch != AudioConstant.DefaultPitch)
+			{
+				pitch = entity.GetRandomValue(StaticPitch, RandomFlag.Pitch);
+			}
+			else if(audioTypePlaybackPref.Pitch != AudioConstant.DefaultPitch)
+			{
+				pitch = entity.GetRandomValue(audioTypePlaybackPref.Pitch, RandomFlag.Pitch);
+			}
+			else
+			{
+				pitch = entity.GetPitch();
+            }
 			AudioSource.pitch = pitch;
 		}
 
@@ -54,5 +66,11 @@ namespace Ami.BroAudio.Runtime
 				yield return null;
 			}
 		}
+
+		private void ResetPitch()
+		{
+            StaticPitch = AudioConstant.DefaultPitch;
+			AudioSource.pitch = AudioConstant.DefaultPitch;
+        }
 	} 
 }

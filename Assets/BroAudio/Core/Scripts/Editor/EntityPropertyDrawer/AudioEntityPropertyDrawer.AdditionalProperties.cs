@@ -107,7 +107,7 @@ namespace Ami.BroAudio.Editor
 				SerializedProperty snapVolProp = property.FindPropertyRelative(EditorPropertyName.SnapToFullVolume);
 
 				Rect randButtonRect = new Rect(masterVolRect.xMax + 5f, masterVolRect.y, RandomToolBarWidth, masterVolRect.height);
-				if (DrawRandomButton(randButtonRect, RandomFlags.Volume, property))
+				if (DrawRandomButton(randButtonRect, RandomFlag.Volume, property))
 				{
 					
 					float vol = masterVolProp.floatValue;
@@ -170,7 +170,7 @@ namespace Ami.BroAudio.Editor
 				_pitchLabel.tooltip = $"According to the current preference setting, the Pitch will be set on [{pitchSetting}] ";
 
 				Rect randButtonRect = new Rect(pitchRect.xMax + 5f, pitchRect.y, RandomToolBarWidth, pitchRect.height);
-				bool hasRandom = DrawRandomButton(randButtonRect, RandomFlags.Pitch, property);
+				bool hasRandom = DrawRandomButton(randButtonRect, RandomFlag.Pitch, property);
 
 				float pitch = Mathf.Clamp(pitchProp.floatValue, minPitch, maxPitch);
 				float pitchRange = pitchRandProp.floatValue;
@@ -368,10 +368,10 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private bool DrawRandomButton(Rect rect,RandomFlags targetFlag, SerializedProperty property)
+		private bool DrawRandomButton(Rect rect,RandomFlag targetFlag, SerializedProperty property)
 		{
 			SerializedProperty randFlagsProp = property.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags));
-			RandomFlags randomFlags = (RandomFlags)randFlagsProp.intValue;
+			RandomFlag randomFlags = (RandomFlag)randFlagsProp.intValue;
 			bool hasRandom = randomFlags.Contains(targetFlag);
 			hasRandom = GUI.Toggle(rect, hasRandom, "RND", EditorStyles.miniButton);
 			randomFlags = hasRandom ? randomFlags | targetFlag : randomFlags & ~targetFlag;

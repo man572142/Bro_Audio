@@ -62,11 +62,8 @@ namespace Ami.BroAudio.Runtime
 
                 AudioSource.clip = CurrentClip.AudioClip;
                 AudioSource.priority = pref.Entity.Priority;
-                if(StaticPitch == 0f)
-                {
-                    SetInitialPitch(pref.Entity);
-                }
 
+                SetInitialPitch(pref.Entity, audioTypePlaybackPref);
                 SetSpatial(pref);
 
                 if (TryGetDecorator<MusicPlayer>(out var musicPlayer))
@@ -276,6 +273,7 @@ namespace Ami.BroAudio.Runtime
         {   
             _stopMode = default;
             ResetVolume();
+            ResetPitch();
 
             AudioSource.Stop();
             AudioSource.clip = null;

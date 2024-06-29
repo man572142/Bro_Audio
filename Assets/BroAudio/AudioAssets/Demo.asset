@@ -104,7 +104,7 @@ MonoBehaviour:
     SnapToFullVolume: 0
   - <Name>k__BackingField: Footsteps
     <ID>k__BackingField: 1073741824
-    MulticlipsPlayMode: 2
+    MulticlipsPlayMode: 3
     Clips:
     - AudioClip: {fileID: 8300000, guid: 98e92f012ca7aac4cb5a10875b88f2b2, type: 3}
       Volume: 1

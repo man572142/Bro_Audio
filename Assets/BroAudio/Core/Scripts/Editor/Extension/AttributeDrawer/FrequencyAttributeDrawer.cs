@@ -22,7 +22,7 @@ namespace Ami.BroAudio.Editor
 			}
 			else
 			{
-				base.OnGUI(position, property, label);
+				EditorGUI.PropertyField(position, property, label);
 			}
 		}
 	} 

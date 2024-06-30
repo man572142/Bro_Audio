@@ -32,25 +32,15 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
-            List<string> paths = null;
-            foreach (string path in deletedAssets)
+            BroEditorUtility.RemoveEmptyDatas();
+
+            if (HasOpenEditorWindow<LibraryManagerWindow>())
             {
-                if (path.Contains(BroEditorUtility.DefaultRelativeAssetOutputPath))
+                LibraryManagerWindow editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
+
+                foreach (string path in deletedAssets)
                 {
-                    paths = paths ?? new List<string>();
-                    paths.Add(path);
-                }
-            }
-
-            if (paths != null && paths.Count > 0)
-            {
-                BroEditorUtility.DeleteAssetRelativeData(deletedAssets);
-
-                if (HasOpenEditorWindow<LibraryManagerWindow>())
-                {
-                    LibraryManagerWindow editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
-
-                    foreach (string path in deletedAssets)
+                    if(path.Contains(".asset"))
                     {
                         editorWindow.RemoveAssetEditor(AssetDatabase.AssetPathToGUID(path));
                     }

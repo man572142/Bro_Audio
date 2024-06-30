@@ -11,13 +11,8 @@ namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility
 	{
-		public static void DeleteAssetRelativeData(string[] deletedAssetPaths)
+		public static void RemoveEmptyDatas()
 		{
-			if(deletedAssetPaths == null || deletedAssetPaths.Length == 0)
-			{
-				return;
-			}
-
 			if (TryGetCoreData(out BroAudioData coreData))
 			{
 				coreData.RemoveEmpty();

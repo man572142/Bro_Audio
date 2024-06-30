@@ -94,7 +94,7 @@ namespace Ami.BroAudio.Editor
 			if (TryGetCoreData(out var coreData))
 			{
 				_allAssetGUIDs = coreData.GetGUIDList();
-				_hasOutputAssetPath = Directory.Exists(coreData.AssetOutputPath);
+				_hasOutputAssetPath = Directory.Exists(BroEditorUtility.EditorSetting.AssetOutputPath);
 
                 InitEditorDictionary();
                 InitReorderableList();

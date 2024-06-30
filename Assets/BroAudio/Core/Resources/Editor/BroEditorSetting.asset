@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a5837b41054f254c9322a262f546dea, type: 3}
   m_Name: BroEditorSetting
   m_EditorClassIdentifier: 
+  AssetOutputPath: Assets/BroAudio/AudioAssets
   ShowAudioTypeOnSoundID: 1
   ShowVUColorOnVolumeSlider: 1
   ShowMasterVolumeOnClipListHeader: 0

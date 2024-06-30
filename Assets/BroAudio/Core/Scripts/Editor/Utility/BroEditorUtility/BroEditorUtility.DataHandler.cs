@@ -41,15 +41,12 @@ namespace Ami.BroAudio.Editor
 			return asset != null;
 		}
 
-		public static void WriteAssetOutputPathToCoreData(string path)
+		public static void WriteAssetOutputPathToSetting(string path)
 		{
-			if (TryGetCoreData(out BroAudioData coreData))
-			{
-				coreData.AssetOutputPath = path;
-				EditorUtility.SetDirty(coreData);
-				AssetDatabase.SaveAssets();
-			}
-		}
+			EditorSetting.AssetOutputPath = path;
+            EditorUtility.SetDirty(EditorSetting);
+            AssetDatabase.SaveAssets();
+        }
 
 		public static void AddNewAssetToCoreData(ScriptableObject asset)
 		{

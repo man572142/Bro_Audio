@@ -27,7 +27,8 @@ namespace Ami.BroAudio.Editor
 			public bool CanDraw(DrawedProperty target) => DrawedProperty.Contains(target);
 		}
 
-		public bool ShowAudioTypeOnSoundID;
+        public string AssetOutputPath;
+        public bool ShowAudioTypeOnSoundID;
 		public bool ShowVUColorOnVolumeSlider;
 		public bool ShowMasterVolumeOnClipListHeader;
 

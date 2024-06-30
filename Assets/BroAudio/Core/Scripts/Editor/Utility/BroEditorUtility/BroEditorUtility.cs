@@ -238,7 +238,7 @@ namespace Ami.BroAudio.Editor
 				{
 					newPath = newPath.Remove(0, UnityProjectRootPath.Length + 1);
 					AssetOutputPath = newPath;
-					WriteAssetOutputPathToCoreData(newPath);
+					WriteAssetOutputPathToSetting(newPath);
                     onUpdateSuccess?.Invoke();
 				}
 			}

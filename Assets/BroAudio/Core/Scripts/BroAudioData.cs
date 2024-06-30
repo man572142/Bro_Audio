@@ -10,7 +10,6 @@ namespace Ami.BroAudio.Data
 #endif
 	public class BroAudioData : ScriptableObject
 	{
-		public string AssetOutputPath;
 		[SerializeField] List<AudioAsset> _assets = new List<AudioAsset>();
 
 		public IReadOnlyList<AudioAsset> Assets => _assets;

@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility
 	{
-        public const string CoreDataResourcesPath = "Editor/BroAudioData";
+        public const string CoreDataResourcesPath = "BroAudioData";
 		public const string DefaultRelativeAssetOutputPath = "BroAudio/AudioAssets";
         public const string DefaultAssetOutputPath = "Assets/" + DefaultRelativeAssetOutputPath;
 		public const string DefaultResoucesFolderPath = "Assets/BroAudio/Core/Resources";
@@ -27,16 +27,16 @@ namespace Ami.BroAudio.Editor
                     return _assetOutputPath;
                 }
 
-				if(TryGetCoreData(out BroAudioData coreData))
+				if(EditorSetting)
 				{
-					if(string.IsNullOrWhiteSpace(coreData.AssetOutputPath))
+					if(string.IsNullOrWhiteSpace(EditorSetting.AssetOutputPath))
 					{
 						_assetOutputPath = DefaultAssetOutputPath;
-						coreData.AssetOutputPath = DefaultAssetOutputPath;
+                        EditorSetting.AssetOutputPath = DefaultAssetOutputPath;
 					}
 					else
 					{
-						_assetOutputPath = coreData.AssetOutputPath;
+						_assetOutputPath = EditorSetting.AssetOutputPath;
 					}
 				}
 				return _assetOutputPath;

@@ -1,10 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 
 public static class BroProjectBuilder
 {
-    public static void BuildBroAudio()
+    public static void Build()
     {
         List<string> scenes = new List<string>();
         foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
@@ -15,18 +16,18 @@ public static class BroProjectBuilder
             }
         }
 
-        string[] args = System.Environment.GetCommandLineArgs();
+        string[] args = Environment.GetCommandLineArgs();
         string outputPath = GetArgumentValue(args, "-param1");
+        string buildTargetArg = GetArgumentValue(args, "-buildTarget");
 
-        if(string.IsNullOrEmpty(outputPath))
+        if(string.IsNullOrEmpty(outputPath) || !Enum.TryParse(buildTargetArg, out BuildTarget buildTarget))
         {
-            return;
+            UnityEngine.Debug.LogError($"Invalid arguments path:{outputPath}, buildTarget:{buildTargetArg}");
+            throw new Exception();
         }
 
-        UnityEngine.Debug.Log(outputPath);
-
         BuildPlayerOptions options = new BuildPlayerOptions();
-        options.target = BuildTarget.StandaloneWindows;
+        options.target = buildTarget;
         options.scenes = scenes.ToArray();
         options.locationPathName = outputPath;
         BuildPipeline.BuildPlayer(options);

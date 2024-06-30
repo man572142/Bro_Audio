@@ -14,14 +14,14 @@ namespace Ami.BroAudio.Editor.DevTool
     public static class PackageExporter
     {
 		[MenuItem(BroName.MenuItem_BroAudio + "Export Package", priority = DevToolsMenuIndex + 13)]
-        public static void ExportPackage()
+        public static void Export()
         {
 			string[] allfilePaths = AssetDatabase.GetAllAssetPaths();
 			allfilePaths = allfilePaths
 				.Where(x => IsBroAudioAsset(x) && !IsExcludedFile(x))
 				.ToArray();
 
-			AssetDatabase.ExportPackage(allfilePaths, "BroAudio" + DateTime.Now.ToString("yy-MM-dd-HH-mm") + ".unitypackage", ExportPackageOptions.Interactive);
+			AssetDatabase.ExportPackage(allfilePaths, "BroAudio" + DateTime.Now.ToString("yy-MM-dd-HH-mm") + ".unitypackage");
         }
 
 		private static bool IsBroAudioAsset(string path)

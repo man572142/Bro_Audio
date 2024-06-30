@@ -84,11 +84,8 @@ MonoBehaviour:
   - Key: 302
     Value: Multiple audio clips import confirmation
   - Key: 303
-    Value: 'You have drop more than one audio clips.
-
-      Do you want to create
-      multiple AudioEntities for each clip, or create one AudioEntity to contain
-      them in its clip list?'
+    Value: Do you want to create multiple AudioEntities for each clip, or a single
+      AudioEntity that contains all the clips in its clip list?
   - Key: 304
     Value: Choose an AudioType to create an asset
   - Key: 305

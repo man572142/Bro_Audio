@@ -118,8 +118,7 @@ namespace Ami.BroAudio.Editor
 					return;
                 }
 
-                AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName);	
-
+                AudioAssetEditor tempEditor = null;	
                 if (clips.Count > 1)
 				{
                     var option = (MultiClipsImportOption)EditorUtility.DisplayDialogComplex(
@@ -134,23 +133,29 @@ namespace Ami.BroAudio.Editor
                         case MultiClipsImportOption.MultipleForEach:
                             foreach (AudioClip clip in clips)
 							{
-								CreateNewEntity(tempEditor, clip);
+								tempEditor = CreateAsset(BroName.TempAssetName);
+                                CreateNewEntity(tempEditor, clip);
                             }
                             break;
                         case MultiClipsImportOption.Cancel:
-							// Do Nothing
-                            break;
+							return;
                         case MultiClipsImportOption.OneForAll:
+                            tempEditor = CreateAsset(BroName.TempAssetName);
                             CreateNewEntity(tempEditor, clips);
                             break;
                     }
                 }
                 else if(clips.Count == 1)
 				{
-					CreateNewEntity(tempEditor, clips[0]);
+                    tempEditor = CreateAsset(BroName.TempAssetName);
+                    CreateNewEntity(tempEditor, clips[0]);
 				}
-				tempEditor.Verify();
-				tempEditor.serializedObject.ApplyModifiedProperties();
+
+				if(tempEditor != null)
+				{
+                    tempEditor.Verify();
+                    tempEditor.serializedObject.ApplyModifiedProperties();
+                }
 			}
         }
 

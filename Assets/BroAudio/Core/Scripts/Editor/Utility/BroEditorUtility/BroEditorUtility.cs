@@ -138,8 +138,9 @@ namespace Ami.BroAudio.Editor
         public static bool IsTempReservedName(string name)
 		{
             string tempName = BroName.TempAssetName;
-            return (name.Length == tempName.Length || name.Length > tempName.Length && Char.IsNumber(name[tempName.Length]))
-                && name.StartsWith(tempName, StringComparison.Ordinal);
+            bool sameLength = name.Length == tempName.Length;
+            bool couldBeTempWithNumber = name.Length > tempName.Length && Char.IsNumber(name[name.Length - 1]);
+            return (sameLength || couldBeTempWithNumber) && name[0] == 'T' && name.StartsWith(tempName, StringComparison.Ordinal);
         }
 
         public static bool IsInvalidName(string name, out ValidationErrorCode errorCode)

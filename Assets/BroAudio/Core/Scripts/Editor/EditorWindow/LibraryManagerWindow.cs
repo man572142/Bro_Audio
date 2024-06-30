@@ -249,7 +249,7 @@ namespace Ami.BroAudio.Editor
 			AssetNameEditorWindow.ShowWindow(assetNames, assetName => CreateAsset(assetName));
 		}
 
-		private AudioAssetEditor CreateAsset(string entityName, bool isTemp = false)
+		private AudioAssetEditor CreateAsset(string entityName)
 		{
 			if (!TryGetNewPath(entityName, out string path, out string fileName))
 			{
@@ -264,7 +264,7 @@ namespace Ami.BroAudio.Editor
 			AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(newAsset, typeof(AudioAssetEditor)) as AudioAssetEditor;
 			string guid = AssetDatabase.AssetPathToGUID(path);
 			editor.Init(_idGenerator);
-			editor.SetData(guid, isTemp ? fileName.SetColor(FalseColor) : fileName);
+			editor.SetData(guid, fileName);
 
 			_assetEditorDict.Add(guid, editor);
 			_allAssetGUIDs.Add(guid);
@@ -435,19 +435,27 @@ namespace Ami.BroAudio.Editor
 
 		private void DrawAssetNameField(Rect headerRect, IAudioAsset asset, Action<string> onAssetNameChanged)
 		{
-			string namingHint = _instruction.GetText(Instruction.LibraryManager_NameTempAssetHint);
-
-			string displayName = string.IsNullOrWhiteSpace(asset.AssetName) ? namingHint : asset.AssetName;
-
 			GUIStyle wordWrapStyle = new GUIStyle(GUIStyleHelper.MiddleCenterRichText);
 			wordWrapStyle.wordWrap = true;
 			wordWrapStyle.fontSize = AssetNameFontSize;
 
-			EditorGUI.BeginChangeCheck();
+			string displayName = GetDisplayName();
+            EditorGUI.BeginChangeCheck();
 			string newName = EditorGUI.DelayedTextField(headerRect, displayName, wordWrapStyle);
-			if (EditorGUI.EndChangeCheck() && newName != asset.AssetName && IsValidAssetName(newName))
+			
+			if (EditorGUI.EndChangeCheck()
+				&& !newName.Equals(asset.AssetName) && !newName.Equals(displayName) && IsValidAssetName(newName))
 			{
-				onAssetNameChanged?.Invoke(newName);
+                onAssetNameChanged?.Invoke(newName);
+            }
+
+			string GetDisplayName()
+			{
+				if(string.IsNullOrEmpty(asset.AssetName) || IsTempReservedName(asset.AssetName))
+				{
+                    return _instruction.GetText(Instruction.LibraryManager_NameTempAssetHint);
+                }
+				return asset.AssetName;
 			}
 		}
 

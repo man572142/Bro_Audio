@@ -74,8 +74,6 @@ namespace Ami.BroAudio.Editor
                     {
                         Debug.LogError(Utility.LogTitle + string.Format(SettingFileMissingMegssage, "BroEditorSetting"));
                     }
-                    EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
-                    EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
                 }
                 return _editorSetting;
             }

@@ -17,7 +17,7 @@ namespace Ami.BroAudio.Editor.DevTool
 				.Where(x => IsBroAudioAsset(x) && !IsExcludedFile(x))
 				.ToArray();
 
-			AssetDatabase.ExportPackage(allfilePaths, "BroAudio" + DateTime.Now.ToString("yy-MM-dd-HH-mm") + ".unitypackage");
+			AssetDatabase.ExportPackage(allfilePaths, "BroAudio" + DateTime.Now.ToString("yy-MM-dd-HH-mm") + ".unitypackage", ExportPackageOptions.Interactive);
         }
 
 		private static bool IsBroAudioAsset(string path)

@@ -22,7 +22,7 @@ namespace Ami.BroAudio.Editor
 
 		public static bool TryGetOldCoreDataTextAsset(out TextAsset asset)
 		{
-            asset = Resources.Load<TextAsset>(CoreDataResourcesPath);
+            asset = Resources.Load<TextAsset>("Editor/" + CoreDataResourcesPath);
 			return asset != null;
         }
 

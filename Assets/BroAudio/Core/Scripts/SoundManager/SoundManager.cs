@@ -352,11 +352,10 @@ namespace Ami.BroAudio.Runtime
 
         public string GetNameByID(int id)
 		{
-            if(!Application.isPlaying)
-			{
-               Debug.LogError(LogTitle + $"The method {"GetNameByID".ToWhiteBold()} is {"Runtime Only".ToBold().SetColor(Color.green)}");
-                return null;
-			}
+            if(!IsAvailable())
+            {
+                return string.Empty;
+            }
 
             string result = string.Empty;
             if(_audioBank.TryGetValue(id,out var entity))
@@ -366,6 +365,21 @@ namespace Ami.BroAudio.Runtime
 			}
             return result;
         }
+
+        public bool IsIdInBank(SoundID id)
+        {
+            return _audioBank.ContainsKey(id);
+        }
+
+		private bool IsAvailable(bool logError = true)
+        {
+			if (!Application.isPlaying)
+			{
+				Debug.LogError(LogTitle + $"The method {"GetNameByID".ToWhiteBold()} is {"Runtime Only".ToBold().SetColor(Color.green)}");
+				return false;
+			}
+            return true;
+		}
 
 #if UNITY_EDITOR
         public void SetCoreData(BroAudioData data)

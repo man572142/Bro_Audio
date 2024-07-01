@@ -49,5 +49,10 @@ namespace Ami.BroAudio
 		{
 			return Runtime.SoundManager.Instance.GetNameByID(id);
 		}
+
+		public static bool IsValid(this SoundID id)
+		{
+			return id > 0 && Runtime.SoundManager.Instance.IsIdInBank(id);
+		}
 	}
 }

@@ -292,7 +292,7 @@ namespace Ami.Extension
 			return propertyName;
 		}
 
-		public static void DrawToggleGroup(Rect totalPosition, GUIContent label,SerializedProperty[] toggles, bool isAllowSwitchOff = true, int toggleCountPerLine  = 4)
+		public static void DrawToggleGroup(Rect totalPosition, GUIContent label,SerializedProperty[] toggles, Rect[] rects = null, bool isAllowSwitchOff = true)
 		{
 			if (toggles == null)
 			{
@@ -300,9 +300,15 @@ namespace Ami.Extension
 			}
 
 			Rect suffixRect = EditorGUI.PrefixLabel(totalPosition, label);
-			float space = suffixRect.width / toggleCountPerLine;
-			Rect toggleRect = new Rect(suffixRect);
-			toggleRect.width = space;
+			if(rects == null)
+			{
+				float toggleWidth = suffixRect.width / toggles.Length;
+                rects = new Rect[toggles.Length];
+				for(int i = 0; i < rects.Length;i++)
+				{
+                    rects[i] = new Rect(suffixRect) { width = toggleWidth, x = suffixRect.x + i * toggleWidth };
+                }
+			}
 
 			SerializedProperty currentActiveToggle = null;
 			foreach(var toggle in toggles)
@@ -316,7 +322,7 @@ namespace Ami.Extension
 			for(int i = 0; i < toggles.Length;i++)
 			{
 				var toggle = toggles[i];
-				if (EditorGUI.ToggleLeft(toggleRect, toggle.displayName, toggle.boolValue))
+				if (EditorGUI.ToggleLeft(rects[i], toggle.displayName, toggle.boolValue))
 				{
 					if(toggle != currentActiveToggle)
 					{
@@ -336,10 +342,6 @@ namespace Ami.Extension
 				{
 					toggle.boolValue = false;
 				}
-
-				
-				toggleRect.x += space;
-				toggleRect.y += (i / toggleCountPerLine) * EditorGUIUtility.singleLineHeight;
 			}
 		}
 

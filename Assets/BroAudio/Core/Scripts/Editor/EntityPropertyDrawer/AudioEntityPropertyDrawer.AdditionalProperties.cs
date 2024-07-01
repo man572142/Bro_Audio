@@ -25,8 +25,9 @@ namespace Ami.BroAudio.Editor
 		private readonly GUIContent _seamlessLabel = new GUIContent("Seamless Setting");
 		private readonly GUIContent _pitchLabel = new GUIContent(nameof(AudioEntity.Pitch));
 		private readonly GUIContent _spatialLabel = new GUIContent("Spatial (3D Sound)");
-		private readonly float[] _seamlessSettingRectRatio = new float[] { 0.2f, 0.25f, 0.2f, 0.2f, 0.15f };
+		private readonly float[] _seamlessSettingRectRatio = new float[] { 0.25f, 0.25f, 0.2f, 0.15f, 0.15f };
 
+		private Rect[] _loopingRects = null;
 		private Rect[] _seamlessRects = null;
 		private SerializedProperty[] _loopingToggles = new SerializedProperty[2];
 
@@ -145,7 +146,10 @@ namespace Ami.BroAudio.Editor
                 _loopingToggles[1] = seamlessProp;
 
                 Rect loopRect = GetRectAndIterateLine(position);
-                DrawToggleGroup(loopRect, _loopingLabel, _loopingToggles);
+                _loopingRects = _loopingRects ?? new Rect[_loopingToggles.Length];
+				_loopingRects[0] = new Rect(loopRect) { width = 100f, x = loopRect.x + EditorGUIUtility.labelWidth };
+				_loopingRects[1] = new Rect(loopRect) { width = 200f, x = _loopingRects[0].xMax };
+                DrawToggleGroup(loopRect, _loopingLabel, _loopingToggles, _loopingRects);
 
                 if (seamlessProp.boolValue)
                 {

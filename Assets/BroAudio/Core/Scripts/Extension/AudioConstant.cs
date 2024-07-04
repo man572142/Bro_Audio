@@ -56,7 +56,7 @@ namespace Ami.Extension
         public const float DefaultPitch = 1f; // The default pitch for both AudioSource and AudioMixer.
         public const float MinAudioSourcePitch = -3f;
         public const float MaxAudioSourcePitch = 3f;
-        public const float MinMixerPitch = 0.1f;
+        public const float MinPlayablePitch = 0.01f;
         public const float MaxMixerPitch = 10f;
         public const int DefaultPriority = 128;
         public const int HighestPriority = 0;

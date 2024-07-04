@@ -412,7 +412,7 @@ namespace Ami.BroAudio.Editor
             }
             var clipData = new EditorPlayAudioClip.Data(clip) { Volume = volume };
             EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, data.IsLoop, onReplay, pitch);
-            EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip));
+            EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip), entity.GetPitch());
             data.IsPreviewing = true;
             EditorPlayAudioClip.Instance.OnFinished = OnPreviewFinished;
 

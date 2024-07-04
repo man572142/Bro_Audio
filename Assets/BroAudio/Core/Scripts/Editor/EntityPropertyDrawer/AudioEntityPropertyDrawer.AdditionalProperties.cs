@@ -169,7 +169,7 @@ namespace Ami.BroAudio.Editor
 
 				bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
 				var pitchSetting = isWebGL? PitchShiftingSetting.AudioSource : BroEditorUtility.RuntimeSetting.PitchSetting;
-				float minPitch = pitchSetting == PitchShiftingSetting.AudioMixer ? AudioConstant.MinMixerPitch : AudioConstant.MinAudioSourcePitch;
+				float minPitch = AudioConstant.MinPlayablePitch;
 				float maxPitch = pitchSetting == PitchShiftingSetting.AudioMixer ? AudioConstant.MaxMixerPitch : AudioConstant.MaxAudioSourcePitch;
 				_pitchLabel.tooltip = $"According to the current preference setting, the Pitch will be set on [{pitchSetting}] ";
 

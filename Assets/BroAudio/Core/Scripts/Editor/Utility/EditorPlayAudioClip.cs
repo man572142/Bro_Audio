@@ -133,7 +133,7 @@ namespace Ami.Extension
 
 			_audioSourceTaskCanceller = _audioSourceTaskCanceller ?? new CancellationTokenSource();
 
-			float waitTime = clip.Duration;
+			float waitTime = clip.Duration / pitch;
 			if (clip.FadeIn >= SetVolumeOffsetTime)
 			{
 				audioSource.volume = 0f;

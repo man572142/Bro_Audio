@@ -171,10 +171,11 @@ namespace Ami.BroAudio.Runtime
             return true;
         }
 
-        private bool HasPassPreventionTime(int ms)
+        private bool HasPassPreventionTime(int previousPlayTime)
         {
             int time = TimeExtension.UnscaledCurrentFrameBeganTime;
-            return time - ms >= TimeExtension.SecToMs(Setting.CombFilteringPreventionInSeconds);
+            bool isInQueue = previousPlayTime == 0f;
+			return !isInQueue && time - previousPlayTime >= TimeExtension.SecToMs(Setting.CombFilteringPreventionInSeconds);
         }
     }
 }

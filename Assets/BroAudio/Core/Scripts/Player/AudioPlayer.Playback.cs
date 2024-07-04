@@ -270,7 +270,8 @@ namespace Ami.BroAudio.Runtime
         }
 
         private void EndPlaying()
-        {   
+        {
+            PlaybackStartingTime = 0;
             _stopMode = default;
             ResetVolume();
             ResetPitch();

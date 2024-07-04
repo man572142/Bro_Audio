@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Tools
 		public const string InstructionFileName = "BroInstruction";
 		public const string RuntimeSettingFileName = "BroRuntimeSetting";
 		public const string EditorSettingPath = EditorResourcePath + "BroEditorSetting";
-		public const string MainLogoPath = EditorResourcePath + "Logo_Main";
+		public const string MainLogoPath = EditorResourcePath + "Logo_Editor";
 		public const string TransparentLogoPath = EditorResourcePath + "Logo_Transparent";
 		public const string EditorResourcePath = "Editor/";
 		public const string EditorAudioMixerName = "EditorBroAudioMixer";

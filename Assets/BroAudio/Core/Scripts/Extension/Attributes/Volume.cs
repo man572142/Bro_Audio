@@ -19,7 +19,12 @@ namespace Ami.BroAudio
 
 		public Volume(bool canBoost)
 		{
+#if UNITY_WEBGL
+			Debug.LogWarning(Utility.LogTitle + "Volume boosting is not supported in WebGL");
+			CanBoost = false;
+#else
 			CanBoost = canBoost;
+#endif
 		}
 	} 
 }

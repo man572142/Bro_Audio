@@ -11,14 +11,6 @@ namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility
 	{
-		public static void RemoveEmptyDatas()
-		{
-			if (TryGetCoreData(out BroAudioData coreData))
-			{
-				coreData.RemoveEmpty();
-			}
-		}
-
 		public static bool TryGetCoreData(out BroAudioData coreData)
 		{
 			coreData = Resources.Load<BroAudioData>(CoreDataResourcesPath);
@@ -39,15 +31,24 @@ namespace Ami.BroAudio.Editor
 		public static void WriteAssetOutputPathToSetting(string path)
 		{
 			EditorSetting.AssetOutputPath = path;
-            EditorUtility.SetDirty(EditorSetting);
-            AssetDatabase.SaveAssets();
-        }
+			SaveToDisk(EditorSetting);
+		}
 
 		public static void AddNewAssetToCoreData(ScriptableObject asset)
 		{
 			if(TryGetCoreData(out var coreData))
 			{
 				coreData.AddAsset(asset as AudioAsset);
+				SaveToDisk(coreData);
+			}
+		}
+
+		public static void RemoveEmptyDatas()
+		{
+			if (TryGetCoreData(out BroAudioData coreData))
+			{
+				coreData.RemoveEmpty();
+				SaveToDisk(coreData);
 			}
 		}
 
@@ -56,7 +57,14 @@ namespace Ami.BroAudio.Editor
 			if (TryGetCoreData(out var coreData))
 			{
 				coreData.ReorderAssets(_allAssetGUIDs);
+				SaveToDisk(coreData);
 			}
+		}
+
+		public static void SaveToDisk(UnityEngine.Object obj)
+		{
+			EditorUtility.SetDirty(obj);
+			AssetDatabase.SaveAssets();
 		}
 	}
 }

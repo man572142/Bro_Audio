@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
-using Ami.BroAudio.Data;
+using UnityEditor;
 
 namespace Ami.BroAudio.Editor
 {
@@ -33,6 +33,7 @@ namespace Ami.BroAudio.Editor
 					{
 						_assetOutputPath = DefaultAssetOutputPath;
                         EditorSetting.AssetOutputPath = DefaultAssetOutputPath;
+						EditorUtility.SetDirty(EditorSetting);
 					}
 					else
 					{

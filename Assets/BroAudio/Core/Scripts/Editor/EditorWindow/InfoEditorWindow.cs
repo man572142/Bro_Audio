@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Ami.BroAudio.Runtime;
-using Ami.BroAudio.Tools;
 using Ami.Extension;
 using Ami.Extension.Reflection;
 using UnityEditor;
@@ -26,7 +25,8 @@ namespace Ami.BroAudio.Editor
 
         public const string GitURL = "https://github.com/man572142/Bro_Audio";
         public const string DocURL = "https://man572142s-organization.gitbook.io/broaudio";
-        public const string DiscordURL = "https://discord.gg/z6uNmz6Z3A";
+        public const string KnownIssueURL = "https://man572142s-organization.gitbook.io/broaudio/others/known-issues";
+		public const string DiscordURL = "https://discord.gg/z6uNmz6Z3A";
 
         private UnityEngine.Object[] _creditsObjects = null;
         private BroInstructionHelper _instruction = new BroInstructionHelper();
@@ -60,29 +60,31 @@ namespace Ami.BroAudio.Editor
             DrawEmptyLine(1);
             _scrollPos = BeginScrollView(scrollViewRect, _scrollPos);
             {
-                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Play The Demo!".ToWhiteBold().SetSize(20), middleCenterRichText);
-                Rect demoRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(DemoReferenceFieldWidth, SingleLineSpace);
-                EditorGUI.ObjectField(demoRect, _instruction.DemoScene, typeof(UnityEngine.Object),false);
-
-                DrawParagraph(drawPosition, "The demo not only shows all of the features, but also how to use the API and how they're implemented", 2);
-                DrawEmptyLine(1);
-
-                drawPosition.x += drawPosition.width * 0.1f;
-                drawPosition.xMax -= drawPosition.width * 0.2f;
-
-                DrawEmptyLine(1);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Documentation".ToWhiteBold().SetSize(20), middleCenterRichText);
                 DrawUrlLink(GetRectAndIterateLine(drawPosition), DocURL, DocURL, TextAnchor.MiddleCenter);
 
-                DrawEmptyLine(1);
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Found a bug?".ToBold().SetSize(14).SetColor(FalseColor), middleCenterRichText);
+				DrawParagraph(drawPosition, "Refer to the known issues page for updates and solutions.");
+				DrawUrlLink(GetRectAndIterateLine(drawPosition), KnownIssueURL, KnownIssueURL, TextAnchor.MiddleCenter);
+				DrawEmptyLine(1);
+
+				DrawEmptyLine(1);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Support & Community".ToWhiteBold().SetSize(20), middleCenterRichText);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "GitHub Page", middleCenterStyle);
                 DrawUrlLink(GetRectAndIterateLine(drawPosition), GitURL, GitURL, TextAnchor.MiddleCenter);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Discord", middleCenterStyle);
                 DrawUrlLink(GetRectAndIterateLine(drawPosition), DiscordURL, DiscordURL, TextAnchor.MiddleCenter);
-                DrawEmptyLine(1);
-
                 DrawEmptyLine(2);
+
+				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Play The Demo!".ToWhiteBold().SetSize(20), middleCenterRichText);
+				Rect demoRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(DemoReferenceFieldWidth, SingleLineSpace);
+				EditorGUI.ObjectField(demoRect, _instruction.DemoScene, typeof(UnityEngine.Object), false);
+				DrawParagraph(drawPosition, "The demo not only shows all of the features, but also how to use the API and how they're implemented", 2);
+
+				drawPosition.x += drawPosition.width * 0.1f;
+				drawPosition.xMax -= drawPosition.width * 0.2f;
+
+				DrawEmptyLine(2);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Demo Credits".ToWhiteBold().SetSize(20), middleCenterRichText);
                 DrawEmptyLine(1);
                 DrawAssetCredits(drawPosition);

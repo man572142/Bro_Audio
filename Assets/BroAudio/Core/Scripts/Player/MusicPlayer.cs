@@ -14,6 +14,7 @@ namespace Ami.BroAudio.Runtime
 		private float _overrideFade = AudioPlayer.UseEntitySetting;
 
 		public bool IsPlayingVirtually => IsActive && Instance?.MixerDecibelVolume <= AudioConstant.MinDecibelVolume;
+		public bool IsWaitingForTransition { get; private set; }
 
 		public MusicPlayer(AudioPlayer audioPlayer) : base(audioPlayer)
 		{
@@ -35,7 +36,7 @@ namespace Ami.BroAudio.Runtime
 			return this;
 		}
 
-		public PlaybackPreference Transition(PlaybackPreference pref)
+		public void Transition(ref PlaybackPreference pref)
 		{
 			if(CurrentPlayer != null)
 			{
@@ -49,15 +50,15 @@ namespace Ami.BroAudio.Runtime
 						break;
 					case Ami.BroAudio.Transition.Default:
 					case Ami.BroAudio.Transition.OnlyFadeOut:
-
-						var waiter = pref.CreateWaiter();
-						StopCurrentMusic(waiter.Finish);
+						if(CurrentPlayer.IsPlaying)
+						{
+                            IsWaitingForTransition = true;
+                            StopCurrentMusic(() => IsWaitingForTransition = false);
+                        }	
 						break;
 				}
 			}
-			
 			CurrentPlayer = Instance;
-			return pref;
 		}
 
 		private void StopCurrentMusic(Action onFinished = null)

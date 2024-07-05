@@ -7,6 +7,7 @@ namespace Ami.BroAudio.Demo
 	public class ThemeChangeZone : InteractiveComponent
 	{
 		[SerializeField] SoundID _bgm = default;
+		[SerializeField] Transition _transition = default;
 		[SerializeField] float _transitionTime = default;
 
 		[Header("Change Mood")]
@@ -24,7 +25,7 @@ namespace Ami.BroAudio.Demo
 				_lightAnimator.SetBool(_ligghtAnimParameterName, _isNightTime);
 
 				// The BGM is set to PlaybackMode.Sequence
-				BroAudio.Play(_bgm).AsBGM().SetTransition(Transition.CrossFade, _transitionTime);
+				BroAudio.Play(_bgm).AsBGM().SetTransition(_transition, _transitionTime);
 				StartCoroutine(PreventChangePeriod());
 			}	
 		}

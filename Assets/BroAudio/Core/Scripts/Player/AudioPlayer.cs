@@ -85,7 +85,6 @@ namespace Ami.BroAudio.Runtime
 
 			if (setting == null)
 			{
-				ResetAudioSourceSpatial();
 				return;
 			}
 
@@ -136,17 +135,6 @@ namespace Ami.BroAudio.Runtime
 			}
 		}
 
-		private void ResetAudioSourceSpatial()
-		{
-			AudioSource.panStereo = AudioConstant.DefaultPanStereo;
-			AudioSource.dopplerLevel = AudioConstant.DefaultDoppler;
-			AudioSource.minDistance = AudioConstant.AttenuationMinDistance;
-			AudioSource.maxDistance = AudioConstant.AttenuationMaxDistance;
-			AudioSource.reverbZoneMix = AudioConstant.DefaultReverZoneMix;
-			AudioSource.spread = AudioConstant.DefaultSpread;
-            AudioSource.rolloffMode = AudioConstant.DefaultRolloffMode;
-		}
-
 		private void ResetSpatial()
         {
             AudioSource.spatialBlend = AudioConstant.SpatialBlend_2D;
@@ -155,6 +143,14 @@ namespace Ami.BroAudio.Runtime
                 transform.SetParent(SoundManager.Instance.transform);
 			}
             transform.position = Vector3.zero;
+
+            AudioSource.panStereo = AudioConstant.DefaultPanStereo;
+            AudioSource.dopplerLevel = AudioConstant.DefaultDoppler;
+            AudioSource.minDistance = AudioConstant.AttenuationMinDistance;
+            AudioSource.maxDistance = AudioConstant.AttenuationMaxDistance;
+            AudioSource.reverbZoneMix = AudioConstant.DefaultReverZoneMix;
+            AudioSource.spread = AudioConstant.DefaultSpread;
+            AudioSource.rolloffMode = AudioConstant.DefaultRolloffMode;
         }
 
         public void SetEffect(EffectType effect,SetEffectMode mode)

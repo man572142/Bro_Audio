@@ -17,7 +17,6 @@ namespace Ami.BroAudio.Runtime
 
 		public float FadeIn { get; private set; }
 		public float FadeOut { get; private set; }
-		public Waiter PlayerWaiter { get; private set; }
 
 		public PlaybackPreference(IAudioEntity entity,Vector3 position) : this(entity)
 		{
@@ -36,7 +35,6 @@ namespace Ami.BroAudio.Runtime
 			FadeOut = UseEntitySetting;
 			Position = Vector3.negativeInfinity;
 			FollowTarget = null;
-			PlayerWaiter = null;
 		}
 
 		public void SetFadeTime(Transition transition,float fadeTime)
@@ -68,17 +66,6 @@ namespace Ami.BroAudio.Runtime
 			FadeIn = Entity.TransitionTime;
 			FadeOut = Entity.TransitionTime;
 		}
-
-		public Waiter CreateWaiter()
-		{
-			PlayerWaiter = PlayerWaiter ?? new Waiter();
-            return PlayerWaiter;
-		}
-
-        public void DisposeWaiter()
-        {
-            PlayerWaiter = null;
-        }
 
         public bool HasPosition(out Vector3 position)
 		{

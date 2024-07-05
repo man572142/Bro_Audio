@@ -12441,6 +12441,7 @@ MonoBehaviour:
   _bgm:
     ID: 268435457
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+  _transition: 4
   _transitionTime: 2
   _lightAnimator: {fileID: 2114283753834967214}
   _ligghtAnimParameterName: IsNightTime

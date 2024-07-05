@@ -49,10 +49,15 @@ namespace Ami.BroAudio.Runtime
 
             if(!RemoveFromResumablePlayer()) // if is not resumable (not paused)
             {
-                if (pref.PlayerWaiter != null)
+                if (TryGetDecorator<MusicPlayer>(out var musicPlayer))
                 {
-                    yield return new WaitUntil(() => pref.PlayerWaiter.IsFinished);
-                    pref.DisposeWaiter();
+                    AudioSource.reverbZoneMix = 0f;
+                    AudioSource.priority = AudioConstant.HighestPriority;
+                    musicPlayer.Transition(ref pref);
+                    while(musicPlayer.IsWaitingForTransition)
+                    {
+                        yield return null;
+                    }
                 }
 
                 if (CurrentClip.Delay > 0)
@@ -65,13 +70,6 @@ namespace Ami.BroAudio.Runtime
 
                 SetInitialPitch(pref.Entity, audioTypePlaybackPref);
                 SetSpatial(pref);
-
-                if (TryGetDecorator<MusicPlayer>(out var musicPlayer))
-                {
-                    AudioSource.reverbZoneMix = 0f;
-                    AudioSource.priority = AudioConstant.HighestPriority;
-                    pref = musicPlayer.Transition(pref);
-                }
 
                 if (IsDominator)
                 {

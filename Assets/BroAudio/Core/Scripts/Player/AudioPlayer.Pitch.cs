@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Ami.BroAudio.Runtime
 {
-	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IRecyclable<AudioPlayer>
+	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
 	{
         /// <summary>
         /// Pitch value without any fading process

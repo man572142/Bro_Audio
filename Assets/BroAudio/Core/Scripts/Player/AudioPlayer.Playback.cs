@@ -7,7 +7,7 @@ using Ami.Extension;
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
-	public partial class AudioPlayer : MonoBehaviour,IAudioPlayer,IRecyclable<AudioPlayer>
+	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
         public delegate void SeamlessLoopReplay(int id, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
 
@@ -16,35 +16,41 @@ namespace Ami.BroAudio.Runtime
         public event SeamlessLoopReplay OnSeamlessLoopReplay;
         public event Action<SoundID> OnEndPlaying;
 
+        private PlaybackPreference _pref;
         private StopMode _stopMode = default;
         private Coroutine _playbackControlCoroutine = null;
         private Coroutine _trackVolumeControlCoroutine = null;
 
         public int PlaybackStartingTime { get; private set; }
 
-        public void Play(int id, PlaybackPreference pref)
+        public void SetPlaybackData(int id, PlaybackPreference pref)
         {
-            if(IsStopping)
+            ID = id;
+            _pref = pref;
+        }
+
+        public void Play()
+        {
+            if(IsStopping || ID <= 0 || _pref.Entity == null)
             {
                 return;
             }
 
-            ID = id;
 			PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
 			if (_stopMode == default)
             {
-                CurrentClip = pref.Entity.PickNewClip();
+                CurrentClip = _pref.Entity.PickNewClip();
             }
 
-			this.StartCoroutineAndReassign(PlayControl(pref), ref _playbackControlCoroutine);
+			this.StartCoroutineAndReassign(PlayControl(), ref _playbackControlCoroutine);
 		}
 
-        private IEnumerator PlayControl(PlaybackPreference pref)
+        private IEnumerator PlayControl()
         {
-            IAudioPlaybackPref audioTypePlaybackPref = null;
-            if (SoundManager.Instance.AudioTypePref.TryGetValue(ID.ToAudioType(), out var typePref))
+            if (!SoundManager.Instance.TryGetAudioTypePref(ID.ToAudioType(), out var audioTypePref))
             {
-                audioTypePlaybackPref = typePref;
+                Debug.LogError(Utility.LogTitle + $"The ID:{ID} is invalid");
+                yield break;
             }
 
             if(!RemoveFromResumablePlayer()) // if is not resumable (not paused)
@@ -53,7 +59,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     AudioSource.reverbZoneMix = 0f;
                     AudioSource.priority = AudioConstant.HighestPriority;
-                    musicPlayer.Transition(ref pref);
+                    musicPlayer.Transition(ref _pref);
                     while(musicPlayer.IsWaitingForTransition)
                     {
                         yield return null;
@@ -66,10 +72,10 @@ namespace Ami.BroAudio.Runtime
                 }
 
                 AudioSource.clip = CurrentClip.AudioClip;
-                AudioSource.priority = pref.Entity.Priority;
+                AudioSource.priority = _pref.Entity.Priority;
 
-                SetInitialPitch(pref.Entity, audioTypePlaybackPref);
-                SetSpatial(pref);
+                SetInitialPitch(_pref.Entity, audioTypePref);
+                SetSpatial(_pref);
 
                 if (IsDominator)
                 {
@@ -77,14 +83,14 @@ namespace Ami.BroAudio.Runtime
                 }
                 else
                 {
-                    SetEffect(audioTypePlaybackPref.EffectType, SetEffectMode.Add);
+                    SetEffect(audioTypePref.EffectType, SetEffectMode.Add);
                 }
             }
 
 			this.SafeStopCoroutine(_trackVolumeControlCoroutine);
-			TrackVolume = StaticTrackVolume * audioTypePlaybackPref.Volume;           
+			TrackVolume = StaticTrackVolume * audioTypePref.Volume;           
             ClipVolume = 0f;
-            float targetClipVolume = CurrentClip.Volume * pref.Entity.GetMasterVolume();
+            float targetClipVolume = CurrentClip.Volume * _pref.Entity.GetMasterVolume();
             AudioTrack = _getAudioTrack?.Invoke(TrackType);
 
             int sampleRate = CurrentClip.AudioClip.frequency;
@@ -109,11 +115,11 @@ namespace Ami.BroAudio.Runtime
                 }
                 _stopMode = default;
                 #region FadeIn
-                if (HasFading(CurrentClip.FadeIn, pref.FadeIn, out float fadeIn))
+                if (HasFading(CurrentClip.FadeIn, _pref.FadeIn, out float fadeIn))
                 {
                     IsFadingIn = true;
                     //FadeIn start from here
-                    yield return Fade(targetClipVolume, fadeIn, fader,pref.FadeInEase);
+                    yield return Fade(targetClipVolume, fadeIn, fader, _pref.FadeInEase);
                     IsFadingIn = false;
                 }
                 else
@@ -122,31 +128,37 @@ namespace Ami.BroAudio.Runtime
                 }
                 #endregion
 
-                if (pref.Entity.SeamlessLoop)
+                if (_pref.Entity.SeamlessLoop)
 				{
-                    pref.ApplySeamlessFade();
+                    _pref.ApplySeamlessFade();
 				}
 
                 #region FadeOut
                 int endSample = (int)(AudioSource.clip.samples - (CurrentClip.EndPosition * sampleRate));
-                if (HasFading(CurrentClip.FadeOut, pref.FadeOut, out float fadeOut))
+                if (HasFading(CurrentClip.FadeOut, _pref.FadeOut, out float fadeOut))
                 {
-                    yield return new WaitUntil(() => endSample - AudioSource.timeSamples <= fadeOut * sampleRate);
+                    while(endSample - AudioSource.timeSamples > fadeOut * sampleRate)
+                    {
+                        yield return null;
+                    }
 
                     IsFadingOut = true;
-                    TriggerSeamlessLoopReplay(pref);
+                    TriggerSeamlessLoopReplay();
                     //FadeOut start from here
-                    yield return Fade(0f, fadeOut, fader,pref.FadeOutEase);
+                    yield return Fade(0f, fadeOut, fader, _pref.FadeOutEase);
                     IsFadingOut = false;
                 }
                 else
                 {
                     bool hasPlayed = false;
-                    yield return new WaitUntil(() => HasEndPlaying(ref hasPlayed) || endSample - AudioSource.timeSamples <= 0);
-                    TriggerSeamlessLoopReplay(pref);
+                    while(!HasEndPlaying(ref hasPlayed) && endSample - AudioSource.timeSamples > 0)
+                    {
+                        yield return null;
+                    }
+                    TriggerSeamlessLoopReplay();
                 }
                 #endregion
-            } while (pref.Entity.Loop);
+            } while (_pref.Entity.Loop);
 
             EndPlaying();
 
@@ -170,9 +182,9 @@ namespace Ami.BroAudio.Runtime
             }
 		}
 
-		private void TriggerSeamlessLoopReplay(PlaybackPreference pref)
+		private void TriggerSeamlessLoopReplay()
         {
-            OnSeamlessLoopReplay?.Invoke(ID, pref, CurrentActiveEffects, StaticTrackVolume, StaticPitch);
+            OnSeamlessLoopReplay?.Invoke(ID, _pref, CurrentActiveEffects, StaticTrackVolume, StaticPitch);
             OnSeamlessLoopReplay = null;
         }
 
@@ -219,7 +231,10 @@ namespace Ami.BroAudio.Runtime
                     // if is fading out. then don't stop. just wait for it
                     AudioClip clip = AudioSource.clip;
                     float endSample = clip.samples - (CurrentClip.EndPosition * clip.frequency);
-                    yield return new WaitUntil(() => AudioSource.timeSamples >= endSample);
+                    while(AudioSource.timeSamples < endSample)
+                    {
+                        yield return null;
+                    }
                 }
                 else
                 {
@@ -271,6 +286,7 @@ namespace Ami.BroAudio.Runtime
         {
             PlaybackStartingTime = 0;
             _stopMode = default;
+            _pref = default;
             ResetVolume();
             ResetPitch();
 

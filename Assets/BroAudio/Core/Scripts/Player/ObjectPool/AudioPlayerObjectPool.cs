@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Runtime
 	public class AudioPlayerObjectPool : ObjectPool<AudioPlayer>
 	{
 		private Transform _parent = null;
-		private List<AudioPlayer> _currentPlayers = null;
+		private List<AudioPlayer> _currentPlayers = new List<AudioPlayer>();
 		private IAudioMixer _mixer = null;
 
 		public AudioPlayerObjectPool(AudioPlayer baseObject, Transform parent, int maxInternalPoolSize, IAudioMixer mixer) : base(baseObject, maxInternalPoolSize)
@@ -22,10 +22,8 @@ namespace Ami.BroAudio.Runtime
 			AudioPlayer player = base.Extract();
 			player.gameObject.SetActive(true);
 #if !UNITY_WEBGL
-			player.SetData(_mixer.Mixer, _mixer.GetTrack);
+			player.SetMixerData(_mixer.Mixer, _mixer.GetTrack);
 #endif
-
-            _currentPlayers = _currentPlayers ?? new List<AudioPlayer>();
 			_currentPlayers.Add(player);
 			return player;
 		}

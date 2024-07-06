@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Runtime
 {
 	public partial class SoundManager : MonoBehaviour
     {
-		private Queue<Action> _playbackQueue = new Queue<Action>();
+		private Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
 
         #region Play
         public IAudioPlayer Play(int id)
@@ -45,8 +45,9 @@ namespace Ami.BroAudio.Runtime
 		private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref, AudioPlayer previousPlayer = null)
         {
             BroAudioType audioType = GetAudioType(id);
+            player.SetPlaybackData(id, pref);
 
-			_playbackQueue.Enqueue(() => player.Play(id, pref));
+			_playbackQueue.Enqueue(player);
             var wrapper = new AudioPlayerInstanceWrapper(player);
 
             if (Setting.AlwaysPlayMusicAsBGM && audioType == BroAudioType.Music)
@@ -85,7 +86,7 @@ namespace Ami.BroAudio.Runtime
 		{
 			while (_playbackQueue.Count > 0)
 			{
-				_playbackQueue.Dequeue()?.Invoke();
+				_playbackQueue.Dequeue().Play();
 			}
 		}
 		#endregion
@@ -103,28 +104,32 @@ namespace Ami.BroAudio.Runtime
 
         public void Stop(int id,float fadeTime)
         {
-            StopPlayer(fadeTime,x => x.ID == id);
+            StopPlayer(fadeTime, id);
         }
 
         public void Stop(BroAudioType targetType,float fadeTime)
 		{
-            StopPlayer(fadeTime, x => targetType.Contains(GetAudioType(x.ID)));
+            StopPlayer(fadeTime, targetType);
         }            
 
-        private void StopPlayer(float fadeTime,Predicate<AudioPlayer> predicate)
+        private void StopPlayer<TParameter>(float fadeTime, TParameter parameter)
         {
-            var players = _audioPlayerPool.GetCurrentAudioPlayers();
-            if(players != null)
+            var players = GetCurrentAudioPlayers();
+            for (int i = players.Count - 1; i >= 0; i--)
             {
-                for (int i = players.Count - 1; i >= 0; i--)
+                var player = players[i];
+                if(!player.IsActive)
                 {
-                    var player = players[i];
-                    if (player.IsActive && predicate.Invoke(player))
-                    {
-                        player.Stop(fadeTime);
-                    }
+                    continue;
                 }
-			}
+
+                bool isIdAndMatch = parameter is int id && player.ID == id;
+                bool isAudioTypeAndMatch = parameter is BroAudioType audioType && audioType.Contains(player.ID.ToAudioType());
+                if (isIdAndMatch || isAudioTypeAndMatch)
+                {
+                    player.Stop(fadeTime);
+                }
+            }
         }
         #endregion
 
@@ -135,13 +140,13 @@ namespace Ami.BroAudio.Runtime
 
         public void Pause(int id,float fadeTime)
 		{
-            GetCurrentActivePlayers((player) =>
+            foreach(var player in GetCurrentAudioPlayers())
             {
-                if (player.ID == id)
+                if(player.IsActive && player.ID == id)
                 {
-                    player.Stop(fadeTime, StopMode.Pause,null);
+                    player.Stop(fadeTime, StopMode.Pause, null);
                 }
-            });
+            }
         }
 
         private bool IsPlayable(int id, out IAudioEntity entity, out AudioPlayer previousPlayer)

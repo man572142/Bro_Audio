@@ -38,7 +38,8 @@ namespace Ami.BroAudio.Runtime
             newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
 			newPlayer.SetVolume(trackVolume);
             newPlayer.SetPitch(pitch);
-            newPlayer.Play(id, pref);
+			newPlayer.SetPlaybackData(id, pref);
+            newPlayer.Play();
             
             newPlayer.OnSeamlessLoopReplay += Replay;
 		}

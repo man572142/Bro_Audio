@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Data;
@@ -10,7 +8,7 @@ using static Ami.BroAudio.Tools.BroName;
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource)), AddComponentMenu("")]
-	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IRecyclable<AudioPlayer>
+	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable,IRecyclable<AudioPlayer>
 	{
         public const float UseEntitySetting = -1f;
         public const float Immediate = 0f;
@@ -72,7 +70,7 @@ namespace Ami.BroAudio.Runtime
             AudioSource = AudioSource ?? GetComponent<AudioSource>();
         }
 
-		public void SetData(AudioMixer mixer, Func<AudioTrackType, AudioMixerGroup> getAudioTrack)
+		public void SetMixerData(AudioMixer mixer, Func<AudioTrackType, AudioMixerGroup> getAudioTrack)
 		{
             _audioMixer = mixer;
             _getAudioTrack = getAudioTrack;

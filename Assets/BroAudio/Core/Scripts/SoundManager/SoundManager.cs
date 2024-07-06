@@ -61,15 +61,11 @@ namespace Ami.BroAudio.Runtime
         [SerializeField] BroAudioData _data = null;
 
         private Dictionary<int, IAudioEntity> _audioBank = new Dictionary<int, IAudioEntity>();
-
         private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
-
         private Dictionary<SoundID, AudioPlayer> _combFilteringPreventer = null;
-
         private Coroutine _masterVolumeCoroutine;
 
-        public IReadOnlyDictionary<BroAudioType, AudioTypePlaybackPreference> AudioTypePref => _auidoTypePref;
         public AudioMixer Mixer => _broAudioMixer;
 
         private void Awake()
@@ -137,14 +133,14 @@ namespace Ami.BroAudio.Runtime
                 return;
 			}
 
-            GetPlaybackPrefByType(targetType, pref => pref.Volume = vol);
-            GetCurrentActivePlayers(player => 
-            { 
-                if(targetType.Contains(GetAudioType(player.ID)))
-				{
+            SetPlaybackPrefByType(targetType, vol , AudioTypePlaybackPreference.SetVolume);
+            foreach (var player in GetCurrentAudioPlayers())
+            {
+                if (player.IsActive && targetType.Contains(GetAudioType(player.ID)))
+                {
                     player.SetVolume(vol, fadeTime);
                 }
-            });
+            }
         }
 
 		private void SetMasterVolume(float targetVol, float fadeTime)
@@ -181,13 +177,13 @@ namespace Ami.BroAudio.Runtime
 
 		public void SetVolume(int id, float vol, float fadeTime)
 		{
-            GetCurrentActivePlayers(player =>
+            foreach (var player in GetCurrentAudioPlayers())
             {
-                if (player && player.ID == id)
+                if (player.IsActive && player.ID == id)
                 {
                     player.SetVolume(vol, fadeTime);
                 }
-            });
+            }
         }
 #endregion
 
@@ -229,29 +225,16 @@ namespace Ami.BroAudio.Runtime
 
         private void SetPlayerEffect(BroAudioType targetType, EffectType effectType,SetEffectMode mode)
         {
-			GetPlaybackPrefByType(targetType, pref =>
-			{
-				switch (mode)
-				{
-					case SetEffectMode.Add:
-                        pref.EffectType |= effectType;
-						break;
-					case SetEffectMode.Remove:
-						pref.EffectType &= ~effectType;
-						break;
-					case SetEffectMode.Override:
-						pref.EffectType = effectType;
-						break;
-				}				
-			});
+            var parameter = new AudioTypePlaybackPreference.SetEffectParameter() { EffectType = effectType, Mode = mode};
+            SetPlaybackPrefByType(targetType, parameter, AudioTypePlaybackPreference.SetEffect);
 
-			GetCurrentActivePlayers(player =>
-			{
-                if (targetType.Contains(GetAudioType(player.ID)) && !player.IsDominator)
-				{
-					player.SetEffect(effectType, mode);
-				}
-			});
+            foreach (var player in GetCurrentAudioPlayers())
+            {
+                if (player.IsActive && targetType.Contains(GetAudioType(player.ID)) && !player.IsDominator)
+                {
+                    player.SetEffect(effectType, mode);
+                }
+            }
 		}
         #endregion
 
@@ -263,14 +246,24 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            GetPlaybackPrefByType(targetType, pref => pref.Pitch = pitch);
-            GetCurrentActivePlayers(player =>
+            SetPlaybackPrefByType(targetType, pitch, AudioTypePlaybackPreference.SetPitch);
+            foreach (var player in GetCurrentAudioPlayers())
             {
-                if (targetType.Contains(GetAudioType(player.ID)))
+                if (player.IsActive && targetType.Contains(GetAudioType(player.ID)))
                 {
                     player.SetPitch(pitch, fadeTime);
                 }
-            });
+            }
+        }
+
+        public bool TryGetAudioTypePref(BroAudioType audioType, out IAudioPlaybackPref result)
+        {
+            result = null;
+            if (_auidoTypePref.TryGetValue(audioType, out var typePref))
+            {
+                result = typePref;
+            }
+            return result != null;
         }
 
         AudioMixerGroup IAudioMixer.GetTrack(AudioTrackType trackType)
@@ -298,32 +291,21 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        private void GetPlaybackPrefByType(BroAudioType targetType, Action<AudioTypePlaybackPreference> onGetPref)
+        private void SetPlaybackPrefByType<TParameter>(BroAudioType targetType, TParameter parameter, Action<AudioTypePlaybackPreference, TParameter> onModifyPref) where TParameter : struct
         {
             // For those which may be played in the future.
             ForeachConcreteAudioType((audioType) =>
             {
-                if (targetType.Contains(audioType) && _auidoTypePref.TryGetValue(audioType,out var pref))
+                if (targetType.Contains(audioType) && _auidoTypePref.TryGetValue(audioType, out var pref))
                 {
-                    onGetPref.Invoke(pref);
+                    onModifyPref.Invoke(pref, parameter);
                 }
             });
         }
 
-        private void GetCurrentActivePlayers(Action<AudioPlayer> onGetPlayer)
+        private IReadOnlyList<AudioPlayer> GetCurrentAudioPlayers()
         {
-            // For those which are currently playing.
-            var players = _audioPlayerPool.GetCurrentAudioPlayers();
-            if (players != null)
-            {
-                foreach (var player in players)
-                {
-                    if (player.IsActive)
-                    {
-                        onGetPlayer?.Invoke(player);
-                    }
-                }
-            }
+            return _audioPlayerPool.GetCurrentAudioPlayers();
         }
 
         private bool TryGetAvailablePlayer(int id, out AudioPlayer audioPlayer)

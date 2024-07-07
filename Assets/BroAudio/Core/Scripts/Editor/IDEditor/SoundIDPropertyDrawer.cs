@@ -15,12 +15,14 @@ namespace Ami.BroAudio.Editor
 		public const string IDMissing = "Missing";
 		public const string ToolTip = "refering to an AudioEntity";
 
-
         private readonly string _missingMessage = IDMissing.ToBold().ToItalics().SetColor(new Color(1f, 0.3f, 0.3f));
 		private bool _isInit = false;
 		private string _entityName = null;
+		private readonly GUIContent _libraryShortcut = 
+			new GUIContent(EditorGUIUtility.IconContent("d_winbtn_win_restore_a@2x")) { tooltip = "Open in Library Manager"};
 
 		private GUIStyle _dropdownStyle = new GUIStyle(EditorStyles.popup) { richText = true};
+		private float LibraryShortcutButtonWidth => EditorGUIUtility.singleLineHeight * 1.5f;
 
 		private void Init(SerializedProperty idProp,SerializedProperty assetProp)
 		{
@@ -84,20 +86,27 @@ namespace Ami.BroAudio.Editor
 			}
 
             Rect suffixRect = EditorGUI.PrefixLabel(position, new GUIContent(property.displayName, ToolTip));
+			Rect dropdownRect = new Rect(suffixRect) { width = suffixRect.width - LibraryShortcutButtonWidth};
+			Rect libraryShortcutRect = new Rect(suffixRect) { width = LibraryShortcutButtonWidth, x = dropdownRect.xMax };
 
-			if (EditorGUI.DropdownButton(suffixRect, new GUIContent(_entityName, ToolTip), FocusType.Keyboard, _dropdownStyle))
+			if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(_entityName, ToolTip), FocusType.Keyboard, _dropdownStyle))
 			{
 				var dropdown = new SoundIDAdvancedDropdown(new AdvancedDropdownState(), OnSelect);
-				dropdown.Show(suffixRect);
+				dropdown.Show(dropdownRect);
 			}
 
             IAudioAsset audioAsset = assetProp.objectReferenceValue as IAudioAsset;
             if (BroEditorUtility.EditorSetting.ShowAudioTypeOnSoundID && audioAsset != null && idProp.intValue > 0)
 			{
 				BroAudioType audioType = Utility.GetAudioType(idProp.intValue);
-                Rect audioTypeRect = EditorScriptingExtension.DissolveHorizontal(suffixRect, 0.7f);
+                Rect audioTypeRect = EditorScriptingExtension.DissolveHorizontal(dropdownRect, 0.7f);
 				EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(audioType));
 				EditorGUI.LabelField(audioTypeRect, audioType.ToString(), GUIStyleHelper.MiddleCenterText);
+			}
+
+			if(GUI.Button(libraryShortcutRect, _libraryShortcut))
+			{
+				LibraryManagerWindow.ShowWindowAndLocateToEntity(audioAsset.AssetGUID, idProp.intValue);
 			}
 
 			void OnSelect(int id, string name, ScriptableObject asset)

@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Tools;
 using Ami.Extension;
@@ -180,6 +179,23 @@ namespace Ami.BroAudio.Editor
 			elementProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = clip;
 			elementProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = AudioConstant.FullVolume;
 		}
+
+		public void SelectEntity(int id, out float entityVerticalPos)
+		{
+			entityVerticalPos = 0f;
+            for (int i = 0; i < _entitiesList.count;i++)
+			{
+				var elementProp = _entitiesList.serializedProperty.GetArrayElementAtIndex(i);
+                int entityID = elementProp.FindBackingFieldProperty(nameof(AudioEntity.ID)).intValue;
+				bool isTarget = entityID == id;
+                elementProp.isExpanded = isTarget;
+                if (isTarget)
+				{
+					_entitiesList.index = i;
+                    entityVerticalPos = i * _entitiesList.elementHeight;
+                }
+			}
+        }
 
 		public void Verify()
 		{

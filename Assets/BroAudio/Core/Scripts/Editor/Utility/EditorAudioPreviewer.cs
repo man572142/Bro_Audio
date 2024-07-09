@@ -29,6 +29,8 @@ namespace Ami.BroAudio.Editor
 
         private bool _isInitSuccessfully = false;
 
+        public float CurrentDecibelVolume => _dbVolume;
+
         public EditorAudioPreviewer(AudioMixer mixer)
         {
             _mixer = mixer;
@@ -65,8 +67,19 @@ namespace Ami.BroAudio.Editor
                 _method = reflection.MixerGroupClass.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public);
             }
 
-            float startVol = _clipData.FadeIn > 0f ? 0f : 1f;
-            SetVolume(startVol);
+            float startVol = GetStartVolume(clipData);
+            SetVolume(startVol, true);
+        }
+
+        private float GetStartVolume(EditorPlayAudioClip.Data clipData)
+        {
+            return clipData.FadeIn > 0f ? 0f : clipData.Volume; ;
+        }
+
+        public bool IsNewVolumeDifferentFromCurrent(EditorPlayAudioClip.Data clipData)
+        {
+            float startVol = GetStartVolume(clipData);
+            return startVol.ToDecibel() != _dbVolume;
         }
 
         public override void Start()
@@ -75,10 +88,10 @@ namespace Ami.BroAudio.Editor
             base.Start();
         }
 
-        public override void End()
+        public override void Dispose()
         {
             SetVolume(1f);
-            base.End();
+            base.Dispose();
         }
 
         protected override void Update()
@@ -109,15 +122,15 @@ namespace Ami.BroAudio.Editor
             base.Update();
         }
 
-        private void SetVolume(float vol)
+        private void SetVolume(float vol, bool forceSet = false)
         {
-            if(!_isInitSuccessfully)
+            if (!_isInitSuccessfully)
             {
                 return;
             }
 
             float db = vol.ToDecibel();
-            if (db == _dbVolume)
+            if (!forceSet && db == _dbVolume)
             {
                 return;
             }

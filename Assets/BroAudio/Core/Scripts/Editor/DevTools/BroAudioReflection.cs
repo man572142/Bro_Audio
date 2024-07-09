@@ -11,11 +11,6 @@ namespace Ami.Extension.Reflection
 {
     public static class BroAudioReflection
     {
-        public enum LoopOrder
-        {
-            Ascending, Descending,
-        }
-
         public enum MethodName
         {
             None,
@@ -244,7 +239,6 @@ namespace Ami.Extension.Reflection
                 AssignSendTarget(sendTarget, group, isSendInLast);
             }
         }
-
 
         private static bool TryGetGUID(MethodName methodName, Type type, object target, out GUID guid)
         {

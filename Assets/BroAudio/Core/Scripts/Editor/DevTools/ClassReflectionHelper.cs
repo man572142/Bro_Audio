@@ -6,7 +6,13 @@ namespace Ami.Extension.Reflection
 {
 	public class ClassReflectionHelper
 	{
-		private Type _mixerClass = null;
+        public const string AudioUtilClassName = "AudioUtil";
+        public const string MixerClassName = "AudioMixerController";
+		public const string MixerGroupClassName = "AudioMixerGroupController";
+		public const string MixerEffectClassName = "AudioMixerEffectController";
+		public const string MixerEffectParameterPathClassName = "AudioEffectParameterPath";
+
+        private Type _mixerClass = null;
 		private Type _mixerGroupClass = null;
 		private Type _effectClass = null;
 		private Type _effectParameterPath = null;
@@ -15,7 +21,7 @@ namespace Ami.Extension.Reflection
 		{
 			get
 			{
-                _mixerClass = _mixerClass ?? GetUnityAudioEditorClass("AudioMixerController");
+                _mixerClass = _mixerClass ?? GetUnityAudioEditorClass(MixerClassName);
 				return _mixerClass;
 			}
 		}
@@ -24,7 +30,7 @@ namespace Ami.Extension.Reflection
 		{
 			get
 			{
-                _mixerGroupClass = _mixerGroupClass ?? GetUnityAudioEditorClass("AudioMixerGroupController");
+                _mixerGroupClass = _mixerGroupClass ?? GetUnityAudioEditorClass(MixerGroupClassName);
                 return _mixerGroupClass;
 			}
 		}
@@ -33,7 +39,7 @@ namespace Ami.Extension.Reflection
 		{
 			get
 			{
-                _effectClass = _effectClass ?? GetUnityAudioEditorClass("AudioMixerEffectController");
+                _effectClass = _effectClass ?? GetUnityAudioEditorClass(MixerEffectClassName);
                 return _effectClass;
 			}
 		}
@@ -42,7 +48,7 @@ namespace Ami.Extension.Reflection
 		{
 			get
 			{
-                _effectParameterPath = _effectParameterPath ?? GetUnityAudioEditorClass("AudioEffectParameterPath");
+                _effectParameterPath = _effectParameterPath ?? GetUnityAudioEditorClass(MixerEffectParameterPathClassName);
                 return _effectParameterPath;
 			}
 		}
@@ -58,5 +64,12 @@ namespace Ami.Extension.Reflection
 			Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
 			return unityEditorAssembly?.GetType($"UnityEditor.{className}");
 		}
-	}
+
+        public static T GetAudioUtilMethodDelegate<T>(string methodName) where T : Delegate
+        {
+            Type audioUtilClass = GetUnityEditorClass(AudioUtilClassName);
+            MethodInfo method = audioUtilClass.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public);
+            return Delegate.CreateDelegate(typeof(T), method) as T;
+        }
+    }
 }

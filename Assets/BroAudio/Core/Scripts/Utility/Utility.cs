@@ -19,9 +19,14 @@ namespace Ami.BroAudio
 		{
 			return ((int)flags & (int)targetFlag) != 0;
 		}
-		#endregion
+        #endregion
 
-		public static bool IsDefaultCurve(this AnimationCurve curve , float defaultValue)
+        public static int GetSample(int sampleRate, float seconds)
+        {
+            return (int)(sampleRate * seconds);
+        }
+
+        public static bool IsDefaultCurve(this AnimationCurve curve , float defaultValue)
 		{
 			if(curve == null || curve.length == 0)
 			{

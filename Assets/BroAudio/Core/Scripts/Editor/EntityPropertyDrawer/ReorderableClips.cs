@@ -314,10 +314,7 @@ namespace Ami.BroAudio.Editor
                 _currentPlayingClipPath = clipProp.propertyPath;
                 EditorPlayAudioClip.Instance.OnFinished = () => _currentPlayingClipPath = null;
 
-                if (EditorPlayAudioClip.Instance.PlaybackIndicator.IsPlaying)
-                {
-                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, previewClipGUI);
-                }
+                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, previewClipGUI);
             }
 
 			void DrawVolumeSlider()

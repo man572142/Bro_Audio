@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Ami.Extension;
+using static Ami.BroAudio.Utility;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -119,8 +120,8 @@ namespace Ami.BroAudio.Runtime
                     _pref.ApplySeamlessFade();
 				}
 
-                #region FadeOut     
-                int endSample = (int)(AudioSource.clip.samples - (CurrentClip.EndPosition * sampleRate));
+                #region FadeOut
+                int endSample = AudioSource.clip.samples - GetSample(sampleRate, CurrentClip.EndPosition);
                 if (HasFading(CurrentClip.FadeOut, _pref.FadeOut, out float fadeOut))
                 {
                     while (endSample - AudioSource.timeSamples > fadeOut * sampleRate)

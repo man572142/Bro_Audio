@@ -240,16 +240,13 @@ namespace Ami.BroAudio.Editor
 					EditorPlayAudioClip.Instance.OnFinished = () => _onPreviewingClip?.Invoke(null);
                     currEvent.Use();
 
-					if (EditorPlayAudioClip.Instance.PlaybackIndicator.IsPlaying)
-					{
-						PreviewClip clip = new PreviewClip() 
-						{
-							StartPosition = clickedPoint * audioClip.length,
-							EndPosition = 0f,
-							FullLength = audioClip.length,
-						};
-						EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, clip);
-					}
+                    PreviewClip clip = new PreviewClip()
+                    {
+                        StartPosition = clickedPoint * audioClip.length,
+                        EndPosition = 0f,
+                        FullLength = audioClip.length,
+                    };
+                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, clip);
                     _onPreviewingClip = onPreviewClip;
                     _onPreviewingClip?.Invoke(clipPath);
                 }
@@ -264,7 +261,7 @@ namespace Ami.BroAudio.Editor
 				GUI.BeginClip(scope);
 				{
 					Rect indicatorRect = indicator.GetIndicatorPosition();
-					EditorGUI.DrawRect(new Rect(indicatorRect.position + positionOffset, indicatorRect.size), indicator.Color);
+                    EditorGUI.DrawRect(new Rect(indicatorRect.position + positionOffset, indicatorRect.size), indicator.Color);
 				}
 				GUI.EndClip();
 			}

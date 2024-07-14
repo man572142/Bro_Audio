@@ -8,6 +8,7 @@ using System;
 using static Ami.BroAudio.Utility;
 using static Ami.Extension.CoroutineExtension;
 using static Ami.BroAudio.Tools.BroName;
+using static Ami.Extension.AnimationExtension;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -21,7 +22,7 @@ namespace Ami.BroAudio.Runtime
 
             if (prefab == null)
             {
-                Debug.LogError(Utility.LogTitle + $"Initialize failed ,please check {nameof(SoundManager)}.prefab in your Resources folder!");
+                Debug.LogError(LogTitle + $"Initialize failed ,please check {nameof(SoundManager)}.prefab in your Resources folder!");
                 return;
             }
 
@@ -31,7 +32,7 @@ namespace Ami.BroAudio.Runtime
             }
             else
             {
-                Debug.LogError(Utility.LogTitle + $"Initialize failed ,please add {nameof(SoundManager)} component to {nameof(SoundManager)}.prefab");
+                Debug.LogError(LogTitle + $"Initialize failed ,please add {nameof(SoundManager)} component to {nameof(SoundManager)}.prefab");
             }
 
             DontDestroyOnLoad(prefab);
@@ -138,7 +139,7 @@ namespace Ami.BroAudio.Runtime
             {
                 if (player.IsActive && targetType.Contains(GetAudioType(player.ID)))
                 {
-                    player.SetVolume(vol, fadeTime);
+                    player.SetAudioTypeVolume(vol, fadeTime);
                 }
             }
         }
@@ -155,27 +156,22 @@ namespace Ami.BroAudio.Runtime
 
                 if(fadeTime != 0f)
                 {
-                    Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
-                    var volumes = AnimationExtension.GetLerpValuesPerFrame(currentVol, targetVol, fadeTime, ease);
-                    this.StartCoroutineAndReassign(SetMasterVolume(volumes), ref _masterVolumeCoroutine);
+                    this.StartCoroutineAndReassign(SetMasterVolume(currentVol, targetVol, fadeTime), ref _masterVolumeCoroutine);
                 }
 				else
                 {
                     _broAudioMixer.SafeSetFloat(MasterTrackName, targetVol);
                 }
 			}
-
-            IEnumerator SetMasterVolume(IEnumerable<float> volumes)
-            {
-                foreach (var vol in volumes)
-                {
-                    _broAudioMixer.SafeSetFloat(MasterTrackName, vol);
-                    yield return null;
-                }
-            }
         }
 
-		public void SetVolume(int id, float vol, float fadeTime)
+        private IEnumerator SetMasterVolume(float currentVol, float targetVol, float fadeTime)
+        {
+            Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
+            yield return LerpValuesPerFrame(currentVol, targetVol, fadeTime, ease, vol => _broAudioMixer.SafeSetFloat(MasterTrackName, vol));
+        }
+
+        public void SetVolume(int id, float vol, float fadeTime)
 		{
             foreach (var player in GetCurrentAudioPlayers())
             {

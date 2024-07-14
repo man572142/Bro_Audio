@@ -31,7 +31,6 @@ namespace Ami.BroAudio.Runtime
         public bool IsActive => ID > 0;
         public bool IsStopping { get; private set; }
         public bool IsFadingOut { get; private set; }
-        public bool IsFadingIn { get; private set; }
         public EffectType CurrentActiveEffects { get; private set; } = EffectType.None;
         public bool IsUsingEffect => CurrentActiveEffects != EffectType.None;
 		public bool IsDominator => TryGetDecorator<DominatorPlayer>(out _);
@@ -68,6 +67,7 @@ namespace Ami.BroAudio.Runtime
         protected virtual void Awake()
         {
             AudioSource = AudioSource ?? GetComponent<AudioSource>();
+            InitVolumeModule();
         }
 
 		public void SetMixerData(AudioMixer mixer, Func<AudioTrackType, AudioMixerGroup> getAudioTrack)

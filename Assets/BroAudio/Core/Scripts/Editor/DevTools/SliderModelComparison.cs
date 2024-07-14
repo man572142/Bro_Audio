@@ -41,7 +41,7 @@ namespace Ami.BroAudio.Editor.DevTool
 
 		private void ReflectUnityAudioMixerSlider()
 		{
-			Type mixerClass = AudioClassReflectionHelper.GetUnityAudioEditorClass("AudioMixerController");
+			Type mixerClass = ClassReflectionHelper.GetUnityAudioEditorClass("AudioMixerController");
 			_unityMixerSliderAlgorithm = mixerClass.GetMethod("VolumeToScreenMapping", BindingFlags.Static | BindingFlags.Public);
 			_unityMixerSliderAlgorithmParameters = new object[] { 0f, 0f, true };
 

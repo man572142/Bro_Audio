@@ -10,6 +10,7 @@ using static Ami.Extension.StringExtension;
 using static Ami.Extension.AudioConstant;
 using static Ami.Extension.EditorScriptingExtension;
 using System.Reflection;
+using Ami.Extension.Reflection;
 
 namespace Ami.BroAudio.Editor
 {
@@ -30,15 +31,15 @@ namespace Ami.BroAudio.Editor
         private const float HighVolumeSnappingThreshold = 0.2f;
         private const string DbValueStringFormat = "0.##";
 
-		public const int RoundedDigits = 4;
-		public const float MinMaxSliderFieldWidth = 50f;
+        public const int RoundedDigits = 4;
+        public const float MinMaxSliderFieldWidth = 50f;
 
-		private static Vector2 DecibelLabelSize => new Vector2(55f,25f);
+        private static Vector2 DecibelLabelSize => new Vector2(55f, 25f);
         private static Vector2 MinMaxDecibelLabelSize => new Vector2(115f, 25f);
         public static readonly float[] VolumeSplitPoints = { -80f, -60f, -36f, -24f, -12f, -6f, 0f, 6f, 20f };
 
         public static float VolumeScale => 1f / (VolumeSplitPoints.Length - 1);
-		public static AnimationCurve SpatialBlend => AnimationCurve.Constant(0f, 0f, 0f);
+        public static AnimationCurve SpatialBlend => AnimationCurve.Constant(0f, 0f, 0f);
         public static AnimationCurve ReverbZoneMix => AnimationCurve.Constant(0f, 0f, 1f);
         public static AnimationCurve Spread => AnimationCurve.Constant(0f, 0f, 0f);
         public static AnimationCurve LogarithmicRolloff => GetLogarithmicCurve(AttenuationMinDistance / AttenuationMaxDistance, 1f, 1f);
@@ -48,7 +49,7 @@ namespace Ami.BroAudio.Editor
         {
             get
             {
-                if(!_runtimeSetting)
+                if (!_runtimeSetting)
                 {
                     _runtimeSetting = Resources.Load<RuntimeSetting>(BroName.RuntimeSettingFileName);
                     if (!_runtimeSetting)
@@ -77,7 +78,24 @@ namespace Ami.BroAudio.Editor
                 }
                 return _editorSetting;
             }
-        } 
+        }
+
+#if UNITY_EDITOR
+        [MenuItem("GameObject/Audio/Sound Source (Bro Audio)")]
+        public static void CreateSoundSourceGameObject(MenuCommand menuCommand)
+        {
+            var parent = menuCommand.context as GameObject;
+            var newGO = ObjectFactory.CreateGameObject("Sound Source", typeof(SoundSource));
+            Type goCreationClass = ClassReflectionHelper.GetUnityEditorClass("GOCreationCommands");
+
+#if UNITY_2020_3_OR_NEWER
+            object[] parameters = new object[] { newGO, parent, true };
+#else
+            object[] parameters = new object[] { newGO, parent , };
+#endif
+            ReflectionExtension.ExecuteMethod("Place", parameters, goCreationClass, null, BindingFlags.NonPublic | BindingFlags.Static);
+        }
+#endif
 
         private static float SliderFullScale => FullVolume / ((FullDecibelVolume - MinDecibelVolume) / DecibelVoulumeFullScale);
 
@@ -98,7 +116,7 @@ namespace Ami.BroAudio.Editor
         }
 
         public static int GetProjectSettingRealAudioVoices()
-		{
+        {
             string path = GetFullFilePath(ProjectSettingsFolderName, ProjectAudioSettingFileName);
             if (!File.Exists(path))
             {
@@ -134,7 +152,7 @@ namespace Ami.BroAudio.Editor
         }
 
         public static bool IsTempReservedName(string name)
-		{
+        {
             string tempName = BroName.TempAssetName;
             bool sameLength = name.Length == tempName.Length;
             bool couldBeTempWithNumber = name.Length > tempName.Length && Char.IsNumber(name[name.Length - 1]);
@@ -211,7 +229,7 @@ namespace Ami.BroAudio.Editor
         }
 
         public static bool Contains(this DrawedProperty flags, DrawedProperty targetFlag)
-		{
+        {
             return ((int)flags & (int)targetFlag) != 0;
         }
 
@@ -222,33 +240,33 @@ namespace Ami.BroAudio.Editor
 
         public static void DrawAssetOutputPath(Rect rect, BroInstructionHelper instruction, Action onUpdateSuccess)
         {
-			GUIStyle style = new GUIStyle(EditorStyles.objectField);
-			style.alignment = TextAnchor.MiddleCenter;
-			if (GUI.Button(rect, new GUIContent(AssetOutputPath), style))
-			{
-				string openPath = AssetOutputPath;
-				if (!Directory.Exists(GetFullPath(openPath)))
-				{
-					openPath = Application.dataPath;
-				}
-				string newPath = EditorUtility.OpenFolderPanel(instruction.GetText(Instruction.AssetOutputPathPanelTtile), openPath, "");
-				if (!string.IsNullOrEmpty(newPath) && IsInProjectFolder(newPath))
-				{
-					newPath = newPath.Remove(0, UnityProjectRootPath.Length + 1);
-					AssetOutputPath = newPath;
-					WriteAssetOutputPathToSetting(newPath);
+            GUIStyle style = new GUIStyle(EditorStyles.objectField);
+            style.alignment = TextAnchor.MiddleCenter;
+            if (GUI.Button(rect, new GUIContent(AssetOutputPath), style))
+            {
+                string openPath = AssetOutputPath;
+                if (!Directory.Exists(GetFullPath(openPath)))
+                {
+                    openPath = Application.dataPath;
+                }
+                string newPath = EditorUtility.OpenFolderPanel(instruction.GetText(Instruction.AssetOutputPathPanelTtile), openPath, "");
+                if (!string.IsNullOrEmpty(newPath) && IsInProjectFolder(newPath))
+                {
+                    newPath = newPath.Remove(0, UnityProjectRootPath.Length + 1);
+                    AssetOutputPath = newPath;
+                    WriteAssetOutputPathToSetting(newPath);
                     onUpdateSuccess?.Invoke();
-				}
-			}
-			Rect browserIconRect = rect;
-			browserIconRect.width = EditorGUIUtility.singleLineHeight;
-			browserIconRect.height = EditorGUIUtility.singleLineHeight;
-			browserIconRect.x = rect.xMax - EditorGUIUtility.singleLineHeight;
+                }
+            }
+            Rect browserIconRect = rect;
+            browserIconRect.width = EditorGUIUtility.singleLineHeight;
+            browserIconRect.height = EditorGUIUtility.singleLineHeight;
+            browserIconRect.x = rect.xMax - EditorGUIUtility.singleLineHeight;
 #if UNITY_2020_1_OR_NEWER
-			GUI.DrawTexture(browserIconRect, EditorGUIUtility.IconContent(IconConstant.AssetOutputBrowser).image);
+            GUI.DrawTexture(browserIconRect, EditorGUIUtility.IconContent(IconConstant.AssetOutputBrowser).image);
 #endif
-			EditorGUI.DrawRect(browserIconRect, BroAudioGUISetting.ShadowMaskColor);
-		}
+            EditorGUI.DrawRect(browserIconRect, BroAudioGUISetting.ShadowMaskColor);
+        }
 
         public static void DrawVUMeter(Rect vuRect, Color maskColor)
         {
@@ -259,7 +277,7 @@ namespace Ami.BroAudio.Editor
         }
 
         public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue, bool canDrawVU = true)
-		{
+        {
             return DrawVolumeSlider(position, label, currentValue, false, null, canDrawVU);
         }
 
@@ -281,15 +299,15 @@ namespace Ami.BroAudio.Editor
             float newFloatFieldValue = EditorGUI.FloatField(fieldRect, hasSliderChanged ? newNormalizedValue : currentValue);
             currentValue = Mathf.Clamp(newFloatFieldValue, 0f, MaxVolume);
             if (isSnap && CanSnap(currentValue))
-			{
-				currentValue = FullVolume;
-			}
-			DrawDecibelValuePeeking(currentValue, padding, sliderRect, newSliderValue);
+            {
+                currentValue = FullVolume;
+            }
+            DrawDecibelValuePeeking(currentValue, padding, sliderRect, newSliderValue);
 #else
             currentValue = GUI.HorizontalSlider(sliderRect, currentValue, 0f, FullVolume);
 			currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue),0f,FullVolume);
 #endif
-			
+
             return currentValue;
 
 #if !UNITY_WEBGL
@@ -300,10 +318,10 @@ namespace Ami.BroAudio.Editor
                     return;
                 }
 
-				float scale = 1f / (VolumeSplitPoints.Length - 1);
-				float sliderValue = VolumeToSlider(FullVolume);
+                float scale = 1f / (VolumeSplitPoints.Length - 1);
+                float sliderValue = VolumeToSlider(FullVolume);
 
-				Rect rect = new Rect(sliderPosition);
+                Rect rect = new Rect(sliderPosition);
                 rect.width = 30f;
                 rect.x = sliderPosition.x + sliderPosition.width * sliderValue - (rect.width * 0.5f) + 1f; // add 1 pixel for more precise position
                 rect.y -= sliderPosition.height;
@@ -363,59 +381,59 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        public static float DrawVolumeSlider(Rect position, float currentValue,out bool hasChanged, out float newSliderInFullScale)
-		{
-			float sliderValue = VolumeToSlider(currentValue);
+        public static float DrawVolumeSlider(Rect position, float currentValue, out bool hasChanged, out float newSliderInFullScale)
+        {
+            float sliderValue = VolumeToSlider(currentValue);
 
-			EditorGUI.BeginChangeCheck();
-			sliderValue = GUI.HorizontalSlider(position, sliderValue, 0f, 1f);
-			newSliderInFullScale = sliderValue * SliderFullScale;
-			hasChanged = EditorGUI.EndChangeCheck();
-			if(hasChanged)
+            EditorGUI.BeginChangeCheck();
+            sliderValue = GUI.HorizontalSlider(position, sliderValue, 0f, 1f);
+            newSliderInFullScale = sliderValue * SliderFullScale;
+            hasChanged = EditorGUI.EndChangeCheck();
+            if (hasChanged)
             {
                 return SliderToVolume(sliderValue);
-			}
-			return currentValue;
-		}
+            }
+            return currentValue;
+        }
 
         public static void GetMixerMinMaxVolume(out float minVol, out float maxVol)
         {
-			bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
+            bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
             minVol = MinVolume;
             maxVol = isWebGL ? FullVolume : MaxVolume;
-		}
+        }
 
-		public static void DrawRandomRangeSlider(Rect rect, GUIContent label, ref float value, ref float valueRange, float minLimit, float maxLimit, RandomRangeSliderType sliderType, Action<Rect> onGetSliderRect = null)
-		{
-			float minRand = value - valueRange * 0.5f;
-			float maxRand = value + valueRange * 0.5f;
-			minRand = (float)Math.Round(Mathf.Clamp(minRand, minLimit, maxLimit), RoundedDigits, MidpointRounding.AwayFromZero);
-			maxRand = (float)Math.Round(Mathf.Clamp(maxRand, minLimit, maxLimit), RoundedDigits, MidpointRounding.AwayFromZero);
-			switch (sliderType)
-			{
-				case RandomRangeSliderType.Default:
-					DrawMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
-					break;
-				case RandomRangeSliderType.Logarithmic:
-					DrawLogarithmicMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
-					break;
-				case RandomRangeSliderType.BroVolume:
-					DrawRandomRangeVolumeSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
-					break;
+        public static void DrawRandomRangeSlider(Rect rect, GUIContent label, ref float value, ref float valueRange, float minLimit, float maxLimit, RandomRangeSliderType sliderType, Action<Rect> onGetSliderRect = null)
+        {
+            float minRand = value - valueRange * 0.5f;
+            float maxRand = value + valueRange * 0.5f;
+            minRand = (float)Math.Round(Mathf.Clamp(minRand, minLimit, maxLimit), RoundedDigits, MidpointRounding.AwayFromZero);
+            maxRand = (float)Math.Round(Mathf.Clamp(maxRand, minLimit, maxLimit), RoundedDigits, MidpointRounding.AwayFromZero);
+            switch (sliderType)
+            {
+                case RandomRangeSliderType.Default:
+                    DrawMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
+                    break;
+                case RandomRangeSliderType.Logarithmic:
+                    DrawLogarithmicMinMaxSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
+                    break;
+                case RandomRangeSliderType.BroVolume:
+                    DrawRandomRangeVolumeSlider(rect, label, ref minRand, ref maxRand, minLimit, maxLimit, MinMaxSliderFieldWidth, onGetSliderRect);
+                    break;
                 case RandomRangeSliderType.BroVolumeNoField:
                     DrawRandomRangeVolumeSliderNoField(rect, label, ref minRand, ref maxRand, minLimit, maxLimit);
                     break;
-			}
-			valueRange = maxRand - minRand;
-			value = minRand + valueRange * 0.5f;
-		}
+            }
+            valueRange = maxRand - minRand;
+            value = minRand + valueRange * 0.5f;
+        }
 
-		public static float DrawRandomRangeVolumeSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit, float fieldWidth, Action<Rect> onGetSliderRect = null)
+        public static float DrawRandomRangeVolumeSlider(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit, float fieldWidth, Action<Rect> onGetSliderRect = null)
         {
             Rect sliderRect = DrawMinMaxLabelAndField(position, label, ref min, ref max, fieldWidth, onGetSliderRect);
             DrawRandomRangeVolumeSliderNoField(sliderRect, label, ref min, ref max, minLimit, maxLimit);
             return max;
-		}
+        }
 
         public static float DrawRandomRangeVolumeSliderNoField(Rect position, GUIContent label, ref float min, ref float max, float minLimit, float maxLimit)
         {
@@ -433,39 +451,39 @@ namespace Ami.BroAudio.Editor
         }
 
         private static float VolumeToSlider(float vol)
-		{
-			float decibelVol = vol.ToDecibel();
-			for (int i = 0; i < VolumeSplitPoints.Length; i++)
-			{
-				if (i + 1 >= VolumeSplitPoints.Length)
-				{
-					return 1f;
-				}
-				else if (decibelVol >= VolumeSplitPoints[i] && decibelVol < VolumeSplitPoints[i + 1])
-				{
-					float currentStageSliderValue = VolumeScale * i;
-					float range = Mathf.Abs(VolumeSplitPoints[i + 1] - VolumeSplitPoints[i]);
-					float stageProgress = Mathf.Abs(decibelVol - VolumeSplitPoints[i]) / range;
-					return currentStageSliderValue + stageProgress * VolumeScale;
-				}
-			}
-			return 0f;
-		}
+        {
+            float decibelVol = vol.ToDecibel();
+            for (int i = 0; i < VolumeSplitPoints.Length; i++)
+            {
+                if (i + 1 >= VolumeSplitPoints.Length)
+                {
+                    return 1f;
+                }
+                else if (decibelVol >= VolumeSplitPoints[i] && decibelVol < VolumeSplitPoints[i + 1])
+                {
+                    float currentStageSliderValue = VolumeScale * i;
+                    float range = Mathf.Abs(VolumeSplitPoints[i + 1] - VolumeSplitPoints[i]);
+                    float stageProgress = Mathf.Abs(decibelVol - VolumeSplitPoints[i]) / range;
+                    return currentStageSliderValue + stageProgress * VolumeScale;
+                }
+            }
+            return 0f;
+        }
 
         private static float SliderToVolume(float sliderValue)
         {
-			if (sliderValue == 1f)
-			{
-				return MaxVolume;
-			}
-			int newStageIndex = (int)(sliderValue / VolumeScale);
-			float progress = (sliderValue % VolumeScale) / VolumeScale;
-			float range = Mathf.Abs(VolumeSplitPoints[newStageIndex + 1] - VolumeSplitPoints[newStageIndex]);
-			float decibelResult = VolumeSplitPoints[newStageIndex] + range * progress;
-			return decibelResult.ToNormalizeVolume();
-		}
+            if (sliderValue == 1f)
+            {
+                return MaxVolume;
+            }
+            int newStageIndex = (int)(sliderValue / VolumeScale);
+            float progress = (sliderValue % VolumeScale) / VolumeScale;
+            float range = Mathf.Abs(VolumeSplitPoints[newStageIndex + 1] - VolumeSplitPoints[newStageIndex]);
+            float decibelResult = VolumeSplitPoints[newStageIndex] + range * progress;
+            return decibelResult.ToNormalizeVolume();
+        }
 
-		private static AnimationCurve GetLogarithmicCurve(float timeStart, float timeEnd, float logBase)
+        private static AnimationCurve GetLogarithmicCurve(float timeStart, float timeEnd, float logBase)
         {
             Assembly unityEditorAssembly = typeof(AudioImporter).Assembly;
             Type audioSourceInspector = unityEditorAssembly?.GetType($"UnityEditor.AudioSourceInspector");

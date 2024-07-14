@@ -42,7 +42,7 @@ namespace Ami.Extension.Reflection
             // Using [DuplicateGroupRecurse] method on AudioMixerController will cause some unexpected result.
             // Create a new one and copy the setting manually might be better.
 
-            AudioClassReflectionHelper reflection = new AudioClassReflectionHelper();
+            ClassReflectionHelper reflection = new ClassReflectionHelper();
 
             AudioMixerGroup newGroup = ExecuteMethod("CreateNewGroup", new object[] { newTrackName, false }, reflection.MixerClass, mixer) as AudioMixerGroup;
             if (newGroup != null)
@@ -74,11 +74,11 @@ namespace Ami.Extension.Reflection
 
         private static object CreateParameterPathInstance(string className, params object[] parameters)
         {
-            Type type = AudioClassReflectionHelper.GetUnityAudioEditorClass(className);
+            Type type = ClassReflectionHelper.GetUnityAudioEditorClass(className);
             return CreateNewObjectWithReflection(type, parameters);
         }
 
-        private static void CopyColorIndex(AudioMixerGroup sourceGroup, AudioMixerGroup targetGroup, AudioClassReflectionHelper reflection)
+        private static void CopyColorIndex(AudioMixerGroup sourceGroup, AudioMixerGroup targetGroup, ClassReflectionHelper reflection)
         {
             int colorIndex = GetProperty<int>(ColorIndexParameter, reflection.MixerGroupClass, sourceGroup);
             SetProperty(ColorIndexParameter, reflection.MixerGroupClass, targetGroup, colorIndex);
@@ -114,7 +114,7 @@ namespace Ami.Extension.Reflection
             }
         }
 
-        private static object CopySendEffect(AudioMixerGroup sourceGroup, AudioMixerGroup targetGroup, AudioClassReflectionHelper reflection)
+        private static object CopySendEffect(AudioMixerGroup sourceGroup, AudioMixerGroup targetGroup, ClassReflectionHelper reflection)
         {
             if (TryGetFirstEffect(sourceGroup, SendEffectName, reflection, out object sourceSendEffect, out int effectIndex))
             {
@@ -128,7 +128,7 @@ namespace Ami.Extension.Reflection
             return null;
         }
 
-        public static bool TryGetFirstEffect(AudioMixerGroup mixerGroup, string targetEffectName, AudioClassReflectionHelper reflection, out object result, out int effectIndex, bool isAscending = true)
+        public static bool TryGetFirstEffect(AudioMixerGroup mixerGroup, string targetEffectName, ClassReflectionHelper reflection, out object result, out int effectIndex, bool isAscending = true)
         {
             result = null;
             effectIndex = 0;
@@ -168,9 +168,9 @@ namespace Ami.Extension.Reflection
             }
         }
 
-        public static void ExposeParameter(ExposedParameterType parameterType, AudioMixerGroup mixerGroup, AudioClassReflectionHelper reflection = null, params object[] additionalObjects)
+        public static void ExposeParameter(ExposedParameterType parameterType, AudioMixerGroup mixerGroup, ClassReflectionHelper reflection = null, params object[] additionalObjects)
         {
-            reflection = reflection ?? new AudioClassReflectionHelper();
+            reflection = reflection ?? new ClassReflectionHelper();
             AudioMixer audioMixer = mixerGroup.audioMixer;
 
             switch (parameterType)
@@ -210,9 +210,9 @@ namespace Ami.Extension.Reflection
             }
         }
 
-        public static void RemoveAudioEffect(AudioMixer mixer, string targetEffectName, AudioMixerGroup mixerGroup, AudioClassReflectionHelper reflection = null)
+        public static void RemoveAudioEffect(AudioMixer mixer, string targetEffectName, AudioMixerGroup mixerGroup, ClassReflectionHelper reflection = null)
         {
-            reflection = reflection ?? new AudioClassReflectionHelper();
+            reflection = reflection ?? new ClassReflectionHelper();
 
             object[] effects = GetProperty<object[]>("effects", reflection.MixerGroupClass, mixerGroup);
 
@@ -227,9 +227,9 @@ namespace Ami.Extension.Reflection
             }
         }
 
-        private static void AssignSendTarget(object sendTarget, AudioMixerGroup mixerGroup, bool isSendInLast, AudioClassReflectionHelper reflection = null)
+        private static void AssignSendTarget(object sendTarget, AudioMixerGroup mixerGroup, bool isSendInLast, ClassReflectionHelper reflection = null)
         {
-            reflection = reflection ?? new AudioClassReflectionHelper();
+            reflection = reflection ?? new ClassReflectionHelper();
 
             if (mixerGroup != null && TryGetFirstEffect(mixerGroup, SendEffectName, reflection, out object sendEffect, out _, !isSendInLast))
             {

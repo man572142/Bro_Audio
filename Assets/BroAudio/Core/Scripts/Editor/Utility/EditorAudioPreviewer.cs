@@ -60,7 +60,7 @@ namespace Ami.BroAudio.Editor
             
             if(_isInitSuccessfully && _method == null)
             {
-                var reflection = new AudioClassReflectionHelper();
+                var reflection = new ClassReflectionHelper();
                 string methodName = BroAudioReflection.MethodName.SetValueForVolume.ToString();
                 _method = reflection.MixerGroupClass.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public);
             }

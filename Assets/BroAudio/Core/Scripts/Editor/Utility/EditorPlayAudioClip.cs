@@ -366,7 +366,7 @@ namespace Ami.Extension
 
         private T GetAudioUtilMethodDelegate<T>(string methodName) where T : Delegate
         {
-            Type audioUtilClass = AudioClassReflectionHelper.GetUnityEditorClass(AudioUtilClassName);
+            Type audioUtilClass = ClassReflectionHelper.GetUnityEditorClass(AudioUtilClassName);
             MethodInfo method = audioUtilClass.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public);
             return Delegate.CreateDelegate(typeof(T), method) as T;
         }

@@ -40,7 +40,7 @@ namespace Ami.Extension.Reflection
 			public string Name { get; private set; }
 		}
 
-		public static void AddExposedParameter(string exposedName,object paraPathInstance,GUID guid ,AudioMixer audioMixer,AudioClassReflectionHelper reflection)
+		public static void AddExposedParameter(string exposedName,object paraPathInstance,GUID guid ,AudioMixer audioMixer,ClassReflectionHelper reflection)
 		{
 			if (guid == default)
 			{
@@ -66,7 +66,7 @@ namespace Ami.Extension.Reflection
 				return;
 			}
 
-			Type parameterType = AudioClassReflectionHelper.GetUnityAudioEditorClass("ExposedAudioParameter");
+			Type parameterType = ClassReflectionHelper.GetUnityAudioEditorClass("ExposedAudioParameter");
 			var newParam = new ReflectedExposedAudioParameter(parameterType, guid, exposedName);
 			exposedParameterList.Add(newParam);
 
@@ -79,7 +79,7 @@ namespace Ami.Extension.Reflection
 			SetField(CachedExposedParametersFieldName, reflection.MixerClass, audioMixer, exposedParamCache, PrivateFlag);
 
 			//AudioMixerUtility.RepaintAudioMixerAndInspectors();
-			Type mixerUtil = AudioClassReflectionHelper.GetUnityEditorClass("AudioMixerUtility");
+			Type mixerUtil = ClassReflectionHelper.GetUnityEditorClass("AudioMixerUtility");
 			ExecuteMethod("RepaintAudioMixerAndInspectors", ReflectionExtension.Void, mixerUtil, null,BindingFlags.Public | BindingFlags.Static);
 		}
 

@@ -4,7 +4,7 @@ using UnityEditor;
 
 namespace Ami.Extension.Reflection
 {
-	public class AudioClassReflectionHelper
+	public class ClassReflectionHelper
 	{
 		private Type _mixerClass = null;
 		private Type _mixerGroupClass = null;

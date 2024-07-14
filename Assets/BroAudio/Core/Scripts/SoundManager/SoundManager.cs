@@ -44,12 +44,12 @@ namespace Ami.BroAudio.Runtime
             get 
             {
 #if UNITY_EDITOR
-				if (!Application.isPlaying)
-				{
-					return null;
-				} 
+                if (!Application.isPlaying)
+                {
+                    return null;
+                } 
 #endif
-				return _instance;
+                return _instance;
             } 
         }
 
@@ -67,21 +67,25 @@ namespace Ami.BroAudio.Runtime
         private Dictionary<SoundID, AudioPlayer> _combFilteringPreventer = null;
         private Coroutine _masterVolumeCoroutine;
 
+#if UNITY_WEBGL
+        public float WebGLMasterVolume { get; private set; } = AudioConstant.FullVolume;
+#endif
+
         public AudioMixer Mixer => _broAudioMixer;
 
         private void Awake()
-		{
+        {
             string nullRefLog = LogTitle + $"Please assign {{0}} in {nameof(SoundManager)}.prefab";
             if(!_broAudioMixer)
-			{
+            {
                 Debug.LogError(string.Format(nullRefLog, MixerName));
                 return;
-			}
+            }
             else if(!_audioPlayerPrefab)
-			{
+            {
                 Debug.LogError(string.Format(nullRefLog, AudioPlayerPrefabName));
                 return;
-			}
+            }
 
             _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab, transform, Setting.DefaultAudioPlayerPoolSize, this);
             AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups(GenericTrackName);
@@ -94,17 +98,17 @@ namespace Ami.BroAudio.Runtime
             _automationHelper = new EffectAutomationHelper(this, _broAudioMixer);
         }
 
-		#region InitBank
-		private void InitBank()
-		{
-			foreach (var asset in _data.Assets)
-			{
+        #region InitBank
+        private void InitBank()
+        {
+            foreach (var asset in _data.Assets)
+            {
                 if (asset == null)
                     continue;
 
-				foreach(var entity in asset.GetAllAudioEntities())
-				{
-					if (!entity.Validate())
+                foreach(var entity in asset.GetAllAudioEntities())
+                {
+                    if (!entity.Validate())
                         continue;
 
                     if (!_audioBank.ContainsKey(entity.ID))
@@ -112,27 +116,26 @@ namespace Ami.BroAudio.Runtime
                         _audioBank.Add(entity.ID, entity as IAudioEntity);
                     }
                 }
-			}
+            }
 
             ForeachConcreteAudioType(audioType => _auidoTypePref.Add(audioType, new AudioTypePlaybackPreference()));
-		}
-		#endregion
+        }
+        #endregion
 
         #region Volume
         public void SetVolume(float vol, BroAudioType targetType, float fadeTime)
-		{
-#if !UNITY_WEBGL
-            if(targetType == BroAudioType.All)
-			{
-                SetMasterVolume(vol,fadeTime);
-                return;
-			}
-#endif
+        {
             if (targetType == BroAudioType.None)
-			{
+            {
                 Debug.LogWarning(LogTitle + $"SetVolume with {targetType} is meaningless");
                 return;
-			}
+            }
+
+            if (targetType == BroAudioType.All)
+            {
+                SetMasterVolume(vol,fadeTime);
+                return;
+            }
 
             SetPlaybackPrefByType(targetType, vol , AudioTypePlaybackPreference.SetVolume);
             foreach (var player in GetCurrentAudioPlayers())
@@ -144,35 +147,63 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-		private void SetMasterVolume(float targetVol, float fadeTime)
-		{
+        private void SetMasterVolume(float targetVol, float fadeTime)
+        {
+#if UNITY_WEBGL
+            if (WebGLMasterVolume != targetVol)
+            {
+                if (fadeTime != 0f)
+                {
+                    this.StartCoroutineAndReassign(SetMasterVolume(WebGLMasterVolume, targetVol, fadeTime, OnSetMaster), ref _masterVolumeCoroutine);
+                }
+            }
+            
+            void OnSetMaster(float vol)
+            {
+                WebGLMasterVolume = targetVol.ClampNormalize();
+
+                foreach (var player in GetCurrentAudioPlayers())
+                {
+                    if (player.IsActive)
+                    {
+                        player.UpdateWebGLVolume();
+                    }
+                }
+            }
+#else
             targetVol = targetVol.ToDecibel();
             if(_broAudioMixer.SafeGetFloat(MasterTrackName,out float currentVol))
-			{
-				if (currentVol == targetVol)
-				{
-					return;
-				}
+            {
+                if (currentVol == targetVol)
+                {
+                    return;
+                }
 
                 if(fadeTime != 0f)
                 {
-                    this.StartCoroutineAndReassign(SetMasterVolume(currentVol, targetVol, fadeTime), ref _masterVolumeCoroutine);
+                    this.StartCoroutineAndReassign(SetMasterVolume(currentVol, targetVol, fadeTime, OnSetMasterVolume), ref _masterVolumeCoroutine);
                 }
-				else
+                else
                 {
                     _broAudioMixer.SafeSetFloat(MasterTrackName, targetVol);
                 }
-			}
+            }
+
+            void OnSetMasterVolume(float vol)
+            {
+                _broAudioMixer.SafeSetFloat(MasterTrackName, vol);
+            }
+#endif
         }
 
-        private IEnumerator SetMasterVolume(float currentVol, float targetVol, float fadeTime)
+        private IEnumerator SetMasterVolume(float currentVol, float targetVol, float fadeTime, Action<float> onSetMaster)
         {
             Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
-            yield return LerpValuesPerFrame(currentVol, targetVol, fadeTime, ease, vol => _broAudioMixer.SafeSetFloat(MasterTrackName, vol));
+            yield return LerpValuesPerFrame(currentVol, targetVol, fadeTime, ease, onSetMaster);
         }
 
         public void SetVolume(int id, float vol, float fadeTime)
-		{
+        {
             foreach (var player in GetCurrentAudioPlayers())
             {
                 if (player.IsActive && player.ID == id)
@@ -185,17 +216,17 @@ namespace Ami.BroAudio.Runtime
 
         #region Effect
         public IAutoResetWaitable SetEffect(Effect effect)
-		{
+        {
             return SetEffect(BroAudioType.All,effect);
         }
 
         public IAutoResetWaitable SetEffect(BroAudioType targetType, Effect effect)
-		{
-			SetEffectMode mode = SetEffectMode.Add;
+        {
+            SetEffectMode mode = SetEffectMode.Add;
             if(effect.Type == EffectType.None)
             {
-				mode = SetEffectMode.Override;
-			}
+                mode = SetEffectMode.Override;
+            }
             else if(effect.IsDefault())
             {
                 mode = SetEffectMode.Remove;
@@ -213,7 +244,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     SetPlayerEffect(targetType, effect.Type, mode);
                 }
-			}
+            }
             
             _automationHelper.SetEffectTrackParameter(effect, onResetEffect);
             return _automationHelper;
@@ -231,7 +262,7 @@ namespace Ami.BroAudio.Runtime
                     player.SetEffect(effectType, mode);
                 }
             }
-		}
+        }
         #endregion
 
         public void SetPitch(float pitch, BroAudioType targetType, float fadeTime)
@@ -324,12 +355,12 @@ namespace Ami.BroAudio.Runtime
         }
 
         private AudioPlayer GetNewAudioPlayer()
-		{
+        {
             return _audioPlayerPool.Extract();
         }
 
         public string GetNameByID(int id)
-		{
+        {
             if(!IsAvailable())
             {
                 return string.Empty;
@@ -337,10 +368,10 @@ namespace Ami.BroAudio.Runtime
 
             string result = string.Empty;
             if(_audioBank.TryGetValue(id,out var entity))
-			{
+            {
                 IEntityIdentity entityIdentity = entity as IEntityIdentity;
                 result = entityIdentity?.Name;
-			}
+            }
             return result;
         }
 
@@ -349,15 +380,15 @@ namespace Ami.BroAudio.Runtime
             return _audioBank.ContainsKey(id);
         }
 
-		private bool IsAvailable(bool logError = true)
+        private bool IsAvailable(bool logError = true)
         {
-			if (!Application.isPlaying)
-			{
-				Debug.LogError(LogTitle + $"The method {"GetNameByID".ToWhiteBold()} is {"Runtime Only".ToBold().SetColor(Color.green)}");
-				return false;
-			}
+            if (!Application.isPlaying)
+            {
+                Debug.LogError(LogTitle + $"The method {"GetNameByID".ToWhiteBold()} is {"Runtime Only".ToBold().SetColor(Color.green)}");
+                return false;
+            }
             return true;
-		}
+        }
 
 #if UNITY_EDITOR
         public void SetCoreData(BroAudioData data)

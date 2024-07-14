@@ -64,7 +64,7 @@ namespace Ami.BroAudio.Runtime
         private void UpdateMixerVolume()
         {
 #if UNITY_WEBGL
-            WebGLSetVolume();
+            UpdateWebGLVolume();
 #else
             MixerDecibelVolume = (_clipVolume.Current * _trackVolume.Current * _audioTypeVolume.Current).ToDecibel();
 #endif
@@ -94,7 +94,7 @@ namespace Ami.BroAudio.Runtime
         {
             module.SetTarget(vol);
             if (fadeTime > 0f)
-            {
+            {   
                 Ease ease = module.Current < vol ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
                 module.StartCoroutineAndReassign(Fade(module, fadeTime, ease));
             }
@@ -112,9 +112,10 @@ namespace Ami.BroAudio.Runtime
         }
 
 #if UNITY_WEBGL
-        private void WebGLSetVolume()
+        public void UpdateWebGLVolume()
         {
-            AudioSource.volume = AudioExtension.ClampNormalize(_clipVolume.Current * _trackVolume.Current * _audioTypeVolume.Current);
+            float masterVolume = SoundManager.Instance.WebGLMasterVolume;
+            AudioSource.volume = AudioExtension.ClampNormalize(_clipVolume.Current * _trackVolume.Current * _audioTypeVolume.Current * masterVolume);
         }
 #endif
     }

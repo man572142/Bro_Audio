@@ -1329,7 +1329,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playOnStart: 0
+  _onlyPlayOnce: 0
+  _playOnEnable: 0
+  _stopOnDisable: 0
   _sound:
     ID: 536870912
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
@@ -2827,7 +2829,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playOnStart: 1
+  _onlyPlayOnce: 0
+  _playOnEnable: 1
+  _stopOnDisable: 0
   _sound:
     ID: 805306369
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
@@ -3630,7 +3634,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playOnStart: 1
+  _onlyPlayOnce: 0
+  _playOnEnable: 1
+  _stopOnDisable: 0
   _sound:
     ID: 1073741825
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
@@ -4801,7 +4807,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playOnStart: 1
+  _onlyPlayOnce: 0
+  _playOnEnable: 1
+  _stopOnDisable: 0
   _sound:
     ID: 1073741826
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
@@ -5339,7 +5347,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playOnStart: 1
+  _onlyPlayOnce: 0
+  _playOnEnable: 1
+  _stopOnDisable: 0
   _sound:
     ID: 1073741833
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
@@ -8332,7 +8342,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playOnStart: 1
+  _onlyPlayOnce: 0
+  _playOnEnable: 1
+  _stopOnDisable: 0
   _sound:
     ID: 805306368
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}

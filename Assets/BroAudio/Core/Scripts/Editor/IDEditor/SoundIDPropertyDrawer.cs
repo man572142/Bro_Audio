@@ -19,7 +19,7 @@ namespace Ami.BroAudio.Editor
 		private bool _isInit = false;
 		private string _entityName = null;
 		private readonly GUIContent _libraryShortcut = 
-			new GUIContent(EditorGUIUtility.IconContent("d_winbtn_win_restore_a@2x")) { tooltip = "Open in Library Manager"};
+			new GUIContent(EditorGUIUtility.IconContent(IconConstant.LibraryManagerShortcut)) { tooltip = "Open in Library Manager"};
 
 		private GUIStyle _dropdownStyle = new GUIStyle(EditorStyles.popup) { richText = true};
 		private float LibraryShortcutButtonWidth => EditorGUIUtility.singleLineHeight * 1.5f;

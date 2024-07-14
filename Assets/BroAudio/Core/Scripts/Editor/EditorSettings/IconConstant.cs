@@ -1,6 +1,3 @@
-using UnityEditor;
-using UnityEngine;
-
 namespace Ami.BroAudio.Editor
 {
     public static class IconConstant
@@ -18,11 +15,16 @@ namespace Ami.BroAudio.Editor
         public const string ImportFile = "Import@2x";
         public const string AudioClip = "AudioClip Icon";
         public const string AudioGroup = "d_AudioMixerGroup Icon";
-		public const string TempAssetWarning = "console.infoicon";
+        public const string TempAssetWarning = "console.infoicon";
         public const string LoopIcon = "d_preAudioLoopOff";
+#if UNITY_2023_1_OR_NEWER
+        public const string LibraryManagerShortcut = "winbtn_win_rest_h"; 
+#else
+        public const string LibraryManagerShortcut = "d_winbtn_win_restore_a@2x";
+#endif
 
 #if UNITY_2021_2_OR_NEWER
-		public const string AudioSpeakerOn = "SceneViewAudio On";
+        public const string AudioSpeakerOn = "SceneViewAudio On";
 #else
         public const string AudioSpeakerOn = "SceneViewAudio";
 #endif

@@ -11,7 +11,7 @@
 <br />
 <div align="center">
   <a href="Bro Audio Logo">
-    <img src="https://raw.githubusercontent.com/man572142/Bro_Audio/main/Assets/BroAudio/Core/Resources/Editor/Logo_Main.png" alt="Logo" width="128" height="128">
+    <img src="https://raw.githubusercontent.com/man572142/Bro_Audio/main/Assets/BroAudio/Logo.png" alt="Logo" width="128" height="128">
   </a>
 
   <!-- PROJECT Title -->

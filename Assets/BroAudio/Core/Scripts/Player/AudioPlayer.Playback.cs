@@ -87,7 +87,6 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
-            _trackVolume.StopCoroutine();
             _audioTypeVolume.Complete(audioTypePref.Volume, false);
             _clipVolume.Complete(0f, false);
             UpdateMixerVolume();
@@ -188,7 +187,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     hasPlayed = timeSample > 0;
                 }
-                
+
                 return hasPlayed && timeSample == 0;
             }
 		}
@@ -204,13 +203,13 @@ namespace Ami.BroAudio.Runtime
             => this.Pause(UseEntitySetting);
         void IAudioStoppable.Pause(float fadeOut)
             => Stop(fadeOut, StopMode.Pause, null);
-        void IAudioStoppable.Stop() 
+        void IAudioStoppable.Stop()
             => this.Stop(UseEntitySetting);
-        void IAudioStoppable.Stop(float fadeOut) 
+        void IAudioStoppable.Stop(float fadeOut)
             => this.Stop(fadeOut, null);
-        void IAudioStoppable.Stop(Action onFinished) 
+        void IAudioStoppable.Stop(Action onFinished)
             => this.Stop(UseEntitySetting, onFinished);
-        void IAudioStoppable.Stop(float fadeOut, Action onFinished) 
+        void IAudioStoppable.Stop(float fadeOut, Action onFinished)
             => Stop(fadeOut, StopMode.Stop, onFinished);
         #endregion
         public void Stop(float overrideFade, StopMode stopMode,Action onFinished)

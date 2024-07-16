@@ -102,11 +102,10 @@ namespace Ami.Extension
             StopAllPreviewClipsDelegate = GetAudioUtilMethodDelegate<StopAllPreviewClips>(StopClipMethodName);
             PlayPreviewClipDelegate = GetAudioUtilMethodDelegate<PlayPreviewClip>(PlayClipMethodName);
 
-            SetMixerAutoSuspend(_mixer, false);
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
-        #region AudioSource 
+        #region AudioSource
         public async void PlayClipByAudioSource(Data clip, bool selfLoop = false, Action onReplay = null, float pitch = 1f)
         {
             try
@@ -126,6 +125,7 @@ namespace Ami.Extension
             _previousMuteState = EditorUtility.audioMasterMute ? MuteState.On : MuteState.Off;
 
             _volumeTransporter.SetData(clip);
+            SetMixerAutoSuspend(_mixer, false);
             await Task.Delay(SecToMs(MixerUpdateTime), CancellationSource.Token);
 
             audioSource.Play();
@@ -204,8 +204,26 @@ namespace Ami.Extension
                 await Task.Delay(SecToMs(_currentPlayingClip.Duration), CancellationSource.Token);
             }
         }
+
+        private void DestroyPreviewAudioSourceAndCancelTask()
+        {
+            SetMixerAutoSuspend(_mixer, true);
+            if (_currentEditorAudioSource)
+            {
+                CancelTask();
+
+                _currentEditorAudioSource.Stop();
+                UnityEngine.Object.DestroyImmediate(_currentEditorAudioSource.gameObject);
+                PlaybackIndicator.End();
+                _volumeTransporter.End();
+                _volumeTransporter.Dispose();
+                _currentEditorAudioSource = null;
+                TriggerOnFinished();
+            }
+        }
         #endregion
 
+        #region AudioClip
         public void PlayClip(AudioClip audioClip, float startTime, float endTime, bool loop = false)
         {
             int startSample = AudioExtension.GetTimeSample(audioClip, startTime);
@@ -236,7 +254,7 @@ namespace Ami.Extension
 
             if (loop)
             {
-                while(loop)
+                while (loop)
                 {
                     await AudioClipReplay(audioClip, startSample, loop, lengthInMs);
                 }
@@ -258,6 +276,15 @@ namespace Ami.Extension
             await Task.Delay(lengthInMs, CancellationSource.Token);
         }
 
+        private void StopStaticPreviewClipsAndCancelTask()
+        {
+            CancelTask();
+            StopAllPreviewClipsDelegate.Invoke();
+            PlaybackIndicator.End();
+            TriggerOnFinished();
+        }
+        #endregion
+
         public void StopAllClips()
         {
             _isRecursionOutside = false;
@@ -269,30 +296,6 @@ namespace Ami.Extension
                 EditorUtility.audioMasterMute = _previousMuteState == MuteState.On;
                 _previousMuteState = MuteState.None;
             }
-        }
-
-        private void DestroyPreviewAudioSourceAndCancelTask()
-        {
-            if (_currentEditorAudioSource)
-            {
-                CancelTask();
-
-                _currentEditorAudioSource.Stop();
-                UnityEngine.Object.DestroyImmediate(_currentEditorAudioSource.gameObject);
-                PlaybackIndicator.End();
-                _volumeTransporter.End();
-                _volumeTransporter.Dispose();
-                _currentEditorAudioSource = null;
-                TriggerOnFinished();
-            }
-        }
-
-        private void StopStaticPreviewClipsAndCancelTask()
-        {
-            CancelTask();
-            StopAllPreviewClipsDelegate.Invoke();
-            PlaybackIndicator.End();
-            TriggerOnFinished();
         }
 
         private void TriggerOnFinished()
@@ -336,6 +339,7 @@ namespace Ami.Extension
             _volumeTransporter = null;
             StopStaticPreviewClipsAndCancelTask();
             DestroyPreviewAudioSourceAndCancelTask();
+            SetMixerAutoSuspend(_mixer, true);
             PlaybackIndicator.Dispose();
             PlaybackIndicator = null;
             _instance = null;
@@ -348,7 +352,6 @@ namespace Ami.Extension
             if (mode == PlayModeStateChange.ExitingEditMode || mode == PlayModeStateChange.ExitingPlayMode)
             {
                 Dispose();
-                SetMixerAutoSuspend(_mixer, true);
             }
         }
 

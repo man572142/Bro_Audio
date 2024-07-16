@@ -86,16 +86,8 @@ namespace Ami.BroAudio
         /// Set the master volume
         /// </summary>
         /// <param name="vol">Accepts values from 0 to 10, default is 1</param>
-        public static void SetVolume(float vol)
-            => SetVolume(BroAudioType.All, vol);
-
-        /// <summary>
-        /// Set the volume of the given audio type
-        /// </summary>
-        /// <param name="vol">Accepts values from 0 to 10, default is 1</param>
-        /// <param name="audioType"></param>
-        public static void SetVolume(BroAudioType audioType, float vol) 
-            => SetVolume(audioType, vol, BroAdvice.FadeTime_Immediate);
+        public static void SetVolume(float vol, float fadeTime = BroAdvice.FadeTime_Immediate)
+            => SetVolume(BroAudioType.All, vol, fadeTime);
 
         /// <summary>
         /// Set the volume of the given audio type
@@ -103,7 +95,7 @@ namespace Ami.BroAudio
         /// <param name="vol">Accepts values from 0 to 10, default is 1</param>
         /// <param name="audioType"></param>
         /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
-        public static void SetVolume(BroAudioType audioType, float vol, float fadeTime) 
+        public static void SetVolume(BroAudioType audioType, float vol, float fadeTime = BroAdvice.FadeTime_Immediate) 
             => SoundManager.Instance?.SetVolume(vol, audioType, fadeTime);
 
         /// <summary>

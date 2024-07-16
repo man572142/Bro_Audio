@@ -87,7 +87,10 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
-            _audioTypeVolume.Complete(audioTypePref.Volume, false);
+            if (audioTypePref.Volume != DefaultTrackVolume && !_audioTypeVolume.IsFading)
+            {
+                _audioTypeVolume.Complete(audioTypePref.Volume, false);
+            }
             _clipVolume.Complete(0f, false);
             UpdateMixerVolume();
             AudioTrack = _getAudioTrack?.Invoke(TrackType);

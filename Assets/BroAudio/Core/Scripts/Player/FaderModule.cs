@@ -16,6 +16,7 @@ namespace Ami.BroAudio.Runtime
 
         public float Current { get; private set; }
         public float Target { get; private set; }
+        public bool IsFading => !Mathf.Approximately(Current,Target);
 
         private MonoBehaviour _coroutineExecutor => SoundManager.Instance;
 
@@ -56,7 +57,7 @@ namespace Ami.BroAudio.Runtime
             {
                 Current = Mathf.Lerp(_origin, Target, (elapsedTime / fadeTime).SetEase(ease));
                 _onUpdate?.Invoke();
-                
+
                 elapsedTime += Time.deltaTime;
                 return true;
             }

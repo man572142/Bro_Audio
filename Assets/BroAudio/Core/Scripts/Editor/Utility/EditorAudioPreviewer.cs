@@ -79,7 +79,7 @@ namespace Ami.BroAudio.Editor
         public bool IsNewVolumeDifferentFromCurrent(EditorPlayAudioClip.Data clipData)
         {
             float startVol = GetStartVolume(clipData);
-            return startVol.ToDecibel() != _dbVolume;
+            return !Mathf.Approximately(startVol.ToDecibel(), _dbVolume);
         }
 
         public override void Start()

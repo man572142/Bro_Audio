@@ -8,7 +8,7 @@ namespace Ami.Extension
 {
 	public static class StringExtension
 	{
-		public static string SetColor(this string text, Color color)
+        public static string SetColor(this string text, Color color)
 		{
 			string colorString = ColorUtility.ToHtmlStringRGB(color);
 			return $"<color=#{colorString}>{text}</color>";

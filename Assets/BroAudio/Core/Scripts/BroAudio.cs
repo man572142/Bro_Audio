@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using Ami.BroAudio.Runtime;
-using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio
 { 
@@ -116,6 +115,7 @@ namespace Ami.BroAudio
             => SoundManager.Instance?.SetVolume(id, vol, fadeTime);
         #endregion
 
+        #region Pitch
         /// <summary>
         /// Set all audio's pitch immediately
         /// </summary>
@@ -136,7 +136,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="pitch">values between -3 to 3, default is 1</param>
         /// <param name="fadeTime"></param>
-        public static void SetPitch(float pitch,float fadeTime)
+        public static void SetPitch(float pitch, float fadeTime)
             => SoundManager.Instance?.SetPitch(pitch, BroAudioType.All, fadeTime);
 
         /// <summary>
@@ -146,7 +146,8 @@ namespace Ami.BroAudio
         /// <param name="audioType"></param>
         /// <param name="fadeTime"></param>
         public static void SetPitch(float pitch, BroAudioType audioType, float fadeTime)
-            => SoundManager.Instance?.SetPitch(pitch, audioType, fadeTime);
+            => SoundManager.Instance?.SetPitch(pitch, audioType, fadeTime); 
+        #endregion
 
 #if !UNITY_WEBGL
 #region Effect

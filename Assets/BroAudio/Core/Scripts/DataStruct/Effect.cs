@@ -10,15 +10,15 @@ namespace Ami.BroAudio
 	public struct Effect
 	{
 		// Use these static methods for SetEffect()
-		public static Effect HighPass(float frequency, float fadeTime, Ease ease = BroAdvice.HighPassInEase) 
+		public static Effect HighPass(float frequency, float fadeTime = 0f, Ease ease = BroAdvice.HighPassInEase) 
 			=> new Effect(EffectType.HighPass, frequency, SingleFading(fadeTime, ease));
-        public static Effect ResetHighPass(float fadeTime, Ease ease = BroAdvice.HighPassOutEase) 
+        public static Effect ResetHighPass(float fadeTime = 0f, Ease ease = BroAdvice.HighPassOutEase) 
 			=> new Effect(EffectType.HighPass, AudioConstant.MinFrequency, SingleFading(fadeTime, ease));
-        public static Effect LowPass(float frequency, float fadeTime, Ease ease = BroAdvice.LowPassInEase) 
+        public static Effect LowPass(float frequency, float fadeTime = 0f, Ease ease = BroAdvice.LowPassInEase) 
 			=> new Effect(EffectType.LowPass, frequency, SingleFading(fadeTime, ease));
-        public static Effect ResetLowPass(float fadeTime, Ease ease = BroAdvice.LowPassOutEase) 
+        public static Effect ResetLowPass(float fadeTime = 0f, Ease ease = BroAdvice.LowPassOutEase) 
 			=> new Effect(EffectType.LowPass, AudioConstant.MaxFrequency, SingleFading(fadeTime, ease));
-        public static Effect Custom(string exposedParameterName, float value, float fadeTime, Ease ease = Ease.Linear) 
+        public static Effect Custom(string exposedParameterName, float value, float fadeTime = 0f, Ease ease = Ease.Linear) 
 			=> new Effect(exposedParameterName, value, SingleFading(fadeTime, ease));
         public static class Defaults
 		{

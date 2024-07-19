@@ -404,12 +404,24 @@ namespace Ami.BroAudio.Editor
                 _entitiesScrollPos = EditorGUILayout.BeginScrollView(_entitiesScrollPos);
                 {
                     DrawEntitiesHeader(editor.Asset, editor.SetAssetName);
-                    editor.DrawEntitiesList();
+                    editor.DrawEntitiesList(out float listHeight);
+                    float compenstateHeight = GetScrollPosCompenstateHeight(listHeight);
+                    if (compenstateHeight > 0f)
+                    {
+                        GUILayout.Space(compenstateHeight);
+                    }
                 }
                 EditorGUILayout.EndScrollView();
                 DrawClipPropertiesHelper.DrawPlaybackIndicator(rect.Scoping(position, new Vector2(offsetX, offsetY)), -_entitiesScrollPos);
             }
             EditorGUILayout.EndVertical();
+        }
+
+        private float GetScrollPosCompenstateHeight(float listHeight)
+        {
+            float headerHeight = EntitiesHeaderSize.y + (DefaultLayoutPadding * 2) + ReorderableList.Defaults.padding;
+            float scrollViewHeight = listHeight - (position.height - headerHeight);
+            return _entitiesScrollPos.y - scrollViewHeight;
         }
 
         // The ReorderableList default header background GUIStyle has set fixedHeight to non-0 and stretchHeight to false, which is unreasonable...

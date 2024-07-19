@@ -144,9 +144,10 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public void DrawEntitiesList()
+		public void DrawEntitiesList(out float height)
 		{
 			_entitiesList.DoLayoutList();
+            height = _entitiesList.GetHeight();
 		}
 
 		public void SetAssetName(string newName)

@@ -34,9 +34,15 @@ namespace Ami.BroAudio
 		public static class NameOf
 		{
 			public static string SourceAsset => nameof(_sourceAsset);
-		} 
+		}
+
+        public static bool TryGetAsset(SoundID soundID, out Data.AudioAsset asset)
+        {
+            asset = soundID._sourceAsset as Data.AudioAsset;
+            return asset;
+        }
 #endif
-	}
+    }
 
 	public static class SoundIDExtension
 	{

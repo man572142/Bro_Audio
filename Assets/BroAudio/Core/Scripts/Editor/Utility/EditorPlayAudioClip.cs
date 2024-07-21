@@ -381,10 +381,13 @@ namespace Ami.Extension
 
         private static void SetMixerAutoSuspend(AudioMixer mixer, bool enable)
         {
-            SerializedObject serializedMixer = new SerializedObject(mixer);
-            serializedMixer.Update();
-            serializedMixer.FindProperty(MixerSuspendFieldName).boolValue = enable;
-            serializedMixer.ApplyModifiedProperties();
+            if(mixer)
+            {
+                SerializedObject serializedMixer = new SerializedObject(mixer);
+                serializedMixer.Update();
+                serializedMixer.FindProperty(MixerSuspendFieldName).boolValue = enable;
+                serializedMixer.ApplyModifiedProperties();
+            }
         }
     }
 }

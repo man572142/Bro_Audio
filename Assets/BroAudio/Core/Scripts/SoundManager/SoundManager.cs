@@ -64,6 +64,7 @@ namespace Ami.BroAudio.Runtime
         private Dictionary<int, IAudioEntity> _audioBank = new Dictionary<int, IAudioEntity>();
         private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
+        private EffectAutomationHelper _dominatorAutomationHelper = null;
         private Dictionary<SoundID, AudioPlayer> _combFilteringPreventer = null;
         private Coroutine _masterVolumeCoroutine;
 
@@ -96,6 +97,7 @@ namespace Ami.BroAudio.Runtime
 
             InitBank();
             _automationHelper = new EffectAutomationHelper(this, _broAudioMixer);
+            _dominatorAutomationHelper = new EffectAutomationHelper(this, _broAudioMixer);
         }
 
         #region InitBank
@@ -233,9 +235,14 @@ namespace Ami.BroAudio.Runtime
             }
 
             Action<EffectType> onResetEffect = null;
-            if(!effect.IsDominator)
+            EffectAutomationHelper automationHelper = null;
+            if (effect.IsDominator)
             {
-                if(mode == SetEffectMode.Remove)
+                automationHelper = _dominatorAutomationHelper;
+            }
+            else
+            {
+                if (mode == SetEffectMode.Remove)
                 {
                     // wait for reset tweaking of the previous effect
                     onResetEffect = (resetType) => SetPlayerEffect(targetType, resetType, SetEffectMode.Remove);
@@ -244,10 +251,11 @@ namespace Ami.BroAudio.Runtime
                 {
                     SetPlayerEffect(targetType, effect.Type, mode);
                 }
+                automationHelper = _automationHelper;
             }
-            
-            _automationHelper.SetEffectTrackParameter(effect, onResetEffect);
-            return _automationHelper;
+
+            automationHelper.SetEffectTrackParameter(effect, onResetEffect);
+            return automationHelper;
         }
 
         private void SetPlayerEffect(BroAudioType targetType, EffectType effectType,SetEffectMode mode)

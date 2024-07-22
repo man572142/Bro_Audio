@@ -29,7 +29,7 @@ namespace Ami.BroAudio.Data
 
         public bool Validate()
         {
-            return Utility.Validate(Name.ToWhiteBold(), Clips, ID);
+            return Utility.Validate(Name, Clips, ID);
         }
 
         public float GetMasterVolume()

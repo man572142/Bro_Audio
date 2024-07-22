@@ -109,7 +109,7 @@ namespace Ami.BroAudio
 
 			if(clips == null || clips.Length == 0)
 			{
-				LogWarning(LogTitle + $"{name} has no audio clips, please assign or delete the entity.");
+				LogWarning(LogTitle + $"{name.ToWhiteBold()} has no audio clips, please assign or delete the entity.");
 				return false;
 			}
 
@@ -118,7 +118,7 @@ namespace Ami.BroAudio
 				var clipData = clips[i];
 				if (clipData.AudioClip == null)
 				{
-					LogError(LogTitle + $"Audio clip has not been assigned! please check {name} in Library Manager.");
+					LogError(LogTitle + $"Audio clip has not been assigned! please check {name.ToWhiteBold()} in Library Manager.");
 					return false;
 				}
 				float controlLength = (clipData.FadeIn > 0f ? clipData.FadeIn : 0f) + (clipData.FadeOut > 0f ? clipData.FadeOut : 0f) + clipData.StartPosition;

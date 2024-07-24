@@ -9,7 +9,7 @@ namespace Ami.BroAudio
 	{
 		private static Dictionary<int, int> ClipsSequencer = null;
 
-		public static BroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index)
+		public static BroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index, float velocity = 0f)
 		{
 			index = 0;
             if (clips == null || clips.Length <= 0)
@@ -32,6 +32,8 @@ namespace Ami.BroAudio
                     return clips.PickRandomClip(out index);
                 case MulticlipsPlayMode.Shuffle:
                     return clips.PickShuffleClip(out index);
+                case MulticlipsPlayMode.Velocity:
+                    return clips.PickClipByVelocity(velocity, out index);
             }
             return default;
         }
@@ -134,8 +136,23 @@ namespace Ami.BroAudio
 			}
 		}
 
+        public static BroAudioClip PickClipByVelocity(this BroAudioClip[] clips, float velocity, out int index)
+        {
+            index = 0;
+            for(int i = 0; i < clips.Length;i++)
+            {
+                var clip = clips[i];
+                if(clip.Weight > velocity)
+                {
+                    index = i == 0 ? 0 : i - 1;
+                    return clips[index];
+                }
+            }
+            return null;
+        }
+
 #if UNITY_EDITOR
-		public static void ClearPreviewAudioData()
+        public static void ClearPreviewAudioData()
 		{
 			ClipsSequencer?.Clear();
 			ClipsSequencer = null;

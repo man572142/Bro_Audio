@@ -106,9 +106,10 @@ namespace Ami.BroAudio.Runtime
 
         private void ResetVolume()
         {
-            _clipVolume.Complete(DefaultClipVolume);
-            _trackVolume.Complete(DefaultTrackVolume);
-            _mixerDecibelVolume = DefaultMixerDecibelVolume;
+            _clipVolume.Complete(DefaultClipVolume, false);
+            _trackVolume.Complete(DefaultTrackVolume, false);
+            _audioTypeVolume.Complete(DefaultTrackVolume, false);
+            MixerDecibelVolume = AudioConstant.MinDecibelVolume;
         }
 
 #if UNITY_WEBGL

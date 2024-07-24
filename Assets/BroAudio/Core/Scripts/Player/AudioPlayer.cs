@@ -246,7 +246,6 @@ namespace Ami.BroAudio.Runtime
 
         private void Recycle()
         {
-            MixerDecibelVolume = AudioConstant.MinDecibelVolume;
             OnRecycle?.Invoke(this);
 
             TrackType = AudioTrackType.Generic;

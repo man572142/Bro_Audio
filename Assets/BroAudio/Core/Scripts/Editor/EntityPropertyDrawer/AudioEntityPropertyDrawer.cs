@@ -456,6 +456,7 @@ namespace Ami.BroAudio.Editor
 			var nameProp = property.FindBackingFieldProperty(nameof(AudioEntity.Name));
 
 			GenericMenu menu = new GenericMenu();
+            menu.AddDisabledItem(new GUIContent($"ID:{idProp.intValue}"));
 			menu.AddItem(new GUIContent($"Remove [{nameProp.stringValue}]"), false, () => OnRemoveEntity?.Invoke());
 
 			var audioType = Utility.GetAudioType(idProp.intValue);

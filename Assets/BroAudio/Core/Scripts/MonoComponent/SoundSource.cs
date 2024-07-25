@@ -16,6 +16,7 @@ namespace Ami.BroAudio
         [SerializeField] bool _onlyPlayOnce = false;
         [SerializeField, FormerlySerializedAs("_playOnStart")] bool _playOnEnable = true;
         [SerializeField] bool _stopOnDisable = false;
+        [SerializeField] float _overrideFadeOut = -1f;
         [Space]
         [SerializeField] SoundID _sound = default;
         [SerializeField] PositionMode _positionMode = default;
@@ -62,8 +63,18 @@ namespace Ami.BroAudio
         {
             if(_stopOnDisable && _currentPlayer != null && _currentPlayer.IsPlaying)
             {
-                _currentPlayer.Stop();
+                _currentPlayer.Stop(_overrideFadeOut);
             }
+        }
+
+        public static class NameOf
+        {
+            public const string PlayOnEnable = nameof(_playOnEnable);
+            public const string StopOnDisable = nameof(_stopOnDisable);
+            public const string OnlyPlayOnce = nameof(_onlyPlayOnce);
+            public const string OverrideFadeOut = nameof(_overrideFadeOut);
+            public const string SoundID = nameof(_sound);
+            public const string PositionMode = nameof(_positionMode);
         }
     }
 }

@@ -60,7 +60,7 @@ namespace Ami.BroAudio.Editor
             {
                 new TabViewData(0.475f, new GUIContent(nameof(Tab.Clips)), EditorPlayAudioClip.Instance.StopAllClips, null),
                 new TabViewData(0.475f, new GUIContent(nameof(Tab.Overall)), EditorPlayAudioClip.Instance.StopAllClips, null),
-                new TabViewData(0.05f, EditorGUIUtility.IconContent("pane options"), null, OnClickChangeDrawedProperties),
+                new TabViewData(0.05f, EditorGUIUtility.IconContent("pane options"), null, OnOpenOptionMenu),
             };
         private Rect[] _headerRects = null;
 
@@ -450,14 +450,17 @@ namespace Ami.BroAudio.Editor
 			return entity != null;
         }
 
-		private static void OnClickChangeDrawedProperties(Rect rect, SerializedProperty property)
+		private static void OnOpenOptionMenu(Rect rect, SerializedProperty property)
 		{
 			var idProp = property.FindBackingFieldProperty(nameof(AudioEntity.ID));
 			var nameProp = property.FindBackingFieldProperty(nameof(AudioEntity.Name));
 
 			GenericMenu menu = new GenericMenu();
             menu.AddDisabledItem(new GUIContent($"ID:{idProp.intValue}"));
-			menu.AddItem(new GUIContent($"Remove [{nameProp.stringValue}]"), false, () => OnRemoveEntity?.Invoke());
+#if BroAudio_DevOnly
+            menu.AddItem(new GUIContent("Copy ID to the clipboard"), false, CopyID);
+    #endif
+            menu.AddItem(new GUIContent($"Remove [{nameProp.stringValue}]"), false, () => OnRemoveEntity?.Invoke());
 
 			var audioType = Utility.GetAudioType(idProp.intValue);
 			if (!BroEditorUtility.EditorSetting.TryGetAudioTypeSetting(audioType, out var typeSetting))
@@ -492,6 +495,13 @@ namespace Ami.BroAudio.Editor
 					BroEditorUtility.EditorSetting.WriteAudioTypeSetting(typeSetting.AudioType, typeSetting);
 				}
 			}
+
+#if BroAudio_DevOnly
+            void CopyID()
+            {
+                EditorGUIUtility.systemCopyBuffer = idProp.intValue.ToString();
+            } 
+#endif
         }
     }
 }

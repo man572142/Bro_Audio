@@ -6,84 +6,78 @@ using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Editor
 {
-	[CustomPropertyDrawer(typeof(SoundID))]
-	public class SoundIDPropertyDrawer : PropertyDrawer
-	{
-		public const string DefaultIDName = "None";
-		public const string IDMissing = "Missing";
-		public const string ToolTip = "refering to an AudioEntity";
+    [CustomPropertyDrawer(typeof(SoundID))]
+    public class SoundIDPropertyDrawer : PropertyDrawer
+    {
+        public const string DefaultIDName = "None";
+        public const string IDMissing = "Missing";
+        public const string ToolTip = "refering to an AudioEntity";
 
         private readonly string _missingMessage = IDMissing.ToBold().ToItalics().SetColor(new Color(1f, 0.3f, 0.3f));
-		private bool _isInit = false;
-		private string _entityName = null;
+        private bool _isInit = false;
+        private string _entityName = null;
         private bool _isPlaying = false;
         private EditorWindow _currentWindow = null;
 
         private readonly GUIStyle _dropdownStyle = new GUIStyle(EditorStyles.popup) { richText = true };
         private readonly GUIContent _libraryShortcut = 
-			new GUIContent(EditorGUIUtility.IconContent(IconConstant.LibraryManagerShortcut)) { tooltip = "Open in Library Manager"};
+            new GUIContent(EditorGUIUtility.IconContent(IconConstant.LibraryManagerShortcut)) { tooltip = "Open in Library Manager"};
 
         private float ButtonWidth => EditorGUIUtility.singleLineHeight * 1.5f;
 
-		private void Init(SerializedProperty idProp,SerializedProperty assetProp)
-		{
+        private void Init(SerializedProperty idProp,SerializedProperty assetProp)
+        {
             _isInit = true;
 
-			if (idProp.intValue == 0)
-			{
-				_entityName = DefaultIDName;
-				return;
-			}
-			else if (idProp.intValue < 0)
-			{
-				_entityName = _missingMessage;
-				return;
-			}
-
-			BroAudioType audioType = Utility.GetAudioType(idProp.intValue);
-			if (!audioType.IsConcrete())
-			{
-				SetToMissing();
-				return;
-			}
-
-			AudioAsset asset = assetProp.objectReferenceValue as AudioAsset;
-            if (asset != null && BroEditorUtility.TryGetEntityName(asset,idProp.intValue,out _entityName))
+            if (idProp.intValue == 0)
             {
-				return;
+                _entityName = DefaultIDName;
+                return;
+            }
+            else if (idProp.intValue < 0)
+            {
+                _entityName = _missingMessage;
+                return;
             }
 
-			if(BroEditorUtility.TryGetCoreData(out var coreData))
-			{
-				foreach (var coreAsset in coreData.Assets)
-				{
-					asset = coreAsset;
-					if (asset != null && BroEditorUtility.TryGetEntityName(asset, idProp.intValue, out _entityName))
-					{
-						assetProp.objectReferenceValue = asset;
-						assetProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-						return;
-					}
-				}
-			}
-			
-			SetToMissing();
+            BroAudioType audioType = Utility.GetAudioType(idProp.intValue);
+            if (!audioType.IsConcrete())
+            {
+                SetToMissing();
+                return;
+            }
 
-			void SetToMissing()
+            AudioAsset asset = assetProp.objectReferenceValue as AudioAsset;
+            if (asset != null && BroEditorUtility.TryGetEntityName(asset,idProp.intValue,out _entityName))
+            {
+                return;
+            }
+
+            if(BroEditorUtility.TryGetCoreData(out var coreData))
+            {
+                foreach (var coreAsset in coreData.Assets)
+                {
+                    asset = coreAsset;
+                    if (asset != null && BroEditorUtility.TryGetEntityName(asset, idProp.intValue, out _entityName))
+                    {
+                        assetProp.objectReferenceValue = asset;
+                        assetProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+                        return;
+                    }
+                }
+            }
+            
+            SetToMissing();
+
+            void SetToMissing()
             {
                 idProp.intValue = -1;
                 _entityName = _missingMessage;
             }
         }
 
-		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if(IsWindowFocusChanged())
-            {
-                EditorPlayAudioClip.Instance.StopAllClips();
-                _isPlaying = false;
-            }
-
             SerializedProperty idProp = property.FindPropertyRelative(nameof(SoundID.ID));
             SerializedProperty assetProp = property.FindPropertyRelative(SoundID.NameOf.SourceAsset);
 
@@ -120,14 +114,6 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private bool IsWindowFocusChanged()
-        {
-            EditorWindow latestWindow = EditorWindow.focusedWindow;
-            bool isChanged = _currentWindow != null && _currentWindow != latestWindow;
-            _currentWindow = latestWindow;
-            return isChanged;
-        }
-
         private void DrawAudioTypeLabel(Rect dropdownRect, SerializedProperty idProp, IAudioAsset audioAsset)
         {
             if (BroEditorUtility.EditorSetting.ShowAudioTypeOnSoundID && audioAsset != null)
@@ -158,6 +144,8 @@ namespace Ami.BroAudio.Editor
                     EditorPlayAudioClip.Instance.PlayClipByAudioSource(data, false, null, entity.GetPitch());
                     EditorPlayAudioClip.Instance.OnFinished = () => _isPlaying = false; ;
                     _isPlaying = true;
+
+                    EditorApplication.update += OnPreviewAudioUpdate;
                 }
             }
 
@@ -174,6 +162,24 @@ namespace Ami.BroAudio.Editor
                 }
                 return false;
             }
+        }
+
+        private void OnPreviewAudioUpdate()
+        {
+            if(IsWindowFocusChanged())
+            {
+                EditorApplication.update -= OnPreviewAudioUpdate;
+                EditorPlayAudioClip.Instance.StopAllClips();
+                _isPlaying = false;
+            }
+        }
+
+        private bool IsWindowFocusChanged()
+        {
+            EditorWindow latestWindow = EditorWindow.focusedWindow;
+            bool isChanged = _currentWindow != null && _currentWindow != latestWindow;
+            _currentWindow = latestWindow;
+            return isChanged;
         }
 
         private void DrawLibraryShortcutButton(Rect libraryShortcutRect, SerializedProperty idProp, IAudioAsset audioAsset)

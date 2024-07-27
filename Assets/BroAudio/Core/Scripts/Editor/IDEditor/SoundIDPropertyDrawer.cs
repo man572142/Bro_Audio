@@ -142,7 +142,7 @@ namespace Ami.BroAudio.Editor
                 {
                     var data = new EditorPlayAudioClip.Data(entity.PickNewClip());
                     EditorPlayAudioClip.Instance.PlayClipByAudioSource(data, false, null, entity.GetPitch());
-                    EditorPlayAudioClip.Instance.OnFinished = () => _isPlaying = false; ;
+                    EditorPlayAudioClip.Instance.OnFinished = OnPreviewAudioFinished;
                     _isPlaying = true;
 
                     EditorApplication.update += OnPreviewAudioUpdate;
@@ -162,6 +162,12 @@ namespace Ami.BroAudio.Editor
                 }
                 return false;
             }
+        }
+
+        private void OnPreviewAudioFinished()
+        {
+            _isPlaying = false;
+            EditorApplication.update -= OnPreviewAudioUpdate;
         }
 
         private void OnPreviewAudioUpdate()

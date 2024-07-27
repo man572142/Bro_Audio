@@ -70,7 +70,20 @@ namespace Ami.BroAudio.Runtime
             InitVolumeModule();
         }
 
-		public void SetMixerData(AudioMixer mixer, Func<AudioTrackType, AudioMixerGroup> getAudioTrack)
+        private void Update()
+        {
+            if(!IsActive)
+            {
+                return;
+            }
+
+            if(_pref.FollowTarget != null)
+            {
+                transform.position = _pref.FollowTarget.position;
+            }
+        }
+
+        public void SetMixerData(AudioMixer mixer, Func<AudioTrackType, AudioMixerGroup> getAudioTrack)
 		{
             _audioMixer = mixer;
             _getAudioTrack = getAudioTrack;
@@ -104,7 +117,6 @@ namespace Ami.BroAudio.Runtime
 			{
 				if (pref.FollowTarget != null && transform.parent != pref.FollowTarget)
 				{
-					transform.SetParent(pref.FollowTarget, false);
 					SetTo3D();
 				}
 				else if (pref.HasPosition(out var position))
@@ -136,10 +148,6 @@ namespace Ami.BroAudio.Runtime
 		private void ResetSpatial()
         {
             AudioSource.spatialBlend = AudioConstant.SpatialBlend_2D;
-            if (transform.parent != SoundManager.Instance)
-			{
-                transform.SetParent(SoundManager.Instance.transform);
-			}
             transform.position = Vector3.zero;
 
             AudioSource.panStereo = AudioConstant.DefaultPanStereo;
@@ -252,5 +260,5 @@ namespace Ami.BroAudio.Runtime
             AudioTrack = null;
             _decorators = null;
         }
-	}
+    }
 }

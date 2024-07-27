@@ -1,9 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
+using UnityEngine;
 using Ami.BroAudio.Runtime;
 using Ami.Extension;
 using System;
-using static UnityEngine.Debug;
 
 namespace Ami.BroAudio
 {
@@ -53,7 +51,7 @@ namespace Ami.BroAudio
 		{
 			if(SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)
 			{
-                LogWarning(Utility.LogTitle + "Invalid operation. The audio player you're accessing has finished playing and has been recycled.");
+                Debug.LogWarning(Utility.LogTitle + "Invalid operation. The audio player you're accessing has finished playing and has been recycled.");
             }
 		}
 
@@ -63,7 +61,5 @@ namespace Ami.BroAudio
         void IAudioStoppable.Stop(float fadeOut, Action onFinished) => Instance?.Stop(fadeOut, onFinished);
         void IAudioStoppable.Pause() => Instance?.Pause();
         void IAudioStoppable.Pause(float fadeOut) => Instance?.Pause(fadeOut);
-
-		
-	}
+    }
 }

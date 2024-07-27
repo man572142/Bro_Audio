@@ -32,9 +32,9 @@ namespace Ami.BroAudio.Runtime
 		{
 			_mixer.ReturnTrack(player.TrackType,player.AudioTrack);
 			RemoveFromCurrent(player);
-			player.gameObject.SetActive(false);
-			base.Recycle(player);
-		}
+            player.gameObject.SetActive(false);
+            base.Recycle(player);
+        }
 
 		protected override AudioPlayer CreateObject()
 		{
@@ -43,9 +43,10 @@ namespace Ami.BroAudio.Runtime
 			return newPlayer;
 		}
 
-		protected override void DestroyObject(AudioPlayer instance)
+		protected override void DestroyObject(AudioPlayer player)
 		{
-			GameObject.Destroy(instance.gameObject);
+            player.OnRecycle -= Recycle;
+            GameObject.Destroy(player.gameObject);
 		}
 
 		private void RemoveFromCurrent(AudioPlayer player)

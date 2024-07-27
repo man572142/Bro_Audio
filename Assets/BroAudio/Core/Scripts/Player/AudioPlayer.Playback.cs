@@ -49,7 +49,7 @@ namespace Ami.BroAudio.Runtime
         {
             if (!SoundManager.Instance.TryGetAudioTypePref(ID.ToAudioType(), out var audioTypePref))
             {
-                Debug.LogError(Utility.LogTitle + $"The ID:{ID} is invalid");
+                Debug.LogError(LogTitle + $"The ID:{ID} is invalid");
                 yield break;
             }
 
@@ -318,6 +318,7 @@ namespace Ami.BroAudio.Runtime
             RemoveFromResumablePlayer();
             OnEndPlaying?.Invoke(ID);
             OnEndPlaying = null;
+            OnSeamlessLoopReplay = null;
             ID = -1;
             Recycle();
 		}

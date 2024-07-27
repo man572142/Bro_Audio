@@ -18,41 +18,13 @@ namespace Ami.Extension
 
         public static Coroutine StartCoroutineAndReassign(this MonoBehaviour source, IEnumerator enumerator, ref Coroutine coroutine)
         {
-            source.SafeStopCoroutine(coroutine);
-            coroutine = source.StartCoroutine(enumerator);
-            return coroutine;
-        }
-
-
-        public static IEnumerator GetEnumerator(this YieldInstruction instruction)
-        {
-            return Enumerator();
-
-            IEnumerator Enumerator()
+            if(source)
             {
-                yield return instruction;
+                source.SafeStopCoroutine(coroutine);
+                coroutine = source.StartCoroutine(enumerator);
+                return coroutine;
             }
-        }
-
-        public static void DelayInvoke(this MonoBehaviour source, Action action, float delayTime)
-        {
-            DelayInvoke(source, action, new WaitForSeconds(delayTime));
-        }
-
-        public static void DelayInvoke(this MonoBehaviour source, Action action, YieldInstruction yieldInstruction)
-        {
-            if(yieldInstruction == null)
-            {
-                Debug.LogError("WaitForSeconds is null !");
-                return;
-            }
-            source.StartCoroutine(DelayInvoke());
-
-            IEnumerator DelayInvoke()
-            {
-                yield return yieldInstruction;
-                action?.Invoke();
-            }
+            return null;
         }
     } 
 }

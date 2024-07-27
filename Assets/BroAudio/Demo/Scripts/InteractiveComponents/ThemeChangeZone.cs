@@ -10,6 +10,7 @@ namespace Ami.BroAudio.Demo
 		[SerializeField] SoundID _bgm = default;
 		[SerializeField] Transition _transition = default;
 		[SerializeField] float _transitionTime = default;
+        [SerializeField] float _sceneFadeOutTime = 2f;
 
 		[Header("Change Mood")]
 		[SerializeField] Animator _lightAnimator = null;
@@ -56,7 +57,7 @@ namespace Ami.BroAudio.Demo
 
         private void OnSceneChanged(Scene arg0, Scene arg1)
         {
-            BroAudio.Stop(_bgm, 2f);
+            BroAudio.Stop(_bgm, _sceneFadeOutTime);
         }
     }
 }

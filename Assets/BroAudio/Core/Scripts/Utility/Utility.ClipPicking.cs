@@ -9,6 +9,11 @@ namespace Ami.BroAudio
     {
         private static Dictionary<int, int> ClipsSequencer = null;
 
+        public static void ResetClipSequencer(int id)
+        {
+            ClipsSequencer.Remove(id);
+        }
+
         public static BroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index)
         {
             index = 0;

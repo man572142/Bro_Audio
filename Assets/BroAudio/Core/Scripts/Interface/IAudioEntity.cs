@@ -13,5 +13,6 @@ namespace Ami.BroAudio.Data
 		float GetMasterVolume();
 		float GetPitch();
 		float GetRandomValue(float baseValue, RandomFlag flags);
+        void ResetShuffleInUseState();
     } 
 }

@@ -131,6 +131,16 @@ namespace Ami.BroAudio
             => SoundManager.Instance.SetPitch(pitch, audioType, fadeTime); 
         #endregion
 
+        public static void ResetSequence(SoundID id)
+        {
+            Utility.ResetClipSequencer(id);
+        }
+
+        public static void ResetShuffle(SoundID id)
+        {
+            SoundManager.Instance.ResetShuffleInUseState(id);
+        }
+
 #if !UNITY_WEBGL
 #region Effect
         /// <summary>

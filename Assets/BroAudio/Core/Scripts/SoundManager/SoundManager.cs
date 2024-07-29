@@ -326,6 +326,14 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
+        public void ResetShuffleInUseState(int id)
+        {
+            if(_audioBank.TryGetValue(id, out IAudioEntity entity))
+            {
+                entity.ResetShuffleInUseState();
+            }
+        }
+
         private void SetPlaybackPrefByType<TParameter>(BroAudioType targetType, TParameter parameter, Action<AudioTypePlaybackPreference, TParameter> onModifyPref) where TParameter : struct
         {
             // For those which may be played in the future.

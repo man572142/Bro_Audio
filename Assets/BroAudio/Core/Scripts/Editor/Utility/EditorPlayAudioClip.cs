@@ -55,13 +55,9 @@ namespace Ami.Extension
 
         public const string MixerSuspendFieldName = "m_EnableSuspend";
         public const string IgnoreSettingTooltip = "Right-click to play the audio clip directly";
-#if UNITY_2020_2_OR_NEWER
         public const string PlayClipMethodName = "PlayPreviewClip";
         public const string StopClipMethodName = "StopAllPreviewClips";
-#else
-        public const string PlayClipMethodName = "PlayClip";
-        public const string StopClipMethodName = "StopAllClips";
-#endif
+
         // Not 100% sure but highly suspect the delay comes from the dsp time
         // The worst case might be 4096 sample in 44.1KHz, which is ~0.09 sec per chunk
         public const float MixerUpdateTime = 0.1f;

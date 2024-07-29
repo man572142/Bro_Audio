@@ -1,6 +1,4 @@
 using UnityEditor;
-using System.Collections.Generic;
-using static Ami.Extension.EditorVersionAdapter;
 
 namespace Ami.BroAudio.Editor
 {
@@ -18,7 +16,7 @@ namespace Ami.BroAudio.Editor
 
         private static void OnReimportAsset(string[] importedAssets)
         {
-            if (importedAssets.Length > 0 && HasOpenEditorWindow<ClipEditorWindow>())
+            if (importedAssets.Length > 0 && EditorWindow.HasOpenInstances<ClipEditorWindow>())
             {
                 ClipEditorWindow window = EditorWindow.GetWindow(typeof(ClipEditorWindow)) as ClipEditorWindow;
                 window.OnPostprocessAllAssets();
@@ -34,7 +32,7 @@ namespace Ami.BroAudio.Editor
 
             BroEditorUtility.RemoveEmptyDatas();
 
-            if (HasOpenEditorWindow<LibraryManagerWindow>())
+            if (EditorWindow.HasOpenInstances<LibraryManagerWindow>())
             {
                 LibraryManagerWindow editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
 

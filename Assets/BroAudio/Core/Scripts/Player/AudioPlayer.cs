@@ -66,7 +66,7 @@ namespace Ami.BroAudio.Runtime
 
         protected virtual void Awake()
         {
-            AudioSource = AudioSource ?? GetComponent<AudioSource>();
+            AudioSource ??= GetComponent<AudioSource>();
             InitVolumeModule();
         }
 
@@ -217,7 +217,7 @@ namespace Ami.BroAudio.Runtime
             }
 
             decoratePalyer = null;
-            _decorators = _decorators ?? new AudioPlayerDecorator[DecoratorsArraySize];
+            _decorators ??= new AudioPlayerDecorator[DecoratorsArraySize];
             for(int i = 0; i < _decorators.Length;i++)
             {
                 if (_decorators[i] == null)

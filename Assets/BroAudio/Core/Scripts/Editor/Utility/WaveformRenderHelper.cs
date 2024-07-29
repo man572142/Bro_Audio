@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Editor
 
         public void RenderClipWaveform(Rect rect,AudioClip clip)
         {
-            _clipInspectorClass = _clipInspectorClass ?? ClassReflectionHelper.GetUnityEditorClass("AudioClipInspector");
+            _clipInspectorClass ??= ClassReflectionHelper.GetUnityEditorClass("AudioClipInspector");
             string assetPath = AssetDatabase.GetAssetPath(clip);
             AudioImporter importer = AssetImporter.GetAtPath(assetPath) as AudioImporter;
             UnityEditor.Editor.CreateCachedEditor(clip, _clipInspectorClass, ref _editor);

@@ -126,7 +126,7 @@ namespace Ami.BroAudio.Editor
             if (_creditsObjects == null)
             {
                 _creditsObjects = Resources.LoadAll("Editor", typeof(AssetCredits));
-                _creditsObjects = _creditsObjects ?? Array.Empty<UnityEngine.Object>();
+                _creditsObjects ??= Array.Empty<UnityEngine.Object>();
             }
 
             foreach (var obj in _creditsObjects)

@@ -276,14 +276,11 @@ namespace Ami.BroAudio.Editor
 		private void DrawEntityNameField(Rect position, SerializedProperty nameProp, int id)
         {
             EditorGUI.BeginChangeCheck();
-#if UNITY_2019_3_OR_NEWER
 			Rect nameRect = new Rect(position) { height = EditorGUIUtility.singleLineHeight };
 			nameRect.x += FoldoutArrowWidth;
 			nameRect.width = Mathf.Min(nameRect.width - FoldoutArrowWidth, MaxTextFieldWidth);
 			nameRect.y += 1f;
-#else
-			Rect nameRect = new Rect(GetRectAndIterateLine(position));
-#endif
+
 			GUIContent content = new GUIContent();
 #if !BroAudio_DevOnly
 			content.tooltip = id.ToString(); 

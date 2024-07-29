@@ -1,6 +1,5 @@
 using UnityEditor;
 using UnityEngine;
-using static Ami.Extension.EditorVersionAdapter;
 
 namespace Ami.Extension
 {
@@ -56,7 +55,7 @@ namespace Ami.Extension
 		{
 			get
 			{
-				GUIStyle style = new GUIStyle(LinkLabel);
+				GUIStyle style = new GUIStyle(EditorStyles.linkLabel);
 				return style;
 			}
 		}

@@ -262,9 +262,7 @@ namespace Ami.BroAudio.Editor
             browserIconRect.width = EditorGUIUtility.singleLineHeight;
             browserIconRect.height = EditorGUIUtility.singleLineHeight;
             browserIconRect.x = rect.xMax - EditorGUIUtility.singleLineHeight;
-#if UNITY_2020_1_OR_NEWER
             GUI.DrawTexture(browserIconRect, EditorGUIUtility.IconContent(IconConstant.AssetOutputBrowser).image);
-#endif
             EditorGUI.DrawRect(browserIconRect, BroAudioGUISetting.ShadowMaskColor);
         }
 

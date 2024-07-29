@@ -290,7 +290,7 @@ namespace Ami.BroAudio.Runtime
 
         private void AddResumablePlayer()
 		{
-            ResumablePlayers = ResumablePlayers ?? new Dictionary<int, AudioPlayer>();
+            ResumablePlayers ??= new Dictionary<int, AudioPlayer>();
             ResumablePlayers[ID] = this;
         }
 

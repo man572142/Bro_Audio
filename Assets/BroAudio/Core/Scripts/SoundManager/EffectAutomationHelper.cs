@@ -61,7 +61,7 @@ namespace Ami.BroAudio.Runtime
 
             public override IEnumerator GetYieldInstruction()
             {
-                _waitUntil = _waitUntil ?? new WaitUntil(IsFinished);
+                _waitUntil ??= new WaitUntil(IsFinished);
                 yield return _waitUntil;
             }
         }
@@ -157,7 +157,7 @@ namespace Ami.BroAudio.Runtime
 
             bool isNullOrEmpty = tweaker.WaitableList == null || tweaker.WaitableList.Count == 0;
             bool isMoreIntense = !isNullOrEmpty && effect.IsMoreIntenseThan(tweaker.WaitableList[tweaker.WaitableList.Count - 1].Effect);
-            tweaker.WaitableList = tweaker.WaitableList ?? new List<ITweakingWaitable>();
+            tweaker.WaitableList ??= new List<ITweakingWaitable>();
             tweaker.WaitableList.Add(new TweakingWaitableBase(effect));
             tweaker.WaitableList.Sort();
 

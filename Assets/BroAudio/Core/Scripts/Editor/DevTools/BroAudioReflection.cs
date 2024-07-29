@@ -165,7 +165,7 @@ namespace Ami.Extension.Reflection
 
         public static void ExposeParameter(ExposedParameterType parameterType, AudioMixerGroup mixerGroup, ClassReflectionHelper reflection = null, params object[] additionalObjects)
         {
-            reflection = reflection ?? new ClassReflectionHelper();
+            reflection ??= new ClassReflectionHelper();
             AudioMixer audioMixer = mixerGroup.audioMixer;
 
             switch (parameterType)
@@ -207,7 +207,7 @@ namespace Ami.Extension.Reflection
 
         public static void RemoveAudioEffect(AudioMixer mixer, string targetEffectName, AudioMixerGroup mixerGroup, ClassReflectionHelper reflection = null)
         {
-            reflection = reflection ?? new ClassReflectionHelper();
+            reflection ??= new ClassReflectionHelper();
 
             object[] effects = GetProperty<object[]>("effects", reflection.MixerGroupClass, mixerGroup);
 
@@ -224,7 +224,7 @@ namespace Ami.Extension.Reflection
 
         private static void AssignSendTarget(object sendTarget, AudioMixerGroup mixerGroup, bool isSendInLast, ClassReflectionHelper reflection = null)
         {
-            reflection = reflection ?? new ClassReflectionHelper();
+            reflection ??= new ClassReflectionHelper();
 
             if (mixerGroup != null && TryGetFirstEffect(mixerGroup, SendEffectName, reflection, out object sendEffect, out _, !isSendInLast))
             {

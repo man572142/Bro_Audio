@@ -7,9 +7,9 @@ using static Ami.BroAudio.Utility;
 
 namespace Ami.BroAudio.Runtime
 {
-	public partial class SoundManager : MonoBehaviour
+    public partial class SoundManager : MonoBehaviour
     {
-		private Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
+        private Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
 
         #region Play
         public IAudioPlayer Play(int id)
@@ -42,12 +42,12 @@ namespace Ami.BroAudio.Runtime
             return null;
         }
 
-		private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref, AudioPlayer previousPlayer = null)
+        private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref, AudioPlayer previousPlayer = null)
         {
             BroAudioType audioType = GetAudioType(id);
             player.SetPlaybackData(id, pref);
 
-			_playbackQueue.Enqueue(player);
+            _playbackQueue.Enqueue(player);
             var wrapper = new AudioPlayerInstanceWrapper(player);
 
             if (Setting.AlwaysPlayMusicAsBGM && audioType == BroAudioType.Music)
@@ -57,7 +57,7 @@ namespace Ami.BroAudio.Runtime
 
             if(CombFilteringPreventionInSeconds > 0f)
             {
-                _combFilteringPreventer = _combFilteringPreventer ?? new Dictionary<SoundID, AudioPlayer>();
+                _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
                 if(previousPlayer != null)
                 {
                     previousPlayer.OnEndPlaying -= RemoveFromPreventer;
@@ -82,25 +82,25 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-		private void LateUpdate()
-		{
-			while (_playbackQueue.Count > 0)
-			{
-				_playbackQueue.Dequeue().Play();
-			}
-		}
-		#endregion
+        private void LateUpdate()
+        {
+            while (_playbackQueue.Count > 0)
+            {
+                _playbackQueue.Dequeue().Play();
+            }
+        }
+        #endregion
 
-		#region Stop
-		public void Stop(BroAudioType targetType)
+        #region Stop
+        public void Stop(BroAudioType targetType)
         {
             Stop(targetType,AudioPlayer.UseEntitySetting);
         }
 
         public void Stop(int id)
-		{
+        {
             Stop(id, AudioPlayer.UseEntitySetting);
-		}
+        }
 
         public void Stop(int id,float fadeTime)
         {
@@ -108,7 +108,7 @@ namespace Ami.BroAudio.Runtime
         }
 
         public void Stop(BroAudioType targetType,float fadeTime)
-		{
+        {
             StopPlayer(fadeTime, targetType);
         }            
 
@@ -134,12 +134,12 @@ namespace Ami.BroAudio.Runtime
         #endregion
 
         public void Pause(int id)
-		{
+        {
             Pause(id, AudioPlayer.UseEntitySetting);
-		}
+        }
 
         public void Pause(int id,float fadeTime)
-		{
+        {
             foreach(var player in GetCurrentAudioPlayers())
             {
                 if(player.IsActive && player.ID == id)
@@ -180,7 +180,7 @@ namespace Ami.BroAudio.Runtime
         {
             int time = TimeExtension.UnscaledCurrentFrameBeganTime;
             bool isInQueue = previousPlayTime == 0f;
-			return !isInQueue && time - previousPlayTime >= TimeExtension.SecToMs(Setting.CombFilteringPreventionInSeconds);
+            return !isInQueue && time - previousPlayTime >= TimeExtension.SecToMs(Setting.CombFilteringPreventionInSeconds);
         }
     }
 }

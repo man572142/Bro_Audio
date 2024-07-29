@@ -67,7 +67,7 @@ namespace Ami.Extension
         {
             get
             {
-                _instance = _instance ?? new EditorPlayAudioClip();
+                _instance ??= new EditorPlayAudioClip();
                 return _instance;
             }
         }
@@ -87,7 +87,7 @@ namespace Ami.Extension
         private EditorAudioPreviewer _volumeTransporter = null;
         private MuteState _previousMuteState = MuteState.None;
 
-        private CancellationTokenSource CancellationSource => _cancellationSource = _cancellationSource ?? new CancellationTokenSource();
+        private CancellationTokenSource CancellationSource => _cancellationSource ??= new CancellationTokenSource();
 
         public EditorPlayAudioClip()
         {

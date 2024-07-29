@@ -67,6 +67,11 @@ namespace Ami.BroAudio.Data
             return baseValue + Random.Range(-half, half);
         }
 
+        public void ResetShuffleInUseState()
+        {
+            Clips.ResetIsUse();
+        }
+
 #if UNITY_EDITOR
         public enum SeamlessType
         {

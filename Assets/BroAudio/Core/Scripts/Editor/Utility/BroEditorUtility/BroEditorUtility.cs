@@ -369,13 +369,21 @@ namespace Ami.BroAudio.Editor
 
         public static void DrawDecibelValuePeeking(string text, float padding, Rect sliderRect, float sliderValue, Vector2 size)
         {
-            if (Event.current.type == EventType.Repaint && sliderRect.Contains(Event.current.mousePosition))
+            if (sliderRect.Contains(Event.current.mousePosition))
             {
                 float sliderHandlerPos = sliderValue / SliderFullScale * sliderRect.width - (size.x * 0.5f);
                 Rect valueTooltipRect = new Rect(sliderRect.x + sliderHandlerPos, sliderRect.y - size.y - padding, size.x, size.y);
-                GUI.skin.window.Draw(valueTooltipRect, false, false, false, false);
+                DrawValuePeeking(valueTooltipRect, text);
+            }
+        }
+
+        public static void DrawValuePeeking(Rect rect, string text)
+        {
+            if(Event.current.type == EventType.Repaint)
+            {
+                GUI.skin.window.Draw(rect, false, false, false, false);
                 // ** Don't use EditorGUI.Label(), it will change the keyboard focus, might be a Unity's bug **
-                GUI.Label(valueTooltipRect, text, GUIStyleHelper.MiddleCenterText);
+                GUI.Label(rect, text, GUIStyleHelper.MiddleCenterText);
             }
         }
 
@@ -488,6 +496,42 @@ namespace Ami.BroAudio.Editor
             MethodInfo method = audioSourceInspector?.GetMethod("Logarithmic", BindingFlags.NonPublic | BindingFlags.Static);
 
             return method?.Invoke(null, new object[] { timeStart, timeEnd, logBase }) as AnimationCurve;
+        }
+
+        public static float GetValue(this ITransport transport, TransportType transportType) => transportType switch
+        {
+            TransportType.Start => transport.StartPosition,
+            TransportType.End => transport.EndPosition,
+            TransportType.FadeIn => transport.FadeIn,
+            TransportType.FadeOut => transport.FadeOut,
+            _ => throw new NotImplementedException(),
+        };
+
+        public static TransportVectorPoints GetVectorPoints(this ITransport transport, Vector2 drawingSize, AudioClip clip)
+        {
+            float exceedTime = transport.GetExceedTime();
+            return new TransportVectorPoints(transport, drawingSize, clip.length + exceedTime);
+        }
+
+        public static float GetExceedTime(this ITransport transport)
+        {
+            return Mathf.Max(transport.Delay - transport.StartPosition, 0f);
+        }
+
+        public static DrawedProperty GetDrawedProperty(this TransportType transportType)
+        {
+            switch (transportType)
+            {
+                case TransportType.Start:
+                case TransportType.End:
+                case TransportType.Delay:
+                    return DrawedProperty.PlaybackPosition;
+                case TransportType.FadeIn:
+                case TransportType.FadeOut:
+                    return DrawedProperty.Fade;
+                default:
+                    throw new NotImplementedException();
+            }
         }
     }
 }

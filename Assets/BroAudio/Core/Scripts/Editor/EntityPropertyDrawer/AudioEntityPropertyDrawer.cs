@@ -25,6 +25,8 @@ namespace Ami.BroAudio.Editor
             public Tab SelectedTab;
             public bool IsLoop;
             public bool IsPreviewing;
+            public readonly Rect[] HiddenButtonRects = new Rect[4];
+
             public bool IsPlaying => IsPreviewing || (Clips != null && Clips.IsPlaying);
 
             public ReorderableClips Clips { get; private set; }
@@ -38,6 +40,15 @@ namespace Ami.BroAudio.Editor
             {
                 Clips?.Dispose();
                 Clips = null;
+            }
+
+            public void UpdateHiddenButtonRect(TransportType transportType, Rect rect)
+            {
+                int typeIndex = (int)transportType;
+                if(typeIndex < 4)
+                {
+                    HiddenButtonRects[typeIndex] = rect;
+                }
             }
         }
 
@@ -171,6 +182,8 @@ namespace Ami.BroAudio.Editor
             DrawEntityNameField(nameRect, nameProp, idProp.intValue);
             DrawEntityPreviewButton(previewButtonRect, property, data);
 
+            _clipPropHelper.DrawDraggableHiddenButton(data.HiddenButtonRects, setting);
+
             Rect tabViewRect = GetRectAndIterateLine(position).SetHeight(GetTabWindowHeight());
             data.SelectedTab = (Tab)DrawButtonTabsMixedView(tabViewRect, property,(int)data.SelectedTab, TabLabelHeight, _tabViewDatas);
             
@@ -194,7 +207,7 @@ namespace Ami.BroAudio.Editor
                             Rect previewRect = GetNextLineRect(position);  
                             previewRect.y -= PreviewPrettinessOffsetY;
                             previewRect.height = ClipPreviewHeight;
-                            _clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, volume, currSelectClip.propertyPath, data.Clips.SetPlayingClip);
+                            _clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, volume, currSelectClip.propertyPath, data.Clips.SetPlayingClip, DrawPlaybackValuePeeking);
                             data.Clips.SetPreviewRect(previewRect);
                             Offset += ClipPreviewHeight + ClipPreviewPadding;
                         }
@@ -211,6 +224,21 @@ namespace Ami.BroAudio.Editor
                 height += GetTabViewHeight(property, setting, data.SelectedTab);
                 height += TabLabelCompensation;
                 return height;
+            }
+
+            void DrawPlaybackValuePeeking(ITransport transport, TransportType transportType, Rect dragPointRect)
+            {
+                if (!setting.CanDraw(transportType.GetDrawedProperty()))
+                {
+                    data.UpdateHiddenButtonRect(transportType, dragPointRect);
+                    if(dragPointRect.Contains(Event.current.mousePosition))
+                    {
+                        Rect rect = new Rect(dragPointRect) { width = 50f };
+                        rect.y -= dragPointRect.height;
+                        rect.x -= dragPointRect.width * 0.5f;
+                        DrawValuePeeking(rect, transport.GetValue(transportType).ToString("0.000"));
+                    }
+                }
             }
         }
 

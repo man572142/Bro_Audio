@@ -32,15 +32,12 @@ namespace Ami.Extension
                 flagsRange += 1 << i;
             }
 
-            switch (rangeType)
+            return rangeType switch 
             {
-                case FlagsRangeType.Included:
-                    return flagsRange;
-                case FlagsRangeType.Excluded:
-                    return ~flagsRange;
-                default:
-                    return default;
-            }
+                FlagsRangeType.Included => flagsRange,
+                FlagsRangeType.Excluded => ~flagsRange,
+                _ => default,
+            };
         }
     }
 }

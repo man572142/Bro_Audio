@@ -284,64 +284,50 @@ namespace Ami.BroAudio.Editor
 		private DraggablePoint GetDraggablePoint(Rect waveformRect,TransportVectorPoints points, ITransport transport,TransportType transportType)
 		{
 			Rect rect = GetDraggableRect(waveformRect, points, transportType);
-			switch (transportType)
-			{
-				case TransportType.Start:
-					return new DraggablePoint(rect)
-					{
-						Image = EditorGUIUtility.IconContent(PlaybackPosIcon).image,
-						ImageBorder = new Vector4(DragPointSizeLength * 0.5f, 0f, 0f, 0f),
-						ColorTint = _startEndColor,
-						OnSetPlaybackPosition = posInSec => transport.SetValue(posInSec, transportType),
-					};
-				case TransportType.FadeIn:
-					return new DraggablePoint(rect)
-					{
-						Image = EditorGUIUtility.IconContent(FadeInIcon).image,
-						ColorTint = _fadingLineColor,
-						OnSetPlaybackPosition = posInSec => transport.SetValue(posInSec - transport.StartPosition, transportType),
-					};
-				case TransportType.FadeOut:
-					return new DraggablePoint(rect)
-					{
-						Image = EditorGUIUtility.IconContent(FadeOutIcon).image,
-						ColorTint = _fadingLineColor,
-						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.FullLength - transport.EndPosition - posInSec, transportType),
-					};
-				case TransportType.End:
-					return new DraggablePoint(rect)
-					{
-						Image = EditorGUIUtility.IconContent(PlaybackPosIcon).image,
-						ImageBorder = new Vector4(0f, 0f, DragPointSizeLength * 0.5f, 0f),
-						ColorTint = _startEndColor,
-						OnSetPlaybackPosition = posInSec => transport.SetValue(transport.FullLength - posInSec, transportType),
-					};
-				default:
-					Debug.LogError(Utility.LogTitle + $"No corresponding point for transport type {transportType}");
-					return default;
-			}
-		}
+            return transportType switch
+            {
+                TransportType.Start => new DraggablePoint(rect)
+                {
+                    Image = EditorGUIUtility.IconContent(PlaybackPosIcon).image,
+                    ImageBorder = new Vector4(DragPointSizeLength * 0.5f, 0f, 0f, 0f),
+                    ColorTint = _startEndColor,
+                    OnSetPlaybackPosition = posInSec => transport.SetValue(posInSec, transportType),
+                },
+                TransportType.FadeIn => new DraggablePoint(rect)
+                {
+                    Image = EditorGUIUtility.IconContent(FadeInIcon).image,
+                    ColorTint = _fadingLineColor,
+                    OnSetPlaybackPosition = posInSec => transport.SetValue(posInSec - transport.StartPosition, transportType),
+                },
+                TransportType.FadeOut => new DraggablePoint(rect)
+                {
+                    Image = EditorGUIUtility.IconContent(FadeOutIcon).image,
+                    ColorTint = _fadingLineColor,
+                    OnSetPlaybackPosition = posInSec => transport.SetValue(transport.FullLength - transport.EndPosition - posInSec, transportType),
+                },
+                TransportType.End => new DraggablePoint(rect)
+                {
+                    Image = EditorGUIUtility.IconContent(PlaybackPosIcon).image,
+                    ImageBorder = new Vector4(0f, 0f, DragPointSizeLength * 0.5f, 0f),
+                    ColorTint = _startEndColor,
+                    OnSetPlaybackPosition = posInSec => transport.SetValue(transport.FullLength - posInSec, transportType),
+                },
+                _ => throw new NotImplementedException(),
+            };
+        }
 
 		private Rect GetDraggableRect(Rect waveformRect,TransportVectorPoints points, TransportType transportType)
 		{
 			Vector2 offset = new Vector2(-DragPointSizeLength * 0.5f, -DragPointSizeLength);
 			Vector2 dragPointSize = new Vector2(DragPointSizeLength, DragPointSizeLength);
-			Vector2 position = default;
-			switch (transportType)
-			{
-				case TransportType.Start:
-					position = new Vector2(points.Start.x, 0f).DeScope(waveformRect, offset);
-					break;
-				case TransportType.FadeIn:
-					position = new Vector2(points.FadeIn.x, dragPointSize.y).DeScope(waveformRect, offset);
-					break;
-				case TransportType.FadeOut:
-					position = new Vector2(points.FadeOut.x, dragPointSize.y).DeScope(waveformRect, offset);
-					break;
-				case TransportType.End:
-					position = new Vector2(points.End.x, 0f).DeScope(waveformRect, offset);
-					break;
-			}
+			Vector2 position = transportType switch 
+            {
+                TransportType.Start => new Vector2(points.Start.x, 0f).DeScope(waveformRect, offset),
+                TransportType.FadeIn => new Vector2(points.FadeIn.x, dragPointSize.y).DeScope(waveformRect, offset),
+                TransportType.FadeOut => new Vector2(points.FadeOut.x, dragPointSize.y).DeScope(waveformRect, offset),
+                TransportType.End => new Vector2(points.End.x, 0f).DeScope(waveformRect, offset),
+                _ => throw new NotImplementedException(),
+            };
 			return new Rect(position, dragPointSize);
 		}
 	}

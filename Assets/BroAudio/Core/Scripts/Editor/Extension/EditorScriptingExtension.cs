@@ -244,20 +244,13 @@ namespace Ami.Extension
             RichTextHelpBox(message, GetIconName(messageType));
         }
 
-        private static string GetIconName(MessageType messageType)
+        private static string GetIconName(MessageType messageType) => messageType switch
         {
-            switch (messageType)
-            {
-                case MessageType.Info:
-                    return IconConstant.InfoMessage;
-                case MessageType.Warning:
-                    return IconConstant.WarningMessage;
-                case MessageType.Error:
-                    return IconConstant.ErrorMessage;
-                default:
-                    return string.Empty;
-            }
-        }
+            MessageType.Info => IconConstant.InfoMessage,
+            MessageType.Warning => IconConstant.WarningMessage,
+            MessageType.Error => IconConstant.ErrorMessage,
+            _ => string.Empty,
+        };
 
         public static void RichTextHelpBox(Rect position,string message, string icon)
         {

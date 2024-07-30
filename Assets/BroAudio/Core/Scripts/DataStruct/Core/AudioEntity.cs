@@ -49,19 +49,12 @@ namespace Ami.BroAudio.Data
                 return baseValue;
             }
 
-            float range = 0f;
-            switch (flag)
-            {
-                case RandomFlag.Pitch:
-                    range = PitchRandomRange;
-                    break;
-                case RandomFlag.Volume:
-                    range = VolumeRandomRange;
-                    break;
-                default:
-                    Debug.LogError(Utility.LogTitle + "Invalid approach with multiple flags on GetRandomValue()");
-                    break;
-            }
+            float range = flag switch 
+            { 
+                RandomFlag.Pitch => PitchRandomRange,
+                RandomFlag.Volume => VolumeRandomRange,
+                _ => throw new System.InvalidOperationException(),
+            };
 
             float half = range * 0.5f;
             return baseValue + Random.Range(-half, half);

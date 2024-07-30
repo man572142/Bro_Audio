@@ -3,10 +3,6 @@ using UnityEngine;
 using Ami.BroAudio.Data;
 using System.Collections.Generic;
 
-#if !UNITY_2019_2_OR_NEWER
-using Ami.Extension; 
-#endif
-
 namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility

@@ -301,17 +301,12 @@ namespace Ami.BroAudio.Runtime
             return result != null;
         }
 
-        AudioMixerGroup IAudioMixer.GetTrack(AudioTrackType trackType)
+        AudioMixerGroup IAudioMixer.GetTrack(AudioTrackType trackType) => trackType switch
         {
-            switch (trackType)
-            {
-                case AudioTrackType.Generic:
-                    return _audioTrackPool.Extract();
-                case AudioTrackType.Dominator:
-                    return _dominatorTrackPool.Extract();
-            }
-            return null;
-        }
+            AudioTrackType.Generic => _audioTrackPool.Extract(),
+            AudioTrackType.Dominator => _dominatorTrackPool.Extract(),
+            _ => null,
+        };
 
         void IAudioMixer.ReturnTrack(AudioTrackType trackType, AudioMixerGroup track)
         {

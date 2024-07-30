@@ -208,15 +208,7 @@ namespace Ami.BroAudio.Editor
             float GetTabWindowHeight()
             {
                 float height = TabLabelHeight;
-                switch (data.SelectedTab)
-                {
-                    case Tab.Clips:
-                        height += GetClipListHeight(property, setting);
-                        break;
-                    case Tab.Overall:
-                        height += GetAdditionalBasePropertiesHeight(property, setting);
-                        break; 
-                }
+                height += GetTabViewHeight(property, setting, data.SelectedTab);
                 height += TabLabelCompensation;
                 return height;
             }
@@ -241,19 +233,10 @@ namespace Ami.BroAudio.Editor
             {
                 height += ReorderableList.Defaults.padding; // reorderableList element padding;
                 height += TabLabelHeight + TabLabelCompensation;
-#if !UNITY_2019_3_OR_NEWER
-                height += SingleLineSpace;
-#endif
+
                 GetOrCreateEntityDataDict(property, out var data);
-                switch (data.SelectedTab)
-                {
-                    case Tab.Clips:
-                        height += GetClipListHeight(property, setting);
-                        break;
-                    case Tab.Overall:
-                        height += GetAdditionalBasePropertiesHeight(property, setting);
-                        break;
-                }
+
+                height += GetTabViewHeight(property, setting, data.SelectedTab);
             }
             return height;
         }
@@ -271,6 +254,13 @@ namespace Ami.BroAudio.Editor
             }
             return height;
         }
+
+        private float GetTabViewHeight(SerializedProperty property, EditorSetting.AudioTypeSetting setting, Tab tab) => tab switch
+        {
+            Tab.Clips => GetClipListHeight(property, setting),
+            Tab.Overall => GetAdditionalBasePropertiesHeight(property, setting),
+            _ => 0f,
+        };
         #endregion
 
         private void DrawEntityNameField(Rect position, SerializedProperty nameProp, int id)
@@ -456,7 +446,7 @@ namespace Ami.BroAudio.Editor
             menu.AddDisabledItem(new GUIContent($"ID:{idProp.intValue}"));
 #if BroAudio_DevOnly
             menu.AddItem(new GUIContent("Copy ID to the clipboard"), false, CopyID);
-    #endif
+#endif
             menu.AddItem(new GUIContent($"Remove [{nameProp.stringValue}]"), false, () => OnRemoveEntity?.Invoke());
 
             var audioType = Utility.GetAudioType(idProp.intValue);

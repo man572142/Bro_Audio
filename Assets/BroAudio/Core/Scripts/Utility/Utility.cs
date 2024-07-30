@@ -70,18 +70,12 @@ namespace Ami.BroAudio
             }
         }
 
-		private static float GetCurveDefaultValue(AudioSourceCurveType curveType)
-		{
-            switch (curveType)
-            {
-                case AudioSourceCurveType.SpatialBlend:
-                    return AudioConstant.SpatialBlend_2D;
-                case AudioSourceCurveType.ReverbZoneMix:
-                    return AudioConstant.DefaultReverZoneMix;
-                case AudioSourceCurveType.Spread:
-                    return AudioConstant.DefaultSpread;
-            }
-			return default;
-        }
+        private static float GetCurveDefaultValue(AudioSourceCurveType curveType) => curveType switch
+        {
+            AudioSourceCurveType.SpatialBlend => AudioConstant.SpatialBlend_2D,
+            AudioSourceCurveType.ReverbZoneMix => AudioConstant.DefaultReverZoneMix,
+            AudioSourceCurveType.Spread => AudioConstant.DefaultSpread,
+            _ => default,
+        };
     }
 }

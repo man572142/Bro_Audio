@@ -23,9 +23,9 @@ namespace Ami.BroAudio
             => new Effect(exposedParameterName, value, SingleFading(fadeTime, ease));
         public static class Defaults
         {
-            public static float Volume => AudioConstant.FullVolume;
-            public static float LowPass => AudioConstant.MaxFrequency;
-            public static float HighPass => AudioConstant.MinFrequency;
+            public const float Volume = AudioConstant.FullVolume;
+            public const float LowPass = AudioConstant.MaxFrequency;
+            public const float HighPass = AudioConstant.MinFrequency;
         }
 
         private static Fading SingleFading(float fadeTime, Ease ease) => new Fading(fadeTime, default, ease, default);
@@ -49,6 +49,19 @@ namespace Ami.BroAudio
         internal Effect(string exposedParaName, float value, Fading fading) : this(EffectType.Custom, value, fading)
         {
             CustomExposedParameter = exposedParaName;
+        }
+
+        public Effect(EffectType type) : this()
+        {
+            Type = type;
+
+            Value = type switch
+            {
+                EffectType.Volume => AudioConstant.FullVolume,
+                EffectType.LowPass => BroAdvice.LowPassFrequency,
+                EffectType.HighPass => BroAdvice.HighPassFrequency,
+                _ => default,
+            };
         }
 
         public float Value
@@ -78,38 +91,13 @@ namespace Ami.BroAudio
             }
         }
 
-        public Effect(EffectType type) : this()
+        public bool IsDefault() => Type switch
         {
-            Type = type;
-
-            switch (type)
-            {
-                case EffectType.Volume:
-                    Value = AudioConstant.FullVolume;
-                    break;
-                case EffectType.LowPass:
-                    Value = BroAdvice.LowPassFrequency;
-                    break;
-                case EffectType.HighPass:
-                    Value = BroAdvice.HighPassFrequency;
-                    break;
-            }
-        }
-
-        public bool IsDefault()
-        {
-            switch (Type)
-            {
-                case EffectType.Volume:
-                    return Value == AudioConstant.FullDecibelVolume;
-                case EffectType.LowPass:
-                    return Value == Defaults.LowPass;
-                case EffectType.HighPass:
-                    return Value == Defaults.HighPass;
-            }
-            return false;
-        }
-
+            EffectType.Volume => Value == AudioConstant.FullDecibelVolume,
+            EffectType.LowPass => Value == Defaults.LowPass,
+            EffectType.HighPass => Value == Defaults.HighPass,
+            _ => false,
+        };
 
         public int CompareTo(Effect other)
         {

@@ -2,10 +2,11 @@
 {
 	public enum TransportType 
 	{ 
-		Start = 1 << 0,
-		End = 1 << 1,
-		Delay = 1 << 2,
-		FadeIn = 1 << 3,
-		FadeOut =  1 << 4,
-	}
+		Start = 0,
+		End = 1,
+		FadeIn = 2,
+		FadeOut =  3,
+
+        Delay = 4,
+    }
 }

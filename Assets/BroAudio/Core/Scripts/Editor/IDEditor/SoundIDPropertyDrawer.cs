@@ -97,13 +97,13 @@ namespace Ami.BroAudio.Editor
                 dropdown.Show(dropdownRect);
             }
 
+            IAudioAsset audioAsset = assetProp.objectReferenceValue as IAudioAsset;
+            DrawAudioTypeLabel(dropdownRect, idProp, audioAsset);
             using (new EditorGUI.DisabledScope(idProp.intValue <= 0))
-            {
-                IAudioAsset audioAsset = assetProp.objectReferenceValue as IAudioAsset;
-                DrawAudioTypeLabel(dropdownRect, idProp, audioAsset);
+            {                
                 DrawPlaybackButton(playbackButtonRect, idProp.intValue, assetProp);
-                DrawLibraryShortcutButton(libraryShortcutRect, idProp, audioAsset);
             }
+            DrawLibraryShortcutButton(libraryShortcutRect, idProp, audioAsset);
 
             void OnSelect(int id, string name, ScriptableObject asset)
             {
@@ -192,7 +192,14 @@ namespace Ami.BroAudio.Editor
         {
             if (GUI.Button(libraryShortcutRect, _libraryShortcut))
             {
-                LibraryManagerWindow.ShowWindowAndLocateToEntity(audioAsset.AssetGUID, idProp.intValue);
+                if(idProp.intValue > 0 && !string.IsNullOrEmpty(audioAsset.AssetGUID))
+                {
+                    LibraryManagerWindow.ShowWindowAndLocateToEntity(audioAsset.AssetGUID, idProp.intValue);
+                }
+                else
+                {
+                    LibraryManagerWindow.ShowWindow();
+                }
             }
         }
 

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using Ami.Extension;
 using static Ami.BroAudio.SoundSource.NameOf;
+using Ami.BroAudio.Runtime;
 
 namespace Ami.BroAudio.Editor
 {
@@ -86,6 +87,18 @@ namespace Ami.BroAudio.Editor
             EditorGUILayout.PropertyField(_positionModeProp);
 
             serializedObject.ApplyModifiedProperties();
+
+            if(Application.isPlaying && target is SoundSource source && 
+                source.CurrentPlayer != null && source.CurrentPlayer is AudioPlayerInstanceWrapper wrapper)
+            {
+                AudioPlayer player = wrapper;
+                EditorGUI.BeginDisabledGroup(true);
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.ObjectField("Current Player",player, typeof(AudioPlayer), false);
+                }
+                EditorGUI.EndDisabledGroup();
+            }
         }
 
         private void DrawBoldToggle(ref SerializedProperty property)
@@ -103,7 +116,8 @@ namespace Ami.BroAudio.Editor
             {
                 float width = EditorGUIUtility.currentViewWidth - (WindowPaddingX * 2);
                 float height = (EditorGUIUtility.singleLineHeight * lineCount) + (WindowPaddingY * 2);
-                GUI.skin.horizontalScrollbar.Draw(new Rect(WindowPaddingX, _currentDrawedWindowY, width, height), false, false, false, false);
+                GUIStyle style = new GUIStyle("AnimationKeyframeBackground");
+                style.Draw(new Rect(WindowPaddingX, _currentDrawedWindowY, width, height), false, false, false, false);
                 _currentDrawedWindowY += height;
             }
         }

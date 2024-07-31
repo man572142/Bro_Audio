@@ -21,17 +21,17 @@ namespace Ami.BroAudio
         [SerializeField] SoundID _sound = default;
         [SerializeField] PositionMode _positionMode = default;
 
-        public void Play() => _currentPlayer = BroAudio.Play(_sound);
-        public void Play(Transform followTarget) => _currentPlayer = BroAudio.Play(_sound, followTarget);
-        public void Play(Vector3 positon) => _currentPlayer = BroAudio.Play(_sound, positon);
-        public void Stop() => _currentPlayer?.Stop();
-        public void Stop(float fadeTime) => _currentPlayer?.Stop(fadeTime);
-        public void SetVolume(float vol) => _currentPlayer?.SetVolume(vol);
-        public void SetVolume(float vol, float fadeTime) => _currentPlayer?.SetVolume(vol, fadeTime);
-        public void SetPitch(float pitch) => _currentPlayer?.SetPitch(pitch);
-        public void SetPitch(float pitch, float fadeTime) => _currentPlayer?.SetPitch(pitch, fadeTime);
+        public void Play() => CurrentPlayer = BroAudio.Play(_sound);
+        public void Play(Transform followTarget) => CurrentPlayer = BroAudio.Play(_sound, followTarget);
+        public void Play(Vector3 positon) => CurrentPlayer = BroAudio.Play(_sound, positon);
+        public void Stop() => CurrentPlayer?.Stop();
+        public void Stop(float fadeTime) => CurrentPlayer?.Stop(fadeTime);
+        public void SetVolume(float vol) => CurrentPlayer?.SetVolume(vol);
+        public void SetVolume(float vol, float fadeTime) => CurrentPlayer?.SetVolume(vol, fadeTime);
+        public void SetPitch(float pitch) => CurrentPlayer?.SetPitch(pitch);
+        public void SetPitch(float pitch, float fadeTime) => CurrentPlayer?.SetPitch(pitch, fadeTime);
 
-        private IAudioPlayer _currentPlayer;
+        public IAudioPlayer CurrentPlayer { get; private set; }
 
         private void OnEnable()
         {
@@ -61,9 +61,9 @@ namespace Ami.BroAudio
 
         private void OnDisable()
         {
-            if(_stopOnDisable && _currentPlayer != null && _currentPlayer.IsPlaying)
+            if(_stopOnDisable && CurrentPlayer != null && CurrentPlayer.IsPlaying)
             {
-                _currentPlayer.Stop(_overrideFadeOut);
+                CurrentPlayer.Stop(_overrideFadeOut);
             }
         }
 

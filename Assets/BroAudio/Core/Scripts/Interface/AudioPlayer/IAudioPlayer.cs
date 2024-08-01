@@ -18,5 +18,7 @@ namespace Ami.BroAudio
         /// Triggered when the audio player has finished playing
         /// </summary>
         event Action<SoundID> OnEndPlaying;
+
+        IAudioPlayer SetVelocity(int velocity);
     }
 }

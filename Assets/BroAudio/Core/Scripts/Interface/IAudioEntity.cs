@@ -10,7 +10,8 @@ namespace Ami.BroAudio.Data
         SpatialSetting SpatialSetting { get; }
 		int Priority { get; }
         BroAudioClip PickNewClip();
-		float GetMasterVolume();
+        BroAudioClip PickNewClip(int velocity);
+        float GetMasterVolume();
 		float GetPitch();
 		float GetRandomValue(float baseValue, RandomFlag flags);
         void ResetShuffleInUseState();

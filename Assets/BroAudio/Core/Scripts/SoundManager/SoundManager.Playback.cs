@@ -26,8 +26,8 @@ namespace Ami.BroAudio.Runtime
         {
             if (IsPlayable(id,out var entity, out var previousPlayer) && TryGetAvailablePlayer(id, out var player))
             {
-                var pref = new PlaybackPreference(entity,position);
-                return PlayerToPlay(id, player,pref, previousPlayer);
+                var pref = new PlaybackPreference(entity, position);
+                return PlayerToPlay(id, player, pref, previousPlayer);
             }
             return null;
         }
@@ -36,8 +36,8 @@ namespace Ami.BroAudio.Runtime
         {
             if (IsPlayable(id,out var entity, out var previousPlayer) && TryGetAvailablePlayer(id, out var player))
             {
-                var pref = new PlaybackPreference(entity,followTarget);
-                return PlayerToPlay(id, player,pref, previousPlayer);
+                var pref = new PlaybackPreference(entity, followTarget);
+                return PlayerToPlay(id, player, pref, previousPlayer);
             }
             return null;
         }

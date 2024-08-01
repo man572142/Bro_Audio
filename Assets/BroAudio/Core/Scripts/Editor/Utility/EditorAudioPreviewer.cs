@@ -26,6 +26,7 @@ namespace Ami.BroAudio.Editor
 
         private float _elapsedTime = 0f;
         private float _dbVolume = 0f;
+        private float _pitch = 1f;
 
         private bool _isInitSuccessfully = false;
 
@@ -56,11 +57,12 @@ namespace Ami.BroAudio.Editor
 
         protected override float UpdateInterval => 1 / 30f;
 
-        public void SetData(EditorPlayAudioClip.Data clipData)
+        public void SetData(EditorPlayAudioClip.Data clipData, float pitch = 1f)
         {
             _clipData = clipData;
-            
-            if(_isInitSuccessfully && _method == null)
+            _pitch = pitch;
+
+            if (_isInitSuccessfully && _method == null)
             {
                 var reflection = new ClassReflectionHelper();
                 string methodName = BroAudioReflection.MethodName.SetValueForVolume.ToString();
@@ -104,7 +106,7 @@ namespace Ami.BroAudio.Editor
             float fadeOutPos = _clipData.Duration - _clipData.FadeOut;
             bool hasFaddeOut = _clipData.FadeOut > 0f;
 
-            _elapsedTime += DeltaTime;
+            _elapsedTime += DeltaTime * _pitch;
             if (_elapsedTime < _clipData.FadeIn)
             {
                 float t = (_elapsedTime / _clipData.FadeIn).SetEase(_fadeInEase);

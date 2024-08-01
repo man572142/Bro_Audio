@@ -120,7 +120,7 @@ namespace Ami.Extension
             _currentPlayingClip = clip;
             _previousMuteState = EditorUtility.audioMasterMute ? MuteState.On : MuteState.Off;
 
-            _volumeTransporter.SetData(clip);
+            _volumeTransporter.SetData(clip, pitch);
             SetMixerAutoSuspend(_mixer, false);
             
             double startDspTime = AudioSettings.dspTime + MixerUpdateTime;
@@ -147,7 +147,7 @@ namespace Ami.Extension
             {
                 while (selfLoop)
                 {
-                    await AudioSourceReplay(clip);
+                    await AudioSourceReplay(clip, pitch);
                 }
             }
             else
@@ -161,7 +161,6 @@ namespace Ami.Extension
             if (_currentEditorAudioSource)
             {
                 CancelTask();
-                //_currentEditorAudioSource.Stop();
             }
             else
             {
@@ -183,20 +182,21 @@ namespace Ami.Extension
             audioSource.reverbZoneMix = 0f;
         }
 
-        private async Task AudioSourceReplay(Data clip)
+        private async Task AudioSourceReplay(Data clip, float pitch)
         {
             if (_currentEditorAudioSource != null)
             {
-                if(_volumeTransporter.IsNewVolumeDifferentFromCurrent(clip))
+                PlaybackIndicator.End();
+                if (_volumeTransporter.IsNewVolumeDifferentFromCurrent(clip))
                 {
-                    _volumeTransporter.SetData(clip);
+                    _volumeTransporter.SetData(clip, pitch);
                     await Task.Delay(SecToMs(MixerUpdateTime), CancellationSource.Token);
                 }
 
-                PlaybackIndicator.End();
-
+                double dspTime = AudioSettings.dspTime;
                 _currentEditorAudioSource.timeSamples = GetSample(clip.AudioClip.frequency, clip.StartPosition);
-                _currentEditorAudioSource.Play();
+                _currentEditorAudioSource.PlayScheduled(dspTime);
+                _currentEditorAudioSource.SetScheduledEndTime(dspTime + (clip.Duration / pitch));
 
                 _volumeTransporter.Start();
                 PlaybackIndicator.Start();

@@ -39,7 +39,7 @@ namespace Ami.BroAudio.Runtime
 			PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
 			if (_stopMode == default)
             {
-                CurrentClip = _pref.Entity.PickNewClip();
+                CurrentClip = _pref.PickNewClip();
             }
 
 			this.StartCoroutineAndReassign(PlayControl(), ref _playbackControlCoroutine);

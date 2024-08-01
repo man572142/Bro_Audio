@@ -26,6 +26,7 @@ namespace Ami.BroAudio.Data
 
         public BroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);
         public BroAudioClip PickNewClip(out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index);
+        public BroAudioClip PickNewClip(int velocity) => Clips.PickNewOne(MulticlipsPlayMode, ID, out _, velocity);
 
         public bool Validate()
         {

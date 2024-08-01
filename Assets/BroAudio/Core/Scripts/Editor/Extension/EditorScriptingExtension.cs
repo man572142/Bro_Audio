@@ -29,7 +29,10 @@ namespace Ami.Extension
             public LabelWidthScope(float labelWidth)
             {
                 _originalLabelWidth = EditorGUIUtility.labelWidth;
-                EditorGUIUtility.labelWidth = labelWidth;
+                if(labelWidth >= 0f)
+                {
+                    EditorGUIUtility.labelWidth = labelWidth;
+                }
             }
 
             public void Dispose()
@@ -485,7 +488,7 @@ namespace Ami.Extension
 
             Rect suffixRect = EditorGUI.PrefixLabel(position, title);
 
-            using (new LabelWidthScope())
+            using (new LabelWidthScope(-1f))
             {
                 for (int i = 0; i < values.Length; i++)
                 {

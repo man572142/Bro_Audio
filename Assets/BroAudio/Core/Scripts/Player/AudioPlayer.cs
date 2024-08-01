@@ -77,9 +77,9 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            if(_pref.FollowTarget != null)
+            if(_pref.HasFollowTarget(out var target))
             {
-                transform.position = _pref.FollowTarget.position;
+                transform.position = target.position;
             }
         }
 
@@ -115,7 +115,7 @@ namespace Ami.BroAudio.Runtime
 
 			void SetSpatialBlend()
 			{
-				if (pref.FollowTarget != null && transform.parent != pref.FollowTarget)
+				if (pref.HasFollowTarget(out _))
 				{
 					SetTo3D();
 				}
@@ -157,6 +157,12 @@ namespace Ami.BroAudio.Runtime
             AudioSource.reverbZoneMix = AudioConstant.DefaultReverZoneMix;
             AudioSource.spread = AudioConstant.DefaultSpread;
             AudioSource.rolloffMode = AudioConstant.DefaultRolloffMode;
+        }
+
+        public IAudioPlayer SetVelocity(int velocity)
+        {
+            _pref.SetVelocity(velocity);
+            return this;
         }
 
         public void SetEffect(EffectType effect,SetEffectMode mode)

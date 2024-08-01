@@ -8,15 +8,15 @@ namespace Ami.BroAudio
     public static partial class Utility
     {
         private static Dictionary<int, int> ClipsSequencer = null;
-
+        
         public static void ResetClipSequencer(int id)
         {
             ClipsSequencer.Remove(id);
         }
 
-        public static BroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index)
-        {
-            index = 0;
+		public static BroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index, int velocity = 0)
+		{
+			index = 0;
             if (clips == null || clips.Length <= 0)
             {
                 Debug.LogError(LogTitle + "There are no AudioClip in the entity");
@@ -27,18 +27,15 @@ namespace Ami.BroAudio
                 playMode = MulticlipsPlayMode.Single;
             }
 
-            switch (playMode)
+            return playMode switch
             {
-                case MulticlipsPlayMode.Single:
-                    return clips[0];
-                case MulticlipsPlayMode.Sequence:
-                    return clips.PickNextClip(id, out index);
-                case MulticlipsPlayMode.Random:
-                    return clips.PickRandomClip(out index);
-                case MulticlipsPlayMode.Shuffle:
-                    return clips.PickShuffleClip(out index);
-            }
-            return default;
+                MulticlipsPlayMode.Single => clips[0],
+                MulticlipsPlayMode.Sequence => clips.PickNextClip(id, out index),
+                MulticlipsPlayMode.Random => clips.PickRandomClip(out index),
+                MulticlipsPlayMode.Shuffle => clips.PickShuffleClip(out index),
+                MulticlipsPlayMode.Velocity => clips.PickClipByVelocity(velocity, out index),
+                _ => default,
+            };
         }
 
         private static BroAudioClip PickNextClip(this BroAudioClip[] clips, int id, out int index)
@@ -137,6 +134,21 @@ namespace Ami.BroAudio
             {
                 clips[i].IsUsed = false;
             }
+        }
+
+        public static BroAudioClip PickClipByVelocity(this BroAudioClip[] clips, int velocity, out int index)
+        {
+            index = 0;
+            for(int i = 0; i < clips.Length;i++)
+            {
+                var clip = clips[i];
+                if(clip.Velocity > velocity)
+                {
+                    index = i == 0 ? 0 : i - 1;
+                    return clips[index];
+                }
+            }
+            return clips.Length > 0 ? clips[clips.Length - 1] : null;
         }
 
 #if UNITY_EDITOR

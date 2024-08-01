@@ -13,10 +13,10 @@ namespace Ami.BroAudio.Data
 		public float FadeIn;
 		public float FadeOut;
 
-		// For random
+		// For random, velocity
 		public int Weight;
 
-		// For shuffle
+		// For shuffle (runtime-only)
 		[System.NonSerialized]
 		public bool IsUsed;
 
@@ -27,6 +27,7 @@ namespace Ami.BroAudio.Data
 		float IBroAudioClip.EndPosition => EndPosition;
 		float IBroAudioClip.FadeIn => FadeIn;
 		float IBroAudioClip.FadeOut => FadeOut;
+        public int Velocity => Weight;
 		public bool IsNull() => AudioClip == null;
 	}
 

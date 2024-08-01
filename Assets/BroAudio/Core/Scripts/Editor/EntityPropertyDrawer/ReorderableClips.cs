@@ -201,6 +201,10 @@ namespace Ami.BroAudio.Editor
                     case MulticlipsPlayMode.Shuffle:
                         guiContent.tooltip = "Plays a clip randomly without repeating the previous one.";
                         break;
+                    case MulticlipsPlayMode.Velocity:
+                        EditorGUI.LabelField(valueRect, "Velocity", GUIStyleHelper.MiddleCenterText);
+                        guiContent.tooltip = "Plays a clip by a given velocity";
+                        break;
                 }
                 EditorGUI.LabelField(multiclipOptionRect.DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
                 EditorGUI.LabelField(multiclipOptionRect, guiContent);
@@ -338,13 +342,12 @@ namespace Ami.BroAudio.Editor
 				MulticlipsPlayMode currentPlayMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
 				switch (currentPlayMode)
 				{
-					case MulticlipsPlayMode.Single:
-						break;
 					case MulticlipsPlayMode.Sequence:
 						EditorGUI.LabelField(valueRect, index.ToString(), GUIStyleHelper.MiddleCenterText);
 						break;
 					case MulticlipsPlayMode.Random:
-						SerializedProperty weightProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Weight));
+                    case MulticlipsPlayMode.Velocity:
+                        SerializedProperty weightProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Weight));
 						GUIStyle intFieldStyle = new GUIStyle(EditorStyles.numberField);
 						intFieldStyle.alignment = TextAnchor.MiddleCenter;
 						weightProp.intValue = EditorGUI.IntField(valueRect, weightProp.intValue, intFieldStyle);

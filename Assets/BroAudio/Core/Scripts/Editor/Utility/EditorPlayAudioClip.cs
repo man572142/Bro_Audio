@@ -122,15 +122,18 @@ namespace Ami.Extension
 
             _volumeTransporter.SetData(clip);
             SetMixerAutoSuspend(_mixer, false);
-            await Task.Delay(SecToMs(MixerUpdateTime), CancellationSource.Token);
+            
+            double startDspTime = AudioSettings.dspTime + MixerUpdateTime;
+            float duration = clip.Duration / pitch;
+            audioSource.PlayScheduled(startDspTime);
+            audioSource.SetScheduledEndTime(startDspTime + duration);
 
-            audioSource.Play();
+            await Task.Delay(SecToMs(MixerUpdateTime), CancellationSource.Token);
             PlaybackIndicator.Start(selfLoop);
             _volumeTransporter.Start();
             EditorUtility.audioMasterMute = false;
 
-            float waitTime = clip.Duration / pitch;
-            await Task.Delay(SecToMs(waitTime), CancellationSource.Token);
+            await Task.Delay(SecToMs(duration), CancellationSource.Token);
             _volumeTransporter.End();
 
             _isRecursionOutside = onReplay != null;

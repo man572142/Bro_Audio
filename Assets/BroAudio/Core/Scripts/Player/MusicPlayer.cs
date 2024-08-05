@@ -28,7 +28,7 @@ namespace Ami.BroAudio.Runtime
 			_overrideFade = AudioPlayer.UseEntitySetting;
 		}
 
-		IMusicPlayer IMusicPlayer.SetTransition(Transition transition, StopMode stopMode, float overrideFade)
+        IAudioPlayer IMusicPlayer.SetTransition(Transition transition, StopMode stopMode, float overrideFade)
 		{
 			_transition = transition;
 			_stopMode = stopMode;

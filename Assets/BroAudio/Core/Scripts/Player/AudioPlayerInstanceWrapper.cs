@@ -14,6 +14,7 @@ namespace Ami.BroAudio
 		{
 		}
 
+        [Obsolete("Use " + nameof(IAudioPlayer.OnEnd) + " instead")]
         public event Action<SoundID> OnEndPlaying
 		{
 			add
@@ -32,38 +33,81 @@ namespace Ami.BroAudio
 			}
 		}
 
-        public SoundID ID => Instance ? Instance.ID : SoundID.Invalid;
-
-		public bool IsActive => IsAvailable() ? Instance.IsActive : false;
-
-		public bool IsPlaying => IsAvailable() ? Instance.IsPlaying : false;
-
-        IMusicPlayer IMusicDecoratable.AsBGM() => Instance ? Instance.AsBGM() : null;
-
-#if !UNITY_WEBGL
-		IPlayerEffect IEffectDecoratable.AsDominator() => Instance ? Instance.AsDominator() : null;
-#endif
-		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Instance ? Instance.SetVolume(vol, fadeTime) : null;
-
-		IAudioPlayer IPitchSettable.SetPitch(float pitch, float fadeTime) => Instance ? Instance.SetPitch(pitch, fadeTime) : null;
-
-        IAudioPlayer IAudioPlayer.SetVelocity(int velocity) => Instance ? Instance.SetVelocity(velocity) : null;
-
         protected override void LogInstanceIsNull()
-		{
-			if(SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)
-			{
+        {
+            if (SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)
+            {
                 Debug.LogWarning(Utility.LogTitle + "Invalid operation. The audio player you're accessing has finished playing and has been recycled.");
             }
-		}
+        }
 
-        void IAudioStoppable.Stop() => Instance?.Stop();
-        void IAudioStoppable.Stop(Action onFinished) => Instance?.Stop(onFinished);
-        void IAudioStoppable.Stop(float fadeOut) => Instance?.Stop(fadeOut);
-        void IAudioStoppable.Stop(float fadeOut, Action onFinished) => Instance?.Stop(fadeOut, onFinished);
-        void IAudioStoppable.Pause() => Instance?.Pause();
-        void IAudioStoppable.Pause(float fadeOut) => Instance?.Pause(fadeOut);
 
         public static implicit operator AudioPlayer(AudioPlayerInstanceWrapper wrapper) => wrapper.IsAvailable() ? wrapper.Instance : null;
+
+
+        #region Interface
+        public SoundID ID => Instance ? Instance.ID : SoundID.Invalid;
+        public bool IsActive => IsAvailable() ? Instance.IsActive : false;
+        public bool IsPlaying => IsAvailable() ? Instance.IsPlaying : false;
+        IMusicPlayer IMusicDecoratable.AsBGM() => Instance ? Instance.AsBGM() : null;
+#if !UNITY_WEBGL
+        IPlayerEffect IEffectDecoratable.AsDominator() => Instance.Safe()?.AsDominator();
+#endif
+        IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Instance.Safe()?.SetVolume(vol, fadeTime);
+        IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime) => Instance.Safe()?.SetPitch(pitch, fadeTime);
+        IAudioPlayer IAudioPlayer.SetVelocity(int velocity) => Instance.Safe()?.SetVelocity(velocity);
+
+        void IAudioStoppable.Stop() => Instance.Safe()?.Stop();
+        void IAudioStoppable.Stop(Action onFinished) => Instance.Safe()?.Stop(onFinished);
+        void IAudioStoppable.Stop(float fadeOut) => Instance.Safe()?.Stop(fadeOut);
+        void IAudioStoppable.Stop(float fadeOut, Action onFinished) => Instance.Safe()?.Stop(fadeOut, onFinished);
+        void IAudioStoppable.Pause() => Instance.Safe()?.Pause();
+        void IAudioStoppable.Pause(float fadeOut) => Instance.Safe()?.Pause(fadeOut);
+
+        IAudioPlayer IAudioPlayer.OnStart(Action<IAudioPlayerContent> onStart) => Instance.Safe()?.OnStart(onStart);
+
+        IAudioPlayer IAudioPlayer.OnUpdate(Action<IAudioPlayerContent> onUpdate) => Instance.Safe()?.OnUpdate(onUpdate);
+
+        IAudioPlayer IAudioPlayer.OnEnd(Action onEnd) => Instance.Safe()?.OnEnd(onEnd);
+
+        IAudioPlayer IAudioPlayer.SetOnAudioFilterRead(Action<float[], int> onAudioFilterRead) => Instance.Safe()?.SetOnAudioFilterRead(onAudioFilterRead);
+
+        void IAudioPlayerContent.GetOutputData(float[] samples, int channels)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IAudioPlayerContent.GetSpectrumData(float[] samples, int channels, FFTWindow window)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IAudioPlayerContent.GetSpatializerFloat(int index, out float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IAudioPlayerContent.GetAmbisonicDecoderFloat(int index, out float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        AudioSource IAudioPlayerContent.GetAudioSource()
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+    }
+
+    internal static class AudioPlayerNullChecker
+    {
+        internal static AudioPlayer Safe(this AudioPlayer player)
+        {
+            if(player)
+            {
+                return player;
+            }
+            return null;
+        }
     }
 }

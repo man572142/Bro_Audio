@@ -21,6 +21,10 @@ namespace Ami.BroAudio.Runtime
         private StopMode _stopMode = default;
         private Coroutine _playbackControlCoroutine = null;
 
+        private Action _onEnd = null;
+        private Action<IAudioPlayerContent> _onUpdate = null;
+        private Action<IAudioPlayerContent> _onStart = null;
+
         public int PlaybackStartingTime { get; private set; }
 
         public void SetPlaybackData(int id, PlaybackPreference pref)
@@ -109,6 +113,7 @@ namespace Ami.BroAudio.Runtime
                     while (_clipVolume.Update(ref elapsedTime, fadeIn, _pref.FadeInEase))
                     {
                         yield return null;
+                        _onUpdate?.Invoke(this);
                     }
                 }
                 else
@@ -129,6 +134,7 @@ namespace Ami.BroAudio.Runtime
                     while (endSample - AudioSource.timeSamples > fadeOut * sampleRate)
                     {
                         yield return null;
+                        _onUpdate?.Invoke(this);
                     }
 
                     IsFadingOut = true;
@@ -138,6 +144,7 @@ namespace Ami.BroAudio.Runtime
                     while (_clipVolume.Update(ref elapsedTime, fadeOut, _pref.FadeOutEase))
                     {
                         yield return null;
+                        _onUpdate?.Invoke(this);
                     }
                     IsFadingOut = false;
                 }
@@ -147,6 +154,7 @@ namespace Ami.BroAudio.Runtime
                     while(!HasEndPlaying(ref hasPlayed) && endSample - AudioSource.timeSamples > 0)
                     {
                         yield return null;
+                        _onUpdate?.Invoke(this);
                     }
                     TriggerSeamlessLoopReplay();
                 }
@@ -173,6 +181,9 @@ namespace Ami.BroAudio.Runtime
                         break;
                 }
                 _stopMode = default;
+                _onUpdate?.Invoke(this);
+                _onStart?.Invoke(this);
+                _onStart = null;
             }
 
 			void PlayFromPos(float pos)
@@ -318,9 +329,31 @@ namespace Ami.BroAudio.Runtime
             RemoveFromResumablePlayer();
             OnEndPlaying?.Invoke(ID);
             OnEndPlaying = null;
+
+            _onEnd?.Invoke();
+            _onEnd = null;
+
             OnSeamlessLoopReplay = null;
             ID = -1;
             Recycle();
 		}
-	}
+
+        public IAudioPlayer OnEnd(Action onEnd)
+        {
+            _onEnd += onEnd;
+            return this;
+        }
+
+        public IAudioPlayer OnUpdate(Action<IAudioPlayerContent> onUpdate)
+        {
+            _onUpdate += onUpdate;
+            return this;
+        }
+
+        public IAudioPlayer OnStart(Action<IAudioPlayerContent> onStart)
+        {
+            _onStart += onStart;
+            return this;
+        }
+    }
 }

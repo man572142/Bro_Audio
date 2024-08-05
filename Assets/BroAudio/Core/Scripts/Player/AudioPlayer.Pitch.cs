@@ -15,7 +15,7 @@ namespace Ami.BroAudio.Runtime
 
         private Coroutine _pitchCoroutine;
 
-        IAudioPlayer IPitchSettable.SetPitch(float pitch, float fadeTime)
+        IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime)
 		{
             StaticPitch = pitch;
             switch (SoundManager.PitchSetting)

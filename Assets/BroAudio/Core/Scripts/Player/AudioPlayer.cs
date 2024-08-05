@@ -26,6 +26,9 @@ namespace Ami.BroAudio.Runtime
 		private string _currTrackName = string.Empty;
         //private string _pitchParaName = string.Empty;
 
+        private AudioFilterReader _audioFilterReader = null;
+        private bool _hasUserGotAudioSource = false;
+
 		public SoundID ID { get; private set; } = -1;
         public bool IsPlaying => IsActive;
         public bool IsActive => ID > 0;
@@ -159,7 +162,7 @@ namespace Ami.BroAudio.Runtime
             AudioSource.rolloffMode = AudioConstant.DefaultRolloffMode;
         }
 
-        public IAudioPlayer SetVelocity(int velocity)
+        IAudioPlayer IAudioPlayer.SetVelocity(int velocity)
         {
             _pref.SetVelocity(velocity);
             return this;
@@ -258,13 +261,24 @@ namespace Ami.BroAudio.Runtime
             return false;
         }
 
-        private void Recycle()
+        public void GetOutputData(float[] samples, int channels) => AudioSource.GetOutputData(samples, channels);
+        public void GetSpectrumData(float[] samples, int channels, FFTWindow window) => AudioSource.GetSpectrumData(samples, channels, window);
+        public bool GetSpatializerFloat(int index, out float value) => AudioSource.GetSpatializerFloat(index, out value);
+        public bool GetAmbisonicDecoderFloat(int index, out float value) => AudioSource.GetSpatializerFloat(index, out value);
+        public AudioSource GetAudioSource()
         {
-            OnRecycle?.Invoke(this);
+            _hasUserGotAudioSource = true;
+            return AudioSource;
+        }
 
-            TrackType = AudioTrackType.Generic;
-            AudioTrack = null;
-            _decorators = null;
+        public IAudioPlayer SetOnAudioFilterRead(Action<float[], int> onAudioFilterRead)
+        {
+            if(!_audioFilterReader)
+            {
+                _audioFilterReader = gameObject.AddComponent<AudioFilterReader>();
+            }
+            _audioFilterReader.OnTriggerAudioFilterRead = onAudioFilterRead;
+            return this;
         }
     }
 }

@@ -1,34 +1,37 @@
 using System;
 using System.Collections.Generic;
 
-public abstract class BroModifier<T> : IDisposable where T : class
+namespace Ami.Extension
 {
-    private List<Action> _resetActions = null;
-    protected T Base { get; private set; }
-
-    protected BroModifier(T @base)
+    public abstract class BroModifier<T> : IDisposable where T : class
     {
-        Base = @base;
-    }
+        private List<Action> _resetActions = null;
+        protected T Base { get; private set; }
 
-    public void Dispose()
-    {
-        if (_resetActions != null)
+        protected BroModifier(T @base)
         {
-            foreach (var act in _resetActions)
+            Base = @base;
+        }
+
+        public void Dispose()
+        {
+            if (_resetActions != null)
             {
-                act?.Invoke();
+                foreach (var act in _resetActions)
+                {
+                    act?.Invoke();
+                }
             }
         }
-    }
 
-    protected void AddResetAction(ref bool hasAdded, Action action)
-    {
-        if(!hasAdded)
+        protected void AddResetAction(ref bool hasAdded, Action action)
         {
-            _resetActions ??= new List<Action>();
-            _resetActions.Add(action);
-            hasAdded = true;
+            if (!hasAdded)
+            {
+                _resetActions ??= new List<Action>();
+                _resetActions.Add(action);
+                hasAdded = true;
+            }
         }
-    }
+    } 
 }

@@ -8,10 +8,11 @@ using UnityEditor;
 
 namespace Ami.Extension.Reflection
 {
-#if BroAudio_DevOnly_GeneratedCodeSample
+#if !BroAudio_DevOnly_GeneratedCodeSample
     public interface IAudioSourceModifierSample
     {
-        float volume { set; }
+        /// <inheritdoc cref="AudioSource.volume"/>
+        float volume { get; set; }
     }
 
     public class AudioSourceModifierSample : BroModifier<AudioSource>, IAudioSourceModifierSample
@@ -22,6 +23,7 @@ namespace Ami.Extension.Reflection
         private bool _hasVolumeResetAction = false;
         public float volume
         {
+            get => Base.volume;
             set
             {
                 AddResetAction(ref _hasVolumeResetAction, () => Base.volume = Default_Volume);
@@ -30,6 +32,8 @@ namespace Ami.Extension.Reflection
         }
     }
 #endif
+
+#if BroAudio_DevOnly
 
     public static class AudioSourceProxyGenerator
     {
@@ -60,7 +64,7 @@ namespace Ami.Extension.Reflection
             public bool IncludeBaseTypeMembers;
         }
 
-        public static void GenerateModifierCode<T>(Parameters parameters, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance)
+        public static void GenerateModifierCode<T>(Parameters parameters, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance) where T : Component
         {
             Type type = typeof(T);
             MemberInfo[] members = type.GetMembers(bindingFlags);
@@ -78,16 +82,16 @@ namespace Ami.Extension.Reflection
             }
 
             var filteredMembers = members
-                .Where(x => x.MemberType == MemberTypes.Property && 
+                .Where(x => x.MemberType == MemberTypes.Property &&
                 (!parameters.IncludeBaseTypeMembers && x.DeclaringType == typeof(T)) &&
                 x is PropertyInfo property && property.CanWrite && x.GetCustomAttribute(typeof(ObsoleteAttribute)) == null);
 
             CreateModifierInterface<T>(parameters, filteredMembers);
-            CreateModifierClass<T>(parameters, filteredMembers);
+            CreateModifierClass<T>(parameters, filteredMembers, GetDefaultValueMap<T>(filteredMembers));
             AssetDatabase.Refresh();
         }
 
-        private static void CreateModifierInterface<T>(Parameters parameters, IEnumerable<MemberInfo> members)
+        private static void CreateModifierInterface<T>(Parameters parameters, IEnumerable<MemberInfo> members) where T : Component
         {
             string interfaceName = "I" + parameters.ScriptName;
             using (var file = File.CreateText(Path.Combine(parameters.Path, interfaceName + ".cs")))
@@ -97,21 +101,24 @@ namespace Ami.Extension.Reflection
                 file.WriteLine();
 
                 string indent = string.Empty;
-                using ( file.WriteBraces("namespace " + parameters.Namespace, ref indent))
-                using ( file.WriteBraces("public interface " + interfaceName, ref indent))
+                using (file.WriteBraces("namespace " + parameters.Namespace, ref indent))
+                using (file.WriteBraces("public interface " + interfaceName, ref indent))
                 {
                     foreach (var member in members)
                     {
-                        if(member is PropertyInfo property)
+                        if (member is PropertyInfo property)
                         {
-                            file.WriteLine(indent + string.Format("{0} {1} {{ set; }}", property.PropertyType.GetSimpleTypeName(), property.Name));
+                            string typeName = property.PropertyType.GetSimpleTypeName();
+                            file.WriteLine(indent + $"/// <inheritdoc cref=\"{typeof(T).Name}.{property.Name}\"/>");
+                            file.WriteLine(indent + $"{typeName} {property.Name} {{ get; set; }}");
+                            file.WriteLine();
                         }
                     }
                 }
             }
         }
 
-        private static void CreateModifierClass<T>(Parameters parameters, IEnumerable<MemberInfo> members)
+        private static void CreateModifierClass<T>(Parameters parameters, IEnumerable<MemberInfo> members, Dictionary<MemberInfo, string> defaultValueMap) where T : Component
         {
             using (var file = File.CreateText(Path.Combine(parameters.Path, parameters.ScriptName + ".cs")))
             {
@@ -127,13 +134,13 @@ namespace Ami.Extension.Reflection
                     file.WriteLine();
                     foreach (var member in members)
                     {
-                        WriteSetterBody(file, indent, member);
+                        WriteGetterSetterBody(file, indent, member, defaultValueMap);
                     }
                 }
             }
         }
 
-        private static void WriteSetterBody(StreamWriter file, string indent, MemberInfo member)
+        private static void WriteGetterSetterBody(StreamWriter file, string indent, MemberInfo member, Dictionary<MemberInfo, string> defaultValueMap)
         {
             if (member is not PropertyInfo property)
             {
@@ -143,20 +150,55 @@ namespace Ami.Extension.Reflection
             string typeName = property.PropertyType.GetSimpleTypeName();
             string varName = property.Name;
             string pascalVarName = varName.ToPascal();
-
-            string varNameOfDefault = $"Default_{pascalVarName}";
             string varNameOfHasReset = $"_has{pascalVarName}ResetAction";
 
-            // ToDo: no value
-            file.WriteLine(indent + $"public const {typeName} {varNameOfDefault} = default;");
             file.WriteLine(indent + $"private bool {varNameOfHasReset} = false;");
-            using (file.WriteBraces($"public {typeName} {varName}",ref indent))
-            using (file.WriteBraces("set", ref indent))
+            using (file.WriteBraces($"public {typeName} {varName}", ref indent))
             {
-                file.WriteLine(indent + $"AddResetAction(ref {varNameOfHasReset}, () => Base.{varName} = {varNameOfDefault});");
-                file.WriteLine(indent + $"Base.{varName} = value;");
+                file.WriteLine(indent + $"get => Base.{varName};");
+                using (file.WriteBraces("set", ref indent))
+                {
+                    string defaultValue = "default";
+                    if (defaultValueMap.TryGetValue(member, out string value))
+                    {
+                        defaultValue = value;
+                    }
+
+                    file.WriteLine(indent + $"AddResetAction(ref {varNameOfHasReset}, () => Base.{varName} = {defaultValue});");
+                    file.WriteLine(indent + $"Base.{varName} = value;");
+                }
             }
+
             file.WriteLine();
+        }
+
+        private static Dictionary<MemberInfo, string> GetDefaultValueMap<T>(IEnumerable<MemberInfo> filteredMembers) where T : Component
+        {
+            var temp = new GameObject("Temp");
+            temp.hideFlags = HideFlags.HideAndDontSave;
+
+            T component = temp.AddComponent<T>();
+            Dictionary<MemberInfo, string> defaultValueMap = new Dictionary<MemberInfo, string>();
+            foreach (PropertyInfo property in filteredMembers)
+            {
+                object value = property.GetValue(component);
+                if (value != default)
+                {
+                    string valueString = value.ToString();
+                    if (property.PropertyType.IsEnum)
+                    {
+                        valueString = property.PropertyType.ToString() + "." + valueString;
+                    }
+                    else if (property.PropertyType == typeof(bool))
+                    {
+                        valueString = valueString.ToCamel();
+                    }
+
+                    defaultValueMap.Add(property, valueString);
+                }
+            }
+            GameObject.DestroyImmediate(temp);
+            return defaultValueMap;
         }
 
         private static void WriteUsings(this StreamWriter writer, string[] usings)
@@ -196,5 +238,6 @@ namespace Ami.Extension.Reflection
             array[0] = array[0].ToLower();
             return new string(array);
         }
-    }
+    } 
+#endif
 }

@@ -7,32 +7,86 @@ namespace Ami.Extension
 {
     public interface IAudioSourceProxy
     {
-        float volume { set; }
-        float pitch { set; }
-        float time { set; }
-        int timeSamples { set; }
-        AudioClip clip { set; }
-        AudioMixerGroup outputAudioMixerGroup { set; }
-        GamepadSpeakerOutputType gamepadSpeakerOutputType { set; }
-        bool loop { set; }
-        bool ignoreListenerVolume { set; }
-        bool playOnAwake { set; }
-        bool ignoreListenerPause { set; }
-        AudioVelocityUpdateMode velocityUpdateMode { set; }
-        float panStereo { set; }
-        float spatialBlend { set; }
-        bool spatialize { set; }
-        bool spatializePostEffects { set; }
-        float reverbZoneMix { set; }
-        bool bypassEffects { set; }
-        bool bypassListenerEffects { set; }
-        bool bypassReverbZones { set; }
-        float dopplerLevel { set; }
-        float spread { set; }
-        int priority { set; }
-        bool mute { set; }
-        float minDistance { set; }
-        float maxDistance { set; }
-        AudioRolloffMode rolloffMode { set; }
+        /// <inheritdoc cref="AudioSource.volume"/>
+        float volume { get; set; }
+
+        /// <inheritdoc cref="AudioSource.pitch"/>
+        float pitch { get; set; }
+
+        /// <inheritdoc cref="AudioSource.time"/>
+        float time { get; set; }
+
+        /// <inheritdoc cref="AudioSource.timeSamples"/>
+        int timeSamples { get; set; }
+
+        /// <inheritdoc cref="AudioSource.clip"/>
+        AudioClip clip { get; set; }
+
+        /// <inheritdoc cref="AudioSource.outputAudioMixerGroup"/>
+        AudioMixerGroup outputAudioMixerGroup { get; set; }
+
+        /// <inheritdoc cref="AudioSource.gamepadSpeakerOutputType"/>
+        GamepadSpeakerOutputType gamepadSpeakerOutputType { get; set; }
+
+        /// <inheritdoc cref="AudioSource.loop"/>
+        bool loop { get; set; }
+
+        /// <inheritdoc cref="AudioSource.ignoreListenerVolume"/>
+        bool ignoreListenerVolume { get; set; }
+
+        /// <inheritdoc cref="AudioSource.playOnAwake"/>
+        bool playOnAwake { get; set; }
+
+        /// <inheritdoc cref="AudioSource.ignoreListenerPause"/>
+        bool ignoreListenerPause { get; set; }
+
+        /// <inheritdoc cref="AudioSource.velocityUpdateMode"/>
+        AudioVelocityUpdateMode velocityUpdateMode { get; set; }
+
+        /// <inheritdoc cref="AudioSource.panStereo"/>
+        float panStereo { get; set; }
+
+        /// <inheritdoc cref="AudioSource.spatialBlend"/>
+        float spatialBlend { get; set; }
+
+        /// <inheritdoc cref="AudioSource.spatialize"/>
+        bool spatialize { get; set; }
+
+        /// <inheritdoc cref="AudioSource.spatializePostEffects"/>
+        bool spatializePostEffects { get; set; }
+
+        /// <inheritdoc cref="AudioSource.reverbZoneMix"/>
+        float reverbZoneMix { get; set; }
+
+        /// <inheritdoc cref="AudioSource.bypassEffects"/>
+        bool bypassEffects { get; set; }
+
+        /// <inheritdoc cref="AudioSource.bypassListenerEffects"/>
+        bool bypassListenerEffects { get; set; }
+
+        /// <inheritdoc cref="AudioSource.bypassReverbZones"/>
+        bool bypassReverbZones { get; set; }
+
+        /// <inheritdoc cref="AudioSource.dopplerLevel"/>
+        float dopplerLevel { get; set; }
+
+        /// <inheritdoc cref="AudioSource.spread"/>
+        float spread { get; set; }
+
+        /// <inheritdoc cref="AudioSource.priority"/>
+        int priority { get; set; }
+
+        /// <inheritdoc cref="AudioSource.mute"/>
+        bool mute { get; set; }
+
+        /// <inheritdoc cref="AudioSource.minDistance"/>
+        float minDistance { get; set; }
+
+        /// <inheritdoc cref="AudioSource.maxDistance"/>
+        float maxDistance { get; set; }
+
+        /// <inheritdoc cref="AudioSource.rolloffMode"/>
+        AudioRolloffMode rolloffMode { get; set; }
+
     }
 }

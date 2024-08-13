@@ -8,8 +8,8 @@ using static Ami.BroAudio.Tools.BroName;
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource)), AddComponentMenu("")]
-	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable,IRecyclable<AudioPlayer>
-	{
+	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
+    {
         public const float UseEntitySetting = -1f;
         public const float Immediate = 0f;
         private const int DecoratorsArraySize = 2;
@@ -20,21 +20,38 @@ namespace Ami.BroAudio.Runtime
         private AudioMixer _audioMixer;
         private Func<AudioTrackType, AudioMixerGroup> _getAudioTrack;
 
-        private IBroAudioClip CurrentClip;
+        private IBroAudioClip _clip;
         private AudioPlayerDecorator[] _decorators = null;
         private string _sendParaName = string.Empty;
 		private string _currTrackName = string.Empty;
         //private string _pitchParaName = string.Empty;
 
+        private AudioSourceProxy _proxy = null;
+        private AudioFilterReader _audioFilterReader = null;
+
 		public SoundID ID { get; private set; } = -1;
-        public bool IsPlaying => IsActive;
+
         public bool IsActive => ID > 0;
+        public bool IsPlaying => AudioSource.isPlaying;
         public bool IsStopping { get; private set; }
         public bool IsFadingOut { get; private set; }
         public EffectType CurrentActiveEffects { get; private set; } = EffectType.None;
         public bool IsUsingEffect => CurrentActiveEffects != EffectType.None;
 		public bool IsDominator => TryGetDecorator<DominatorPlayer>(out _);
 		public bool IsBGM => TryGetDecorator<MusicPlayer>(out _);
+        IAudioSourceProxy IAudioPlayer.AudioSource
+        {
+            get
+            {
+                if(!IsActive)
+                {
+                    Debug.LogError(Utility.LogTitle + "The audio player is not played or has finished its playing");
+                    return null;
+                }
+                return _proxy ??= new AudioSourceProxy(AudioSource);
+            }
+        }
+
 		public string VolumeParaName 
         {
             get
@@ -159,7 +176,7 @@ namespace Ami.BroAudio.Runtime
             AudioSource.rolloffMode = AudioConstant.DefaultRolloffMode;
         }
 
-        public IAudioPlayer SetVelocity(int velocity)
+        IAudioPlayer IAudioPlayer.SetVelocity(int velocity)
         {
             _pref.SetVelocity(velocity);
             return this;
@@ -258,13 +275,20 @@ namespace Ami.BroAudio.Runtime
             return false;
         }
 
-        private void Recycle()
-        {
-            OnRecycle?.Invoke(this);
+        public void GetOutputData(float[] samples, int channels) => AudioSource.GetOutputData(samples, channels);
+        public void GetSpectrumData(float[] samples, int channels, FFTWindow window) => AudioSource.GetSpectrumData(samples, channels, window);
+        public bool GetSpatializerFloat(int index, out float value) => AudioSource.GetSpatializerFloat(index, out value);
+        public bool GetAmbisonicDecoderFloat(int index, out float value) => AudioSource.GetSpatializerFloat(index, out value);
 
-            TrackType = AudioTrackType.Generic;
-            AudioTrack = null;
-            _decorators = null;
+        IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead)
+        {
+            Debug.Log("OnAudioFilterRead inside AudioPlayer");
+            if (!_audioFilterReader)
+            {
+                _audioFilterReader = gameObject.AddComponent<AudioFilterReader>();
+            }
+            _audioFilterReader.OnTriggerAudioFilterRead = onAudioFilterRead;
+            return this;
         }
     }
 }

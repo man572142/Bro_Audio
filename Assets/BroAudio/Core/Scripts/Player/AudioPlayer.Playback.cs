@@ -15,11 +15,20 @@ namespace Ami.BroAudio.Runtime
         public static Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
         public event SeamlessLoopReplay OnSeamlessLoopReplay;
-        public event Action<SoundID> OnEndPlaying;
+        [Obsolete]
+        public event Action<SoundID> OnEndPlaying
+        {
+            add => _onEnd += value;
+            remove => _onEnd -= value;
+        }
 
         private PlaybackPreference _pref;
         private StopMode _stopMode = default;
         private Coroutine _playbackControlCoroutine = null;
+
+        private event Action<SoundID> _onEnd = null;
+        private event Action<IAudioPlayer> _onUpdate = null;
+        private event Action<IAudioPlayer> _onStart = null;
 
         public int PlaybackStartingTime { get; private set; }
 
@@ -39,7 +48,7 @@ namespace Ami.BroAudio.Runtime
 			PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
 			if (_stopMode == default)
             {
-                CurrentClip = _pref.PickNewClip();
+                _clip = _pref.PickNewClip();
             }
 
 			this.StartCoroutineAndReassign(PlayControl(), ref _playbackControlCoroutine);
@@ -66,12 +75,12 @@ namespace Ami.BroAudio.Runtime
                     }
                 }
 
-                if (CurrentClip.Delay > 0)
+                if (_clip.Delay > 0)
                 {
-                    yield return new WaitForSeconds(CurrentClip.Delay);
+                    yield return new WaitForSeconds(_clip.Delay);
                 }
 
-                AudioSource.clip = CurrentClip.AudioClip;
+                AudioSource.clip = _clip.AudioClip;
                 AudioSource.priority = _pref.Entity.Priority;
 
                 SetInitialPitch(_pref.Entity, audioTypePref);
@@ -95,20 +104,21 @@ namespace Ami.BroAudio.Runtime
             UpdateMixerVolume();
             AudioTrack = _getAudioTrack?.Invoke(TrackType);
 
-            int sampleRate = CurrentClip.AudioClip.frequency;
+            int sampleRate = _clip.AudioClip.frequency;
 			do
             {
                 StartPlaying();
-                float targetClipVolume = CurrentClip.Volume * _pref.Entity.GetMasterVolume();
+                float targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
                 float elapsedTime = 0f;
 
                 #region FadeIn
-                if(HasFading(CurrentClip.FadeIn, _pref.FadeIn, out float fadeIn))
+                if(HasFading(_clip.FadeIn, _pref.FadeIn, out float fadeIn))
                 {
                     _clipVolume.SetTarget(targetClipVolume);
                     while (_clipVolume.Update(ref elapsedTime, fadeIn, _pref.FadeInEase))
                     {
                         yield return null;
+                        _onUpdate?.Invoke(this);
                     }
                 }
                 else
@@ -123,12 +133,13 @@ namespace Ami.BroAudio.Runtime
 				}
 
                 #region FadeOut
-                int endSample = AudioSource.clip.samples - GetSample(sampleRate, CurrentClip.EndPosition);
-                if (HasFading(CurrentClip.FadeOut, _pref.FadeOut, out float fadeOut))
+                int endSample = AudioSource.clip.samples - GetSample(sampleRate, _clip.EndPosition);
+                if (HasFading(_clip.FadeOut, _pref.FadeOut, out float fadeOut))
                 {
                     while (endSample - AudioSource.timeSamples > fadeOut * sampleRate)
                     {
                         yield return null;
+                        _onUpdate?.Invoke(this);
                     }
 
                     IsFadingOut = true;
@@ -138,6 +149,7 @@ namespace Ami.BroAudio.Runtime
                     while (_clipVolume.Update(ref elapsedTime, fadeOut, _pref.FadeOutEase))
                     {
                         yield return null;
+                        _onUpdate?.Invoke(this);
                     }
                     IsFadingOut = false;
                 }
@@ -147,6 +159,7 @@ namespace Ami.BroAudio.Runtime
                     while(!HasEndPlaying(ref hasPlayed) && endSample - AudioSource.timeSamples > 0)
                     {
                         yield return null;
+                        _onUpdate?.Invoke(this);
                     }
                     TriggerSeamlessLoopReplay();
                 }
@@ -165,7 +178,7 @@ namespace Ami.BroAudio.Runtime
                 switch (_stopMode)
                 {
                     case StopMode.Stop:
-                        PlayFromPos(CurrentClip.StartPosition);
+                        PlayFromPos(_clip.StartPosition);
                         break;
                     case StopMode.Pause:
                         AudioSource.UnPause();
@@ -173,11 +186,14 @@ namespace Ami.BroAudio.Runtime
                     case StopMode.Mute:
                         if (!AudioSource.isPlaying)
                         {
-                            PlayFromPos(CurrentClip.StartPosition);
+                            PlayFromPos(_clip.StartPosition);
                         }
                         break;
                 }
                 _stopMode = default;
+                _onStart?.Invoke(this);
+                _onUpdate?.Invoke(this);
+                _onStart = null;
             }
 
 			void PlayFromPos(float pos)
@@ -242,16 +258,17 @@ namespace Ami.BroAudio.Runtime
 			IsStopping = true;
 
 			#region FadeOut
-			if (HasFading(CurrentClip.FadeOut,overrideFade,out float fadeTime))
+			if (HasFading(_clip.FadeOut,overrideFade,out float fadeTime))
             {
                 if (IsFadingOut)
                 {
                     // if is fading out. then don't stop. just wait for it
                     AudioClip clip = AudioSource.clip;
-                    float endSample = clip.samples - (CurrentClip.EndPosition * clip.frequency);
+                    float endSample = clip.samples - (_clip.EndPosition * clip.frequency);
                     while(AudioSource.timeSamples < endSample)
                     {
                         yield return null;
+                        _onUpdate?.Invoke(this);
                     }
                 }
                 else
@@ -261,6 +278,7 @@ namespace Ami.BroAudio.Runtime
                     while(_clipVolume.Update(ref elapsedTime, fadeTime, SoundManager.FadeOutEase))
                     {
                         yield return null;
+                        _onUpdate?.Invoke(this);
                     }
                 }
             }
@@ -314,18 +332,41 @@ namespace Ami.BroAudio.Runtime
 
             AudioSource.Stop();
             AudioSource.clip = null;
-            CurrentClip = null;
+            _clip = null;
             ResetSpatial();
             ResetEffect();
 
             _trackVolume.StopCoroutine();
             _audioTypeVolume.StopCoroutine();
             RemoveFromResumablePlayer();
-            OnEndPlaying?.Invoke(ID);
-            OnEndPlaying = null;
+
+            _onEnd?.Invoke(ID);
+            _onEnd = null;
+
             OnSeamlessLoopReplay = null;
             ID = -1;
             Recycle();
 		}
-	}
+
+        public IAudioPlayer OnEnd(Action<SoundID> onEnd)
+        {
+            _onEnd -= onEnd;
+            _onEnd += onEnd;
+            return this;
+        }
+
+        public IAudioPlayer OnUpdate(Action<IAudioPlayer> onUpdate)
+        {
+            _onUpdate -= onUpdate;
+            _onUpdate += onUpdate;
+            return this;
+        }
+
+        public IAudioPlayer OnStart(Action<IAudioPlayer> onStart)
+        {
+            _onStart -= onStart;
+            _onStart += onStart;
+            return this;
+        }
+    }
 }

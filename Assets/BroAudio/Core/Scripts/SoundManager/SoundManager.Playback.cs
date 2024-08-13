@@ -60,9 +60,8 @@ namespace Ami.BroAudio.Runtime
                 _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
                 if(previousPlayer != null)
                 {
-                    previousPlayer.OnEndPlaying -= RemoveFromPreventer;
+                    previousPlayer.OnEnd(RemoveFromPreventer);
                 }
-                player.OnEndPlaying += RemoveFromPreventer;
                 _combFilteringPreventer[id] = player;
             }
 

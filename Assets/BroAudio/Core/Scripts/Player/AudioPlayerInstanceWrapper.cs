@@ -14,6 +14,7 @@ namespace Ami.BroAudio
 		{
 		}
 
+        [Obsolete("Use " + nameof(IAudioPlayer.OnEnd) + " instead")]
         public event Action<SoundID> OnEndPlaying
 		{
 			add
@@ -32,30 +33,29 @@ namespace Ami.BroAudio
 			}
 		}
 
-        public SoundID ID => Instance ? Instance.ID : SoundID.Invalid;
-
-		public bool IsActive => IsAvailable() ? Instance.IsActive : false;
-
-		public bool IsPlaying => IsAvailable() ? Instance.IsPlaying : false;
-
-        IMusicPlayer IMusicDecoratable.AsBGM() => Instance ? Instance.AsBGM() : null;
-
-#if !UNITY_WEBGL
-		IPlayerEffect IEffectDecoratable.AsDominator() => Instance ? Instance.AsDominator() : null;
-#endif
-		IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Instance ? Instance.SetVolume(vol, fadeTime) : null;
-
-		IAudioPlayer IPitchSettable.SetPitch(float pitch, float fadeTime) => Instance ? Instance.SetPitch(pitch, fadeTime) : null;
-
-        IAudioPlayer IAudioPlayer.SetVelocity(int velocity) => Instance ? Instance.SetVelocity(velocity) : null;
-
         protected override void LogInstanceIsNull()
-		{
-			if(SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)
-			{
+        {
+            if (SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)
+            {
                 Debug.LogWarning(Utility.LogTitle + "Invalid operation. The audio player you're accessing has finished playing and has been recycled.");
             }
-		}
+        }
+
+
+        public static implicit operator AudioPlayer(AudioPlayerInstanceWrapper wrapper) => wrapper.IsAvailable() ? wrapper.Instance : null;
+
+        #region Interface
+#pragma warning disable UNT0008
+        public SoundID ID => Instance ? Instance.ID : SoundID.Invalid;
+        public bool IsActive => IsAvailable() ? Instance.IsActive : false;
+        public bool IsPlaying => IsAvailable() ? Instance.IsPlaying : false;
+        IMusicPlayer IMusicDecoratable.AsBGM() => Instance?.AsBGM() ?? Empty.MusicPlayer;
+#if !UNITY_WEBGL
+        IPlayerEffect IEffectDecoratable.AsDominator() => Instance?.AsDominator() ?? Empty.DominatorPlayer;
+#endif
+        IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => Instance?.SetVolume(vol, fadeTime) ?? Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime) => Instance?.SetPitch(pitch, fadeTime) ?? Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.SetVelocity(int velocity) => Instance?.SetVelocity(velocity) ?? Empty.AudioPlayer;
 
         void IAudioStoppable.Stop() => Instance?.Stop();
         void IAudioStoppable.Stop(Action onFinished) => Instance?.Stop(onFinished);
@@ -64,6 +64,47 @@ namespace Ami.BroAudio
         void IAudioStoppable.Pause() => Instance?.Pause();
         void IAudioStoppable.Pause(float fadeOut) => Instance?.Pause(fadeOut);
 
-        public static implicit operator AudioPlayer(AudioPlayerInstanceWrapper wrapper) => wrapper.IsAvailable() ? wrapper.Instance : null;
+        IAudioPlayer IAudioPlayer.OnStart(Action<IAudioPlayer> onStart) => Instance?.OnStart(onStart) ?? Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.OnUpdate(Action<IAudioPlayer> onUpdate) => Instance?.OnUpdate(onUpdate) ?? Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.OnEnd(Action<SoundID> onEnd) => Instance?.OnEnd(onEnd) ?? Empty.AudioPlayer;
+        IAudioSourceProxy IAudioPlayer.AudioSource
+        {
+            get
+            {
+                if(Instance && Instance is IAudioPlayer player)
+                {
+                    return player.AudioSource;
+                }
+                return null;
+            }
+        }
+
+        public void GetOutputData(float[] samples, int channels) => Instance?.GetOutputData(samples, channels);
+
+        public void GetSpectrumData(float[] samples, int channels, FFTWindow window) => Instance?.GetSpectrumData(samples, channels, window);
+
+        public bool GetSpatializerFloat(int index, out float value)
+        {
+            value = default;
+            if(Instance != null)
+            {
+                return Instance.GetSpatializerFloat(index, out value);
+            }
+            return false;
+        }
+
+        public bool GetAmbisonicDecoderFloat(int index, out float value)
+        {
+            value = default;
+            if (Instance != null)
+            {
+                return Instance.GetAmbisonicDecoderFloat(index, out value);
+            }
+            return false;
+        }
+
+        IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead)=> Instance?.OnAudioFilterRead(onAudioFilterRead) ?? Empty.AudioPlayer;
+#pragma warning restore UNT0008
+        #endregion
     }
 }

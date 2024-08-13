@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Ami.BroAudio.Runtime
 {
 	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
-	{
+    {
         /// <summary>
         /// Pitch value without any fading process
         /// </summary>
@@ -15,7 +15,7 @@ namespace Ami.BroAudio.Runtime
 
         private Coroutine _pitchCoroutine;
 
-        IAudioPlayer IPitchSettable.SetPitch(float pitch, float fadeTime)
+        IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime)
 		{
             StaticPitch = pitch;
             switch (SoundManager.PitchSetting)

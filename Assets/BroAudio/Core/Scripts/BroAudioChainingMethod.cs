@@ -21,7 +21,7 @@ namespace Ami.BroAudio
             => player?.Pause();
 
         public static void Pause(this IAudioStoppable player, float fadeOut)
-            => player?.Pause(fadeOut); 
+            => player?.Pause(fadeOut);
         #endregion
 
         #region Set Volume
@@ -44,9 +44,9 @@ namespace Ami.BroAudio
 
         #region Set Pitch
         /// <summary>
-        /// Set the player's pitch (-3 ~ 3).
+        /// Set the player's pitch.
         /// </summary>
-        /// <param name="pitch">The target pitch</param>
+        /// <param name="pitch">Values between -3 to 3, default is 1</param>
         /// <param name="fadeTime">Time to reach the target volume from the current volume.</param>
         public static IAudioPlayer SetPitch(this IAudioPlayer player, float pitch, float fadeTime = FadeTime_Immediate)
             => player?.SetPitch(pitch, fadeTime);
@@ -58,6 +58,14 @@ namespace Ami.BroAudio
         /// <inheritdoc cref="SetPitch(IAudioPlayer,float,float)"/>
         public static IAudioPlayer SetPitch(this IPlayerEffect player, float pitch, float fadeTime = FadeTime_Immediate)
             => player?.SetPitch(pitch, fadeTime);
+        #endregion
+
+        #region Velocity
+        /// <summary>
+        /// Set the velocity and use it to determine which audio clip to play
+        /// </summary>
+        public static IAudioPlayer SetVelocity(this IAudioPlayer player, int velocity)
+            => player?.SetVelocity(velocity); 
         #endregion
 
         #region As Background Music
@@ -79,24 +87,29 @@ namespace Ami.BroAudio
         /// <param name="player"></param>
         /// <param name="transition">Transition type</param>
         /// <returns></returns>
-        public static IMusicPlayer SetTransition(this IMusicPlayer player, Transition transition) 
+        public static IAudioPlayer SetTransition(this IMusicPlayer player, Transition transition) 
             => player?.SetTransition(transition, Runtime.AudioPlayer.UseEntitySetting);
 
         /// <param name="overrideFade">Override value of the fading time</param>
         /// <inheritdoc cref="SetTransition(IMusicPlayer, Transition)"/>
-        public static IMusicPlayer SetTransition(this IMusicPlayer player, Transition transition, float overrideFade)
+        public static IAudioPlayer SetTransition(this IMusicPlayer player, Transition transition, float overrideFade)
             => player?.SetTransition(transition, default, overrideFade);
 
         /// <param name="stopMode">The stop mode of the previous player</param>
         /// <inheritdoc cref="SetTransition(IMusicPlayer, Transition)"/>
-        public static IMusicPlayer SetTransition(this IMusicPlayer player, Transition transition, StopMode stopMode)
+        public static IAudioPlayer SetTransition(this IMusicPlayer player, Transition transition, StopMode stopMode)
             => player?.SetTransition(transition, stopMode, Runtime.AudioPlayer.UseEntitySetting);
 
         /// <param name="overrideFade">Override value of the fading time</param>
         /// <inheritdoc cref="SetTransition(IMusicPlayer, Transition,StopMode)"/>
-        public static IMusicPlayer SetTransition(this IMusicPlayer player, Transition transition, StopMode stopMode, float overrideFade)
+        public static IAudioPlayer SetTransition(this IMusicPlayer player, Transition transition, StopMode stopMode, float overrideFade)
             => player?.SetTransition(transition, stopMode, overrideFade);
         #endregion
+
+        public static IAudioPlayer OnAudioFilterRead(this IAudioPlayer player, Action<float[], int> onAudioFilterRead)
+        {
+            return player?.OnAudioFilterRead(onAudioFilterRead);
+        }
 
 #if !UNITY_WEBGL
         #region As Dominator

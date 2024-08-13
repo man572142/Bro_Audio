@@ -1,0 +1,60 @@
+﻿using System.IO;
+using System;
+using static Ami.Extension.Reflection.ProxyModifierCodeGenerator;
+
+namespace Ami.Extension.Reflection
+{
+    public class CodeWriter : IDisposable
+    {
+        public enum Type { Class, Interface, Struct }
+
+        private StreamWriter _file;
+        private AutoBraces _namespace;
+        private AutoBraces _codeBlock;
+
+        public string Indent = string.Empty;
+
+        public static implicit operator StreamWriter(CodeWriter writer) => writer._file;
+
+        public CodeWriter(string directory, string codeName)
+        {
+            _file = File.CreateText(Path.Combine(directory, codeName + ".cs"));
+        }
+
+        public void Dispose()
+        {
+            _codeBlock.Dispose();
+            _namespace.Dispose();
+            _file?.Dispose();
+        }
+
+        public void Write(string[] usings, string @namespace, string codeName, Type scriptType = Type.Class, string implementation = "")
+        {
+            _file.WriteLine(Title);
+            _file.WriteUsings(usings);
+            _file.WriteLine();
+            _namespace = _file.WriteBraces("namespace " + @namespace, ref Indent);
+            _codeBlock = _file.WriteBraces("public " + GetScriptType(scriptType) + " " + codeName + implementation, ref Indent);
+        }
+
+        public void WriteLine(string text = "")
+        {
+            _file.WriteLine(text);
+        }
+
+        private string GetScriptType(Type scriptType) => scriptType switch
+        {
+            Type.Class => "class",
+            Type.Interface => "interface",
+            Type.Struct => "struct",
+            _ => throw new NotImplementedException(),
+        };
+
+        public static CodeWriter Write(Parameters parameters, Type scriptType = Type.Class, string implementation = "")
+        {
+            var code = new CodeWriter(parameters.Path, parameters.ScriptName);
+            code.Write(parameters.Usings, parameters.Namespace, parameters.ScriptName, scriptType, implementation);
+            return code;
+        }
+    }
+}

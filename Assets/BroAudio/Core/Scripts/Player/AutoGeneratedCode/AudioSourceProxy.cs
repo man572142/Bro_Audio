@@ -1,7 +1,7 @@
 // Auto-generated code
-using System;
 using UnityEngine;
 using UnityEngine.Audio;
+
 namespace Ami.Extension
 {
     public class AudioSourceProxy : BroModifier<AudioSource>, IAudioSourceProxy

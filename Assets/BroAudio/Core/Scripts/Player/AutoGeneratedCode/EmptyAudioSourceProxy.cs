@@ -4,7 +4,7 @@ using UnityEngine.Audio;
 
 namespace Ami.Extension
 {
-    public class EmptyAudioSourceProxy
+    public class EmptyAudioSourceProxy : IAudioSourceProxy
     {
         public float volume { get => 1; set { } }
         public float pitch { get => 1; set { } }

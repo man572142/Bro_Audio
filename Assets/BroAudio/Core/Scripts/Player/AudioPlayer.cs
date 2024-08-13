@@ -45,8 +45,9 @@ namespace Ami.BroAudio.Runtime
             {
                 if(!IsActive)
                 {
-                    Debug.LogError(Utility.LogTitle + "The audio player is not played or has finished its playing");
-                    return null;
+                    Debug.LogError(Utility.LogTitle +
+                        "The audio player is not playing! Please consider accessing the AudioSource via OnStart() or OnUpdate() methods.");
+                    return Empty.AudioSource;
                 }
                 return _proxy ??= new AudioSourceProxy(AudioSource);
             }
@@ -282,7 +283,6 @@ namespace Ami.BroAudio.Runtime
 
         IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead)
         {
-            Debug.Log("OnAudioFilterRead inside AudioPlayer");
             if (!_audioFilterReader)
             {
                 _audioFilterReader = gameObject.AddComponent<AudioFilterReader>();

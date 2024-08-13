@@ -9,6 +9,7 @@ namespace Ami.BroAudio.Runtime
         public static EmptyAudioPlayer AudioPlayer = new EmptyAudioPlayer();
         public static EmptyMusicPlayer MusicPlayer = new EmptyMusicPlayer();
         public static EmptyDominator DominatorPlayer = new EmptyDominator();
+        public static EmptyAudioSourceProxy AudioSource = new EmptyAudioSourceProxy();
 
         public class EmptyAudioPlayer : IAudioPlayer
         {

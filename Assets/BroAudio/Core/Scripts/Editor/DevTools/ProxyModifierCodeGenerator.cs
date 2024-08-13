@@ -159,8 +159,9 @@ namespace Ami.Extension.Reflection
 
         private static void CreateEmptyModifierClass<T>(Parameters parameters, IEnumerable<MemberInfo> filteredMembers, Dictionary<MemberInfo, string> defaultValueMap) where T : Component
         {
+            string interfaceName = "I" + parameters.ScriptName;
             parameters.ScriptName = "Empty" + parameters.ScriptName;
-            using (var file = CodeWriter.Write(parameters, CodeWriter.Type.Class))
+            using (var file = CodeWriter.Write(parameters, CodeWriter.Type.Class, $" : " + interfaceName))
             {
                 foreach (var member in filteredMembers)
                 {

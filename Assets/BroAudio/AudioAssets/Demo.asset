@@ -499,38 +499,30 @@ MonoBehaviour:
     <ID>k__BackingField: 1073741835
     MulticlipsPlayMode: 4
     Clips:
-    - AudioClip: {fileID: 8300000, guid: ff505fad4d94c9441ba6eb037ca41827, type: 3}
-      Volume: 0.23500901
-      Delay: 0
-      StartPosition: 0.088
-      EndPosition: 0
-      FadeIn: 0.018
-      FadeOut: 0
-      Weight: 0
-    - AudioClip: {fileID: 8300000, guid: ff505fad4d94c9441ba6eb037ca41827, type: 3}
-      Volume: 0.39371386
-      Delay: 0
-      StartPosition: 0.029
-      EndPosition: 0
-      FadeIn: 0.04
-      FadeOut: 0
-      Weight: 10
-    - AudioClip: {fileID: 8300000, guid: ff505fad4d94c9441ba6eb037ca41827, type: 3}
-      Volume: 0.5492359
+    - AudioClip: {fileID: 8300000, guid: 283db2de8512111488e1d3aa233ab98d, type: 3}
+      Volume: 0.44236746
       Delay: 0
       StartPosition: 0
       EndPosition: 0
-      FadeIn: 0.029
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    - AudioClip: {fileID: 8300000, guid: 28355d60fb44bb54ca435b5badcd1c16, type: 3}
+      Volume: 0.67066556
+      Delay: 0
+      StartPosition: 0
+      EndPosition: 0
+      FadeIn: 0
       FadeOut: 0
       Weight: 30
-    - AudioClip: {fileID: 8300000, guid: ff505fad4d94c9441ba6eb037ca41827, type: 3}
+    - AudioClip: {fileID: 8300000, guid: 1bbbe2206455ec9419e24a9a6aa08854, type: 3}
       Volume: 1
       Delay: 0
       StartPosition: 0
       EndPosition: 0
       FadeIn: 0
       FadeOut: 0
-      Weight: 50
+      Weight: 70
     <MasterVolume>k__BackingField: 1
     <Loop>k__BackingField: 0
     <SeamlessLoop>k__BackingField: 0
@@ -550,7 +542,7 @@ MonoBehaviour:
     <ID>k__BackingField: 1073741836
     MulticlipsPlayMode: 0
     Clips:
-    - AudioClip: {fileID: 8300000, guid: 8c817a7d94d3c60448f8612257e47cac, type: 3}
+    - AudioClip: {fileID: 8300000, guid: 2cd1432e8b64c5f47a8ef0c6c1aa49c6, type: 3}
       Volume: 1
       Delay: 0
       StartPosition: 0
@@ -564,7 +556,7 @@ MonoBehaviour:
     <TransitionTime>k__BackingField: 0.5
     <SpatialSetting>k__BackingField: {fileID: 0}
     <Priority>k__BackingField: 128
-    <Pitch>k__BackingField: 0.7
+    <Pitch>k__BackingField: 1
     <PitchRandomRange>k__BackingField: 0
     <VolumeRandomRange>k__BackingField: 0
     <RandomFlags>k__BackingField: 0

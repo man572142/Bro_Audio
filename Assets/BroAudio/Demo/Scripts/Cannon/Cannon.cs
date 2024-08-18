@@ -9,91 +9,137 @@ namespace Ami.BroAudio.Demo
     {
         public event Action<float> OnForceChanged;
         public event Action<float> OnFire;
-        public event Action OnReloaded;
+        public event Action OnCoolDownFinished;
 
+        [Header("Audio")]
         [SerializeField] SoundID _fireSound = default;
         [SerializeField] SoundID _chargingSound = default;
 
-        [SerializeField] Rigidbody _cannonball = null;
-        [SerializeField, Min(1f)] float _reloadTime = 3f;
-        
-        [SerializeField] private float _forceIncrement = 1f;
+        [Header("Cannonball")]
+        [SerializeField] Transform _cannonball = null;
+        [SerializeField] float _cannonballLifeTime = 3f;
+        [SerializeField] ParticleSystem _particle = null;
+        [SerializeField, Min(1f)] float _coolDownTime = 1f;
+
+        [Header("Force")]
+        [SerializeField] float _forceIncrement = 1f;
+        [SerializeField] AnimationCurve _forceIncrementCurve = null;
         [field: SerializeField] public float MaxForce { get; private set; }
 
         private float _force = 0;
-        private float _countDownTime = 0f;
-        private Vector3 _cannonballOriginalPos = default;
-        private Quaternion _cannonballOriginalRotation = default;
-
+        private float _charagingTime = 0f;
+        private float _coolDownCountDownTime = 0f;
         private IAudioPlayer _chargingSoundPlayer = null;
+        private float _maxCannonballScale = 1f;
+        private Transform _firingCannonball;
+        private Light _chargingLight = null;
+        private const float MaxChargingLightIntensity = 5f;
 
         private void Start()
         {
-            _cannonballOriginalPos = _cannonball.transform.position;
-            _cannonballOriginalRotation = _cannonball.transform.rotation;
+            _maxCannonballScale = _cannonball.localScale.x;
+            _cannonball.gameObject.SetActive(false);
         }
 
         private void Update()
         {
-            if (_countDownTime > 0f)
+            if (IsCoolingDown())
             {
-                CountDownToReload();
+                return;
+            }
+            else if (!InteractiveZone.IsInZone)
+            {
                 return;
             }
 
-            if (InteractiveZone.IsInZone)
+            if (Input.GetKey(KeyCode.Space))
             {
-                if (Input.GetKey(KeyCode.Space))
+                _charagingTime += Time.deltaTime;
+                _force = _forceIncrementCurve.Evaluate(_charagingTime / (MaxForce / _forceIncrement)) * MaxForce;
+                OnForceChanged?.Invoke(_force);
+                if (_force >= MaxForce)
                 {
-                    _force += _forceIncrement * Time.deltaTime;
-                    _force = Mathf.Min(_force, MaxForce);
-                    OnForceChanged?.Invoke(_force);
-
-                    if(_chargingSoundPlayer == null || !_chargingSoundPlayer.IsActive)
-                    {
-                        PlayChargingSound();
-                    }
-                }
-                else if (Input.GetKeyUp(KeyCode.Space))
-                {
+                    _force = MaxForce;
                     Fire();
-                    _chargingSoundPlayer?.Stop(0.5f);
+                    return;
                 }
+
+                Charging();
             }
-        }
-
-        private void CountDownToReload()
-        {
-            _countDownTime -= Time.deltaTime;
-
-            if(_countDownTime <= 0f)
+            else if (Input.GetKeyUp(KeyCode.Space))
             {
-                ReloadCannonball();
+                Fire();
+                _chargingSoundPlayer?.Stop(0.5f);
             }
         }
 
-        private void ReloadCannonball()
+        private void Charging()
         {
-            _cannonball.isKinematic = true;
-            _cannonball.transform.position = _cannonballOriginalPos;
-            _cannonball.transform.rotation = _cannonballOriginalRotation;
-            OnReloaded?.Invoke();
+            if (_chargingSoundPlayer == null || !_chargingSoundPlayer.IsActive)
+            {
+                PlayChargingSound();
+            }
+
+            if (!_particle.isPlaying)
+            {
+                _particle.Play();
+            }
+
+            if(_firingCannonball == null)
+            {
+                _firingCannonball = Instantiate(_cannonball, _cannonball.parent);
+                _firingCannonball.gameObject.SetActive(true);
+                _chargingLight = _firingCannonball.GetComponentInChildren<Light>();
+            }
+
+            float normalizedScale = (_force / MaxForce) * UnityEngine.Random.Range(0.2f, 1f);
+            _firingCannonball.localScale = Vector3.one * normalizedScale * _maxCannonballScale;
+            _chargingLight.intensity = normalizedScale * MaxChargingLightIntensity; 
+        }
+
+        private bool IsCoolingDown()
+        {
+            if(_coolDownCountDownTime > 0f)
+            {
+                _coolDownCountDownTime -= Time.deltaTime;
+                if (_coolDownCountDownTime <= 0f)
+                {
+                    OnCoolDownFinished?.Invoke();
+                }
+                return true;
+            }
+            return false;
         }
 
         private void Fire()
         {
-            if(_force > 0f)
+            if(_force <= 0f)
             {
-                _cannonball.isKinematic = false;
-                _cannonball.AddForce(_cannonball.transform.forward * _force, ForceMode.Impulse);
-                OnFire?.Invoke(_force);
+                return;
+            }
 
-                PlayFireSound((int)_force);
+            FireCannonball();
+            OnFire?.Invoke(_force);
 
-                _force = 0f;
-                OnForceChanged?.Invoke(0f);
+            PlayFireSound((int)_force);
+            _chargingSoundPlayer.Stop(0.5f);
 
-                _countDownTime = _reloadTime;
+            _force = 0f;
+            OnForceChanged?.Invoke(0f);
+            _charagingTime = 0f;
+            _coolDownCountDownTime = _coolDownTime;
+            _particle.Stop();
+
+            void FireCannonball()
+            {
+                _chargingLight.intensity = MaxChargingLightIntensity;
+                _firingCannonball.GetComponentInChildren<ParticleSystem>().gameObject.SetActive(false);
+                _firingCannonball.localScale = Vector3.one * (_force / MaxForce) * _maxCannonballScale;
+                Rigidbody rigidbody = _firingCannonball.GetComponent<Rigidbody>();
+                rigidbody.isKinematic = false;
+                rigidbody.AddForce(_cannonball.transform.forward * _force, ForceMode.Impulse);
+                Destroy(_firingCannonball.gameObject, _cannonballLifeTime);
+                _firingCannonball = null;
             }
         }
 
@@ -106,14 +152,8 @@ namespace Ami.BroAudio.Demo
         private void PlayChargingSound()
         {
             _chargingSoundPlayer = BroAudio.Play(_chargingSound);
-            _chargingSoundPlayer.OnEndPlaying += DisposeChargingSoundPlayer;
+            _chargingSoundPlayer.OnEnd(_ => _chargingSoundPlayer = null);
         }
-
-        private void DisposeChargingSoundPlayer(SoundID iD)
-        {
-            _chargingSoundPlayer.OnEndPlaying -= DisposeChargingSoundPlayer;
-            _chargingSoundPlayer = null;
-        } 
         #endregion
     }
 }

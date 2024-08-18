@@ -49,7 +49,7 @@ namespace Ami.BroAudio.Demo
                     _force = Mathf.Min(_force, MaxForce);
                     OnForceChanged?.Invoke(_force);
 
-                    if(_chargingSoundPlayer == null || !_chargingSoundPlayer.IsPlaying)
+                    if(_chargingSoundPlayer == null || !_chargingSoundPlayer.IsActive)
                     {
                         PlayChargingSound();
                     }

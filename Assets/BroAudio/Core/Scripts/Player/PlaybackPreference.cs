@@ -37,7 +37,12 @@ namespace Ami.BroAudio.Runtime
 			FollowTarget = null;
 		}
 
-		public void SetFadeTime(Transition transition,float fadeTime)
+        public void ResetFading()
+        {
+            SetFadeTime(Transition.Immediate, 0f);
+        }
+
+        public void SetFadeTime(Transition transition,float fadeTime)
 		{
 			switch (transition)
 			{

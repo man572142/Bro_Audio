@@ -151,6 +151,11 @@ namespace Ami.BroAudio.Runtime
                     TriggerSeamlessLoopReplay();
                 }
                 #endregion
+
+                if (_pref.Entity.Loop)
+                {
+                    _pref.ResetFading();
+                }
             } while (_pref.Entity.Loop);
 
             EndPlaying();

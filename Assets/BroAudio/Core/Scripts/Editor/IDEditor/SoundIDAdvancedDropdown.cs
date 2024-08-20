@@ -32,7 +32,7 @@ namespace Ami.BroAudio.Editor
 
 			foreach (var asset in coreData.Assets)
 			{
-				if (asset != null && !string.IsNullOrEmpty(asset.AssetName))
+				if (asset != null && !string.IsNullOrEmpty(asset.AssetName) && asset.Entities.Length > 0)
 				{
 					AdvancedDropdownItem item = null;
 					foreach (var entity in asset.GetAllAudioEntities())
@@ -41,8 +41,11 @@ namespace Ami.BroAudio.Editor
                         item.AddChild(new SoundIDAdvancedDropdownItem(entity.Name, entity.ID, asset));
 					}
 
-					root.AddChild(item);
-					childCount++;
+                    if(item != null)
+                    {
+                        root.AddChild(item);
+                        childCount++;
+                    }
 				}
 			}
 			return root;

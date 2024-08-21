@@ -42,6 +42,11 @@ namespace Ami.BroAudio.Runtime
             return Entity.PickNewClip(_velocity);
         }
 
+        public void ResetFading()
+        {
+            SetFadeTime(Transition.Immediate, 0f);
+        }
+
         public void SetFadeTime(Transition transition,float fadeTime)
         {
             switch (transition)
@@ -70,11 +75,6 @@ namespace Ami.BroAudio.Runtime
         {
             FadeIn = Entity.TransitionTime;
             FadeOut = Entity.TransitionTime;
-        }
-        
-        public void ResetFading()
-        {
-            SetFadeTime(Transition.Immediate, 0f);
         }
 
         public void SetVelocity(int velocity)

@@ -20,7 +20,6 @@ namespace Ami.BroAudio.Demo
         private void Awake ()
         {
             _controller.OnForceChanged += UpdateForceUI;
-            _controller.OnFire += CloseUI;
             _controller.OnCoolDownFinished += OpenUI;
 
             _progressBar.maxValue = _controller.MaxForce;
@@ -32,7 +31,6 @@ namespace Ami.BroAudio.Demo
         private void OnDestroy()
         {
             _controller.OnForceChanged -= UpdateForceUI;
-            _controller.OnFire -= CloseUI;
             _controller.OnCoolDownFinished -= OpenUI;
         }
 

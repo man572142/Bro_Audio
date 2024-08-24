@@ -125,7 +125,6 @@ namespace Ami.BroAudio.Demo
             _chargingSoundPlayer.Stop(0.5f);
 
             _force = 0f;
-            OnForceChanged?.Invoke(0f);
             _charagingTime = 0f;
             _coolDownCountDownTime = _coolDownTime;
             _particle.Stop();

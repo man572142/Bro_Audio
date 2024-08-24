@@ -36,7 +36,7 @@ MonoBehaviour:
     <MasterVolume>k__BackingField: 0.4
     <Loop>k__BackingField: 1
     <SeamlessLoop>k__BackingField: 0
-    <TransitionTime>k__BackingField: 1
+    <TransitionTime>k__BackingField: 2
     <SpatialSetting>k__BackingField: {fileID: 0}
     <Priority>k__BackingField: 128
     <Pitch>k__BackingField: 1

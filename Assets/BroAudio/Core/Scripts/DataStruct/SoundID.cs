@@ -46,19 +46,53 @@ namespace Ami.BroAudio
 
 	public static class SoundIDExtension
 	{
-		public static BroAudioType ToAudioType(this SoundID id)
+        /// <summary>
+        /// Gets the AudioType of the entity
+        /// </summary>
+        public static BroAudioType ToAudioType(this SoundID id)
 		{
 			return Utility.GetAudioType(id);
 		}
 
+        /// <summary>
+        /// Gets the name of the entity
+        /// </summary>
 		public static string ToName(this SoundID id)
 		{
 			return Runtime.SoundManager.Instance.GetNameByID(id);
 		}
 
+        /// <summary>
+        /// Checks if this ID is available in the SoundManager at runtime
+        /// </summary>
 		public static bool IsValid(this SoundID id)
 		{
 			return id > 0 && Runtime.SoundManager.Instance.IsIdInBank(id);
 		}
-	}
+
+        /// <summary>
+        /// Gets the AudioClip based on the PlayMode set in the LibraryManager.
+        /// </summary>
+        public static AudioClip GetAudioClip(this SoundID id)
+        {
+            return Runtime.SoundManager.Instance.GetAudioClip(id);
+        }
+
+        /// <summary>
+        /// Gets the AudioClip based on the PlayMode and velocity set in the LibraryManager.
+        /// </summary>
+        public static AudioClip GetAudioClip(this SoundID id, int velocity)
+        {
+            return Runtime.SoundManager.Instance.GetAudioClip(id, velocity);
+        }
+
+        /// <inheritdoc cref="BroAudio.Play(SoundID)"/>
+        public static IAudioPlayer Play(this SoundID id) => BroAudio.Play(id);
+
+        /// <inheritdoc cref="BroAudio.Play(SoundID, Vector3)"/>
+        public static IAudioPlayer Play(this SoundID id, Vector3 position) => BroAudio.Play(id, position);
+
+        /// <inheritdoc cref="BroAudio.Play(SoundID, Transform)"/>
+        public static IAudioPlayer Play(this SoundID id, Transform followTarget) => BroAudio.Play(id, followTarget);
+    }
 }

@@ -7,19 +7,19 @@ namespace Ami.BroAudio
     {
         #region Play
         /// <summary>
-        /// Play an audio
+        /// Plays an audio
         /// </summary>
         public static IAudioPlayer Play(SoundID id) 
             => SoundManager.Instance.Play(id);
 
         /// <summary>
-        /// Play an audio at the given position
+        /// Plays an audio as 3D sound at the given position
         /// </summary>
         public static IAudioPlayer Play(SoundID id, Vector3 position)
           => SoundManager.Instance.Play(id, position);
 
         /// <summary>
-        /// Play an audio and let it keep following the target
+        /// Plays an audio as 3D sound and keeps it continuously following the target
         /// </summary>
         public static IAudioPlayer Play(SoundID id, Transform followTarget)
           => SoundManager.Instance.Play(id, followTarget);

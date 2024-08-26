@@ -30,9 +30,21 @@ namespace Ami.BroAudio
         internal IAudioPlayer SetVelocity(int velocity);
         internal IAudioPlayer SetPitch(float pitch, float fadeTime);
 
+        /// <summary>
+        /// Triggered when the AudioPlayer starts to play
+        /// </summary>
         IAudioPlayer OnStart(Action<IAudioPlayer> onStart);
+
+        /// <summary>
+        /// Triggered each frame while the AudioPlayer is playing
+        /// </summary>
         IAudioPlayer OnUpdate(Action<IAudioPlayer> onUpdate);
+
+        /// <summary>
+        /// Triggered when the AudioPlayer stops playing
+        /// </summary>
         IAudioPlayer OnEnd(Action<SoundID> onEnd);
+
         internal IAudioPlayer OnAudioFilterRead(Action<float[], int> onAudioFilterRead);
 
         IAudioSourceProxy AudioSource { get; }

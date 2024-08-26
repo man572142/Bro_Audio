@@ -321,14 +321,6 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        public void ResetShuffleInUseState(int id)
-        {
-            if(_audioBank.TryGetValue(id, out IAudioEntity entity))
-            {
-                entity.ResetShuffleInUseState();
-            }
-        }
-
         private void SetPlaybackPrefByType<TParameter>(BroAudioType targetType, TParameter parameter, Action<AudioTypePlaybackPreference, TParameter> onModifyPref) where TParameter : struct
         {
             // For those which may be played in the future.
@@ -341,6 +333,7 @@ namespace Ami.BroAudio.Runtime
             });
         }
 
+        #region Audio Player
         private IReadOnlyList<AudioPlayer> GetCurrentAudioPlayers()
         {
             return _audioPlayerPool.GetCurrentAudioPlayers();
@@ -368,44 +361,7 @@ namespace Ami.BroAudio.Runtime
         private AudioPlayer GetNewAudioPlayer()
         {
             return _audioPlayerPool.Extract();
-        }
-
-        public string GetNameByID(int id)
-        {
-            if(!IsAvailable())
-            {
-                return string.Empty;
-            }
-
-            string result = string.Empty;
-            if(_audioBank.TryGetValue(id,out var entity))
-            {
-                IEntityIdentity entityIdentity = entity as IEntityIdentity;
-                result = entityIdentity?.Name;
-            }
-            return result;
-        }
-
-        public bool IsIdInBank(SoundID id)
-        {
-            return _audioBank.ContainsKey(id);
-        }
-
-        private bool IsAvailable(bool logError = true)
-        {
-            if (!Application.isPlaying)
-            {
-                Debug.LogError(LogTitle + $"The method {"GetNameByID".ToWhiteBold()} is {"Runtime Only".ToBold().SetColor(Color.green)}");
-                return false;
-            }
-            return true;
-        }
-
-#if UNITY_EDITOR
-        public void SetCoreData(BroAudioData data)
-        {
-            _data = data;
         } 
-#endif
+        #endregion
     }
 }

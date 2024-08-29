@@ -12,6 +12,9 @@ namespace Ami.Extension
         public const float IndentInPixel = 15f;
         public const float LogarithmicMinValue = 0.0001f;
 
+        public const float WindowPaddingX = 10f;
+        public const float WindowPaddingY = 4f;
+
         // https://www.foundations.unity.com/patterns/content-organization
         public static RectOffset InspectorPadding => new RectOffset(18, 4, 8, 8);
 

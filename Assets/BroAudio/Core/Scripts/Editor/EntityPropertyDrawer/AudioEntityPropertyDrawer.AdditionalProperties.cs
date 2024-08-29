@@ -1,16 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using static Ami.Extension.EditorScriptingExtension;
-using static Ami.Extension.FlagsExtension;
 using static Ami.BroAudio.Editor.EditorSetting;
 using static Ami.BroAudio.Data.AudioEntity;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using Ami.BroAudio.Runtime;
 using System;
+using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
@@ -122,7 +120,7 @@ namespace Ami.BroAudio.Editor
                     }
 #endif
                     GetMixerMinMaxVolume(out float minVol, out float maxVol);
-                    DrawRandomRangeSlider(masterVolRect,_masterVolLabel,ref vol,ref volRange, minVol, maxVol, RandomRangeSliderType.BroVolume, onDrawVU);
+                    DrawRandomRangeSlider(masterVolRect,_masterVolLabel,ref vol,ref volRange, minVol, maxVol, SliderType.BroVolume, onDrawVU);
                     masterVolProp.floatValue = vol;
                     volRandProp.floatValue = volRange;
                 }
@@ -188,7 +186,7 @@ namespace Ami.BroAudio.Editor
                         maxPitch *= Percentage;
                         if (hasRandom)
                         {
-                            DrawRandomRangeSlider(pitchRect,_pitchLabel, ref pitch, ref pitchRange, minPitch, maxPitch,RandomRangeSliderType.Default);
+                            DrawRandomRangeSlider(pitchRect,_pitchLabel, ref pitch, ref pitchRange, minPitch, maxPitch, SliderType.Linear);
                             Rect minFieldRect = new Rect(pitchRect) { x = pitchRect.x + EditorGUIUtility.labelWidth + 5f, width = MinMaxSliderFieldWidth };
                             Rect maxFieldRect = new Rect(minFieldRect) { x = pitchRect.xMax - MinMaxSliderFieldWidth };
                             DrawPercentageLabel(minFieldRect);
@@ -206,7 +204,7 @@ namespace Ami.BroAudio.Editor
                     case PitchShiftingSetting.AudioSource:
                         if (hasRandom)
                         {
-                            DrawRandomRangeSlider(pitchRect, _pitchLabel,ref pitch, ref pitchRange, minPitch, maxPitch, RandomRangeSliderType.Default);
+                            DrawRandomRangeSlider(pitchRect, _pitchLabel,ref pitch, ref pitchRange, minPitch, maxPitch, SliderType.Linear);
                         }
                         else
                         {

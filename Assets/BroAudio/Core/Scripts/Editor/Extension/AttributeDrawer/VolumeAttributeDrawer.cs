@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using Ami.Extension;
 
 namespace Ami.BroAudio.Editor
 {
@@ -13,17 +10,8 @@ namespace Ami.BroAudio.Editor
 		{
 			if(property.propertyType == SerializedPropertyType.Float && attribute is Volume volAttr)
 			{
-				if(volAttr.CanBoost)
-				{
-					//Rect suffixRect = EditorGUI.PrefixLabel(position, label);
-					property.floatValue = BroEditorUtility.DrawVolumeSlider(position, label, property.floatValue);
-				}
-				else
-				{
-					property.floatValue = EditorGUI.Slider(position, label, property.floatValue, 0f, AudioConstant.FullVolume);
-				}
-				
-			}
+                property.floatValue = BroEditorUtility.DrawVolumeSlider(position, label, property.floatValue, volAttr.CanBoost);
+            }
 			else
 			{
 				EditorGUI.PropertyField(position, property, label);

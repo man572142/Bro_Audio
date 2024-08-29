@@ -6,6 +6,7 @@ using Ami.BroAudio.Data;
 using Ami.BroAudio.Editor.Setting;
 using System;
 using static Ami.BroAudio.Editor.BroEditorUtility;
+using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
@@ -234,7 +235,7 @@ namespace Ami.BroAudio.Editor
             EditorGUI.LabelField(masterVolLabelRect, EditorGUIUtility.IconContent(IconConstant.AudioSpeakerOn));
             if (flags.Contains(RandomFlag.Volume))
             {
-                DrawRandomRangeSlider(masterVolSldierRect, GUIContent.none, ref masterVol, ref masterVolRand, minVol, maxVol, RandomRangeSliderType.BroVolumeNoField);
+                DrawRandomRangeSlider(masterVolSldierRect, GUIContent.none, ref masterVol, ref masterVolRand, minVol, maxVol, SliderType.BroVolumeNoField);
             }
             else
             {

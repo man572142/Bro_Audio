@@ -1,4 +1,3 @@
-#if BroAudio_DevOnly
 using UnityEngine;
 using UnityEditor;
 using Ami.Extension;
@@ -21,9 +20,11 @@ namespace Ami.BroAudio.Editor.DevTool
 
 		public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 
-		[MenuItem(MenuItem_BroAudio + "SliderModelComparison", priority = DevToolsMenuIndex + 2)]
+#if BroAudio_DevOnly
+        [MenuItem(MenuItem_BroAudio + "SliderModelComparison", priority = DevToolsMenuIndex + 2)]
+#endif
 
-		public static void ShowWindow()
+        public static void ShowWindow()
 		{
 			var window = GetWindow<SliderModelComparison>();
 			window.titleContent = new GUIContent("Slider Model Comparison");
@@ -115,4 +116,3 @@ namespace Ami.BroAudio.Editor.DevTool
 		}
 	}
 }
-#endif

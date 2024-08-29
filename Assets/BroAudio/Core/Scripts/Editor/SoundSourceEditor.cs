@@ -10,8 +10,8 @@ namespace Ami.BroAudio.Editor
     public class SoundSourceEditor : UnityEditor.Editor
     {
         public const float FadeOutFieldWidth = 70f;
-        public const float WindowPaddingX = 10f;
-        public const float WindowPaddingY = 4f;
+        public const float WindowOffsetX = 4f;
+        public const float WindowOffsetY = 6f;
 
         private SerializedProperty _playProp = null;
         private SerializedProperty _stopProp = null;
@@ -61,7 +61,7 @@ namespace Ami.BroAudio.Editor
             }
 
             EditorGUILayout.Space();
-            _currentDrawedWindowY += EditorGUIUtility.standardVerticalSpacing * 2;
+            _currentDrawedWindowY += GUILayoutUtility.GetLastRect().height + EditorGUIUtility.standardVerticalSpacing;
 
             DrawBackgroudWindow(2);
             DrawBoldToggle(ref _stopProp);
@@ -114,10 +114,13 @@ namespace Ami.BroAudio.Editor
         {
             if (Event.current.type == EventType.Repaint)
             {
-                float width = EditorGUIUtility.currentViewWidth - (WindowPaddingX * 2);
-                float height = (EditorGUIUtility.singleLineHeight * lineCount) + (WindowPaddingY * 2);
+                float x = _inspectorPadding.left - WindowOffsetX;
+                float y = _inspectorPadding.top - WindowOffsetY + _currentDrawedWindowY;
+                float width = EditorGUIUtility.currentViewWidth - _inspectorPadding.left - _inspectorPadding.right;
+                float height = (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * lineCount;
+                Rect rect = new Rect(x, y, width, height);
                 GUIStyle style = new GUIStyle("AnimationKeyframeBackground");
-                style.Draw(new Rect(WindowPaddingX, _currentDrawedWindowY, width, height), false, false, false, false);
+                style.Draw(rect, false, false, false, false);
                 _currentDrawedWindowY += height;
             }
         }

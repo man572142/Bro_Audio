@@ -66,6 +66,10 @@ namespace Ami.Extension
         public const float DefaultPanStereo = 0f;
         public const AudioRolloffMode DefaultRolloffMode = AudioRolloffMode.Logarithmic;
 
+        public const float MinLogValue = -4; // Log10(MinVolume) => Log10(0.0001) 
+        public const float MaxLogValue = 1; // Log10(MaxVolume) => Log10(10)
+        public const float FullVolumeLogValue = 0; // Log10(FullVolume) => Log10(1);
+
         public static float DecibelVoulumeFullScale => MaxDecibelVolume - MinDecibelVolume;
     }
 }

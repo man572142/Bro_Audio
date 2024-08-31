@@ -15,34 +15,36 @@ namespace Ami.BroAudio.Editor
 
 		public static void CheckAndGenerateUserData()
 		{
-			if (_isGenerating || TryGetCoreData(out _))
+			if (_isGenerating)
 			{
 				return;
 			}
 			_isGenerating = true;
 
-			GenerateUserData();
-		}
+            var request = Resources.LoadAsync<SoundManager>(nameof(SoundManager));
+            request.completed += OnGetSoundManager;
 
-		public static void GenerateUserData()
-		{
-			var request = Resources.LoadAsync<SoundManager>(nameof(SoundManager));
-			request.completed += OnRequestComplete;
-
-			void OnRequestComplete(AsyncOperation operation)
-			{
-				request.completed -= OnRequestComplete;
-				if (request.asset is SoundManager soundManager)
-				{
-					StartGenerateUserData(soundManager);
-				}
-				else
-				{
-					Debug.LogError(Utility.LogTitle + $"Load {nameof(SoundManager)} fail, " +
-						$"please import it and place it in the Resources folder, and go to Tools/Preference, switch to the last tab and hit [Regenerate User Data]");
-				}
-			}
-		}
+            void OnGetSoundManager(AsyncOperation operation)
+            {
+                request.completed -= OnGetSoundManager;
+                if (request.asset is SoundManager soundManager)
+                {
+                    if(TryGetCoreData(out var currentCoreData))
+                    {
+                        AssignCoreData(soundManager, currentCoreData);
+                    }
+                    else
+                    {
+                        StartGenerateUserData(soundManager);
+                    }
+                }
+                else
+                {
+                    Debug.LogError(Utility.LogTitle + $"Load {nameof(SoundManager)} fail, " +
+                        $"please import it and place it in the Resources folder, and go to Tools/Preference, switch to the last tab and hit [Regenerate User Data]");
+                }
+            }
+        }
 
 		private static void StartGenerateUserData(SoundManager soundManager)
 		{

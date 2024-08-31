@@ -10,7 +10,7 @@ namespace Ami.BroAudio.Editor
         {
             OnDeleteAssets(deletedAssets);
             OnReimportAsset(importedAssets);
-            if(importedAssets.Length > 0)
+            if(importedAssets.Length > 0 && importedAssets[0].StartsWith("Assets/BroAudio"))
             {
                 BroUserDataGenerator.CheckAndGenerateUserData();
             }

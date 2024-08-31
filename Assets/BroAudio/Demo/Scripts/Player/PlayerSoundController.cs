@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Ami.Extension;
 
@@ -13,6 +10,7 @@ namespace Ami.BroAudio.Demo
         [SerializeField] Terrain _terrain = null;
         private float[] _terrainTextureMix = new float[3];
 
+        // Triggered by AnimationEvent, file: Run_N.anim, Walk_N.anim
         public void OnFootstep()
         {
             Vector3 playerPos = transform.position;
@@ -52,7 +50,6 @@ namespace Ami.BroAudio.Demo
             {
                 textureMix[i] = alphaMapValues[0, 0, i];
             }
-            
         }
     } 
 }

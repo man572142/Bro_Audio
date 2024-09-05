@@ -113,3 +113,16 @@ MonoBehaviour:
     Value: "Click here if you failed to generate the user data when importing BroAudio
       or if you accidentally deleted them. The user data files are as follows:\n   
       BroAudioData.asset\n    BroRuntimeSetting.asset\n    BroEditorSetting.asset"
+  - Key: 400
+    Value: Apply the volume to both the slider and the system when the GameObject
+      is enabled
+  - Key: 401
+    Value: Resets both the volume and the slider to its value before the component
+      was enabled
+  - Key: 402
+    Value: Determine if the slider can support a range beyond volume 1 (to boost
+      the original audio)
+  - Key: 403
+    Value: How long it will take to reach the target volume
+  - Key: 404
+    Value: Dynamically set both the volume and the slider in Play Mode

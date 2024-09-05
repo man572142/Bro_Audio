@@ -18,6 +18,8 @@ namespace Ami.Extension
         // https://www.foundations.unity.com/patterns/content-organization
         public static RectOffset InspectorPadding => new RectOffset(18, 4, 8, 8);
 
+        private static GUIContent _tempContent = new GUIContent();
+
         public struct MultiLabel
         {
             public string Main;
@@ -657,6 +659,38 @@ namespace Ami.Extension
         public static SerializedProperty FindBackingFieldProperty(this SerializedProperty property, string fieldName)
         {
             return property.FindPropertyRelative(GetBackingFieldName(fieldName));
+        }
+
+        public static void DrawBoldToggle(ref SerializedProperty property, RectOffset padding, GUIContent content = null)
+        {
+            // We can't draw a field with Bold Label because it's used for prefab overrides
+            content ??= TempContent(property.displayName);
+            EditorGUILayout.LabelField(content, EditorStyles.boldLabel);
+            Rect toggleRect = GUILayoutUtility.GetLastRect();
+            toggleRect.x = EditorGUIUtility.labelWidth + padding.left + 2f;
+            property.boolValue = EditorGUI.Toggle(toggleRect, property.boolValue);
+        }
+
+        public static void DrawBackgroudWindow(int lineCount, RectOffset padding, ref float drawedPosY)
+        {
+            if (Event.current.type == EventType.Repaint)
+            {
+                float x = padding.left - 4f;
+                float y = padding.top - 6f + drawedPosY;
+                float width = EditorGUIUtility.currentViewWidth - padding.left - padding.right;
+                float height = (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * lineCount;
+                Rect rect = new Rect(x, y, width, height);
+                GUIStyle style = new GUIStyle("AnimationKeyframeBackground");
+                style.Draw(rect, false, false, false, false);
+                drawedPosY += height;
+            }
+        }
+
+        public static GUIContent TempContent(string label, string tooltip = "")
+        {
+            _tempContent.text = label;
+            _tempContent.tooltip = tooltip;
+            return _tempContent;
         }
     }
 }

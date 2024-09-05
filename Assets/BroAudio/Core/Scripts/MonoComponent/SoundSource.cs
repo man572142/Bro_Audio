@@ -3,6 +3,7 @@ using UnityEngine.Serialization;
 
 namespace Ami.BroAudio
 {
+    [HelpURL("https://man572142s-organization.gitbook.io/broaudio/core-features/no-code-components/sound-source")]
     [AddComponentMenu("BroAudio/" + nameof(SoundSource))]
     public class SoundSource : MonoBehaviour
     {

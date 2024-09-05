@@ -2,10 +2,13 @@ using System;
 using Ami.BroAudio.Tools;
 using UnityEngine;
 using UnityEngine.UI;
+using Ami.BroAudio.Runtime;
+using Ami.Extension;
+using System.Collections.Generic;
 
 namespace Ami.BroAudio
 {
-    [ExecuteAlways]
+    [HelpURL("https://man572142s-organization.gitbook.io/broaudio/core-features/no-code-components/sound-volume")]
     [AddComponentMenu("BroAudio/" + nameof(SoundVolume))]
     public class SoundVolume : MonoBehaviour
     {
@@ -21,27 +24,21 @@ namespace Ami.BroAudio
             [SerializeField] Slider _slider = null;
 
             private GetSliderSetting _onGetSliderSetting;
+            private float _originalVolume = 0f;
+            private Dictionary<BroAudioType, float> _systemOriginalVolumes = null;
 
             private SliderType SliderType => _onGetSliderSetting.Invoke().Item1;
             private bool AllowBoost => _onGetSliderSetting.Invoke().Item2;
+            public bool IsInit => _onGetSliderSetting != null;
 
             public void Init(GetSliderSetting onGetSliderSetting)
             {
                 _onGetSliderSetting = onGetSliderSetting;
             }
 
-            public void ApplyVolumeToSystem()
+            public void ApplyVolumeToSystem(float fadeTime)
             {
-                BroAudio.SetVolume(_audioType, _volume);
-            }
-
-            public void SetSliderValueToVolume()
-            {
-                if(_slider)
-                {
-                    float vol = Utility.SliderToVolume(SliderType, _slider.normalizedValue, AllowBoost);
-                    _volume = (float)Math.Round(vol, RoundingDigits);
-                }
+                BroAudio.SetVolume(_audioType, _volume, fadeTime);
             }
 
             public void SetVolumeToSlider(bool notify)
@@ -56,9 +53,36 @@ namespace Ami.BroAudio
                     }
                     else
                     {
-                        _slider.SetValueWithoutNotify(value);
+                        _slider.SetValueWithoutNotify(Mathf.Lerp(_slider.minValue, _slider.maxValue, value));
                     }
                 }
+            }
+
+            public void RecordOrigin()
+            {
+                _originalVolume = _volume;
+                _systemOriginalVolumes = new Dictionary<BroAudioType, float>();
+                Utility.ForeachConcreteAudioType(type => 
+                {
+                    if (_audioType.Contains(type) && SoundManager.Instance.TryGetAudioTypePref(type, out var pref))
+                    {
+                        _systemOriginalVolumes[type] = pref.Volume;
+                    }
+                });
+            }
+
+            public void ResetToOrigin(float fadeTime)
+            {
+                _volume = _originalVolume;
+                SetVolumeToSlider(false);
+                if (_systemOriginalVolumes != null)
+                {
+                    foreach (var pair in _systemOriginalVolumes)
+                    {
+                        BroAudio.SetVolume(pair.Key, pair.Value, fadeTime);
+                    }
+                    _systemOriginalVolumes = null;
+                }               
             }
 
             public void AddSliderListener()
@@ -79,7 +103,9 @@ namespace Ami.BroAudio
 
             private void OnValueChanged(float sliderValue)
             {
-                BroAudio.SetVolume(_audioType, Utility.SliderToVolume(SliderType, sliderValue, AllowBoost));
+                float volume = Utility.SliderToVolume(SliderType, sliderValue, AllowBoost);
+                _volume = volume;
+                BroAudio.SetVolume(_audioType, volume);
             }
 
             public static class NameOf
@@ -91,50 +117,44 @@ namespace Ami.BroAudio
         }
 
         [SerializeField] bool _applyOnEnable = false;
+        [SerializeField] bool _onlyApplyOnce = false;
         [SerializeField] bool _resetOnDisable = false;
+        [SerializeField] float _fadeTime = 0f;
 
         [SerializeField] SliderType _sliderType = SliderType.BroVolume;
         [SerializeField] bool _allowBoost = false;
         [SerializeField] Setting[] _settings = null;
 
-        public void ReadVolumeFromSlider()
-        {
-            foreach (var setting in _settings)
-            {
-                setting.SetSliderValueToVolume();
-            }
-        }
+        private bool _hasApplyOnce = false;
 
-        public void SetVolumeToSlider(bool notify = true)
+        public void SetFadeTime(float fadeTime)
         {
-            foreach (var setting in _settings)
-            {
-                setting.SetVolumeToSlider(notify);
-            }
+            _fadeTime = fadeTime;
         }
 
         private void OnEnable()
         {
-            GetSliderSetting onGetSliderSetting = () => (_sliderType, _allowBoost);
-            
-            if(!Application.isPlaying)
-            {
-                foreach (var setting in _settings)
-                {
-                    setting.Init(onGetSliderSetting);
-                }
-                return;
-            }
-
+            GetSliderSetting onGetSliderSetting = null;
             foreach (var setting in _settings)
             {
-                setting.Init(onGetSliderSetting);
+                if (!setting.IsInit)
+                {
+                    onGetSliderSetting ??= () => (_sliderType, _allowBoost);
+                    setting.Init(onGetSliderSetting);
+                }
+
                 setting.AddSliderListener();
 
-                if (_applyOnEnable)
+                if(_resetOnDisable)
                 {
-                    setting.ApplyVolumeToSystem();
+                    setting.RecordOrigin();
+                }
+
+                if (_applyOnEnable && !(_onlyApplyOnce && _hasApplyOnce))
+                {
+                    setting.ApplyVolumeToSystem(_fadeTime);
                     setting.SetVolumeToSlider(false);
+                    _hasApplyOnce = true;
                 }
             }
         }
@@ -143,19 +163,21 @@ namespace Ami.BroAudio
         {
             foreach (var setting in _settings)
             {
-                setting.RemoveSliderListener();
-
                 if(_resetOnDisable)
                 {
-                    // TODO: not implemented
+                    setting.ResetToOrigin(_fadeTime);
+                    // will trigger onValueChanged and set the volume to system
                 }
+                setting.RemoveSliderListener();
             }
         }
 
         public static class NameOf
         {
             public const string ApplyOnEnable = nameof(_applyOnEnable);
+            public const string OnlyApplyOnce = nameof(_onlyApplyOnce);
             public const string ResetOnDisable = nameof(_resetOnDisable);
+            public const string FadeTime = nameof(_fadeTime);
             public const string SliderType = nameof(_sliderType);
             public const string AllowBoost = nameof(_allowBoost);
             public const string Settings = nameof(_settings);

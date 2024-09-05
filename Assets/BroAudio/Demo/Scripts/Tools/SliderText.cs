@@ -12,7 +12,7 @@ namespace Ami.BroAudio.Demo
 		[SerializeField] Text _valueText = null;
 		[SerializeField] bool _isPercentage = false;
 
-		private void Awake()
+		private void Start()
 		{
 			_slider.onValueChanged.AddListener(SetText);
 			SetText(_slider.value);

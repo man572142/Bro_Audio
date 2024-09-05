@@ -50,5 +50,15 @@
         LibraryManager_NameTempAssetHint,
         LibraryManager_AssetAudioTypeNotSet,
         LibraryManager_AssetUnnamed,
+
+        // Sound Volume
+        SoundVolume_ApplyOnEnable = 400,
+        SoundVolume_ResetOnDisable,
+        SoundVolume_AllowBoost,
+        SoundVolume_FadeTime,
+        SoundVolume_EditInPlayMode,
+
+        // Sound Source
+        SoundSource_PositionMode = 450,
     }
 }

@@ -39,5 +39,20 @@ namespace Ami.Extension
                 _ => default,
             };
         }
+
+        public static int GetFirstFlag(int flags)
+        {
+            if(flags <= 0)
+            {
+                return flags;
+            }
+
+            int result = 1;
+            while ((flags & result) == 0)
+            {
+                result <<= 1;
+            }
+            return result;
+        }
     }
 }

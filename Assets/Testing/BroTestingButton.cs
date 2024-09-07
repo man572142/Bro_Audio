@@ -30,15 +30,17 @@ namespace Ami.BroAudio.Testing
         public const string Play = nameof(BroAudio.Play);
         public const string SetVolume = nameof(BroAudio.SetVolume);
         public const string SetPitch = nameof(BroAudio.SetPitch);
-        public const string SetEffect = nameof(BroAudio.SetEffect);
         public const string Stop = nameof(BroAudio.Stop);
 
         public const string LowPass = nameof(Effect.LowPass);
         public const string ResetLowPass = nameof(Effect.ResetLowPass);
         public const string HighPass = nameof(Effect.HighPass);
         public const string ResetHighPass = nameof(Effect.ResetHighPass);
+#if !UNITY_WEBGL
+        public const string SetEffect = nameof(BroAudio.SetEffect);
+        public const string Dominator = nameof(BroAudioChainingMethod.AsDominator); 
+#endif
 
-        public const string Dominator = nameof(BroAudioChainingMethod.AsDominator);
         public const string BGM = nameof(BroAudioChainingMethod.AsBGM);
         public const string LowPasOthers = "LowPassOthers";
         public const string HighPasOthers = "HighPasOthers";
@@ -81,6 +83,7 @@ namespace Ami.BroAudio.Testing
             nameof(BroTesting.StopSoundID) => GetMainMethodText(Stop, ID, Fade),
             nameof(BroTesting.StopAudioType) => GetMainMethodText(Stop, AudioType, Fade),
 
+#if !UNITY_WEBGL
             nameof(BroTesting.SetLowPassFilter) => GetMainMethodText(SetEffect, GetEffectFactoryText(LowPass, Frequency, Fade), AudioType),
             nameof(BroTesting.ResetLowPassFilter) => GetMainMethodText(SetEffect, GetEffectFactoryText(ResetLowPass, Fade), AudioType),
             nameof(BroTesting.SetHighPassFilter) => GetMainMethodText(SetEffect, GetEffectFactoryText(HighPass, Frequency, Fade), AudioType),
@@ -89,6 +92,7 @@ namespace Ami.BroAudio.Testing
             nameof(BroTesting.PlayerAsLowPassDominator) => GetPlayerAppendMethodString(Dominator) + GetPlayerAppendMethodString(LowPasOthers, Frequency, Fade),
             nameof(BroTesting.PlayerAsHighPassDominator) => GetPlayerAppendMethodString(Dominator) + GetPlayerAppendMethodString(HighPasOthers, Frequency, Fade),
 
+#endif
             nameof(BroTesting.PlayerAsBGM) => GetPlayerAppendMethodString(BGM) + GetPlayerAppendMethodString(Transition, TransitionParam, Fade),
             _ => throw new System.NotImplementedException(),
         };

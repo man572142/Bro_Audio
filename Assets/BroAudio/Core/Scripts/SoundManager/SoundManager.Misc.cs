@@ -39,6 +39,14 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
+        public void ResetShuffleInUseState()
+        {
+            foreach(var entity in _audioBank.Values)
+            {
+                entity.ResetShuffleInUseState();
+            }
+        }
+
         public string GetNameByID(int id)
         {
             if(!IsAvailable())

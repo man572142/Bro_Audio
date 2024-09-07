@@ -128,12 +128,18 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="pitch">values between -3 to 3, default is 1</param>
         public static void SetPitch(float pitch, BroAudioType audioType, float fadeTime)
-            => SoundManager.Instance.SetPitch(pitch, audioType, fadeTime); 
+            => SoundManager.Instance.SetPitch(pitch, audioType, fadeTime);
         #endregion
 
+        #region Reset MultiClips Data
         public static void ResetSequence(SoundID id)
         {
             Utility.ResetClipSequencer(id);
+        }
+
+        public static void ResetSequence()
+        {
+            Utility.ResetClipSequencer();
         }
 
         public static void ResetShuffle(SoundID id)
@@ -141,8 +147,14 @@ namespace Ami.BroAudio
             SoundManager.Instance.ResetShuffleInUseState(id);
         }
 
+        public static void ResetShuffle()
+        {
+            SoundManager.Instance.ResetShuffleInUseState();
+        } 
+        #endregion
+
 #if !UNITY_WEBGL
-#region Effect
+        #region Effect
         /// <summary>
         /// Set effect for all audio
         /// </summary>

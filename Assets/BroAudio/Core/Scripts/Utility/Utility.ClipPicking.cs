@@ -11,10 +11,15 @@ namespace Ami.BroAudio
         
         public static void ResetClipSequencer(int id)
         {
-            ClipsSequencer.Remove(id);
+            ClipsSequencer?.Remove(id);
         }
 
-		public static BroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index, int velocity = 0)
+        public static void ResetClipSequencer()
+        {
+            ClipsSequencer?.Clear();
+        }
+
+        public static BroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index, int velocity = 0)
 		{
 			index = 0;
             if (clips == null || clips.Length <= 0)
@@ -88,51 +93,61 @@ namespace Ami.BroAudio
             index = Random.Range(0, clips.Length);
             BroAudioClip result;
 
-            if(clips.Use(index, out result))
+            if(Use(index, out result))
             {
+                if(!HasAnyAvailable())
+                {
+                    clips.ResetIsUse(result);
+                }
                 return result;
             }
 
             // to avoid overusing the Random method when there are only a few clips left
-            bool isIncreasing = Random.Range(0,1) == 0 ? false : true;
+            int increment = Random.Range(0,2) == 0 ? -1 : 1;
+            bool checkRanOut = false;
             for(int i = 0; i < clips.Length; i++)
             {
-                index += isIncreasing ? 1 : -1;
+                index += increment;
                 index = (index + clips.Length) % clips.Length;
 
-                if (clips.Use(index, out result))
+                if (checkRanOut) 
                 {
-                    return result;
+                    if(!clips[index].IsUsed) // if there are any available clips, return. Otherwise, proceed to ResetInUse
+                    {
+                        return result;
+                    }
+                }
+                else if (Use(index, out result))
+                {
+                    checkRanOut = true;
                 }
             }
 
-            // reset all IsUsed and pick randomly again
-            clips.ResetIsUse();
-            index = Random.Range(0, clips.Length);
-            if(clips.Use(index, out result))
-            {
-                return result;
-            }
-            return null;
-        }
+            clips.ResetIsUse(result);
+            return result;
 
-        private static bool Use(this BroAudioClip[] clips, int index, out BroAudioClip result)
-        {
-            result = clips[index];
-            if (!result.IsUsed)
+            bool HasAnyAvailable()
             {
-                result.IsUsed = true;
-                return true;
+                for (int i = 0; i < clips.Length; i++)
+                {
+                    if (!clips[i].IsUsed)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
-            result = null;
-            return false;
-        }
 
-        public static void ResetIsUse(this BroAudioClip[] clips)
-        {
-            for (int i = 0; i < clips.Length; i++)
+            bool Use(int index, out BroAudioClip result)
             {
-                clips[i].IsUsed = false;
+                result = clips[index];
+                if (!result.IsUsed)
+                {
+                    result.IsUsed = true;
+                    return true;
+                }
+                result = null;
+                return false;
             }
         }
 
@@ -151,8 +166,20 @@ namespace Ami.BroAudio
             return clips.Length > 0 ? clips[clips.Length - 1] : null;
         }
 
+        public static void ResetIsUse(this BroAudioClip[] clips, BroAudioClip exclude = null)
+        {
+            for (int i = 0; i < clips.Length; i++)
+            {
+                var clip = clips[i];
+                if (clip != exclude)
+                {
+                    clips[i].IsUsed = false;
+                }
+            }
+        }
+
 #if UNITY_EDITOR
-        public static void ClearPreviewAudioData()
+        public static void ClearClipsSequencer()
         {
             ClipsSequencer?.Clear();
             ClipsSequencer = null;

@@ -325,7 +325,7 @@ namespace Ami.BroAudio.Editor
                 if (data.IsPlaying)
                 {
                     EditorPlayAudioClip.Instance.StopAllClips();
-                    Utility.ClearPreviewAudioData();
+                    Utility.ClearClipsSequencer();
                     entity.Clips.ResetIsUse();
                 }
                 else
@@ -445,7 +445,7 @@ namespace Ami.BroAudio.Editor
 
         private void ResetPreview()
         {
-            Utility.ClearPreviewAudioData();
+            Utility.ClearClipsSequencer();
             _currentPreviewingEntity?.Clips?.ResetIsUse();
         }
 

@@ -1,3 +1,4 @@
+#if BroAudio_DevOnly
 using System.Reflection;
 using System.IO;
 using System;
@@ -59,6 +60,7 @@ namespace Ami.Extension.Reflection
     public static class ProxyModifierCodeGenerator
     {
         public const string Title = "// Auto-generated code";
+        public const string GamepadSpeakerCondition = "UNITY_EDITOR || UNITY_PS4 || UNITY_PS5";
         public struct Parameters
         {
             public string Namespace;
@@ -105,13 +107,25 @@ namespace Ami.Extension.Reflection
             {
                 foreach (var member in members)
                 {
-                    if (member is PropertyInfo property)
+                    if (member is not PropertyInfo property)
                     {
-                        string typeName = property.PropertyType.GetSimpleTypeName();
-                        file.WriteLine(file.Indent + $"/// <inheritdoc cref=\"{typeof(T).Name}.{property.Name}\"/>");
-                        file.WriteLine(file.Indent + $"{typeName} {property.Name} {{ get; set; }}");
-                        file.WriteLine();
+                        continue;
                     }
+
+                    if(TryGetConditionalCompilation(property, out string condition))
+                    {
+                        file.WriteConditional_If(condition);
+                    }
+
+                    string typeName = property.PropertyType.GetSimpleTypeName();
+                    file.WriteLine(file.Indent + $"/// <inheritdoc cref=\"{typeof(T).Name}.{property.Name}\"/>");
+                    file.WriteLine(file.Indent + $"{typeName} {property.Name} {{ get; set; }}");
+
+                    if(condition != null)
+                    {
+                        file.WriteConditional_EndIf();
+                    }
+                    file.WriteLine();
                 }
             }
         }
@@ -130,11 +144,16 @@ namespace Ami.Extension.Reflection
                 }
             }
 
-            static void WriteGetterSetterBody(StreamWriter file, string indent, MemberInfo member, string defaultValue = "default")
+            static void WriteGetterSetterBody(CodeWriter file, string indent, MemberInfo member, string defaultValue = "default")
             {
                 if (member is not PropertyInfo property)
                 {
                     return;
+                }
+
+                if (TryGetConditionalCompilation(property, out string condition))
+                {
+                    file.WriteConditional_If(condition);
                 }
 
                 string typeName = property.PropertyType.GetSimpleTypeName();
@@ -153,6 +172,10 @@ namespace Ami.Extension.Reflection
                     }
                 }
 
+                if (condition != null)
+                {
+                    file.WriteConditional_EndIf();
+                }
                 file.WriteLine();
             }
         }
@@ -165,12 +188,25 @@ namespace Ami.Extension.Reflection
             {
                 foreach (var member in filteredMembers)
                 {
-                    if (member is PropertyInfo property)
+                    if (member is not PropertyInfo property)
                     {
-                        string typeName = property.PropertyType.GetSimpleTypeName();
-                        string defaultValue = GetDefaultValue(member, defaultValueMap);
-                        file.WriteLine(file.Indent + $"public {typeName} {property.Name} {{ get => {defaultValue}; set {{ }} }}");
+                        continue;
                     }
+
+                    if (TryGetConditionalCompilation(property, out string condition))
+                    {
+                        file.WriteConditional_If(condition);
+                    }
+
+                    string typeName = property.PropertyType.GetSimpleTypeName();
+                    string defaultValue = GetDefaultValue(member, defaultValueMap);
+                    file.WriteLine(file.Indent + $"public {typeName} {property.Name} {{ get => {defaultValue}; set {{ }} }}");
+
+                    if (condition != null)
+                    {
+                        file.WriteConditional_EndIf();
+                    }
+                    file.WriteLine();
                 }
             }
         }
@@ -224,6 +260,16 @@ namespace Ami.Extension.Reflection
             }
         }
 
+        private static bool TryGetConditionalCompilation(PropertyInfo property, out string condition)
+        {
+            condition = null;
+            if (property.PropertyType == typeof(GamepadSpeakerOutputType))
+            {
+                condition = GamepadSpeakerCondition;
+            }
+            return condition != null;
+        }
+
         private static string GetSimpleTypeName(this Type type) => type switch
         {
             Type f when f == typeof(float) => "float",
@@ -253,3 +299,4 @@ namespace Ami.Extension.Reflection
     } 
 #endif
 }
+#endif

@@ -42,6 +42,23 @@ namespace Ami.Extension.Reflection
             _file.WriteLine(text);
         }
 
+        public void WriteConditional_If(string condition)
+        {
+            _file.Write("#if " + condition);
+            _file.WriteLine();
+        }
+
+        public void WriteConditional_EndIf()
+        {
+            _file.Write("#endif");
+            _file.WriteLine();
+        }
+
+        public AutoBraces WriteBraces(string text, ref string indent)
+        {
+            return _file.WriteBraces(text, ref indent);
+        }
+
         private string GetScriptType(Type scriptType) => scriptType switch
         {
             Type.Class => "class",

@@ -74,6 +74,7 @@ namespace Ami.Extension
             }
         }
 
+#if UNITY_EDITOR || UNITY_PS4 || UNITY_PS5
         private bool _hasGamepadSpeakerOutputTypeResetAction = false;
         public GamepadSpeakerOutputType gamepadSpeakerOutputType
         {
@@ -84,6 +85,7 @@ namespace Ami.Extension
                 Base.gamepadSpeakerOutputType = value;
             }
         }
+#endif
 
         private bool _hasLoopResetAction = false;
         public bool loop

@@ -24,8 +24,10 @@ namespace Ami.Extension
         /// <inheritdoc cref="AudioSource.outputAudioMixerGroup"/>
         AudioMixerGroup outputAudioMixerGroup { get; set; }
 
+#if UNITY_EDITOR || UNITY_PS4 || UNITY_PS5
         /// <inheritdoc cref="AudioSource.gamepadSpeakerOutputType"/>
         GamepadSpeakerOutputType gamepadSpeakerOutputType { get; set; }
+#endif
 
         /// <inheritdoc cref="AudioSource.loop"/>
         bool loop { get; set; }

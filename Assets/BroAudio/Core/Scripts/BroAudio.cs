@@ -2,7 +2,7 @@
 using Ami.BroAudio.Runtime;
 
 namespace Ami.BroAudio
-{ 
+{
     public static class BroAudio
     {
         #region Play

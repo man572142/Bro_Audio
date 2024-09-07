@@ -38,6 +38,7 @@ namespace Ami.BroAudio.Testing
         public void StopAudioType() => BroAudio.Stop(_audioType, _fadeTime);
         public void StopSoundID() => BroAudio.Stop(_sound, _fadeTime);
 
+#if !UNITY_WEBGL
         public void SetLowPassFilter() => BroAudio.SetEffect(Effect.LowPass(_frequency, _fadeTime), _audioType);
         public void ResetLowPassFilter() => BroAudio.SetEffect(Effect.ResetLowPass(_fadeTime), _audioType);
         public void SetHighPassFilter() => BroAudio.SetEffect(Effect.HighPass(_frequency, _fadeTime), _audioType);
@@ -45,7 +46,8 @@ namespace Ami.BroAudio.Testing
         public void SetCustomEffect(string paraName) => BroAudio.SetEffect(Effect.Custom(paraName, _customEffectValue), _audioType);
 
         public void PlayerAsLowPassDominator() => _player.AsDominator().LowPassOthers(_frequency, _fading);
-        public void PlayerAsHighPassDominator() => _player.AsDominator().HighPassOthers(_frequency, _fading);
+        public void PlayerAsHighPassDominator() => _player.AsDominator().HighPassOthers(_frequency, _fading); 
+#endif
 
         public void PlayerAsBGM() => _player.AsBGM().SetTransition(_transition, _fadeTime);
     }

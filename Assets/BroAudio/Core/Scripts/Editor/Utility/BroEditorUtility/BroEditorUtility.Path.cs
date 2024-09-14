@@ -11,7 +11,6 @@ namespace Ami.BroAudio.Editor
         public const string CoreDataResourcesPath = "BroAudioData";
 		public const string DefaultRelativeAssetOutputPath = "BroAudio/AudioAssets";
         public const string DefaultAssetOutputPath = "Assets/" + DefaultRelativeAssetOutputPath;
-		public const string DefaultResoucesFolderPath = "Assets/BroAudio/Core/Resources";
 		public const string EditorSettingPath = "Editor/BroEditorSetting";
 		public const string RuntimeSettingPath = "BroRuntimeSetting";
 

@@ -1,13 +1,25 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Ami.Extension;
 
 namespace Ami.BroAudio.Runtime
 {
 	public class MusicPlayer : AudioPlayerDecorator, IMusicPlayer
 	{
-		public static AudioPlayer CurrentPlayer = null;
+        public static event Action<IAudioPlayer> OnBGMChanged;
+		private static AudioPlayer _currentPlayer = null;
+
+        public static AudioPlayer CurrentPlayer
+        {
+            get => _currentPlayer;
+            set
+            {
+                if (_currentPlayer != value)
+                {
+                    _currentPlayer = value;
+                    OnBGMChanged?.Invoke(value);
+                }
+            }
+        }
 
 		private Transition _transition = default;
 		private StopMode _stopMode = default;
@@ -47,19 +59,24 @@ namespace Ami.BroAudio.Runtime
 					case Ami.BroAudio.Transition.OnlyFadeIn:
 					case Ami.BroAudio.Transition.CrossFade:
 						StopCurrentMusic();
-						break;
+                        break;
 					case Ami.BroAudio.Transition.Default:
 					case Ami.BroAudio.Transition.OnlyFadeOut:
 						if(CurrentPlayer.IsPlaying)
 						{
                             IsWaitingForTransition = true;
-                            StopCurrentMusic(() => IsWaitingForTransition = false);
+                            StopCurrentMusic(() =>
+                            {
+                                IsWaitingForTransition = false;
+                                CurrentPlayer = Instance;
+                            });
+                            return;
                         }	
 						break;
 				}
 			}
-			CurrentPlayer = Instance;
-		}
+            CurrentPlayer = Instance;
+        }
 
 		private void StopCurrentMusic(Action onFinished = null)
 		{

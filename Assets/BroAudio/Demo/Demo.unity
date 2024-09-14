@@ -10853,7 +10853,6 @@ MonoBehaviour:
   - Transform: {fileID: 294429241}
     Frequency: 10000
     Weighted: 2.5
-  _bgmPlayer: {fileID: 1430655737}
 --- !u!4 &1409252107
 Transform:
   m_ObjectHideFlags: 0
@@ -14338,7 +14337,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   InteractiveZone: {fileID: 1853003833}
-  _target: {fileID: 1430655736}
+  _target: {fileID: 1409252105}
 --- !u!114 &1853003835
 MonoBehaviour:
   m_ObjectHideFlags: 0

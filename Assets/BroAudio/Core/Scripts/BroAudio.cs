@@ -1,10 +1,17 @@
 ﻿using UnityEngine;
 using Ami.BroAudio.Runtime;
+using System;
 
 namespace Ami.BroAudio
 {
     public static class BroAudio
     {
+        public static event Action<IAudioPlayer> OnBGMChanged
+        {
+            add => MusicPlayer.OnBGMChanged += value;
+            remove => MusicPlayer.OnBGMChanged -= value;
+        }
+
         #region Play
         /// <summary>
         /// Plays an audio

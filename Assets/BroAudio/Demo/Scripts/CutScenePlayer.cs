@@ -8,8 +8,6 @@ namespace Ami.BroAudio.Demo
 {
 	public class CutScenePlayer : InteractiveComponent
 	{
-        public event Action<GetSpectrumData> OnGetSpectrumDataEventHandler;
-
 		[SerializeField] PlayableDirector _director = null;
 		[SerializeField] SoundID _backgroundMusic = default;
 		[SerializeField, Volume(true)] float _maxBgmVolumeDuringCutScene = default;
@@ -24,14 +22,8 @@ namespace Ami.BroAudio.Demo
 			_director.stopped += OnCutSceneStopped;
             BroAudio.Play(_backgroundMusic)
                 .AsBGM()
-                .SetVolume(_maxBgmVolumeDuringCutScene)
-                .OnUpdate(OnBGMPlayerUpdate);
+                .SetVolume(_maxBgmVolumeDuringCutScene);
 		}
-
-        private void OnBGMPlayerUpdate(IAudioPlayer player)
-        {
-            OnGetSpectrumDataEventHandler?.Invoke(player.GetSpectrumData);
-        }
 
         private void OnCutSceneStopped(PlayableDirector director)
 		{

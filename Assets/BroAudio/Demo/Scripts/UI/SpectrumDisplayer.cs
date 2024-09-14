@@ -1,13 +1,9 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using Ami.Extension;
 using UnityEngine;
 
 namespace Ami.BroAudio.Demo
 {
-    public delegate void GetSpectrumData(float[] samples, int channel, FFTWindow fftWindow);
-
     public class SpectrumDisplayer : MonoBehaviour
     {
         [Serializable]
@@ -25,7 +21,6 @@ namespace Ami.BroAudio.Demo
         [SerializeField] float _updateRate = 0.1f;
         [SerializeField] float _falldownSpeed = 0.3f;
         [SerializeField] Band[] _bands = null;
-        [SerializeField] CutScenePlayer _bgmPlayer = null;
 
         private readonly float[] _spectrum = new float[SpectrumSampleCount];
 
@@ -37,9 +32,10 @@ namespace Ami.BroAudio.Demo
 
         private void Start()
         {
+            BroAudio.OnBGMChanged += OnBGMChanged;
+
             _buffer = new float[_bands.Length];
             _target = _buffer.Clone() as float[];
-            _bgmPlayer.OnGetSpectrumDataEventHandler += UpdateSpectrum;
 
             float freqRange = AudioSettings.outputSampleRate / 2f;
             _harmonic = freqRange / SpectrumSampleCount;
@@ -47,10 +43,19 @@ namespace Ami.BroAudio.Demo
 
         private void OnDestroy()
         {
-            _bgmPlayer.OnGetSpectrumDataEventHandler -= UpdateSpectrum;
+            BroAudio.OnBGMChanged -= OnBGMChanged;
         }
 
-        public void UpdateSpectrum(GetSpectrumData onGetSpectrum)
+        private void OnBGMChanged(IAudioPlayer player)
+        {
+            player.OnUpdate(x =>
+            {
+                x.GetSpectrumData(_spectrum, 0, FFTWindow.Hanning); // Left channel
+                UpdateSpectrum();
+            });
+        }
+
+        public void UpdateSpectrum()
         {
             if(_time >= _updateRate)
             {
@@ -59,8 +64,6 @@ namespace Ami.BroAudio.Demo
                 Array.Copy(_buffer, _target, _target.Length);
                 StartCoroutine(ScaleTransform());
             }
-
-            onGetSpectrum?.Invoke(_spectrum, 0, FFTWindow.Hanning); // Left channel
 
             for (int i = 0; i < _spectrum.Length - 1; i++)
             {

@@ -129,18 +129,25 @@ namespace Ami.BroAudio.Runtime
         }
         #endregion
 
-        public void Pause(int id)
+        public void Pause(int id, bool isPause)
         {
-            Pause(id, AudioPlayer.UseEntitySetting);
+            Pause(id, isPause, AudioPlayer.UseEntitySetting);
         }
 
-        public void Pause(int id,float fadeTime)
+        public void Pause(int id, bool isPause, float fadeTime)
         {
             foreach(var player in GetCurrentAudioPlayers())
             {
                 if(player.IsActive && player.ID == id)
                 {
-                    player.Stop(fadeTime, StopMode.Pause, null);
+                    if(isPause)
+                    {
+                        player.Stop(fadeTime, StopMode.Pause, null);
+                    }
+                    else
+                    {
+                        player.UnPause(fadeTime);
+                    }
                 }
             }
         }

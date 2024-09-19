@@ -45,7 +45,11 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-			PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
+            if(PlaybackStartingTime == 0)
+            {
+                PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
+            }
+			
 			if (_stopMode == default)
             {
                 _clip = _pref.PickNewClip();
@@ -227,6 +231,13 @@ namespace Ami.BroAudio.Runtime
             => this.Pause(UseEntitySetting);
         void IAudioStoppable.Pause(float fadeOut)
             => Stop(fadeOut, StopMode.Pause, null);
+        void IAudioStoppable.UnPause()
+            => this.UnPause(UseEntitySetting);
+        void IAudioStoppable.UnPause(float fadeIn)
+        {
+            _pref.FadeIn = fadeIn;
+            Play();
+        }
         void IAudioStoppable.Stop()
             => this.Stop(UseEntitySetting);
         void IAudioStoppable.Stop(float fadeOut)

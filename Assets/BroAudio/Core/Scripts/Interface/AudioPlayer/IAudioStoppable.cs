@@ -9,6 +9,8 @@ namespace Ami.BroAudio
         internal void Stop(float fadeOut);
         internal void Stop(float fadeOut, Action onFinished);
         internal void Pause();
-        internal void Pause(float fadeOut);
+        internal void Pause(float fadeTime);
+        internal void UnPause();
+        internal void UnPause(float fadeTime);
     }
 }

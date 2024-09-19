@@ -82,7 +82,6 @@ namespace Ami.BroAudio.Editor
             SplitRectVertical(rect, 2f, _settingRects, _settingRectRatio);
 
             EditorGUI.PropertyField(_settingRects[0], audioTypeProp);
-            //DrawAudioTypeFlagsField(_settingRects[0], audioTypeProp, out var audioType);
             DrawSliderObjectField(_settingRects[1], sliderProp);
             
 
@@ -114,17 +113,7 @@ namespace Ami.BroAudio.Editor
                 return DrawLogarithmicSlider_Horizontal(suffixRect, vol, AudioConstant.MinVolume, maxVolume);
             }
 
-            void DrawAudioTypeFlagsField(Rect rect, SerializedProperty audioTypeProp, out BroAudioType audioType)
-            {
-                audioType = (BroAudioType)EditorGUI.EnumFlagsField(rect,"Audio Type", (BroAudioType)audioTypeProp.enumValueFlag);
-                if (audioType != BroAudioType.None)
-                {
-                    audioTypeProp.enumValueFlag = (int)audioType;
-                }
-                audioType = (BroAudioType)audioTypeProp.enumValueFlag;
-            }
-
-            void DrawSliderObjectField(Rect rect, SerializedProperty property)
+            static void DrawSliderObjectField(Rect rect, SerializedProperty property)
             {
                 Rect suffixRect = EditorGUI.PrefixLabel(rect, TempContent("Slider"));
                 EditorGUI.ObjectField(suffixRect, property, GUIContent.none);

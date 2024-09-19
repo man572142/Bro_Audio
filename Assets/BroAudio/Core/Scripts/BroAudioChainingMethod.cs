@@ -22,6 +22,12 @@ namespace Ami.BroAudio
 
         public static void Pause(this IAudioStoppable player, float fadeOut)
             => player?.Pause(fadeOut);
+
+        public static void UnPause(this IAudioStoppable player)
+            => player?.UnPause();
+
+        public static void UnPause(this IAudioStoppable player, float fadeOut)
+            => player?.UnPause( fadeOut);
         #endregion
 
         #region Set Volume

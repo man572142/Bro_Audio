@@ -12,8 +12,8 @@ namespace Ami.BroAudio.Runtime
         private readonly Transform _followTarget;
 
         private int _velocity;
-        public float FadeIn { get; private set; }
-        public float FadeOut { get; private set; }
+        public float FadeIn { get; set; }
+        public float FadeOut { get; set; }
         public Ease FadeInEase => Entity.SeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
         public Ease FadeOutEase => Entity.SeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
 

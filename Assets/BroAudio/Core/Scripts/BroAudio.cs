@@ -62,26 +62,26 @@ namespace Ami.BroAudio
 
         #region Pause
         /// <summary>
-        /// Pause an audio
+        /// Pause a sound
         /// </summary>
         public static void Pause(SoundID id) 
             => SoundManager.Instance.Pause(id, true);
 
         /// <summary>
-        /// Pause an audio
+        /// Pause a sound
         /// </summary>
         /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
         public static void Pause(SoundID id, float fadeOut)
             => SoundManager.Instance.Pause(id, true, fadeOut);
 
         /// <summary>
-        /// Pause an audio
+        /// Resume a paused sound
         /// </summary>
         public static void UnPause(SoundID id)
             => SoundManager.Instance.Pause(id, false);
 
         /// <summary>
-        /// Pause an audio
+        /// Resume a paused sound
         /// </summary>
         /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
         public static void UnPause(SoundID id, float fadeOut)

@@ -278,9 +278,6 @@ namespace Ami.BroAudio.Runtime
 
         public void GetOutputData(float[] samples, int channels) => AudioSource.GetOutputData(samples, channels);
         public void GetSpectrumData(float[] samples, int channels, FFTWindow window) => AudioSource.GetSpectrumData(samples, channels, window);
-        public bool GetSpatializerFloat(int index, out float value) => AudioSource.GetSpatializerFloat(index, out value);
-        public bool GetAmbisonicDecoderFloat(int index, out float value) => AudioSource.GetSpatializerFloat(index, out value);
-
         IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead)
         {
             if (!_audioFilterReader)

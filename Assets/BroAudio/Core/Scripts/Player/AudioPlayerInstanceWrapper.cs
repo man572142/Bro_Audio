@@ -83,26 +83,6 @@ namespace Ami.BroAudio
 
         public void GetSpectrumData(float[] samples, int channels, FFTWindow window) => Instance?.GetSpectrumData(samples, channels, window);
 
-        public bool GetSpatializerFloat(int index, out float value)
-        {
-            value = default;
-            if(Instance != null)
-            {
-                return Instance.GetSpatializerFloat(index, out value);
-            }
-            return false;
-        }
-
-        public bool GetAmbisonicDecoderFloat(int index, out float value)
-        {
-            value = default;
-            if (Instance != null)
-            {
-                return Instance.GetAmbisonicDecoderFloat(index, out value);
-            }
-            return false;
-        }
-
         IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead)=> Instance?.OnAudioFilterRead(onAudioFilterRead) ?? Empty.AudioPlayer;
 #pragma warning restore UNT0008
         #endregion

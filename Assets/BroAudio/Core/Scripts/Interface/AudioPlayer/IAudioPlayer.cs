@@ -54,11 +54,5 @@ namespace Ami.BroAudio
 
         /// <inheritdoc cref="AudioSource.GetSpectrumData(float[], int, FFTWindow)"/>
         void GetSpectrumData(float[] samples, int channels, FFTWindow window);
-
-        /// <inheritdoc cref="AudioSource.GetSpatializerFloat(int, out float)"/>
-        bool GetSpatializerFloat(int index, out float value);
-
-        /// <inheritdoc cref="AudioSource.GetAmbisonicDecoderFloat(int, out float)"/>
-        bool GetAmbisonicDecoderFloat(int index, out float value);
     }
 }

@@ -27,18 +27,6 @@ namespace Ami.BroAudio.Runtime
             IMusicPlayer IMusicDecoratable.AsBGM() => MusicPlayer;
             IPlayerEffect IEffectDecoratable.AsDominator() => DominatorPlayer;
 
-            bool IAudioPlayer.GetAmbisonicDecoderFloat(int index, out float value)
-            {
-                value = default;
-                return false;
-            }
-
-            bool IAudioPlayer.GetSpatializerFloat(int index, out float value)
-            {
-                value = default;
-                return false;
-            }
-
             void IAudioPlayer.GetOutputData(float[] samples, int channels) { }
             void IAudioPlayer.GetSpectrumData(float[] samples, int channels, FFTWindow window) { }
             IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead) => this;

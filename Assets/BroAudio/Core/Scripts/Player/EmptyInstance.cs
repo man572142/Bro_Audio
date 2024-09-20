@@ -35,6 +35,8 @@ namespace Ami.BroAudio.Runtime
             IAudioPlayer IAudioPlayer.OnUpdate(Action<IAudioPlayer> onUpdate) => this;
             void IAudioStoppable.Pause() { }
             void IAudioStoppable.Pause(float fadeOut) { }
+            void IAudioStoppable.UnPause() { }
+            void IAudioStoppable.UnPause(float fadeOut) { }
             IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime) => this;
             IAudioPlayer IAudioPlayer.SetVelocity(int velocity) => this;
             IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => this;

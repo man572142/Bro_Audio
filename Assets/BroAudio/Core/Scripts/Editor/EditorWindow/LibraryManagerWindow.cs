@@ -108,6 +108,7 @@ namespace Ami.BroAudio.Editor
             }
 
             Undo.undoRedoPerformed += Repaint;
+            AudioEntityPropertyDrawer.OnExpandAll += ResetEntitiesScrollPos;
         }
 
         private void OnDisable()
@@ -118,6 +119,7 @@ namespace Ami.BroAudio.Editor
                 DestroyImmediate(editor);
             }
             Undo.undoRedoPerformed -= Repaint;
+            AudioEntityPropertyDrawer.OnExpandAll -= ResetEntitiesScrollPos;
 
             if (_hasAssetListReordered)
             {
@@ -323,6 +325,10 @@ namespace Ami.BroAudio.Editor
                 if (_isInEntitiesEditMode && TryGetCurrentAssetEditor(out var editor))
                 {
                     DrawEntitiesList(editor);
+                    if (Event.current.alt)
+                    {
+                        GUILayout.Button("CollapseAll");
+                    }
                 }
                 else
                 {
@@ -422,6 +428,14 @@ namespace Ami.BroAudio.Editor
             float headerHeight = EntitiesHeaderSize.y + (DefaultLayoutPadding * 2) + ReorderableList.Defaults.padding;
             float scrollViewHeight = listHeight - (position.height - headerHeight);
             return _entitiesScrollPos.y - scrollViewHeight;
+        }
+
+        private void ResetEntitiesScrollPos(bool isExpanded)
+        {
+            if (!isExpanded)
+            {
+                _entitiesScrollPos = new Vector2(_entitiesScrollPos.x, 0f);
+            }
         }
 
         // The ReorderableList default header background GUIStyle has set fixedHeight to non-0 and stretchHeight to false, which is unreasonable...

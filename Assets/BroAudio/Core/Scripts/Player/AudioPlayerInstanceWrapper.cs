@@ -63,6 +63,8 @@ namespace Ami.BroAudio
         void IAudioStoppable.Stop(float fadeOut, Action onFinished) => Instance?.Stop(fadeOut, onFinished);
         void IAudioStoppable.Pause() => Instance?.Pause();
         void IAudioStoppable.Pause(float fadeOut) => Instance?.Pause(fadeOut);
+        void IAudioStoppable.UnPause() => Instance?.UnPause();
+        void IAudioStoppable.UnPause(float fadeOut) => Instance?.UnPause(fadeOut);
 
         IAudioPlayer IAudioPlayer.OnStart(Action<IAudioPlayer> onStart) => Instance?.OnStart(onStart) ?? Empty.AudioPlayer;
         IAudioPlayer IAudioPlayer.OnUpdate(Action<IAudioPlayer> onUpdate) => Instance?.OnUpdate(onUpdate) ?? Empty.AudioPlayer;

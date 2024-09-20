@@ -23,12 +23,14 @@ namespace Ami.BroAudio.Editor
         {
             AudioEntityPropertyDrawer.OnEntityNameChanged += Verify;
             AudioEntityPropertyDrawer.OnRemoveEntity += OnRemoveSelectedEntity;
+            AudioEntityPropertyDrawer.OnExpandAll += SetAllElementsExpanded;
         }
 
         public void RemoveEntitiesListener()
         {
             AudioEntityPropertyDrawer.OnEntityNameChanged -= Verify;
             AudioEntityPropertyDrawer.OnRemoveEntity -= OnRemoveSelectedEntity;
+            AudioEntityPropertyDrawer.OnExpandAll -= SetAllElementsExpanded;
         }
 
         private void OnDestroy()
@@ -148,6 +150,15 @@ namespace Ami.BroAudio.Editor
         {
             _entitiesList.DoLayoutList();
             height = _entitiesList.GetHeight();
+        }
+
+        private void SetAllElementsExpanded(bool isExpanded)
+        {
+            for(int i = 0; i < _entitiesList.count; i++)
+            {
+                SerializedProperty elementProp = _entitiesList.serializedProperty.GetArrayElementAtIndex(i);
+                elementProp.isExpanded = isExpanded;
+            }
         }
 
         public void SetAssetName(string newName)

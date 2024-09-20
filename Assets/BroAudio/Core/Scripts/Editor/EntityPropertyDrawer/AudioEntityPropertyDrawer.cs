@@ -56,6 +56,7 @@ namespace Ami.BroAudio.Editor
 
         public static event Action OnEntityNameChanged;
         public static event Action OnRemoveEntity;
+        public static event Action<bool> OnExpandAll;
 
         private const float ClipPreviewHeight = 100f;
         private const float DefaultFieldRatio = 0.9f;
@@ -171,7 +172,13 @@ namespace Ami.BroAudio.Editor
             Rect nameRect = _headerRects[0]; Rect previewButtonRect = _headerRects[1]; Rect audioTypeRect = _headerRects[2];
             audioTypeRect.x += gap * 0.5f;
 
+            EditorGUI.BeginChangeCheck();
             property.isExpanded = EditorGUI.Foldout(nameRect, property.isExpanded, property.isExpanded? string.Empty : nameProp.stringValue);
+            if(EditorGUI.EndChangeCheck() && Event.current.alt)
+            {
+                OnExpandAll?.Invoke(property.isExpanded);
+            }
+
             DrawAudioTypeButton(audioTypeRect, property, Utility.GetAudioType(idProp.intValue));
             if (!property.isExpanded || !TryGetAudioTypeSetting(property, out var setting))
             {

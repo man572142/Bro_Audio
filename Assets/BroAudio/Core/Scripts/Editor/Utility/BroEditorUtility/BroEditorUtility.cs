@@ -266,12 +266,12 @@ namespace Ami.BroAudio.Editor
             EditorGUI.DrawRect(vuRect, maskColor);
         }
 
-        public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue, bool allowBoost = true)
+        public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue, bool allowBoost = true, bool isSubElement = false)
         {
-            return DrawVolumeSlider(position, label, currentValue, false, null, true, allowBoost);
+            return DrawVolumeSlider(position, label, currentValue, false, null, true, allowBoost, isSubElement);
         }
 
-        public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue, bool isSnap, Action onSwitchSnapMode, bool canDrawVU = true, bool allowBoost = true)
+        public static float DrawVolumeSlider(Rect position, GUIContent label, float currentValue, bool isSnap, Action onSwitchSnapMode, bool canDrawVU = true, bool allowBoost = true, bool isSubElement = false)
         {
             Rect suffixRect = EditorGUI.PrefixLabel(position, label);
             float padding = 3f;

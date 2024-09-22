@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Linq;
 using Ami.BroAudio.Editor;
 using System;
+using UnityEditorInternal;
 
 namespace Ami.Extension
 {
@@ -573,7 +574,7 @@ namespace Ami.Extension
             maxFieldRect = new Rect(suffixRect) { x = sliderRect.xMax + gap, width = fieldWidth };
         }
 
-        public static float DrawLogarithmicSlider_Horizontal(Rect position, float currentValue, float leftValue, float rightValue, bool isDrawField = true)
+        public static float DrawLogarithmicSlider_Horizontal(Rect position, float currentValue, float leftValue, float rightValue, bool isDrawField = true, bool isSubElement = false)
         {
             if (leftValue <= 0f)
             {
@@ -586,10 +587,10 @@ namespace Ami.Extension
             {
                 float gap = 5f;
                 sliderRect.width -= EditorGUIUtility.fieldWidth + gap;
-                Rect fieldRect = new Rect(sliderRect) { x = sliderRect.xMax + gap, width = EditorGUIUtility.fieldWidth };
+                float offset = isSubElement ? IndentInPixel : 0f;
+                Rect fieldRect = new Rect(sliderRect) { x = sliderRect.xMax + gap - offset, width = EditorGUIUtility.fieldWidth + offset };
                 
                 currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue), leftValue, rightValue);
-                
             }
 
             currentValue = currentValue == 0 ? leftValue : currentValue;

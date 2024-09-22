@@ -17,7 +17,7 @@ namespace Ami.BroAudio.Editor
 			{
 				Rect suffixRect = EditorGUI.PrefixLabel(position, label);
 
-				float freq = DrawLogarithmicSlider_Horizontal(suffixRect, property.floatValue, AudioConstant.MinFrequency, AudioConstant.MaxFrequency);
+				float freq = DrawLogarithmicSlider_Horizontal(suffixRect, property.floatValue, AudioConstant.MinFrequency, AudioConstant.MaxFrequency, true, property.depth > 1);
 				property.floatValue = (float)Math.Floor(freq);
 			}
 			else

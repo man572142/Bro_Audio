@@ -10,7 +10,7 @@ namespace Ami.BroAudio.Editor
 		{
 			if(property.propertyType == SerializedPropertyType.Float && attribute is Volume volAttr)
 			{
-                property.floatValue = BroEditorUtility.DrawVolumeSlider(position, label, property.floatValue, volAttr.CanBoost);
+                property.floatValue = BroEditorUtility.DrawVolumeSlider(position, label, property.floatValue, volAttr.CanBoost, property.depth > 1);
             }
 			else
 			{

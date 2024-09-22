@@ -1,128 +1,51 @@
-using System;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using static Ami.BroAudio.SpectrumAnalyzer;
 
 namespace Ami.BroAudio.Demo
 {
     public class SpectrumDisplayer : MonoBehaviour
     {
-        [Serializable]
-        public struct Band
-        {
-            public Transform Transform;
-            public float Frequency;
-            [Range(1f, 3f)] public float Weighted;
-        }
-
-        public const int SpectrumSampleCount = 1 << 9;
-
+        [SerializeField] SpectrumAnalyzer _analyzer = null;
         [SerializeField] float _maxHeight = 10f;
-        [SerializeField] float _scale = 100f;
-        [SerializeField] float _updateRate = 0.1f;
-        [SerializeField] float _falldownSpeed = 0.3f;
-        [SerializeField] Band[] _bands = null;
-
-        private readonly float[] _spectrum = new float[SpectrumSampleCount];
-
-        private float[] _buffer = null;
-        private float[] _target = null;
-        private float _time = 0f;
-        private int _step = 0;
-        private float _harmonic = 0f;
+        [SerializeField] Transform[] _barTransforms = null;
 
         private void Start()
         {
             BroAudio.OnBGMChanged += OnBGMChanged;
-
-            _buffer = new float[_bands.Length];
-            _target = _buffer.Clone() as float[];
-
-            float freqRange = AudioSettings.outputSampleRate / 2f;
-            _harmonic = freqRange / SpectrumSampleCount;
+            if(_analyzer)
+            {
+                _analyzer.OnUpdate += OnSpectrumUpdate;
+            }
         }
 
         private void OnDestroy()
         {
             BroAudio.OnBGMChanged -= OnBGMChanged;
+            if (_analyzer)
+            {
+                _analyzer.OnUpdate -= OnSpectrumUpdate;
+            }
         }
 
         private void OnBGMChanged(IAudioPlayer player)
         {
-            player.OnUpdate(x =>
-            {
-                x.GetSpectrumData(_spectrum, 0, FFTWindow.Hanning); // Left channel
-                UpdateSpectrum();
-            });
+            _analyzer.SetSource(player);
         }
 
-        public void UpdateSpectrum()
+        private void OnSpectrumUpdate(IReadOnlyList<Band> bands)
         {
-            if(_time >= _updateRate)
+            for(int i = 0; i < bands.Count;i++)
             {
-                _time = 0f;
-                _step = 0;
-                Array.Copy(_buffer, _target, _target.Length);
-                StartCoroutine(ScaleTransform());
-            }
-
-            for (int i = 0; i < _spectrum.Length - 1; i++)
-            {
-                float freq = i * _harmonic;
-                int index = GetFrequencyBandIndex(freq);
-                if (_step == 0)
+                if(i >= _barTransforms.Length)
                 {
-                    _buffer[index] = _spectrum[i];
+                    Debug.LogWarning("The bar count and spectrum band count doesn't match");
+                    break;
                 }
-                else
-                {
-                    _buffer[index] = ((_buffer[index] * _step) + _spectrum[i]) / (_step + 1);
-                }
-            }
 
-            _step++;
-            _time += Time.deltaTime;
-        }
-
-        private int GetFrequencyBandIndex(float freq)
-        {
-            for(int i = 0; i < _bands.Length;i++)
-            {
-                if(freq < _bands[i].Frequency)
-                {
-                    return i;
-                }
-            }
-            return _bands.Length - 1;
-        }
-
-        private IEnumerator ScaleTransform()
-        {
-            float[] previousScales = new float[_bands.Length];
-            for(int i = 0; i < _bands.Length;i++)
-            {
-                previousScales[i] = _bands[i].Transform.localScale.y;
-            }
-
-            while (_time < _updateRate)
-            {
-                for(int i = 0; i < _bands.Length;i++)
-                {
-                    Transform bar = _bands[i].Transform;
-                    float targetScale = Mathf.Min(_target[i] * _scale, _maxHeight) * _bands[i].Weighted;
-                    bool isFalling = targetScale < previousScales[i];
-                    float y;
-                    if (isFalling)
-                    {
-                        y = Mathf.Max(bar.localScale.y - (_falldownSpeed * Time.deltaTime), targetScale);
-                    }
-                    else
-                    {
-                        y = Mathf.Lerp(previousScales[i], targetScale, _time / _updateRate);
-                    }
-                    
-                    bar.localScale = new Vector3(bar.localScale.x, y, bar.localScale.z);
-                }
-                yield return null;
+                Vector3 localScale = _barTransforms[i].localScale;
+                localScale.y = Mathf.Min(bands[i].Amplitube, _maxHeight);
+                _barTransforms[i].localScale = localScale;
             }
         }
     } 

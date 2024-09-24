@@ -28,6 +28,7 @@ namespace Ami.BroAudio.Runtime
             }
 
             _proxy?.Dispose();
+            _proxy = null;
         }
 
         private void DestroyAudioFilterReader()

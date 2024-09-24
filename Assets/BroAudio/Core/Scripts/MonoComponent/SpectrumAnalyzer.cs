@@ -13,7 +13,6 @@ namespace Ami.BroAudio
         [Serializable]
         public struct Band
         {
-            [Frequency]
             public float Frequency;
 
             [SerializeField, Min(1f)]
@@ -40,6 +39,11 @@ namespace Ami.BroAudio
                 {
                     Amplitube = Mathf.Lerp(_lastAmplitube, _targetAmplitube, progress);
                 }
+            }
+
+            public static class NameOf
+            {
+                public const string Weighted = nameof(_weighted);
             }
         }
 
@@ -143,6 +147,18 @@ namespace Ami.BroAudio
                 }
             }
             return _bands.Length - 1;
+        }
+
+        public static class NameOf
+        {
+            public const string SoundSource = nameof(_soundSource);
+            public const string ResolutionScale = nameof(_resolutionScale);
+            public const string UpdateRate = nameof(_updateRate);
+            public const string Scale = nameof(_scale);
+            public const string FalldownSpeed = nameof(_falldownSpeed);
+            public const string Channel = nameof(_channel);
+            public const string WindowType = nameof(_windowType);
+            public const string Bands = nameof(_bands);
         }
     }
 }

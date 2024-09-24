@@ -62,5 +62,9 @@ namespace Ami.Extension
 
         public AudioRolloffMode rolloffMode { get => UnityEngine.AudioRolloffMode.Logarithmic; set { } }
 
+        public AnimationCurve GetCustomCurve(AudioSourceCurveType type) { return default; }
+
+        public void SetCustomCurve(AudioSourceCurveType type, AnimationCurve curve) {  }
+
     }
 }

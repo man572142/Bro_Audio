@@ -89,5 +89,11 @@ namespace Ami.Extension
         /// <inheritdoc cref="AudioSource.rolloffMode"/>
         AudioRolloffMode rolloffMode { get; set; }
 
+        /// <inheritdoc cref="AudioSource.GetCustomCurve"/>
+        AnimationCurve GetCustomCurve(AudioSourceCurveType type);
+
+        /// <inheritdoc cref="AudioSource.SetCustomCurve"/>
+        void SetCustomCurve(AudioSourceCurveType type, AnimationCurve curve);
+
     }
 }

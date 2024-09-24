@@ -4,7 +4,7 @@ using UnityEngine.Audio;
 
 namespace Ami.Extension
 {
-    public class AudioSourceProxy : BroModifier<AudioSource>, IAudioSourceProxy
+    public partial class AudioSourceProxy : BroModifier<AudioSource>, IAudioSourceProxy
     {
         public AudioSourceProxy(AudioSource @base) : base(@base) {}
 

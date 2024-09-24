@@ -28,13 +28,14 @@ namespace Ami.Extension.Reflection
             _file?.Dispose();
         }
 
-        public void Write(string[] usings, string @namespace, string codeName, Type scriptType = Type.Class, string implementation = "")
+        public void Write(string[] usings, string @namespace, string codeName, Type scriptType, string implementation = "", bool isPartial = false)
         {
             _file.WriteLine(Title);
             _file.WriteUsings(usings);
             _file.WriteLine();
+            string partial = isPartial ? "partial " : string.Empty;
             _namespace = _file.WriteBraces("namespace " + @namespace, ref Indent);
-            _codeBlock = _file.WriteBraces("public " + GetScriptType(scriptType) + " " + codeName + implementation, ref Indent);
+            _codeBlock = _file.WriteBraces("public " + partial + GetScriptType(scriptType) + " " + codeName + implementation, ref Indent);
         }
 
         public void WriteLine(string text = "")
@@ -67,10 +68,17 @@ namespace Ami.Extension.Reflection
             _ => throw new NotImplementedException(),
         };
 
-        public static CodeWriter Write(Parameters parameters, Type scriptType = Type.Class, string implementation = "")
+        public static CodeWriter Write(Parameters parameters, Type scriptType, string implementation = "", bool isPartial = false)
         {
             var code = new CodeWriter(parameters.Path, parameters.ScriptName);
-            code.Write(parameters.Usings, parameters.Namespace, parameters.ScriptName, scriptType, implementation);
+            code.Write(parameters.Usings, parameters.Namespace, parameters.ScriptName, scriptType, implementation, isPartial);
+            return code;
+        }
+
+        public static CodeWriter WritePartial(Parameters parameters, Type scriptType, string partialName, string implementation = "")
+        {
+            var code = new CodeWriter(parameters.Path, parameters.ScriptName + "." + partialName);
+            code.Write(parameters.Usings, parameters.Namespace, parameters.ScriptName, scriptType, implementation, true);
             return code;
         }
     }

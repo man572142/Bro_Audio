@@ -8,6 +8,21 @@ namespace Ami.Extension
             Excluded,
         }
 
+        public static bool ContainsFlag(this int flags, int targetFlag)
+        {
+            return (flags & targetFlag) != 0;
+        }
+
+        public static void AddFlag(ref int flags, int add)
+        {
+            flags |= add;
+        }
+
+        public static void RemoveFlag(ref int flags, int remove)
+        {
+            flags &= ~remove;
+        }
+
         public static int GetFlagsOnCount(int flags)
         {
             int count = 0;

@@ -1,6 +1,6 @@
 // Auto-generated code
 using UnityEngine;
-using static Ami.Extension.FlagsExtension;
+using UnityEngine.Audio;
 
 namespace Ami.Extension
 {
@@ -13,7 +13,7 @@ namespace Ami.Extension
         public void SetCustomCurve(AudioSourceCurveType type, AnimationCurve curve)
         {
             Base.SetCustomCurve(type, curve);
-            AddFlag(ref _modifiedCurveFlags, 1 << (int)type);
+            FlagsExtension.AddFlag(ref _modifiedCurveFlags, 1 << (int)type);
 
             AddResetAction(ref _hasCurveResetAction, ResetModifiedCurve);
         }
@@ -26,7 +26,7 @@ namespace Ami.Extension
                 if (_modifiedCurveFlags.ContainsFlag(flag))
                 {
                     ResetCurve((AudioSourceCurveType)flag);
-                    RemoveFlag(ref _modifiedCurveFlags, flag);
+                    FlagsExtension.RemoveFlag(ref _modifiedCurveFlags, flag);
                 }
                 flag <<= 1;
             }
@@ -50,5 +50,14 @@ namespace Ami.Extension
                 }
             }
         }
+
+        public bool GetAmbisonicDecoderFloat(int index, out float value) => Base.GetAmbisonicDecoderFloat(index, out value);
+
+        public bool SetAmbisonicDecoderFloat(int index, float value) => Base.SetAmbisonicDecoderFloat(index, value);
+
+        public bool GetSpatializerFloat(int index, out float value) => Base.GetSpatializerFloat(index, out value);
+
+        public bool SetSpatializerFloat(int index, float value) => Base.SetSpatializerFloat(index, value);
+
     }
 }

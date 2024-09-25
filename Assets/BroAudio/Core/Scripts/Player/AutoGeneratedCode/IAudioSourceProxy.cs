@@ -95,5 +95,17 @@ namespace Ami.Extension
         /// <inheritdoc cref="AudioSource.SetCustomCurve"/>
         void SetCustomCurve(AudioSourceCurveType type, AnimationCurve curve);
 
+        /// <inheritdoc cref="AudioSource.GetAmbisonicDecoderFloat"/>
+        bool GetAmbisonicDecoderFloat(int index, out float value);
+
+        /// <inheritdoc cref="AudioSource.SetAmbisonicDecoderFloat"/>
+        bool SetAmbisonicDecoderFloat(int index, float value);
+
+        /// <inheritdoc cref="AudioSource.GetSpatializerFloat"/>
+        bool GetSpatializerFloat(int index, out float value);
+
+        /// <inheritdoc cref="AudioSource.SetSpatializerFloat"/>
+        bool SetSpatializerFloat(int index, float value);
+
     }
 }

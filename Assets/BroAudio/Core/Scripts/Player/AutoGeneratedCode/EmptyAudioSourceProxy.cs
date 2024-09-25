@@ -66,5 +66,13 @@ namespace Ami.Extension
 
         public void SetCustomCurve(AudioSourceCurveType type, AnimationCurve curve) {  }
 
+        public bool GetAmbisonicDecoderFloat(int index, out float value) { value = default; return default; }
+
+        public bool SetAmbisonicDecoderFloat(int index, float value) { return default; }
+
+        public bool GetSpatializerFloat(int index, out float value) { value = default; return default; }
+
+        public bool SetSpatializerFloat(int index, float value) { return default; }
+
     }
 }

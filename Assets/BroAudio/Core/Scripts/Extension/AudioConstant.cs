@@ -70,6 +70,9 @@ namespace Ami.Extension
         public const float MaxLogValue = 1; // Log10(MaxVolume) => Log10(10)
         public const float FullVolumeLogValue = 0; // Log10(FullVolume) => Log10(1);
 
+        public const float MinFrequencyLogValue = 1; // Log10(MinFrequency) => Log10(10) 
+        public const float MaxFrequencyLogValue = 4.34242268f; // Log10(MinFrequency) => Log10(22000) 
+
         public static float DecibelVoulumeFullScale => MaxDecibelVolume - MinDecibelVolume;
     }
 }

@@ -5,6 +5,8 @@ using Ami.Extension;
 using static Ami.BroAudio.SpectrumAnalyzer;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.Extension.AudioConstant;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Ami.BroAudio.Editor
 {
@@ -14,9 +16,14 @@ namespace Ami.BroAudio.Editor
         public const int MinResolutionScale = 6;
         public const int MaxResolutionScale = 13;
         public const int BandElementLineCount = 3;
+        public const float SpectrumViewHeight = 120f;
+        public const float SpectrumViewLabelHeight = 20f;
+        public const float SpectrumViewLabelWidth = 30f;
+        public const float SPectrumViewOffset = 6f;
+        public const int AmplitubeScaleCount = 4;
 
         private SerializedProperty _soundSourceProp, _resolutionProp, _updateRateProp, _scaleProp, _falldownProp,
-            _channelProp, _windowProp;
+            _channelProp, _windowProp, _bandsProp;
 
         ReorderableList _bandsList = null;
 
@@ -24,6 +31,13 @@ namespace Ami.BroAudio.Editor
         private string[] _resolutionLabels = new string[MaxResolutionScale - MinResolutionScale + 1];
         private Rect[] _bandRects = new Rect[BandElementLineCount];
         private float[] _bandRectRatios = { 0.34f, 0.33f, 0.33f };
+        private List<(float freq, float logFreq)> _referenceFrequencies = null;
+        private float[] _referenceLabels = { 20f, 50f, 100f, 200f, 500f, 1000f, 2000f, 5000f, 10000f, 20000f };
+        private int _currentControlBandIndex = -1;
+
+        private GUIStyle _thumbExtentStyle;
+
+        private Vector2 BandHandleSize => new Vector2(10f,15f);
 
         private void OnEnable()
         {
@@ -35,20 +49,23 @@ namespace Ami.BroAudio.Editor
             _falldownProp = so.FindProperty(NameOf.FalldownSpeed);
             _channelProp = so.FindProperty(NameOf.Channel);
             _windowProp = so.FindProperty(NameOf.WindowType);
+            _bandsProp = so.FindProperty(NameOf.Bands);
 
-            for(int i = 0; i < _resolutionValues.Length; i++)
+            for (int i = 0; i < _resolutionValues.Length; i++)
             {
                 int scale = MinResolutionScale + i;
                 _resolutionValues[i] = scale;
                 _resolutionLabels[i] = $"{1 << scale} samples";
             }
 
-            _bandsList = new ReorderableList(serializedObject, so.FindProperty(NameOf.Bands))
+            _bandsList = new ReorderableList(serializedObject, _bandsProp)
             {
                 elementHeight = (EditorGUIUtility.singleLineHeight + 1f) * BandElementLineCount + ReorderableList.Defaults.padding,
                 drawHeaderCallback = OnDrawBandListHeader,
                 drawElementCallback = OnDrawBandElement,
             };
+
+
         }
 
         private void OnDrawBandListHeader(Rect rect)
@@ -102,6 +119,11 @@ namespace Ami.BroAudio.Editor
 
         public override void OnInspectorGUI()
         {
+            _thumbExtentStyle ??= "horizontalSliderThumbExtent";
+            //Debug.Log(_thumbExtentStyle == null);
+            //_thumbExtentStyle = typeof(GUISkin).GetProperty("horizontalSliderThumbExtent", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(GUI.skin) as GUIStyle;
+            //Debug.Log(_thumbExtentStyle == null);
+
             serializedObject.Update();
 
             EditorGUILayout.PropertyField(_soundSourceProp);
@@ -115,9 +137,166 @@ namespace Ami.BroAudio.Editor
             EditorGUILayout.PropertyField(_falldownProp);
             EditorGUILayout.PropertyField(_channelProp);
             EditorGUILayout.PropertyField(_windowProp);
+
+            DrawSpectrumView();
+
             _bandsList.DoLayoutList();
 
+
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private void DrawSpectrumView()
+        {
+            float width = EditorGUIUtility.currentViewWidth - 18f - 4f;
+            Rect rect = GUILayoutUtility.GetRect(width, SpectrumViewHeight + SpectrumViewLabelHeight * 2);
+            Rect viewRect = new Rect(rect.x - 16f, rect.y + SpectrumViewLabelHeight, width, SpectrumViewHeight);
+            Event evt = Event.current;
+            if (evt.type == EventType.Repaint)
+            {
+                GUI.skin.window.Draw(viewRect, false, false, false, false);
+            }
+
+            viewRect = DrawReferenceView(width, viewRect);
+
+            for (int i = 0; i < _bandsList.count; i++)
+            {
+                var elementProp = _bandsProp.GetArrayElementAtIndex(i);
+                var freqProp = elementProp.FindPropertyRelative(nameof(Band.Frequency));
+
+                float x = width * Mathf.InverseLerp(MinFrequencyLogValue, MaxFrequencyLogValue, Mathf.Log10(freqProp.floatValue));
+                Rect lineRect = new Rect(viewRect.x + x, viewRect.y, 1f, SpectrumViewHeight);
+
+                Rect handleRect = new Rect(lineRect) { size = BandHandleSize };
+                handleRect.x -= Mathf.Round(handleRect.width * 0.5f);
+                handleRect.y -= handleRect.height + 2f;
+                EditorGUI.DrawRect(lineRect, Color.green);
+
+                int controlID = GUIUtility.GetControlID(FocusType.Passive);
+                switch (evt.GetTypeForControl(controlID))
+                {
+                    case EventType.MouseDown:
+                        if (handleRect.Contains(evt.mousePosition) && evt.button == 0)
+                        {
+                            GUIUtility.hotControl = controlID;
+                            _currentControlBandIndex = i;
+                            EditorGUIUtility.SetWantsMouseJumping(1);
+                            evt.Use();
+                        }
+                        break;
+
+                    case EventType.MouseUp:
+                        if (GUIUtility.hotControl == controlID && evt.button == 0)
+                        {
+                            GUIUtility.hotControl = 0;
+                            EditorGUIUtility.SetWantsMouseJumping(0);
+                            evt.Use();
+                        }
+                        break;
+
+                    case EventType.MouseDrag:
+                        if (GUIUtility.hotControl == controlID)
+                        {
+                            float normalized = (x + evt.delta.x) / width;
+                            float log = Mathf.Lerp(MinFrequencyLogValue, MaxFrequencyLogValue, normalized);
+                            float freq = Mathf.Pow(10, log);
+                            if(evt.control)
+                            {
+                                freq = Mathf.Ceil(freq);
+                            }
+                            freqProp.floatValue = Mathf.Clamp(freq, GetLastFrequency(i), GetMaxFrequencyOfThisRange(i));
+                            evt.Use();
+                        }
+                        break;
+                }
+                if (_currentControlBandIndex == i && evt.type == EventType.Repaint)
+                {
+                    Rect extentRect = new Rect(handleRect);
+                    extentRect.x -= 4f;
+                    _thumbExtentStyle.Draw(extentRect, true, true, true, true);
+                }
+                GUI.Slider(handleRect, 0f, 0f, 0f, 0f, GUI.skin.horizontalSlider, GUI.skin.horizontalSliderThumb, true, controlID, _thumbExtentStyle);
+            }
+
+            float GetLastFrequency(int index)
+            {
+                if (index > 0)
+                {
+                    var last = _bandsList.serializedProperty.GetArrayElementAtIndex(index - 1);
+                    return last.FindPropertyRelative(nameof(Band.Frequency)).floatValue;
+                }
+                return MinFrequency;
+            }
+
+            float GetMaxFrequencyOfThisRange(int index)
+            {
+                if (index < _bandsList.count - 1)
+                {
+                    var next = _bandsList.serializedProperty.GetArrayElementAtIndex(index + 1);
+                    return next.FindPropertyRelative(nameof(Band.Frequency)).floatValue - 1f;
+                }
+                return MaxFrequency;
+            }
+        }
+
+        private Rect DrawReferenceView(float width, Rect viewRect)
+        {
+            Color refColor = Color.gray;
+            refColor.a = 0.5f;
+            _referenceFrequencies ??= GetReferenceLogFrequencies();
+            for (int i = 0; i < _referenceFrequencies.Count; i++)
+            {
+                float x = width * Mathf.InverseLerp(MinFrequencyLogValue, MaxFrequencyLogValue, _referenceFrequencies[i].logFreq);
+                Rect lineRect = new Rect(viewRect.x + x, viewRect.y, 1f, SpectrumViewHeight);
+                EditorGUI.DrawRect(lineRect, refColor);
+
+                if(HasLabel(_referenceFrequencies[i].freq, out string label))
+                {
+                    Rect labelRect = new Rect(viewRect.x + x - (SpectrumViewLabelWidth * 0.5f) , viewRect.y + SpectrumViewHeight, SpectrumViewLabelWidth, SpectrumViewLabelHeight);
+                    EditorGUI.LabelField(labelRect, label, EditorStyles.centeredGreyMiniLabel);
+                }
+            }
+
+            for (int i = 1; i < AmplitubeScaleCount; i++)
+            {
+                float y = SpectrumViewHeight / AmplitubeScaleCount * i;
+                Rect lineRect = new Rect(viewRect.x, viewRect.y + y, width, 1f);
+                EditorGUI.DrawRect(lineRect, refColor);
+            }
+
+            return viewRect;
+        }
+
+        private List<(float, float)> GetReferenceLogFrequencies()
+        {
+            List<(float, float)> result = new List<(float, float)>();
+            float log = 10;
+            float refFreq = MinFrequency + log;
+            while (refFreq < MaxFrequency)
+            {
+                result.Add((refFreq, Mathf.Log10(refFreq)));
+
+                refFreq += log;
+                if (refFreq / log >= 10)
+                {
+                    log *= 10;
+                }
+            }
+            return result;
+        }
+
+        private bool HasLabel(float freq, out string label)
+        {
+            label = string.Empty;
+            foreach (var value in _referenceLabels)
+            {
+                if(Mathf.Approximately(value, freq))
+                {
+                    label = freq >= 1000 ? $"{(freq / 1000)}k" : freq.ToString();
+                    return true;
+                }
+            }
+            return false;
         }
     } 
 }

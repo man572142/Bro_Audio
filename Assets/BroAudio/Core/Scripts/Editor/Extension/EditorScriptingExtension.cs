@@ -705,5 +705,21 @@ namespace Ami.Extension
             rect.height = height;
             return rect;
         }
+
+        public static T GetEnumFlag<T>(this SerializedProperty property) where T : Enum
+        {
+#if UNITY_2021_2_OR_NEWER
+            if (property.enumValueFlag is T flag)
+            {
+                return flag;
+            }
+#else
+            if(property.intValue is T flag)
+            {
+                return flag;
+            }
+#endif
+            return default;
+        }
     }
 }

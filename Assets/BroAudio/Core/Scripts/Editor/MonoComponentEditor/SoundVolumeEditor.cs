@@ -31,7 +31,7 @@ namespace Ami.BroAudio.Editor
         private GUIContent _volumeGUIContent, _readFromSliderGUIContent, _setToSliderGUIContent, _fadeTimeGUIContent,
             _editInPlaymodeGUIContent, _applyOnEnableGUIContent, _allowBoostGUIContent, _resetOnDisableGUIContent;
 
-        private SliderType SliderType => (SliderType)_sliderTypeProp.enumValueFlag;
+        private SliderType SliderType => (SliderType)_sliderTypeProp.enumValueIndex;
         private float MaxFieldWidth => EditorGUIUtility.labelWidth + 160f;
 
         private void OnEnable()
@@ -104,7 +104,7 @@ namespace Ami.BroAudio.Editor
             if (_isEditingInPlayMode && EditorGUI.EndChangeCheck())
             {
                 SetVolumeToSlider(sliderProp, volProp.floatValue);
-                BroAudio.SetVolume((BroAudioType)audioTypeProp.enumValueFlag, volProp.floatValue);
+                BroAudio.SetVolume(audioTypeProp.GetEnumFlag<BroAudioType>(), volProp.floatValue);
             }
 
             static float DrawLogarithmicSlider(Rect rect, GUIContent content, float vol, float maxVolume)
@@ -135,7 +135,7 @@ namespace Ami.BroAudio.Editor
 
             var property = _settingsProp.GetArrayElementAtIndex(index);
             var audioTypeProp = property.FindPropertyRelative(SoundVolume.Setting.NameOf.AudioType);
-            int flags = audioTypeProp.enumValueFlag;
+            int flags = (int)audioTypeProp.GetEnumFlag<BroAudioType>();
             bool isSelected = index == _settingsList.index;
 
             if(isSelected && Event.current.type == EventType.Repaint)

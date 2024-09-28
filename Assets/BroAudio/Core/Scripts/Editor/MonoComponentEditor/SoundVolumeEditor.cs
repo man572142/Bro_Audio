@@ -264,10 +264,11 @@ namespace Ami.BroAudio.Editor
                 var settingProp = _settingsList.serializedProperty.GetArrayElementAtIndex(i);
                 var volProp = settingProp.FindPropertyRelative(SoundVolume.Setting.NameOf.Volume);
                 var sliderProp = settingProp.FindPropertyRelative(SoundVolume.Setting.NameOf.Slider);
-                var slider = sliderProp.objectReferenceValue as UnityEngine.UI.Slider;
-
-                float vol = Utility.SliderToVolume(SliderType, slider.normalizedValue, _allowBoostProp.boolValue);
-                volProp.floatValue = (float)Math.Round(vol, RoundingDigits);
+                if (sliderProp.objectReferenceValue is UnityEngine.UI.Slider slider && slider)
+                {
+                    float vol = Utility.SliderToVolume(SliderType, slider.normalizedValue, _allowBoostProp.boolValue);
+                    volProp.floatValue = (float)Math.Round(vol, RoundingDigits);
+                }
             }
             _settingsList.serializedProperty.serializedObject.ApplyModifiedProperties();
         }

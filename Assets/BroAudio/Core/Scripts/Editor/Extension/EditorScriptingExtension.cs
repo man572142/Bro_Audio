@@ -698,5 +698,12 @@ namespace Ami.Extension
         {
             return new Color(color.r, color.g, color.b, a);
         }
+
+        public static Rect GrowUp(this Rect rect, float height)
+        {
+            rect.y -= height;
+            rect.height = height;
+            return rect;
+        }
     }
 }

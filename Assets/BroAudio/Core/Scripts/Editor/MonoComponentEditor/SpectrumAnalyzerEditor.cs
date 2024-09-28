@@ -6,7 +6,6 @@ using static Ami.BroAudio.SpectrumAnalyzer;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.Extension.AudioConstant;
 using System.Collections.Generic;
-using System.Reflection;
 using System;
 
 namespace Ami.BroAudio.Editor
@@ -37,6 +36,7 @@ namespace Ami.BroAudio.Editor
 
         private GUIStyle _thumbExtentStyle;
         private GUIContent _indicator = null;
+        private IReadOnlyList<Band> _bands = null;
 
         private Vector2 BandHandleSize
         {
@@ -74,6 +74,13 @@ namespace Ami.BroAudio.Editor
             };
 
             _indicator = EditorGUIUtility.IconContent(IconConstant.Indicator);
+
+            if(Application.isPlaying && so.targetObject is SpectrumAnalyzer target)
+            {
+                target.OnUpdate -= OnUpdateSpectrum;
+                target.OnUpdate += OnUpdateSpectrum;
+                _bands = target.Bands;
+            }
         }
 
         private void OnDrawBandListHeader(Rect rect)
@@ -165,14 +172,15 @@ namespace Ami.BroAudio.Editor
             }
 
             viewRect = DrawReferenceView(width, viewRect);
-            DrawBands(width, viewRect, out float selectedBandX, out float lastBandX);
-            DrawGradientRect(viewRect, selectedBandX, lastBandX);
+            DrawBands(width, viewRect, out float selectedBandX, out float previousBandOfSelectedX);
+            DrawGradientRect(viewRect, selectedBandX, previousBandOfSelectedX);
 
-            void DrawBands(float width, Rect viewRect, out float selectedBandX, out float lastBandX)
+            void DrawBands(float width, Rect viewRect, out float selectedBandX, out float previousBandOfSelectedX)
             {
                 Event evt = Event.current;
                 selectedBandX = viewRect.x;
-                lastBandX = viewRect.x;
+                previousBandOfSelectedX = viewRect.x;
+                float lastBandX = viewRect.x;
                 for (int i = 0; i < _bandsList.count; i++)
                 {
                     var elementProp = _bandsProp.GetArrayElementAtIndex(i);
@@ -189,6 +197,7 @@ namespace Ami.BroAudio.Editor
                     handleRect.y -= SpectrumViewLabelHeight;
 
                     EditorGUIUtility.AddCursorRect(handleRect, MouseCursor.SlideArrow);
+                    DrawAmp(new Rect(lastBandX +1f, viewRect.yMax, lineRect.x - lastBandX - 1f, 0f), i);
 
                     int controlID = GUIUtility.GetControlID(FocusType.Passive);
                     switch (evt.GetTypeForControl(controlID))
@@ -237,15 +246,27 @@ namespace Ami.BroAudio.Editor
 
                     if(i < _bandsList.index)
                     {
-                        lastBandX = x;
+                        previousBandOfSelectedX = lineRect.x;
                     }
 
                     if(i == _bandsList.index)
                     {
-                        selectedBandX = x;
+                        selectedBandX = lineRect.x;
                     }
+                    lastBandX = lineRect.x;
                 }
             }
+        }
+
+        private void DrawAmp(Rect rect, int index)
+        {
+            if(_bands == null || index >= _bands.Count || !Application.isPlaying)
+            {
+                return;
+            }
+            float normalized = _bands[index].Amplitube / (_scaleProp.floatValue * 0.05f); // hack: the definition of scale is still vague
+            float height = Mathf.Min(normalized * SpectrumViewHeight, SpectrumViewHeight);
+            EditorGUI.DrawRect(rect.GrowUp(height), BroEditorUtility.EditorSetting.GetSpectrumColor(index));
         }
 
         private void DrawGradientRect(Rect viewRect ,float x, float xMax)
@@ -333,6 +354,11 @@ namespace Ami.BroAudio.Editor
                 }
             }
             return false;
+        }
+
+        private void OnUpdateSpectrum(IReadOnlyList<Band> list)
+        {
+            Repaint();
         }
     } 
 }

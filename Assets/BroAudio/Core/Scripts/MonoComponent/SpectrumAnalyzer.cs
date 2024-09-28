@@ -69,6 +69,7 @@ namespace Ami.BroAudio
 
         private int SpectrumSampleCount => 1 << _resolutionScale;
         public int BandCount => _bands.Length;
+        public IReadOnlyList<Band> Bands => _bands;
 
         public void SetSource(IAudioPlayer audioPlayer)
         {

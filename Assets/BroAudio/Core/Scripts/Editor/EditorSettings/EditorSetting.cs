@@ -61,10 +61,9 @@ namespace Ami.BroAudio.Editor
 				return true;
 			}
 
-			if(AudioTypeSettings == null || SpectrumBandColors == null)
+			if(AudioTypeSettings == null)
 			{
 				CreateNewAudioTypeSettings();
-                CreateDefaultSpectrumColors();
 			}
 
             foreach (var setting in AudioTypeSettings)
@@ -93,7 +92,7 @@ namespace Ami.BroAudio.Editor
 
         public Color GetSpectrumColor(int index)
         {
-            if(index < SpectrumBandColors.Count)
+            if(SpectrumBandColors != null && index >= 0 && index < SpectrumBandColors.Count)
             {
                 return SpectrumBandColors[index];
             }
@@ -135,14 +134,6 @@ namespace Ami.BroAudio.Editor
                 Color color = ColorUtility.TryParseHtmlString(htmlString, out color) ? color : Color.black;
                 return color.SetAlpha(alpha);
             }
-        }
-
-        private void CreateSpectrumColors()
-        {
-            SpectrumBandColors = new List<Color>
-            {
-                 new Color(),
-            };
         }
 
         public class FactorySettings

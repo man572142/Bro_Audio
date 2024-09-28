@@ -272,9 +272,12 @@ namespace Ami.BroAudio.Editor
 
         private void DrawGradientRect(Rect viewRect ,float x, float xMax)
         {
-            Rect rect = new Rect(viewRect) { x = x + 1f, xMax = xMax};
-            Color color = BroEditorUtility.EditorSetting.GetSpectrumColor(_bandsList.index);
-            AudioCurveRendering.DrawGradientRect(rect, color, color.SetAlpha(0f), 0.5f, false);
+            if(_bandsList.index >= 0)
+            {
+                Rect rect = new Rect(viewRect) { x = x + 1f, xMax = xMax };
+                Color color = BroEditorUtility.EditorSetting.GetSpectrumColor(_bandsList.index);
+                AudioCurveRendering.DrawGradientRect(rect, color, color.SetAlpha(0f), 0.5f, false);
+            }
         }
 
         private Rect DrawReferenceView(float width, Rect viewRect)

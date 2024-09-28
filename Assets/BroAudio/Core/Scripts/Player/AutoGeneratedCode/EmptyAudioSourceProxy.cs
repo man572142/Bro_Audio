@@ -18,7 +18,7 @@ namespace Ami.Extension
 
         public AudioMixerGroup outputAudioMixerGroup { get => default; set { } }
 
-#if UNITY_EDITOR || UNITY_PS4 || UNITY_PS5
+#if (UNITY_EDITOR && UNITY_2021_3_OR_NEWER) || UNITY_PS4 || UNITY_PS5
         public GamepadSpeakerOutputType gamepadSpeakerOutputType { get => UnityEngine.GamepadSpeakerOutputType.Speaker; set { } }
 #endif
 

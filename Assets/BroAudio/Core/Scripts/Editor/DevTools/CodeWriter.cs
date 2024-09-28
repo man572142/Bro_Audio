@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿#if BroAudio_DevOnly
+using System.IO;
 using System;
 using static Ami.Extension.Reflection.ProxyModifierCodeGenerator;
 
@@ -83,3 +84,4 @@ namespace Ami.Extension.Reflection
         }
     }
 }
+#endif

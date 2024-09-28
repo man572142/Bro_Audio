@@ -74,7 +74,7 @@ namespace Ami.Extension
             }
         }
 
-#if UNITY_EDITOR || UNITY_PS4 || UNITY_PS5
+#if (UNITY_EDITOR && UNITY_2021_3_OR_NEWER) || UNITY_PS4 || UNITY_PS5
         private bool _hasGamepadSpeakerOutputTypeResetAction = false;
         public GamepadSpeakerOutputType gamepadSpeakerOutputType
         {

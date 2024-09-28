@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BroRuntimeSetting
   m_EditorClassIdentifier: 
   CombFilteringPreventionInSeconds: 0.04
-  LogCombFilteringWarning: 1
+  LogCombFilteringWarning: 0
   LogAccessRecycledPlayerWarning: 1
   DefaultFadeInEase: 2
   DefaultFadeOutEase: 11

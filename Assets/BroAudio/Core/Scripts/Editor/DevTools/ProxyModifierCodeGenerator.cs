@@ -66,7 +66,7 @@ namespace Ami.Extension.Reflection
     public static class ProxyModifierCodeGenerator
     {
         public const string Title = "// Auto-generated code";
-        public const string GamepadSpeakerCondition = "UNITY_EDITOR || UNITY_PS4 || UNITY_PS5";
+        public const string GamepadSpeakerCondition = "(UNITY_EDITOR && UNITY_2021_3_OR_NEWER) || UNITY_PS4 || UNITY_PS5";
         public struct Parameters
         {
             public string Namespace;

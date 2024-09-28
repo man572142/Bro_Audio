@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Audio;
 using static Ami.BroAudio.Editor.BroEditorUtility;
@@ -39,6 +40,7 @@ namespace Ami.BroAudio.Editor.Setting
         public const string ShowMasterVolumeLabel = "Show master volume on clip list header";
         public const string AudioTypeColorLabel = "Audio Type Color";
         public const string AudioTypeDrawedProperties = "Displayed Properties";
+        public const string SpectrumBandColors = "Spectrum Band Colors";
         public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
         public const string ProjectSettings = "Project Settings";
         public const string CombFilteringDocUrl = "https://man572142s-organization.gitbook.io/broaudio/reference/technical-details#preventing-comb-filtering";
@@ -61,7 +63,7 @@ namespace Ami.BroAudio.Editor.Setting
         private Rect[] _tabPreAllocRects = null;
         private bool _isInit = false;
         private bool _hasOutputAssetPath = false;
-
+        private ReorderableList _spectrumColorsList = null;
         public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
         public EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
         private float TabLabelHeight => EditorGUIUtility.singleLineHeight * 2f;
@@ -107,6 +109,24 @@ namespace Ami.BroAudio.Editor.Setting
             _regenerateUserDataGUIContent = new GUIContent("Regenerate User Data", _instruction.GetText(Instruction.RegenerateUserData));
         }
 
+        private ReorderableList InitSpectrumReorderableList()
+        {
+            var list = new ReorderableList(EditorSetting.SpectrumBandColors, typeof(Color)) 
+            {
+                drawHeaderCallback = rect => EditorGUI.LabelField(rect, "Colors"),
+                drawElementCallback = OnDrawElement,
+            };
+
+            return list;
+
+            void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
+            {
+                SplitRectHorizontal(rect, 0.1f, 0f, out Rect labelRect, out Rect colorRect);
+                EditorGUI.LabelField(labelRect, new GUIContent(index.ToString()));
+                EditorSetting.SpectrumBandColors[index] = EditorGUI.ColorField(colorRect, EditorSetting.SpectrumBandColors[index]);
+            }
+        }
+
         private void OnDisable()
         {
             ResetTracksAndAudioVoices();
@@ -145,6 +165,7 @@ namespace Ami.BroAudio.Editor.Setting
                 _isInit = true;
             }
 
+            _spectrumColorsList ??= InitSpectrumReorderableList();
             Rect drawPosition = new Rect(Gap * 0.5f, 0f, position.width - Gap, position.height);
 
             DrawEmptyLine(1);
@@ -437,6 +458,7 @@ namespace Ami.BroAudio.Editor.Setting
 
         private void DrawGUISetting(Rect drawPosition)
         {
+            drawPosition.width -= 15f;
             EditorSetting.ShowVUColorOnVolumeSlider = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), VUColorToggleLabel, EditorSetting.ShowVUColorOnVolumeSlider);
             DemonstrateSlider();
 
@@ -448,8 +470,6 @@ namespace Ami.BroAudio.Editor.Setting
                 using (new EditorGUI.IndentLevelScope())
                 {
                     Rect colorRect = GetRectAndIterateLine(drawPosition);
-                    colorRect.xMax -= 20f;
-
                     DrawTwoColumnAudioType(colorRect, SetAudioTypeLabelColor);
                 }
             }
@@ -459,6 +479,15 @@ namespace Ami.BroAudio.Editor.Setting
             {
                 DrawTwoColumnAudioType(GetRectAndIterateLine(drawPosition), SetAudioTypeDrawedProperties);
             }
+
+            EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), SpectrumBandColors.ToWhiteBold(), GUIStyleHelper.RichText);
+            Rect colorListRect = GetRectAndIterateLine(drawPosition);
+            colorListRect.x += IndentInPixel;
+            colorListRect.xMax -= IndentInPixel;
+            colorListRect.height = _spectrumColorsList.GetHeight();
+            _spectrumColorsList.DoList(colorListRect);
+            DrawEmptyLine(_spectrumColorsList.count + 1);
+            DrawEmptyLine(1);
 
             void DemonstrateSlider()
             {

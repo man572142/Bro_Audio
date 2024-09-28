@@ -7,6 +7,7 @@ using static Ami.Extension.EditorScriptingExtension;
 using static Ami.Extension.AudioConstant;
 using System.Collections.Generic;
 using System.Reflection;
+using System;
 
 namespace Ami.BroAudio.Editor
 {
@@ -33,11 +34,18 @@ namespace Ami.BroAudio.Editor
         private float[] _bandRectRatios = { 0.34f, 0.33f, 0.33f };
         private List<(float freq, float logFreq)> _referenceFrequencies = null;
         private float[] _referenceLabels = { 20f, 50f, 100f, 200f, 500f, 1000f, 2000f, 5000f, 10000f, 20000f };
-        private int _currentControlBandIndex = -1;
 
         private GUIStyle _thumbExtentStyle;
+        private GUIContent _indicator = null;
 
-        private Vector2 BandHandleSize => new Vector2(10f,15f);
+        private Vector2 BandHandleSize
+        {
+            get
+            {
+                float width = Mathf.Clamp(EditorGUIUtility.currentViewWidth * 0.05f, 10f, 30f);
+                return new Vector2(width, SpectrumViewHeight + SpectrumViewLabelHeight * 2);
+            }
+        }
 
         private void OnEnable()
         {
@@ -65,7 +73,7 @@ namespace Ami.BroAudio.Editor
                 drawElementCallback = OnDrawBandElement,
             };
 
-
+            _indicator = EditorGUIUtility.IconContent(IconConstant.Indicator);
         }
 
         private void OnDrawBandListHeader(Rect rect)
@@ -86,8 +94,7 @@ namespace Ami.BroAudio.Editor
 
             EditorGUI.BeginChangeCheck();
 
-            freqProp.floatValue = 
-                DrawLogarithmicSlider_Horizontal(_bandRects[1], freqProp.floatValue, MinFrequency, MaxFrequency, true, false);
+            freqProp.floatValue = EditorGUI.FloatField(_bandRects[1], freqProp.displayName,freqProp.floatValue);
             if(EditorGUI.EndChangeCheck())
             {
                 float freq = Mathf.Floor(freqProp.floatValue);
@@ -120,13 +127,16 @@ namespace Ami.BroAudio.Editor
         public override void OnInspectorGUI()
         {
             _thumbExtentStyle ??= "horizontalSliderThumbExtent";
-            //Debug.Log(_thumbExtentStyle == null);
-            //_thumbExtentStyle = typeof(GUISkin).GetProperty("horizontalSliderThumbExtent", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(GUI.skin) as GUIStyle;
-            //Debug.Log(_thumbExtentStyle == null);
 
             serializedObject.Update();
 
             EditorGUILayout.PropertyField(_soundSourceProp);
+            if(_soundSourceProp.objectReferenceValue == null && EditorGUIUtility.currentViewWidth > 350f)
+            {
+                Rect soundSourceRect = GUILayoutUtility.GetLastRect();
+                soundSourceRect.x = soundSourceRect.xMax -= 70f;
+                EditorGUI.LabelField(soundSourceRect, "Optional".SetColor(Color.grey).ToItalics(), GUIStyleHelper.RichText);
+            }
             EditorGUILayout.Space();
 
             _resolutionProp.intValue =
@@ -139,9 +149,7 @@ namespace Ami.BroAudio.Editor
             EditorGUILayout.PropertyField(_windowProp);
 
             DrawSpectrumView();
-
             _bandsList.DoLayoutList();
-
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -151,103 +159,111 @@ namespace Ami.BroAudio.Editor
             float width = EditorGUIUtility.currentViewWidth - 18f - 4f;
             Rect rect = GUILayoutUtility.GetRect(width, SpectrumViewHeight + SpectrumViewLabelHeight * 2);
             Rect viewRect = new Rect(rect.x - 16f, rect.y + SpectrumViewLabelHeight, width, SpectrumViewHeight);
-            Event evt = Event.current;
-            if (evt.type == EventType.Repaint)
+            if (Event.current.type == EventType.Repaint)
             {
                 GUI.skin.window.Draw(viewRect, false, false, false, false);
             }
 
             viewRect = DrawReferenceView(width, viewRect);
+            DrawBands(width, viewRect, out float selectedBandX, out float lastBandX);
+            DrawGradientRect(viewRect, selectedBandX, lastBandX);
 
-            for (int i = 0; i < _bandsList.count; i++)
+            void DrawBands(float width, Rect viewRect, out float selectedBandX, out float lastBandX)
             {
-                var elementProp = _bandsProp.GetArrayElementAtIndex(i);
-                var freqProp = elementProp.FindPropertyRelative(nameof(Band.Frequency));
-
-                float x = width * Mathf.InverseLerp(MinFrequencyLogValue, MaxFrequencyLogValue, Mathf.Log10(freqProp.floatValue));
-                Rect lineRect = new Rect(viewRect.x + x, viewRect.y, 1f, SpectrumViewHeight);
-
-                Rect handleRect = new Rect(lineRect) { size = BandHandleSize };
-                handleRect.x -= Mathf.Round(handleRect.width * 0.5f);
-                handleRect.y -= handleRect.height + 2f;
-                EditorGUI.DrawRect(lineRect, Color.green);
-
-                int controlID = GUIUtility.GetControlID(FocusType.Passive);
-                switch (evt.GetTypeForControl(controlID))
+                Event evt = Event.current;
+                selectedBandX = viewRect.x;
+                lastBandX = viewRect.x;
+                for (int i = 0; i < _bandsList.count; i++)
                 {
-                    case EventType.MouseDown:
-                        if (handleRect.Contains(evt.mousePosition) && evt.button == 0)
-                        {
-                            GUIUtility.hotControl = controlID;
-                            _currentControlBandIndex = i;
-                            EditorGUIUtility.SetWantsMouseJumping(1);
-                            evt.Use();
-                        }
-                        break;
+                    var elementProp = _bandsProp.GetArrayElementAtIndex(i);
+                    var freqProp = elementProp.FindPropertyRelative(nameof(Band.Frequency));
 
-                    case EventType.MouseUp:
-                        if (GUIUtility.hotControl == controlID && evt.button == 0)
-                        {
-                            GUIUtility.hotControl = 0;
-                            EditorGUIUtility.SetWantsMouseJumping(0);
-                            evt.Use();
-                        }
-                        break;
+                    float x = width * Mathf.InverseLerp(MinFrequencyLogValue, MaxFrequencyLogValue, Mathf.Log10(freqProp.floatValue));
+                    Rect lineRect = new Rect(viewRect.x + x, viewRect.y, 2f, SpectrumViewHeight);
 
-                    case EventType.MouseDrag:
-                        if (GUIUtility.hotControl == controlID)
-                        {
-                            float normalized = (x + evt.delta.x) / width;
-                            float log = Mathf.Lerp(MinFrequencyLogValue, MaxFrequencyLogValue, normalized);
-                            float freq = Mathf.Pow(10, log);
-                            if(evt.control)
+                    Color color = BroEditorUtility.EditorSetting.GetSpectrumColor(i);
+                    EditorGUI.DrawRect(lineRect, _bandsList.index == i ? color.SetAlpha(1f) : color);
+
+                    Rect handleRect = new Rect(lineRect) { size = BandHandleSize };
+                    handleRect.x -= BandHandleSize.x * 0.5f;
+                    handleRect.y -= SpectrumViewLabelHeight;
+
+                    EditorGUIUtility.AddCursorRect(handleRect, MouseCursor.SlideArrow);
+
+                    int controlID = GUIUtility.GetControlID(FocusType.Passive);
+                    switch (evt.GetTypeForControl(controlID))
+                    {
+                        case EventType.MouseDown:
+                            if (handleRect.Contains(evt.mousePosition) && evt.button == 0)
                             {
-                                freq = Mathf.Ceil(freq);
+                                GUIUtility.hotControl = controlID;
+                                _bandsList.index = i;
+                                EditorGUIUtility.SetWantsMouseJumping(1);
+                                evt.Use();
                             }
-                            freqProp.floatValue = Mathf.Clamp(freq, GetLastFrequency(i), GetMaxFrequencyOfThisRange(i));
-                            evt.Use();
-                        }
-                        break;
-                }
-                if (_currentControlBandIndex == i && evt.type == EventType.Repaint)
-                {
-                    Rect extentRect = new Rect(handleRect);
-                    extentRect.x -= 4f;
-                    _thumbExtentStyle.Draw(extentRect, true, true, true, true);
-                }
-                GUI.Slider(handleRect, 0f, 0f, 0f, 0f, GUI.skin.horizontalSlider, GUI.skin.horizontalSliderThumb, true, controlID, _thumbExtentStyle);
-            }
+                            break;
 
-            float GetLastFrequency(int index)
-            {
-                if (index > 0)
-                {
-                    var last = _bandsList.serializedProperty.GetArrayElementAtIndex(index - 1);
-                    return last.FindPropertyRelative(nameof(Band.Frequency)).floatValue;
-                }
-                return MinFrequency;
-            }
+                        case EventType.MouseUp:
+                            if (GUIUtility.hotControl == controlID && evt.button == 0)
+                            {
+                                GUIUtility.hotControl = 0;
+                                EditorGUIUtility.SetWantsMouseJumping(0);
+                                evt.Use();
+                            }
+                            break;
 
-            float GetMaxFrequencyOfThisRange(int index)
-            {
-                if (index < _bandsList.count - 1)
-                {
-                    var next = _bandsList.serializedProperty.GetArrayElementAtIndex(index + 1);
-                    return next.FindPropertyRelative(nameof(Band.Frequency)).floatValue - 1f;
+                        case EventType.MouseDrag:
+                            if (GUIUtility.hotControl == controlID)
+                            {
+                                float normalized = (x + evt.delta.x) / width;
+                                float log = Mathf.Lerp(MinFrequencyLogValue, MaxFrequencyLogValue, normalized);
+                                float freq = Mathf.Pow(10, log);
+                                if (evt.control)
+                                {
+                                    freq = Mathf.Ceil(freq);
+                                }
+                                freqProp.floatValue = Mathf.Clamp(freq, GetLastFrequency(i), GetMaxFrequencyOfThisRange(i));
+                                evt.Use();
+                            }
+                            break;
+                    }
+
+                    if (_bandsList.index == i && evt.type == EventType.Repaint)
+                    {
+                        Rect indicatorRect = new Rect(handleRect.center.x, handleRect.y + 3f, 13f, 13f);
+                        indicatorRect.x -= Mathf.Floor(indicatorRect.width * 0.5f);
+                        GUI.DrawTexture(indicatorRect, _indicator.image);
+                    }
+
+                    if(i < _bandsList.index)
+                    {
+                        lastBandX = x;
+                    }
+
+                    if(i == _bandsList.index)
+                    {
+                        selectedBandX = x;
+                    }
                 }
-                return MaxFrequency;
             }
+        }
+
+        private void DrawGradientRect(Rect viewRect ,float x, float xMax)
+        {
+            Rect rect = new Rect(viewRect) { x = x + 1f, xMax = xMax};
+            Color color = BroEditorUtility.EditorSetting.GetSpectrumColor(_bandsList.index);
+            AudioCurveRendering.DrawGradientRect(rect, color, color.SetAlpha(0f), 0.5f, false);
         }
 
         private Rect DrawReferenceView(float width, Rect viewRect)
         {
             Color refColor = Color.gray;
-            refColor.a = 0.5f;
+            refColor.a = 0.2f;
             _referenceFrequencies ??= GetReferenceLogFrequencies();
             for (int i = 0; i < _referenceFrequencies.Count; i++)
             {
                 float x = width * Mathf.InverseLerp(MinFrequencyLogValue, MaxFrequencyLogValue, _referenceFrequencies[i].logFreq);
-                Rect lineRect = new Rect(viewRect.x + x, viewRect.y, 1f, SpectrumViewHeight);
+                Rect lineRect = new Rect(viewRect.x + x, viewRect.y + 1f, 1f, SpectrumViewHeight - 2f);
                 EditorGUI.DrawRect(lineRect, refColor);
 
                 if(HasLabel(_referenceFrequencies[i].freq, out string label))
@@ -265,6 +281,26 @@ namespace Ami.BroAudio.Editor
             }
 
             return viewRect;
+        }
+
+        float GetLastFrequency(int index)
+        {
+            if (index > 0)
+            {
+                var last = _bandsList.serializedProperty.GetArrayElementAtIndex(index - 1);
+                return last.FindPropertyRelative(nameof(Band.Frequency)).floatValue;
+            }
+            return MinFrequency;
+        }
+
+        float GetMaxFrequencyOfThisRange(int index)
+        {
+            if (index < _bandsList.count - 1)
+            {
+                var next = _bandsList.serializedProperty.GetArrayElementAtIndex(index + 1);
+                return next.FindPropertyRelative(nameof(Band.Frequency)).floatValue - 1f;
+            }
+            return MaxFrequency;
         }
 
         private List<(float, float)> GetReferenceLogFrequencies()

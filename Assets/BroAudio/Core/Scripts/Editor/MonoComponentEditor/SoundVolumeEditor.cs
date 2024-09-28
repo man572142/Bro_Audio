@@ -118,7 +118,7 @@ namespace Ami.BroAudio.Editor
                 Rect suffixRect = EditorGUI.PrefixLabel(rect, TempContent("Slider"));
                 EditorGUI.ObjectField(suffixRect, property, GUIContent.none);
 
-                if(property.objectReferenceValue == null)
+                if(property.objectReferenceValue == null && EditorGUIUtility.currentViewWidth > 300f)
                 {
                     Rect noteRect = new Rect(suffixRect) { x = suffixRect.xMax - SliderOptionalLabelWidth - 20f, width = SliderOptionalLabelWidth };
                     EditorGUI.LabelField(noteRect, "Optional".SetColor(Color.grey).ToItalics(), GUIStyleHelper.RichText);

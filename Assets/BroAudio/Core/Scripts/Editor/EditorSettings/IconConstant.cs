@@ -44,7 +44,6 @@ namespace Ami.BroAudio.Editor
         public const string Help = "_Help";
 
         // Inspector
-        public const string SliderAct = "slider thumb act";
-        public const string SliderFocus = "slider thumb focus";
+        public const string Indicator = "IN foldout act on";
     }
 }

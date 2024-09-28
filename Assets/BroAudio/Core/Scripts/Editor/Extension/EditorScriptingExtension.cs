@@ -693,5 +693,10 @@ namespace Ami.Extension
             _tempContent.tooltip = tooltip;
             return _tempContent;
         }
+
+        public static Color SetAlpha(this Color color, float a)
+        {
+            return new Color(color.r, color.g, color.b, a);
+        }
     }
 }

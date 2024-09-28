@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Ami.Extension.EditorScriptingExtension;
 
 namespace Ami.BroAudio.Editor
 {
@@ -12,7 +13,7 @@ namespace Ami.BroAudio.Editor
 		[System.Serializable]
 		public struct AudioTypeSetting
 		{
-            // AudioEntityPropertyDrawer rely on the immutability, don't chagne to class without modifying it
+            // AudioEntityPropertyDrawer rely on the immutability, don't chagne to class without refactoring it
             public BroAudioType AudioType;
 			public Color Color;
 			public DrawedProperty DrawedProperty;
@@ -33,6 +34,7 @@ namespace Ami.BroAudio.Editor
 		public bool ShowMasterVolumeOnClipListHeader;
 
 		public List<AudioTypeSetting> AudioTypeSettings;
+        public List<Color> SpectrumBandColors; 
 
 		public Color GetAudioTypeColor(BroAudioType audioType)
 		{
@@ -59,12 +61,13 @@ namespace Ami.BroAudio.Editor
 				return true;
 			}
 
-			if(AudioTypeSettings == null)
+			if(AudioTypeSettings == null || SpectrumBandColors == null)
 			{
 				CreateNewAudioTypeSettings();
+                CreateDefaultSpectrumColors();
 			}
 
-			foreach (var setting in AudioTypeSettings)
+            foreach (var setting in AudioTypeSettings)
 			{
 				if(audioType == setting.AudioType)
 				{
@@ -88,12 +91,22 @@ namespace Ami.BroAudio.Editor
 			return false;
 		}
 
+        public Color GetSpectrumColor(int index)
+        {
+            if(index < SpectrumBandColors.Count)
+            {
+                return SpectrumBandColors[index];
+            }
+            return new Color(1f, 1f, 1f, 0.2f);
+        }
+
 		public void ResetToFactorySettings()
 		{
 			ShowVUColorOnVolumeSlider = FactorySettings.ShowVUColorOnVolumeSlider;
 			ShowAudioTypeOnSoundID = FactorySettings.ShowAudioTypeOnSoundID;
 			ShowMasterVolumeOnClipListHeader = FactorySettings.ShowMasterVolumeOnClipListHeader;
 			CreateNewAudioTypeSettings();
+            CreateDefaultSpectrumColors();
 		}
 
 		private void CreateNewAudioTypeSettings()
@@ -108,7 +121,31 @@ namespace Ami.BroAudio.Editor
 			};
 		}
 
-		public class FactorySettings
+        private void CreateDefaultSpectrumColors()
+        {
+            float alpha = 150f / 256f;
+            SpectrumBandColors = new List<Color>()
+            {
+                GetColor("#7CAEFF"),GetColor("#62EBFA"),GetColor("#77FFA7"),GetColor("#C5FF78"),GetColor("#FF646E"),
+                GetColor("#FF64C5"),GetColor("#CC7EFF"),GetColor("#5B39FF"),GetColor("#6DBDFF"),GetColor("#6CFF75"),
+            };
+
+            Color GetColor(string htmlString)
+            {
+                Color color = ColorUtility.TryParseHtmlString(htmlString, out color) ? color : Color.black;
+                return color.SetAlpha(alpha);
+            }
+        }
+
+        private void CreateSpectrumColors()
+        {
+            SpectrumBandColors = new List<Color>
+            {
+                 new Color(),
+            };
+        }
+
+        public class FactorySettings
 		{
 			public const bool ShowAudioTypeOnSoundID = true;
 			public const bool ShowVUColorOnVolumeSlider = true;

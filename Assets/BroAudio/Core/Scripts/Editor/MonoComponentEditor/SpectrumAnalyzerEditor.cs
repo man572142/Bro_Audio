@@ -21,6 +21,8 @@ namespace Ami.BroAudio.Editor
         public const float SpectrumViewLabelWidth = 30f;
         public const float SPectrumViewOffset = 6f;
         public const int AmplitubeScaleCount = 4;
+        public const string ExperimentalWarning = "<b>[Experimental]</b> " +
+            "The component is still in development. While it is usable, the precision of the result is not guaranteed.";
 
         private SerializedProperty _soundSourceProp, _resolutionProp, _updateRateProp, _scaleProp, _falldownProp,
             _channelProp, _windowProp, _bandsProp;
@@ -34,7 +36,6 @@ namespace Ami.BroAudio.Editor
         private List<(float freq, float logFreq)> _referenceFrequencies = null;
         private float[] _referenceLabels = { 20f, 50f, 100f, 200f, 500f, 1000f, 2000f, 5000f, 10000f, 20000f };
 
-        private GUIStyle _thumbExtentStyle;
         private GUIContent _indicator = null;
         private IReadOnlyList<Band> _bands = null;
 
@@ -133,7 +134,7 @@ namespace Ami.BroAudio.Editor
 
         public override void OnInspectorGUI()
         {
-            _thumbExtentStyle ??= "horizontalSliderThumbExtent";
+            RichTextHelpBox(ExperimentalWarning, MessageType.Warning);
 
             serializedObject.Update();
 

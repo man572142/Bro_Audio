@@ -706,20 +706,13 @@ namespace Ami.Extension
             return rect;
         }
 
-        public static T GetEnumFlag<T>(this SerializedProperty property) where T : Enum
+        public static int GetEnumFlag(this SerializedProperty property)
         {
 #if UNITY_2021_2_OR_NEWER
-            if (property.enumValueFlag is T flag)
-            {
-                return flag;
-            }
+            return property.enumValueFlag;
 #else
-            if(property.intValue is T flag)
-            {
-                return flag;
-            }
+            return property.intValue;
 #endif
-            return default;
         }
     }
 }

@@ -73,3 +73,27 @@ MonoBehaviour:
     Author: sonniss
     License: THE #GAMEAUDIOGDC BUNDLE LICENSING
     Link: https://sonniss.com/gameaudiogdc
+  - Source: {fileID: 8300000, guid: 2cd1432e8b64c5f47a8ef0c6c1aa49c6, type: 3}
+    Type: 0
+    Name: Utilities-Sensor-02
+    Author: sonniss
+    License: THE #GAMEAUDIOGDC BUNDLE LICENSING
+    Link: https://sonniss.com/gameaudiogdc
+  - Source: {fileID: 8300000, guid: 283db2de8512111488e1d3aa233ab98d, type: 3}
+    Type: 0
+    Name: PM_SFG_VOL2_WEAPON_15_5_GUN_GUNSHOT_FUTURISTIC
+    Author: sonniss
+    License: THE #GAMEAUDIOGDC BUNDLE LICENSING
+    Link: https://sonniss.com/gameaudiogdc
+  - Source: {fileID: 8300000, guid: 28355d60fb44bb54ca435b5badcd1c16, type: 3}
+    Type: 0
+    Name: PM_SFG_VOL1_WEAPON_4_4_GUN_GUNSHOT_FUTURISTIC
+    Author: sonniss
+    License: THE #GAMEAUDIOGDC BUNDLE LICENSING
+    Link: https://sonniss.com/gameaudiogdc
+  - Source: {fileID: 8300000, guid: 1bbbe2206455ec9419e24a9a6aa08854, type: 3}
+    Type: 0
+    Name: Weapon Shot Spaceship Super Blaster-04
+    Author: sonniss
+    License: THE #GAMEAUDIOGDC BUNDLE LICENSING
+    Link: https://sonniss.com/gameaudiogdc

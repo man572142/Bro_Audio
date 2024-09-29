@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Runtime
     {
         public static EmptyAudioPlayer AudioPlayer = new EmptyAudioPlayer();
         public static EmptyMusicPlayer MusicPlayer = new EmptyMusicPlayer();
-        public static EmptyDominator DominatorPlayer = new EmptyDominator();
+
         public static EmptyAudioSourceProxy AudioSource = new EmptyAudioSourceProxy();
 
         public class EmptyAudioPlayer : IAudioPlayer
@@ -25,7 +25,9 @@ namespace Ami.BroAudio.Runtime
             }
 
             IMusicPlayer IMusicDecoratable.AsBGM() => MusicPlayer;
-            IPlayerEffect IEffectDecoratable.AsDominator() => DominatorPlayer;
+#if !UNITY_WEBGL
+            IPlayerEffect IEffectDecoratable.AsDominator() => DominatorPlayer; 
+#endif
 
             void IAudioPlayer.GetOutputData(float[] samples, int channels) { }
             void IAudioPlayer.GetSpectrumData(float[] samples, int channels, FFTWindow window) { }
@@ -53,6 +55,9 @@ namespace Ami.BroAudio.Runtime
             IAudioPlayer IMusicPlayer.SetTransition(Transition transition, StopMode stopMode, float overrideFade) => AudioPlayer;
         }
 
+#if !UNITY_WEBGL
+        public static EmptyDominator DominatorPlayer = new EmptyDominator();
+
         public class EmptyDominator : EmptyAudioPlayer, IPlayerEffect
         {
             IPlayerEffect IPlayerEffect.HighPassOthers(float freq, float fadeTime) => this;
@@ -61,6 +66,7 @@ namespace Ami.BroAudio.Runtime
             IPlayerEffect IPlayerEffect.LowPassOthers(float freq, Fading fading) => this;
             IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, float fadeTime) => this;
             IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, Fading fading) => this;
-        }
+        } 
+#endif
     }
 }

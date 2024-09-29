@@ -92,7 +92,13 @@ namespace Ami.BroAudio.Editor
 
         public Color GetSpectrumColor(int index)
         {
-            if(SpectrumBandColors != null && index >= 0 && index < SpectrumBandColors.Count)
+            if(SpectrumBandColors == null || SpectrumBandColors.Count == 0)
+            {
+                CreateDefaultSpectrumColors();
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+
+            if(index >= 0 && index < SpectrumBandColors.Count)
             {
                 return SpectrumBandColors[index];
             }

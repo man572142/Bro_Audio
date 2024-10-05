@@ -18,7 +18,7 @@ namespace Ami.BroAudio
 			{
 				return 0;
 			}
-			else if (audioType == BroAudioType.All)
+			else if (audioType == BroAudioType.All || (int)audioType < 0)
 			{
 				return int.MaxValue;
 			}

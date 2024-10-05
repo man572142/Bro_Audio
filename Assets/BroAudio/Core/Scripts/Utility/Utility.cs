@@ -1,13 +1,12 @@
 using UnityEngine;
 using Ami.Extension;
-using Ami.BroAudio.Tools;
-using static Ami.Extension.AudioConstant;
 
 namespace Ami.BroAudio
 {
     public static partial class Utility
     {
         public const string LogTitle = "<b><color=#F3E9D7>[BroAudio] </color></b>";
+        public const int UnityEverythingFlag = -1;
 
         #region Efficient HasFlag
         // faster than Enum.HasFlag, could be used in runtime.
@@ -21,6 +20,15 @@ namespace Ami.BroAudio
             return ((int)flags & (int)targetFlag) != 0;
         }
         #endregion
+
+        public static BroAudioType ConvertEverything(this BroAudioType audioType)
+        {
+            if((int)audioType == UnityEverythingFlag)
+            {
+                return BroAudioType.All;
+            }
+            return audioType;
+        }
 
         public static int GetSample(int sampleRate, float seconds)
         {

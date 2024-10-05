@@ -37,14 +37,14 @@ namespace Ami.BroAudio
         /// Stop playing all audio that match the given audio type
         /// </summary>
         public static void Stop(BroAudioType audioType) 
-            => SoundManager.Instance.Stop(audioType);
+            => SoundManager.Instance.Stop(audioType.ConvertEverything());
 
         /// <summary>
         /// Stop playing all audio that match the given audio type
         /// </summary>
         /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
         public static void Stop(BroAudioType audioType,float fadeOut)
-            => SoundManager.Instance.Stop(audioType, fadeOut);
+            => SoundManager.Instance.Stop(audioType.ConvertEverything(), fadeOut);
 
         /// <summary>
         /// Stop playing an audio
@@ -103,7 +103,7 @@ namespace Ami.BroAudio
         /// <param name="vol">Accepts values from 0 to 10, default is 1</param>
         /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
         public static void SetVolume(BroAudioType audioType, float vol, float fadeTime = BroAdvice.FadeTime_Immediate) 
-            => SoundManager.Instance.SetVolume(vol, audioType, fadeTime);
+            => SoundManager.Instance.SetVolume(vol, audioType.ConvertEverything(), fadeTime);
 
         /// <summary>
         /// Set the volume of an audio
@@ -134,7 +134,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="pitch">values between -3 to 3, default is 1</param>
         public static void SetPitch(float pitch, BroAudioType audioType)
-            => SoundManager.Instance.SetPitch(pitch, audioType, BroAdvice.FadeTime_Immediate);
+            => SoundManager.Instance.SetPitch(pitch, audioType.ConvertEverything(), BroAdvice.FadeTime_Immediate);
 
         /// <summary>
         /// Set all audio's pitch
@@ -148,7 +148,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="pitch">values between -3 to 3, default is 1</param>
         public static void SetPitch(float pitch, BroAudioType audioType, float fadeTime)
-            => SoundManager.Instance.SetPitch(pitch, audioType, fadeTime);
+            => SoundManager.Instance.SetPitch(pitch, audioType.ConvertEverything(), fadeTime);
         #endregion
 
         #region Reset MultiClips Data
@@ -185,7 +185,7 @@ namespace Ami.BroAudio
         /// Set effect for all audio that mathch the given audio type
         /// </summary>
         public static IAutoResetWaitable SetEffect(Effect effect, BroAudioType audioType)
-            => SoundManager.Instance.SetEffect(audioType,effect);
+            => SoundManager.Instance.SetEffect(audioType.ConvertEverything(),effect);
 #endregion
 #endif
 	}

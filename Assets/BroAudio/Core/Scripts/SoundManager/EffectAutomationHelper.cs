@@ -298,7 +298,7 @@ namespace Ami.BroAudio.Runtime
                 case EffectType.Volume:
                     if(effect.IsDominator)
                     {
-                        return BroName.MainTrackName;
+                        return BroName.MainDominatedTrackName;
                     }
                     else
                     {

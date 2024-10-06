@@ -261,9 +261,14 @@ namespace Ami.BroAudio.Editor
 			Rect sliderRect = new Rect(rect) { width = (remainWidth * (1 - ObjectPickerRatio)) - Gap, x = clipRect.xMax + Gap};
 
 			DrawPlayClipButton();
-			DrawObjectPicker();
-			DrawVolumeSlider();
-			DrawMulticlipsValue();
+            bool isSingleMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex == MulticlipsPlayMode.Single;
+            EditorGUI.BeginDisabledGroup(isSingleMode && index > 0);
+            {
+                DrawObjectPicker();
+                DrawVolumeSlider();
+                DrawMulticlipsValue();
+            }
+            EditorGUI.EndDisabledGroup();
 
 			void DrawObjectPicker()
 			{

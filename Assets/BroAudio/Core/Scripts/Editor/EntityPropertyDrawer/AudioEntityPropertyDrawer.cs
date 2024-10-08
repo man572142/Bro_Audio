@@ -63,6 +63,7 @@ namespace Ami.BroAudio.Editor
         private const float PreviewPrettinessOffsetY = 7f; // for prettiness
         private const float FoldoutArrowWidth = 15f;
         private const float MaxTextFieldWidth = 300f;
+        private const string AddressableCleanUpDialogTitle = "References Cleanup Confirmation";
 
         private readonly float[] _headerRatios = new float[] { 0.55f, 0.2f, 0.25f };
         private readonly GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume),"The playback volume of this clip");
@@ -173,8 +174,8 @@ namespace Ami.BroAudio.Editor
             audioTypeRect.x += gap * 0.5f;
 
             EditorGUI.BeginChangeCheck();
-            property.isExpanded = EditorGUI.Foldout(nameRect, property.isExpanded, property.isExpanded? string.Empty : nameProp.stringValue);
-            if(EditorGUI.EndChangeCheck() && Event.current.alt)
+            property.isExpanded = EditorGUI.Foldout(nameRect, property.isExpanded, property.isExpanded ? string.Empty : nameProp.stringValue);
+            if (EditorGUI.EndChangeCheck() && Event.current.alt)
             {
                 OnExpandAll?.Invoke(property.isExpanded);
             }
@@ -192,8 +193,8 @@ namespace Ami.BroAudio.Editor
             _clipPropHelper.DrawDraggableHiddenButton(data.HiddenButtonRects, setting);
 
             Rect tabViewRect = GetRectAndIterateLine(position).SetHeight(GetTabWindowHeight());
-            data.SelectedTab = (Tab)DrawButtonTabsMixedView(tabViewRect, property,(int)data.SelectedTab, TabLabelHeight, _tabViewDatas);
-            
+            data.SelectedTab = (Tab)DrawButtonTabsMixedView(tabViewRect, property, (int)data.SelectedTab, TabLabelHeight, _tabViewDatas);
+
             DrawEmptyLine(1);
 
             position.x += IndentInPixel;
@@ -202,6 +203,10 @@ namespace Ami.BroAudio.Editor
             switch (data.SelectedTab)
             {
                 case Tab.Clips:
+#if PACKAGE_ADDRESSABLES
+                    Offset -= SingleLineSpace * 0.5f;
+                    DrawUseAddressablesToggle(position, property, data.Clips);
+#endif
                     DrawReorderableClipsList(position, data.Clips, OnClipChanged);
                     SerializedProperty currSelectClip = data.Clips.CurrentSelectedClip;
                     if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
@@ -211,7 +216,7 @@ namespace Ami.BroAudio.Editor
                         if (setting.CanDraw(DrawedProperty.ClipPreview) && audioClip != null && Event.current.type != EventType.Layout)
                         {
                             DrawEmptyLine(1);
-                            Rect previewRect = GetNextLineRect(position);  
+                            Rect previewRect = GetNextLineRect(position);
                             previewRect.y -= PreviewPrettinessOffsetY;
                             previewRect.height = ClipPreviewHeight;
                             _clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, volume, currSelectClip.propertyPath, data.Clips.SetPlayingClip, DrawPlaybackValuePeeking);
@@ -238,7 +243,7 @@ namespace Ami.BroAudio.Editor
                 if (!setting.CanDraw(transportType.GetDrawedProperty()))
                 {
                     data.UpdateHiddenButtonRect(transportType, dragPointRect);
-                    if(dragPointRect.Contains(Event.current.mousePosition))
+                    if (dragPointRect.Contains(Event.current.mousePosition))
                     {
                         Rect rect = new Rect(dragPointRect) { width = 50f };
                         rect.y -= dragPointRect.height;
@@ -246,6 +251,69 @@ namespace Ami.BroAudio.Editor
                         DrawValuePeeking(rect, transport.GetValue(transportType).ToString("0.000"));
                     }
                 }
+            }
+        }
+
+        private void DrawUseAddressablesToggle(Rect position, SerializedProperty property, ReorderableClips clips)
+        {
+            SerializedProperty useAddressablesProp = property.FindPropertyRelative(nameof(AudioEntity.UseAddressables));
+            Rect rect = GetRectAndIterateLine(position);
+            rect.width = 100f;
+            rect.x = position.xMax - rect.width;
+            EditorGUI.BeginChangeCheck();
+            useAddressablesProp.boolValue = EditorGUI.ToggleLeft(rect, "Addressables", useAddressablesProp.boolValue);
+            if(EditorGUI.EndChangeCheck())
+            {
+                ReferenceType refType = useAddressablesProp.boolValue ? ReferenceType.Direct : ReferenceType.Addressalbes;
+                string instruction = _instruction.GetText(Instruction.LibraryManager_AddressableReferencesCleanup);
+                string targetTypeName = GetTargetTypeName(refType);
+                string message = string.Format(instruction, targetTypeName);
+                bool cleanDirectRef = clips.HasAnyAudioClip && useAddressablesProp.boolValue;
+                bool cleanAddressable = clips.HasAnyAddressableClip && !useAddressablesProp.boolValue;
+                if ((cleanDirectRef || cleanAddressable))
+                {
+                    var alwaysAsk = EditorSetting.ReferenceCleanupOption.AlwaysAsk;
+                    int decision = 0;
+                    if((cleanDirectRef && EditorSetting.DirectReferenceOption == alwaysAsk) || 
+                        (cleanAddressable && EditorSetting.AddressableOption == alwaysAsk))
+                    {
+                        decision = EditorUtility.DisplayDialogComplex(AddressableCleanUpDialogTitle, message, "Yes", "No", $"Yes, don't ask again when it's {targetTypeName}");
+                    }
+                    switch(decision)
+                    {
+                        case 0: // Yes
+                            clips.CleanupAllReferences(refType);
+                            break;
+                        case 1: // No
+                            break; 
+                        case 2: // Yes, never ask
+                            SetNeverAsk(refType);
+                            clips.CleanupAllReferences(refType);
+                            break;
+                    }
+                }
+            }
+
+            string GetTargetTypeName(ReferenceType referenceType) => referenceType switch
+            {
+                ReferenceType.Direct => "[Audio Clip Direct References]",
+                ReferenceType.Addressalbes => "[Addressable Asset References]",
+                _ => throw new NotImplementedException(),
+            };
+
+            void SetNeverAsk(ReferenceType referenceType)
+            {
+                var alwaysRemove = EditorSetting.ReferenceCleanupOption.Remove;
+                switch (referenceType)
+                {
+                    case ReferenceType.Direct:
+                        EditorSetting.DirectReferenceOption = alwaysRemove;
+                        break;
+                    case ReferenceType.Addressalbes:
+                        EditorSetting.AddressableOption = alwaysRemove;
+                        break;
+                }
+                EditorUtility.SetDirty(EditorSetting);
             }
         }
 
@@ -258,7 +326,6 @@ namespace Ami.BroAudio.Editor
                 _entityDataDict[property.propertyPath] = data;
             }
         }
-
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
@@ -286,6 +353,9 @@ namespace Ami.BroAudio.Editor
                 height += data.Clips.Height;
                 height += isShowClipProp ? GetAdditionalClipPropertiesHeight(property, setting) : 0f;
                 height += isShowClipProp && setting.CanDraw(DrawedProperty.ClipPreview) ? ClipPreviewHeight + ClipPreviewPadding : 0f;
+#if PACKAGE_ADDRESSABLES
+                height += SingleLineSpace * 0.5f; 
+#endif
             }
             return height;
         }
@@ -364,7 +434,7 @@ namespace Ami.BroAudio.Editor
             Rect rect = GetNextLineRect(position);
             reorderableClips.DrawReorderableList(rect);
             Offset += reorderableClips.Height;
-            reorderableClips.OnAudioClipChanged = onClipChanged;
+            reorderableClips.OnClipChanged = onClipChanged;
             return reorderableClips;
         }
 

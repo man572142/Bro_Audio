@@ -12,6 +12,9 @@ namespace Ami.BroAudio.Data
         [SerializeField] private MulticlipsPlayMode MulticlipsPlayMode = MulticlipsPlayMode.Single;
 
         public BroAudioClip[] Clips;
+#if PACKAGE_ADDRESSABLES
+        public bool UseAddressables = false;
+#endif
 
         [field: SerializeField] public float MasterVolume { get; private set; }
         [field: SerializeField] public bool Loop { get; private set; }

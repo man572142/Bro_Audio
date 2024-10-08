@@ -8,11 +8,17 @@ using System;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using Ami.BroAudio.Tools;
 
+#if PACKAGE_ADDRESSABLES
+using UnityEngine.AddressableAssets;
+using UnityEditor.AddressableAssets.GUI;
+using System.Reflection; 
+#endif
+
 namespace Ami.BroAudio.Editor
 {
 	public class ReorderableClips
 	{
-		public Action<string> OnAudioClipChanged;
+		public Action<string> OnClipChanged;
 
 		public const MulticlipsPlayMode DefaultMulticlipsMode = MulticlipsPlayMode.Random;
 		private const float Gap = 5f;
@@ -25,6 +31,7 @@ namespace Ami.BroAudio.Editor
 		private ReorderableList _reorderableList;
 		private SerializedProperty _entityProp;
 		private SerializedProperty _playModeProp;
+        private SerializedProperty _useAddressablesProp;
 		private int _currSelectedClipIndex = -1;
 		private SerializedProperty _currSelectedClip;
 		private Rect _previewRect = default;
@@ -38,6 +45,8 @@ namespace Ami.BroAudio.Editor
 		public bool IsPlaying => _currentPlayingClipPath != null;
 		public bool HasValidClipSelected => CurrentSelectedClip != null 
 			&& CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip _);
+        public bool HasAnyAudioClip { get; private set; }
+        public bool HasAnyAddressableClip { get; private set; }
 
         public SerializedProperty CurrentSelectedClip
 		{
@@ -72,7 +81,10 @@ namespace Ami.BroAudio.Editor
 		{
 			_entityProp = entityProperty;
 			_playModeProp = entityProperty.FindPropertyRelative(AudioEntity.EditorPropertyName.MulticlipsPlayMode);
-			_reorderableList = CreateReorderabeList(entityProperty);
+#if PACKAGE_ADDRESSABLES
+            _useAddressablesProp = entityProperty.FindPropertyRelative(nameof(AudioEntity.UseAddressables)); 
+#endif
+            _reorderableList = CreateReorderabeList(entityProperty);
 			UpdatePlayMode();
 
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
@@ -103,7 +115,46 @@ namespace Ami.BroAudio.Editor
             _currentPlayingClipPath = clipPath;
         }
 
-		private void OnUndoRedoPerformed()
+#if PACKAGE_ADDRESSABLES
+        public void CleanupAllReferences(ReferenceType referenceType)
+        {
+            var property = _reorderableList.serializedProperty;
+            for (int i = 0; i < _reorderableList.count; i++)
+            {
+                var clipProp = property.GetArrayElementAtIndex(i);
+                switch (referenceType)
+                {
+                    case ReferenceType.Direct:
+                        clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = null;
+                        break;
+                    case ReferenceType.Addressalbes:
+                        var assetRefProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClipAssetReference));
+                        int targetDepth = assetRefProp.depth + 1;
+                        while(assetRefProp.NextVisible(true) && assetRefProp.depth == targetDepth)
+                        {
+                            if(assetRefProp.propertyType == SerializedPropertyType.String)
+                            {
+                                assetRefProp.stringValue = string.Empty;
+                            }
+                        }
+                        break;
+                }
+            }
+
+            switch (referenceType)
+            {
+                case ReferenceType.Direct:
+                    HasAnyAudioClip = false;
+                    break;
+                case ReferenceType.Addressalbes:
+                    HasAnyAddressableClip = false;
+                    break;
+            }
+            property.serializedObject.ApplyModifiedProperties();
+        }
+#endif
+
+        private void OnUndoRedoPerformed()
 		{
 			_reorderableList.serializedProperty.serializedObject.Update();
 			int count = _reorderableList.count;
@@ -123,13 +174,15 @@ namespace Ami.BroAudio.Editor
 		private ReorderableList CreateReorderabeList(SerializedProperty entityProperty)
 		{
 			SerializedProperty clipsProp = entityProperty.FindPropertyRelative(nameof(AudioEntity.Clips));
-			var list = new ReorderableList(clipsProp.serializedObject, clipsProp);
-			list.drawHeaderCallback = OnDrawHeader;
-			list.drawElementCallback = OnDrawElement;
-			list.drawFooterCallback = OnDrawFooter;
-			list.onAddCallback = OnAdd;
-			list.onRemoveCallback = OnRemove;
-			list.onSelectCallback = OnSelect;
+			var list = new ReorderableList(clipsProp.serializedObject, clipsProp) 
+            {
+                drawHeaderCallback = OnDrawHeader,
+                drawElementCallback = OnDrawElement,
+                drawFooterCallback = OnDrawFooter,
+                onAddCallback = OnAdd,
+                onRemoveCallback = OnRemove,
+                onSelectCallback = OnSelect,
+            };
 			return list;
 		}
 
@@ -250,9 +303,14 @@ namespace Ami.BroAudio.Editor
 		{
 			SerializedProperty clipProp = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
 			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
-			SerializedProperty volProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
+            SerializedProperty assetReferenceProp = null;
+#if PACKAGE_ADDRESSABLES
+            assetReferenceProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClipAssetReference));
+#endif
+            SerializedProperty volProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
+            bool isUsingAddressable = _useAddressablesProp != null && _useAddressablesProp.boolValue && assetReferenceProp != null;
 
-			Rect buttonRect = new Rect(rect) { width = PlayButtonSize.x, height = PlayButtonSize.y };
+            Rect buttonRect = new Rect(rect) { width = PlayButtonSize.x, height = PlayButtonSize.y };
             buttonRect.y += (_reorderableList.elementHeight - PlayButtonSize.y) * 0.5f;
 			Rect valueRect = new Rect(rect) { width = MulticlipsValueLabelWidth, x = rect.xMax - MulticlipsValueLabelWidth };
 
@@ -273,22 +331,34 @@ namespace Ami.BroAudio.Editor
 			void DrawObjectPicker()
 			{
 				EditorGUI.BeginChangeCheck();
-				EditorGUI.PropertyField(clipRect, audioClipProp, GUIContent.none);
+                if(isUsingAddressable)
+                {
+                    EditorGUI.PropertyField(clipRect, assetReferenceProp, GUIContent.none);
+                }
+                else
+                {
+                    EditorGUI.PropertyField(clipRect, audioClipProp, GUIContent.none);
+                }
+				
 				if (EditorGUI.EndChangeCheck())
 				{
-					ResetBroAudioClipPlaybackSetting(clipProp);
-					OnAudioClipChanged?.Invoke(clipProp.propertyPath);
-				}
+					ResetBroClipPlaybackSetting(clipProp);
+					OnClipChanged?.Invoke(clipProp.propertyPath);
+                    if (!TryGetAudioClip(out AudioClip audioClip, out ReferenceType referenceType))
+                    {
+                        SetHasAny(false, referenceType);
+                    }
+                }
 			}
 
-			void DrawPlayClipButton()
+            void DrawPlayClipButton()
 			{
-                AudioClip audioClip = audioClipProp.objectReferenceValue as AudioClip;
-                if (audioClip == null)
-				{
-					return;
-				}
+                if(!TryGetAudioClip(out AudioClip audioClip, out ReferenceType referenceType))
+                {
+                    return;
+                }
 
+                SetHasAny(true, referenceType);
                 bool isPlaying = string.Equals(_currentPlayingClipPath, clipProp.propertyPath);
                 var image = GetPlaybackButtonIcon(isPlaying).image;
                 GUIContent buttonGUIContent = new GUIContent(image, EditorPlayAudioClip.IgnoreSettingTooltip);
@@ -303,6 +373,26 @@ namespace Ami.BroAudio.Editor
 						PreviewAudio(audioClip);
                     }
                 }
+            }
+
+            bool TryGetAudioClip(out AudioClip audioClip, out ReferenceType referenceType)
+            {
+                audioClip = null;
+                referenceType = ReferenceType.Direct;
+                if(isUsingAddressable)
+                {
+                    referenceType = ReferenceType.Addressalbes;
+                    string guid = assetReferenceProp.FindPropertyRelative("m_AssetGUID").stringValue;
+                    if(!string.IsNullOrEmpty(guid))
+                    {
+                        audioClip = AssetDatabase.LoadAssetAtPath<AudioClip>(AssetDatabase.GUIDToAssetPath(guid));
+                    }
+                }
+                else
+                {
+                    audioClip = audioClipProp.objectReferenceValue as AudioClip;
+                }
+                return audioClip != null;
             }
 
 			void PreviewAudio(AudioClip audioClip)
@@ -362,7 +452,7 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void OnDrawFooter(Rect rect)
+        private void OnDrawFooter(Rect rect)
 		{
 			ReorderableList.defaultBehaviours.DrawFooter(rect, _reorderableList);
 			if (CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
@@ -388,14 +478,27 @@ namespace Ami.BroAudio.Editor
 			EditorPlayAudioClip.Instance.StopAllClips();
 		}
 
-		#endregion
+        private void SetHasAny(bool state, ReferenceType type)
+        {
+            switch (type)
+            {
+                case ReferenceType.Direct:
+                    HasAnyAudioClip = state;
+                    break;
+                case ReferenceType.Addressalbes:
+                    HasAnyAddressableClip = state;
+                    break;
+            }
+        }
 
-		private SerializedProperty AddClip(ReorderableList list)
+        #endregion
+
+        private SerializedProperty AddClip(ReorderableList list)
         {
             ReorderableList.defaultBehaviours.DoAddButton(list);
             var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
             ResetBroAudioClipSerializedProperties(clipProp);
 			return clipProp;
         }
-	} 
+    }
 }

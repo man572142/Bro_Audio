@@ -14,10 +14,10 @@ namespace Ami.BroAudio.Editor
 		{
 			property.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = null;
 			property.FindPropertyRelative(nameof(BroAudioClip.Weight)).intValue = 0;
-			ResetBroAudioClipPlaybackSetting(property);
+			ResetBroClipPlaybackSetting(property);
 		}
 
-		public static void ResetBroAudioClipPlaybackSetting(SerializedProperty property)
+		public static void ResetBroClipPlaybackSetting(SerializedProperty property)
 		{
 			property.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = AudioConstant.FullVolume;
 			property.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue = 0f;

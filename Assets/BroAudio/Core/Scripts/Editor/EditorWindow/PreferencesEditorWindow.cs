@@ -18,14 +18,6 @@ namespace Ami.BroAudio.Editor.Setting
 {
     public class PreferencesEditorWindow : MiEditorWindow
     {
-        public enum OpenMessage
-        {
-            None,
-            Welcome,
-            RuntimeSettingFileMissing,
-            EditorSettingFileMissing,
-        }
-
         public enum Tab { Audio, GUI, Miscellaneous,}
 
         public const float Gap = 50f;
@@ -501,9 +493,13 @@ namespace Ami.BroAudio.Editor.Setting
 
         private void DrawMiscellaneousSetting(Rect drawPosition)
         {
-            DrawEmptyLine(1);
             DrawAssetOutputPath(drawPosition);
             DrawEmptyLine(1);
+
+#if PACKAGE_ADDRESSABLES
+            DrawAddressableNeverAskOptions(drawPosition);
+            DrawEmptyLine(1);
+#endif
 
             if (Button(_dominatorTrackGUIContent))
             {
@@ -531,6 +527,26 @@ namespace Ami.BroAudio.Editor.Setting
                 return GUI.Button(buttonRect, label);
             }
         }
+
+#if PACKAGE_ADDRESSABLES
+        private void DrawAddressableNeverAskOptions(Rect drawPosition)
+        {
+            drawPosition.xMax -= Gap;
+            EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Addressable/Direct References Cleanup".ToWhiteBold(), GUIStyleHelper.RichText);
+            using (new EditorGUI.IndentLevelScope())
+            {
+                DrawOption(GetRectAndIterateLine(drawPosition), "Direct References", ref EditorSetting.DirectReferenceOption);
+                DrawOption(GetRectAndIterateLine(drawPosition), "Addressable References", ref EditorSetting.AddressableOption);
+            }
+
+            void DrawOption(Rect rect, string label, ref EditorSetting.ReferenceCleanupOption option)
+            {
+                SplitRectHorizontal(rect, 0.4f, 10f, out Rect labelRect, out Rect popupRect);
+                EditorGUI.LabelField(labelRect, label);
+                option = (EditorSetting.ReferenceCleanupOption)EditorGUI.EnumPopup(popupRect, option);
+            }
+        } 
+#endif
 
         private void DrawAssetOutputPath(Rect drawPosition)
         {

@@ -51,6 +51,7 @@
         LibraryManager_NameTempAssetHint,
         LibraryManager_AssetAudioTypeNotSet,
         LibraryManager_AssetUnnamed,
+        LibraryManager_AddressableReferencesCleanup,
 
         // Sound Volume
         SoundVolume_ApplyOnEnable = 400,

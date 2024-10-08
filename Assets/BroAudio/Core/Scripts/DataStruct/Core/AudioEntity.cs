@@ -14,6 +14,9 @@ namespace Ami.BroAudio.Data
         [SerializeField] private PlaybackGroup _group;
 
         public BroAudioClip[] Clips;
+#if PACKAGE_ADDRESSABLES
+        public bool UseAddressables = false;
+#endif
 
         [field: SerializeField] public float MasterVolume { get; private set; }
         [field: SerializeField] public bool Loop { get; private set; }

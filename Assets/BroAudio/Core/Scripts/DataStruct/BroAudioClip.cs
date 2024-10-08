@@ -1,4 +1,7 @@
 using UnityEngine;
+#if PACKAGE_ADDRESSABLES
+using UnityEngine.AddressableAssets;
+#endif
 
 namespace Ami.BroAudio.Data
 {
@@ -6,6 +9,9 @@ namespace Ami.BroAudio.Data
 	public class BroAudioClip : IBroAudioClip
 	{
 		public AudioClip AudioClip;
+#if PACKAGE_ADDRESSABLES
+        public AssetReferenceT<AudioClip> AudioClipAssetReference;
+#endif
 		public float Volume;
 		public float Delay;
 		public float StartPosition;

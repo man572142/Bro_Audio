@@ -2,7 +2,9 @@
     "name": "BroAudioEditor",
     "rootNamespace": "",
     "references": [
-        "GUID:111d4e39aeddad44898002abada9c174"
+        "BroAudio",
+        "Unity.Addressables",
+        "Unity.Addressables.Editor"
     ],
     "includePlatforms": [
         "Editor"
@@ -13,6 +15,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "",
+            "define": "PACKAGE_ADDRESSABLES"
+        }
+    ],
     "noEngineReferences": false
 }

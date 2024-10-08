@@ -10,6 +10,11 @@ namespace Ami.BroAudio.Editor
 #endif
 	public class EditorSetting : ScriptableObject
 	{
+        public enum ReferenceCleanupOption
+        {
+            AlwaysAsk, Remove, Keep,
+        }
+
 		[System.Serializable]
 		public struct AudioTypeSetting
 		{
@@ -32,6 +37,8 @@ namespace Ami.BroAudio.Editor
         public bool ShowAudioTypeOnSoundID;
 		public bool ShowVUColorOnVolumeSlider;
 		public bool ShowMasterVolumeOnClipListHeader;
+        public ReferenceCleanupOption DirectReferenceOption;
+        public ReferenceCleanupOption AddressableOption;
 
 		public List<AudioTypeSetting> AudioTypeSettings;
         public List<Color> SpectrumBandColors; 

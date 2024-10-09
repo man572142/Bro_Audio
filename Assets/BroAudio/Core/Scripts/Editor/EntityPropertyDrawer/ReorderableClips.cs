@@ -11,6 +11,8 @@ using Ami.BroAudio.Tools;
 #if PACKAGE_ADDRESSABLES
 using UnityEngine.AddressableAssets;
 using UnityEditor.AddressableAssets.GUI;
+using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings;
 using System.Reflection; 
 #endif
 
@@ -151,6 +153,52 @@ namespace Ami.BroAudio.Editor
                     break;
             }
             property.serializedObject.ApplyModifiedProperties();
+        }
+
+        public void ConvertReferences(ReferenceType referenceType, bool needSetAddressable = true)
+        {
+            var property = _reorderableList.serializedProperty;
+            for (int i = 0; i < _reorderableList.count; i++)
+            {
+                var clipProp = property.GetArrayElementAtIndex(i);
+                var directRefProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
+                var assetRefGuidProp = clipProp
+                    .FindPropertyRelative(nameof(BroAudioClip.AudioClipAssetReference))
+                    .FindPropertyRelative("m_AssetGUID");
+                string path;
+                switch (referenceType)
+                {
+                    case ReferenceType.Direct:
+                        if (directRefProp.objectReferenceValue != null)
+                        {
+                            path = AssetDatabase.GetAssetPath(directRefProp.objectReferenceValue);
+                            string guid = AssetDatabase.AssetPathToGUID(path);
+                            assetRefGuidProp.stringValue = guid;
+                            directRefProp.objectReferenceValue = null;
+                            if(needSetAddressable)
+                            {
+                                var settings = GetAddressableSettings();
+                                settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
+                            }
+                        }
+                        break;
+                    case ReferenceType.Addressalbes:
+                        if(!string.IsNullOrEmpty(assetRefGuidProp.stringValue))
+                        {
+                            path = AssetDatabase.GUIDToAssetPath(assetRefGuidProp.stringValue);
+                            var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                            directRefProp.objectReferenceValue = obj;
+                            if(needSetAddressable)
+                            {
+                                GetAddressableSettings().RemoveAssetEntry(assetRefGuidProp.stringValue);
+                            }
+                            assetRefGuidProp.stringValue = string.Empty;
+                        }
+                        break;
+                }
+            }
+
+            AddressableAssetSettings GetAddressableSettings() => AddressableAssetSettingsDefaultObject.Settings;
         }
 #endif
 

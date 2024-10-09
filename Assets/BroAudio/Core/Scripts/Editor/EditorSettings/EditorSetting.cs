@@ -10,9 +10,13 @@ namespace Ami.BroAudio.Editor
 #endif
 	public class EditorSetting : ScriptableObject
 	{
-        public enum ReferenceCleanupOption
+        public enum ReferenceConversionDecision
         {
-            AlwaysAsk, Remove, Keep,
+            AlwaysAsk,
+            OnlyConvert,
+            ConvertAndSetAddressables,
+            OnlyRemoveReference,
+            DoNothing,
         }
 
 		[System.Serializable]
@@ -37,8 +41,8 @@ namespace Ami.BroAudio.Editor
         public bool ShowAudioTypeOnSoundID;
 		public bool ShowVUColorOnVolumeSlider;
 		public bool ShowMasterVolumeOnClipListHeader;
-        public ReferenceCleanupOption DirectReferenceOption;
-        public ReferenceCleanupOption AddressableOption;
+        public ReferenceConversionDecision DirectReferenceDecision;
+        public ReferenceConversionDecision AddressableDecision;
 
 		public List<AudioTypeSetting> AudioTypeSettings;
         public List<Color> SpectrumBandColors; 

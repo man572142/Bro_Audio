@@ -209,7 +209,7 @@ namespace Ami.BroAudio.Editor
 #endif
                     DrawReorderableClipsList(position, data.Clips, OnClipChanged);
                     SerializedProperty currSelectClip = data.Clips.CurrentSelectedClip;
-                    if (currSelectClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
+                    if (data.Clips.TryGetSelectedAudioClip(out AudioClip audioClip))
                     {
                         DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport, out float volume);
                         DrawAdditionalClipProperties(position, currSelectClip, setting);
@@ -255,7 +255,7 @@ namespace Ami.BroAudio.Editor
         }
 
 #if PACKAGE_ADDRESSABLES
-        private void DrawUseAddressablesToggle(Rect position, SerializedProperty property, ReorderableClips clips)
+        private bool DrawUseAddressablesToggle(Rect position, SerializedProperty property, ReorderableClips clips)
         {
             SerializedProperty useAddressablesProp = property.FindPropertyRelative(nameof(AudioEntity.UseAddressables));
             Rect rect = GetRectAndIterateLine(position);
@@ -268,6 +268,7 @@ namespace Ami.BroAudio.Editor
                 EditorPlayAudioClip.Instance.StopAllClips();
                 SwitchAddressable(useAddressablesProp.boolValue ? ReferenceType.Direct : ReferenceType.Addressalbes, clips);
             }
+            return useAddressablesProp.boolValue;
         }
 
         private void SwitchAddressable(ReferenceType currentType, ReorderableClips clips)
@@ -393,7 +394,7 @@ namespace Ami.BroAudio.Editor
             float height = 0f;
             if (_entityDataDict.TryGetValue(property.propertyPath, out var data))
             {
-                bool isShowClipProp = data.Clips.HasValidClipSelected;
+                bool isShowClipProp = data.Clips.TryGetSelectedAudioClip(out _);
 
                 height += data.Clips.Height;
                 height += isShowClipProp ? GetAdditionalClipPropertiesHeight(property, setting) : 0f;
@@ -434,7 +435,7 @@ namespace Ami.BroAudio.Editor
 
         private void DrawEntityPreviewButton(Rect rect, SerializedProperty property, EntityData data)
         {
-            if(!data.Clips.HasValidClipSelected)
+            if(!data.Clips.TryGetSelectedAudioClip(out _))
             {
                 return;
             }
@@ -547,7 +548,11 @@ namespace Ami.BroAudio.Editor
             {
                 onReplay = ReplayPreview;
             }
+#if PACKAGE_ADDRESSABLES
+            var clipData = new EditorPlayAudioClip.Data(clip, entity.UseAddressables) { Volume = volume };
+#else
             var clipData = new EditorPlayAudioClip.Data(clip) { Volume = volume };
+#endif
             EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, false, onReplay, pitch);
             EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip), entity.GetPitch());
             data.IsPreviewing = true;

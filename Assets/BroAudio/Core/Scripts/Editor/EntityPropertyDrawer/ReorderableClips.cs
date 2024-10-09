@@ -5,15 +5,13 @@ using Ami.Extension;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Editor.Setting;
 using System;
-using static Ami.BroAudio.Editor.BroEditorUtility;
 using Ami.BroAudio.Tools;
+using System.Collections.Generic;
+using static Ami.BroAudio.Editor.BroEditorUtility;
 
 #if PACKAGE_ADDRESSABLES
-using UnityEngine.AddressableAssets;
-using UnityEditor.AddressableAssets.GUI;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
-using System.Reflection; 
 #endif
 
 namespace Ami.BroAudio.Editor
@@ -39,14 +37,15 @@ namespace Ami.BroAudio.Editor
 		private Rect _previewRect = default;
 		private string _currentPlayingClipPath;
 		private GUIContent _weightGUIContent = new GUIContent("Weight", "Probability = Weight / Total Weight");
+#if PACKAGE_ADDRESSABLES
+        private List<AudioClip> _assetReferenceCachedClips = new List<AudioClip>();  
+#endif
 
         private Vector2 PlayButtonSize => new Vector2(30f, 20f);
         public bool IsMulticlips => _reorderableList.count > 1;
 		public float Height => _reorderableList.GetHeight();
 		public Rect PreviewRect => _previewRect;
 		public bool IsPlaying => _currentPlayingClipPath != null;
-		public bool HasValidClipSelected => CurrentSelectedClip != null 
-			&& CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip _);
         public bool HasAnyAudioClip { get; private set; }
         public bool HasAnyAddressableClip { get; private set; }
 
@@ -117,6 +116,26 @@ namespace Ami.BroAudio.Editor
             _currentPlayingClipPath = clipPath;
         }
 
+        public bool TryGetSelectedAudioClip(out AudioClip audioClip)
+        {
+            audioClip = null;
+            if (CurrentSelectedClip == null)
+            {
+                return false;
+            }
+
+#if PACKAGE_ADDRESSABLES
+            bool useAddressable = _entityProp.FindPropertyRelative(nameof(AudioEntity.UseAddressables)).boolValue;
+            int index = _reorderableList.index;
+            if (useAddressable && index >= 0 && index < _assetReferenceCachedClips.Count)
+            {
+                audioClip = _assetReferenceCachedClips[index];
+                return audioClip != null;
+            }
+#endif
+            return CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out audioClip);
+        }
+
 #if PACKAGE_ADDRESSABLES
         public void CleanupAllReferences(ReferenceType referenceType)
         {
@@ -164,7 +183,7 @@ namespace Ami.BroAudio.Editor
                 var directRefProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
                 var assetRefGuidProp = clipProp
                     .FindPropertyRelative(nameof(BroAudioClip.AudioClipAssetReference))
-                    .FindPropertyRelative("m_AssetGUID");
+                    .FindPropertyRelative(AssetReferenceGUIDFieldName);
                 string path;
                 switch (referenceType)
                 {
@@ -426,15 +445,24 @@ namespace Ami.BroAudio.Editor
             bool TryGetAudioClip(out AudioClip audioClip, out ReferenceType referenceType)
             {
                 audioClip = null;
-                referenceType = ReferenceType.Direct;
+                referenceType = isUsingAddressable ? ReferenceType.Addressalbes : ReferenceType.Direct;
                 if(isUsingAddressable)
                 {
-                    referenceType = ReferenceType.Addressalbes;
-                    string guid = assetReferenceProp.FindPropertyRelative("m_AssetGUID").stringValue;
-                    if(!string.IsNullOrEmpty(guid))
+                    while (index >= _assetReferenceCachedClips.Count)
                     {
-                        audioClip = AssetDatabase.LoadAssetAtPath<AudioClip>(AssetDatabase.GUIDToAssetPath(guid));
+                        _assetReferenceCachedClips.Add(null);
                     }
+
+                    audioClip = _assetReferenceCachedClips[index];
+                    if (audioClip == null)
+                    {
+                        string guid = assetReferenceProp.FindPropertyRelative(AssetReferenceGUIDFieldName).stringValue;
+                        if (!string.IsNullOrEmpty(guid))
+                        {
+                            audioClip = AssetDatabase.LoadAssetAtPath<AudioClip>(AssetDatabase.GUIDToAssetPath(guid));
+                        }
+                    }
+                    _assetReferenceCachedClips[index] = audioClip;
                 }
                 else
                 {
@@ -461,7 +489,6 @@ namespace Ami.BroAudio.Editor
 
                 _currentPlayingClipPath = clipProp.propertyPath;
                 EditorPlayAudioClip.Instance.OnFinished = () => _currentPlayingClipPath = null;
-
                 EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, previewClipGUI);
             }
 
@@ -503,7 +530,7 @@ namespace Ami.BroAudio.Editor
         private void OnDrawFooter(Rect rect)
 		{
 			ReorderableList.defaultBehaviours.DrawFooter(rect, _reorderableList);
-			if (CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out AudioClip audioClip))
+			if (TryGetSelectedAudioClip(out AudioClip audioClip))
 			{
 				EditorGUI.LabelField(rect, audioClip.name.SetColor(BroAudioGUISetting.ClipLabelColor).ToBold(), GUIStyleHelper.RichText);
 			}

@@ -26,6 +26,8 @@ namespace Ami.BroAudio.Editor
         private const float HighVolumeSnappingThreshold = 0.2f;
         private const string DbValueStringFormat = "0.##";
 
+        public const string AssetReferenceGUIDFieldName = "m_AssetGUID";
+
         public const int RoundedDigits = 4;
         public const float MinMaxSliderFieldWidth = 50f;
 

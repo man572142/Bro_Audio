@@ -97,7 +97,17 @@ MonoBehaviour:
   - Key: 308
     Value: Please name the temp asset
   - Key: 309
-    Value: Do you also want to remove all the {0} immediately?
+    Value: 'Do you want to convert the {0} and {1} addressables?
+
+
+      *For more
+      option, please check out Tools/BroAudio/Preferences - Misc'
+  - Key: 310
+    Value: "Set how would you like to handle with the current references when switching
+      the [Addressables] option in Library Manager.\n\n[Only Convert] \nConvert the
+      reference to the new type.\n\n[Convert And Set Addressables] \nConvert and
+      set the asset's addressables state.\n\n[Only Remove Reference] \nDon't convert,
+      only remove the current reference."
   - Key: 17
     Value: If enabled, all [Music] will be played as BGM and trigger a transtion
       from one the other automatically.

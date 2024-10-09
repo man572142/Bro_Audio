@@ -8,6 +8,7 @@ using Ami.BroAudio.Data;
 using System;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.BroAudio.Editor.BroEditorUtility;
+using Decision = Ami.BroAudio.Editor.EditorSetting.ReferenceConversionDecision;
 
 namespace Ami.BroAudio.Editor
 {
@@ -63,7 +64,6 @@ namespace Ami.BroAudio.Editor
         private const float PreviewPrettinessOffsetY = 7f; // for prettiness
         private const float FoldoutArrowWidth = 15f;
         private const float MaxTextFieldWidth = 300f;
-        private const string AddressableCleanUpDialogTitle = "References Cleanup Confirmation";
 
         private readonly float[] _headerRatios = new float[] { 0.55f, 0.2f, 0.25f };
         private readonly GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume),"The playback volume of this clip");
@@ -254,6 +254,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
+#if PACKAGE_ADDRESSABLES
         private void DrawUseAddressablesToggle(Rect position, SerializedProperty property, ReorderableClips clips)
         {
             SerializedProperty useAddressablesProp = property.FindPropertyRelative(nameof(AudioEntity.UseAddressables));
@@ -262,61 +263,105 @@ namespace Ami.BroAudio.Editor
             rect.x = position.xMax - rect.width;
             EditorGUI.BeginChangeCheck();
             useAddressablesProp.boolValue = EditorGUI.ToggleLeft(rect, "Addressables", useAddressablesProp.boolValue);
-            if(EditorGUI.EndChangeCheck())
+            if (EditorGUI.EndChangeCheck())
             {
-                ReferenceType refType = useAddressablesProp.boolValue ? ReferenceType.Direct : ReferenceType.Addressalbes;
-                string instruction = _instruction.GetText(Instruction.LibraryManager_AddressableReferencesCleanup);
-                string targetTypeName = GetTargetTypeName(refType);
-                string message = string.Format(instruction, targetTypeName);
-                bool cleanDirectRef = clips.HasAnyAudioClip && useAddressablesProp.boolValue;
-                bool cleanAddressable = clips.HasAnyAddressableClip && !useAddressablesProp.boolValue;
-                if ((cleanDirectRef || cleanAddressable))
+                EditorPlayAudioClip.Instance.StopAllClips();
+                SwitchAddressable(useAddressablesProp.boolValue ? ReferenceType.Direct : ReferenceType.Addressalbes, clips);
+            }
+        }
+
+        private void SwitchAddressable(ReferenceType currentType, ReorderableClips clips)
+        {
+            bool hasAny = false;
+            Decision decision = default;
+            switch (currentType)
+            {
+                case ReferenceType.Direct:
+                    hasAny = clips.HasAnyAudioClip;
+                    decision = EditorSetting.DirectReferenceDecision;
+                    break;
+                case ReferenceType.Addressalbes:
+                    hasAny = clips.HasAnyAddressableClip;
+                    decision = EditorSetting.AddressableDecision;
+                    break;
+            }
+
+            if (!hasAny)
+            {
+                return;
+            }
+
+            switch (decision)
+            {
+                case Decision.AlwaysAsk:
+                    ShowDialogAndHandleResult(clips, currentType);
+                    break;
+                case Decision.OnlyConvert:
+                    clips.ConvertReferences(currentType, false);
+                    break;
+                case Decision.ConvertAndSetAddressables:
+                    clips.ConvertReferences(currentType);
+                    break;
+                case Decision.OnlyRemoveReference:
+                    clips.CleanupAllReferences(currentType);
+                    break;
+            }
+
+            void ShowDialogAndHandleResult(ReorderableClips clips, ReferenceType current)
+            {
+                string format = _instruction.GetText(Instruction.LibraryManager_AddressableConversionDialog);
+                string message = GetMessage(current, format);
+                int result = EditorUtility.DisplayDialogComplex("References Conversion Confirmation", message, "Yes", "No", $"Yes, don't ask me again");
+                switch (result)
                 {
-                    var alwaysAsk = EditorSetting.ReferenceCleanupOption.AlwaysAsk;
-                    int decision = 0;
-                    if((cleanDirectRef && EditorSetting.DirectReferenceOption == alwaysAsk) || 
-                        (cleanAddressable && EditorSetting.AddressableOption == alwaysAsk))
-                    {
-                        decision = EditorUtility.DisplayDialogComplex(AddressableCleanUpDialogTitle, message, "Yes", "No", $"Yes, don't ask again when it's {targetTypeName}");
-                    }
-                    switch(decision)
-                    {
-                        case 0: // Yes
-                            clips.CleanupAllReferences(refType);
-                            break;
-                        case 1: // No
-                            break; 
-                        case 2: // Yes, never ask
-                            SetNeverAsk(refType);
-                            clips.CleanupAllReferences(refType);
-                            break;
-                    }
+                    case 0: // Yes
+                        clips.ConvertReferences(current);
+                        break;
+                    case 1: // No
+                        clips.CleanupAllReferences(current);
+                        break;
+                    case 2: // Yes, never ask
+                        SetNeverAsk(current);
+                        clips.ConvertReferences(current);
+                        break;
                 }
             }
 
-            string GetTargetTypeName(ReferenceType referenceType) => referenceType switch
+            string GetMessage(ReferenceType currentRefType, string format)
             {
-                ReferenceType.Direct => "[Audio Clip Direct References]",
-                ReferenceType.Addressalbes => "[Addressable Asset References]",
-                _ => throw new NotImplementedException(),
-            };
+                string conversion = null;
+                string action = null;
+                switch (currentRefType)
+                {
+                    case ReferenceType.Direct:
+                        conversion = " [Direct Reference] to [Asset Reference]";
+                        action = "add the asset to";
+                        break;
+                    case ReferenceType.Addressalbes:
+                        conversion = "[Asset Reference] to [Direct Reference]";
+                        action = "remove the asset from";
+                        break;
+                }
+                return string.Format(format, conversion, action);
+            }
 
             void SetNeverAsk(ReferenceType referenceType)
             {
-                var alwaysRemove = EditorSetting.ReferenceCleanupOption.Remove;
+                var convertAndSet = EditorSetting.ReferenceConversionDecision.ConvertAndSetAddressables;
                 switch (referenceType)
                 {
                     case ReferenceType.Direct:
-                        EditorSetting.DirectReferenceOption = alwaysRemove;
+                        EditorSetting.DirectReferenceDecision = convertAndSet;
                         break;
                     case ReferenceType.Addressalbes:
-                        EditorSetting.AddressableOption = alwaysRemove;
+                        EditorSetting.AddressableDecision = convertAndSet;
                         break;
                 }
                 EditorUtility.SetDirty(EditorSetting);
             }
         }
 
+#endif
         private void GetOrCreateEntityDataDict(SerializedProperty property, out EntityData data)
         {
             if(!_entityDataDict.TryGetValue(property.propertyPath, out data))

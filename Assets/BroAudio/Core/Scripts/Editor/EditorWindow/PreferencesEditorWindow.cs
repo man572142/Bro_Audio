@@ -42,6 +42,10 @@ namespace Ami.BroAudio.Editor.Setting
         private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
             ,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent,_dominatorTrackGUIContent, _regenerateUserDataGUIContent, _defaultGroupGUIContent;
 
+#if PACKAGE_ADDRESSABLES
+        private GUIContent _addressableConversionGUIContent, _directToAddressableGUIContent, _addressableToDirectGUIContent; 
+#endif
+
         private GUIContent[] _tabLabels = null;
         private Tab _currSelectedTab = Tab.Audio;
         private int _currProjectSettingVoiceCount = -1;
@@ -100,6 +104,13 @@ namespace Ami.BroAudio.Editor.Setting
             _poolSizeCountGUIContent = new GUIContent("Audio Player Object Pool Size", _instruction.GetText(Instruction.AudioPlayerPoolSize));
             _dominatorTrackGUIContent = new GUIContent("Add Dominator Track", _instruction.GetText(Instruction.AddDominatorTrack));
             _regenerateUserDataGUIContent = new GUIContent("Regenerate User Data", _instruction.GetText(Instruction.RegenerateUserData));
+
+#if PACKAGE_ADDRESSABLES
+            string aaTooltip = _instruction.GetText(Instruction.LibraryManager_AddressableConversionTooltip);
+            _addressableConversionGUIContent = new GUIContent("Addressable/Direct References Conversion".ToWhiteBold(), aaTooltip);
+            _directToAddressableGUIContent = new GUIContent("Direct -> Addressables", aaTooltip);
+            _addressableToDirectGUIContent = new GUIContent("Addressables -> Direct", aaTooltip); 
+#endif
         }
 
         private ReorderableList InitSpectrumReorderableList()
@@ -532,18 +543,18 @@ namespace Ami.BroAudio.Editor.Setting
         private void DrawAddressableNeverAskOptions(Rect drawPosition)
         {
             drawPosition.xMax -= Gap;
-            EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Addressable/Direct References Cleanup".ToWhiteBold(), GUIStyleHelper.RichText);
+            EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), _addressableConversionGUIContent, GUIStyleHelper.RichText);
             using (new EditorGUI.IndentLevelScope())
             {
-                DrawOption(GetRectAndIterateLine(drawPosition), "Direct References", ref EditorSetting.DirectReferenceOption);
-                DrawOption(GetRectAndIterateLine(drawPosition), "Addressable References", ref EditorSetting.AddressableOption);
+                DrawOption(GetRectAndIterateLine(drawPosition), _directToAddressableGUIContent, ref EditorSetting.DirectReferenceDecision);
+                DrawOption(GetRectAndIterateLine(drawPosition), _addressableToDirectGUIContent, ref EditorSetting.AddressableDecision);
             }
 
-            void DrawOption(Rect rect, string label, ref EditorSetting.ReferenceCleanupOption option)
+            void DrawOption(Rect rect, GUIContent label, ref EditorSetting.ReferenceConversionDecision option)
             {
                 SplitRectHorizontal(rect, 0.4f, 10f, out Rect labelRect, out Rect popupRect);
                 EditorGUI.LabelField(labelRect, label);
-                option = (EditorSetting.ReferenceCleanupOption)EditorGUI.EnumPopup(popupRect, option);
+                option = (EditorSetting.ReferenceConversionDecision)EditorGUI.EnumPopup(popupRect, option);
             }
         } 
 #endif

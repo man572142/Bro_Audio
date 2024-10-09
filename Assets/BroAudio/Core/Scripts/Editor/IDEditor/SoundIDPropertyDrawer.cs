@@ -141,7 +141,11 @@ namespace Ami.BroAudio.Editor
                 if (targetValue is SoundID sound
                     && SoundID.TryGetAsset(sound, out var asset) && TryGetEntity(asset, out var entity))
                 {
+#if PACKAGE_ADDRESSABLES
+                    var data = new EditorPlayAudioClip.Data(entity.PickNewClip(), entity.UseAddressables);
+#else
                     var data = new EditorPlayAudioClip.Data(entity.PickNewClip());
+#endif
                     EditorPlayAudioClip.Instance.PlayClipByAudioSource(data, false, null, entity.GetPitch());
                     EditorPlayAudioClip.Instance.OnFinished = OnPreviewAudioFinished;
                     _isPlaying = true;

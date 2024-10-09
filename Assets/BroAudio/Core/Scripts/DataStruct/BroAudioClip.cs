@@ -26,7 +26,28 @@ namespace Ami.BroAudio.Data
 		[System.NonSerialized]
 		public bool IsUsed;
 
-		AudioClip IBroAudioClip.AudioClip => AudioClip;
+		AudioClip IBroAudioClip.AudioClip
+        {
+            get
+            {
+                // TODO: gotta know isUsing or not
+                if(AudioClip)
+                {
+                    return AudioClip;
+                }
+#if PACKAGE_ADDRESSABLES
+                if(AudioClipAssetReference != null)
+                {
+#if UNITY_EDITOR
+                    return AudioClipAssetReference.editorAsset;
+#else
+                    return AudioClipAssetReference.Asset as AudioClip;
+#endif
+                }
+#endif
+                return null;
+            }
+        }
 		float IBroAudioClip.Volume => Volume;
 		float IBroAudioClip.Delay => Delay;
 		float IBroAudioClip.StartPosition => StartPosition;

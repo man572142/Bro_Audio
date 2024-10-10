@@ -25,6 +25,7 @@ namespace Ami.BroAudio.Runtime
                 var broClip = onGetAudioClip?.Invoke(entity);
                 if (broClip != null)
                 {
+                    // TODO: Log error?
                     return broClip.AudioClip;
                 }
             }

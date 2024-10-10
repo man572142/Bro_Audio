@@ -16,7 +16,131 @@ MonoBehaviour:
   m_Data:
     m_SerializedData: []
   m_GUID: b80d8d9b76a97f040a05a1b8d5128db6
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 80f984309ecd65a4ea1235c4d4c7ac99
+    m_Address: Assets/BroAudio/Demo/AudioClip/fALLING.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 6b1c392805e9c0c49ba9182ce0dbdaf8
+    m_Address: Assets/BroAudio/Demo/AudioClip/DroneMusic.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: b4281e86518cede498465899fed49af8
+    m_Address: Assets/BroAudio/Demo/AudioClip/AMBIENCE Desert Soft Day.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 90d15b059ff868e48bc2d4bd157792cc
+    m_Address: Assets/BroAudio/Demo/AudioClip/FUI Hologram Ping Tone Echoed-2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 98e92f012ca7aac4cb5a10875b88f2b2
+    m_Address: Assets/BroAudio/Demo/AudioClip/Footsteps/Footstep1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 81d6cc9391967574c8d850e15adec10c
+    m_Address: Assets/BroAudio/Demo/AudioClip/Footsteps/Footstep2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 552ce8157933395458d559fdee898974
+    m_Address: Assets/BroAudio/Demo/AudioClip/Footsteps/Footstep3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 7d82cae6003b3164db683bd79ee012f4
+    m_Address: Assets/BroAudio/Demo/AudioClip/Footsteps/Footstep4.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 79ed6fc8aeb95724cbde5d19288704dd
+    m_Address: Assets/BroAudio/Demo/AudioClip/Footsteps/Footstep5.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 6cc7c64d8a280e448b8fbc2ff79283ad
+    m_Address: Assets/BroAudio/Demo/AudioClip/Footsteps/Footstep6.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 82fcc4bd69f6d454b8e6d40f442df5df
+    m_Address: Assets/BroAudio/Demo/AudioClip/Footsteps/Footstep_Sand1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 9b2d989f54557a648987639019145542
+    m_Address: Assets/BroAudio/Demo/AudioClip/Footsteps/Footstep_Sand2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2b16c7ed38399d940aef4157531cb6fa
+    m_Address: Assets/BroAudio/Demo/AudioClip/Footsteps/Footstep_Sand3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 096478cc397152944878b3c5c14ad1bb
+    m_Address: Assets/BroAudio/Demo/AudioClip/Footsteps/Footstep_Sand4.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e00d65c1cb3ddee4384059e085ccba25
+    m_Address: Assets/BroAudio/Demo/AudioClip/Torch.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 53a94199c0be37f47ac8a3be45e84c7d
+    m_Address: Assets/BroAudio/Demo/AudioClip/688130__sami_hiltunen__spaceship-ambience.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: f2c643d9991326f44b1224002f9c61fd
+    m_Address: Assets/BroAudio/Demo/AudioClip/490253__anomaex__sci-fi_explosion.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 5504b651486f0624db15463931a24cf3
+    m_Address: Assets/BroAudio/Demo/AudioClip/EnterWater.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 865ea11df1cc5b0409ab851ccdce14ee
+    m_Address: Assets/BroAudio/Demo/AudioClip/353194__inspectorj__wind-chimes-a.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 8609bb316e5211241a1b6f184275bc78
+    m_Address: Assets/BroAudio/Demo/AudioClip/Reverse_Production Element_Sigh-Piano-Guitar-Bells-003.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 5fa5b0707fe528747a365bfa62913341
+    m_Address: Assets/BroAudio/Demo/AudioClip/water_lapping_sea_waves_sandy_beach_5_meters_01.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: aa55ad851a936e04fb634b21d5430fce
+    m_Address: Assets/BroAudio/Demo/AudioClip/Sparkle1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: ae01c0b540590bb45861f97e92bbbfc9
+    m_Address: Assets/BroAudio/Demo/AudioClip/Sparkle2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 594637f21c415284f9765319f902eaae
+    m_Address: Assets/BroAudio/Demo/AudioClip/Sparkle3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 1a7e0f8a3f2439345a90622c6e48f570
+    m_Address: Assets/BroAudio/Demo/AudioClip/Sparkle4.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 8cec2e26376299548a1c67b41409274d
+    m_Address: Assets/BroAudio/Demo/AudioClip/Sparkle5.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 31f987a22b50cfb4388695cfa0ce70a3
+    m_Address: Assets/BroAudio/Demo/AudioClip/Transition_Mystery-08.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 283db2de8512111488e1d3aa233ab98d
+    m_Address: Assets/BroAudio/Demo/AudioClip/Weapon/Shoot1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 28355d60fb44bb54ca435b5badcd1c16
+    m_Address: Assets/BroAudio/Demo/AudioClip/Weapon/Shoot2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 1bbbe2206455ec9419e24a9a6aa08854
+    m_Address: Assets/BroAudio/Demo/AudioClip/Weapon/Shoot3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2cd1432e8b64c5f47a8ef0c6c1aa49c6
+    m_Address: Assets/BroAudio/Demo/AudioClip/Weapon/Charging.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: dd22967ee85138e4cbbf109d1ac7a2fa, type: 2}
   m_SchemaSet:

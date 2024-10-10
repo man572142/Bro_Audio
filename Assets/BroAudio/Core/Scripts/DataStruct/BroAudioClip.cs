@@ -35,16 +35,29 @@ namespace Ami.BroAudio.Data
                     return AudioClip;
                 }
 #if PACKAGE_ADDRESSABLES
-                if(AudioClipAssetReference != null && !string.IsNullOrEmpty(AudioClipAssetReference.AssetGUID))
+                if(IsUsingAddressables)
                 {
+                    string assetIdentity = null;
 #if UNITY_EDITOR
-                    return AudioClipAssetReference.editorAsset;
+                    if(!Application.isPlaying)
+                    {
+                        return AudioClipAssetReference.editorAsset;
+                    }
+                    assetIdentity = AudioClipAssetReference.editorAsset.name;
 #else
-                    return AudioClipAssetReference.Asset as AudioClip;
+                    assetIdentity = AudioClipAssetReference.AssetGUID;
 #endif
+                    if (AudioClipAssetReference.Asset is AudioClip clip) // null check
+                    {
+                        return clip;
+                    }
+                    else
+                    {
+                        Debug.LogError(Utility.LogTitle + $"{assetIdentity} is marked as Addressables, but hasn't been loaded");
+                    }
                 }
 #endif
-                return null;
+                    return null;
             }
         }
 		float IBroAudioClip.Volume => Volume;
@@ -55,6 +68,17 @@ namespace Ami.BroAudio.Data
 		float IBroAudioClip.FadeOut => FadeOut;
         public int Velocity => Weight;
 		public bool IsNull() => AudioClip == null;
+        public bool IsUsingAddressables
+        {
+            get
+            {
+#if PACKAGE_ADDRESSABLES
+                return AudioClipAssetReference != null && !string.IsNullOrEmpty(AudioClipAssetReference.AssetGUID);
+#else
+                return false;
+#endif
+            }
+        }
 	}
 
 	public interface IBroAudioClip
@@ -66,5 +90,6 @@ namespace Ami.BroAudio.Data
 		float EndPosition { get; }
 		float FadeIn { get;}
 		float FadeOut { get; }
+        bool IsUsingAddressables { get; }
 	}
 }

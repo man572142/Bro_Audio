@@ -12,7 +12,7 @@ namespace Ami.BroAudio.Editor
     {
         public static void ResetBroAudioClipSerializedProperties(SerializedProperty property)
 		{
-			property.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = null;
+			property.FindPropertyRelative(nameof(IBroAudioClip.AudioClip)).objectReferenceValue = null;
 			property.FindPropertyRelative(nameof(BroAudioClip.Weight)).intValue = 0;
 			ResetBroClipPlaybackSetting(property);
 		}

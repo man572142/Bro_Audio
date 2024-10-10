@@ -36,7 +36,7 @@ namespace Ami.Extension
                 FadeOut = transport.FadeOut;
             }
 
-            public Data(BroAudioClip broAudioClip)
+            public Data(IBroAudioClip broAudioClip)
             {
                 AudioClip = broAudioClip.AudioClip;
                 Volume = broAudioClip.Volume;
@@ -45,26 +45,6 @@ namespace Ami.Extension
                 FadeIn = broAudioClip.FadeIn;
                 FadeOut = broAudioClip.FadeOut;
             }
-
-#if PACKAGE_ADDRESSABLES
-            public Data(BroAudioClip broAudioClip, bool useAddressable)
-            {
-                if (useAddressable
-                    && broAudioClip.AudioClipAssetReference != null && !string.IsNullOrEmpty(broAudioClip.AudioClipAssetReference.AssetGUID))
-                {
-                    AudioClip = broAudioClip.AudioClipAssetReference.editorAsset;
-                }
-                else
-                {
-                    AudioClip = broAudioClip.AudioClip;
-                }
-                Volume = broAudioClip.Volume;
-                StartPosition = broAudioClip.StartPosition;
-                EndPosition = broAudioClip.EndPosition;
-                FadeIn = broAudioClip.FadeIn;
-                FadeOut = broAudioClip.FadeOut;
-            }
-#endif
 
             public float Duration => AudioClip.length - EndPosition - StartPosition;
         }

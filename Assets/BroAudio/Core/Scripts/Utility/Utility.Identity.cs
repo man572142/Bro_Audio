@@ -99,7 +99,7 @@ namespace Ami.BroAudio
             }
         }
 
-		public static bool Validate(string name, BroAudioClip[] clips, int id)
+		public static bool Validate(string name, IBroAudioClip[] clips, int id)
 		{
 			if (id <= 0)
 			{

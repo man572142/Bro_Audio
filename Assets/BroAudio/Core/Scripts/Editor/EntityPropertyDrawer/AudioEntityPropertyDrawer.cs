@@ -66,7 +66,7 @@ namespace Ami.BroAudio.Editor
         private const float MaxTextFieldWidth = 300f;
 
         private readonly float[] _headerRatios = new float[] { 0.55f, 0.2f, 0.25f };
-        private readonly GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume),"The playback volume of this clip");
+        private readonly GUIContent _volumeLabel = new GUIContent(nameof(IBroAudioClip.Volume),"The playback volume of this clip");
         private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
         private readonly IUniqueIDGenerator _idGenerator = new IdGenerator();
         private TabViewData[] _tabViewDatas = new TabViewData[]
@@ -548,11 +548,8 @@ namespace Ami.BroAudio.Editor
             {
                 onReplay = ReplayPreview;
             }
-#if PACKAGE_ADDRESSABLES
-            var clipData = new EditorPlayAudioClip.Data(clip, entity.UseAddressables) { Volume = volume };
-#else
+
             var clipData = new EditorPlayAudioClip.Data(clip) { Volume = volume };
-#endif
             EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, false, onReplay, pitch);
             EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip), entity.GetPitch());
             data.IsPreviewing = true;

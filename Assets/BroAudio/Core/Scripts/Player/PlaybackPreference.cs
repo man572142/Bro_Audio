@@ -37,7 +37,7 @@ namespace Ami.BroAudio.Runtime
             _velocity = default;
         }
 
-        public BroAudioClip PickNewClip()
+        public IBroAudioClip PickNewClip()
         {
             return Entity.PickNewClip(_velocity);
         }

@@ -10,8 +10,8 @@ namespace Ami.BroAudio.Data
 		float TransitionTime { get; }
         SpatialSetting SpatialSetting { get; }
 		int Priority { get; }
-        BroAudioClip PickNewClip();
-        BroAudioClip PickNewClip(int velocity);
+        IBroAudioClip PickNewClip();
+        IBroAudioClip PickNewClip(int velocity);
         float GetMasterVolume();
 		float GetPitch();
 		float GetRandomValue(float baseValue, RandomFlag flags);

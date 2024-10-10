@@ -133,7 +133,7 @@ namespace Ami.BroAudio.Editor
                 return audioClip != null;
             }
 #endif
-            return CurrentSelectedClip.TryGetPropertyObject(nameof(BroAudioClip.AudioClip), out audioClip);
+            return CurrentSelectedClip.TryGetPropertyObject(nameof(IBroAudioClip.AudioClip), out audioClip);
         }
 
 #if PACKAGE_ADDRESSABLES
@@ -146,7 +146,7 @@ namespace Ami.BroAudio.Editor
                 switch (referenceType)
                 {
                     case ReferenceType.Direct:
-                        clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip)).objectReferenceValue = null;
+                        clipProp.FindPropertyRelative(nameof(IBroAudioClip.AudioClip)).objectReferenceValue = null;
                         break;
                     case ReferenceType.Addressalbes:
                         var assetRefProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClipAssetReference));
@@ -181,7 +181,7 @@ namespace Ami.BroAudio.Editor
             for (int i = 0; i < _reorderableList.count; i++)
             {
                 var clipProp = property.GetArrayElementAtIndex(i);
-                var directRefProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
+                var directRefProp = clipProp.FindPropertyRelative(nameof(IBroAudioClip.AudioClip));
                 var assetRefGuidProp = clipProp
                     .FindPropertyRelative(nameof(BroAudioClip.AudioClipAssetReference))
                     .FindPropertyRelative(AssetReferenceGUIDFieldName);
@@ -277,7 +277,7 @@ namespace Ami.BroAudio.Editor
 					foreach(var clipObj in DragAndDrop.objectReferences)
 					{
 						SerializedProperty broClipProp = AddClip(_reorderableList);
-						SerializedProperty audioClipProp = broClipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
+						SerializedProperty audioClipProp = broClipProp.FindPropertyRelative(nameof(IBroAudioClip.AudioClip));
 						audioClipProp.objectReferenceValue = clipObj;
 					}
                     UpdatePlayMode();
@@ -370,12 +370,12 @@ namespace Ami.BroAudio.Editor
         private void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
 		{
 			SerializedProperty clipProp = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
-			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClip));
+			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(IBroAudioClip.AudioClip));
             SerializedProperty assetReferenceProp = null;
 #if PACKAGE_ADDRESSABLES
             assetReferenceProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClipAssetReference));
 #endif
-            SerializedProperty volProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
+            SerializedProperty volProp = clipProp.FindPropertyRelative(nameof(IBroAudioClip.Volume));
             bool isUsingAddressable = _useAddressablesProp != null && _useAddressablesProp.boolValue && assetReferenceProp != null;
 
             Rect buttonRect = new Rect(rect) { width = PlayButtonSize.x, height = PlayButtonSize.y };

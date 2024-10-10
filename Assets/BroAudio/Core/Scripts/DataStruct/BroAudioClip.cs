@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Data
 	[System.Serializable]
 	public class BroAudioClip : IBroAudioClip
 	{
-		public AudioClip AudioClip;
+		[SerializeField] internal AudioClip AudioClip;
 #if PACKAGE_ADDRESSABLES
         public AssetReferenceT<AudioClip> AudioClipAssetReference;
 #endif
@@ -30,13 +30,12 @@ namespace Ami.BroAudio.Data
         {
             get
             {
-                // TODO: gotta know isUsing or not
-                if(AudioClip)
+                if(AudioClip != null)
                 {
                     return AudioClip;
                 }
 #if PACKAGE_ADDRESSABLES
-                if(AudioClipAssetReference != null)
+                if(AudioClipAssetReference != null && !string.IsNullOrEmpty(AudioClipAssetReference.AssetGUID))
                 {
 #if UNITY_EDITOR
                     return AudioClipAssetReference.editorAsset;

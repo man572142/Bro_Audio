@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Runtime
             return GetAudioClip(id, x => x.PickNewClip(velocity));
         }
 
-        private AudioClip GetAudioClip(SoundID id, Func<IAudioEntity, BroAudioClip> onGetAudioClip)
+        private AudioClip GetAudioClip(SoundID id, Func<IAudioEntity, IBroAudioClip> onGetAudioClip)
         {
             if (_audioBank.TryGetValue(id, out var entity))
             {

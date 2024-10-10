@@ -169,6 +169,7 @@ namespace Ami.BroAudio.Editor
                     break;
                 case ReferenceType.Addressalbes:
                     HasAnyAddressableClip = false;
+                    _assetReferenceCachedClips.Clear();
                     break;
             }
             property.serializedObject.ApplyModifiedProperties();

@@ -17,7 +17,7 @@ MonoBehaviour:
   ShowVUColorOnVolumeSlider: 1
   ShowMasterVolumeOnClipListHeader: 0
   DirectReferenceDecision: 0
-  AddressableDecision: 2
+  AddressableDecision: 0
   AudioTypeSettings:
   - AudioType: 1
     Color: {r: 0.003921569, g: 0.18431373, b: 0.5294118, a: 0.29803923}

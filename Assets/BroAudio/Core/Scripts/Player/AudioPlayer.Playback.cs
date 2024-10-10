@@ -182,7 +182,7 @@ namespace Ami.BroAudio.Runtime
                 switch (_stopMode)
                 {
                     case StopMode.Stop:
-                        PlayFromPos(_clip.StartPosition);
+                        PlayFromPos();
                         break;
                     case StopMode.Pause:
                         AudioSource.UnPause();
@@ -190,7 +190,7 @@ namespace Ami.BroAudio.Runtime
                     case StopMode.Mute:
                         if (!AudioSource.isPlaying)
                         {
-                            PlayFromPos(_clip.StartPosition);
+                            PlayFromPos();
                         }
                         break;
                 }
@@ -200,24 +200,27 @@ namespace Ami.BroAudio.Runtime
                 _onStart = null;
             }
 
-			void PlayFromPos(float pos)
+			void PlayFromPos()
 			{
 				AudioSource.Stop();
-				AudioSource.timeSamples = (int)(pos * sampleRate);
+				AudioSource.timeSamples = GetStartSample();
 				AudioSource.Play();
 			}
 
             // more accurate than AudioSource.isPlaying
             bool HasEndPlaying(ref bool hasPlayed)
             {
-                int timeSample = AudioSource.timeSamples;
-                if(!hasPlayed)
+                int currentSample = AudioSource.timeSamples;
+                int startSample = GetStartSample();
+                if (!hasPlayed)
                 {
-                    hasPlayed = timeSample > 0;
+                    hasPlayed = currentSample > startSample;
                 }
 
-                return hasPlayed && timeSample == 0;
+                return hasPlayed && currentSample <= startSample;
             }
+
+            int GetStartSample() => (int)(_clip.StartPosition * sampleRate);
 		}
 
 		private void TriggerSeamlessLoopReplay()

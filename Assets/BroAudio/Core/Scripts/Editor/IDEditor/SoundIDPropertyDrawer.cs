@@ -19,7 +19,7 @@ namespace Ami.BroAudio.Editor
         private bool _isPlaying = false;
         private EditorWindow _currentWindow = null;
 
-        private readonly GUIStyle _dropdownStyle = new GUIStyle(EditorStyles.popup) { richText = true };
+        private GUIStyle _dropdownStyle;
         private readonly GUIContent _libraryShortcut = 
             new GUIContent(EditorGUIUtility.IconContent(IconConstant.LibraryManagerShortcut)) { tooltip = "Open in Library Manager"};
 
@@ -84,6 +84,7 @@ namespace Ami.BroAudio.Editor
             if (!_isInit)
             {
                 Init(idProp, assetProp);
+                _dropdownStyle = new GUIStyle(EditorStyles.popup) { richText = true };
             }
 
             Rect suffixRect = EditorGUI.PrefixLabel(position, new GUIContent(property.displayName, ToolTip));

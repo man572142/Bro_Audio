@@ -303,7 +303,7 @@ namespace Ami.BroAudio.Editor
                 case Decision.ConvertAndSetAddressables:
                     clips.ConvertReferences(currentType);
                     break;
-                case Decision.OnlyRemoveReference:
+                case Decision.DontConvert:
                     clips.CleanupAllReferences(currentType);
                     break;
             }
@@ -336,11 +336,11 @@ namespace Ami.BroAudio.Editor
                 {
                     case ReferenceType.Direct:
                         conversion = " [Direct Reference] to [Asset Reference]";
-                        action = "add the asset to";
+                        action = "mark the asset as";
                         break;
                     case ReferenceType.Addressalbes:
                         conversion = "[Asset Reference] to [Direct Reference]";
-                        action = "remove the asset from";
+                        action = "unmark the asset's";
                         break;
                 }
                 return string.Format(format, conversion, action);

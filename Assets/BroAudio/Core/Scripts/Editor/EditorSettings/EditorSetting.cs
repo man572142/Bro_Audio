@@ -15,8 +15,7 @@ namespace Ami.BroAudio.Editor
             AlwaysAsk,
             OnlyConvert,
             ConvertAndSetAddressables,
-            OnlyRemoveReference,
-            DoNothing,
+            DontConvert,
         }
 
 		[System.Serializable]
@@ -121,7 +120,9 @@ namespace Ami.BroAudio.Editor
 			ShowVUColorOnVolumeSlider = FactorySettings.ShowVUColorOnVolumeSlider;
 			ShowAudioTypeOnSoundID = FactorySettings.ShowAudioTypeOnSoundID;
 			ShowMasterVolumeOnClipListHeader = FactorySettings.ShowMasterVolumeOnClipListHeader;
-			CreateNewAudioTypeSettings();
+            DirectReferenceDecision = ReferenceConversionDecision.AlwaysAsk;
+            AddressableDecision = ReferenceConversionDecision.AlwaysAsk;
+            CreateNewAudioTypeSettings();
             CreateDefaultSpectrumColors();
 		}
 

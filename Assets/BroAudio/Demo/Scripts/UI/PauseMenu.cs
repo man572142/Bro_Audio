@@ -18,7 +18,6 @@ namespace Ami.BroAudio.Demo
 
 		[SerializeField] GameObject _ui = null;
 		[SerializeField] float _fadeTime = default;
-		[SerializeField, Volume] float _othersVolume = default;
 #pragma warning disable 414
         [SerializeField, Frequency] float _othersLowPasFreq = default;
 #pragma warning restore 414
@@ -62,14 +61,12 @@ namespace Ami.BroAudio.Demo
 
 			if(IsOpen)
 			{
-				BroAudio.SetVolume(BroAudioType.All, _othersVolume);
 #if !UNITY_WEBGL
 				BroAudio.SetEffect(Effect.LowPass(_othersLowPasFreq, _fadeTime)); 
 #endif
 			}
 			else
 			{
-                BroAudio.SetVolume(BroAudioType.All, BroAdvice.FullVolume, _fadeTime);
 #if !UNITY_WEBGL
 				BroAudio.SetEffect(Effect.LowPass(Effect.Defaults.LowPass, _fadeTime)); 
 #endif

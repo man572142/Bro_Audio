@@ -19,7 +19,7 @@ namespace Ami.BroAudio.Editor
 		{
             StartPosition = clip.StartPosition;
             EndPosition = clip.EndPosition;
-            FullLength = clip.AudioClip.length;
+            FullLength = clip.GetAudioClip().length;
         }
 
 		public PreviewClip(float length) : this()

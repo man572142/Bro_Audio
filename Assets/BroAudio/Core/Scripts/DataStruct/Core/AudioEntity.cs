@@ -5,7 +5,7 @@ using Ami.BroAudio.Runtime;
 namespace Ami.BroAudio.Data
 {
     [System.Serializable]
-    public class AudioEntity : IEntityIdentity, IAudioEntity
+    public partial class AudioEntity : IEntityIdentity, IAudioEntity
     {
         [field: SerializeField] public string Name { get; private set; }
         [field: SerializeField] public int ID { get; private set; }
@@ -14,9 +14,6 @@ namespace Ami.BroAudio.Data
         [SerializeField] private PlaybackGroup _group;
 
         public BroAudioClip[] Clips;
-#if PACKAGE_ADDRESSABLES
-        public bool UseAddressables = false;
-#endif
 
         [field: SerializeField] public float MasterVolume { get; private set; }
         [field: SerializeField] public bool Loop { get; private set; }

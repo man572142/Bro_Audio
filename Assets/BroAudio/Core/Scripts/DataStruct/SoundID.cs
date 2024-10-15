@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Ami.BroAudio.Runtime;
+#if PACKAGE_ADDRESSABLES
+using UnityEngine.ResourceManagement.AsyncOperations;
+#endif
 
 namespace Ami.BroAudio
 {
@@ -68,7 +72,7 @@ namespace Ami.BroAudio
         /// </summary>
 		public static bool IsValid(this SoundID id)
 		{
-			return id > 0 && Runtime.SoundManager.Instance.IsIdInBank(id);
+			return id > 0 && SoundManager.Instance.IsIdInBank(id);
 		}
 
         /// <summary>
@@ -76,7 +80,7 @@ namespace Ami.BroAudio
         /// </summary>
         public static AudioClip GetAudioClip(this SoundID id)
         {
-            return Runtime.SoundManager.Instance.GetAudioClip(id);
+            return SoundManager.Instance.GetAudioClip(id);
         }
 
         /// <summary>
@@ -84,7 +88,7 @@ namespace Ami.BroAudio
         /// </summary>
         public static AudioClip GetAudioClip(this SoundID id, int velocity)
         {
-            return Runtime.SoundManager.Instance.GetAudioClip(id, velocity);
+            return SoundManager.Instance.GetAudioClip(id, velocity);
         }
 
         /// <inheritdoc cref="BroAudio.Play(SoundID)"/>
@@ -98,5 +102,23 @@ namespace Ami.BroAudio
         /// <inheritdoc cref="BroAudio.Play(SoundID, Transform)"/>
         public static IAudioPlayer Play(this SoundID id, Transform followTarget, PlaybackGroup overrideGroup = null) 
             => BroAudio.Play(id, followTarget, overrideGroup);
+
+#if PACKAGE_ADDRESSABLES
+        public static AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(this SoundID id)
+            => SoundManager.Instance.LoadAllAssetsAsync(id);
+
+        public static AsyncOperationHandle<AudioClip> LoadAssetAsync(this SoundID id)
+            => LoadAssetAsync(id, 0);
+        public static AsyncOperationHandle<AudioClip> LoadAssetAsync(this SoundID id, int clipIndex)
+            => SoundManager.Instance.LoadAssetAsync(id, clipIndex);
+
+        public static void ReleaseAllAssets(this SoundID id)
+            => SoundManager.Instance.ReleaseAllAssets(id);
+
+        public static void ReleaseAsset(this SoundID id)
+            => SoundManager.Instance.ReleaseAsset(id, 0);
+        public static void ReleaseAsset(this SoundID id, int clipIndex)
+            => SoundManager.Instance.ReleaseAsset(id, clipIndex);
+#endif
     }
 }

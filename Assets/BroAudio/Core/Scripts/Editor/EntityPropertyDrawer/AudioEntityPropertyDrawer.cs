@@ -66,7 +66,7 @@ namespace Ami.BroAudio.Editor
         private const float MaxTextFieldWidth = 300f;
 
         private readonly float[] _headerRatios = new float[] { 0.55f, 0.2f, 0.25f };
-        private readonly GUIContent _volumeLabel = new GUIContent(nameof(IBroAudioClip.Volume),"The playback volume of this clip");
+        private readonly GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume),"The playback volume of this clip");
         private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
         private readonly IUniqueIDGenerator _idGenerator = new IdGenerator();
         private TabViewData[] _tabViewDatas = new TabViewData[]

@@ -84,7 +84,7 @@ namespace Ami.BroAudio.Runtime
                     yield return new WaitForSeconds(_clip.Delay);
                 }
 
-                AudioSource.clip = _clip.AudioClip;
+                AudioSource.clip = _clip.GetAudioClip();
                 AudioSource.priority = _pref.Entity.Priority;
 
                 SetInitialPitch(_pref.Entity, audioTypePref);
@@ -108,7 +108,7 @@ namespace Ami.BroAudio.Runtime
             UpdateMixerVolume();
             AudioTrack = _getAudioTrack?.Invoke(TrackType);
 
-            int sampleRate = _clip.AudioClip.frequency;
+            int sampleRate = _clip.GetAudioClip().frequency;
 			do
             {
                 StartPlaying();

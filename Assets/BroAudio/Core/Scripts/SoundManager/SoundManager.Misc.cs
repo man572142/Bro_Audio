@@ -25,7 +25,7 @@ namespace Ami.BroAudio.Runtime
                 var broClip = onGetAudioClip?.Invoke(entity);
                 if (broClip != null)
                 {
-                    return broClip.AudioClip;
+                    return broClip.GetAudioClip();
                 }
             }
             return null;

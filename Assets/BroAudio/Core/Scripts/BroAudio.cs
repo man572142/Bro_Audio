@@ -2,6 +2,11 @@
 using Ami.BroAudio.Runtime;
 using System;
 
+#if PACKAGE_ADDRESSABLES
+using System.Collections.Generic;
+using UnityEngine.ResourceManagement.AsyncOperations;
+#endif 
+
 namespace Ami.BroAudio
 {
     public static class BroAudio
@@ -186,7 +191,37 @@ namespace Ami.BroAudio
         /// </summary>
         public static IAutoResetWaitable SetEffect(Effect effect, BroAudioType audioType)
             => SoundManager.Instance.SetEffect(audioType.ConvertEverything(),effect);
-#endregion
+        #endregion
 #endif
-	}
+
+#if PACKAGE_ADDRESSABLES
+        /// <summary>
+        /// Loads all the audio clips in the entity
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(SoundID id) 
+            => SoundManager.Instance.LoadAllAssetsAsync(id);
+
+        /// <summary>
+        /// Loads the first audio clips in the entity
+        /// </summary>
+        public static AsyncOperationHandle<AudioClip> LoadAssetAsync(SoundID id)
+            => LoadAssetAsync(id, 0);
+
+        /// <summary>
+        /// Loads the audio clip in the entity's clip list by index
+        /// </summary>
+        public static AsyncOperationHandle<AudioClip> LoadAssetAsync(SoundID id, int clipIndex)
+            => SoundManager.Instance.LoadAssetAsync(id, clipIndex);
+
+        public static void ReleaseAllAssets(SoundID id) 
+            => SoundManager.Instance.ReleaseAllAssets(id);
+
+        public static void ReleaseAsset(SoundID id)
+    => SoundManager.Instance.ReleaseAsset(id, 0);
+        public static void ReleaseAsset(SoundID id, int clipIndex)
+            => SoundManager.Instance.ReleaseAsset(id, clipIndex);
+#endif
+    }
 }

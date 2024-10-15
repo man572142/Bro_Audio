@@ -38,7 +38,7 @@ namespace Ami.Extension
 
             public Data(IBroAudioClip broAudioClip)
             {
-                AudioClip = broAudioClip.AudioClip;
+                AudioClip = broAudioClip.GetAudioClip();
                 Volume = broAudioClip.Volume;
                 StartPosition = broAudioClip.StartPosition;
                 EndPosition = broAudioClip.EndPosition;

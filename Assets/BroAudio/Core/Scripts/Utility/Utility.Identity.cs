@@ -115,17 +115,10 @@ namespace Ami.BroAudio
 
 			for(int i = 0; i < clips.Length;i++)
 			{
-				var clipData = clips[i];
-				if (clipData.AudioClip == null)
+				if (!clips[i].IsValid())
 				{
-					LogError(LogTitle + $"Audio clip has not been assigned! please check {name.ToWhiteBold()} in Library Manager.");
-					return false;
-				}
-				float controlLength = (clipData.FadeIn > 0f ? clipData.FadeIn : 0f) + (clipData.FadeOut > 0f ? clipData.FadeOut : 0f) + clipData.StartPosition;
-				if (controlLength > clipData.AudioClip.length)
-				{
-					LogError(LogTitle + $"Time control value should not greater than clip's length! please check clips element:{i} in {name}.");
-					return false;
+                    LogError(LogTitle + $"Audio clip has not been assigned! please check {name.ToWhiteBold()} in Library Manager.");
+                    return false;
 				}
 			}
 			return true;

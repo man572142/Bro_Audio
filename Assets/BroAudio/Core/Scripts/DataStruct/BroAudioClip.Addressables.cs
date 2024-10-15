@@ -1,0 +1,69 @@
+#if PACKAGE_ADDRESSABLES
+using Ami.BroAudio.Runtime;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+
+namespace Ami.BroAudio.Data
+{
+	public partial class BroAudioClip : IBroAudioClip
+	{
+        [SerializeField] private AssetReferenceT<AudioClip> AudioClipAssetReference;
+        private AudioClip _batchLoadedAsset = null;
+
+        public IKeyEvaluator AddressableKey => AudioClipAssetReference;
+
+        public AsyncOperationHandle<AudioClip> LoadAssetAsync()
+        {
+            return AudioClipAssetReference.LoadAssetAsync();
+        }
+
+        public void ReleaseAsset()
+        {
+            if(AudioClipAssetReference.OperationHandle.IsValid())
+            {
+                Addressables.Release(AudioClipAssetReference.OperationHandle);
+            }
+        }
+
+        public void SetLoadedAsset(AudioClip clip)
+        {
+            _batchLoadedAsset = clip;
+        }
+
+        public AudioClip GetAudioClip()
+        {
+            if (AudioClip != null)
+            {
+                return AudioClip;
+            }
+            if(_batchLoadedAsset != null)
+            {
+                return _batchLoadedAsset;
+            }
+
+            string assetIdentity = null;
+            if (IsAddressablesAvailable())
+            {
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                {
+                    return AudioClipAssetReference.editorAsset;
+                }
+                assetIdentity = AudioClipAssetReference.editorAsset.name;
+#else
+                assetIdentity = AudioClipAssetReference.AssetGUID;
+#endif
+                if (AudioClipAssetReference.Asset is AudioClip clip) // null check
+                {
+                    return clip;
+                }
+                throw new BroAudioException($"AudioClip [<b>{assetIdentity}</b>] is marked as Addressables, but it hasn't been loaded");
+            }
+            return AudioClip;
+        }
+
+        public bool IsAddressablesAvailable() => !string.IsNullOrEmpty(AudioClipAssetReference.AssetGUID);
+    }
+}
+#endif

@@ -133,7 +133,7 @@ namespace Ami.BroAudio.Editor
                 return audioClip != null;
             }
 #endif
-            return CurrentSelectedClip.TryGetPropertyObject(nameof(IBroAudioClip.AudioClip), out audioClip);
+            return CurrentSelectedClip.TryGetPropertyObject(BroAudioClip.NameOf.AudioClip, out audioClip);
         }
 
 #if PACKAGE_ADDRESSABLES
@@ -146,10 +146,10 @@ namespace Ami.BroAudio.Editor
                 switch (referenceType)
                 {
                     case ReferenceType.Direct:
-                        clipProp.FindPropertyRelative(nameof(IBroAudioClip.AudioClip)).objectReferenceValue = null;
+                        clipProp.FindPropertyRelative(BroAudioClip.NameOf.AudioClip).objectReferenceValue = null;
                         break;
                     case ReferenceType.Addressalbes:
-                        var assetRefProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClipAssetReference));
+                        var assetRefProp = clipProp.FindPropertyRelative(BroAudioClip.NameOf.AudioClipAssetReference);
                         int targetDepth = assetRefProp.depth + 1;
                         while(assetRefProp.NextVisible(true) && assetRefProp.depth == targetDepth)
                         {
@@ -181,9 +181,9 @@ namespace Ami.BroAudio.Editor
             for (int i = 0; i < _reorderableList.count; i++)
             {
                 var clipProp = property.GetArrayElementAtIndex(i);
-                var directRefProp = clipProp.FindPropertyRelative(nameof(IBroAudioClip.AudioClip));
+                var directRefProp = clipProp.FindPropertyRelative(BroAudioClip.NameOf.AudioClip);
                 var assetRefGuidProp = clipProp
-                    .FindPropertyRelative(nameof(BroAudioClip.AudioClipAssetReference))
+                    .FindPropertyRelative(BroAudioClip.NameOf.AudioClipAssetReference)
                     .FindPropertyRelative(AssetReferenceGUIDFieldName);
                 string path;
                 switch (referenceType)
@@ -277,7 +277,7 @@ namespace Ami.BroAudio.Editor
 					foreach(var clipObj in DragAndDrop.objectReferences)
 					{
 						SerializedProperty broClipProp = AddClip(_reorderableList);
-						SerializedProperty audioClipProp = broClipProp.FindPropertyRelative(nameof(IBroAudioClip.AudioClip));
+						SerializedProperty audioClipProp = broClipProp.FindPropertyRelative(BroAudioClip.NameOf.AudioClip);
 						audioClipProp.objectReferenceValue = clipObj;
 					}
                     UpdatePlayMode();
@@ -370,12 +370,12 @@ namespace Ami.BroAudio.Editor
         private void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
 		{
 			SerializedProperty clipProp = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
-			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(nameof(IBroAudioClip.AudioClip));
+			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(BroAudioClip.NameOf.AudioClip);
             SerializedProperty assetReferenceProp = null;
 #if PACKAGE_ADDRESSABLES
-            assetReferenceProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.AudioClipAssetReference));
+            assetReferenceProp = clipProp.FindPropertyRelative(BroAudioClip.NameOf.AudioClipAssetReference);
 #endif
-            SerializedProperty volProp = clipProp.FindPropertyRelative(nameof(IBroAudioClip.Volume));
+            SerializedProperty volProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
             bool isUsingAddressable = _useAddressablesProp != null && _useAddressablesProp.boolValue && assetReferenceProp != null;
 
             Rect buttonRect = new Rect(rect) { width = PlayButtonSize.x, height = PlayButtonSize.y };
@@ -449,6 +449,7 @@ namespace Ami.BroAudio.Editor
                 referenceType = isUsingAddressable ? ReferenceType.Addressalbes : ReferenceType.Direct;
                 if(isUsingAddressable)
                 {
+#if PACKAGE_ADDRESSABLES
                     while (index >= _assetReferenceCachedClips.Count)
                     {
                         _assetReferenceCachedClips.Add(null);
@@ -463,7 +464,8 @@ namespace Ami.BroAudio.Editor
                             audioClip = AssetDatabase.LoadAssetAtPath<AudioClip>(AssetDatabase.GUIDToAssetPath(guid));
                         }
                     }
-                    _assetReferenceCachedClips[index] = audioClip;
+                    _assetReferenceCachedClips[index] = audioClip; 
+#endif
                 }
                 else
                 {

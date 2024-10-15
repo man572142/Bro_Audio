@@ -188,8 +188,8 @@ namespace Ami.BroAudio.Editor
         {
             clipListProp.InsertArrayElementAtIndex(index);
             SerializedProperty elementProp = clipListProp.GetArrayElementAtIndex(index);
-            elementProp.FindPropertyRelative(nameof(IBroAudioClip.AudioClip)).objectReferenceValue = clip;
-            elementProp.FindPropertyRelative(nameof(IBroAudioClip.Volume)).floatValue = AudioConstant.FullVolume;
+            elementProp.FindPropertyRelative(BroAudioClip.NameOf.AudioClip).objectReferenceValue = clip;
+            elementProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = AudioConstant.FullVolume;
         }
 
         public void SelectEntity(int id, out float entityVerticalPos)

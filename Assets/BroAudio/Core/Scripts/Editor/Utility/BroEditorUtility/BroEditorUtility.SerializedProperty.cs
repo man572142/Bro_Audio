@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using Ami.BroAudio.Data;
 using static Ami.Extension.EditorScriptingExtension;
@@ -12,7 +10,13 @@ namespace Ami.BroAudio.Editor
     {
         public static void ResetBroAudioClipSerializedProperties(SerializedProperty property)
 		{
-			property.FindPropertyRelative(nameof(IBroAudioClip.AudioClip)).objectReferenceValue = null;
+#if PACKAGE_ADDRESSABLES
+            var assetRefGuidProp = property
+                .FindPropertyRelative(BroAudioClip.NameOf.AudioClipAssetReference)
+                .FindPropertyRelative(AssetReferenceGUIDFieldName);
+            assetRefGuidProp.stringValue = string.Empty; 
+#endif
+            property.FindPropertyRelative(BroAudioClip.NameOf.AudioClip).objectReferenceValue = null;
 			property.FindPropertyRelative(nameof(BroAudioClip.Weight)).intValue = 0;
 			ResetBroClipPlaybackSetting(property);
 		}
@@ -29,16 +33,19 @@ namespace Ami.BroAudio.Editor
 		public static void ResetEntitySerializedProperties(SerializedProperty property)
         {
             //could use enumerator to improve this, but might have to deal with some property
-            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Name))).stringValue = string.Empty;
+            property.FindBackingFieldProperty(nameof(AudioEntity.Name)).stringValue = string.Empty;
             property.FindPropertyRelative(nameof(AudioEntity.Clips)).arraySize = 0;
             property.FindPropertyRelative(AudioEntity.EditorPropertyName.MulticlipsPlayMode).enumValueIndex = 0;
-            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.MasterVolume))).floatValue = AudioConstant.FullVolume;
-            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Loop))).boolValue = false;
-            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SeamlessLoop))).boolValue = false;
-            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Pitch))).floatValue = AudioConstant.DefaultPitch;
-            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.PitchRandomRange))).floatValue = 0f;
-            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.RandomFlags))).intValue = 0;
-            property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.Priority))).intValue = AudioConstant.DefaultPriority;
+            property.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume)).floatValue = AudioConstant.FullVolume;
+            property.FindBackingFieldProperty(nameof(AudioEntity.Loop)).boolValue = false;
+            property.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop)).boolValue = false;
+            property.FindBackingFieldProperty(nameof(AudioEntity.Pitch)).floatValue = AudioConstant.DefaultPitch;
+            property.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange)).floatValue = 0f;
+            property.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags)).intValue = 0;
+            property.FindBackingFieldProperty(nameof(AudioEntity.Priority)).intValue = AudioConstant.DefaultPriority;
+#if PACKAGE_ADDRESSABLES
+            property.FindPropertyRelative(nameof(AudioEntity.UseAddressables)).boolValue = false; 
+#endif
 
             SerializedProperty spatialProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSetting)));
 			spatialProp.objectReferenceValue = null;

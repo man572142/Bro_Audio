@@ -116,9 +116,16 @@ namespace Ami.BroAudio
             => SoundManager.Instance.ReleaseAllAssets(id);
 
         public static void ReleaseAsset(this SoundID id)
-            => SoundManager.Instance.ReleaseAsset(id, 0);
+            => ReleaseAsset(id, 0);
         public static void ReleaseAsset(this SoundID id, int clipIndex)
             => SoundManager.Instance.ReleaseAsset(id, clipIndex);
+
+        public static void SetLoadAssetAsyncOperation(this SoundID id, AsyncOperationHandle<IList<AudioClip>> operationHandle)
+            => SoundManager.Instance.SetLoadAssetAsyncOperation(id, operationHandle);
+        public static void SetLoadAssetAsyncOperation(this SoundID id, AsyncOperationHandle<AudioClip> operationHandle)
+            => SetLoadAssetAsyncOperation(id, operationHandle, 0);
+        public static void SetLoadAssetAsyncOperation(this SoundID id, AsyncOperationHandle<AudioClip> operationHandle, int clipIndex)
+            => SoundManager.Instance.SetLoadAssetAsyncOperation(id, operationHandle, clipIndex);
 #endif
     }
 }

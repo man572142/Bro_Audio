@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Ami.BroAudio.Data;
 using System.Collections;
+using System;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -16,6 +17,22 @@ namespace Ami.BroAudio.Runtime
                 return entity.GetAllAddressableKeys();
             }
             return null;
+        }
+
+        public void SetLoadAssetAsyncOperation(SoundID id, AsyncOperationHandle<IList<AudioClip>> handle)
+        {
+            if (TryGetAddressableEntity(id, out var entity))
+            {
+                handle.Completed += entity.SetLoadedClipList;
+            }
+        }
+
+        public void SetLoadAssetAsyncOperation(SoundID id, AsyncOperationHandle<AudioClip> handle, int clipIndex)
+        {
+            if (TryGetAddressableEntity(id, out var entity) && clipIndex >= 0 && clipIndex < entity.Clips.Length)
+            {
+                handle.Completed += entity.Clips[clipIndex].SetLoadedClip;
+            }
         }
 
         public AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(SoundID id)

@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Data
 	public partial class BroAudioClip : IBroAudioClip
 	{
         [SerializeField] private AssetReferenceT<AudioClip> AudioClipAssetReference;
-        private AudioClip _batchLoadedAsset = null;
+        private AudioClip _loadedAsset = null;
 
         public IKeyEvaluator AddressableKey => AudioClipAssetReference;
 
@@ -28,7 +28,12 @@ namespace Ami.BroAudio.Data
 
         public void SetLoadedAsset(AudioClip clip)
         {
-            _batchLoadedAsset = clip;
+            _loadedAsset = clip;
+        }
+
+        public void SetLoadedClip(AsyncOperationHandle<AudioClip> op)
+        {
+            _loadedAsset = op.Result;
         }
 
         public AudioClip GetAudioClip()
@@ -37,9 +42,9 @@ namespace Ami.BroAudio.Data
             {
                 return AudioClip;
             }
-            if(_batchLoadedAsset != null)
+            if(_loadedAsset != null)
             {
-                return _batchLoadedAsset;
+                return _loadedAsset;
             }
 
             string assetIdentity = null;

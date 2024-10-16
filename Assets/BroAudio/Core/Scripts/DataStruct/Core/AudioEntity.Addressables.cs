@@ -30,13 +30,13 @@ namespace Ami.BroAudio.Data
             }
 
             var op = Addressables.LoadAssetsAsync<AudioClip>(GetAllAddressableKeys(), null, Addressables.MergeMode.Union);
-            op.Completed += CacheAudioClipList;
+            op.Completed += SetLoadedClipList;
             return op;
         }
 
-        private void CacheAudioClipList(AsyncOperationHandle<IList<AudioClip>> handle)
+        public void SetLoadedClipList(AsyncOperationHandle<IList<AudioClip>> handle)
         {
-            handle.Completed -= CacheAudioClipList;
+            handle.Completed -= SetLoadedClipList;
 
             if(handle.Status == AsyncOperationStatus.Succeeded && handle.Result.Count == Clips.Length)
             {

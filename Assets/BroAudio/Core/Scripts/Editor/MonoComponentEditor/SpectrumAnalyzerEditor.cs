@@ -13,6 +13,12 @@ namespace Ami.BroAudio.Editor
     [CustomEditor(typeof(SpectrumAnalyzer))]
     public class SpectrumAnalyzerEditor : UnityEditor.Editor
     {
+        private struct PropertyData
+        {
+            public SerializedProperty Property;
+            public GUIContent Label;
+        }
+
         public const int MinResolutionScale = 6;
         public const int MaxResolutionScale = 13;
         public const int BandElementLineCount = 3;
@@ -24,13 +30,13 @@ namespace Ami.BroAudio.Editor
         public const string ExperimentalWarning = "<b>[Experimental]</b> " +
             "The component is still in development. While it is usable, the precision of the result is not guaranteed.";
 
-        private SerializedProperty _soundSourceProp, _resolutionProp, _updateRateProp, _scaleProp, _falldownProp,
-            _channelProp, _windowProp, _bandsProp;
+        private PropertyData _soundSourceProp, _resolutionProp,  _scaleProp, _channelProp, _windowProp, 
+            _meteringProp, _attackProp, _decayProp, _bandsProp;
 
         ReorderableList _bandsList = null;
 
         private int[] _resolutionValues = new int[MaxResolutionScale - MinResolutionScale + 1];
-        private string[] _resolutionLabels = new string[MaxResolutionScale - MinResolutionScale + 1];
+        private GUIContent[] _resolutionLabels = new GUIContent[MaxResolutionScale - MinResolutionScale + 1];
         private Rect[] _bandRects = new Rect[BandElementLineCount];
         private float[] _bandRectRatios = { 0.34f, 0.33f, 0.33f };
         private List<(float freq, float logFreq)> _referenceFrequencies = null;
@@ -51,23 +57,52 @@ namespace Ami.BroAudio.Editor
         private void OnEnable()
         {
             var so = serializedObject;
-            _soundSourceProp = so.FindProperty(NameOf.SoundSource);
-            _resolutionProp = so.FindProperty(NameOf.ResolutionScale);
-            _updateRateProp = so.FindProperty(NameOf.UpdateRate);
-            _scaleProp = so.FindProperty(NameOf.Scale);
-            _falldownProp = so.FindProperty(NameOf.FalldownSpeed);
-            _channelProp = so.FindProperty(NameOf.Channel);
-            _windowProp = so.FindProperty(NameOf.WindowType);
-            _bandsProp = so.FindProperty(NameOf.Bands);
+            _soundSourceProp = new PropertyData() { Property = so.FindProperty(NameOf.SoundSource) };
+            _bandsProp = new PropertyData() { Property = so.FindProperty(NameOf.Bands) };
+            _resolutionProp = new PropertyData()
+            {
+                Property = so.FindProperty(NameOf.ResolutionScale),
+                Label = new GUIContent("Block Size", "Number of data samples used for FFT, which can also be considered as frequency resolution"),
+            };
+            _scaleProp = new PropertyData() 
+            {
+                Property = so.FindProperty(NameOf.Scale),
+                Label = new GUIContent("Scale", "Amplitubes retrun from the FFT are usually small, increase this value if you need a more significant value change"),
+            };
+            _channelProp = new PropertyData()
+            {
+                Property = so.FindProperty(NameOf.Channel),
+                Label = new GUIContent("Channel", "The target channel the spectrum is sampled from"),
+            };
+            _windowProp = new PropertyData()
+            {
+                Property = so.FindProperty(NameOf.WindowType),
+                Label = new GUIContent("Window Type", "The FFT window type to use when sampling"),
+            };
+            _meteringProp = new PropertyData()
+            {
+                Property = so.FindProperty(NameOf.Metering),
+                Label = new GUIContent("Metering", "The metering type used to calculate the amplitube of the band"),
+            };
+            _attackProp = new PropertyData()
+            {
+                Property = so.FindProperty(NameOf.Attack),
+                Label = new GUIContent("Attack", "The volume(decibel) it raise per second"),
+            };
+            _decayProp = new PropertyData()
+            {
+                Property = so.FindProperty(NameOf.Decay),
+                Label = new GUIContent("Decay", "The volume(decibel) it reduce per second"),
+            };
 
             for (int i = 0; i < _resolutionValues.Length; i++)
             {
                 int scale = MinResolutionScale + i;
                 _resolutionValues[i] = scale;
-                _resolutionLabels[i] = $"{1 << scale} samples";
+                _resolutionLabels[i] = new GUIContent($"{1 << scale} samples");
             }
 
-            _bandsList = new ReorderableList(serializedObject, _bandsProp)
+            _bandsList = new ReorderableList(so, _bandsProp.Property)
             {
                 elementHeight = (EditorGUIUtility.singleLineHeight + 1f) * BandElementLineCount + ReorderableList.Defaults.padding,
                 drawHeaderCallback = OnDrawBandListHeader,
@@ -138,8 +173,8 @@ namespace Ami.BroAudio.Editor
 
             serializedObject.Update();
 
-            EditorGUILayout.PropertyField(_soundSourceProp);
-            if(_soundSourceProp.objectReferenceValue == null && EditorGUIUtility.currentViewWidth > 350f)
+            DrawPropertyField(_soundSourceProp);
+            if(_soundSourceProp.Property.objectReferenceValue == null && EditorGUIUtility.currentViewWidth > 350f)
             {
                 Rect soundSourceRect = GUILayoutUtility.GetLastRect();
                 soundSourceRect.x = soundSourceRect.xMax -= 70f;
@@ -147,19 +182,36 @@ namespace Ami.BroAudio.Editor
             }
             EditorGUILayout.Space();
 
-            _resolutionProp.intValue =
-                EditorGUILayout.IntPopup("Resolution", _resolutionProp.intValue, _resolutionLabels, _resolutionValues);
+            EditorGUILayout.LabelField("FFT Settings", EditorStyles.boldLabel);
+            _resolutionProp.Property.intValue =
+                EditorGUILayout.IntPopup(_resolutionProp.Label, _resolutionProp.Property.intValue, _resolutionLabels, _resolutionValues);
+            DrawPropertyField(_windowProp);
+            
+            DrawPropertyField(_channelProp);
 
-            EditorGUILayout.PropertyField(_updateRateProp);
-            EditorGUILayout.PropertyField(_scaleProp);
-            EditorGUILayout.PropertyField(_falldownProp);
-            EditorGUILayout.PropertyField(_channelProp);
-            EditorGUILayout.PropertyField(_windowProp);
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Amplitube Settings", EditorStyles.boldLabel);
+            DrawPropertyField(_scaleProp);
+            DrawPropertyField(_meteringProp);
+            DrawPropertyField(_attackProp);
+            DrawPropertyField(_decayProp);
 
             DrawSpectrumView();
             _bandsList.DoLayoutList();
 
             serializedObject.ApplyModifiedProperties();
+
+            static void DrawPropertyField(PropertyData data)
+            {
+                if(data.Label != null)
+                {
+                    EditorGUILayout.PropertyField(data.Property, data.Label);
+                }
+                else
+                {
+                    EditorGUILayout.PropertyField(data.Property);
+                }
+            }
         }
 
         private void DrawSpectrumView()
@@ -184,7 +236,7 @@ namespace Ami.BroAudio.Editor
                 float lastBandX = viewRect.x;
                 for (int i = 0; i < _bandsList.count; i++)
                 {
-                    var elementProp = _bandsProp.GetArrayElementAtIndex(i);
+                    var elementProp = _bandsProp.Property.GetArrayElementAtIndex(i);
                     var freqProp = elementProp.FindPropertyRelative(nameof(Band.Frequency));
 
                     float x = width * Mathf.InverseLerp(MinFrequencyLogValue, MaxFrequencyLogValue, Mathf.Log10(freqProp.floatValue));
@@ -265,8 +317,7 @@ namespace Ami.BroAudio.Editor
             {
                 return;
             }
-            float normalized = _bands[index].Amplitube / (_scaleProp.floatValue * 0.05f); // hack: the definition of scale is still vague
-            float height = Mathf.Min(normalized * SpectrumViewHeight, SpectrumViewHeight);
+            float height = Mathf.Min(_bands[index].Amplitube * SpectrumViewHeight, SpectrumViewHeight);
             EditorGUI.DrawRect(rect.GrowUp(height), BroEditorUtility.EditorSetting.GetSpectrumColor(index));
         }
 

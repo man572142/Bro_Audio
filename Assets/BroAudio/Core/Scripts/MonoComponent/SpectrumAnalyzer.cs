@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Ami.Extension;
 using UnityEngine;
 
 namespace Ami.BroAudio
@@ -9,36 +10,22 @@ namespace Ami.BroAudio
     public class SpectrumAnalyzer : MonoBehaviour
     {
         public enum Channel { Left = 0, Right = 1 };
+        public enum Metering { Peak, RMS, Average}
 
         [Serializable]
-        public struct Band
+        public class Band
         {
             public float Frequency;
 
             [SerializeField, Min(1f)]
             private float _weighted;
+            public float Amplitube { get; private set; } = AudioConstant.MinVolume;
+            public float DecibelVolume { get; private set; } = AudioConstant.MinDecibelVolume;
 
-            private float _lastAmplitube;
-            private float _targetAmplitube;
-            public float Amplitube { get; private set; }
-
-            internal void Record(float targetAmp, int index)
+            public void SetVolume(float amp, float dB)
             {
-                _lastAmplitube = Amplitube;
-                _targetAmplitube = targetAmp * _weighted;
-            }
-
-            internal void Update(float falldown, float progress)
-            {
-                bool isFalling = falldown > 0f && _targetAmplitube < _lastAmplitube;
-                if (isFalling)
-                {
-                    Amplitube = Mathf.Max(Amplitube - (falldown * Time.deltaTime), _targetAmplitube);
-                }
-                else
-                {
-                    Amplitube = Mathf.Lerp(_lastAmplitube, _targetAmplitube, progress);
-                }
+                Amplitube = amp;
+                DecibelVolume = dB;
             }
 
             public static class NameOf
@@ -47,22 +34,22 @@ namespace Ami.BroAudio
             }
         }
 
+        public const float MaxVolumeChange = 20f;
+
         public event Action<IReadOnlyList<Band>> OnUpdate;
 
         [SerializeField] SoundSource _soundSource = null;
         [Space]
         [SerializeField, Range(6, 13)] int _resolutionScale = 10;
-        [SerializeField] float _updateRate = 0.1f;
-        [SerializeField] float _scale = 100f;
-        [SerializeField] float _falldownSpeed = 0f;
         [SerializeField] Channel _channel = default;
         [SerializeField] FFTWindow _windowType = default;
+        [SerializeField] Metering _metering = Metering.Peak;
+        [SerializeField] int _attack = 100; // the time it takes to raise a level of 20dB in milliseconds
+        [SerializeField] int _decay = 1500; // the time it takes to reduce a level of 20dB in milliseconds
+        [SerializeField] int _smooth = 0;
         [SerializeField] Band[] _bands = null;
 
         private float[] _spectrum = null;
-        private float[] _buffer = null;
-        private float _time = 0f;
-        private int _step = 0;
         private float _harmonic = 0f;
         private IAudioPlayer _player;
         private bool _isUsingSoundSource = false;
@@ -70,19 +57,20 @@ namespace Ami.BroAudio
         private int SpectrumSampleCount => 1 << _resolutionScale;
         public int BandCount => _bands.Length;
         public IReadOnlyList<Band> Bands => _bands;
+        public IReadOnlyList<float> Spectrum => _spectrum;
 
         public void SetSource(IAudioPlayer audioPlayer)
         {
             _player = audioPlayer;
+            // TODO: Audio Listener
         }
 
         private void Start()
         {
             _spectrum = new float[SpectrumSampleCount];
-            _buffer = new float[_bands.Length];
 
-            float freqRange = AudioSettings.outputSampleRate / 2f;
-            _harmonic = freqRange / SpectrumSampleCount;
+            float nyquistFreq = AudioSettings.outputSampleRate / 2f;
+            _harmonic = nyquistFreq / SpectrumSampleCount;
 
             _isUsingSoundSource = _soundSource != null;
         }
@@ -103,63 +91,109 @@ namespace Ami.BroAudio
 
         private void UpdateSpectrum()
         {
-            if (_time >= _updateRate)
+            float deltaTime = Time.deltaTime;
+            for (int i = 0; i < _bands.Length;i++)
             {
-                for (int i = 0; i < _bands.Length; i++)
-                {
-                    _bands[i].Record(_buffer[i] * _scale, i);
-                }
-                _time = 0f;
-                _step = 0;
-            }
+                float minFreq = i > 0 ? _bands[i - 1].Frequency : AudioConstant.MinFrequency;
+                float newVol = GetLatestAmp(minFreq, _bands[i].Frequency).ToDecibel();
+                float currentVol = _bands[i].DecibelVolume;
+                float diff = newVol - currentVol;
+                float sign = Mathf.Sign(diff);
+                float changeTime = diff > 0 ? _attack : _decay;
 
-            for (int i = 0; i < _spectrum.Length - 1; i++)
-            {
-                float freq = i * _harmonic;
-                int index = GetFrequencyBandIndex(freq);
-                if (_step == 0)
+                float changeDegree;
+                if (_smooth > 0)
                 {
-                    _buffer[index] = _spectrum[i];
+                    float speedRatio = diff / _smooth;
+                    changeDegree = Mathf.Clamp(MaxVolumeChange * speedRatio, -MaxVolumeChange, MaxVolumeChange);
                 }
                 else
                 {
-                    _buffer[index] = ((_buffer[index] * _step) + _spectrum[i]) / (_step + 1);
+                    changeDegree = MaxVolumeChange * sign;
                 }
+
+                float change = changeTime > 0 ? deltaTime * 1000 * (changeDegree / changeTime) : float.MaxValue;
+
+                if ((diff * sign) <= change)
+                {
+                    currentVol = newVol;
+                }
+                else
+                {
+                    currentVol += change;
+                }
+
+                _bands[i].SetVolume(currentVol.ToNormalizeVolume(), currentVol);
             }
-
-            for (int i = 0; i < _bands.Length;i++)
-            {
-                _bands[i].Update(_falldownSpeed, _time / _updateRate);
-            }
-
-            _step++;
-            _time += Time.deltaTime;
-
             OnUpdate?.Invoke(_bands);
+
+            float GetLatestAmp(float minFreq, float maxFreq)
+            {
+                RangeInt range = GetFrequencyRangeIndex(minFreq, maxFreq);
+                return _metering switch
+                {
+                    Metering.Peak => GetPeak(range),
+                    Metering.RMS => GetRMS(range),
+                    Metering.Average => GetAverage(range),
+                    _ => throw new NotImplementedException(),
+                };
+            }
+
+            float GetPeak(RangeInt range)
+            {
+                float peak = 0f;
+                for (int i = range.start; i <= range.end; i++)
+                {
+                    if (_spectrum[i] > peak)
+                    {
+                        peak = _spectrum[i];
+                    }
+                }
+                return peak;
+            }
+
+            float GetRMS(RangeInt range)
+            {
+                float sum = 0f;
+                for (int i = range.start; i <= range.end; i++)
+                {
+                    sum += Mathf.Pow(_spectrum[i], 2);
+                }
+                return Mathf.Sqrt(sum / range.length);
+            }
+
+            float GetAverage(RangeInt range)
+            {
+                float sum = 0f;
+                for (int i = range.start; i <= range.end; i++)
+                {
+                    sum += _spectrum[i];
+
+                }
+                return sum / range.length;
+            }
         }
 
-        private int GetFrequencyBandIndex(float freq)
+        private RangeInt GetFrequencyRangeIndex(float minFreq, float maxFreq)
         {
-            for (int i = 0; i < _bands.Length; i++)
-            {
-                if (freq < _bands[i].Frequency)
-                {
-                    return i;
-                }
-            }
-            return _bands.Length - 1;
+            RangeInt range;
+            range.start = Mathf.CeilToInt(minFreq / _harmonic);
+            int end = Mathf.FloorToInt(maxFreq / _harmonic);
+            range.length = end - range.start;
+            return range;
         }
 
         public static class NameOf
         {
             public const string SoundSource = nameof(_soundSource);
             public const string ResolutionScale = nameof(_resolutionScale);
-            public const string UpdateRate = nameof(_updateRate);
-            public const string Scale = nameof(_scale);
-            public const string FalldownSpeed = nameof(_falldownSpeed);
             public const string Channel = nameof(_channel);
             public const string WindowType = nameof(_windowType);
             public const string Bands = nameof(_bands);
+            public const string Metering = nameof(_metering);
+            public const string Attack = nameof(_attack);
+            public const string Decay = nameof(_decay);
+            public const string Smooth = nameof(_smooth);
         }
     }
 }

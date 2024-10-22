@@ -6,6 +6,8 @@ using System.Linq;
 using Ami.BroAudio;
 using static Ami.BroAudio.Tools.BroName;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
+using System;
+using Ami.BroAudio.Editor;
 
 namespace Ami.Extension.Reflection
 {
@@ -24,6 +26,8 @@ namespace Ami.Extension.Reflection
 		private ExposedParameterType _exposedParaType = ExposedParameterType.Volume;
 		private AudioMixerGroup _targetExposeMixerGroup = null;
 		private bool _exposeAllMixerGroup = false;
+        private int _sineWavefrequency = 1000;
+        private float _sineWaveDruation = 3f;
 
 		[MenuItem(MenuItem_BroAudio + "Dev Only Tools", priority = DevToolsMenuIndex)]
 		public static void ShowWindow()
@@ -39,18 +43,22 @@ namespace Ami.Extension.Reflection
 			EditorGUILayout.Space();
 			_targetMixer = EditorGUILayout.ObjectField("AudioMixer", _targetMixer, typeof(AudioMixer), false) as AudioMixer;
 
-			if (!_targetMixer)
-			{
-				return;
-			}
-			for (int i = 0; i < 3; i++)
-			{
-				GUILayout.Space(10);
-			}
+            using (new EditorGUI.DisabledScope(_targetMixer == null))
+            {
+                GUILayout.Space(30);
+                DrawDuplicateLastTrackButton();
+                EditorGUILayout.Space();
+                DrawAddExposedParameterButton();
+            }
 
-			DrawDuplicateLastTrackButton();
-			EditorGUILayout.Space();
-			DrawAddExposedParameterButton();
+            EditorGUILayout.Space(20);
+            EditorGUILayout.LabelField("Sine Wave Test Tone", EditorStyles.boldLabel);
+            _sineWavefrequency = EditorGUILayout.IntField("Frequency",_sineWavefrequency);
+            _sineWaveDruation = EditorGUILayout.FloatField("Duration",_sineWaveDruation);
+            if (GUILayout.Button("Generate"))
+            {
+                GenerateTestTone(_sineWavefrequency, _sineWaveDruation);
+            }
 		}
 
 		private void DrawDuplicateLastTrackButton()
@@ -118,6 +126,25 @@ namespace Ami.Extension.Reflection
 		{
 			return EditorUtility.DisplayDialog(DialogTitle, string.Format(DialogMessage, functionName), Confirm, Cancel);
 		}
-	}
+
+        private void GenerateTestTone(float freq, float duration)
+        {
+            int sampleRate = AudioSettings.outputSampleRate;
+            float[] samples = new float[(int)(sampleRate * duration)];
+
+            for (int i = 0; i < samples.Length; i++)
+            {
+                double time = (double)i / sampleRate;
+                samples[i] = (float)Math.Sin(2 * Math.PI * time * freq);
+            }
+
+            string name = $"TestTone_{freq}Hz_0dB";
+            string path = EditorUtility.SaveFilePanelInProject("Generate Test Tone", name, "wav", "");
+            var audioClip = AudioClip.Create(name, samples.Length, 1, sampleRate, false);
+            audioClip.SetData(samples, 0);
+
+            SavWav.Save(path, audioClip);
+        }
+    }
 }
 #endif

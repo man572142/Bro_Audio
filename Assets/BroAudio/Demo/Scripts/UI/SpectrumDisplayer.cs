@@ -4,11 +4,13 @@ using static Ami.BroAudio.SpectrumAnalyzer;
 
 namespace Ami.BroAudio.Demo
 {
+    [AddComponentMenu("")]
     public class SpectrumDisplayer : MonoBehaviour
     {
         [SerializeField] SpectrumAnalyzer _analyzer = null;
         [SerializeField] float _maxHeight = 10f;
         [SerializeField] Transform[] _barTransforms = null;
+        [SerializeField] float _scale = 50f;
 
         private void Start()
         {
@@ -44,7 +46,7 @@ namespace Ami.BroAudio.Demo
                 }
 
                 Vector3 localScale = _barTransforms[i].localScale;
-                localScale.y = Mathf.Min(bands[i].Amplitube, _maxHeight);
+                localScale.y = Mathf.Min(bands[i].Amplitube * _scale, _maxHeight);
                 _barTransforms[i].localScale = localScale;
             }
         }

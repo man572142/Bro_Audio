@@ -3,7 +3,6 @@ using UnityEngine;
 using System.Linq;
 using Ami.BroAudio.Editor;
 using System;
-using UnityEditorInternal;
 
 namespace Ami.Extension
 {

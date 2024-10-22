@@ -10016,7 +10016,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _ui: {fileID: 116313284}
   _fadeTime: 0.5
-  _othersVolume: 1
   _othersLowPasFreq: 1000
   _hierarchyLocateTarget: {fileID: 129135823}
 --- !u!1001 &1347922819
@@ -10912,11 +10911,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _soundSource: {fileID: 0}
   _resolutionScale: 10
-  _updateRate: 0.1
   _scale: 100
-  _falldownSpeed: 3.5
   _channel: 0
   _windowType: 3
+  _metering: 0
+  _attack: 100
+  _decay: 1500
+  _smooth: 0.2
   _bands:
   - Frequency: 50
     _weighted: 1

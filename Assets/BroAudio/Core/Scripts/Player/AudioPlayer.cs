@@ -287,5 +287,22 @@ namespace Ami.BroAudio.Runtime
             _audioFilterReader.OnTriggerAudioFilterRead = onAudioFilterRead;
             return this;
         }
+
+        internal void TransferEvents(out Delegate[] onUpdateDelegates, out Delegate[] onEndDelegates) 
+        {
+            onUpdateDelegates = null;
+            onEndDelegates = null;
+            if (_onUpdate != null)
+            {
+                onUpdateDelegates = _onUpdate.GetInvocationList();
+                _onUpdate = null;
+            }
+
+            if(_onEnd != null)
+            {
+                onEndDelegates = _onEnd.GetInvocationList();
+                _onEnd = null;
+            }
+        }
     }
 }

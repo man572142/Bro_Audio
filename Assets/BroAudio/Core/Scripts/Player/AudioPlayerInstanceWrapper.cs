@@ -88,5 +88,27 @@ namespace Ami.BroAudio
         IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead)=> Instance?.OnAudioFilterRead(onAudioFilterRead) ?? Empty.AudioPlayer;
 #pragma warning restore UNT0008
         #endregion
+
+        public override void UpdateInstance(AudioPlayer newInstance)
+        {
+            Instance.TransferEvents(out var onUpdateDelegates, out var onEndDelegates);
+            if(onUpdateDelegates != null)
+            {
+                foreach(var onUpdate in onUpdateDelegates)
+                {
+                    newInstance.OnUpdate(onUpdate as Action<IAudioPlayer>);
+                }
+            }
+
+            if (onEndDelegates != null)
+            {
+                foreach (var onEnd in onEndDelegates)
+                {
+                    newInstance.OnEnd(onEnd as Action<SoundID>);
+                }
+            }
+             
+            base.UpdateInstance(newInstance);
+        }
     }
 }

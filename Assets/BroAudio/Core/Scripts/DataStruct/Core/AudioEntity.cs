@@ -23,6 +23,7 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public float PitchRandomRange { get; private set; }
         [field: SerializeField] public float VolumeRandomRange { get; private set; }
         [field: SerializeField] public RandomFlag RandomFlags { get; private set; }
+        [field: SerializeField] public PlaybackConfig Config { get; private set; }
 
         public BroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);
         public BroAudioClip PickNewClip(out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index);

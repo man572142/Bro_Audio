@@ -17,8 +17,10 @@ namespace Ami.BroAudio.Editor
 		Priority = 1 << 12,
 		SpatialSettings = 1 << 13,
 		Pitch = 1 << 14,
+        SoundGroup = 1 << 15,
 
-		All = Volume | PlaybackPosition | Fade | ClipPreview | MasterVolume | Loop | Priority | SpatialSettings | Pitch,
+		All = Volume | PlaybackPosition | Fade | ClipPreview | MasterVolume |
+            Loop | Priority | SpatialSettings | Pitch | SoundGroup,
 	} 
 
 	public static class DrawedPropertyConstant

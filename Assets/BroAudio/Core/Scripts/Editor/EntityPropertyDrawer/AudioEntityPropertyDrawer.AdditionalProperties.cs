@@ -86,11 +86,24 @@ namespace Ami.BroAudio.Editor
         {
             var drawFlags = setting.DrawedProperty;
             ConvertUnityEverythingFlagsToAll(ref drawFlags);
+            DrawSoundGroup();
             DrawMasterVolume();
             DrawPitchProperty();
             DrawPriorityProperty();
             DrawLoopProperty();
             DrawSpatialSetting();
+
+            void DrawSoundGroup()
+            {
+                if(IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.SoundGroup, out var groupProp, out _))
+                {
+                    return;
+                }
+
+                Rect groupRect = GetRectAndIterateLine(position);
+                groupRect.width *= DefaultFieldRatio;
+                EditorGUI.PropertyField(groupRect, groupProp);
+            }
 
             void DrawMasterVolume()
             {
@@ -301,6 +314,9 @@ namespace Ami.BroAudio.Editor
                     mainProp = property.FindBackingFieldProperty(nameof(AudioEntity.Pitch));
                     secondaryProp = property.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
                     return mainProp.floatValue == AudioConstant.DefaultPitch && secondaryProp.floatValue == 0f;
+                case DrawedProperty.SoundGroup:
+                    mainProp = property.FindPropertyRelative(EditorPropertyName.SoundGroup);
+                    return mainProp.objectReferenceValue == null;
             }
             return true;
         }

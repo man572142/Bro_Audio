@@ -10,6 +10,7 @@ namespace Ami.BroAudio
 		public int ID;
 #if UNITY_EDITOR
 		[SerializeField] private ScriptableObject _sourceAsset;
+        [field: SerializeField] public GameObject DebugObject { get; private set; }
 #endif
 		public SoundID(int id) : this()
 		{

@@ -25,7 +25,7 @@ namespace Ami.BroAudio.Editor
 
         private float ButtonWidth => EditorGUIUtility.singleLineHeight * 1.5f;
 
-        private string CacheEntityName(int id, SerializedProperty assetProp)
+        private string GetEntityName(int id, SerializedProperty assetProp)
         {
             if(id == 0)
             {
@@ -74,7 +74,8 @@ namespace Ami.BroAudio.Editor
 
             if (!_entityNameDict.TryGetValue(id, out string entityName))
             {
-                _entityNameDict[id] = CacheEntityName(id, assetProp);
+                _entityNameDict[id] = GetEntityName(id, assetProp);
+                CacheDebugObject(property);
             }
 
             Rect suffixRect = EditorGUI.PrefixLabel(position, new GUIContent(property.displayName, ToolTip));
@@ -102,6 +103,17 @@ namespace Ami.BroAudio.Editor
                 _entityNameDict[id] = name;
                 assetProp.objectReferenceValue = asset;
                 property.serializedObject.ApplyModifiedProperties();
+            }
+        }
+
+        private void CacheDebugObject(SerializedProperty property)
+        {
+            SerializedProperty debugObjectProp = property.FindBackingFieldProperty(nameof(SoundID.DebugObject));
+            if (property.serializedObject.targetObject != debugObjectProp.objectReferenceValue &&
+                property.serializedObject.targetObject is MonoBehaviour mono)
+            {
+                debugObjectProp.objectReferenceValue = mono.gameObject;
+                debugObjectProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
             }
         }
 

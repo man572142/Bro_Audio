@@ -48,7 +48,7 @@ namespace Ami.Extension
             return _instance != null;
         }
 
-        public void UpdateInstance(T newInstance)
+        public virtual void UpdateInstance(T newInstance)
         {
             ClearEvent();
             _instance = newInstance;

@@ -14,35 +14,35 @@ namespace Ami.BroAudio.Runtime
         #region Play
         public IAudioPlayer Play(int id)
         {
-            if (IsPlayable(id,out var entity, out var previousPlayer) && TryGetAvailablePlayer(id, out var player))
+            if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
             {
                 var pref = new PlaybackPreference(entity);
-                return PlayerToPlay(id, player, pref, previousPlayer);
+                return PlayerToPlay(id, player, pref);
             }
             return null;
         }
 
         public IAudioPlayer Play(int id, Vector3 position)
         {
-            if (IsPlayable(id,out var entity, out var previousPlayer) && TryGetAvailablePlayer(id, out var player))
+            if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
             {
                 var pref = new PlaybackPreference(entity, position);
-                return PlayerToPlay(id, player, pref, previousPlayer);
+                return PlayerToPlay(id, player, pref);
             }
             return null;
         }
 
         public IAudioPlayer Play(int id, Transform followTarget)
         {
-            if (IsPlayable(id,out var entity, out var previousPlayer) && TryGetAvailablePlayer(id, out var player))
+            if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
             {
                 var pref = new PlaybackPreference(entity, followTarget);
-                return PlayerToPlay(id, player, pref, previousPlayer);
+                return PlayerToPlay(id, player, pref);
             }
             return null;
         }
 
-        private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref, AudioPlayer previousPlayer = null)
+        private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref)
         {
             BroAudioType audioType = GetAudioType(id);
             player.SetPlaybackData(id, pref);
@@ -67,6 +67,8 @@ namespace Ami.BroAudio.Runtime
                 var seamlessLoopHelper = new SeamlessLoopHelper(wrapper, GetNewAudioPlayer);
                 seamlessLoopHelper.AddReplayListener(player);
             }
+
+            //pref.Entity.Config.AddPlayingEntity(wrapper);
             return wrapper;
         }
 
@@ -152,30 +154,30 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        private bool IsPlayable(int id, out IAudioEntity entity, out AudioPlayer previousPlayer)
+
+        private bool IsPlayable(int id, out IAudioEntity entity)
         {
             entity = null;
-            previousPlayer = null;
             if (id <= 0 || !_audioBank.TryGetValue(id, out entity))
             {
                 Debug.LogError(LogTitle + $"The sound is missing or it has never been assigned. No sound will be played. SoundID:{id}");
                 return false;
             }
 
-            SoundID soundID = id;
-            if (_combFilteringPreventer != null && _combFilteringPreventer.TryGetValue(soundID, out previousPlayer) 
+            // TODO:改成用Config
+            //return entity.Config.IsPlayable();
+            if (_combFilteringPreventer != null && _combFilteringPreventer.TryGetValue(id, out var previousPlayer)
                 && !HasPassPreventionTime(previousPlayer.PlaybackStartingTime))
             {
 #if UNITY_EDITOR
                 if (Setting.LogCombFilteringWarning)
                 {
-                    Debug.LogWarning(LogTitle + $"One of the plays of Audio:{soundID.ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
+                    Debug.LogWarning(LogTitle + $"One of the plays of Audio:{((SoundID)id).ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
                     $"For more information, please go to the [Comb Filtering] section in Tools/BroAudio/Preference.");
                 }
 #endif
                 return false;
             }
-
             return true;
         }
 

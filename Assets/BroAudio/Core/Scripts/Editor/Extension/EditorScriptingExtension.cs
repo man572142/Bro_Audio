@@ -661,6 +661,11 @@ namespace Ami.Extension
             return property.FindPropertyRelative(GetBackingFieldName(fieldName));
         }
 
+        public static SerializedProperty FindBackingFieldProperty(this SerializedObject so, string fieldName)
+        {
+            return so.FindProperty(GetBackingFieldName(fieldName));
+        }
+
         public static void DrawBoldToggle(ref SerializedProperty property, RectOffset padding, GUIContent content = null)
         {
             // We can't draw a field with Bold Label because it's used for prefab overrides

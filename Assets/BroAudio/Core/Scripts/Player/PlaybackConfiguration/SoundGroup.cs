@@ -13,7 +13,11 @@ namespace Ami.BroAudio
 
         public bool VerifyPlayableAndAddCount(IAudioPlayer player)
         {
-            if(CurrentPlayingCount >= MaxPlayableCount)
+            if(MaxPlayableCount <= 0)
+            {
+                return true;
+            }
+            else if(CurrentPlayingCount >= MaxPlayableCount)
             {
                 return false;
             }
@@ -27,5 +31,5 @@ namespace Ami.BroAudio
         {
             CurrentPlayingCount = 0;
         }
-    } 
+    }
 }

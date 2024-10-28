@@ -16,6 +16,7 @@ MonoBehaviour:
   - <Name>k__BackingField: BGM
     <ID>k__BackingField: 268435457
     MulticlipsPlayMode: 1
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 80f984309ecd65a4ea1235c4d4c7ac99, type: 3}
       Volume: 1
@@ -51,6 +52,7 @@ MonoBehaviour:
   - <Name>k__BackingField: DesertWind
     <ID>k__BackingField: 805306368
     MulticlipsPlayMode: 0
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: b4281e86518cede498465899fed49af8, type: 3}
       Volume: 0.4
@@ -78,6 +80,7 @@ MonoBehaviour:
   - <Name>k__BackingField: UIHover
     <ID>k__BackingField: 536870912
     MulticlipsPlayMode: 0
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 90d15b059ff868e48bc2d4bd157792cc, type: 3}
       Volume: 1
@@ -105,6 +108,7 @@ MonoBehaviour:
   - <Name>k__BackingField: Footsteps
     <ID>k__BackingField: 1073741824
     MulticlipsPlayMode: 3
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 98e92f012ca7aac4cb5a10875b88f2b2, type: 3}
       Volume: 1
@@ -172,6 +176,7 @@ MonoBehaviour:
   - <Name>k__BackingField: Footsteps_Sand
     <ID>k__BackingField: 1073741834
     MulticlipsPlayMode: 2
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 82fcc4bd69f6d454b8e6d40f442df5df, type: 3}
       Volume: 1
@@ -223,6 +228,7 @@ MonoBehaviour:
   - <Name>k__BackingField: Torch
     <ID>k__BackingField: 1073741825
     MulticlipsPlayMode: 0
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: e00d65c1cb3ddee4384059e085ccba25, type: 3}
       Volume: 0.3
@@ -250,6 +256,7 @@ MonoBehaviour:
   - <Name>k__BackingField: SpaceShipCube
     <ID>k__BackingField: 1073741826
     MulticlipsPlayMode: 0
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 53a94199c0be37f47ac8a3be45e84c7d, type: 3}
       Volume: 2.5
@@ -277,6 +284,7 @@ MonoBehaviour:
   - <Name>k__BackingField: Explosion
     <ID>k__BackingField: 1073741827
     MulticlipsPlayMode: 0
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: f2c643d9991326f44b1224002f9c61fd, type: 3}
       Volume: 1.5
@@ -304,6 +312,7 @@ MonoBehaviour:
   - <Name>k__BackingField: EnterEffectZone
     <ID>k__BackingField: 1073741828
     MulticlipsPlayMode: 0
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 5504b651486f0624db15463931a24cf3, type: 3}
       Volume: 1
@@ -331,6 +340,7 @@ MonoBehaviour:
   - <Name>k__BackingField: WindChime
     <ID>k__BackingField: 1073741829
     MulticlipsPlayMode: 0
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 865ea11df1cc5b0409ab851ccdce14ee, type: 3}
       Volume: 1
@@ -358,6 +368,7 @@ MonoBehaviour:
   - <Name>k__BackingField: EffectZoneHum
     <ID>k__BackingField: 1073741833
     MulticlipsPlayMode: 0
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 8609bb316e5211241a1b6f184275bc78, type: 3}
       Volume: 1
@@ -385,6 +396,7 @@ MonoBehaviour:
   - <Name>k__BackingField: Beach
     <ID>k__BackingField: 805306369
     MulticlipsPlayMode: 0
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 5fa5b0707fe528747a365bfa62913341, type: 3}
       Volume: 1
@@ -412,6 +424,7 @@ MonoBehaviour:
   - <Name>k__BackingField: Collectible
     <ID>k__BackingField: 1073741831
     MulticlipsPlayMode: 1
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: aa55ad851a936e04fb634b21d5430fce, type: 3}
       Volume: 1
@@ -471,6 +484,7 @@ MonoBehaviour:
   - <Name>k__BackingField: BigCollectible
     <ID>k__BackingField: 1073741832
     MulticlipsPlayMode: 0
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 31f987a22b50cfb4388695cfa0ce70a3, type: 3}
       Volume: 1
@@ -498,6 +512,7 @@ MonoBehaviour:
   - <Name>k__BackingField: Shoot
     <ID>k__BackingField: 1073741835
     MulticlipsPlayMode: 4
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 283db2de8512111488e1d3aa233ab98d, type: 3}
       Volume: 0.44236746
@@ -541,6 +556,7 @@ MonoBehaviour:
   - <Name>k__BackingField: Charging
     <ID>k__BackingField: 1073741836
     MulticlipsPlayMode: 0
+    _group: {fileID: 0}
     Clips:
     - AudioClip: {fileID: 8300000, guid: 2cd1432e8b64c5f47a8ef0c6c1aa49c6, type: 3}
       Volume: 1

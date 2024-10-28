@@ -6,7 +6,7 @@ using static Ami.Extension.EditorScriptingExtension;
 namespace Ami.BroAudio.Editor
 {
 #if BroAudio_DevOnly
-	[CreateAssetMenu(menuName = nameof(BroAudio) + "/Editor Setting", fileName = Tools.BroName.EditorSettingPath)]
+	[CreateAssetMenu(menuName = nameof(BroAudio) + "/Editor Setting", fileName = BroEditorUtility.EditorSettingPath)]
 #endif
 	public class EditorSetting : ScriptableObject
 	{
@@ -126,7 +126,7 @@ namespace Ami.BroAudio.Editor
 			};
 		}
 
-        private void CreateDefaultSpectrumColors()
+        internal void CreateDefaultSpectrumColors()
         {
             float alpha = 150f / 256f;
             SpectrumBandColors = new List<Color>()

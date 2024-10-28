@@ -4,6 +4,7 @@ using UnityEditor;
 using Ami.BroAudio.Tools;
 using System.Linq;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
+using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Editor.DevTool
 {
@@ -17,7 +18,10 @@ namespace Ami.BroAudio.Editor.DevTool
 				.Where(x => IsBroAudioAsset(x) && !IsExcludedFile(x))
 				.ToArray();
 
-			AssetDatabase.ExportPackage(allfilePaths, "BroAudio" + DateTime.Now.ToString("yy-MM-dd-HH-mm") + ".unitypackage", ExportPackageOptions.Interactive);
+            if(EditorUtility.DisplayDialog("Export BroAudio Package", $"Export Version:{BroAudioData.CodeBaseVersion} ?", "Yes", "No"))
+            {
+                AssetDatabase.ExportPackage(allfilePaths, "BroAudio" + DateTime.Now.ToString("yy-MM-dd-HH-mm") + ".unitypackage", ExportPackageOptions.Interactive);
+            }
         }
 
 		private static bool IsBroAudioAsset(string path)
@@ -31,7 +35,10 @@ namespace Ami.BroAudio.Editor.DevTool
 			{
 				return false;
 			}
-			return path.Contains("BroRuntimeSetting.asset") || path.Contains("BroEditorSetting.asset") || path.Contains("BroAudioData.asset");
+			return path.Contains($"{BroName.RuntimeSettingName}.asset") || 
+                path.Contains($"{BroName.EditorSettingName}.asset") || 
+                path.Contains($"{BroName.CoreDataName}.asset") ||
+                path.Contains($"{BroName.DefaultSoundGroupName}.asset");
 		}
 	}
 }

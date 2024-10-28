@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Ami.Extension;
 using UnityEngine;
 
 namespace Ami.BroAudio.Data
@@ -10,9 +12,13 @@ namespace Ami.BroAudio.Data
 #endif
 	public class BroAudioData : ScriptableObject
 	{
-		[SerializeField] List<AudioAsset> _assets = new List<AudioAsset>();
+        public const string CodeBaseVersion = "1.14";
 
+        [SerializeField, ReadOnly] string _version = "1.0";
+        [SerializeField] List<AudioAsset> _assets = new List<AudioAsset>();
+        
 		public IReadOnlyList<AudioAsset> Assets => _assets;
+        public Version Version => new Version(_version);
 
 #if UNITY_EDITOR
 		public List<string> GetGUIDList()
@@ -53,6 +59,11 @@ namespace Ami.BroAudio.Data
 			}
 			_assets = _assets.OrderBy(x => guids.IndexOf(x.AssetGUID)).ToList();
 		} 
+
+        public void UpdateVersion()
+        {
+            _version = CodeBaseVersion;
+        }
 #endif
 	} 
 }

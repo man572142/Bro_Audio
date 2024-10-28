@@ -6,14 +6,12 @@ namespace Ami.BroAudio.Tools
         public const string AudioPlayerPrefabName = "AudioPlayer";
 
 		#region File Path
-		public const string InstructionFileName = "BroInstruction";
-		public const string RuntimeSettingFileName = "BroRuntimeSetting";
-		public const string EditorSettingPath = EditorResourcePath + "BroEditorSetting";
-		public const string MainLogoPath = EditorResourcePath + "Logo_Editor";
-		public const string TransparentLogoPath = EditorResourcePath + "Logo_Transparent";
-		public const string EditorResourcePath = "Editor/";
+        public const string CoreDataName = "BroAudioData";
+        public const string InstructionFileName = "BroInstruction";
+		public const string RuntimeSettingName = "BroRuntimeSetting";
+        public const string EditorSettingName = "BroEditorSetting";
+        public const string DefaultSoundGroupName = "DefaultSoundGroup";
 		public const string EditorAudioMixerName = "EditorBroAudioMixer";
-		public const string EditorAudioMixerPath = EditorResourcePath + EditorAudioMixerName;
 		#endregion
 
 		#region MenuItem

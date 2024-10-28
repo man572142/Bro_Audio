@@ -3,18 +3,27 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using UnityEditor;
+using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
 	public static partial class BroEditorUtility
 	{
-        public const string CoreDataResourcesPath = "BroAudioData";
-		public const string DefaultRelativeAssetOutputPath = "BroAudio/AudioAssets";
-        public const string DefaultAssetOutputPath = "Assets/" + DefaultRelativeAssetOutputPath;
-		public const string EditorSettingPath = "Editor/BroEditorSetting";
-		public const string RuntimeSettingPath = "BroRuntimeSetting";
+        public const string EditorResourcePath = "Editor/";
 
-		public static readonly string UnityProjectRootPath = Application.dataPath.Replace("/Assets", string.Empty);
+        public const string CoreDataResourcesPath = BroName.CoreDataName;
+        public const string DefaultRelativeAssetOutputPath = "BroAudio/AudioAssets";
+        public const string DefaultAssetOutputPath = "Assets/" + DefaultRelativeAssetOutputPath;
+        public const string EditorSettingPath = EditorResourcePath + BroName.EditorSettingName;
+        public const string RuntimeSettingPath = BroName.RuntimeSettingName;
+        public const string DefaultSoundGroupPath = BroName.DefaultSoundGroupName;
+
+        public const string MainLogoPath = EditorResourcePath + "Logo_Editor";
+        public const string TransparentLogoPath = EditorResourcePath + "Logo_Transparent";
+        public const string EditorAudioMixerPath = EditorResourcePath + BroName.EditorAudioMixerName;
+
+
+        public static readonly string UnityProjectRootPath = Application.dataPath.Replace("/Assets", string.Empty);
 
 		private static string _assetOutputPath = string.Empty;
 		public static string AssetOutputPath

@@ -43,7 +43,7 @@ namespace Ami.BroAudio.Editor
             {
                 if (!_runtimeSetting)
                 {
-                    _runtimeSetting = Resources.Load<RuntimeSetting>(BroName.RuntimeSettingFileName);
+                    _runtimeSetting = Resources.Load<RuntimeSetting>(BroName.RuntimeSettingName);
                     if (!_runtimeSetting)
                     {
                         Debug.LogError(Utility.LogTitle + string.Format(SettingFileMissingMegssage, "BroRuntimeSetting"));
@@ -62,7 +62,7 @@ namespace Ami.BroAudio.Editor
             {
                 if (!_editorSetting)
                 {
-                    _editorSetting = Resources.Load<EditorSetting>(BroName.EditorSettingPath);
+                    _editorSetting = Resources.Load<EditorSetting>(EditorSettingPath);
                     if (!_editorSetting)
                     {
                         Debug.LogError(Utility.LogTitle + string.Format(SettingFileMissingMegssage, "BroEditorSetting"));

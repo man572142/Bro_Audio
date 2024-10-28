@@ -11,42 +11,95 @@ namespace Ami.BroAudio.Editor
 #if UNITY_EDITOR
 	public static class BroUserDataGenerator
 	{
-		private static bool _isGenerating = false;
+		private static bool _isLoading = false;
+        private static Version SoundGroupFirstReleasedVersion => new Version(1, 14);
 
 		public static void CheckAndGenerateUserData()
 		{
-			if (_isGenerating)
+			if (_isLoading)
 			{
 				return;
 			}
-			_isGenerating = true;
+			_isLoading = true;
 
             var request = Resources.LoadAsync<SoundManager>(nameof(SoundManager));
             request.completed += OnGetSoundManager;
 
             void OnGetSoundManager(AsyncOperation operation)
             {
-                request.completed -= OnGetSoundManager;
+                request.completed -= OnGetSoundManager;          
                 if (request.asset is SoundManager soundManager)
                 {
                     if(TryGetCoreData(out var currentCoreData))
                     {
                         AssignCoreData(soundManager, currentCoreData);
+                        AddNewFeatureSettings(soundManager, currentCoreData);
+                        currentCoreData.UpdateVersion();
+                        EditorUtility.SetDirty(currentCoreData);
+                        AssetDatabase.SaveAssets();
                     }
                     else
                     {
-                        StartGenerateUserData(soundManager);
+                        StartGeneratingUserData(soundManager);
                     }
                 }
                 else
                 {
                     Debug.LogError(Utility.LogTitle + $"Load {nameof(SoundManager)} fail, " +
-                        $"please import it and place it in the Resources folder, and go to Tools/Preference, switch to the last tab and hit [Regenerate User Data]");
+                        $"please import it and place it in the Resources folder, and go to Tools/Preferences, switch to the last tab and hit [Regenerate User Data]");
+                }
+                _isLoading = false;
+            }
+        }
+
+        private static void AddNewFeatureSettings(SoundManager soundManager, BroAudioData coreData)
+        {
+            Version oldAssetVersion = coreData.Version;
+            Version soundGroupFirstVersion = SoundGroupFirstReleasedVersion;
+            string resourcePath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(soundManager));
+            if (TryLoadResources<RuntimeSetting>(RuntimeSettingPath, out var runtimeSetting))
+            {
+                bool isDirty = false;
+                if (runtimeSetting.DefaultSoundGroup == null)
+                {
+                    runtimeSetting.DefaultSoundGroup = CreateScriptableObjectIfNotExist<SoundGroup>(GetAssetSavePath(resourcePath, DefaultSoundGroupPath));
+                    isDirty = true;
+                }
+                
+                if(isDirty)
+                {
+                    EditorUtility.SetDirty(runtimeSetting);
+                }
+            }
+
+            if(TryLoadResources<EditorSetting>(EditorSettingPath, out var editorSetting))
+            {
+                bool isDirty = false;
+                if (editorSetting.SpectrumBandColors == null || editorSetting.SpectrumBandColors.Count == 0)
+                {
+                    editorSetting.CreateDefaultSpectrumColors();
+                    isDirty = true;
+                }
+
+                if (oldAssetVersion < soundGroupFirstVersion)
+                {
+                    for(int i = 0; i < editorSetting.AudioTypeSettings.Count;i++)
+                    {
+                        var typeSetting = editorSetting.AudioTypeSettings[i];
+                        typeSetting.DrawedProperty |= DrawedProperty.SoundGroup;
+                        editorSetting.AudioTypeSettings[i] = typeSetting;
+                    }
+                    isDirty = true;
+                }
+
+                if (isDirty)
+                {
+                    EditorUtility.SetDirty(editorSetting);
                 }
             }
         }
 
-		private static void StartGenerateUserData(SoundManager soundManager)
+        private static void StartGeneratingUserData(SoundManager soundManager)
 		{
 			string resourcePath;
 			resourcePath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(soundManager));
@@ -55,12 +108,15 @@ namespace Ami.BroAudio.Editor
             var coreData = CreateCoreData(coreDataPath, out string audioAssetOutputPath);
 			AssignCoreData(soundManager, coreData);
 
-			CreateSettingIfNotExist<RuntimeSetting>(GetAssetSavePath(resourcePath, RuntimeSettingPath));
-            var editorSetting = CreateSettingIfNotExist<EditorSetting>(GetAssetSavePath(resourcePath, EditorSettingPath));
+			var runtimeSetting = CreateScriptableObjectIfNotExist<RuntimeSetting>(GetAssetSavePath(resourcePath, RuntimeSettingPath));
+            runtimeSetting.DefaultSoundGroup = CreateScriptableObjectIfNotExist<SoundGroup>(GetAssetSavePath(resourcePath, DefaultSoundGroupPath));
+            EditorUtility.SetDirty(runtimeSetting);
+
+            var editorSetting = CreateScriptableObjectIfNotExist<EditorSetting>(GetAssetSavePath(resourcePath, EditorSettingPath));
 			editorSetting.AssetOutputPath = audioAssetOutputPath;
 			EditorUtility.SetDirty(editorSetting);
+
             AssetDatabase.SaveAssets();
-            _isGenerating = false;
         }
 
 		private static string GetAssetSavePath(string resourcesPath, string relativePath)
@@ -71,6 +127,7 @@ namespace Ami.BroAudio.Editor
 		private static BroAudioData CreateCoreData(string coreDataPath, out string audioAssetOutputpath)
 		{
 			BroAudioData coreData = ScriptableObject.CreateInstance<BroAudioData>();
+            coreData.UpdateVersion();
 			GetInitialData(coreData.AddAsset, out audioAssetOutputpath);
 			AssetDatabase.CreateAsset(coreData, coreDataPath);
             EditorUtility.SetDirty(coreData);
@@ -113,9 +170,9 @@ namespace Ami.BroAudio.Editor
 			PrefabUtility.SavePrefabAsset(soundManager.gameObject);
 		}
 
-		private static T CreateSettingIfNotExist<T>(string path) where T : ScriptableObject
+		private static T CreateScriptableObjectIfNotExist<T>(string path) where T : ScriptableObject
 		{
-			T setting = null;
+			T setting;
 			if (!TryLoadResources<T>(path, out setting))
 			{
 				setting = ScriptableObject.CreateInstance<T>();

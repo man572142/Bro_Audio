@@ -1,5 +1,6 @@
 using UnityEngine;
 using Ami.Extension;
+using Ami.BroAudio.Runtime;
 
 namespace Ami.BroAudio.Data
 {
@@ -31,8 +32,7 @@ namespace Ami.BroAudio.Data
             {
                 if(!_group)
                 {
-                    // TODO : return default group?
-                    return null;
+                    return SoundManager.Instance.Setting.DefaultSoundGroup;
                 }
                 return _group;
             }

@@ -7,7 +7,7 @@ using Ami.BroAudio.Runtime;
 namespace Ami.BroAudio.Data
 {
 #if BroAudio_DevOnly
-	[CreateAssetMenu(menuName = nameof(BroAudio) + "/Runtime Setting", fileName = Tools.BroName.RuntimeSettingFileName)]
+	[CreateAssetMenu(menuName = nameof(BroAudio) + "/Runtime Setting", fileName = Tools.BroName.RuntimeSettingName)]
 #endif
 	public class RuntimeSetting : ScriptableObject
 	{
@@ -26,6 +26,8 @@ namespace Ami.BroAudio.Data
 		public bool AlwaysPlayMusicAsBGM = true;
 		public Transition DefaultBGMTransition = FactorySettings.DefaultBGMTransition;
 		public float DefaultBGMTransitionTime = FactorySettings.DefaultBGMTransitionTime;
+
+        public SoundGroup DefaultSoundGroup = null;
 
 #if UNITY_EDITOR
 		public void ResetToFactorySettings()

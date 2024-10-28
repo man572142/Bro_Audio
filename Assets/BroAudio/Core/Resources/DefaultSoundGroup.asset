@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b243f3ab30ae6d84c97a6e127715e296, type: 3}
   m_Name: DefaultSoundGroup
   m_EditorClassIdentifier: 
-  <MaxPlayableCount>k__BackingField: 10
+  <MaxPlayableCount>k__BackingField: -1

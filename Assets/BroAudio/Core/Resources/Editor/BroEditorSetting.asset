@@ -19,19 +19,19 @@ MonoBehaviour:
   AudioTypeSettings:
   - AudioType: 1
     Color: {r: 0.003921569, g: 0.18431373, b: 0.5294118, a: 0.29803923}
-    DrawedProperty: 3087
+    DrawedProperty: 35855
   - AudioType: 2
     Color: {r: 0.05490196, g: 0.6117647, b: 0.53333336, a: 0.29803923}
-    DrawedProperty: 1039
+    DrawedProperty: 33807
   - AudioType: 4
     Color: {r: 0, g: 0.6901961, b: 0.15686275, a: 0.29803923}
-    DrawedProperty: 11279
+    DrawedProperty: 44047
   - AudioType: 8
     Color: {r: 0.99215686, g: 0.5019608, b: 0.23921569, a: 0.5882353}
-    DrawedProperty: 27663
+    DrawedProperty: 60431
   - AudioType: 16
     Color: {r: 0.93333334, g: 0.7764706, b: 0.21568628, a: 0.29803923}
-    DrawedProperty: 1039
+    DrawedProperty: 33807
   SpectrumBandColors:
   - {r: 0.4862745, g: 0.68235296, b: 1, a: 0.5859375}
   - {r: 0.38431373, g: 0.92156863, b: 0.98039216, a: 0.5859375}

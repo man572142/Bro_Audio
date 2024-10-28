@@ -11,9 +11,9 @@ namespace Ami.BroAudio.Runtime
         private Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
 
         #region Play
-        public IAudioPlayer Play(SoundID id)
+        public IAudioPlayer Play(SoundID id, SoundGroup overrideGroup = null)
         {
-            if (IsPlayable(id, out var entity, out var player))
+            if (IsPlayable(id, overrideGroup, out var entity, out var player))
             {
                 var pref = new PlaybackPreference(entity);
                 return PlayerToPlay(id, player, pref);
@@ -21,9 +21,9 @@ namespace Ami.BroAudio.Runtime
             return null;
         }
 
-        public IAudioPlayer Play(SoundID id, Vector3 position)
+        public IAudioPlayer Play(SoundID id, Vector3 position, SoundGroup overrideGroup = null)
         {
-            if (IsPlayable(id, out var entity, out var player))
+            if (IsPlayable(id, overrideGroup, out var entity, out var player))
             {
                 var pref = new PlaybackPreference(entity, position);
                 return PlayerToPlay(id, player, pref);
@@ -31,9 +31,9 @@ namespace Ami.BroAudio.Runtime
             return null;
         }
 
-        public IAudioPlayer Play(SoundID id, Transform followTarget)
+        public IAudioPlayer Play(SoundID id, Transform followTarget, SoundGroup overrideGroup = null)
         {
-            if (IsPlayable(id, out var entity, out var player))
+            if (IsPlayable(id, overrideGroup, out var entity, out var player))
             {
                 var pref = new PlaybackPreference(entity, followTarget);
                 return PlayerToPlay(id, player, pref);
@@ -41,7 +41,7 @@ namespace Ami.BroAudio.Runtime
             return null;
         }
 
-        private bool IsPlayable(SoundID id, out IAudioEntity entity, out AudioPlayer player)
+        private bool IsPlayable(SoundID id, SoundGroup overrideGroup, out IAudioEntity entity, out AudioPlayer player)
         {
             entity = null;
             player = null;
@@ -52,8 +52,10 @@ namespace Ami.BroAudio.Runtime
                 return false;
             }
 
+            var group = overrideGroup != null ? overrideGroup : entity.Group;
+
             return TryGetAvailablePlayer(id, out player) &&
-                (entity.Group == null || entity.Group.VerifyPlayableAndAddCount(player));
+                (group == null || group.VerifyPlayableAndAddCount(player));
         }
 
         private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref)

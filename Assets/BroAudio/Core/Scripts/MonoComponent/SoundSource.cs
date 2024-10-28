@@ -20,11 +20,12 @@ namespace Ami.BroAudio
         [SerializeField] float _overrideFadeOut = -1f;
         [Space]
         [SerializeField] SoundID _sound = default;
+        [SerializeField] SoundGroup _overrideGroup = null;
         [SerializeField] PositionMode _positionMode = default;
 
-        public void Play() => CurrentPlayer = BroAudio.Play(_sound);
-        public void Play(Transform followTarget) => CurrentPlayer = BroAudio.Play(_sound, followTarget);
-        public void Play(Vector3 positon) => CurrentPlayer = BroAudio.Play(_sound, positon);
+        public void Play() => CurrentPlayer = BroAudio.Play(_sound, _overrideGroup);
+        public void Play(Transform followTarget) => CurrentPlayer = BroAudio.Play(_sound, followTarget, _overrideGroup);
+        public void Play(Vector3 positon) => CurrentPlayer = BroAudio.Play(_sound, positon, _overrideGroup);
         public void Stop() => CurrentPlayer?.Stop();
         public void Stop(float fadeTime) => CurrentPlayer?.Stop(fadeTime);
         public void SetVolume(float vol) => CurrentPlayer?.SetVolume(vol);

@@ -75,7 +75,7 @@ namespace Ami.BroAudio.Editor
 				float offsetX = DefaultLayoutPadding * 2f;
 				Vector2 logoPos = entitiesRect.size * 0.5f - audioIconSize * 0.5f + new Vector2(offsetX, 0f);
 				Rect audioIconRect = new Rect(logoPos, audioIconSize);
-                _backgroundLogo = _backgroundLogo ? _backgroundLogo : Resources.Load<Texture>(BroName.TransparentLogoPath);
+                _backgroundLogo = _backgroundLogo ? _backgroundLogo : Resources.Load<Texture>(BroEditorUtility.TransparentLogoPath);
                 _backgroundLogoMat = _backgroundLogoMat ? _backgroundLogoMat : (Material)EditorGUIUtility.LoadRequired("Inspectors/InactiveGUI.mat");
 				EditorGUI.DrawPreviewTexture(audioIconRect, _backgroundLogo, _backgroundLogoMat, ScaleMode.ScaleToFit);
 			}

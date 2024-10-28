@@ -91,7 +91,7 @@ namespace Ami.Extension
 
         public EditorPlayAudioClip()
         {
-            _mixer = Resources.Load<AudioMixer>(BroName.EditorAudioMixerPath);
+            _mixer = Resources.Load<AudioMixer>(BroEditorUtility.EditorAudioMixerPath);
             PlaybackIndicator = new PlaybackIndicatorUpdater();
             _volumeTransporter = new EditorAudioPreviewer(_mixer);
 

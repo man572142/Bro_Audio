@@ -48,7 +48,7 @@ namespace Ami.BroAudio.Editor.Setting
         private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
         private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
-            ,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent,_dominatorTrackGUIContent, _regenerateUserDataGUIContent;
+            ,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent,_dominatorTrackGUIContent, _regenerateUserDataGUIContent, _defaultGroupGUIContent;
 
         private GUIContent[] _tabLabels = null;
         private Tab _currSelectedTab = Tab.Audio;
@@ -100,6 +100,7 @@ namespace Ami.BroAudio.Editor.Setting
             _pitchGUIContent = new GUIContent("Pitch Shift Using", _instruction.GetText(Instruction.PitchShiftingToolTip));
             _audioVoicesGUIContent = new GUIContent("Max Real Voices", _instruction.GetText(Instruction.AudioVoicesToolTip));
             _virtualTracksGUIContent = new GUIContent("Bro Virtual Tracks", _instruction.GetText(Instruction.BroVirtualToolTip));
+            _defaultGroupGUIContent = new GUIContent("Default Sound Group", _instruction.GetText(Instruction.DefaultSoundGroup));
             _filterSlopeGUIContent = new GUIContent("Audio Filter Slope", _instruction.GetText(Instruction.AudioFilterSlope));
             _acceptAudioMixerGUIContent = new GUIContent("Accept BroAudioMixer Modification");
             _playMusicAsBgmGUIContent = new GUIContent("Always Play Music As BGM", _instruction.GetText(Instruction.AlwaysPlayMusicAsBGM));
@@ -207,6 +208,7 @@ namespace Ami.BroAudio.Editor.Setting
         private void DrawAudioSetting(Rect drawPosition)
         {
             drawPosition.width -= Gap;
+            DrawDefaultSoundGroup();
             DrawAudioFilterSlope();
             DrawEmptyLine(1);
             DrawBGMSetting();
@@ -314,6 +316,11 @@ namespace Ami.BroAudio.Editor.Setting
                     RuntimeSetting.SeamlessFadeOutEase =
                         (Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade Out", RuntimeSetting.SeamlessFadeOutEase);
                 }
+            }
+
+            void DrawDefaultSoundGroup()
+            {
+                RuntimeSetting.DefaultSoundGroup = (SoundGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _defaultGroupGUIContent, RuntimeSetting.DefaultSoundGroup, typeof(SoundGroup), false);
             }
 
             void DrawAudioFilterSlope()

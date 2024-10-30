@@ -257,13 +257,13 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-			if (ID <= 0 || !AudioSource.isPlaying)
+            if (ID <= 0 || !AudioSource.isPlaying)
 			{
 				onFinished?.Invoke();
 				return;
 			}
 
-			this.StartCoroutineAndReassign(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);
+            this.StartCoroutineAndReassign(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);
         }
 
 		private IEnumerator StopControl(float overrideFade, StopMode stopMode, Action onFinished)

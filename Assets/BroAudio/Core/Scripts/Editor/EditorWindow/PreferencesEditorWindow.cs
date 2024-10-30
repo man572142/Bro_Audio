@@ -1,3 +1,4 @@
+using Ami.BroAudio.Tools;
 using Ami.Extension;
 using Ami.Extension.Reflection;
 using System;
@@ -96,7 +97,7 @@ namespace Ami.BroAudio.Editor.Setting
 
         private void InitGUIContents()
         {
-            _combFilteringGUIContent = new GUIContent("Time To Prevent Comb Filtering", _instruction.GetText(Instruction.CombFilteringTooltip));
+            _combFilteringGUIContent = new GUIContent(CombFilteringTimeName, _instruction.GetText(Instruction.CombFilteringTooltip));
             _pitchGUIContent = new GUIContent("Pitch Shift Using", _instruction.GetText(Instruction.PitchShiftingToolTip));
             _audioVoicesGUIContent = new GUIContent("Max Real Voices", _instruction.GetText(Instruction.AudioVoicesToolTip));
             _virtualTracksGUIContent = new GUIContent("Bro Virtual Tracks", _instruction.GetText(Instruction.BroVirtualToolTip));
@@ -320,7 +321,16 @@ namespace Ami.BroAudio.Editor.Setting
 
             void DrawDefaultSoundGroup()
             {
-                RuntimeSetting.DefaultSoundGroup = (SoundGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _defaultGroupGUIContent, RuntimeSetting.DefaultSoundGroup, typeof(SoundGroup), false);
+                var group = (SoundGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _defaultGroupGUIContent, RuntimeSetting.DefaultSoundGroup, typeof(SoundGroup), false);
+                if(group.OverrideOptions != SoundGroup.OverrideOption.All)
+                {
+                    ShowNotification(new GUIContent("This group cannot be used as Default, see log"));
+                    Debug.LogWarning(LogTitle + "The DefaultSoundGroup must enable all override options, as it needs to represent the default value when no Group or Value is specified.");
+                }
+                else
+                {
+                    RuntimeSetting.DefaultSoundGroup = group;
+                }
             }
 
             void DrawAudioFilterSlope()

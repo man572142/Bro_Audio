@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: DefaultSoundGroup
   m_EditorClassIdentifier: 
   <MaxPlayableCount>k__BackingField: -1
+  <CombFilteringTime>k__BackingField: 0.04
+  <OverrideOptions>k__BackingField: 3

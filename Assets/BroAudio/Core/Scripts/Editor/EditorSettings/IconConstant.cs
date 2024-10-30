@@ -45,5 +45,6 @@ namespace Ami.BroAudio.Editor
 
         // Inspector
         public const string Indicator = "IN foldout act on";
+        public const string WritingIcon = "d_editicon.sml";
     }
 }

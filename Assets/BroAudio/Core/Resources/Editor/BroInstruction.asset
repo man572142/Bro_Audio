@@ -128,3 +128,9 @@ MonoBehaviour:
     Value: Dynamically set both the volume and the slider in Play Mode
   - Key: 18
     Value: If no SoundGroup is specified in the AudioEntity, this group will be used
+  - Key: 500
+    Value: '[Override Option]
+
+      When enabled, playback will be verified using
+      the value of this group; otherwise, the DefaultSoundGroup''s value will be
+      used'

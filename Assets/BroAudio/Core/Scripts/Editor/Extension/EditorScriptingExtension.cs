@@ -718,5 +718,14 @@ namespace Ami.Extension
             return property.intValue;
 #endif
         }
+
+        public static void SetEnumFlag(this SerializedProperty property, int flags)
+        {
+#if UNITY_2021_2_OR_NEWER
+            property.enumValueFlag = flags;
+#else
+            property.intValue = flags;
+#endif
+        }
     }
 }

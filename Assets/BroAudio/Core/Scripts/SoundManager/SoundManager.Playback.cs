@@ -11,9 +11,9 @@ namespace Ami.BroAudio.Runtime
         private Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
 
         #region Play
-        public IAudioPlayer Play(SoundID id, SoundGroup overrideGroup = null)
+        public IAudioPlayer Play(SoundID id, IPlayableValidator customValidator = null)
         {
-            if (IsPlayable(id, overrideGroup, out var entity, out var player))
+            if (IsPlayable(id, customValidator, out var entity, out var player))
             {
                 var pref = new PlaybackPreference(entity);
                 return PlayerToPlay(id, player, pref);
@@ -21,9 +21,9 @@ namespace Ami.BroAudio.Runtime
             return null;
         }
 
-        public IAudioPlayer Play(SoundID id, Vector3 position, SoundGroup overrideGroup = null)
+        public IAudioPlayer Play(SoundID id, Vector3 position, IPlayableValidator customValidator = null)
         {
-            if (IsPlayable(id, overrideGroup, out var entity, out var player))
+            if (IsPlayable(id, customValidator, out var entity, out var player))
             {
                 var pref = new PlaybackPreference(entity, position);
                 return PlayerToPlay(id, player, pref);
@@ -31,9 +31,9 @@ namespace Ami.BroAudio.Runtime
             return null;
         }
 
-        public IAudioPlayer Play(SoundID id, Transform followTarget, SoundGroup overrideGroup = null)
+        public IAudioPlayer Play(SoundID id, Transform followTarget, IPlayableValidator customValidator = null)
         {
-            if (IsPlayable(id, overrideGroup, out var entity, out var player))
+            if (IsPlayable(id, customValidator, out var entity, out var player))
             {
                 var pref = new PlaybackPreference(entity, followTarget);
                 return PlayerToPlay(id, player, pref);
@@ -41,7 +41,7 @@ namespace Ami.BroAudio.Runtime
             return null;
         }
 
-        private bool IsPlayable(SoundID id, SoundGroup overrideGroup, out IAudioEntity entity, out AudioPlayer player)
+        private bool IsPlayable(SoundID id, IPlayableValidator customValidator, out IAudioEntity entity, out AudioPlayer player)
         {
             entity = null;
             player = null;
@@ -52,10 +52,12 @@ namespace Ami.BroAudio.Runtime
                 return false;
             }
 
-            var group = overrideGroup != null ? overrideGroup : entity.Group;
+            var validator = customValidator != null ? customValidator : entity.Group;
 
-            return TryGetAvailablePlayer(id, out player) &&
-                (group == null || group.VerifyPlayableAndAddCount(player));
+            bool isValid = validator == null || validator.IsPlayable(id);
+            bool result = isValid && TryGetAvailablePlayer(id, out player);
+            validator?.OnGetPlayer(player);
+            return result;
         }
 
         private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref)
@@ -196,11 +198,23 @@ namespace Ami.BroAudio.Runtime
 //            return true;
 //        }
 
-        private bool HasPassPreventionTime(int previousPlayTime)
+        public static bool HasPassPreventionTime(int previousPlayTime, float combFilteringTime)
         {
             int time = TimeExtension.UnscaledCurrentFrameBeganTime;
             bool isInQueue = previousPlayTime == 0f;
-            return !isInQueue && time - previousPlayTime >= TimeExtension.SecToMs(Setting.CombFilteringPreventionInSeconds);
+            return !isInQueue && time - previousPlayTime >= TimeExtension.SecToMs(combFilteringTime);
+        }
+
+        public bool HasPassCombFilteringPreventionTime(SoundID id, float combFilteringTime)
+        {
+            if (_combFilteringPreventer != null && _combFilteringPreventer.TryGetValue(id, out var previousPlayer))
+            {
+                int time = TimeExtension.UnscaledCurrentFrameBeganTime;
+                int previousPlayTime = previousPlayer.PlaybackStartingTime;
+                bool isInQueue = previousPlayTime == 0f;
+                return !isInQueue && time - previousPlayTime >= TimeExtension.SecToMs(combFilteringTime);
+            }
+            return true;
         }
     }
 }

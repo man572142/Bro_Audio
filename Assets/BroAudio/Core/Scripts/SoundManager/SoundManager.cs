@@ -73,6 +73,7 @@ namespace Ami.BroAudio.Runtime
 #endif
 
         public AudioMixer Mixer => _broAudioMixer;
+        public IReadOnlyDictionary<SoundID, AudioPlayer> CombFilteringPreventer => _combFilteringPreventer;
 
         private void Awake()
         {

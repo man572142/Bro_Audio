@@ -19,6 +19,11 @@ namespace Ami.BroAudio
         {
             return ((int)flags & (int)targetFlag) != 0;
         }
+
+        public static bool Contains(this SoundGroup.OverrideOption flags, SoundGroup.OverrideOption targetFlag)
+        {
+            return ((int)flags & (int)targetFlag) != 0;
+        }
         #endregion
 
         public static BroAudioType ConvertEverything(this BroAudioType audioType)

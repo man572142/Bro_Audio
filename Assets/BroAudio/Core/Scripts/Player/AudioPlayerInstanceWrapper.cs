@@ -47,8 +47,8 @@ namespace Ami.BroAudio
         #region Interface
 #pragma warning disable UNT0008
         public SoundID ID => Instance ? Instance.ID : SoundID.Invalid;
-        public bool IsActive => IsAvailable() ? Instance.IsActive : false;
-        public bool IsPlaying => IsAvailable() ? Instance.IsPlaying : false;
+        public bool IsActive => IsAvailable() && Instance.IsActive;
+        public bool IsPlaying => IsAvailable() && Instance.IsPlaying;
         IMusicPlayer IMusicDecoratable.AsBGM() => Instance?.AsBGM() ?? Empty.MusicPlayer;
 #if !UNITY_WEBGL
         IPlayerEffect IEffectDecoratable.AsDominator() => Instance?.AsDominator() ?? Empty.DominatorPlayer;

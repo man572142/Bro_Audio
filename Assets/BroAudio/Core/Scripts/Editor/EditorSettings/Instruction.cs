@@ -61,5 +61,8 @@
 
         // Sound Source
         SoundSource_PositionMode = 450,
+
+        // Sound Group
+        SoundGroup_Override = 500,
     }
 }

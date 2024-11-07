@@ -318,7 +318,7 @@ namespace Ami.BroAudio.Runtime
         private bool HasFading(float clipFade, float overrideFade, out float fadeTime)
         {
             fadeTime = clipFade;
-            if (overrideFade > 0f)
+            if (overrideFade >= 0f)
             {
                 fadeTime = overrideFade;
             }

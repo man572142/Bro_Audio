@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using UnityEditor;
 using Ami.BroAudio.Data;
 using static Ami.BroAudio.Editor.BroEditorUtility;
-using System;
 
 namespace Ami.BroAudio.Editor
 {
@@ -13,14 +11,6 @@ namespace Ami.BroAudio.Editor
 
         private void Init()
 		{
-			int value = 0;
-            object obj = new object();
-			Action action = () => 
-            {
-				value++;
-			};
-            action();
-
             if(!TryGetCoreData(out var coreData))
             {
                 return;

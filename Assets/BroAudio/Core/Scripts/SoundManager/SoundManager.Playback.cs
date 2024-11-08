@@ -12,31 +12,31 @@ namespace Ami.BroAudio.Runtime
         private Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
 
         #region Play
-        public IAudioPlayer Play(int id)
+        public IAudioPlayer Play(int id, float delay)
         {
             if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
             {
-                var pref = new PlaybackPreference(entity);
+                var pref = new PlaybackPreference(entity, delay);
                 return PlayerToPlay(id, player, pref);
             }
             return null;
         }
 
-        public IAudioPlayer Play(int id, Vector3 position)
+        public IAudioPlayer Play(int id, Vector3 position, float delay)
         {
             if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
             {
-                var pref = new PlaybackPreference(entity, position);
+                var pref = new PlaybackPreference(entity, position, delay);
                 return PlayerToPlay(id, player, pref);
             }
             return null;
         }
 
-        public IAudioPlayer Play(int id, Transform followTarget)
+        public IAudioPlayer Play(int id, Transform followTarget, float delay)
         {
             if (IsPlayable(id,out var entity) && TryGetAvailablePlayer(id, out var player))
             {
-                var pref = new PlaybackPreference(entity, followTarget);
+                var pref = new PlaybackPreference(entity, followTarget, delay);
                 return PlayerToPlay(id, player, pref);
             }
             return null;

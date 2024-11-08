@@ -10,24 +10,25 @@ namespace Ami.BroAudio.Runtime
         public readonly IAudioEntity Entity;
         private readonly Vector3 _position;
         private readonly Transform _followTarget;
-
+        
         private int _velocity;
         public float FadeIn { get; set; }
         public float FadeOut { get; set; }
+        public float OverrideDelay { get; private set; }
         public Ease FadeInEase => Entity.SeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
         public Ease FadeOutEase => Entity.SeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
 
-        public PlaybackPreference(IAudioEntity entity, Vector3 position) : this(entity)
+        public PlaybackPreference(IAudioEntity entity, Vector3 position, float delay = 0f) : this(entity, delay)
         {
             _position = position;
         }
 
-        public PlaybackPreference(IAudioEntity entity, Transform followTarget) : this(entity)
+        public PlaybackPreference(IAudioEntity entity, Transform followTarget, float delay = 0f) : this(entity, delay)
         {
             _followTarget = followTarget;
         }
 
-        public PlaybackPreference(IAudioEntity entity)
+        public PlaybackPreference(IAudioEntity entity, float delay = 0f)
         {
             Entity = entity;
             FadeIn = UseEntitySetting;
@@ -35,6 +36,7 @@ namespace Ami.BroAudio.Runtime
             _position = Vector3.negativeInfinity;
             _followTarget = null;
             _velocity = default;
+            OverrideDelay = delay;
         }
 
         public BroAudioClip PickNewClip()

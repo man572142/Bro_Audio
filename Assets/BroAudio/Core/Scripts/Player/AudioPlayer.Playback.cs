@@ -79,9 +79,10 @@ namespace Ami.BroAudio.Runtime
                     }
                 }
 
-                if (_clip.Delay > 0)
+                float delay = _pref.OverrideDelay > 0f ? _pref.OverrideDelay : _clip.Delay;
+                if (delay > 0f)
                 {
-                    yield return new WaitForSeconds(_clip.Delay);
+                    yield return new WaitForSeconds(delay);
                 }
 
                 AudioSource.clip = _clip.AudioClip;

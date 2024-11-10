@@ -47,7 +47,7 @@ namespace Ami.BroAudio.Testing
         public const string Transition = "Transition";
 
         [SerializeField] bool _forceValidate = false;
-        [SerializeField] Button _button;
+        [SerializeField] UnityEngine.UI.Button _button;
         [SerializeField] Text _text;
 
         private void OnValidate()

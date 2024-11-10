@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Testing
     {
         [SerializeField] SoundID _sound = default;
 
-        [SerializeField] private Button _btn;
+        [SerializeField] private UnityEngine.UI.Button _btn;
 
         [Space]
         [SerializeField] float _fadeTime = 0f;

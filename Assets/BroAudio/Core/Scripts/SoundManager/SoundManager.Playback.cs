@@ -56,7 +56,7 @@ namespace Ami.BroAudio.Runtime
 
             bool isValid = validator == null || validator.IsPlayable(id);
             bool result = isValid && TryGetAvailablePlayer(id, out player);
-            validator?.OnGetPlayer(player);
+            validator?.HandlePlayer(player);
             return result;
         }
 

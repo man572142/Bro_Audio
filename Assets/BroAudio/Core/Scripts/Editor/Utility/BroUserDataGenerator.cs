@@ -62,7 +62,7 @@ namespace Ami.BroAudio.Editor
                 bool isDirty = false;
                 if (runtimeSetting.DefaultSoundGroup == null)
                 {
-                    runtimeSetting.DefaultSoundGroup = CreateScriptableObjectIfNotExist<SoundGroup>(GetAssetSavePath(resourcePath, DefaultSoundGroupPath));
+                    runtimeSetting.DefaultSoundGroup = CreateScriptableObjectIfNotExist<DefaultSoundGroup>(GetAssetSavePath(resourcePath, DefaultSoundGroupPath));
                     isDirty = true;
                 }
                 
@@ -109,7 +109,7 @@ namespace Ami.BroAudio.Editor
 			AssignCoreData(soundManager, coreData);
 
 			var runtimeSetting = CreateScriptableObjectIfNotExist<RuntimeSetting>(GetAssetSavePath(resourcePath, RuntimeSettingPath));
-            runtimeSetting.DefaultSoundGroup = CreateScriptableObjectIfNotExist<SoundGroup>(GetAssetSavePath(resourcePath, DefaultSoundGroupPath));
+            runtimeSetting.DefaultSoundGroup = CreateScriptableObjectIfNotExist<DefaultSoundGroup>(GetAssetSavePath(resourcePath, DefaultSoundGroupPath));
             EditorUtility.SetDirty(runtimeSetting);
 
             var editorSetting = CreateScriptableObjectIfNotExist<EditorSetting>(GetAssetSavePath(resourcePath, EditorSettingPath));

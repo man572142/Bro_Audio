@@ -2,7 +2,8 @@ namespace Ami.BroAudio
 {
     public interface IPlayableValidator
     {
+        // TODO: Split them
         bool IsPlayable(SoundID id);
-        void OnGetPlayer(IAudioPlayer player);
+        void HandlePlayer(IAudioPlayer player);
     }
 }

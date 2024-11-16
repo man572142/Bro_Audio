@@ -17,7 +17,7 @@ namespace Ami.BroAudio
         [SerializeField]
         [Tooltip("The max playable sound count of this group")]
         [Button("Infinity", -1)]
-        [CustomEditorDrawingMethod(typeof(DefaultSoundGroup), nameof(DrawMaxPlayableLimitProperty))]
+        [CustomDrawingMethod(typeof(DefaultSoundGroup), nameof(DrawMaxPlayableLimitProperty))]
         private Rule<int> _maxPlayableCount = new Rule<int>(-1);
 
         [SerializeField]
@@ -25,9 +25,13 @@ namespace Ami.BroAudio
         [Button("Default", 0.04f)]
         private Rule<float> _combFilteringTime = new Rule<float>(DefaultCombFilteringTime);
 
-        [SerializeField]
+        [SerializeField, DerivativeProperty, InspectorName("Ignore If Same Frame")]
         [Tooltip("Bypass Comb-Filtering prevention feature when it's played in the same frame")]
         private bool _ignoreCombFilteringIfSameFrame = false;
+
+        [SerializeField, DerivativeProperty(isEnd: true), InspectorName("Log Warning If Occurs")]
+        [Tooltip("Bypass Comb-Filtering prevention feature when it's played in the same frame")]
+        private bool _logCombFilteringWarning = false;
 
         private int _currentPlayingCount;
 

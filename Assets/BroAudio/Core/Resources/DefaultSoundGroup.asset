@@ -18,3 +18,5 @@ MonoBehaviour:
   _combFilteringTime:
     Value: 0.04
     _isOverride: 1
+  _ignoreCombFilteringIfSameFrame: 0
+  _logCombFilteringWarning: 0

@@ -82,54 +82,65 @@ namespace Ami.BroAudio.Editor
 
             SerializedProperty property = serializedObject.GetIterator();
             property.NextVisible(true); // Enter children and skip MonoScript field
-            int index = 0;
             while (property.NextVisible(false))
             {
-                DrawRule(property, toggleWidth, nameWidth);
-                DrawRuleTooltip(property, headerRect, index);
-                index++;
+                Rect rowRect = EditorGUILayout.BeginHorizontal();
+                {
+                    GUILayout.Space(OverrideToggleOffsetX);
+
+                    if (property.type.StartsWith(nameof(SoundGroup.Rule<int>)))
+                    {
+                        DrawRule(property, toggleWidth, nameWidth);
+                    }
+                    else
+                    {
+                        DraweNormalProperty(property, toggleWidth, nameWidth);
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+
+                
+                DrawRuleTooltip(property, rowRect);
             }
 
             serializedObject.ApplyModifiedProperties();
         }
 
-        private void DrawRule(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth)
+        private void DraweNormalProperty(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth)
         {
-            EditorGUILayout.BeginHorizontal();
-            {
-                GUILayout.Space(OverrideToggleOffsetX);
-
-                var overrideProp = property.FindPropertyRelative(SoundGroup.Rule<int>.NameOf.IsOverride);
-                overrideProp.boolValue = EditorGUILayout.Toggle(GUIContent.none, overrideProp.boolValue, toggleWidth);
-
-                EditorGUI.BeginDisabledGroup(!overrideProp.boolValue);
-                {
-                    EditorGUILayout.LabelField(property.displayName, nameWidth);
-                    var valueProp = property.FindPropertyRelative(nameof(SoundGroup.Rule<int>.Value));
-                    object customDrawerReturnValue = null;
-                    _fieldInfoDict.TryGetValue(property.name, out var fieldInfo);
-                    var customDrawer = fieldInfo?.GetCustomAttribute<CustomEditorDrawingMethod>();
-                    if (customDrawer != null && customDrawer.Method != null)
-                    {
-                        customDrawerReturnValue = customDrawer.Method.Invoke(target, new object[] { valueProp });
-                    }
-                    else
-                    {
-                        EditorGUILayout.PropertyField(valueProp, GUIContent.none);
-                    }
-                    DrawValueButton(fieldInfo, valueProp, customDrawerReturnValue);
-                }
-                EditorGUI.EndDisabledGroup();
-            }
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.LabelField(GUIContent.none, toggleWidth);
+            EditorGUILayout.LabelField(property.displayName, nameWidth);
+            EditorGUILayout.PropertyField(property, GUIContent.none);
         }
 
-        private void DrawRuleTooltip(SerializedProperty property, Rect headerRect, int index)
+        private void DrawRule(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth)
+        {
+            var overrideProp = property.FindPropertyRelative(SoundGroup.Rule<int>.NameOf.IsOverride);
+            overrideProp.boolValue = EditorGUILayout.Toggle(GUIContent.none, overrideProp.boolValue, toggleWidth);
+
+            using (new EditorGUI.DisabledScope(!overrideProp.boolValue))
+            {
+                EditorGUILayout.LabelField(property.displayName, nameWidth);
+                var valueProp = property.FindPropertyRelative(nameof(SoundGroup.Rule<int>.Value));
+                object customDrawerReturnValue = null;
+                _fieldInfoDict.TryGetValue(property.name, out var fieldInfo);
+                var customDrawer = fieldInfo?.GetCustomAttribute<CustomEditorDrawingMethod>();
+                if (customDrawer != null && customDrawer.Method != null)
+                {
+                    customDrawerReturnValue = customDrawer.Method.Invoke(target, new object[] { valueProp });
+                }
+                else
+                {
+                    EditorGUILayout.PropertyField(valueProp, GUIContent.none);
+                }
+                DrawValueButton(fieldInfo, valueProp, customDrawerReturnValue);
+            }
+        }
+
+        private void DrawRuleTooltip(SerializedProperty property, Rect rect)
         {
             if (!string.IsNullOrEmpty(property.tooltip))
             {
-                Rect rect = new Rect(headerRect);
-                rect.y += EditorGUIUtility.singleLineHeight * (index + 1);
                 EditorGUI.LabelField(rect, new GUIContent(string.Empty, property.tooltip));
             }
         }

@@ -6,19 +6,54 @@ using System.Reflection;
 using Ami.Extension;
 using System.Collections.Generic;
 using System.Linq;
+using Ami.BroAudio.Editor.Setting;
 
 namespace Ami.BroAudio.Editor
 {
     [CustomEditor(typeof(SoundGroup), true)]
     public class SoundGroupEditor : UnityEditor.Editor
     {
+        public struct AttributesContainer
+        {
+            public FieldInfo FieldInfo;
+            private Button _button;
+            private CustomDrawingMethod _customDrawer;
+            private DerivativeProperty _derivativeProperty;
+            private InspectorNameAttribute _inspectorName;
+
+            public bool TryGetAndCache<T>(out T attribute) where T : PropertyAttribute
+            {
+                attribute = null;
+                if (FieldInfo == null)
+                {
+                    return false;
+                }
+
+                attribute = typeof(T) switch 
+                {
+                    Type t when t == typeof(Button) => GetOrCreate(ref _button) as T,
+                    Type t when t == typeof(CustomDrawingMethod) => GetOrCreate(ref _customDrawer) as T,
+                    Type t when t == typeof(DerivativeProperty) => GetOrCreate(ref _derivativeProperty) as T,
+                    Type t when t == typeof(InspectorNameAttribute) => GetOrCreate(ref _inspectorName) as T,
+                    _ => throw new NotImplementedException(), 
+                };
+                return attribute != null;
+            }
+
+            private T GetOrCreate<T>(ref T value) where T : PropertyAttribute
+            {
+                value ??= FieldInfo.GetCustomAttribute<T>();
+                return value;
+            }
+        }
+
         public const float AdditionalButtonWidth = 60f;
         public const float OverrideToggleWidth = 30f;
         public const float OverrideToggleOffsetX = 5f;
 
         private MultiColumnHeader _multiColumn = null;
         private BroInstructionHelper _instruction = new BroInstructionHelper();
-        private Dictionary<string, FieldInfo> _fieldInfoDict = null;
+        private Dictionary<string, AttributesContainer> _attributesDict = null;
 
         private void OnEnable()
         {
@@ -32,11 +67,9 @@ namespace Ami.BroAudio.Editor
                 fields = fields.Concat(type.BaseType.GetFields(bindingFlags)).ToArray();
             }
 
-            _fieldInfoDict = fields
-                .Where(x => x.FieldType.IsGenericType &&
-                    x.FieldType.GetGenericTypeDefinition() == typeof(SoundGroup.Rule<>) &&
-                    (x.GetCustomAttribute<Button>() != null || x.GetCustomAttribute<CustomEditorDrawingMethod>() != null))
-                .ToDictionary(x => x.Name);
+            _attributesDict = fields
+                .Select(x => (x.Name, new AttributesContainer() { FieldInfo = x}))
+                .ToDictionary(x => x.Name, y => y.Item2);
         }
 
         private void InitMultiColumn()
@@ -82,6 +115,7 @@ namespace Ami.BroAudio.Editor
 
             SerializedProperty property = serializedObject.GetIterator();
             property.NextVisible(true); // Enter children and skip MonoScript field
+            string lastRulePath = null;
             while (property.NextVisible(false))
             {
                 Rect rowRect = EditorGUILayout.BeginHorizontal();
@@ -91,10 +125,11 @@ namespace Ami.BroAudio.Editor
                     if (property.type.StartsWith(nameof(SoundGroup.Rule<int>)))
                     {
                         DrawRule(property, toggleWidth, nameWidth);
+                        lastRulePath = property.propertyPath;
                     }
                     else
                     {
-                        DraweNormalProperty(property, toggleWidth, nameWidth);
+                        DraweNormalProperty(property, toggleWidth, nameWidth, lastRulePath);
                     }
                 }
                 EditorGUILayout.EndHorizontal();
@@ -106,13 +141,6 @@ namespace Ami.BroAudio.Editor
             serializedObject.ApplyModifiedProperties();
         }
 
-        private void DraweNormalProperty(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth)
-        {
-            EditorGUILayout.LabelField(GUIContent.none, toggleWidth);
-            EditorGUILayout.LabelField(property.displayName, nameWidth);
-            EditorGUILayout.PropertyField(property, GUIContent.none);
-        }
-
         private void DrawRule(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth)
         {
             var overrideProp = property.FindPropertyRelative(SoundGroup.Rule<int>.NameOf.IsOverride);
@@ -120,12 +148,11 @@ namespace Ami.BroAudio.Editor
 
             using (new EditorGUI.DisabledScope(!overrideProp.boolValue))
             {
-                EditorGUILayout.LabelField(property.displayName, nameWidth);
+                _attributesDict.TryGetValue(property.name, out var attrContainer);
+                EditorGUILayout.LabelField(GetDisplayName(property, attrContainer), nameWidth);
                 var valueProp = property.FindPropertyRelative(nameof(SoundGroup.Rule<int>.Value));
                 object customDrawerReturnValue = null;
-                _fieldInfoDict.TryGetValue(property.name, out var fieldInfo);
-                var customDrawer = fieldInfo?.GetCustomAttribute<CustomEditorDrawingMethod>();
-                if (customDrawer != null && customDrawer.Method != null)
+                if (attrContainer.TryGetAndCache(out CustomDrawingMethod customDrawer) && customDrawer.Method != null)
                 {
                     customDrawerReturnValue = customDrawer.Method.Invoke(target, new object[] { valueProp });
                 }
@@ -133,7 +160,47 @@ namespace Ami.BroAudio.Editor
                 {
                     EditorGUILayout.PropertyField(valueProp, GUIContent.none);
                 }
-                DrawValueButton(fieldInfo, valueProp, customDrawerReturnValue);
+                DrawValueButton(attrContainer, valueProp, customDrawerReturnValue);
+            }
+        }
+
+        private void DraweNormalProperty(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth, string lastRulePath)
+        {
+            bool isDisableGroup = false;
+            EditorGUILayout.LabelField(GUIContent.none, toggleWidth);
+            if(_attributesDict.TryGetValue(property.name, out var attrContainer) &&
+                attrContainer.TryGetAndCache(out DerivativeProperty derivativeProp))
+            {
+                if(lastRulePath != null)
+                {
+                    var lastRule = serializedObject.FindProperty(lastRulePath);
+                    isDisableGroup = !lastRule.FindPropertyRelative(SoundGroup.Rule<int>.NameOf.IsOverride).boolValue;
+                }
+
+                Rect rect = GUILayoutUtility.GetLastRect();
+                using (new Handles.DrawingScope(Color.gray))
+                {
+                    Vector2 start = new Vector2(rect.x + 5f, rect.y -1f);
+
+                    if (derivativeProp.IsEnd)
+                    {
+                        Vector2 mid = new Vector2(start.x, start.y + EditorGUIUtility.singleLineHeight * 0.5f);
+                        Vector2 end = new Vector2(mid.x + 10f, mid.y);
+                        Handles.DrawLine(start, mid);
+                        Handles.DrawLine(mid, end);
+                    }
+                    else
+                    {
+                        Vector2 end = new Vector2(start.x, start.y + EditorGUIUtility.singleLineHeight + 2f);
+                        Handles.DrawLine(start, end);
+                    }
+                }
+            }
+
+            using (new EditorGUI.DisabledScope(isDisableGroup))
+            {
+                EditorGUILayout.LabelField(GetDisplayName(property, attrContainer), nameWidth);
+                EditorGUILayout.PropertyField(property, GUIContent.none);
             }
         }
 
@@ -145,9 +212,9 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private void DrawValueButton(FieldInfo fieldInfo, SerializedProperty valueProp, object customDrawerReturnValue)
+        private void DrawValueButton(AttributesContainer attrContainer, SerializedProperty valueProp, object customDrawerReturnValue)
         {
-            if(fieldInfo != null && fieldInfo.GetCustomAttribute<Button>() is Button button)
+            if(attrContainer.TryGetAndCache(out Button button))
             {
                 bool isDisabled = customDrawerReturnValue is bool ? (bool)customDrawerReturnValue : false;
                 using (new EditorGUI.DisabledScope(isDisabled))
@@ -183,7 +250,7 @@ namespace Ami.BroAudio.Editor
                             valueProp.objectReferenceValue = (UnityEngine.Object)value;
                             break;
                         case SerializedPropertyType.Enum:
-                            if (fieldInfo.FieldType.GetCustomAttribute<FlagsAttribute>() != null)
+                            if (attrContainer.FieldInfo.FieldType.GetCustomAttribute<FlagsAttribute>() != null)
                             {
                                 valueProp.SetEnumFlag((int)value);
                             }
@@ -235,6 +302,15 @@ namespace Ami.BroAudio.Editor
                     }
                 }
             }
+        }
+
+        private string GetDisplayName(SerializedProperty property, AttributesContainer attrContainer)
+        {
+            if(attrContainer.TryGetAndCache(out InspectorNameAttribute inspectorName))
+            {
+                return inspectorName.displayName;
+            }
+            return property.displayName;
         }
     }
 }

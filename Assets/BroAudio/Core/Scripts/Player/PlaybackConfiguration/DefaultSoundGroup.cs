@@ -25,6 +25,10 @@ namespace Ami.BroAudio
         [Button("Default", 0.04f)]
         private Rule<float> _combFilteringTime = new Rule<float>(DefaultCombFilteringTime);
 
+        [SerializeField]
+        [Tooltip("Bypass Comb-Filtering prevention feature when it's played in the same frame")]
+        private bool _ignoreCombFilteringIfSameFrame = false;
+
         private int _currentPlayingCount;
 
         public override IEnumerable<PlayableDelegate> InitializeRules()
@@ -49,7 +53,7 @@ namespace Ami.BroAudio
 
         protected virtual bool CheckCombFiltering(SoundID id)
         {
-            if (!SoundManager.Instance.HasPassCombFilteringPreventionTime(id, _combFilteringTime))
+            if (!SoundManager.Instance.HasPassCombFilteringPreventionTime(id, _combFilteringTime, _ignoreCombFilteringIfSameFrame))
             {
 #if UNITY_EDITOR
                 if (SoundManager.Instance.Setting.LogCombFilteringWarning)
@@ -87,6 +91,11 @@ namespace Ami.BroAudio
                 }
             }
             return property.intValue <= 0;
+        }
+
+        public static class NameOf
+        {
+            public const string CombFilteringTime = nameof(_combFilteringTime);
         }
 #endif
     }

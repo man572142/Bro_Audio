@@ -56,7 +56,10 @@ namespace Ami.BroAudio.Runtime
 
             bool isValid = validator == null || validator.IsPlayable(id);
             bool result = isValid && TryGetAvailablePlayer(id, out player);
-            validator?.HandlePlayer(player);
+            if(validator != null && player != null)
+            {
+                validator.HandlePlayer(player);
+            }
             return result;
         }
 
@@ -73,12 +76,10 @@ namespace Ami.BroAudio.Runtime
                 player.AsBGM().SetTransition(Setting.DefaultBGMTransition, Setting.DefaultBGMTransitionTime);
             }
 
-            if(CombFilteringPreventionInSeconds > 0f)
-            {
-                _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
-                player.OnEnd(RemoveFromPreventer);
-                _combFilteringPreventer[id] = player;
-            }
+            // Whether there's any group implementing this or not, we're tracking it anyway
+            _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
+            player.OnEnd(RemoveFromPreventer);
+            _combFilteringPreventer[id] = player;
 
             if (pref.Entity.SeamlessLoop)
             {
@@ -86,7 +87,6 @@ namespace Ami.BroAudio.Runtime
                 seamlessLoopHelper.AddReplayListener(player);
             }
 
-            //pref.Entity.Config.AddPlayingEntity(wrapper);
             return wrapper;
         }
 
@@ -172,47 +172,21 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-//        private bool IsPlayable(int id, out IAudioEntity entity)
-//        {
-//            entity = null;
-//            if (id <= 0 || !_audioBank.TryGetValue(id, out entity))
-//            {
-//                Debug.LogError(LogTitle + $"The sound is missing or it has never been assigned. No sound will be played. SoundID:{id}");
-//                return false;
-//            }
-
-//            // TODO:改成用Config
-//            //return entity.Config.IsPlayable();
-//            if (_combFilteringPreventer != null && _combFilteringPreventer.TryGetValue(id, out var previousPlayer)
-//                && !HasPassPreventionTime(previousPlayer.PlaybackStartingTime))
-//            {
-//#if UNITY_EDITOR
-//                if (Setting.LogCombFilteringWarning)
-//                {
-//                    Debug.LogWarning(LogTitle + $"One of the plays of Audio:{((SoundID)id).ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
-//                    $"For more information, please go to the [Comb Filtering] section in Tools/BroAudio/Preference.");
-//                }
-//#endif
-//                return false;
-//            }
-//            return true;
-//        }
-
-        public static bool HasPassPreventionTime(int previousPlayTime, float combFilteringTime)
-        {
-            int time = TimeExtension.UnscaledCurrentFrameBeganTime;
-            bool isInQueue = previousPlayTime == 0f;
-            return !isInQueue && time - previousPlayTime >= TimeExtension.SecToMs(combFilteringTime);
-        }
-
-        public bool HasPassCombFilteringPreventionTime(SoundID id, float combFilteringTime)
+        public bool HasPassCombFilteringPreventionTime(SoundID id, float combFilteringTime, bool ignoreCombFilteringIfSameFrame)
         {
             if (_combFilteringPreventer != null && _combFilteringPreventer.TryGetValue(id, out var previousPlayer))
             {
                 int time = TimeExtension.UnscaledCurrentFrameBeganTime;
                 int previousPlayTime = previousPlayer.PlaybackStartingTime;
-                bool isInQueue = previousPlayTime == 0f;
-                return !isInQueue && time - previousPlayTime >= TimeExtension.SecToMs(combFilteringTime);
+                // the previous has been added to the queue but hasn't played yet, i.e. The current and the previous will end up being played in the same frame
+                bool previousIsInQueue = Mathf.Approximately(previousPlayTime, 0f); 
+                float difference = time - previousPlayTime;
+                if(previousIsInQueue || Mathf.Approximately(difference, 0f))
+                {
+                    return ignoreCombFilteringIfSameFrame;
+                }
+
+                return difference >= TimeExtension.SecToMs(combFilteringTime);
             }
             return true;
         }

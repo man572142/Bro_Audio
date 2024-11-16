@@ -12,7 +12,7 @@ namespace Ami.BroAudio.Editor
 	public static class BroUserDataGenerator
 	{
 		private static bool _isLoading = false;
-        private static Version SoundGroupFirstReleasedVersion => new Version(1, 14);
+        private static Version SoundGroupFirstReleasedVersion => new Version(1, 15);
 
 		public static void CheckAndGenerateUserData()
 		{
@@ -60,9 +60,17 @@ namespace Ami.BroAudio.Editor
             if (TryLoadResources<RuntimeSetting>(RuntimeSettingPath, out var runtimeSetting))
             {
                 bool isDirty = false;
-                if (runtimeSetting.DefaultSoundGroup == null)
+                if (oldAssetVersion < soundGroupFirstVersion && runtimeSetting.DefaultSoundGroup == null)
                 {
-                    runtimeSetting.DefaultSoundGroup = CreateScriptableObjectIfNotExist<DefaultSoundGroup>(GetAssetSavePath(resourcePath, DefaultSoundGroupPath));
+                    var defaultSoundGroup = CreateScriptableObjectIfNotExist<DefaultSoundGroup>(GetAssetSavePath(resourcePath, DefaultSoundGroupPath));
+                    var serializeObj = new SerializedObject(defaultSoundGroup);
+                    var combProp = serializeObj.FindProperty(DefaultSoundGroup.NameOf.CombFilteringTime)?.FindPropertyRelative(nameof(DefaultSoundGroup.Rule<int>.Value));
+                    if(combProp != null)
+                    {
+                        combProp.floatValue = runtimeSetting.CombFilteringPreventionInSeconds;
+                        serializeObj.ApplyModifiedPropertiesWithoutUndo();
+                    }
+                    runtimeSetting.DefaultSoundGroup = defaultSoundGroup;
                     isDirty = true;
                 }
                 

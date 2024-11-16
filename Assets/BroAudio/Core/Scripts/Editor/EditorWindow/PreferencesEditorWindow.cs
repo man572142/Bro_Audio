@@ -213,7 +213,6 @@ namespace Ami.BroAudio.Editor.Setting
             DrawAudioFilterSlope();
             DrawEmptyLine(1);
             DrawBGMSetting();
-            DrawCombFilteringSetting();
             // To make a room for other functions to use exposed parameters, we only use AudioSource.pitch for now
             //DrawPitchSetting();
             DrawEmptyLine(1);
@@ -247,53 +246,6 @@ namespace Ami.BroAudio.Editor.Setting
                     }
                 }
             }
-
-            void DrawCombFilteringSetting()
-            {
-                DrawEmptyLine(1);
-                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Comb Filtering".ToWhiteBold(), GUIStyleHelper.RichText);
-                using (new EditorGUI.IndentLevelScope())
-                {
-                    Rect combRect = GetRectAndIterateLine(drawPosition);
-                    EditorGUI.LabelField(combRect, _combFilteringGUIContent);
-
-                    Rect fieldRect = new Rect(combRect) { width = 80f, x = combRect.x + EditorGUIUtility.labelWidth + 50f };
-                    RuntimeSetting.CombFilteringPreventionInSeconds = EditorGUI.FloatField(fieldRect, RuntimeSetting.CombFilteringPreventionInSeconds);
-
-                    Rect defaultButtonRect = new Rect(fieldRect) { x = fieldRect.xMax + 10f, width = 60f };
-                    float defaultValue = Data.RuntimeSetting.FactorySettings.CombFilteringPreventionInSeconds;
-                    EditorGUI.BeginDisabledGroup(RuntimeSetting.CombFilteringPreventionInSeconds == defaultValue);
-                    if (GUI.Button(defaultButtonRect, "Default"))
-                    {
-                        RuntimeSetting.CombFilteringPreventionInSeconds = defaultValue;
-                    }
-                    EditorGUI.EndDisabledGroup();
-
-                    using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.3f))
-                    {
-                        RuntimeSetting.LogCombFilteringWarning = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition), "Log Warning If Occurs", RuntimeSetting.LogCombFilteringWarning);
-                    }
-
-                    Rect docLinkRect = GetRectAndIterateLine(drawPosition);
-                    DrawUrlLink(docLinkRect, "Click for more information", CombFilteringDocUrl);
-                }	
-            }
-
-            //void DrawPitchSetting()
-            //{
-            //	Rect pitchRect = GetRectAndIterateLine(drawPosition);
-            //	bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
-            //	if(isWebGL)
-            //	{
-            //		EditorGUI.BeginDisabledGroup(isWebGL);
-            //		EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, PitchShiftingSetting.AudioSource);
-            //		EditorGUI.EndDisabledGroup();
-            //	}
-            //	else
-            //	{
-            //		RuntimeSetting.PitchSetting = (PitchShiftingSetting)EditorGUI.EnumPopup(pitchRect, _pitchGUIContent, RuntimeSetting.PitchSetting);
-            //	}
-            //}
 
             void DrawDefaultEasing()
             {

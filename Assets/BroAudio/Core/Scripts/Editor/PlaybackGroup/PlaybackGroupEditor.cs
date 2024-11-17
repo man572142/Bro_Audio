@@ -15,12 +15,24 @@ namespace Ami.BroAudio.Editor
         public struct AttributesContainer
         {
             public FieldInfo FieldInfo;
-            private Button _button;
-            private CustomDrawingMethod _customDrawer;
-            private DerivativeProperty _derivativeProperty;
-            private InspectorNameAttribute _inspectorName;
+            private PropertyAttribute[] _attributes;
 
-            public bool TryGetAndCache<T>(out T attribute) where T : PropertyAttribute
+            public bool TryGet<T>(out T attribute) where T : PropertyAttribute
+            {
+                attribute = null;
+                if (TryGet((x,_) => x.GetType() == typeof(T), out var raw))
+                {
+                    attribute = raw as T;
+                }
+                return attribute != null;
+            }
+
+            public bool TryGet(Type type, out PropertyAttribute attribute)
+            {
+                return TryGet((x, arg) => x.GetType() == (Type)arg, out attribute, type);
+            }
+
+            private bool TryGet(Func<PropertyAttribute, object, bool> onValidate, out PropertyAttribute attribute, object arg = null)
             {
                 attribute = null;
                 if (FieldInfo == null)
@@ -28,21 +40,17 @@ namespace Ami.BroAudio.Editor
                     return false;
                 }
 
-                attribute = typeof(T) switch 
-                {
-                    Type t when t == typeof(Button) => GetOrCreate(ref _button) as T,
-                    Type t when t == typeof(CustomDrawingMethod) => GetOrCreate(ref _customDrawer) as T,
-                    Type t when t == typeof(DerivativeProperty) => GetOrCreate(ref _derivativeProperty) as T,
-                    Type t when t == typeof(InspectorNameAttribute) => GetOrCreate(ref _inspectorName) as T,
-                    _ => throw new NotImplementedException(), 
-                };
-                return attribute != null;
-            }
+                _attributes ??= FieldInfo.GetCustomAttributes<PropertyAttribute>().ToArray();
 
-            private T GetOrCreate<T>(ref T value) where T : PropertyAttribute
-            {
-                value ??= FieldInfo.GetCustomAttribute<T>();
-                return value;
+                foreach (var attr in _attributes)
+                {
+                    if (onValidate.Invoke(attr, arg))
+                    {
+                        attribute = attr;
+                        return true;
+                    }
+                }
+                return false;
             }
         }
 
@@ -67,7 +75,7 @@ namespace Ami.BroAudio.Editor
             }
 
             _attributesDict = fields
-                .Select(x => (x.Name, new AttributesContainer() { FieldInfo = x}))
+                .Select(x => (x.Name, new AttributesContainer() { FieldInfo = x }))
                 .ToDictionary(x => x.Name, y => y.Item2);
         }
 
@@ -117,58 +125,59 @@ namespace Ami.BroAudio.Editor
             string lastRulePath = null;
             while (property.NextVisible(false))
             {
+                _attributesDict.TryGetValue(property.name, out var attrContainer);
+                DrawDecoratorField(attrContainer);
+
                 Rect rowRect = EditorGUILayout.BeginHorizontal();
                 {
                     GUILayout.Space(OverrideToggleOffsetX);
 
                     if (property.type.StartsWith(nameof(PlaybackGroup.Rule<int>)))
                     {
-                        DrawRule(property, toggleWidth, nameWidth);
+                        DrawRule(property, toggleWidth, nameWidth, attrContainer);
                         lastRulePath = property.propertyPath;
                     }
                     else
                     {
-                        DraweNormalProperty(property, toggleWidth, nameWidth, lastRulePath);
+                        DraweNormalProperty(property, toggleWidth, nameWidth, lastRulePath, attrContainer);
                     }
                 }
                 EditorGUILayout.EndHorizontal();
 
-                
                 DrawRuleTooltip(property, rowRect);
             }
 
             serializedObject.ApplyModifiedProperties();
         }
 
-        private void DrawRule(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth)
+        private void DrawRule(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth, AttributesContainer attrContainer)
         {
             var overrideProp = property.FindPropertyRelative(PlaybackGroup.Rule<int>.NameOf.IsOverride);
             overrideProp.boolValue = EditorGUILayout.Toggle(GUIContent.none, overrideProp.boolValue, toggleWidth);
 
             using (new EditorGUI.DisabledScope(!overrideProp.boolValue))
             {
-                _attributesDict.TryGetValue(property.name, out var attrContainer);
                 EditorGUILayout.LabelField(GetDisplayName(property, attrContainer), nameWidth);
+
                 var valueProp = property.FindPropertyRelative(nameof(PlaybackGroup.Rule<int>.Value));
                 object customDrawerReturnValue = null;
-                if (attrContainer.TryGetAndCache(out CustomDrawingMethod customDrawer) && customDrawer.Method != null)
+                if (attrContainer.TryGet(out CustomDrawingMethod customDrawer) && customDrawer.Method != null)
                 {
                     customDrawerReturnValue = customDrawer.Method.Invoke(target, new object[] { valueProp });
                 }
                 else
                 {
-                    EditorGUILayout.PropertyField(valueProp, GUIContent.none);
+                    PlaybackRuleValueDrawer.DrawValue(valueProp, attrContainer);
                 }
                 DrawValueButton(attrContainer, valueProp, customDrawerReturnValue);
             }
         }
 
-        private void DraweNormalProperty(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth, string lastRulePath)
+        private void DraweNormalProperty(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth, string lastRulePath, AttributesContainer attrContainer)
         {
             bool isDisableGroup = false;
             EditorGUILayout.LabelField(GUIContent.none, toggleWidth);
-            if(_attributesDict.TryGetValue(property.name, out var attrContainer) &&
-                attrContainer.TryGetAndCache(out DerivativeProperty derivativeProp))
+            if(attrContainer.TryGet(out DerivativeProperty derivativeProp))
             {
                 if(lastRulePath != null)
                 {
@@ -203,6 +212,19 @@ namespace Ami.BroAudio.Editor
             }
         }
 
+
+        private static void DrawDecoratorField(AttributesContainer attrContainer)
+        {
+            if (attrContainer.TryGet<HeaderAttribute>(out var header))
+            {
+                EditorGUILayout.LabelField(header.header, EditorStyles.boldLabel);
+            }
+            if (attrContainer.TryGet<SpaceAttribute>(out var space))
+            {
+                EditorGUILayout.Space(space.height);
+            }
+        }
+
         private void DrawRuleTooltip(SerializedProperty property, Rect rect)
         {
             if (!string.IsNullOrEmpty(property.tooltip))
@@ -213,7 +235,7 @@ namespace Ami.BroAudio.Editor
 
         private void DrawValueButton(AttributesContainer attrContainer, SerializedProperty valueProp, object customDrawerReturnValue)
         {
-            if(attrContainer.TryGetAndCache(out Button button))
+            if(attrContainer.TryGet(out Button button))
             {
                 bool isDisabled = customDrawerReturnValue is bool ? (bool)customDrawerReturnValue : false;
                 using (new EditorGUI.DisabledScope(isDisabled))
@@ -305,7 +327,7 @@ namespace Ami.BroAudio.Editor
 
         private string GetDisplayName(SerializedProperty property, AttributesContainer attrContainer)
         {
-            if(attrContainer.TryGetAndCache(out InspectorNameAttribute inspectorName))
+            if(attrContainer.TryGet(out InspectorNameAttribute inspectorName))
             {
                 return inspectorName.displayName;
             }

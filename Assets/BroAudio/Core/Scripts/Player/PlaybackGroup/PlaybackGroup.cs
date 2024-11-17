@@ -34,10 +34,9 @@ namespace Ami.BroAudio
                 }
             }
 
-            public static implicit operator T(Rule<T> property)
-            {
-                return property == null ? default : property.Value;
-            }
+            public static implicit operator T(Rule<T> property) => property == null ? default : property.Value;
+
+            public static implicit operator Rule<T>(T value) => new Rule<T>(value);
 
             public static class NameOf
             {

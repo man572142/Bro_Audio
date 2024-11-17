@@ -17,12 +17,12 @@ namespace Ami.BroAudio
         [Tooltip("The maximum number of sounds that can be played simultaneously in this group")]
         [Button("Infinity", -1)]
         [CustomDrawingMethod(typeof(DefaultPlaybackGroup), nameof(DrawMaxPlayableLimitProperty))]
-        private Rule<int> _maxPlayableCount = new Rule<int>(-1);
+        private Rule<int> _maxPlayableCount = -1;
 
         [SerializeField]
         [Button("Default", 0.04f)]
         [Tooltip("Time interval to prevent the Comb-Filtering effect")]
-        private Rule<float> _combFilteringTime = new Rule<float>(DefaultCombFilteringTime);
+        private Rule<float> _combFilteringTime = DefaultCombFilteringTime;
 
         [SerializeField]
         [DerivativeProperty]

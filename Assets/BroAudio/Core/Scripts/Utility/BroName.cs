@@ -10,7 +10,7 @@ namespace Ami.BroAudio.Tools
         public const string InstructionFileName = "BroInstruction";
 		public const string RuntimeSettingName = "BroRuntimeSetting";
         public const string EditorSettingName = "BroEditorSetting";
-        public const string DefaultSoundGroupName = "DefaultSoundGroup";
+        public const string DefaultPlaybackGroupName = "DefaultPlaybackGroup";
 		public const string EditorAudioMixerName = "EditorBroAudioMixer";
         #endregion
 

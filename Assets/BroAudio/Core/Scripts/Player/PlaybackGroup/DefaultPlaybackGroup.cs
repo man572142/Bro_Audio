@@ -8,29 +8,32 @@ using UnityEngine;
 
 namespace Ami.BroAudio
 {
-    [CreateAssetMenu(menuName = nameof(BroAudio) + "/Sound Group", fileName = "SoundGroup", order = 0)]
-    public class DefaultSoundGroup : SoundGroup
+    [CreateAssetMenu(menuName = nameof(BroAudio) + "/Playback Group", fileName = "PlaybackGroup", order = 0)]
+    public class DefaultPlaybackGroup : PlaybackGroup
     {
         public const float DefaultCombFilteringTime = RuntimeSetting.FactorySettings.CombFilteringPreventionInSeconds;
 
-        // TODO: need better tooltip
         [SerializeField]
-        [Tooltip("The max playable sound count of this group")]
+        [Tooltip("The maximum number of sounds that can be played simultaneously in this group")]
         [Button("Infinity", -1)]
-        [CustomDrawingMethod(typeof(DefaultSoundGroup), nameof(DrawMaxPlayableLimitProperty))]
+        [CustomDrawingMethod(typeof(DefaultPlaybackGroup), nameof(DrawMaxPlayableLimitProperty))]
         private Rule<int> _maxPlayableCount = new Rule<int>(-1);
 
         [SerializeField]
-        [Tooltip("Time to prevent Comb-Filtering effect")]
         [Button("Default", 0.04f)]
+        [Tooltip("Time interval to prevent the Comb-Filtering effect")]
         private Rule<float> _combFilteringTime = new Rule<float>(DefaultCombFilteringTime);
 
-        [SerializeField, DerivativeProperty, InspectorName("Ignore If Same Frame")]
-        [Tooltip("Bypass Comb-Filtering prevention feature when it's played in the same frame")]
+        [SerializeField]
+        [DerivativeProperty]
+        [InspectorName("Ignore If Same Frame")]
+        [Tooltip("Ignore the Comb-Filtering prevention if the sound is played within the same frame")]
         private bool _ignoreCombFilteringIfSameFrame = false;
 
-        [SerializeField, DerivativeProperty(isEnd: true), InspectorName("Log Warning If Occurs")]
-        [Tooltip("Bypass Comb-Filtering prevention feature when it's played in the same frame")]
+        [SerializeField]
+        [DerivativeProperty(isEnd: true)]
+        [InspectorName("Log Warning When Occurs")]
+        [Tooltip("Log a warning message when the Comb-Filtering occurs")]
         private bool _logCombFilteringWarning = false;
 
         private int _currentPlayingCount;

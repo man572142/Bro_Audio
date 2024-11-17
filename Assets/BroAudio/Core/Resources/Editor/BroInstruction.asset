@@ -53,7 +53,7 @@ MonoBehaviour:
     Value: The attenuation per octave that the HighPass/LowPass Filter applies to.
       The higher value it set, the more frequencies are attenuated by the filter.
   - Key: 20
-    Value: 'Copyright 2022-2023 CheHsiang Weng (Ami).
+    Value: 'Copyright 2022-2024 CheHsiang Weng (Ami).
 
       All rights reserved.'
   - Key: 30
@@ -127,10 +127,11 @@ MonoBehaviour:
   - Key: 404
     Value: Dynamically set both the volume and the slider in Play Mode
   - Key: 18
-    Value: If no SoundGroup is specified in the AudioEntity, this group will be used
+    Value: If no PlaybackGroup is specified in the AudioEntity, this group will be
+      used
   - Key: 500
     Value: '[Override Option]
 
       When enabled, playback will be verified using
-      the value of this group; otherwise, the DefaultSoundGroup''s value will be
-      used'
+      the value of this group; otherwise, the Default Playback Group''s value will
+      be used'

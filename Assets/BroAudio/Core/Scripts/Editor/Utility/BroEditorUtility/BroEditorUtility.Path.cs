@@ -16,7 +16,7 @@ namespace Ami.BroAudio.Editor
         public const string DefaultAssetOutputPath = "Assets/" + DefaultRelativeAssetOutputPath;
         public const string EditorSettingPath = EditorResourcePath + BroName.EditorSettingName;
         public const string RuntimeSettingPath = BroName.RuntimeSettingName;
-        public const string DefaultSoundGroupPath = BroName.DefaultSoundGroupName;
+        public const string DefaultPlaybackGroupPath = BroName.DefaultPlaybackGroupName;
 
         public const string MainLogoPath = EditorResourcePath + "Logo_Editor";
         public const string TransparentLogoPath = EditorResourcePath + "Logo_Transparent";

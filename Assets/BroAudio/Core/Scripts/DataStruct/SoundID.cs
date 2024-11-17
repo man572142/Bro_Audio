@@ -88,15 +88,15 @@ namespace Ami.BroAudio
         }
 
         /// <inheritdoc cref="BroAudio.Play(SoundID)"/>
-        public static IAudioPlayer Play(this SoundID id, SoundGroup overrideGroup = null) 
+        public static IAudioPlayer Play(this SoundID id, PlaybackGroup overrideGroup = null) 
             => BroAudio.Play(id, overrideGroup);
 
         /// <inheritdoc cref="BroAudio.Play(SoundID, Vector3)"/>
-        public static IAudioPlayer Play(this SoundID id, Vector3 position, SoundGroup overrideGroup = null) 
+        public static IAudioPlayer Play(this SoundID id, Vector3 position, PlaybackGroup overrideGroup = null) 
             => BroAudio.Play(id, position, overrideGroup);
 
         /// <inheritdoc cref="BroAudio.Play(SoundID, Transform)"/>
-        public static IAudioPlayer Play(this SoundID id, Transform followTarget, SoundGroup overrideGroup = null) 
+        public static IAudioPlayer Play(this SoundID id, Transform followTarget, PlaybackGroup overrideGroup = null) 
             => BroAudio.Play(id, followTarget, overrideGroup);
     }
 }

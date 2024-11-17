@@ -38,7 +38,7 @@ namespace Ami.BroAudio.Editor.DevTool
 			return path.Contains($"{BroName.RuntimeSettingName}.asset") || 
                 path.Contains($"{BroName.EditorSettingName}.asset") || 
                 path.Contains($"{BroName.CoreDataName}.asset") ||
-                path.Contains($"{BroName.DefaultSoundGroupName}.asset");
+                path.Contains($"{BroName.DefaultPlaybackGroupName}.asset");
 		}
 	}
 }

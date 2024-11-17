@@ -6,12 +6,11 @@ using System.Reflection;
 using Ami.Extension;
 using System.Collections.Generic;
 using System.Linq;
-using Ami.BroAudio.Editor.Setting;
 
 namespace Ami.BroAudio.Editor
 {
-    [CustomEditor(typeof(SoundGroup), true)]
-    public class SoundGroupEditor : UnityEditor.Editor
+    [CustomEditor(typeof(PlaybackGroup), true)]
+    public class PlaybackGroupEditor : UnityEditor.Editor
     {
         public struct AttributesContainer
         {
@@ -62,7 +61,7 @@ namespace Ami.BroAudio.Editor
             Type type = serializedObject.targetObject.GetType();
             var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
             var fields = type.GetFields(bindingFlags);
-            if(type.BaseType == typeof(DefaultSoundGroup))
+            if(type.BaseType == typeof(DefaultPlaybackGroup))
             {
                 fields = fields.Concat(type.BaseType.GetFields(bindingFlags)).ToArray();
             }
@@ -75,7 +74,7 @@ namespace Ami.BroAudio.Editor
         private void InitMultiColumn()
         {
             GUIContent overrideIcon = EditorGUIUtility.IconContent(IconConstant.WritingIcon);
-            overrideIcon.tooltip = _instruction.GetText(Instruction.SoundGroup_Override);
+            overrideIcon.tooltip = _instruction.GetText(Instruction.PlaybackGroup_Override);
             var optionColumn = new MultiColumnHeaderState.Column()
             {
                 headerContent = overrideIcon,
@@ -122,7 +121,7 @@ namespace Ami.BroAudio.Editor
                 {
                     GUILayout.Space(OverrideToggleOffsetX);
 
-                    if (property.type.StartsWith(nameof(SoundGroup.Rule<int>)))
+                    if (property.type.StartsWith(nameof(PlaybackGroup.Rule<int>)))
                     {
                         DrawRule(property, toggleWidth, nameWidth);
                         lastRulePath = property.propertyPath;
@@ -143,14 +142,14 @@ namespace Ami.BroAudio.Editor
 
         private void DrawRule(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth)
         {
-            var overrideProp = property.FindPropertyRelative(SoundGroup.Rule<int>.NameOf.IsOverride);
+            var overrideProp = property.FindPropertyRelative(PlaybackGroup.Rule<int>.NameOf.IsOverride);
             overrideProp.boolValue = EditorGUILayout.Toggle(GUIContent.none, overrideProp.boolValue, toggleWidth);
 
             using (new EditorGUI.DisabledScope(!overrideProp.boolValue))
             {
                 _attributesDict.TryGetValue(property.name, out var attrContainer);
                 EditorGUILayout.LabelField(GetDisplayName(property, attrContainer), nameWidth);
-                var valueProp = property.FindPropertyRelative(nameof(SoundGroup.Rule<int>.Value));
+                var valueProp = property.FindPropertyRelative(nameof(PlaybackGroup.Rule<int>.Value));
                 object customDrawerReturnValue = null;
                 if (attrContainer.TryGetAndCache(out CustomDrawingMethod customDrawer) && customDrawer.Method != null)
                 {
@@ -174,7 +173,7 @@ namespace Ami.BroAudio.Editor
                 if(lastRulePath != null)
                 {
                     var lastRule = serializedObject.FindProperty(lastRulePath);
-                    isDisableGroup = !lastRule.FindPropertyRelative(SoundGroup.Rule<int>.NameOf.IsOverride).boolValue;
+                    isDisableGroup = !lastRule.FindPropertyRelative(PlaybackGroup.Rule<int>.NameOf.IsOverride).boolValue;
                 }
 
                 Rect rect = GUILayoutUtility.GetLastRect();

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Ami.BroAudio
 {
-    public abstract class SoundGroup : ScriptableObject, IPlayableValidator
+    public abstract class PlaybackGroup : ScriptableObject, IPlayableValidator
     {
         public delegate bool PlayableDelegate(SoundID id);
 
@@ -45,7 +45,7 @@ namespace Ami.BroAudio
             }
         }
 
-        public static SoundGroup DefaultGroup => SoundManager.Instance.Setting.DefaultSoundGroup;
+        public static PlaybackGroup DefaultGroup => SoundManager.Instance.Setting.DefaultPlaybackGroup;
 
         private List<PlayableDelegate> _rules = null;
 

@@ -101,7 +101,7 @@ namespace Ami.BroAudio.Editor.Setting
             _pitchGUIContent = new GUIContent("Pitch Shift Using", _instruction.GetText(Instruction.PitchShiftingToolTip));
             _audioVoicesGUIContent = new GUIContent("Max Real Voices", _instruction.GetText(Instruction.AudioVoicesToolTip));
             _virtualTracksGUIContent = new GUIContent("Bro Virtual Tracks", _instruction.GetText(Instruction.BroVirtualToolTip));
-            _defaultGroupGUIContent = new GUIContent("Default Sound Group", _instruction.GetText(Instruction.DefaultSoundGroup));
+            _defaultGroupGUIContent = new GUIContent("Default Playback Group", _instruction.GetText(Instruction.DefaultPlaybackGroup));
             _filterSlopeGUIContent = new GUIContent("Audio Filter Slope", _instruction.GetText(Instruction.AudioFilterSlope));
             _acceptAudioMixerGUIContent = new GUIContent("Accept BroAudioMixer Modification");
             _playMusicAsBgmGUIContent = new GUIContent("Always Play Music As BGM", _instruction.GetText(Instruction.AlwaysPlayMusicAsBGM));
@@ -209,7 +209,7 @@ namespace Ami.BroAudio.Editor.Setting
         private void DrawAudioSetting(Rect drawPosition)
         {
             drawPosition.width -= Gap;
-            DrawDefaultSoundGroup();
+            DrawDefaultPlaybackGroup();
             DrawAudioFilterSlope();
             DrawEmptyLine(1);
             DrawBGMSetting();
@@ -271,9 +271,9 @@ namespace Ami.BroAudio.Editor.Setting
                 }
             }
 
-            void DrawDefaultSoundGroup()
+            void DrawDefaultPlaybackGroup()
             {
-                RuntimeSetting.DefaultSoundGroup = (SoundGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _defaultGroupGUIContent, RuntimeSetting.DefaultSoundGroup, typeof(SoundGroup), false);
+                RuntimeSetting.DefaultPlaybackGroup = (PlaybackGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _defaultGroupGUIContent, RuntimeSetting.DefaultPlaybackGroup, typeof(PlaybackGroup), false);
             }
 
             void DrawAudioFilterSlope()

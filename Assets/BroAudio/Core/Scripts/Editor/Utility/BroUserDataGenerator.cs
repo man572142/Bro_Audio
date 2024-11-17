@@ -12,7 +12,7 @@ namespace Ami.BroAudio.Editor
 	public static class BroUserDataGenerator
 	{
 		private static bool _isLoading = false;
-        private static Version SoundGroupFirstReleasedVersion => new Version(1, 15);
+        private static Version PlaybackGroupFirstReleasedVersion => new Version(1, 15);
 
 		public static void CheckAndGenerateUserData()
 		{
@@ -55,22 +55,21 @@ namespace Ami.BroAudio.Editor
         private static void AddNewFeatureSettings(SoundManager soundManager, BroAudioData coreData)
         {
             Version oldAssetVersion = coreData.Version;
-            Version soundGroupFirstVersion = SoundGroupFirstReleasedVersion;
             string resourcePath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(soundManager));
             if (TryLoadResources<RuntimeSetting>(RuntimeSettingPath, out var runtimeSetting))
             {
                 bool isDirty = false;
-                if (oldAssetVersion < soundGroupFirstVersion && runtimeSetting.DefaultSoundGroup == null)
+                if (oldAssetVersion < PlaybackGroupFirstReleasedVersion && runtimeSetting.DefaultPlaybackGroup == null)
                 {
-                    var defaultSoundGroup = CreateScriptableObjectIfNotExist<DefaultSoundGroup>(GetAssetSavePath(resourcePath, DefaultSoundGroupPath));
-                    var serializeObj = new SerializedObject(defaultSoundGroup);
-                    var combProp = serializeObj.FindProperty(DefaultSoundGroup.NameOf.CombFilteringTime)?.FindPropertyRelative(nameof(DefaultSoundGroup.Rule<int>.Value));
+                    var defaultplaybackGroup = CreateScriptableObjectIfNotExist<DefaultPlaybackGroup>(GetAssetSavePath(resourcePath, DefaultPlaybackGroupPath));
+                    var serializeObj = new SerializedObject(defaultplaybackGroup);
+                    var combProp = serializeObj.FindProperty(DefaultPlaybackGroup.NameOf.CombFilteringTime)?.FindPropertyRelative(nameof(DefaultPlaybackGroup.Rule<int>.Value));
                     if(combProp != null)
                     {
                         combProp.floatValue = runtimeSetting.CombFilteringPreventionInSeconds;
                         serializeObj.ApplyModifiedPropertiesWithoutUndo();
                     }
-                    runtimeSetting.DefaultSoundGroup = defaultSoundGroup;
+                    runtimeSetting.DefaultPlaybackGroup = defaultplaybackGroup;
                     isDirty = true;
                 }
                 
@@ -89,12 +88,12 @@ namespace Ami.BroAudio.Editor
                     isDirty = true;
                 }
 
-                if (oldAssetVersion < soundGroupFirstVersion)
+                if (oldAssetVersion < PlaybackGroupFirstReleasedVersion)
                 {
                     for(int i = 0; i < editorSetting.AudioTypeSettings.Count;i++)
                     {
                         var typeSetting = editorSetting.AudioTypeSettings[i];
-                        typeSetting.DrawedProperty |= DrawedProperty.SoundGroup;
+                        typeSetting.DrawedProperty |= DrawedProperty.PlaybackGroup;
                         editorSetting.AudioTypeSettings[i] = typeSetting;
                     }
                     isDirty = true;
@@ -117,7 +116,7 @@ namespace Ami.BroAudio.Editor
 			AssignCoreData(soundManager, coreData);
 
 			var runtimeSetting = CreateScriptableObjectIfNotExist<RuntimeSetting>(GetAssetSavePath(resourcePath, RuntimeSettingPath));
-            runtimeSetting.DefaultSoundGroup = CreateScriptableObjectIfNotExist<DefaultSoundGroup>(GetAssetSavePath(resourcePath, DefaultSoundGroupPath));
+            runtimeSetting.DefaultPlaybackGroup = CreateScriptableObjectIfNotExist<DefaultPlaybackGroup>(GetAssetSavePath(resourcePath, DefaultPlaybackGroupPath));
             EditorUtility.SetDirty(runtimeSetting);
 
             var editorSetting = CreateScriptableObjectIfNotExist<EditorSetting>(GetAssetSavePath(resourcePath, EditorSettingPath));

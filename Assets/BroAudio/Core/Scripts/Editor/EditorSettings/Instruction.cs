@@ -20,7 +20,7 @@
         PitchShiftingToolTip,
         AudioFilterSlope,
         AlwaysPlayMusicAsBGM,
-        DefaultSoundGroup,
+        DefaultPlaybackGroup,
 
         // Settings/Info
         Copyright = 20,
@@ -62,7 +62,7 @@
         // Sound Source
         SoundSource_PositionMode = 450,
 
-        // Sound Group
-        SoundGroup_Override = 500,
+        // Playback Group
+        PlaybackGroup_Override = 500,
     }
 }

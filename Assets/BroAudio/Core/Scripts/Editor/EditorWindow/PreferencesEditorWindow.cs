@@ -273,7 +273,7 @@ namespace Ami.BroAudio.Editor.Setting
 
             void DrawDefaultPlaybackGroup()
             {
-                RuntimeSetting.DefaultPlaybackGroup = (PlaybackGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _defaultGroupGUIContent, RuntimeSetting.DefaultPlaybackGroup, typeof(PlaybackGroup), false);
+                RuntimeSetting.DefaultPlaybackGroup = (DefaultPlaybackGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _defaultGroupGUIContent, RuntimeSetting.DefaultPlaybackGroup, typeof(DefaultPlaybackGroup), false);
             }
 
             void DrawAudioFilterSlope()

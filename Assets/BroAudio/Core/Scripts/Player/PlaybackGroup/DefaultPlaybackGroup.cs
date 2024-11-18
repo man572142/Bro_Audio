@@ -38,11 +38,13 @@ namespace Ami.BroAudio
 
         private int _currentPlayingCount;
 
+        public static DefaultPlaybackGroup Default => SoundManager.Instance.Setting.DefaultPlaybackGroup;
+
         /// <inheritdoc cref="PlaybackGroup.InitializeRules"/>
         public override IEnumerable<PlayableDelegate> InitializeRules()
         {
-            yield return _maxPlayableCount.SelectPlayableRule(IsPlayableLimitReached);
-            yield return _combFilteringTime.SelectPlayableRule(CheckCombFiltering);
+            yield return _maxPlayableCount.SelectPlayableRule(IsPlayableLimitNotReached, _ => true);
+            yield return _combFilteringTime.SelectPlayableRule(CheckCombFiltering, Default.CheckCombFiltering);
         }
 
         /// <summary>
@@ -58,17 +60,17 @@ namespace Ami.BroAudio
         }
 
         #region Check Rule
-        protected virtual bool IsPlayableLimitReached(SoundID id)
+        protected virtual bool IsPlayableLimitNotReached(SoundID id)
         {
             return _maxPlayableCount <= 0 || _currentPlayingCount < _maxPlayableCount;
         }
 
-        protected virtual bool CheckCombFiltering(SoundID id)
+        public virtual bool CheckCombFiltering(SoundID id)
         {
             if (!SoundManager.Instance.HasPassCombFilteringPreventionTime(id, _combFilteringTime, _ignoreCombFilteringIfSameFrame))
             {
 #if UNITY_EDITOR
-                if (SoundManager.Instance.Setting.LogCombFilteringWarning)
+                if (_logCombFilteringWarning)
                 {
                     Debug.LogWarning(Utility.LogTitle + $"One of the plays of Audio:{((SoundID)id).ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
                     $"For more information, please go to the [Comb Filtering] section in Tools/BroAudio/Preference.");
@@ -77,7 +79,7 @@ namespace Ami.BroAudio
                 return false;
             }
             return true;
-        } 
+        }
         #endregion
 
         private void OnEnable()

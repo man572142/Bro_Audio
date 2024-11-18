@@ -62,8 +62,6 @@ namespace Ami.BroAudio
             }
         }
 
-        public static PlaybackGroup DefaultGroup => SoundManager.Instance.Setting.DefaultPlaybackGroup;
-
         private List<PlayableDelegate> _rules = null;
 
         /// <summary>

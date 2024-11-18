@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Runtime;
@@ -8,6 +7,7 @@ using UnityEngine;
 
 namespace Ami.BroAudio
 {
+    /// <inheritdoc cref="PlaybackGroup"/>
     [CreateAssetMenu(menuName = nameof(BroAudio) + "/Playback Group", fileName = "PlaybackGroup", order = 0)]
     public class DefaultPlaybackGroup : PlaybackGroup
     {
@@ -15,12 +15,12 @@ namespace Ami.BroAudio
 
         [SerializeField]
         [Tooltip("The maximum number of sounds that can be played simultaneously in this group")]
-        [Button("Infinity", -1)]
+        [ValueButton("Infinity", -1)]
         [CustomDrawingMethod(typeof(DefaultPlaybackGroup), nameof(DrawMaxPlayableLimitProperty))]
         private Rule<int> _maxPlayableCount = -1;
 
         [SerializeField]
-        [Button("Default", 0.04f)]
+        [ValueButton("Default", 0.04f)]
         [Tooltip("Time interval to prevent the Comb-Filtering effect")]
         private Rule<float> _combFilteringTime = DefaultCombFilteringTime;
 
@@ -38,12 +38,17 @@ namespace Ami.BroAudio
 
         private int _currentPlayingCount;
 
+        /// <inheritdoc cref="PlaybackGroup.InitializeRules"/>
         public override IEnumerable<PlayableDelegate> InitializeRules()
         {
-            yield return _maxPlayableCount.Initialize(IsPlayableLimitReached);
-            yield return _combFilteringTime.Initialize(CheckCombFiltering);
+            yield return _maxPlayableCount.SelectPlayableRule(IsPlayableLimitReached);
+            yield return _combFilteringTime.SelectPlayableRule(CheckCombFiltering);
         }
 
+        /// <summary>
+        /// Handles the player when the sound is played and keeps track of the number of sounds that are currently playing
+        /// </summary>
+        /// <param name="player"></param>
         public override void HandlePlayer(IAudioPlayer player)
         {
             base.HandlePlayer(player);

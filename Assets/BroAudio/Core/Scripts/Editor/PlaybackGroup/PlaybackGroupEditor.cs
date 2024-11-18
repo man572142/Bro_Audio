@@ -242,7 +242,7 @@ namespace Ami.BroAudio.Editor
 
         private void DrawValueButton(AttributesContainer attrContainer, SerializedProperty valueProp, object customDrawerReturnValue)
         {
-            if(attrContainer.TryGet(out Button button))
+            if(attrContainer.TryGet(out ValueButton button))
             {
                 bool isDisabled = customDrawerReturnValue is bool ? (bool)customDrawerReturnValue : false;
                 using (new EditorGUI.DisabledScope(isDisabled))

@@ -34,7 +34,7 @@ namespace Ami.BroAudio
         [DerivativeProperty(isEnd: true)]
         [InspectorName("Log Warning When Occurs")]
         [Tooltip("Log a warning message when the Comb-Filtering occurs")]
-        private bool _logCombFilteringWarning = false;
+        private bool _logCombFilteringWarning = true;
 
         private int _currentPlayingCount;
 

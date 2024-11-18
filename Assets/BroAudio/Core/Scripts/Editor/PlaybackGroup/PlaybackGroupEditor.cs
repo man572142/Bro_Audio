@@ -17,6 +17,12 @@ namespace Ami.BroAudio.Editor
             public FieldInfo FieldInfo;
             private PropertyAttribute[] _attributes;
 
+            public IEnumerable<PropertyAttribute> GetOrCreateAttributes()
+            {
+                _attributes ??= FieldInfo.GetCustomAttributes<PropertyAttribute>().ToArray();
+                return _attributes;
+            }
+
             public bool TryGet<T>(out T attribute) where T : PropertyAttribute
             {
                 attribute = null;
@@ -40,9 +46,7 @@ namespace Ami.BroAudio.Editor
                     return false;
                 }
 
-                _attributes ??= FieldInfo.GetCustomAttributes<PropertyAttribute>().ToArray();
-
-                foreach (var attr in _attributes)
+                foreach (var attr in GetOrCreateAttributes())
                 {
                     if (onValidate.Invoke(attr, arg))
                     {
@@ -215,13 +219,16 @@ namespace Ami.BroAudio.Editor
 
         private static void DrawDecoratorField(AttributesContainer attrContainer)
         {
-            if (attrContainer.TryGet<HeaderAttribute>(out var header))
+            foreach (var attribute in attrContainer.GetOrCreateAttributes())
             {
-                EditorGUILayout.LabelField(header.header, EditorStyles.boldLabel);
-            }
-            if (attrContainer.TryGet<SpaceAttribute>(out var space))
-            {
-                EditorGUILayout.Space(space.height);
+                if (attribute is HeaderAttribute header)
+                {
+                    EditorGUILayout.LabelField(header.header, EditorStyles.boldLabel);
+                }
+                else if (attribute is SpaceAttribute space)
+                {
+                    EditorGUILayout.Space(space.height);
+                }
             }
         }
 

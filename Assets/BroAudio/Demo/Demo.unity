@@ -1559,6 +1559,8 @@ MonoBehaviour:
   _sound:
     ID: 536870912
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
+  _overrideGroup: {fileID: 0}
   _positionMode: 0
 --- !u!114 &129135828
 MonoBehaviour:
@@ -3102,6 +3104,8 @@ MonoBehaviour:
   _sound:
     ID: 805306369
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
+  _overrideGroup: {fileID: 0}
   _positionMode: 2
 --- !u!135 &372850706
 SphereCollider:
@@ -4036,6 +4040,8 @@ MonoBehaviour:
   _sound:
     ID: 1073741825
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
+  _overrideGroup: {fileID: 0}
   _positionMode: 2
 --- !u!1001 &495975956
 PrefabInstance:
@@ -5369,6 +5375,8 @@ MonoBehaviour:
   _sound:
     ID: 1073741826
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
+  _overrideGroup: {fileID: 0}
   _positionMode: 1
 --- !u!114 &702725847
 MonoBehaviour:
@@ -6006,6 +6014,7 @@ MonoBehaviour:
   _enterExitSound:
     ID: 1073741828
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
   _lowPassFreq: 5465
   _fadeTime: 1
 --- !u!114 &766546313
@@ -6039,6 +6048,8 @@ MonoBehaviour:
   _sound:
     ID: 1073741833
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
+  _overrideGroup: {fileID: 0}
   _positionMode: 2
 --- !u!1 &774434209
 GameObject:
@@ -9954,6 +9965,8 @@ MonoBehaviour:
   _sound:
     ID: 805306368
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
+  _overrideGroup: {fileID: 0}
   _positionMode: 0
 --- !u!1 &1339724367
 GameObject:
@@ -10572,51 +10585,6 @@ ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 5159224826695909273, guid: c6be7ba18328f3b43aa9606c8877513b, type: 3}
   m_PrefabInstance: {fileID: 495975956}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1400717098
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1400717100}
-  - component: {fileID: 1400717099}
-  m_Layer: 0
-  m_Name: Preference
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1400717099
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1400717098}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b197cc0d9c8d824582e1a2c4ec31322, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _logCombFilteringWarning: 0
---- !u!4 &1400717100
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1400717098}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.4900002, y: 1.79, z: -13.33}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 11
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1401136311 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5699927781620790252, guid: bc167543835742746a1840ce53386fed, type: 3}
@@ -10733,6 +10701,7 @@ MonoBehaviour:
   _explosion:
     ID: 1073741827
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
   dominateFadeOut: 2
   _lowPassFrequency: 700
 --- !u!1 &1409124831
@@ -10873,6 +10842,7 @@ MonoBehaviour:
   - {fileID: 933596854}
   - {fileID: 1664107609}
   - {fileID: 294429241}
+  _scale: 50
 --- !u!4 &1409252107
 Transform:
   m_ObjectHideFlags: 0
@@ -10911,13 +10881,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _soundSource: {fileID: 0}
   _resolutionScale: 10
-  _scale: 100
   _channel: 0
   _windowType: 3
   _metering: 0
   _attack: 100
   _decay: 1500
-  _smooth: 0.2
+  _smooth: 0
   _bands:
   - Frequency: 50
     _weighted: 1
@@ -11054,6 +11023,7 @@ MonoBehaviour:
   _backgroundMusic:
     ID: 268435457
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
   _maxBgmVolumeDuringCutScene: 1.5
 --- !u!4 &1430655738
 Transform:
@@ -13946,9 +13916,11 @@ MonoBehaviour:
   _footstep:
     ID: 1073741824
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
   _sandFootstep:
     ID: 1073741834
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
   _terrain: {fileID: 479312997}
 --- !u!114 &1791080168
 MonoBehaviour:
@@ -14869,6 +14841,7 @@ MonoBehaviour:
   _bgm:
     ID: 268435457
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    <DebugObject>k__BackingField: {fileID: 0}
   _transition: 4
   _transitionTime: 2
   _sceneFadeOutTime: 2.5

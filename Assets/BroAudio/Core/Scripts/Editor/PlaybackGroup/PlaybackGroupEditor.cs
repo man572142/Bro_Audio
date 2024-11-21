@@ -320,11 +320,6 @@ namespace Ami.BroAudio.Editor
                         case SerializedPropertyType.BoundsInt:
                             valueProp.boundsIntValue = (BoundsInt)value;
                             break;
-                        case SerializedPropertyType.ManagedReference:
-                            break;
-                        case SerializedPropertyType.Hash128:
-                            valueProp.hash128Value = (Hash128)value;
-                            break;
                         default:
                             throw new NotSupportedException();
                     }

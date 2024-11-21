@@ -63,12 +63,12 @@ namespace Ami.BroAudio.Editor
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Documentation".ToWhiteBold().SetSize(20), middleCenterRichText);
                 DrawUrlLink(GetRectAndIterateLine(drawPosition), DocURL, DocURL, TextAnchor.MiddleCenter);
 
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Found a bug?".ToBold().SetSize(14).SetColor(FalseColor), middleCenterRichText);
-				DrawParagraph(drawPosition, "Refer to the known issues page for updates and solutions.");
-				DrawUrlLink(GetRectAndIterateLine(drawPosition), KnownIssueURL, KnownIssueURL, TextAnchor.MiddleCenter);
-				DrawEmptyLine(1);
+                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Found a bug?".ToBold().SetSize(14).SetColor(FalseColor), middleCenterRichText);
+                DrawParagraph(drawPosition, "Refer to the known issues page for updates and solutions.");
+                DrawUrlLink(GetRectAndIterateLine(drawPosition), KnownIssueURL, KnownIssueURL, TextAnchor.MiddleCenter);
+                DrawEmptyLine(1);
 
-				DrawEmptyLine(1);
+                DrawEmptyLine(1);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Support & Community".ToWhiteBold().SetSize(20), middleCenterRichText);
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "GitHub Page", middleCenterStyle);
                 DrawUrlLink(GetRectAndIterateLine(drawPosition), GitURL, GitURL, TextAnchor.MiddleCenter);
@@ -76,20 +76,21 @@ namespace Ami.BroAudio.Editor
                 DrawUrlLink(GetRectAndIterateLine(drawPosition), DiscordURL, DiscordURL, TextAnchor.MiddleCenter);
                 DrawEmptyLine(2);
 
-				EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Play The Demo!".ToWhiteBold().SetSize(20), middleCenterRichText);
-				Rect demoRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(DemoReferenceFieldWidth, SingleLineSpace);
-				EditorGUI.ObjectField(demoRect, _instruction.DemoScene, typeof(UnityEngine.Object), false);
-				DrawParagraph(drawPosition, "The demo not only shows all of the features, but also how to use the API and how they're implemented", 2);
-
-				drawPosition.x += drawPosition.width * 0.1f;
-				drawPosition.xMax -= drawPosition.width * 0.2f;
-
-				DrawEmptyLine(2);
-                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Demo Credits".ToWhiteBold().SetSize(20), middleCenterRichText);
-                DrawEmptyLine(1);
-                DrawAssetCredits(drawPosition);
+                DrawDemoReference(middleCenterRichText, drawPosition);
+                DrawAssetCredits(drawPosition, middleCenterRichText);
             }
             EndScrollView();
+        }
+
+        private void DrawDemoReference(GUIStyle middleCenterRichText, Rect drawPosition)
+        {
+            if(_instruction.DemoScene)
+            {
+                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Play The Demo!".ToWhiteBold().SetSize(20), middleCenterRichText);
+                Rect demoRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(DemoReferenceFieldWidth, SingleLineSpace);
+                EditorGUI.ObjectField(demoRect, _instruction.DemoScene, typeof(UnityEngine.Object), false);
+                DrawParagraph(drawPosition, "The demo not only shows all of the features, but also how to use the API and how they're implemented", 2);
+            }
         }
 
         private void RemoveDuckVolume()
@@ -121,13 +122,25 @@ namespace Ami.BroAudio.Editor
             EditorGUI.LabelField(rect, text, wordWrapStyle);
         }
 
-        private void DrawAssetCredits(Rect drawPosition)
+        private void DrawAssetCredits(Rect drawPosition, GUIStyle middleCenterRichText)
         {
             if (_creditsObjects == null)
             {
                 _creditsObjects = Resources.LoadAll("Editor", typeof(AssetCredits));
                 _creditsObjects ??= Array.Empty<UnityEngine.Object>();
             }
+
+            if (_creditsObjects.Length == 0)
+            {
+                return;
+            }
+
+            drawPosition.x += drawPosition.width * 0.1f;
+            drawPosition.xMax -= drawPosition.width * 0.2f;
+
+            DrawEmptyLine(2);
+            EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Demo Credits".ToWhiteBold().SetSize(20), middleCenterRichText);
+            DrawEmptyLine(1);
 
             foreach (var obj in _creditsObjects)
             {

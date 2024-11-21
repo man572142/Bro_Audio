@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Runtime
                 var pref = new PlaybackPreference(entity);
                 return PlayerToPlay(id, player, pref);
             }
-            return null;
+            return Empty.AudioPlayer;
         }
 
         public IAudioPlayer Play(SoundID id, Vector3 position, IPlayableValidator customValidator = null)
@@ -28,7 +28,7 @@ namespace Ami.BroAudio.Runtime
                 var pref = new PlaybackPreference(entity, position);
                 return PlayerToPlay(id, player, pref);
             }
-            return null;
+            return Empty.AudioPlayer;
         }
 
         public IAudioPlayer Play(SoundID id, Transform followTarget, IPlayableValidator customValidator = null)
@@ -38,7 +38,7 @@ namespace Ami.BroAudio.Runtime
                 var pref = new PlaybackPreference(entity, followTarget);
                 return PlayerToPlay(id, player, pref);
             }
-            return null;
+            return Empty.AudioPlayer;
         }
 
         private bool IsPlayable(SoundID id, IPlayableValidator customValidator, out IAudioEntity entity, out AudioPlayer player)
@@ -192,4 +192,3 @@ namespace Ami.BroAudio.Runtime
         }
     }
 }
-

@@ -10,6 +10,14 @@ namespace Ami.BroAudio.Editor
 #endif
 	public class EditorSetting : ScriptableObject
 	{
+        public enum ReferenceConversionDecision
+        {
+            AlwaysAsk,
+            OnlyConvert,
+            ConvertAndSetAddressables,
+            DontConvert,
+        }
+
 		[System.Serializable]
 		public struct AudioTypeSetting
 		{
@@ -32,6 +40,8 @@ namespace Ami.BroAudio.Editor
         public bool ShowAudioTypeOnSoundID;
 		public bool ShowVUColorOnVolumeSlider;
 		public bool ShowMasterVolumeOnClipListHeader;
+        public ReferenceConversionDecision DirectReferenceDecision;
+        public ReferenceConversionDecision AddressableDecision;
 
 		public List<AudioTypeSetting> AudioTypeSettings;
         public List<Color> SpectrumBandColors; 
@@ -110,7 +120,9 @@ namespace Ami.BroAudio.Editor
 			ShowVUColorOnVolumeSlider = FactorySettings.ShowVUColorOnVolumeSlider;
 			ShowAudioTypeOnSoundID = FactorySettings.ShowAudioTypeOnSoundID;
 			ShowMasterVolumeOnClipListHeader = FactorySettings.ShowMasterVolumeOnClipListHeader;
-			CreateNewAudioTypeSettings();
+            DirectReferenceDecision = ReferenceConversionDecision.AlwaysAsk;
+            AddressableDecision = ReferenceConversionDecision.AlwaysAsk;
+            CreateNewAudioTypeSettings();
             CreateDefaultSpectrumColors();
 		}
 

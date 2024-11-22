@@ -51,6 +51,8 @@
         LibraryManager_NameTempAssetHint,
         LibraryManager_AssetAudioTypeNotSet,
         LibraryManager_AssetUnnamed,
+        LibraryManager_AddressableConversionDialog,
+        LibraryManager_AddressableConversionTooltip,
 
         // Sound Volume
         SoundVolume_ApplyOnEnable = 400,

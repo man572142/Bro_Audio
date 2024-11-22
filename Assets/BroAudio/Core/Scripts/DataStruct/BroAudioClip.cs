@@ -3,9 +3,10 @@ using UnityEngine;
 namespace Ami.BroAudio.Data
 {
 	[System.Serializable]
-	public class BroAudioClip : IBroAudioClip
+	public partial class BroAudioClip : IBroAudioClip
 	{
-		public AudioClip AudioClip;
+		[SerializeField] private AudioClip AudioClip;
+
 		public float Volume;
 		public float Delay;
 		public float StartPosition;
@@ -18,9 +19,8 @@ namespace Ami.BroAudio.Data
 
 		// For shuffle (runtime-only)
 		[System.NonSerialized]
-		public bool IsUsed;
+		internal bool IsUsed;
 
-		AudioClip IBroAudioClip.AudioClip => AudioClip;
 		float IBroAudioClip.Volume => Volume;
 		float IBroAudioClip.Delay => Delay;
 		float IBroAudioClip.StartPosition => StartPosition;
@@ -28,13 +28,34 @@ namespace Ami.BroAudio.Data
 		float IBroAudioClip.FadeIn => FadeIn;
 		float IBroAudioClip.FadeOut => FadeOut;
         public int Velocity => Weight;
-		public bool IsNull() => AudioClip == null;
-	}
 
-	public interface IBroAudioClip
+        public bool IsValid()
+        {
+            if(AudioClip != null)
+            {
+                return true;
+            }
+            return IsAddressablesAvailable();
+        }
+
+#if !PACKAGE_ADDRESSABLES
+        public AudioClip GetAudioClip() => AudioClip;
+        public bool IsAddressablesAvailable() => false;
+#endif
+
+        public static class NameOf
+        {
+            public const string AudioClip = nameof(AudioClip);
+            public const string AudioClipAssetReference = nameof(AudioClipAssetReference);
+        }
+    }
+
+    public interface IBroAudioClip
 	{
-		AudioClip AudioClip { get; }
-		float Volume { get; }
+        AudioClip GetAudioClip();
+        bool IsValid();
+
+        float Volume { get; }
 		float Delay { get; }
 		float StartPosition { get; }
 		float EndPosition { get; }

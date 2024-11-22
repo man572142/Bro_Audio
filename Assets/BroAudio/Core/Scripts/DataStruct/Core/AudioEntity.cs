@@ -5,7 +5,7 @@ using Ami.BroAudio.Runtime;
 namespace Ami.BroAudio.Data
 {
     [System.Serializable]
-    public class AudioEntity : IEntityIdentity, IAudioEntity
+    public partial class AudioEntity : IEntityIdentity, IAudioEntity
     {
         [field: SerializeField] public string Name { get; private set; }
         [field: SerializeField] public int ID { get; private set; }
@@ -38,9 +38,9 @@ namespace Ami.BroAudio.Data
             }
         }
 
-        public BroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);
-        public BroAudioClip PickNewClip(out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index);
-        public BroAudioClip PickNewClip(int velocity) => Clips.PickNewOne(MulticlipsPlayMode, ID, out _, velocity);
+        public IBroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);
+        public IBroAudioClip PickNewClip(out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index);
+        public IBroAudioClip PickNewClip(int velocity) => Clips.PickNewOne(MulticlipsPlayMode, ID, out _, velocity);
 
         public bool Validate()
         {

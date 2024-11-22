@@ -36,9 +36,9 @@ namespace Ami.Extension
                 FadeOut = transport.FadeOut;
             }
 
-            public Data(BroAudioClip broAudioClip)
+            public Data(IBroAudioClip broAudioClip)
             {
-                AudioClip = broAudioClip.AudioClip;
+                AudioClip = broAudioClip.GetAudioClip();
                 Volume = broAudioClip.Volume;
                 StartPosition = broAudioClip.StartPosition;
                 EndPosition = broAudioClip.EndPosition;
@@ -113,6 +113,10 @@ namespace Ami.Extension
 
         private async Task PlayClipByAudioSourceAsync(Data clip, bool selfLoop, Action onReplay, float pitch)
         {
+            if(clip.AudioClip == null)
+            {
+                return;
+            }
             StopStaticPreviewClipsAndCancelTask();
             ResetAndGetAudioSource(out var audioSource);
 

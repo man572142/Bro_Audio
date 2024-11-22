@@ -19,7 +19,7 @@ namespace Ami.BroAudio
             ClipsSequencer?.Clear();
         }
 
-        public static BroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index, int velocity = 0)
+        public static IBroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index, int velocity = 0)
 		{
 			index = 0;
             if (clips == null || clips.Length <= 0)
@@ -151,7 +151,7 @@ namespace Ami.BroAudio
             }
         }
 
-        public static BroAudioClip PickClipByVelocity(this BroAudioClip[] clips, int velocity, out int index)
+        public static IBroAudioClip PickClipByVelocity(this BroAudioClip[] clips, int velocity, out int index)
         {
             index = 0;
             for(int i = 0; i < clips.Length;i++)

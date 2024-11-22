@@ -131,9 +131,9 @@ namespace Ami.BroAudio.Editor
                     switch (option)
                     {
                         case MultiClipsImportOption.MultipleForEach:
+                            tempEditor = CreateAsset(BroName.TempAssetName);
                             foreach (AudioClip clip in clips)
 							{
-								tempEditor = CreateAsset(BroName.TempAssetName);
                                 CreateNewEntity(tempEditor, clip);
                             }
                             break;

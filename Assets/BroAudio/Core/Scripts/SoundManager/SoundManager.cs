@@ -101,6 +101,13 @@ namespace Ami.BroAudio.Runtime
             _dominatorAutomationHelper = new EffectAutomationHelper(this, _broAudioMixer);
         }
 
+        private void OnDestroy()
+        {
+            AudioPlayer.ResumablePlayers.Clear();
+            MusicPlayer.CleanUp();
+            ResetClipSequencer();
+        }
+
         #region InitBank
         private void InitBank()
         {

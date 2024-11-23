@@ -84,5 +84,11 @@ namespace Ami.BroAudio.Runtime
 			float fadeOut =  noFadeOut? 0f : _overrideFade;
 			CurrentPlayer.Stop(fadeOut, _stopMode, onFinished);
 		}
+
+        public static void CleanUp()
+        {
+            OnBGMChanged = null;
+            _currentPlayer = null;
+        }
 	}
 }

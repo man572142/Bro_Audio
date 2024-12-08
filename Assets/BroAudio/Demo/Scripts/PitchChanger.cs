@@ -13,7 +13,7 @@ namespace Ami.BroAudio.Demo
         {
             if(other.gameObject.CompareTag("Player"))
             {
-                BroAudio.SetPitch(_pitch, _targetAudioType);
+                BroAudio.SetPitch(_targetAudioType, _pitch);
             }
         }
     }

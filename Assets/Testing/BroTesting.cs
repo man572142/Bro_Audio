@@ -31,7 +31,7 @@ namespace Ami.BroAudio.Testing
         public void PlayerSetVolume() => _player.SetVolume(_volume, _fadeTime);
 
         public void SetPitch() => BroAudio.SetPitch(_pitch, _fadeTime);
-        public void SetAudioTypePitch() => BroAudio.SetPitch(_pitch, _audioType, _fadeTime);
+        public void SetAudioTypePitch() => BroAudio.SetPitch(_audioType, _pitch, _fadeTime);
         public void PlayerSetPitch() => _player.SetPitch(_pitch, _fadeTime);
 
         public void PlayerStop() => _player.Stop(_fadeTime);

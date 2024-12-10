@@ -103,7 +103,7 @@ namespace Ami.BroAudio.Runtime
 
         private void OnDestroy()
         {
-            AudioPlayer.ResumablePlayers.Clear();
+            AudioPlayer.ResumablePlayers?.Clear();
             MusicPlayer.CleanUp();
             ResetClipSequencer();
         }

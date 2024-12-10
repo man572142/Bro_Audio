@@ -67,22 +67,18 @@ namespace Ami.BroAudio
         /// <summary>
         /// Initializes the rules that determine how the sounds can be played.
         /// </summary>
-        /// <returns></returns>
         public abstract IEnumerable<PlayableDelegate> InitializeRules();
 
         /// <summary>
         /// Handles the player when the sound is played.
         /// </summary>
-        /// <param name="player"></param>
         public virtual void HandlePlayer(IAudioPlayer player)
         {
         }
 
         /// <summary>
-        /// Checks if the sound is playable based on the rules.
+        /// Checks if the sound is playable.
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         public bool IsPlayable(SoundID id)
         {
             _rules ??= new List<PlayableDelegate>(InitializeRules());

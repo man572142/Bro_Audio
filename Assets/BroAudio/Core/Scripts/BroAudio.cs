@@ -21,20 +21,32 @@ namespace Ami.BroAudio
         /// <summary>
         /// Plays an audio
         /// </summary>
-        public static IAudioPlayer Play(SoundID id, IPlayableValidator customValidator = null) 
+        public static IAudioPlayer Play(SoundID id) 
+            => Play(id, (IPlayableValidator)null);
+
+        ///<inheritdoc cref="Play(SoundID)"/>
+        public static IAudioPlayer Play(SoundID id, IPlayableValidator customValidator)
             => SoundManager.Instance.Play(id, customValidator);
 
         /// <summary>
         /// Plays an audio as 3D sound at the given position
         /// </summary>
-        public static IAudioPlayer Play(SoundID id, Vector3 position, IPlayableValidator customValidator = null)
-          => SoundManager.Instance.Play(id, position, customValidator);
+        public static IAudioPlayer Play(SoundID id, Vector3 position)
+            => Play(id, position, null);
+
+        ///<inheritdoc cref="Play(SoundID, Vector3)"/>
+        public static IAudioPlayer Play(SoundID id, Vector3 position, IPlayableValidator customValidator)
+            => SoundManager.Instance.Play(id, position, customValidator);
 
         /// <summary>
         /// Plays an audio as 3D sound and keeps it continuously following the target
         /// </summary>
-        public static IAudioPlayer Play(SoundID id, Transform followTarget, IPlayableValidator customValidator = null)
-          => SoundManager.Instance.Play(id, followTarget, customValidator);
+        public static IAudioPlayer Play(SoundID id, Transform followTarget)
+            => SoundManager.Instance.Play(id, followTarget, null);
+
+        ///<inheritdoc cref="Play(SoundID, Transform)"/>
+        public static IAudioPlayer Play(SoundID id, Transform followTarget, IPlayableValidator customValidator)
+            => SoundManager.Instance.Play(id, followTarget, customValidator);
         #endregion
 
         #region Stop

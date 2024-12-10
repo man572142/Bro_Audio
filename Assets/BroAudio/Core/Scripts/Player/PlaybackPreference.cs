@@ -12,6 +12,8 @@ namespace Ami.BroAudio.Runtime
         private readonly Transform _followTarget;
 
         private int _velocity;
+        public double ScheduledStartTime { get; set; }
+        public double ScheduledEndTime { get; set; }
         public float FadeIn { get; set; }
         public float FadeOut { get; set; }
         public Ease FadeInEase => Entity.SeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
@@ -32,6 +34,8 @@ namespace Ami.BroAudio.Runtime
             Entity = entity;
             FadeIn = UseEntitySetting;
             FadeOut = UseEntitySetting;
+            ScheduledStartTime = default;
+            ScheduledEndTime = default;
             _position = Vector3.negativeInfinity;
             _followTarget = null;
             _velocity = default;

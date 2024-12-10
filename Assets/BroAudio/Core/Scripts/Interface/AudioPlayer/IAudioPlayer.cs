@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Ami.BroAudio
 {
-	public interface IAudioPlayer : IEffectDecoratable, IVolumeSettable, IMusicDecoratable, IAudioStoppable
+	public interface IAudioPlayer : IEffectDecoratable, IVolumeSettable, IMusicDecoratable, IAudioStoppable, ISchedulable
     {
 		/// <summary>
 		/// The SoundID of the player is playing

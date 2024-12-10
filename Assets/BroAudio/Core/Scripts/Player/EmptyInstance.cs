@@ -16,7 +16,7 @@ namespace Ami.BroAudio.Runtime
             SoundID IAudioPlayer.ID => SoundID.Invalid;
             bool IAudioPlayer.IsActive => false;
             bool IAudioPlayer.IsPlaying => false;
-            IAudioSourceProxy IAudioPlayer.AudioSource => throw new NotImplementedException();
+            IAudioSourceProxy IAudioPlayer.AudioSource => null;
 
             event Action<SoundID> IAudioPlayer.OnEndPlaying
             {
@@ -46,6 +46,9 @@ namespace Ami.BroAudio.Runtime
             void IAudioStoppable.Stop(Action onFinished) { }
             void IAudioStoppable.Stop(float fadeOut) { }
             void IAudioStoppable.Stop(float fadeOut, Action onFinished) { }
+            IAudioPlayer ISchedulable.SetScheduledStartTime(double dspTime) => this;
+            IAudioPlayer ISchedulable.SetScheduledEndTime(double dspTime) => this;
+            IAudioPlayer ISchedulable.SetDelay(float time) => this;
         }
 
         public class EmptyMusicPlayer : EmptyAudioPlayer, IMusicPlayer

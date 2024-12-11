@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Runtime
 	{
         private bool _isScheduled = false;
 
-        public IAudioPlayer SetScheduledStartTime(double dspTime)
+        IAudioPlayer ISchedulable.SetScheduledStartTime(double dspTime)
         {
             if(_pref.ScheduledStartTime <= 0d)
             {
@@ -22,7 +22,7 @@ namespace Ami.BroAudio.Runtime
             return this;
         }
 
-        public IAudioPlayer SetScheduledEndTime(double dspTime)
+        IAudioPlayer ISchedulable.SetScheduledEndTime(double dspTime)
         {
             AudioSource.SetScheduledEndTime(dspTime);
             _pref.ScheduledEndTime = dspTime;
@@ -40,7 +40,7 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        public IAudioPlayer SetDelay(float delay)
+        IAudioPlayer ISchedulable.SetDelay(float delay)
         {
             if(AudioSource.isPlaying)
             {
@@ -48,7 +48,7 @@ namespace Ami.BroAudio.Runtime
                 return this;
             }
 
-            SetScheduledStartTime(AudioSettings.dspTime + delay);
+            this.SetScheduledStartTime(AudioSettings.dspTime + delay);
             return this;
         }
     }

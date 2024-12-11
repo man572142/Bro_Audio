@@ -66,6 +66,18 @@ namespace Ami.BroAudio
             => player?.SetPitch(pitch, fadeTime);
         #endregion
 
+        /// <inheritdoc cref="ISchedulable.SetScheduledStartTime(double)"/>
+        public static IAudioPlayer SetScheduledStartTime(this IAudioPlayer player, double dspTime)
+            => player?.SetScheduledStartTime(dspTime);
+
+        /// <inheritdoc cref="ISchedulable.SetScheduledEndTime(double)"/>
+        public static IAudioPlayer SetScheduledEndTime(this IAudioPlayer player, double dspTime)
+            => player?.SetScheduledEndTime(dspTime);
+
+        /// <inheritdoc cref="ISchedulable.SetDelay(float)(double)"/>
+        public static IAudioPlayer SetDelay(this IAudioPlayer player, float time)
+            => player?.SetDelay(time);
+
         #region Velocity
         /// <summary>
         /// Set the velocity and use it to determine which audio clip to play

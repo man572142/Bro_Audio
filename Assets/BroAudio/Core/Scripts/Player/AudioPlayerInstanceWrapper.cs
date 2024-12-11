@@ -81,9 +81,9 @@ namespace Ami.BroAudio
             }
         }
 
-        public IAudioPlayer SetScheduledStartTime(double dspTime) => Instance?.SetScheduledStartTime(dspTime) ?? Empty.AudioPlayer;
-        public IAudioPlayer SetScheduledEndTime(double dspTime) => Instance?.SetScheduledEndTime(dspTime) ?? Empty.AudioPlayer;
-        public IAudioPlayer SetDelay(float time) => Instance?.SetDelay(time) ?? Empty.AudioPlayer;
+        IAudioPlayer ISchedulable.SetScheduledStartTime(double dspTime) => Instance?.SetScheduledStartTime(dspTime) ?? Empty.AudioPlayer;
+        IAudioPlayer ISchedulable.SetScheduledEndTime(double dspTime) => Instance?.SetScheduledEndTime(dspTime) ?? Empty.AudioPlayer;
+        IAudioPlayer ISchedulable.SetDelay(float time) => Instance?.SetDelay(time) ?? Empty.AudioPlayer;
 
         public void GetOutputData(float[] samples, int channels) => Instance?.GetOutputData(samples, channels);
 

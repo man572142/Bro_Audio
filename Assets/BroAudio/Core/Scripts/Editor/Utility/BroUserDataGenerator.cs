@@ -12,7 +12,7 @@ namespace Ami.BroAudio.Editor
 	public static class BroUserDataGenerator
 	{
 		private static bool _isLoading = false;
-        private static Version PlaybackGroupFirstReleasedVersion => new Version(1, 15);
+        private static Version PlaybackGroupFirstReleasedVersion => new Version(1, 16);
 
 		public static void CheckAndGenerateUserData()
 		{

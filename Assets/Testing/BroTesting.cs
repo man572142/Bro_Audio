@@ -19,10 +19,13 @@ namespace Ami.BroAudio.Testing
         [SerializeField] float _customEffectValue = 0f;
         [SerializeField] Transition _transition = default;
         [SerializeField] Fading _fading = default;
+        [SerializeField] float _delay = 0f;
+        [SerializeField] float _offsetFromDSPTime = 0f;
 
         private IAudioPlayer _player;
 
         public void Play() => _player = BroAudio.Play(_sound);
+        public void PlayScheduled() => _player = BroAudio.Play(_sound).SetScheduledStartTime(AudioSettings.dspTime + _delay);
 
         public void SetVolume() => BroAudio.SetVolume(_volume, _fadeTime);
         public void SetVolume(BroAudioType audioType, int i) {}
@@ -34,9 +37,15 @@ namespace Ami.BroAudio.Testing
         public void SetAudioTypePitch() => BroAudio.SetPitch(_pitch, _audioType, _fadeTime);
         public void PlayerSetPitch() => _player.SetPitch(_pitch, _fadeTime);
 
+        public void SetScheduleStartTime() => _player.SetScheduledStartTime(AudioSettings.dspTime + _offsetFromDSPTime);
+        public void SetScheduleEndTime() => _player.SetScheduledEndTime(AudioSettings.dspTime + _offsetFromDSPTime);
+        public void SetDelay() => BroAudio.Play(_sound).SetDelay(_delay);
+
         public void PlayerStop() => _player.Stop(_fadeTime);
         public void StopAudioType() => BroAudio.Stop(_audioType, _fadeTime);
         public void StopSoundID() => BroAudio.Stop(_sound, _fadeTime);
+        public void Pause() => _player.Pause();
+        public void UnPause() => _player.UnPause();
 
 #if !UNITY_WEBGL
         public void SetLowPassFilter() => BroAudio.SetEffect(Effect.LowPass(_frequency, _fadeTime), _audioType);

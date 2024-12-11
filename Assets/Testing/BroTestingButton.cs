@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Ami.Extension;
-using Ami.BroAudio.Runtime;
 
 namespace Ami.BroAudio.Testing
 {
@@ -22,6 +21,7 @@ namespace Ami.BroAudio.Testing
         public const string Pitch = "pitch";
         public const string Frequency = "frequency";
         public const string TransitionParam = "transition";
+        public const string Time = "time";
 
         public readonly string BaseFormat = "BroAudio".SetColor(ClassColor);
         public readonly string MethodFormat = "." + "{0}".SetColor(MethodColor) + "({1})";
@@ -31,6 +31,12 @@ namespace Ami.BroAudio.Testing
         public const string SetVolume = nameof(BroAudio.SetVolume);
         public const string SetPitch = nameof(BroAudio.SetPitch);
         public const string Stop = nameof(BroAudio.Stop);
+        public const string Pause = nameof(BroAudioChainingMethod.Pause);
+        public const string UnPause = nameof(BroAudioChainingMethod.UnPause);
+
+        public const string SetScheduleStartTime = nameof(BroAudioChainingMethod.SetScheduledStartTime);
+        public const string SetScheduleEndTime = nameof(BroAudioChainingMethod.SetScheduledEndTime);
+        public const string SetDelay = nameof(BroAudioChainingMethod.SetDelay);
 
         public const string LowPass = nameof(Effect.LowPass);
         public const string ResetLowPass = nameof(Effect.ResetLowPass);
@@ -70,6 +76,7 @@ namespace Ami.BroAudio.Testing
         private string GetAPIString(string methodName) => methodName switch
         {
             nameof(BroTesting.Play) => GetMainMethodText(Play),
+            nameof(BroTesting.PlayScheduled) => GetMainMethodText(Play) + GetPlayerAppendMethodString(SetScheduleStartTime, Time),
             nameof(BroTesting.SetVolume) => GetMainMethodText(SetVolume, Volume, Fade),
             nameof(BroTesting.SetAudioTypeVolume) => GetMainMethodText(SetVolume, AudioType, Volume, Fade),
             nameof(BroTesting.SetSoundIDVolume) => GetMainMethodText(SetVolume, ID, Volume, Fade),
@@ -79,9 +86,15 @@ namespace Ami.BroAudio.Testing
             nameof(BroTesting.SetAudioTypePitch) => GetMainMethodText(SetPitch, Pitch, AudioType, Fade),
             nameof(BroTesting.PlayerSetPitch) => GetPlayerAppendMethodString(SetPitch, Pitch, Fade),
 
+            nameof(BroTesting.SetScheduleStartTime) => GetPlayerAppendMethodString(SetScheduleStartTime, Time),
+            nameof(BroTesting.SetScheduleEndTime) => GetPlayerAppendMethodString(SetScheduleEndTime, Time),
+            nameof(BroTesting.SetDelay) => GetMainMethodText(Play) + GetPlayerAppendMethodString(SetDelay, Time),
+
             nameof(BroTesting.PlayerStop) => GetPlayerAppendMethodString(Stop, Fade),
             nameof(BroTesting.StopSoundID) => GetMainMethodText(Stop, ID, Fade),
             nameof(BroTesting.StopAudioType) => GetMainMethodText(Stop, AudioType, Fade),
+            nameof(BroTesting.Pause) => GetPlayerAppendMethodString(Pause),
+            nameof(BroTesting.UnPause) => GetPlayerAppendMethodString(UnPause),
 
 #if !UNITY_WEBGL
             nameof(BroTesting.SetLowPassFilter) => GetMainMethodText(SetEffect, GetEffectFactoryText(LowPass, Frequency, Fade), AudioType),

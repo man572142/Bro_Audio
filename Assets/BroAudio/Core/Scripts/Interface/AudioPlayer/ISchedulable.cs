@@ -7,15 +7,15 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="dspTime">The absolute time in seconds when the clip should start playing.</param>
         /// <remarks>If the clip hasn't played yet, this is equivalent to AudioSource.PlayScheduled, otherwise, it reschedules the time</remarks>
-        IAudioPlayer SetScheduledStartTime(double dspTime);
+        internal IAudioPlayer SetScheduledStartTime(double dspTime);
 
         ///<inheritdoc cref="UnityEngine.AudioSource.SetScheduledEndTime(double)(double)"/>
-        IAudioPlayer SetScheduledEndTime(double dspTime);
+        internal IAudioPlayer SetScheduledEndTime(double dspTime);
 
         /// <summary>
         /// Delays the playback start time by the specified duration in seconds.
         /// </summary>
         /// <param name="time">The delay duration in seconds.</param>
-        IAudioPlayer SetDelay(float time);
+        internal IAudioPlayer SetDelay(float time);
     }
 }

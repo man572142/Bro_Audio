@@ -6,8 +6,6 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource))]
 	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
 	{
-        private bool _isScheduled = false;
-
         IAudioPlayer ISchedulable.SetScheduledStartTime(double dspTime)
         {
             if(_pref.ScheduledStartTime <= 0d)

@@ -25,7 +25,7 @@ namespace Ami.BroAudio.Data
 		public Transition DefaultBGMTransition = FactorySettings.DefaultBGMTransition;
 		public float DefaultBGMTransitionTime = FactorySettings.DefaultBGMTransitionTime;
 
-        public DefaultPlaybackGroup DefaultPlaybackGroup = null;
+        public DefaultPlaybackGroup GlobalPlaybackGroup = null;
 
 #if UNITY_EDITOR
 		public void ResetToFactorySettings()

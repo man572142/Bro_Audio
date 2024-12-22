@@ -20,7 +20,7 @@
         PitchShiftingToolTip,
         AudioFilterSlope,
         AlwaysPlayMusicAsBGM,
-        DefaultPlaybackGroup,
+        GlobalPlaybackGroup,
 
         // Settings/Info
         Copyright = 20,

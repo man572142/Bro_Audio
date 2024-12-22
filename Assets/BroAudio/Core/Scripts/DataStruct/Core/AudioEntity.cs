@@ -32,7 +32,7 @@ namespace Ami.BroAudio.Data
             {
                 if(!_group)
                 {
-                    return SoundManager.Instance.Setting.DefaultPlaybackGroup;
+                    return SoundManager.Instance.Setting.GlobalPlaybackGroup;
                 }
                 return _group;
             }

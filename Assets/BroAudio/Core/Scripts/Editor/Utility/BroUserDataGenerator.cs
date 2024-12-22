@@ -59,17 +59,17 @@ namespace Ami.BroAudio.Editor
             if (TryLoadResources<RuntimeSetting>(RuntimeSettingPath, out var runtimeSetting))
             {
                 bool isDirty = false;
-                if (oldAssetVersion < PlaybackGroupFirstReleasedVersion && runtimeSetting.DefaultPlaybackGroup == null)
+                if (oldAssetVersion < PlaybackGroupFirstReleasedVersion && runtimeSetting.GlobalPlaybackGroup == null)
                 {
-                    var defaultplaybackGroup = CreateScriptableObjectIfNotExist<DefaultPlaybackGroup>(GetAssetSavePath(resourcePath, DefaultPlaybackGroupPath));
-                    var serializeObj = new SerializedObject(defaultplaybackGroup);
+                    var globalPlaybackGroup = CreateScriptableObjectIfNotExist<DefaultPlaybackGroup>(GetAssetSavePath(resourcePath, GlobalPlaybackGroupPath));
+                    var serializeObj = new SerializedObject(globalPlaybackGroup);
                     var combProp = serializeObj.FindProperty(DefaultPlaybackGroup.NameOf.CombFilteringTime)?.FindPropertyRelative(nameof(DefaultPlaybackGroup.Rule<int>.Value));
                     if(combProp != null)
                     {
                         combProp.floatValue = runtimeSetting.CombFilteringPreventionInSeconds;
                         serializeObj.ApplyModifiedPropertiesWithoutUndo();
                     }
-                    runtimeSetting.DefaultPlaybackGroup = defaultplaybackGroup;
+                    runtimeSetting.GlobalPlaybackGroup = globalPlaybackGroup;
                     isDirty = true;
                 }
                 
@@ -116,7 +116,7 @@ namespace Ami.BroAudio.Editor
 			AssignCoreData(soundManager, coreData);
 
 			var runtimeSetting = CreateScriptableObjectIfNotExist<RuntimeSetting>(GetAssetSavePath(resourcePath, RuntimeSettingPath));
-            runtimeSetting.DefaultPlaybackGroup = CreateScriptableObjectIfNotExist<DefaultPlaybackGroup>(GetAssetSavePath(resourcePath, DefaultPlaybackGroupPath));
+            runtimeSetting.GlobalPlaybackGroup = CreateScriptableObjectIfNotExist<DefaultPlaybackGroup>(GetAssetSavePath(resourcePath, GlobalPlaybackGroupPath));
             EditorUtility.SetDirty(runtimeSetting);
 
             var editorSetting = CreateScriptableObjectIfNotExist<EditorSetting>(GetAssetSavePath(resourcePath, EditorSettingPath));

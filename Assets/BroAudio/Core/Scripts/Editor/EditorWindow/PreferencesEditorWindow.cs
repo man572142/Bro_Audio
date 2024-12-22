@@ -40,7 +40,7 @@ namespace Ami.BroAudio.Editor.Setting
         private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
         private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
-            ,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent,_dominatorTrackGUIContent, _regenerateUserDataGUIContent, _defaultGroupGUIContent;
+            ,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent,_dominatorTrackGUIContent, _regenerateUserDataGUIContent, _globalGroupGUIContent;
 
 #if PACKAGE_ADDRESSABLES
         private GUIContent _addressableConversionGUIContent, _directToAddressableGUIContent, _addressableToDirectGUIContent; 
@@ -96,7 +96,7 @@ namespace Ami.BroAudio.Editor.Setting
             _pitchGUIContent = new GUIContent("Pitch Shift Using", _instruction.GetText(Instruction.PitchShiftingToolTip));
             _audioVoicesGUIContent = new GUIContent("Max Real Voices", _instruction.GetText(Instruction.AudioVoicesToolTip));
             _virtualTracksGUIContent = new GUIContent("Bro Virtual Tracks", _instruction.GetText(Instruction.BroVirtualToolTip));
-            _defaultGroupGUIContent = new GUIContent("Default Playback Group", _instruction.GetText(Instruction.DefaultPlaybackGroup));
+            _globalGroupGUIContent = new GUIContent("Global Playback Group", _instruction.GetText(Instruction.GlobalPlaybackGroup));
             _filterSlopeGUIContent = new GUIContent("Audio Filter Slope", _instruction.GetText(Instruction.AudioFilterSlope));
             _acceptAudioMixerGUIContent = new GUIContent("Accept BroAudioMixer Modification");
             _playMusicAsBgmGUIContent = new GUIContent("Always Play Music As BGM", _instruction.GetText(Instruction.AlwaysPlayMusicAsBGM));
@@ -211,7 +211,7 @@ namespace Ami.BroAudio.Editor.Setting
         private void DrawAudioSetting(Rect drawPosition)
         {
             drawPosition.width -= Gap;
-            DrawDefaultPlaybackGroup();
+            DrawGlobalPlaybackGroup();
             DrawAudioFilterSlope();
             DrawEmptyLine(1);
             DrawBGMSetting();
@@ -273,9 +273,9 @@ namespace Ami.BroAudio.Editor.Setting
                 }
             }
 
-            void DrawDefaultPlaybackGroup()
+            void DrawGlobalPlaybackGroup()
             {
-                RuntimeSetting.DefaultPlaybackGroup = (DefaultPlaybackGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _defaultGroupGUIContent, RuntimeSetting.DefaultPlaybackGroup, typeof(DefaultPlaybackGroup), false);
+                RuntimeSetting.GlobalPlaybackGroup = (DefaultPlaybackGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _globalGroupGUIContent, RuntimeSetting.GlobalPlaybackGroup, typeof(DefaultPlaybackGroup), false);
             }
 
             void DrawAudioFilterSlope()

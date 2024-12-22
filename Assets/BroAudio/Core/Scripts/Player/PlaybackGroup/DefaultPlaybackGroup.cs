@@ -38,7 +38,7 @@ namespace Ami.BroAudio
 
         private int _currentPlayingCount;
 
-        public static DefaultPlaybackGroup Default => SoundManager.Instance.Setting.DefaultPlaybackGroup;
+        public static DefaultPlaybackGroup Default => SoundManager.Instance.Setting.GlobalPlaybackGroup;
 
         /// <inheritdoc cref="PlaybackGroup.InitializeRules"/>
         public override IEnumerable<PlayableDelegate> InitializeRules()

@@ -5,7 +5,7 @@ namespace Ami.BroAudio.Runtime
 {
 	public class MusicPlayer : AudioPlayerDecorator, IMusicPlayer
 	{
-        public static event Action<IAudioPlayer> OnBGMChanged;
+        internal static event Action<IAudioPlayer> OnBGMChanged;
 		private static AudioPlayer _currentPlayer = null;
 
         public static AudioPlayer CurrentPlayer

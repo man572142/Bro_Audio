@@ -1,21 +1,47 @@
 using UnityEngine;
 using Ami.Extension;
+using System.Collections;
 
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
 	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
 	{
+        private float _timeBeforeStartSchedule = 0f;
+
+        private bool TryScheduleStartTime()
+        {
+            if (_pref.ScheduledStartTime > 0d) // Scheduled has higher priority than clip.delay
+            {
+                AudioSource.PlayScheduled(_pref.ScheduledStartTime);
+                _timeBeforeStartSchedule = (float)(_pref.ScheduledStartTime - AudioSettings.dspTime);
+                return true;
+            }
+            else if (_clip.Delay > 0f)
+            {
+                // PlayDelayed() can also be rescheduled
+                AudioSource.PlayDelayed(_clip.Delay);
+                _timeBeforeStartSchedule = _clip.Delay;
+                return true;
+            }
+            return false;
+        }
+
+
         IAudioPlayer ISchedulable.SetScheduledStartTime(double dspTime)
         {
-            if(_pref.ScheduledStartTime <= 0d)
+            if(_pref.ScheduledStartTime > 0d)
             {
-                _pref.ScheduledStartTime = dspTime;
-            }
-            else
-            {
-                AudioSource.SetScheduledStartTime(dspTime);
                 _timeBeforeStartSchedule += (float)(dspTime - _pref.ScheduledStartTime);
+            }
+            _pref.ScheduledStartTime = dspTime;
+
+            // isPlaying will return true once it's scheduled, even if it's not actually playing
+            if (AudioSource.isPlaying)
+            {
+                // If this is called after the audio is already playing, it will pause until the given dspTime.
+                // Some might consider this behavior a feature, so it has been left as is.
+                AudioSource.SetScheduledStartTime(dspTime);
             }
             return this;
         }
@@ -31,23 +57,32 @@ namespace Ami.BroAudio.Runtime
 
         private void CheckScheduledEnd(IAudioPlayer player)
         {
-            if(AudioSettings.dspTime >= _pref.ScheduledEndTime)
+            if (!AudioSource.isPlaying)
             {
                 this.SafeStopCoroutine(_playbackControlCoroutine);
+                EndPlaying();
                 _onUpdate -= CheckScheduledEnd;
             }
         }
 
         IAudioPlayer ISchedulable.SetDelay(float delay)
         {
-            if(AudioSource.isPlaying)
-            {
-                Debug.LogWarning(Utility.LogTitle + "SetDelay failed! The AudioPlayer is already playing or has been scheduled");
-                return this;
-            }
+            return this.SetScheduledStartTime(AudioSettings.dspTime + delay);
+        }
 
-            this.SetScheduledStartTime(AudioSettings.dspTime + delay);
-            return this;
+
+        private IEnumerator WaitForScheduledStartTime()
+        {
+            while (_timeBeforeStartSchedule > 0)
+            {
+                yield return null;
+                _timeBeforeStartSchedule -= Time.deltaTime;
+            }
+        }
+
+        private void ClearScheduleEndEvents()
+        {
+            _onUpdate -= CheckScheduledEnd;
         }
     }
 }

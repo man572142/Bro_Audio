@@ -40,7 +40,11 @@ namespace Ami.BroAudio.Runtime
             newPlayer.SetPitch(pitch);
 			newPlayer.SetPlaybackData(id, pref);
             newPlayer.Play();
-            
+            if(pref.ScheduledEndTime > 0d)
+            {
+                newPlayer.SetScheduledEndTime(pref.ScheduledEndTime);
+            }
+
             newPlayer.OnSeamlessLoopReplay += Replay;
 		}
 	}

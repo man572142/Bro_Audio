@@ -10,11 +10,10 @@ namespace Ami.Extension
 		{
 			get
 			{
-                if (_instance)
+                if (IsAvailable())
                 {
                     return _instance;
                 }
-                LogInstanceIsNull();
 				return null;
             }
 		}
@@ -43,9 +42,18 @@ namespace Ami.Extension
 			_instance.OnRecycle += Recycle;
 		}
 
-        protected bool IsAvailable()
+        protected bool IsAvailable(bool logWarning = true)
         {
-            return _instance != null;
+            if(_instance != null)
+            {
+                return true;
+            }
+
+            if(logWarning)
+            {
+                LogInstanceIsNull();
+            }
+            return false;
         }
 
         public virtual void UpdateInstance(T newInstance)

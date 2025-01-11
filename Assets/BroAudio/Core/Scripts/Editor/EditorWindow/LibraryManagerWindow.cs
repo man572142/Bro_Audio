@@ -50,7 +50,6 @@ namespace Ami.BroAudio.Editor
         public static LibraryManagerWindow ShowWindow()
         {
             EditorWindow window = GetWindow(typeof(LibraryManagerWindow));
-            //window.minSize = MinWindowSize;
             Texture titleIcon = Resources.Load<Texture>(MainLogoPath);
             window.titleContent = new GUIContent(BroName.MenuItem_LibraryManager, titleIcon);
             window.Show();

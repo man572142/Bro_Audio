@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Editor
 			{
 				if(_instruction == null)
 				{
-					_instruction = Resources.Load<BroInstruction>(EditorResourcePath + InstructionFileName);
+					_instruction = Resources.Load<BroInstruction>(InstructionFileName);
 					if (_instruction == null)
 					{
 						Debug.LogWarning(Utility.LogTitle + InstructionMissingText);

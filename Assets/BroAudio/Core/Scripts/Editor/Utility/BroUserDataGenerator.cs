@@ -34,6 +34,7 @@ namespace Ami.BroAudio.Editor
                     {
                         AssignCoreData(soundManager, currentCoreData);
                         AddNewFeatureSettings(soundManager, currentCoreData);
+                        MoveEdiotrAssets(soundManager);
                         currentCoreData.UpdateVersion();
                         EditorUtility.SetDirty(currentCoreData);
                         AssetDatabase.SaveAssets();
@@ -50,6 +51,27 @@ namespace Ami.BroAudio.Editor
                 }
                 _isLoading = false;
             }
+        }
+
+        private static void MoveEdiotrAssets(SoundManager manager)
+        {
+            const string Editor = "Editor";
+            const string Resources = "Resources";
+            string mixerPath = AssetDatabase.GetAssetPath(manager.Mixer);
+            string corePath = mixerPath.Remove(mixerPath.LastIndexOf('/'));
+            string oldPath = corePath + $"/{Resources}/{Editor}";
+            string newPath = corePath + $"/{Editor}/{Resources}";
+
+            if (Directory.Exists(newPath))
+            {
+                return;
+            }
+            AssetDatabase.RenameAsset(oldPath, Resources);
+            string newPathRoot = newPath.Remove(newPath.LastIndexOf('/'));
+            Directory.CreateDirectory(newPathRoot);
+            AssetDatabase.Refresh();
+            AssetDatabase.MoveAsset(oldPath.Replace(Editor, Resources), newPathRoot + $"/{Resources}");
+            AssetDatabase.Refresh();
         }
 
         private static void AddNewFeatureSettings(SoundManager soundManager, BroAudioData coreData)

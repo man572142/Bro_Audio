@@ -12,7 +12,6 @@ namespace Ami.BroAudio.Editor
 	public static class BroUserDataGenerator
 	{
 		private static bool _isLoading = false;
-        private static Version PlaybackGroupFirstReleasedVersion => new Version(1, 16);
 
 		public static void CheckAndGenerateUserData()
 		{
@@ -33,9 +32,7 @@ namespace Ami.BroAudio.Editor
                     if(TryGetCoreData(out var currentCoreData))
                     {
                         AssignCoreData(soundManager, currentCoreData);
-                        AddNewFeatureSettings(soundManager, currentCoreData);
-                        MoveEdiotrAssets(soundManager);
-                        currentCoreData.UpdateVersion();
+                        BroUpdater.Process(soundManager, currentCoreData);
                         EditorUtility.SetDirty(currentCoreData);
                         AssetDatabase.SaveAssets();
                     }
@@ -53,86 +50,9 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private static void MoveEdiotrAssets(SoundManager manager)
-        {
-            const string Editor = "Editor";
-            const string Resources = "Resources";
-            string mixerPath = AssetDatabase.GetAssetPath(manager.Mixer);
-            string corePath = mixerPath.Remove(mixerPath.LastIndexOf('/'));
-            string oldPath = corePath + $"/{Resources}/{Editor}";
-            string newPath = corePath + $"/{Editor}/{Resources}";
-
-            if (Directory.Exists(newPath))
-            {
-                return;
-            }
-            AssetDatabase.RenameAsset(oldPath, Resources);
-            string newPathRoot = newPath.Remove(newPath.LastIndexOf('/'));
-            Directory.CreateDirectory(newPathRoot);
-            AssetDatabase.Refresh();
-            AssetDatabase.MoveAsset(oldPath.Replace(Editor, Resources), newPathRoot + $"/{Resources}");
-            AssetDatabase.Refresh();
-        }
-
-        private static void AddNewFeatureSettings(SoundManager soundManager, BroAudioData coreData)
-        {
-            Version oldAssetVersion = coreData.Version;
-            string resourcePath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(soundManager));
-            if (TryLoadResources<RuntimeSetting>(RuntimeSettingPath, out var runtimeSetting))
-            {
-                bool isDirty = false;
-                if (oldAssetVersion < PlaybackGroupFirstReleasedVersion && runtimeSetting.GlobalPlaybackGroup == null)
-                {
-                    var globalPlaybackGroup = CreateScriptableObjectIfNotExist<DefaultPlaybackGroup>(GetAssetSavePath(resourcePath, GlobalPlaybackGroupPath));
-                    var serializeObj = new SerializedObject(globalPlaybackGroup);
-                    var combProp = serializeObj.FindProperty(DefaultPlaybackGroup.NameOf.CombFilteringTime)?.FindPropertyRelative(nameof(DefaultPlaybackGroup.Rule<int>.Value));
-                    if(combProp != null)
-                    {
-                        combProp.floatValue = runtimeSetting.CombFilteringPreventionInSeconds;
-                        serializeObj.ApplyModifiedPropertiesWithoutUndo();
-                    }
-                    runtimeSetting.GlobalPlaybackGroup = globalPlaybackGroup;
-                    isDirty = true;
-                }
-                
-                if(isDirty)
-                {
-                    EditorUtility.SetDirty(runtimeSetting);
-                }
-            }
-
-            if(TryLoadResources<EditorSetting>(EditorSettingPath, out var editorSetting))
-            {
-                bool isDirty = false;
-                if (editorSetting.SpectrumBandColors == null || editorSetting.SpectrumBandColors.Count == 0)
-                {
-                    editorSetting.CreateDefaultSpectrumColors();
-                    isDirty = true;
-                }
-
-                if (oldAssetVersion < PlaybackGroupFirstReleasedVersion)
-                {
-                    for(int i = 0; i < editorSetting.AudioTypeSettings.Count;i++)
-                    {
-                        var typeSetting = editorSetting.AudioTypeSettings[i];
-                        typeSetting.DrawedProperty |= DrawedProperty.PlaybackGroup;
-                        editorSetting.AudioTypeSettings[i] = typeSetting;
-                    }
-                    isDirty = true;
-                }
-
-                if (isDirty)
-                {
-                    EditorUtility.SetDirty(editorSetting);
-                }
-            }
-        }
-
         private static void StartGeneratingUserData(SoundManager soundManager)
 		{
-			string resourcePath;
-			resourcePath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(soundManager));
-
+			string resourcePath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(soundManager));
 			string coreDataPath = GetAssetSavePath(resourcePath, CoreDataResourcesPath);
             var coreData = CreateCoreData(coreDataPath, out string audioAssetOutputPath);
 			AssignCoreData(soundManager, coreData);
@@ -150,7 +70,7 @@ namespace Ami.BroAudio.Editor
 
 		private static string GetAssetSavePath(string resourcesPath, string relativePath)
 		{
-			return Path.Combine(resourcesPath, relativePath + ".asset");
+			return Combine(resourcesPath, relativePath + ".asset");
 		}
 
 		private static BroAudioData CreateCoreData(string coreDataPath, out string audioAssetOutputpath)
@@ -188,8 +108,17 @@ namespace Ami.BroAudio.Editor
 			else
 			{
 				audioAssetOutputPath = DefaultAssetOutputPath;
-                var demoAsset = AssetDatabase.LoadAssetAtPath<AudioAsset>(DefaultAssetOutputPath + "/Demo.asset");
-				onGetAsset?.Invoke(demoAsset);
+                string broPath = DefaultAssetOutputPath.Remove(DefaultAssetOutputPath.LastIndexOf('/'));
+                string demoAssetPath = Combine(DefaultAssetOutputPath, "Demo.asset");
+                if (Directory.Exists(broPath + "Demo"))
+                {
+                    var demoAsset = AssetDatabase.LoadAssetAtPath<AudioAsset>(demoAssetPath);
+                    onGetAsset?.Invoke(demoAsset);
+                }
+                else
+                {
+                    AssetDatabase.DeleteAsset(demoAssetPath);
+                }
 			}
 		}
 
@@ -197,32 +126,6 @@ namespace Ami.BroAudio.Editor
 		{
 			soundManager.AssignCoreData(coreData);
 			PrefabUtility.SavePrefabAsset(soundManager.gameObject);
-		}
-
-		private static T CreateScriptableObjectIfNotExist<T>(string path) where T : ScriptableObject
-		{
-			T setting;
-			if (!TryLoadResources<T>(path, out setting))
-			{
-				setting = ScriptableObject.CreateInstance<T>();
-				if (setting is EditorSetting editorSetting)
-				{
-                    editorSetting.ResetToFactorySettings();
-				}
-				else if (setting is RuntimeSetting runtimeSetting)
-				{
-					runtimeSetting.ResetToFactorySettings();
-				}
-				AssetDatabase.CreateAsset(setting, path);
-                EditorUtility.SetDirty(setting);
-            }
-			return setting;
-		}
-
-		private static bool TryLoadResources<T>(string path, out T resouece) where T : UnityEngine.Object
-		{
-			resouece = Resources.Load<T>(path);
-			return resouece != null;
 		}
 	}
 #endif

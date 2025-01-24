@@ -10,6 +10,7 @@ namespace Ami.BroAudio.Editor
     public class SoundIDAdvancedDropdown : AdvancedDropdown
     {
         private const int MinimumLinesCount = 10;
+        private const string None = "None";
 
         private Action<int, string, ScriptableObject> _onSelectItem = null;
 
@@ -22,15 +23,13 @@ namespace Ami.BroAudio.Editor
         protected override AdvancedDropdownItem BuildRoot()
         {
             var root = new AdvancedDropdownItem(nameof(BroAudio));
-
-            int childCount = 0;
-
+            root.AddChild(new AdvancedDropdownItem(None));
             if(!TryGetCoreData(out var coreData))
             {
                 return null;
             }
 
-			foreach (var asset in coreData.Assets)
+            foreach (var asset in coreData.Assets)
 			{
 				if (asset != null && !string.IsNullOrEmpty(asset.AssetName) && asset.Entities.Length > 0)
 				{
@@ -44,7 +43,6 @@ namespace Ami.BroAudio.Editor
                     if(item != null)
                     {
                         root.AddChild(item);
-                        childCount++;
                     }
 				}
 			}
@@ -53,10 +51,13 @@ namespace Ami.BroAudio.Editor
 
         protected override void ItemSelected(AdvancedDropdownItem item)
         {
-            var audioItem = item as SoundIDAdvancedDropdownItem;
-            if (audioItem != null)
+            if (item is SoundIDAdvancedDropdownItem soundIDItem)
             {
-                _onSelectItem?.Invoke(audioItem.SoundID, audioItem.name, audioItem.SourceAsset);
+                _onSelectItem?.Invoke(soundIDItem.SoundID, soundIDItem.name, soundIDItem.SourceAsset);
+            }
+            else if(item.name == None)
+            {
+                _onSelectItem?.Invoke(0, item.name, null);
             }
 
             base.ItemSelected(item);

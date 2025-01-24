@@ -99,8 +99,8 @@ namespace Ami.BroAudio.Editor
 
             void OnSelect(int id, string name, ScriptableObject asset)
             {
-                idProp.intValue = id;
                 _entityNameDict[id] = name;
+                idProp.intValue = id;
                 assetProp.objectReferenceValue = asset;
                 property.serializedObject.ApplyModifiedProperties();
             }

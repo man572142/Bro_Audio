@@ -172,9 +172,13 @@ namespace Ami.BroAudio.Editor
             SplitRectHorizontal(foldoutRect, gap, _headerRects, _headerRatios);
             Rect nameRect = _headerRects[0]; Rect previewButtonRect = _headerRects[1]; Rect audioTypeRect = _headerRects[2];
             audioTypeRect.x += gap * 0.5f;
+            if(!property.isExpanded)
+            {
+                nameRect.width = foldoutRect.width -1f;
+            }
 
             EditorGUI.BeginChangeCheck();
-            property.isExpanded = EditorGUI.Foldout(nameRect, property.isExpanded, property.isExpanded ? string.Empty : nameProp.stringValue);
+            property.isExpanded = EditorGUI.Foldout(nameRect, property.isExpanded, property.isExpanded ? string.Empty : nameProp.stringValue, !property.isExpanded);
             if (EditorGUI.EndChangeCheck() && Event.current.alt)
             {
                 OnExpandAll?.Invoke(property.isExpanded);

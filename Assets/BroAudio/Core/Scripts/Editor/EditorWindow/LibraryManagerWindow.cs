@@ -327,10 +327,6 @@ namespace Ami.BroAudio.Editor
                 if (_isInEntitiesEditMode && TryGetCurrentAssetEditor(out var editor))
                 {
                     DrawEntitiesList(editor);
-                    if (Event.current.alt)
-                    {
-                        GUILayout.Button("CollapseAll");
-                    }
                 }
                 else
                 {

@@ -79,9 +79,10 @@ namespace Ami.BroAudio.Editor
             void OnAdd(ReorderableList list)
             {
                 BroAudioType audioType = BroAudioType.None;
+                SerializedProperty lastElementProp = null;
                 if (list.count > 0)
                 {
-                    var lastElementProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
+                    lastElementProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
                     var lastElementID = lastElementProp.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.ID))).intValue;
                     audioType = Utility.GetAudioType(lastElementID); 
                 }
@@ -89,6 +90,13 @@ namespace Ami.BroAudio.Editor
                 SerializedProperty newEntity = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
                 ResetEntitySerializedProperties(newEntity);
                 AssignID(newEntity, audioType);
+
+                if (lastElementProp != null)
+                {
+                    string lastElementName = lastElementProp.FindBackingFieldProperty(nameof(AudioEntity.Name)).stringValue;
+                    newEntity.FindBackingFieldProperty(nameof(AudioEntity.Name)).stringValue = lastElementName;
+                }
+
                 serializedObject.ApplyModifiedProperties();
             }
 

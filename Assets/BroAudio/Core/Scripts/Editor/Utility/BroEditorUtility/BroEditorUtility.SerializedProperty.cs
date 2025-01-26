@@ -43,6 +43,7 @@ namespace Ami.BroAudio.Editor
             property.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange)).floatValue = 0f;
             property.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags)).intValue = 0;
             property.FindBackingFieldProperty(nameof(AudioEntity.Priority)).intValue = AudioConstant.DefaultPriority;
+            property.FindPropertyRelative(AudioEntity.EditorPropertyName.PlaybackGroup).objectReferenceValue = null;
 #if PACKAGE_ADDRESSABLES
             property.FindPropertyRelative(nameof(AudioEntity.UseAddressables)).boolValue = false; 
 #endif

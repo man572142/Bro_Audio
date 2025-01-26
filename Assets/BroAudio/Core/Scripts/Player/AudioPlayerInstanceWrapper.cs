@@ -99,22 +99,26 @@ namespace Ami.BroAudio
             base.UpdateInstance(newInstance);
         }
 
-        private bool IsAvailable(out ValueAdapter<IAudioPlayer> adapter, bool logWarning = true)
+        private bool IsAvailable(out BlindInvoker<IAudioPlayer> adapter, bool logWarning = true)
         {
             adapter = default;
             if (IsAvailable(logWarning))
             {
-                adapter = new ValueAdapter<IAudioPlayer>(this);
+                adapter = new BlindInvoker<IAudioPlayer>(this);
                 return true;
             }
             return false;
         }
 
-        private struct ValueAdapter<T> where T : class
+        /// <summary>
+        /// Ensures that any method invocation always returns the specified value.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        private struct BlindInvoker<T> where T : class
         {
             private readonly T _returnValue;
 
-            public ValueAdapter(T returnValue)
+            public BlindInvoker(T returnValue)
             {
                 _returnValue = returnValue;
             }

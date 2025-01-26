@@ -5,8 +5,8 @@ using UnityEditor;
 using UnityEngine.Audio;
 using UnityEditorInternal;
 using System;
+using Ami.Extension;
 using static Ami.BroAudio.Tools.BroName;
-using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
@@ -51,14 +51,14 @@ namespace Ami.BroAudio.Editor
 
             void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
             {
-                if (Event.current.isMouse && Event.current.button == 1 && rect.Contains(Event.current.mousePosition)) // Right click
+                if (EventExtension.IsRightClick(rect))
                 {
                     _rightClickMenu ??= CreateRightClickMenu();
                     _currentRightClickIndex = index;
                     _rightClickMenu.DropDown(rect);
                 }
 
-                if (Event.current.isMouse && Event.current.clickCount >= 2) // Double click
+                if (EventExtension.IsDoubleClicking(rect)) // Double click
                 {
                     _currentRenameIndex = index;
                     _isRename = true;

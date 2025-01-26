@@ -710,6 +710,12 @@ namespace Ami.Extension
             return rect;
         }
 
+        public static Rect ShrinkWidth(this Rect rect, float width)
+        {
+            rect.width -= width;
+            return rect;
+        }
+
         public static int GetEnumFlag(this SerializedProperty property)
         {
 #if UNITY_2021_2_OR_NEWER

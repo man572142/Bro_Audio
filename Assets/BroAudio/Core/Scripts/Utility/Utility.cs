@@ -1,5 +1,8 @@
 using UnityEngine;
 using Ami.Extension;
+using Ami.BroAudio.Runtime;
+using System.Collections.Generic;
+using System;
 
 namespace Ami.BroAudio
 {
@@ -86,5 +89,35 @@ namespace Ami.BroAudio
             AudioSourceCurveType.Spread => AudioConstant.DefaultSpread,
             _ => default,
         };
+
+        internal static T GetOrCreateDecorator<T>(ref List<AudioPlayerDecorator> list, Func<T> onCreateDecorator) where T : AudioPlayerDecorator
+        {
+            if (list != null && list.TryGetDecorator(out T decoratePalyer))
+            {
+                return decoratePalyer;
+            }
+
+            decoratePalyer = onCreateDecorator.Invoke();
+            list ??= new List<AudioPlayerDecorator>();
+            list.Add(decoratePalyer);
+            return decoratePalyer;
+        }
+
+        internal static bool TryGetDecorator<T>(this List<AudioPlayerDecorator> list, out T result) where T : AudioPlayerDecorator
+        {
+            result = null;
+            if (list != null)
+            {
+                foreach (var deco in list)
+                {
+                    if (deco is T target)
+                    {
+                        result = target;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     }
 }

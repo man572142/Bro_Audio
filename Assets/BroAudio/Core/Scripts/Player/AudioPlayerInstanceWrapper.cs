@@ -2,13 +2,14 @@ using UnityEngine;
 using Ami.BroAudio.Runtime;
 using Ami.Extension;
 using System;
+using System.Collections.Generic;
 
 namespace Ami.BroAudio
 {
     /// <summary>
     /// To keep tracking the instance of an AudioPlayer
     /// </summary>
-    public class AudioPlayerInstanceWrapper : InstanceWrapper<AudioPlayer>, IAudioPlayer
+    public class AudioPlayerInstanceWrapper : InstanceWrapper<AudioPlayer>, IAudioPlayer, IMusicPlayer, IPlayerEffect
     {
         public AudioPlayerInstanceWrapper(AudioPlayer instance) : base(instance)
         {
@@ -21,6 +22,8 @@ namespace Ami.BroAudio
             remove { if(IsAvailable()) Instance.OnEndPlaying -= value; }
         }
 
+        private List<AudioPlayerDecorator> _decorators = null;
+
         protected override void LogInstanceIsNull()
         {
             if (SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)
@@ -29,19 +32,18 @@ namespace Ami.BroAudio
             }
         }
 
-        #region Interface
+#region Interface
 #pragma warning disable UNT0008
         public SoundID ID => IsAvailable() ? Instance.ID : SoundID.Invalid;
         public bool IsActive => IsAvailable(false) && Instance.IsActive;
         public bool IsPlaying => IsAvailable(false) && Instance.IsPlaying;
-        // Todo: Decorator's instance is not updated when it's in seamlessLoop
-        IMusicPlayer IMusicDecoratable.AsBGM() => Instance?.AsBGM() ?? Empty.MusicPlayer;
+        IMusicPlayer IMusicDecoratable.AsBGM() => IsAvailable() ? Execute(Instance.AsBGM()) : Empty.MusicPlayer;
 #if !UNITY_WEBGL
-        IPlayerEffect IEffectDecoratable.AsDominator() => Instance?.AsDominator() ?? Empty.DominatorPlayer;
+        IPlayerEffect IEffectDecoratable.AsDominator() => IsAvailable() ? Execute(Instance.AsDominator()) : Empty.DominatorPlayer;
 #endif
-        IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => IsAvailable(out var x) ? x.Invoke(Instance.SetVolume(vol, fadeTime)) : Empty.AudioPlayer;
-        IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime) => IsAvailable(out var x) ? x.Invoke(Instance.SetPitch(pitch, fadeTime)) : Empty.AudioPlayer;
-        IAudioPlayer IAudioPlayer.SetVelocity(int velocity) => IsAvailable(out var x) ? x.Invoke(Instance.SetVelocity(velocity)) : Empty.AudioPlayer;
+        IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => IsAvailable() ? Execute(Instance.SetVolume(vol, fadeTime)) : Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime) => IsAvailable() ? Execute(Instance.SetPitch(pitch, fadeTime)) : Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.SetVelocity(int velocity) => IsAvailable() ? Execute(Instance.SetVelocity(velocity)) : Empty.AudioPlayer;
 
         void IAudioStoppable.Stop() => Instance?.Stop();
         void IAudioStoppable.Stop(Action onFinished) => Instance?.Stop(onFinished);
@@ -52,9 +54,9 @@ namespace Ami.BroAudio
         void IAudioStoppable.UnPause() => Instance?.UnPause();
         void IAudioStoppable.UnPause(float fadeOut) => Instance?.UnPause(fadeOut);
 
-        IAudioPlayer IAudioPlayer.OnStart(Action<IAudioPlayer> onStart) => IsAvailable(out var x) ? x.Invoke(Instance.OnStart(onStart)) : Empty.AudioPlayer;
-        IAudioPlayer IAudioPlayer.OnUpdate(Action<IAudioPlayer> onUpdate) => IsAvailable(out var x) ? x.Invoke(Instance.OnUpdate(onUpdate)) : Empty.AudioPlayer;
-        IAudioPlayer IAudioPlayer.OnEnd(Action<SoundID> onEnd) => IsAvailable(out var x) ? x.Invoke(Instance.OnEnd(onEnd)) : Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.OnStart(Action<IAudioPlayer> onStart) => IsAvailable() ? Execute(Instance.OnStart(onStart)) : Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.OnUpdate(Action<IAudioPlayer> onUpdate) => IsAvailable() ? Execute(Instance.OnUpdate(onUpdate)) : Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.OnEnd(Action<SoundID> onEnd) => IsAvailable() ? Execute(Instance.OnEnd(onEnd)) : Empty.AudioPlayer;
         IAudioSourceProxy IAudioPlayer.AudioSource
         {
             get
@@ -67,20 +69,42 @@ namespace Ami.BroAudio
             }
         }
 
-        IAudioPlayer ISchedulable.SetScheduledStartTime(double dspTime) => IsAvailable(out var x) ? x.Invoke(Instance.SetScheduledStartTime(dspTime)) : Empty.AudioPlayer;
-        IAudioPlayer ISchedulable.SetScheduledEndTime(double dspTime) => IsAvailable(out var x) ? x.Invoke(Instance.SetScheduledEndTime(dspTime)) : Empty.AudioPlayer;
-        IAudioPlayer ISchedulable.SetDelay(float time) => IsAvailable(out var x) ? x.Invoke(Instance.SetDelay(time)) : Empty.AudioPlayer;
+        SoundID IMusicPlayer.ID => throw new NotImplementedException();
+
+        IAudioPlayer ISchedulable.SetScheduledStartTime(double dspTime) => IsAvailable() ? Execute(Instance.SetScheduledStartTime(dspTime)) : Empty.AudioPlayer;
+        IAudioPlayer ISchedulable.SetScheduledEndTime(double dspTime) => IsAvailable() ? Execute(Instance.SetScheduledEndTime(dspTime)) : Empty.AudioPlayer;
+        IAudioPlayer ISchedulable.SetDelay(float time) => IsAvailable() ? Execute(Instance.SetDelay(time)) : Empty.AudioPlayer;
 
         public void GetOutputData(float[] samples, int channels) => Instance?.GetOutputData(samples, channels);
         public void GetSpectrumData(float[] samples, int channels, FFTWindow window) => Instance?.GetSpectrumData(samples, channels, window);
-        IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead) => IsAvailable(out var x) ? x.Invoke(Instance.OnAudioFilterRead(onAudioFilterRead)) : Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead) => IsAvailable() ? Execute(Instance.OnAudioFilterRead(onAudioFilterRead)) : Empty.AudioPlayer;
+
+        // These decorator methods will only be called when there's corresponding instance in the _decorators list
+        IAudioPlayer IMusicPlayer.SetTransition(Transition transition, StopMode stopMode, float overrideFade)
+            => Execute(GetDecorator<MusicPlayer>()?.SetTransition(transition, stopMode, overrideFade));
+
+#if !UNITY_WEBGL
+        IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, float fadeTime)
+            => Execute(GetDecorator<DominatorPlayer>()?.QuietOthers(othersVol, fadeTime));
+        IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, Fading fading)
+            => Execute(GetDecorator<DominatorPlayer>()?.QuietOthers(othersVol, fading));
+        IPlayerEffect IPlayerEffect.LowPassOthers(float freq, float fadeTime)
+            => Execute(GetDecorator<DominatorPlayer>()?.LowPassOthers(freq, fadeTime));
+        IPlayerEffect IPlayerEffect.LowPassOthers(float freq, Fading fading)
+            => Execute(GetDecorator<DominatorPlayer>()?.LowPassOthers(freq, fading));
+
+        IPlayerEffect IPlayerEffect.HighPassOthers(float freq, float fadeTime)
+            => Execute(GetDecorator<DominatorPlayer>()?.HighPassOthers(freq, fadeTime));
+
+        IPlayerEffect IPlayerEffect.HighPassOthers(float freq, Fading fading)
+            => Execute(GetDecorator<DominatorPlayer>()?.HighPassOthers(freq, fading));
+#endif
 #pragma warning restore UNT0008
-        #endregion
+#endregion
 
         public override void UpdateInstance(AudioPlayer newInstance)
         {
-            Instance.TransferEvents(out var onUpdateDelegates, out var onEndDelegates);
-            if(onUpdateDelegates != null)
+            if(Instance.TransferOnUpdates(out var onUpdateDelegates))
             {
                 foreach(var onUpdate in onUpdateDelegates)
                 {
@@ -88,45 +112,62 @@ namespace Ami.BroAudio
                 }
             }
 
-            if (onEndDelegates != null)
+            if (Instance.TransferOnEnds(out var onEndDelegates))
             {
                 foreach (var onEnd in onEndDelegates)
                 {
                     newInstance.OnEnd(onEnd as Action<SoundID>);
                 }
             }
+            
+            if(Instance.TransferDecorators(out var decorators))
+            {
+                _decorators ??= new List<AudioPlayerDecorator>();
+                _decorators.Clear();
+                _decorators.AddRange(decorators);
+            }
              
             base.UpdateInstance(newInstance);
         }
 
-        private bool IsAvailable(out BlindInvoker<IAudioPlayer> adapter, bool logWarning = true)
+        /// <summary>
+        /// Executing a method and returning the instance of this wrapper instead of the method's return value
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        private IAudioPlayer Execute(object method)
         {
-            adapter = default;
-            if (IsAvailable(logWarning))
-            {
-                adapter = new BlindInvoker<IAudioPlayer>(this);
-                return true;
-            }
-            return false;
+            return this;
         }
 
-        /// <summary>
-        /// Ensures that any method invocation always returns the specified value.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        private struct BlindInvoker<T> where T : class
+        private IMusicPlayer Execute(IMusicPlayer musicPlayer)
         {
-            private readonly T _returnValue;
+            CacheDecoratorIfNeeded(musicPlayer as MusicPlayer);
+            return this;
+        }
 
-            public BlindInvoker(T returnValue)
-            {
-                _returnValue = returnValue;
-            }
+        private IPlayerEffect Execute(IPlayerEffect dominator)
+        {
+            CacheDecoratorIfNeeded(dominator as DominatorPlayer);
+            return this;
+        }
 
-            public T Invoke(object method)
+        private void CacheDecoratorIfNeeded<T>(T decorator) where T : AudioPlayerDecorator
+        {
+            _decorators ??= new List<AudioPlayerDecorator>();
+            if (!_decorators.TryGetDecorator<T>(out _))
             {
-                return _returnValue;
+                _decorators.Add(decorator);
             }
+        }
+
+        private T GetDecorator<T>() where T : AudioPlayerDecorator
+        {
+            if (_decorators.TryGetDecorator<T>(out var result))
+            {
+                return result;
+            }
+            return null;
         }
 
         public static implicit operator AudioPlayer(AudioPlayerInstanceWrapper wrapper) => wrapper.IsAvailable() ? wrapper.Instance : null;

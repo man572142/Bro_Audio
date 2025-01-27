@@ -4,6 +4,7 @@ using UnityEngine.Audio;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using static Ami.BroAudio.Tools.BroName;
+using System.Collections.Generic;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -12,7 +13,6 @@ namespace Ami.BroAudio.Runtime
     {
         public const float UseEntitySetting = -1f;
         public const float Immediate = 0f;
-        private const int DecoratorsArraySize = 2;
 
         public event Action<AudioPlayer> OnRecycle;
 
@@ -21,7 +21,7 @@ namespace Ami.BroAudio.Runtime
         private Func<AudioTrackType, AudioMixerGroup> _getAudioTrack;
 
         private IBroAudioClip _clip;
-        private AudioPlayerDecorator[] _decorators = null;
+        private List<AudioPlayerDecorator> _decorators = null;
         private string _sendParaName = string.Empty;
 		private string _currTrackName = string.Empty;
         //private string _pitchParaName = string.Empty;
@@ -37,8 +37,8 @@ namespace Ami.BroAudio.Runtime
         public bool IsFadingOut { get; private set; }
         public EffectType CurrentActiveEffects { get; private set; } = EffectType.None;
         public bool IsUsingEffect => CurrentActiveEffects != EffectType.None;
-		public bool IsDominator => TryGetDecorator<DominatorPlayer>(out _);
-		public bool IsBGM => TryGetDecorator<MusicPlayer>(out _);
+		public bool IsDominator => HasDecoratorOf<DominatorPlayer>();
+		public bool IsBGM => HasDecoratorOf<MusicPlayer>();
         IAudioSourceProxy IAudioPlayer.AudioSource
         {
             get
@@ -223,58 +223,15 @@ namespace Ami.BroAudio.Runtime
 
 		IMusicPlayer IMusicDecoratable.AsBGM()
         {
-            return GetOrCreateDecorator(() => new MusicPlayer(this));
+            return Utility.GetOrCreateDecorator(ref _decorators, () => new MusicPlayer(this));
         }
 
 #if !UNITY_WEBGL
         IPlayerEffect IEffectDecoratable.AsDominator()
         {
-            return GetOrCreateDecorator(() => new DominatorPlayer(this)); ;
+            return Utility.GetOrCreateDecorator(ref _decorators, () => new DominatorPlayer(this));
         }
 #endif
-
-        private T GetOrCreateDecorator<T>(Func<T> onCreateDecorator) where T : AudioPlayerDecorator
-        {
-            if (_decorators != null && TryGetDecorator(out T decoratePalyer))
-            {
-                return decoratePalyer;
-            }
-
-            decoratePalyer = null;
-            _decorators ??= new AudioPlayerDecorator[DecoratorsArraySize];
-            for(int i = 0; i < _decorators.Length;i++)
-            {
-                if (_decorators[i] == null)
-                {
-                    decoratePalyer = onCreateDecorator.Invoke();
-                    _decorators[i] = decoratePalyer;
-                    break;
-                }
-            }
-
-            if(decoratePalyer == null)
-            {
-                Debug.LogError(Utility.LogTitle + "Audio Player decorators array size is too small");
-            }
-            return decoratePalyer;
-        }
-
-        private bool TryGetDecorator<T>(out T result) where T : AudioPlayerDecorator
-        {
-            result = null;
-            if(_decorators != null)
-            {
-                foreach (var deco in _decorators)
-                {
-                    if (deco is T target)
-                    {
-                        result = target;
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
 
         public void GetOutputData(float[] samples, int channels) => AudioSource.GetOutputData(samples, channels);
         public void GetSpectrumData(float[] samples, int channels, FFTWindow window) => AudioSource.GetSpectrumData(samples, channels, window);
@@ -288,21 +245,42 @@ namespace Ami.BroAudio.Runtime
             return this;
         }
 
-        internal void TransferEvents(out Delegate[] onUpdateDelegates, out Delegate[] onEndDelegates) 
+        internal bool TransferOnUpdates(out Delegate[] onUpdateDelegates)
         {
             onUpdateDelegates = null;
-            onEndDelegates = null;
             if (_onUpdate != null)
             {
                 onUpdateDelegates = _onUpdate.GetInvocationList();
                 _onUpdate = null;
             }
+            return onUpdateDelegates != null;
+        }
 
+        internal bool TransferOnEnds(out Delegate[] onEndDelegates) 
+        {
+            onEndDelegates = null;
             if(_onEnd != null)
             {
                 onEndDelegates = _onEnd.GetInvocationList();
                 _onEnd = null;
             }
+            return onEndDelegates != null;
+        }
+
+        internal bool TransferDecorators(out IEnumerable<AudioPlayerDecorator> decorators)
+        {
+            decorators = _decorators;
+            _decorators = null;
+            return decorators != null;
+        }
+
+        private bool HasDecoratorOf<T>() where T : AudioPlayerDecorator
+        {
+            if(_decorators != null)
+            {
+                return _decorators.TryGetDecorator<T>(out _);
+            }
+            return false;
         }
     }
 }

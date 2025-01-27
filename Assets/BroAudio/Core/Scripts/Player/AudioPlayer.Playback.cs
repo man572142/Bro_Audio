@@ -100,7 +100,7 @@ namespace Ami.BroAudio.Runtime
                     yield return WaitForScheduledStartTime();
                 }
 
-                if (TryGetDecorator<MusicPlayer>(out var musicPlayer))
+                if (_decorators.TryGetDecorator<MusicPlayer>(out var musicPlayer))
                 {
                     AudioSource.reverbZoneMix = 0f;
                     AudioSource.priority = AudioConstant.HighestPriority;

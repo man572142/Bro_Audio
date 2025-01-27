@@ -18,24 +18,27 @@ namespace Ami.BroAudio.Runtime
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            GameObject prefab = Instantiate(Resources.Load(nameof(SoundManager))) as GameObject;
-
+            var prefab = Resources.Load(nameof(SoundManager)) as GameObject;
             if (prefab == null)
             {
                 Debug.LogError(LogTitle + $"Initialize failed ,please check {nameof(SoundManager)}.prefab in your Resources folder!");
                 return;
             }
 
-            if (prefab.TryGetComponent(out SoundManager soundSystem))
+            prefab.SetActive(false);
+            GameObject objectInstance = Instantiate(prefab);
+            if (objectInstance.TryGetComponent(out SoundManager manager))
             {
-                _instance = soundSystem;
+                _instance = manager;
             }
             else
             {
                 Debug.LogError(LogTitle + $"Initialize failed ,please add {nameof(SoundManager)} component to {nameof(SoundManager)}.prefab");
+                return;
             }
 
-            DontDestroyOnLoad(prefab);
+            DontDestroyOnLoad(objectInstance);
+            objectInstance.SetActive(true);
         }
 
         private static SoundManager _instance;

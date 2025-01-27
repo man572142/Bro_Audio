@@ -12,24 +12,23 @@ namespace Ami.BroAudio
     /// </remarks>
     /// <typeparam name="T">The type of the rule value</typeparam>
     [Serializable]
-    public abstract class Rule<T>
+    public abstract class Rule<T> : IRule
     {
         public T Value;
-        private PlayableDelegate _playableDelegate;
-        private Func<Type, PlayableDelegate> _onGetParentRule;
+        private PlayableDelegate _ruleDelegate;
+        private Func<Type, IRule> _onGetParentRule;
         [SerializeField] private bool _isOverride = true;
 
-        public PlayableDelegate PlayableDelegate
+        public PlayableDelegate RuleDelegate
         {
             get
             {
                 if(_isOverride)
                 {
-                    return _playableDelegate;
+                    return _ruleDelegate;
                 }
-                return _onGetParentRule?.Invoke(GetType());
+                return _onGetParentRule?.Invoke(GetType())?.RuleDelegate;
             }
-            private set => _playableDelegate = value;
         }
 
         public Rule(T value)
@@ -43,19 +42,19 @@ namespace Ami.BroAudio
         /// <param name="playableFunc"></param>
         /// <param name="onGetParentRule"></param>
         /// <returns></returns>
-        public PlayableDelegate SetPlayableRule(PlayableDelegate playableFunc, Func<Type, PlayableDelegate> onGetParentRule)
+        public PlayableDelegate SetPlayableRule(PlayableDelegate playableFunc, Func<Type, IRule> onGetParentRule)
         {
             if (_isOverride)
             {
-                PlayableDelegate = playableFunc;
-                PlayableDelegate ??= _ => true;
-                return PlayableDelegate;
+                _ruleDelegate = playableFunc;
+                _ruleDelegate ??= _ => true;
+                return _ruleDelegate;
             }
 
             _onGetParentRule = onGetParentRule;
-            PlayableDelegate = _onGetParentRule?.Invoke(GetType());
-            PlayableDelegate ??= _ => true;
-            return playableFunc;
+            _ruleDelegate = _onGetParentRule?.Invoke(GetType())?.RuleDelegate;
+            _ruleDelegate ??= _ => true;
+            return _ruleDelegate;
         }
 
         public static implicit operator T(Rule<T> property) => property == null ? default : property.Value;

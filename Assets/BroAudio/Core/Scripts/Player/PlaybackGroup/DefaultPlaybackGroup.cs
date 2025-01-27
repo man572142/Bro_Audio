@@ -10,14 +10,16 @@ namespace Ami.BroAudio
 {
     /// <inheritdoc cref="PlaybackGroup"/>
     [CreateAssetMenu(menuName = nameof(BroAudio) + "/Playback Group", fileName = "PlaybackGroup", order = 0)]
-    public class DefaultPlaybackGroup : PlaybackGroup
+    public partial class DefaultPlaybackGroup : PlaybackGroup
     {
         public const float DefaultCombFilteringTime = RuntimeSetting.FactorySettings.CombFilteringPreventionInSeconds;
 
+#if UNITY_EDITOR
+        [CustomDrawingMethod(typeof(DefaultPlaybackGroup), nameof(DrawMaxPlayableLimitProperty))]
+#endif
         [SerializeField]
         [Tooltip("The maximum number of sounds that can be played simultaneously in this group")]
         [ValueButton("Infinity", -1)]
-        [CustomDrawingMethod(typeof(DefaultPlaybackGroup), nameof(DrawMaxPlayableLimitProperty))]
         private MaxPlayableCountRule _maxPlayableCount = -1;
 
         [SerializeField]
@@ -39,18 +41,17 @@ namespace Ami.BroAudio
 
         private int _currentPlayingCount;
 
-
         /// <inheritdoc cref="PlaybackGroup.InitializeRules"/>
-        public override IEnumerable<PlayableDelegate> InitializeRules()
+        protected override IEnumerable<PlayableDelegate> InitializeRules()
         {
             yield return _maxPlayableCount.SetPlayableRule(IsPlayableLimitNotReached, Parent.GetRule);
             yield return _combFilteringTime.SetPlayableRule(CheckCombFiltering, Parent.GetRule);
         }
 
-        public override PlayableDelegate GetRule(Type ruleType) => ruleType switch
+        public override IRule GetRule(Type ruleType) => ruleType switch
         {
-            Type t when t == typeof(MaxPlayableCountRule) => _maxPlayableCount.PlayableDelegate,
-            Type t when t == typeof(CombFilteringRule) => _combFilteringTime.PlayableDelegate,
+            Type t when t == typeof(MaxPlayableCountRule) => _maxPlayableCount,
+            Type t when t == typeof(CombFilteringRule) => _combFilteringTime,
             _ => throw new NotImplementedException(),
         };
 
@@ -72,17 +73,15 @@ namespace Ami.BroAudio
             return _maxPlayableCount <= 0 || _currentPlayingCount < _maxPlayableCount;
         }
 
-        public virtual bool CheckCombFiltering(SoundID id)
+        protected virtual bool CheckCombFiltering(SoundID id)
         {
             if (!SoundManager.Instance.HasPassCombFilteringPreventionTime(id, _combFilteringTime, _ignoreCombFilteringIfSameFrame))
             {
-#if UNITY_EDITOR
                 if (_logCombFilteringWarning)
                 {
                     Debug.LogWarning(Utility.LogTitle + $"One of the plays of Audio:{((SoundID)id).ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
                     $"For more information, please go to the [Comb Filtering] section in Tools/BroAudio/Preference.");
                 }
-#endif
                 return false;
             }
             return true;
@@ -93,8 +92,11 @@ namespace Ami.BroAudio
         {
             _currentPlayingCount = 0;
         }
+    }
 
 #if UNITY_EDITOR
+    public partial class DefaultPlaybackGroup : PlaybackGroup
+    {
         private static object DrawMaxPlayableLimitProperty(SerializedProperty property)
         {
             float currentValue = property.intValue <= 0 ? float.PositiveInfinity : property.intValue;
@@ -118,6 +120,6 @@ namespace Ami.BroAudio
         {
             public const string CombFilteringTime = nameof(_combFilteringTime);
         }
-#endif
     }
+#endif
 }

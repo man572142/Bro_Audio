@@ -31,8 +31,8 @@ namespace Ami.BroAudio
         /// <summary>
         /// Initializes the rules that determine how the sounds can be played.
         /// </summary>
-        public abstract IEnumerable<PlayableDelegate> InitializeRules();
-        public abstract PlayableDelegate GetRule(Type ruleType);
+        protected abstract IEnumerable<PlayableDelegate> InitializeRules();
+        public abstract IRule GetRule(Type ruleType);
 
         public void SetParent(PlaybackGroup parent)
         {

@@ -58,6 +58,7 @@ namespace Ami.BroAudio.Testing
         public void PlayerAsHighPassDominator() => _player.AsDominator().HighPassOthers(_frequency, _fading); 
 #endif
 
-        public void PlayerAsBGM() => _player.AsBGM().SetTransition(_transition, _fadeTime);
+        public void AppendAsBGM() => _player.AsBGM().SetTransition(_transition, _fadeTime);
+        public void PlayAsBGM() => _player = BroAudio.Play(_sound).AsBGM().SetTransition(_transition, _fadeTime);
     }
 }

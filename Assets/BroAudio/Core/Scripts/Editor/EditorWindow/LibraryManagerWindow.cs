@@ -38,6 +38,7 @@ namespace Ami.BroAudio.Editor
         private bool _hasAssetListReordered = false;
         private bool _isInEntitiesEditMode = false;
         private bool _hasOutputAssetPath = false;
+        private bool _showSettings = false;
 
         private Vector2 _assetListScrollPos = Vector2.zero;
         private Vector2 _entitiesScrollPos = Vector2.zero;
@@ -413,7 +414,7 @@ namespace Ami.BroAudio.Editor
             {
                 _entitiesScrollPos = EditorGUILayout.BeginScrollView(_entitiesScrollPos);
                 {
-                    DrawEntitiesHeader(editor.Asset, editor.SetAssetName);
+                    DrawEntitiesHeader(editor.serializedObject, editor.SetAssetName);
                     editor.DrawEntitiesList(out float listHeight);
                     float compenstateHeight = GetScrollPosCompenstateHeight(listHeight);
                     if (compenstateHeight > 0f)
@@ -444,7 +445,7 @@ namespace Ami.BroAudio.Editor
 
         // The ReorderableList default header background GUIStyle has set fixedHeight to non-0 and stretchHeight to false, which is unreasonable...
         // Use another style or Draw it manually could solve the problem and accept more customization.
-        private void DrawEntitiesHeader(IAudioAsset asset, Action<string> onAssetNameChanged)
+        private void DrawEntitiesHeader(SerializedObject serializedAsset, Action<string> onAssetNameChanged)
         {
             EditorGUILayout.BeginHorizontal();
             {
@@ -459,18 +460,32 @@ namespace Ami.BroAudio.Editor
                 if (Event.current.type == EventType.Repaint)
                 {
                     GUI.skin.window.Draw(headerRect, false, false, false, false);
-                    EditorStyles.textField.Draw(headerRect.PolarCoordinates(-1f), headerRect.Contains(Event.current.mousePosition), false, false, false);
-                    EditorGUI.DrawRect(headerRect.PolarCoordinates(-2f), new Color(1f, 1f, 1f, 0.1f));
+                    EditorStyles.textField.Draw(headerRect.PolarCoordinates(-1f).AdjustWidth(1f), headerRect.Contains(Event.current.mousePosition), false, false, false);
+                    EditorGUI.DrawRect(headerRect.PolarCoordinates(-2f).AdjustWidth(1f), new Color(1f, 1f, 1f, 0.1f));
                 }
 
-                DrawAssetNameField(headerRect, asset, onAssetNameChanged);
+                var nameProp = serializedAsset.FindBackingFieldProperty(nameof(AudioAsset.AssetName));
+                DrawAssetNameField(headerRect, nameProp, onAssetNameChanged);
 
                 GUILayout.FlexibleSpace();
+
+                _showSettings = EditorGUILayout.BeginFoldoutHeaderGroup(_showSettings, "Settings");
+                if (_showSettings)
+                {
+                    var groupProp = serializedAsset.FindBackingFieldProperty(nameof(AudioAsset.Group));
+                    EditorGUI.BeginChangeCheck();
+                    groupProp.objectReferenceValue = (PlaybackGroup)EditorGUILayout.ObjectField(groupProp.objectReferenceValue, typeof(PlaybackGroup), false);
+                    if(EditorGUI.EndChangeCheck())
+                    {
+                        serializedAsset.ApplyModifiedProperties();
+                    }
+                }
+                EditorGUILayout.EndFoldoutHeaderGroup();
             }
             EditorGUILayout.EndHorizontal();
         }
 
-        private void DrawAssetNameField(Rect headerRect, IAudioAsset asset, Action<string> onAssetNameChanged)
+        private void DrawAssetNameField(Rect headerRect, SerializedProperty nameProp, Action<string> onAssetNameChanged)
         {
             GUIStyle wordWrapStyle = new GUIStyle(GUIStyleHelper.MiddleCenterRichText);
             wordWrapStyle.wordWrap = true;
@@ -481,18 +496,19 @@ namespace Ami.BroAudio.Editor
             string newName = EditorGUI.DelayedTextField(headerRect, displayName, wordWrapStyle);
 
             if (EditorGUI.EndChangeCheck()
-                && !newName.Equals(asset.AssetName) && !newName.Equals(displayName) && IsValidAssetName(newName))
+                && !newName.Equals(nameProp.stringValue) && !newName.Equals(displayName) && IsValidAssetName(newName))
             {
+                nameProp.stringValue = newName;
                 onAssetNameChanged?.Invoke(newName);
             }
 
             string GetDisplayName()
             {
-                if (string.IsNullOrEmpty(asset.AssetName) || IsTempReservedName(asset.AssetName))
+                if (string.IsNullOrEmpty(nameProp.stringValue) || IsTempReservedName(nameProp.stringValue))
                 {
                     return _instruction.GetText(Instruction.LibraryManager_NameTempAssetHint);
                 }
-                return asset.AssetName;
+                return nameProp.stringValue;
             }
         }
 

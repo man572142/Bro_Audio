@@ -172,7 +172,7 @@ namespace Ami.BroAudio.Editor
             audioTypeRect.x += gap * 0.5f;
 
             EditorGUI.BeginChangeCheck();
-            property.isExpanded = EditorGUI.Foldout(foldoutRect.ShrinkWidth(audioTypeRect.width), property.isExpanded, property.isExpanded ? string.Empty : nameProp.stringValue, !property.isExpanded);
+            property.isExpanded = EditorGUI.Foldout(foldoutRect.AdjustWidth(-audioTypeRect.width), property.isExpanded, property.isExpanded ? string.Empty : nameProp.stringValue, !property.isExpanded);
             if (EditorGUI.EndChangeCheck() && Event.current.alt)
             {
                 OnExpandAll?.Invoke(property.isExpanded);

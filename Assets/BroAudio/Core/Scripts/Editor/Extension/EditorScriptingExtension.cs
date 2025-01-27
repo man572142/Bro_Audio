@@ -716,9 +716,9 @@ namespace Ami.Extension
             return rect;
         }
 
-        public static Rect ShrinkWidth(this Rect rect, float width)
+        public static Rect AdjustWidth(this Rect rect, float width)
         {
-            rect.width -= width;
+            rect.width += width;
             return rect;
         }
 

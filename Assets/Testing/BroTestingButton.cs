@@ -106,7 +106,8 @@ namespace Ami.BroAudio.Testing
             nameof(BroTesting.PlayerAsHighPassDominator) => GetPlayerAppendMethodString(Dominator) + GetPlayerAppendMethodString(HighPasOthers, Frequency, Fade),
 
 #endif
-            nameof(BroTesting.PlayerAsBGM) => GetPlayerAppendMethodString(BGM) + GetPlayerAppendMethodString(Transition, TransitionParam, Fade),
+            nameof(BroTesting.AppendAsBGM) => GetPlayerAppendMethodString(BGM) + GetPlayerAppendMethodString(Transition, TransitionParam, Fade),
+            nameof(BroTesting.PlayAsBGM) => GetMainMethodText(Play) + GetPlayerAppendMethodString(BGM) + GetPlayerAppendMethodString(Transition, TransitionParam, Fade),
             _ => throw new System.NotImplementedException(),
         };
 

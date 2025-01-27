@@ -10,63 +10,34 @@ namespace Ami.BroAudio
     /// <remarks>
     /// Please override the <see cref="InitializeRules"/> method to specify the behavior of the rules
     /// </remarks>
-    public abstract class PlaybackGroup : ScriptableObject, IPlayableValidator
+    public abstract partial class PlaybackGroup : ScriptableObject, IPlayableValidator
     {
         public delegate bool PlayableDelegate(SoundID id);
 
-        /// <summary>
-        /// Stores the value required for rule execution.
-        /// </summary>
-        /// <remarks>
-        /// Note that the behavior needs to be specified in the <see cref="PlaybackGroup.InitializeRules"/> method using <see cref="SelectPlayableRule"/>.
-        /// </remarks>
-        /// <typeparam name="T">The type of the rule value</typeparam>
-        [Serializable]
-        public class Rule<T>
-        {
-            public T Value;
-            [SerializeField] private bool _isOverride = true;
-
-            public Rule(T value)
-            {
-                Value = value;
-            }
-
-            /// <summary>
-            /// Selects the rule to be executed based on the override status.
-            /// </summary>
-            /// <param name="playableFunc"></param>
-            /// <param name="defaultPlayableFunc"></param>
-            /// <returns></returns>
-            public PlayableDelegate SelectPlayableRule(PlayableDelegate playableFunc, PlayableDelegate defaultPlayableFunc = null)
-            {
-                if (_isOverride)
-                {
-                    playableFunc ??= _ => true;
-                    return playableFunc;
-                }
-                else
-                {
-                    defaultPlayableFunc ??= _ => true;
-                    return defaultPlayableFunc;
-                }
-            }
-
-            public static implicit operator T(Rule<T> property) => property == null ? default : property.Value;
-            public static implicit operator Rule<T>(T value) => new Rule<T>(value);
-
-            public static class NameOf
-            {
-                public const string IsOverride = nameof(_isOverride);
-            }
-        }
-
+        private PlaybackGroup _parent;
         private List<PlayableDelegate> _rules = null;
 
+        protected PlaybackGroup Parent
+        {
+            get
+            {
+                if(!_parent)
+                {
+                    return Runtime.SoundManager.Instance.Setting.GlobalPlaybackGroup;
+                }
+                return _parent;
+            }
+        }
         /// <summary>
         /// Initializes the rules that determine how the sounds can be played.
         /// </summary>
         public abstract IEnumerable<PlayableDelegate> InitializeRules();
+        public abstract PlayableDelegate GetRule(Type ruleType);
+
+        public void SetParent(PlaybackGroup parent)
+        {
+            _parent = parent;
+        }
 
         /// <summary>
         /// Handles the player when the sound is played.

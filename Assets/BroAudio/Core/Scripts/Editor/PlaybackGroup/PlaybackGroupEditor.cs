@@ -136,9 +136,8 @@ namespace Ami.BroAudio.Editor
                 {
                     GUILayout.Space(OverrideToggleOffsetX);
 
-                    if (property.type.StartsWith(nameof(PlaybackGroup.Rule<int>)))
-                    {
-                        DrawRule(property, toggleWidth, nameWidth, attrContainer);
+                    if (DrawRule(property, toggleWidth, nameWidth, attrContainer))
+                    {                       
                         lastRulePath = property.propertyPath;
                     }
                     else
@@ -154,16 +153,22 @@ namespace Ami.BroAudio.Editor
             serializedObject.ApplyModifiedProperties();
         }
 
-        private void DrawRule(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth, AttributesContainer attrContainer)
+        private bool DrawRule(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth, AttributesContainer attrContainer)
         {
-            var overrideProp = property.FindPropertyRelative(PlaybackGroup.Rule<int>.NameOf.IsOverride);
+            if (!property.TryFindPropertyRelative(Rule<int>.NameOf.IsOverride, out var overrideProp))
+            {
+                return false;
+            }
             overrideProp.boolValue = EditorGUILayout.Toggle(GUIContent.none, overrideProp.boolValue, toggleWidth);
 
             using (new EditorGUI.DisabledScope(!overrideProp.boolValue))
             {
                 EditorGUILayout.LabelField(GetDisplayName(property, attrContainer), nameWidth);
 
-                var valueProp = property.FindPropertyRelative(nameof(PlaybackGroup.Rule<int>.Value));
+                if(!property.TryFindPropertyRelative(nameof(Rule<int>.Value), out var valueProp))
+                {
+                    return false;
+                }
                 object customDrawerReturnValue = null;
                 if (attrContainer.TryGet(out CustomDrawingMethod customDrawer) && customDrawer.Method != null)
                 {
@@ -175,6 +180,7 @@ namespace Ami.BroAudio.Editor
                 }
                 DrawValueButton(attrContainer, valueProp, customDrawerReturnValue);
             }
+            return true;
         }
 
         private void DraweNormalProperty(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth, string lastRulePath, AttributesContainer attrContainer)
@@ -186,7 +192,7 @@ namespace Ami.BroAudio.Editor
                 if(lastRulePath != null)
                 {
                     var lastRule = serializedObject.FindProperty(lastRulePath);
-                    isDisableGroup = !lastRule.FindPropertyRelative(PlaybackGroup.Rule<int>.NameOf.IsOverride).boolValue;
+                    isDisableGroup = !lastRule.FindPropertyRelative(Rule<int>.NameOf.IsOverride).boolValue;
                 }
 
                 Rect rect = GUILayoutUtility.GetLastRect();

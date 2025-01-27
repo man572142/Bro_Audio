@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Runtime;
@@ -17,12 +18,12 @@ namespace Ami.BroAudio
         [Tooltip("The maximum number of sounds that can be played simultaneously in this group")]
         [ValueButton("Infinity", -1)]
         [CustomDrawingMethod(typeof(DefaultPlaybackGroup), nameof(DrawMaxPlayableLimitProperty))]
-        private Rule<int> _maxPlayableCount = -1;
+        private MaxPlayableCountRule _maxPlayableCount = -1;
 
         [SerializeField]
         [ValueButton("Default", 0.04f)]
         [Tooltip("Time interval to prevent the Comb-Filtering effect")]
-        private Rule<float> _combFilteringTime = DefaultCombFilteringTime;
+        private CombFilteringRule _combFilteringTime = DefaultCombFilteringTime;
 
         [SerializeField]
         [DerivativeProperty]
@@ -38,14 +39,20 @@ namespace Ami.BroAudio
 
         private int _currentPlayingCount;
 
-        public static DefaultPlaybackGroup Default => SoundManager.Instance.Setting.GlobalPlaybackGroup;
 
         /// <inheritdoc cref="PlaybackGroup.InitializeRules"/>
         public override IEnumerable<PlayableDelegate> InitializeRules()
         {
-            yield return _maxPlayableCount.SelectPlayableRule(IsPlayableLimitNotReached, _ => true);
-            yield return _combFilteringTime.SelectPlayableRule(CheckCombFiltering, Default.CheckCombFiltering);
+            yield return _maxPlayableCount.SetPlayableRule(IsPlayableLimitNotReached, Parent.GetRule);
+            yield return _combFilteringTime.SetPlayableRule(CheckCombFiltering, Parent.GetRule);
         }
+
+        public override PlayableDelegate GetRule(Type ruleType) => ruleType switch
+        {
+            Type t when t == typeof(MaxPlayableCountRule) => _maxPlayableCount.PlayableDelegate,
+            Type t when t == typeof(CombFilteringRule) => _combFilteringTime.PlayableDelegate,
+            _ => throw new NotImplementedException(),
+        };
 
         /// <summary>
         /// Handles the player when the sound is played and keeps track of the number of sounds that are currently playing

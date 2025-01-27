@@ -77,7 +77,7 @@ public class BroUpdater
             string resourcePath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(runtimeSetting));
             var globalPlaybackGroup = CreateScriptableObjectIfNotExist<DefaultPlaybackGroup>(Combine(resourcePath, GlobalPlaybackGroupPath) + ".asset");
             var serializeObj = new SerializedObject(globalPlaybackGroup);
-            var combProp = serializeObj.FindProperty(DefaultPlaybackGroup.NameOf.CombFilteringTime)?.FindPropertyRelative(nameof(DefaultPlaybackGroup.Rule<int>.Value));
+            var combProp = serializeObj.FindProperty(DefaultPlaybackGroup.NameOf.CombFilteringTime)?.FindPropertyRelative(nameof(Rule<int>.Value));
             if (combProp != null)
             {
                 combProp.floatValue = runtimeSetting.CombFilteringPreventionInSeconds;

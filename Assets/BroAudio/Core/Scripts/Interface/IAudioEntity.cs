@@ -4,7 +4,7 @@ namespace Ami.BroAudio.Data
 {
 	public interface IAudioEntity
 	{
-        PlaybackGroup Group { get; }
+        PlaybackGroup Group { get; set; }
 		bool Loop { get; }
 		bool SeamlessLoop { get; }
 		float TransitionTime { get; }

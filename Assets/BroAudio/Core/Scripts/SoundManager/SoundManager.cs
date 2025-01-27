@@ -116,14 +116,33 @@ namespace Ami.BroAudio.Runtime
                 if (asset == null)
                     continue;
 
-                foreach(var entity in asset.GetAllAudioEntities())
+                // TODO: need better approach
+                if(asset.Group != null)
                 {
-                    if (!entity.Validate())
+                    asset.Group.SetParent(Setting.GlobalPlaybackGroup);
+                }
+                else
+                {
+                    asset.Group = Setting.GlobalPlaybackGroup;
+                }
+
+                foreach(var identity in asset.GetAllAudioEntities())
+                {
+                    if (!identity.Validate())
                         continue;
 
-                    if (!_audioBank.ContainsKey(entity.ID))
+                    if (!_audioBank.ContainsKey(identity.ID))
                     {
-                        _audioBank.Add(entity.ID, entity as IAudioEntity);
+                        var entity = identity as IAudioEntity;
+                        if(entity.Group != null)
+                        {
+                            entity.Group.SetParent(asset.Group);
+                        }
+                        else
+                        {
+                            entity.Group = asset.Group;
+                        }
+                        _audioBank.Add(identity.ID, entity);
                     }
                 }
             }

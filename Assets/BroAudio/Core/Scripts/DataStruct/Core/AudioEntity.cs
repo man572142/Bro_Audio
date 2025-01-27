@@ -36,6 +36,7 @@ namespace Ami.BroAudio.Data
                 }
                 return _group;
             }
+            set => _group = value;
         }
 
         public IBroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);

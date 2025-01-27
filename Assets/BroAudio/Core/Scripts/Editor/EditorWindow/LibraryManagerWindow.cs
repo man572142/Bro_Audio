@@ -107,6 +107,7 @@ namespace Ami.BroAudio.Editor
 
                 InitEditorDictionary();
                 InitReorderableList();
+                RefreshAssetEditors(_assetReorderableList);
             }
 
             Undo.undoRedoPerformed += Repaint;
@@ -210,20 +211,25 @@ namespace Ami.BroAudio.Editor
                 OnSelectAsset?.Invoke();
                 _currSelectedAssetIndex = list.index;
                 EditorPlayAudioClip.Instance.StopAllClips();
-                foreach (var pair in _assetEditorDict)
+                RefreshAssetEditors(list);
+            }
+        }
+
+        private void RefreshAssetEditors(ReorderableList list)
+        {
+            foreach (var pair in _assetEditorDict)
+            {
+                string guid = pair.Key;
+                var editor = pair.Value;
+                if (guid == _allAssetGUIDs[list.index])
                 {
-                    string guid = pair.Key;
-                    var editor = pair.Value;
-                    if (guid == _allAssetGUIDs[list.index])
-                    {
-                        editor.RemoveEntitiesListener();
-                        editor.AddEntitiesListener();
-                        editor.Verify();
-                    }
-                    else
-                    {
-                        editor.RemoveEntitiesListener();
-                    }
+                    editor.RemoveEntitiesListener();
+                    editor.AddEntitiesListener();
+                    editor.Verify();
+                }
+                else
+                {
+                    editor.RemoveEntitiesListener();
                 }
             }
         }

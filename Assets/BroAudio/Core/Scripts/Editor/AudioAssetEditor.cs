@@ -5,6 +5,8 @@ using Ami.Extension;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using Ami.Extension.Reflection;
+using System.Reflection;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.Extension.EditorScriptingExtension;
 
@@ -15,9 +17,24 @@ namespace Ami.BroAudio.Editor
     {
         private ReorderableList _entitiesList = null;
         private IUniqueIDGenerator _idGenerator = null;
+        private Action _onDropDownMenu;
+        private Action<SerializedProperty, GenericMenu, Event> _setupPropertyCopyPasteDelegate;
 
         public Instruction CurrInstruction { get; private set; }
         public IAudioAsset Asset { get; private set; }
+        private Action<SerializedProperty, GenericMenu, Event> SetupPropertycopyPasteDelegate
+        {
+            get
+            {
+                if (_setupPropertyCopyPasteDelegate == null)
+                {
+                    Type type = ClassReflectionHelper.GetUnityEditorClass("ClipboardContextMenu");
+                    MethodInfo method = type.GetMethod("SetupPropertyCopyPaste", BindingFlags.NonPublic | BindingFlags.Static);
+                    _setupPropertyCopyPasteDelegate = (Action<SerializedProperty, GenericMenu, Event>)Delegate.CreateDelegate(typeof(Action<SerializedProperty, GenericMenu, Event>), method);
+                }
+                return _setupPropertyCopyPasteDelegate;
+            }
+        }
 
         public void AddEntitiesListener()
         {
@@ -90,7 +107,7 @@ namespace Ami.BroAudio.Editor
             newEntityNameProp.stringValue = sourceEntityName + $" ({newNameIndex})";
 
             RecoverShiftedExpandedStates(listProp, sourceIndex);
-
+            _entitiesList.index = sourceIndex + 1;
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -163,9 +180,12 @@ namespace Ami.BroAudio.Editor
                 if (!elementProp.isExpanded && EventExtension.IsRightClick(rect))
                 {
                     _entitiesList.index = index;
+                    _entitiesList.GrabKeyboardFocus();
                     string entityName = elementProp.FindBackingFieldProperty(nameof(AudioEntity.Name)).stringValue;
-                    var menu = CreateEntityRightClickMenu(entityName);
-                    menu.DropDown(new Rect(rect) { x = Event.current.mousePosition.x });
+                    Rect dropDownRect = new Rect(rect) { x = Event.current.mousePosition.x };
+                    // the element background doesn't repaint right away, so we delay the dropdown to the next drawing process 
+                    _onDropDownMenu = () => OnDropDwonRightClickMenu(dropDownRect, elementProp);
+                    EditorWindow.focusedWindow.Repaint();
                 }
 
                 HandleKeyboardShortcuts();
@@ -178,6 +198,19 @@ namespace Ami.BroAudio.Editor
                 }
             }
 
+            void OnDropDwonRightClickMenu(Rect rect, SerializedProperty property)
+            {
+                // similar to the default context menu but with more customized features
+                GenericMenu menu = new GenericMenu();
+                menu.AddItem(new GUIContent($"Duplicate ^D"), false, OnDuplicateSelectedEntity);
+                menu.AddItem(new GUIContent($"Remove _DELETE"), false, OnRemoveSelectedEntity);
+                SetupPropertycopyPasteDelegate?.Invoke(property, menu, Event.current);
+                menu.AddSeparator(string.Empty);
+                menu.AddItem(new GUIContent("Copy Property Path"), false, OnCopyPropertyPath);
+
+                menu.DropDown(rect);
+            }
+
             void OnReorder(ReorderableList list)
             {
                 list.serializedProperty.serializedObject.ApplyModifiedProperties();
@@ -187,6 +220,11 @@ namespace Ami.BroAudio.Editor
             {
                 return EditorGUI.GetPropertyHeight(_entitiesList.serializedProperty.GetArrayElementAtIndex(index));
             }
+        }
+
+        private void OnCopyPropertyPath()
+        {
+            EditorGUIUtility.systemCopyBuffer = _entitiesList.serializedProperty.GetArrayElementAtIndex(_entitiesList.index).propertyPath;
         }
 
         private void HandleKeyboardShortcuts()
@@ -238,7 +276,13 @@ namespace Ami.BroAudio.Editor
         }
 
         public void DrawEntitiesList(out float height)
-        {
+        {        
+            if(_onDropDownMenu != null)
+            {
+                _onDropDownMenu.Invoke();
+                _onDropDownMenu = null;
+            }
+
             _entitiesList.DoLayoutList();
             height = _entitiesList.GetHeight();
         }
@@ -250,14 +294,6 @@ namespace Ami.BroAudio.Editor
                 SerializedProperty elementProp = _entitiesList.serializedProperty.GetArrayElementAtIndex(i);
                 elementProp.isExpanded = isExpanded;
             }
-        }
-
-        private GenericMenu CreateEntityRightClickMenu(string name)
-        {
-            GenericMenu menu = new GenericMenu();
-            menu.AddItem(new GUIContent($"Duplicate [{name}] ^D"), false, OnDuplicateSelectedEntity);
-            menu.AddItem(new GUIContent($"Remove [{name}] _DELETE"), false, OnRemoveSelectedEntity);
-            return menu;
         }
 
         public void SetAssetName(string newName)

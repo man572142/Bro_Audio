@@ -228,6 +228,12 @@ namespace Ami.BroAudio.Editor
                     break;
             }
 
+            var evt = Event.current;
+            if(evt.type == EventType.ContextClick && position.Contains(evt.mousePosition) && !tabViewRect.Contains(evt.mousePosition))
+            {
+                OnOpenOptionMenu(new Rect(tabViewRect) { x = evt.mousePosition.x, height = EditorGUIUtility.singleLineHeight}, property);
+            }
+
             float GetTabWindowHeight()
             {
                 float height = TabLabelHeight;
@@ -359,7 +365,6 @@ namespace Ami.BroAudio.Editor
                 EditorUtility.SetDirty(EditorSetting);
             }
         }
-
 #endif
         private void GetOrCreateEntityDataDict(SerializedProperty property, out EntityData data)
         {
@@ -485,7 +490,7 @@ namespace Ami.BroAudio.Editor
             if (!_clipDataDict.TryGetValue(clipProp.propertyPath, out var clipData))
             {
                 clipData = new ClipData();
-                clipData.Transport = new SerializedTransport(clipProp, audioClip.length); ;
+                clipData.Transport = new SerializedTransport(clipProp, audioClip.length);
                 _clipDataDict[clipProp.propertyPath] = clipData;
             }
             transport = clipData.Transport;
@@ -593,8 +598,8 @@ namespace Ami.BroAudio.Editor
 #if BroAudio_DevOnly
             menu.AddItem(new GUIContent("Copy ID to the clipboard"), false, CopyID);
 #endif
-            menu.AddItem(new GUIContent($"Duplicate [{nameProp.stringValue}] ^D"), false, () => OnDulicateEntity?.Invoke());
-            menu.AddItem(new GUIContent($"Remove [{nameProp.stringValue}] _DELETE"), false, () => OnRemoveEntity?.Invoke());
+            menu.AddItem(new GUIContent($"Duplicate ^D"), false, () => OnDulicateEntity?.Invoke());
+            menu.AddItem(new GUIContent($"Remove _DELETE"), false, () => OnRemoveEntity?.Invoke());
 
             var audioType = Utility.GetAudioType(idProp.intValue);
             if (!BroEditorUtility.EditorSetting.TryGetAudioTypeSetting(audioType, out var typeSetting))

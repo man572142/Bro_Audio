@@ -88,12 +88,13 @@ namespace Ami.BroAudio.Editor
 		}
 
 		public bool WriteAudioTypeSetting(BroAudioType audioType, AudioTypeSetting newSetting)
-		{
+		{       
 			for(int i = 0; i < AudioTypeSettings.Count; i++)
 			{
 				if (audioType == AudioTypeSettings[i].AudioType)
 				{
-					AudioTypeSettings[i] = newSetting;
+                    UnityEditor.Undo.RecordObject(this, $"Change {audioType} Setting");
+                    AudioTypeSettings[i] = newSetting;
 					return true;
 				}
 			}

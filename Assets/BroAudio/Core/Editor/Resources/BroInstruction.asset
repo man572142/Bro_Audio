@@ -97,11 +97,11 @@ MonoBehaviour:
   - Key: 308
     Value: Please name the temp asset
   - Key: 309
-    Value: 'Do you want to convert the {0} and {1} addressables?
+    Value: 'Do you want to convert the clips from  {0} and {1} addressables?
 
 
-      *For more
-      option, please check out Tools/BroAudio/Preferences - Misc'
+      *For
+      more option, please check out Tools/BroAudio/Preferences - Misc'
   - Key: 310
     Value: "Set how would you like to handle with the current references when switching
       the [Addressables] option in Library Manager.\n\n[Only Convert] \nConvert the

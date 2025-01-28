@@ -52,6 +52,7 @@ namespace Ami.BroAudio.Editor
 
         public static void WriteAssetOutputPathToSetting(string path)
 		{
+            Undo.RecordObject(EditorSetting, "Change BroAudio Asset Output Path");
 			EditorSetting.AssetOutputPath = path;
 			SaveToDisk(EditorSetting);
 		}

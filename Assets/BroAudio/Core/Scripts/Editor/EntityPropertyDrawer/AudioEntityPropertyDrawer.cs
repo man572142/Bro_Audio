@@ -339,7 +339,7 @@ namespace Ami.BroAudio.Editor
                 switch (currentRefType)
                 {
                     case ReferenceType.Direct:
-                        conversion = " [Direct Reference] to [Asset Reference]";
+                        conversion = "[Direct Reference] to [Asset Reference]";
                         action = "mark the asset as";
                         break;
                     case ReferenceType.Addressalbes:

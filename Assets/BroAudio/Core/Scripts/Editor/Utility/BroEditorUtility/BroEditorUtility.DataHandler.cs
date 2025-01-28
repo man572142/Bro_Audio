@@ -87,7 +87,7 @@ namespace Ami.BroAudio.Editor
 		public static void SaveToDisk(UnityEngine.Object obj)
 		{
 			EditorUtility.SetDirty(obj);
-			AssetDatabase.SaveAssets();
+			AssetDatabase.SaveAssetIfDirty(obj);
 		}
 	}
 }

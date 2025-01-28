@@ -20,35 +20,24 @@ namespace Ami.BroAudio.Editor
         public const string TransparentLogoPath = "Logo_Transparent";
         public const string EditorAudioMixerPath = BroName.EditorAudioMixerName;
 
-
         public static readonly string UnityProjectRootPath = Application.dataPath.Replace("/Assets", string.Empty);
 
-		private static string _assetOutputPath = string.Empty;
 		public static string AssetOutputPath
 		{
 			get
 			{
-				if(!string.IsNullOrEmpty(_assetOutputPath))
-				{
-                    return _assetOutputPath;
-                }
-
 				if(EditorSetting)
 				{
 					if(string.IsNullOrWhiteSpace(EditorSetting.AssetOutputPath))
 					{
-						_assetOutputPath = DefaultAssetOutputPath;
                         EditorSetting.AssetOutputPath = DefaultAssetOutputPath;
 						EditorUtility.SetDirty(EditorSetting);
+                        AssetDatabase.SaveAssetIfDirty(EditorSetting);
 					}
-					else
-					{
-						_assetOutputPath = EditorSetting.AssetOutputPath;
-					}
+                    return EditorSetting.AssetOutputPath;
 				}
-				return _assetOutputPath;
+				return DefaultAssetOutputPath;
 			}
-			set => _assetOutputPath = value;
 		}
 
 		public static string GetFullPath(string path) => Combine(UnityProjectRootPath,path);

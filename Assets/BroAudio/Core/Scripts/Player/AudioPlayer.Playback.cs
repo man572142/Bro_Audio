@@ -386,6 +386,7 @@ namespace Ami.BroAudio.Runtime
             ResetSpatial();
             ResetEffect();
 
+            // Don't add StopCoroutine(_playbackCoroutine) here, as this method is typically called within it, and further processing after this method cannot be guaranteed.
             _trackVolume.StopCoroutine();
             _audioTypeVolume.StopCoroutine();
             RemoveFromResumablePlayer();

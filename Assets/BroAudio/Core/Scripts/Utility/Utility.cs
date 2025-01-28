@@ -38,6 +38,19 @@ namespace Ami.BroAudio
             return (int)(sampleRate * seconds);
         }
 
+        public static PlaybackGroup LinkPlaybackGroup(PlaybackGroup group, PlaybackGroup parent)
+        {
+            if(group == null)
+            {
+                group = parent;
+            }
+            else
+            {
+                group.SetParent(parent);
+            }
+            return group;
+        }
+
         public static bool IsDefaultCurve(this AnimationCurve curve , float defaultValue)
         {
             if(curve == null || curve.length == 0)

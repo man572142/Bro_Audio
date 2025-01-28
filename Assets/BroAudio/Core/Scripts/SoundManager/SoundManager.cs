@@ -119,15 +119,7 @@ namespace Ami.BroAudio.Runtime
                 if (asset == null)
                     continue;
 
-                // TODO: need better approach
-                if(asset.Group != null)
-                {
-                    asset.Group.SetParent(Setting.GlobalPlaybackGroup);
-                }
-                else
-                {
-                    asset.Group = Setting.GlobalPlaybackGroup;
-                }
+                asset.Group = LinkPlaybackGroup(asset.Group, Setting.GlobalPlaybackGroup);
 
                 foreach(var identity in asset.GetAllAudioEntities())
                 {
@@ -137,14 +129,7 @@ namespace Ami.BroAudio.Runtime
                     if (!_audioBank.ContainsKey(identity.ID))
                     {
                         var entity = identity as IAudioEntity;
-                        if(entity.Group != null)
-                        {
-                            entity.Group.SetParent(asset.Group);
-                        }
-                        else
-                        {
-                            entity.Group = asset.Group;
-                        }
+                        entity.Group = LinkPlaybackGroup(entity.Group, asset.Group);
                         _audioBank.Add(identity.ID, entity);
                     }
                 }

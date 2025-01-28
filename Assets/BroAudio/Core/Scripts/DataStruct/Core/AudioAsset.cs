@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Data
     public class AudioAsset : ScriptableObject, IAudioAsset
     {
         public AudioEntity[] Entities;
-        [field: SerializeField] public PlaybackGroup Group { get; set; }
+        public PlaybackGroup Group;
 
 #if UNITY_EDITOR
 		[field: SerializeField] public string AssetName { get; set; }

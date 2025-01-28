@@ -2,6 +2,6 @@ namespace Ami.BroAudio
 {
     public interface IRule
     {
-        PlaybackGroup.PlayableDelegate RuleDelegate { get; }
+        PlaybackGroup.IsPlayableDelegate RuleMethod { get; }
     }
 }

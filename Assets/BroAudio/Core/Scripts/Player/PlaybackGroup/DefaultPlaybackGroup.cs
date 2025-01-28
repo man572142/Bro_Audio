@@ -14,16 +14,19 @@ namespace Ami.BroAudio
     {
         public const float DefaultCombFilteringTime = RuntimeSetting.FactorySettings.CombFilteringPreventionInSeconds;
 
+        #region Max Playable Count Rule
 #if UNITY_EDITOR
         [CustomDrawingMethod(typeof(DefaultPlaybackGroup), nameof(DrawMaxPlayableLimitProperty))]
 #endif
         [SerializeField]
         [Tooltip("The maximum number of sounds that can be played simultaneously in this group")]
         [ValueButton("Infinity", -1)]
-        private MaxPlayableCountRule _maxPlayableCount = -1;
+        private MaxPlayableCountRule _maxPlayableCount = -1; 
+        #endregion
 
+        #region Comb-Filtering Rule
         [SerializeField]
-        [ValueButton("Default", 0.04f)]
+        [ValueButton("Default", DefaultCombFilteringTime)]
         [Tooltip("Time interval to prevent the Comb-Filtering effect")]
         private CombFilteringRule _combFilteringTime = DefaultCombFilteringTime;
 
@@ -37,37 +40,29 @@ namespace Ami.BroAudio
         [DerivativeProperty(isEnd: true)]
         [InspectorName("Log Warning When Occurs")]
         [Tooltip("Log a warning message when the Comb-Filtering occurs")]
-        private bool _logCombFilteringWarning = true;
+        private bool _logCombFilteringWarning = true; 
+        #endregion
 
         private int _currentPlayingCount;
 
         /// <inheritdoc cref="PlaybackGroup.InitializeRules"/>
-        protected override IEnumerable<PlayableDelegate> InitializeRules()
+        protected override IEnumerable<IRule> InitializeRules()
         {
-            yield return _maxPlayableCount.SetPlayableRule(IsPlayableLimitNotReached, Parent.GetRule);
-            yield return _combFilteringTime.SetPlayableRule(CheckCombFiltering, Parent.GetRule);
+            yield return Initialize(_maxPlayableCount, IsPlayableLimitNotReached);
+            yield return Initialize(_combFilteringTime, CheckCombFiltering);
         }
 
-        public override IRule GetRule(Type ruleType) => ruleType switch
-        {
-            Type t when t == typeof(MaxPlayableCountRule) => _maxPlayableCount,
-            Type t when t == typeof(CombFilteringRule) => _combFilteringTime,
-            _ => throw new NotImplementedException(),
-        };
-
         /// <summary>
-        /// Handles the player when the sound is played and keeps track of the number of sounds that are currently playing
+        /// Manages the player and tracks the number of sounds currently playing.
         /// </summary>
         /// <param name="player"></param>
-        public override void HandlePlayer(IAudioPlayer player)
+        public override void OnGetPlayer(IAudioPlayer player)
         {
-            base.HandlePlayer(player);
-
             _currentPlayingCount++;
             player.OnEnd(_ => _currentPlayingCount--);
         }
 
-        #region Check Rule
+        #region Rule Methods
         protected virtual bool IsPlayableLimitNotReached(SoundID id)
         {
             return _maxPlayableCount <= 0 || _currentPlayingCount < _maxPlayableCount;
@@ -93,6 +88,7 @@ namespace Ami.BroAudio
             _currentPlayingCount = 0;
         }
     }
+
 
 #if UNITY_EDITOR
     public partial class DefaultPlaybackGroup : PlaybackGroup

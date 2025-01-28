@@ -10,7 +10,7 @@ namespace Ami.BroAudio
         ///<inheritdoc cref="PlaybackGroup.IsPlayable(SoundID)"/>
         bool IsPlayable(SoundID id);
 
-        ///<inheritdoc cref="PlaybackGroup.HandlePlayer(IAudioPlayer)"/>
-        void HandlePlayer(IAudioPlayer player);
+        ///<inheritdoc cref="PlaybackGroup.OnGetPlayer(IAudioPlayer)"/>
+        void OnGetPlayer(IAudioPlayer player);
     }
 }

@@ -40,10 +40,13 @@ namespace Ami.BroAudio.Editor
         public bool ShowAudioTypeOnSoundID;
 		public bool ShowVUColorOnVolumeSlider;
 		public bool ShowMasterVolumeOnClipListHeader;
-        public ReferenceConversionDecision DirectReferenceDecision;
-        public ReferenceConversionDecision AddressableDecision;
+        public ReferenceConversionDecision DirectReferenceDecision = FactorySettings.DirectReferenceDecision;
+        public ReferenceConversionDecision AddressableDecision = FactorySettings.AddressableDecision;
 
-		public List<AudioTypeSetting> AudioTypeSettings;
+        public bool EditTheNewClipAfterSaveAs = FactorySettings.EditTheNewClipAfterSaveAs;
+        public bool PingTheNewClipAfterSaveAs = FactorySettings.PingTheNewClipAfterSaveAs;
+
+        public List<AudioTypeSetting> AudioTypeSettings;
         public List<Color> SpectrumBandColors; 
 
 		public Color GetAudioTypeColor(BroAudioType audioType)
@@ -121,8 +124,10 @@ namespace Ami.BroAudio.Editor
 			ShowVUColorOnVolumeSlider = FactorySettings.ShowVUColorOnVolumeSlider;
 			ShowAudioTypeOnSoundID = FactorySettings.ShowAudioTypeOnSoundID;
 			ShowMasterVolumeOnClipListHeader = FactorySettings.ShowMasterVolumeOnClipListHeader;
-            DirectReferenceDecision = ReferenceConversionDecision.AlwaysAsk;
-            AddressableDecision = ReferenceConversionDecision.AlwaysAsk;
+            DirectReferenceDecision = FactorySettings.DirectReferenceDecision;
+            AddressableDecision = FactorySettings.AddressableDecision;
+            EditTheNewClipAfterSaveAs = FactorySettings.EditTheNewClipAfterSaveAs;
+            PingTheNewClipAfterSaveAs = FactorySettings.PingTheNewClipAfterSaveAs;
             CreateNewAudioTypeSettings();
             CreateDefaultSpectrumColors();
 		}
@@ -174,6 +179,12 @@ namespace Ami.BroAudio.Editor
 			public const DrawedProperty AmbienceDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop | DrawedProperty.SpatialSettings;
 			public const DrawedProperty SFXDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop | DrawedProperty.SpatialSettings | DrawedProperty.Pitch;
 			public const DrawedProperty VoiceOverDrawedProperties = BasicDrawedProperty;
-		}
+
+            public const ReferenceConversionDecision DirectReferenceDecision = ReferenceConversionDecision.AlwaysAsk;
+            public const ReferenceConversionDecision AddressableDecision = ReferenceConversionDecision.AlwaysAsk;
+
+            public const bool EditTheNewClipAfterSaveAs = true;
+            public const bool PingTheNewClipAfterSaveAs = true;
+        }
 	}
 }

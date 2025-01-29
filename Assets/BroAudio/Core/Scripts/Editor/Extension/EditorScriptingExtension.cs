@@ -656,6 +656,14 @@ namespace Ami.Extension
             return state;
         }
 
+        public static bool DrawButtonToggleLayout(bool state, GUIContent guiContent, params GUILayoutOption[] options)
+        {
+            state = EditorGUILayout.Toggle(state, GUI.skin.button, options);
+            Rect rect = GUILayoutUtility.GetLastRect();
+            EditorGUI.LabelField(rect, guiContent, GUIStyleHelper.MiddleCenterText);
+            return state;
+        }
+
         public static SerializedProperty FindBackingFieldProperty(this SerializedProperty property, string fieldName)
         {
             return property.FindPropertyRelative(GetBackingFieldName(fieldName));

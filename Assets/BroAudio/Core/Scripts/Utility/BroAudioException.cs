@@ -4,7 +4,7 @@ namespace Ami.BroAudio.Runtime
 {
     public class BroAudioException : Exception
     {
-        public BroAudioException(string message) : base(Utility.LogTitle + message)
+        public BroAudioException(string message) : base(message)
         {
         }
     } 

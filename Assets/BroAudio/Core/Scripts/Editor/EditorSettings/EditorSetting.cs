@@ -15,7 +15,7 @@ namespace Ami.BroAudio.Editor
             AlwaysAsk,
             OnlyConvert,
             ConvertAndSetAddressables,
-            DontConvert,
+            ConvertAndClearAllReferences,
         }
 
 		[System.Serializable]

@@ -8,7 +8,6 @@ using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Data;
-//using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.IconConstant;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.BroAudio.Tools.BroName;
@@ -36,11 +35,10 @@ namespace Ami.BroAudio.Editor.Setting
         public const string SpectrumBandColors = "Spectrum Band Colors";
         public const string ProjectSettingsMenuItemPath = "Edit/" + ProjectSettings;
         public const string ProjectSettings = "Project Settings";
-        public const string CombFilteringDocUrl = "https://man572142s-organization.gitbook.io/broaudio/reference/technical-details#preventing-comb-filtering";
 
         private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
-        private GUIContent _combFilteringGUIContent, _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
+        private GUIContent _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
             ,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent,_dominatorTrackGUIContent, _regenerateUserDataGUIContent, _globalGroupGUIContent;
 
 #if PACKAGE_ADDRESSABLES
@@ -115,7 +113,6 @@ namespace Ami.BroAudio.Editor.Setting
 
         private void InitGUIContents()
         {
-            _combFilteringGUIContent = new GUIContent(CombFilteringTimeName, _instruction.GetText(Instruction.CombFilteringTooltip));
             _pitchGUIContent = new GUIContent("Pitch Shift Using", _instruction.GetText(Instruction.PitchShiftingToolTip));
             _audioVoicesGUIContent = new GUIContent("Max Real Voices", _instruction.GetText(Instruction.AudioVoicesToolTip));
             _virtualTracksGUIContent = new GUIContent("Bro Virtual Tracks", _instruction.GetText(Instruction.BroVirtualToolTip));
@@ -130,9 +127,9 @@ namespace Ami.BroAudio.Editor.Setting
 
 #if PACKAGE_ADDRESSABLES
             string aaTooltip = _instruction.GetText(Instruction.LibraryManager_AddressableConversionTooltip);
-            _addressableConversionGUIContent = new GUIContent("Addressable/Direct References Conversion".ToWhiteBold(), aaTooltip);
-            _directToAddressableGUIContent = new GUIContent("Direct -> Addressables", aaTooltip);
-            _addressableToDirectGUIContent = new GUIContent("Addressables -> Direct", aaTooltip); 
+            _addressableConversionGUIContent = new GUIContent("Addressable References Conversion".ToWhiteBold(), aaTooltip);
+            _directToAddressableGUIContent = new GUIContent("Direct → Addressables", aaTooltip);
+            _addressableToDirectGUIContent = new GUIContent("Addressables → Direct", aaTooltip); 
 #endif
         }
 
@@ -291,7 +288,7 @@ namespace Ami.BroAudio.Editor.Setting
             void DrawGlobalPlaybackGroup()
             {
                 var playbackGroupProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.GlobalPlaybackGroup));
-                playbackGroupProp.objectReferenceValue = (DefaultPlaybackGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _globalGroupGUIContent, playbackGroupProp.objectReferenceValue, typeof(DefaultPlaybackGroup), false);
+                playbackGroupProp.objectReferenceValue = (PlaybackGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _globalGroupGUIContent, playbackGroupProp.objectReferenceValue, typeof(PlaybackGroup), false);
             }
 
             void DrawAudioFilterSlope()

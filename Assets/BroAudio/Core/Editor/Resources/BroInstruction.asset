@@ -103,11 +103,28 @@ MonoBehaviour:
       *For
       more option, please check out Tools/BroAudio/Preferences - Misc'
   - Key: 310
-    Value: "Set how would you like to handle with the current references when switching
-      the [Addressables] option in Library Manager.\n\n[Only Convert] \nConvert the
-      reference to the new type.\n\n[Convert And Set Addressables] \nConvert and
-      enable/disable the addressables of the asset.\n\n[Don't Convert] \nRemove the
-      current reference."
+    Value: 'Set how would you like to handle with the current references when switching
+      the [Addressables] option in Library Manager.
+
+
+      [Only Convert]
+
+      Convert
+      the list to the target reference type without changing the Addressables state
+      of the clip assets.
+
+
+      [Convert And Set Addressables]
+
+      Convert the
+      list to the target reference type and mark/unmark Addressables on the clip
+      assets.
+
+
+      [Convert And Clear All References]
+
+      Convert the list
+      to the target reference type and clear all the references in the list.'
   - Key: 17
     Value: If enabled, all [Music] will be played as BGM and trigger a transtion
       from one the other automatically.

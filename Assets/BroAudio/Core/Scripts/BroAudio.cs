@@ -227,11 +227,25 @@ namespace Ami.BroAudio
         public static AsyncOperationHandle<AudioClip> LoadAssetAsync(SoundID id, int clipIndex)
             => SoundManager.Instance.LoadAssetAsync(id, clipIndex);
 
+        /// <summary>
+        /// Releases all the audio clips in the entity
+        /// </summary>
+        /// <param name="id"></param>
         public static void ReleaseAllAssets(SoundID id) 
             => SoundManager.Instance.ReleaseAllAssets(id);
 
+        /// <summary>
+        /// Releases the first audio clips in the entity
+        /// </summary>
+        /// <param name="id"></param>
         public static void ReleaseAsset(SoundID id)
     => SoundManager.Instance.ReleaseAsset(id, 0);
+
+        /// <summary>
+        /// Releases the audio clip in the entity's clip list by index
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="clipIndex"></param>
         public static void ReleaseAsset(SoundID id, int clipIndex)
             => SoundManager.Instance.ReleaseAsset(id, clipIndex);
 #endif

@@ -270,16 +270,17 @@ namespace Ami.BroAudio.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 EditorPlayAudioClip.Instance.StopAllClips();
-                SwitchAddressable(useAddressablesProp.boolValue ? ReferenceType.Direct : ReferenceType.Addressalbes, clips);
+                SwitchAddressable(useAddressablesProp, clips);
             }
             return useAddressablesProp.boolValue;
         }
 
-        private void SwitchAddressable(ReferenceType currentType, ReorderableClips clips)
+        private void SwitchAddressable(SerializedProperty property, ReorderableClips clips)
         {
             bool hasAny = false;
             Decision decision = default;
-            switch (currentType)
+            ReferenceType type = property.boolValue ? ReferenceType.Direct : ReferenceType.Addressalbes;
+            switch (type)
             {
                 case ReferenceType.Direct:
                     hasAny = clips.HasAnyAudioClip;
@@ -299,16 +300,16 @@ namespace Ami.BroAudio.Editor
             switch (decision)
             {
                 case Decision.AlwaysAsk:
-                    ShowDialogAndHandleResult(clips, currentType);
+                    ShowDialogAndHandleResult(clips, type);
                     break;
                 case Decision.OnlyConvert:
-                    clips.ConvertReferences(currentType, false);
+                    clips.ConvertReferences(type, false);
                     break;
                 case Decision.ConvertAndSetAddressables:
-                    clips.ConvertReferences(currentType);
+                    clips.ConvertReferences(type);
                     break;
-                case Decision.DontConvert:
-                    clips.CleanupAllReferences(currentType);
+                case Decision.ConvertAndClearAllReferences:
+                    clips.CleanupAllReferences(type);
                     break;
             }
 
@@ -322,12 +323,12 @@ namespace Ami.BroAudio.Editor
                     case 0: // Yes
                         clips.ConvertReferences(current);
                         break;
-                    case 1: // No
-                        clips.CleanupAllReferences(current);
-                        break;
                     case 2: // Yes, never ask
-                        SetNeverAsk(current);
+                        SetDecision(current, Decision.ConvertAndSetAddressables);
                         clips.ConvertReferences(current);
+                        break;
+                    default: // No or Cancel
+                        property.boolValue = !property.boolValue; // revert the change
                         break;
                 }
             }
@@ -350,16 +351,15 @@ namespace Ami.BroAudio.Editor
                 return string.Format(format, conversion, action);
             }
 
-            void SetNeverAsk(ReferenceType referenceType)
+            void SetDecision(ReferenceType referenceType, Decision decision)
             {
-                var convertAndSet = EditorSetting.ReferenceConversionDecision.ConvertAndSetAddressables;
                 switch (referenceType)
                 {
                     case ReferenceType.Direct:
-                        EditorSetting.DirectReferenceDecision = convertAndSet;
+                        EditorSetting.DirectReferenceDecision = decision;
                         break;
                     case ReferenceType.Addressalbes:
-                        EditorSetting.AddressableDecision = convertAndSet;
+                        EditorSetting.AddressableDecision = decision;
                         break;
                 }
                 EditorUtility.SetDirty(EditorSetting);

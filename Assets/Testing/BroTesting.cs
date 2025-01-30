@@ -1,7 +1,11 @@
+using System.Collections.Generic;
 using Ami.Extension;
 using UnityEngine;
 using UnityEngine.UI;
+#if PACKAGE_ADDRESSABLES
+using UnityEngine.ResourceManagement.AsyncOperations;
 
+#endif
 namespace Ami.BroAudio.Testing
 {
     public class BroTesting : MonoBehaviour
@@ -21,6 +25,9 @@ namespace Ami.BroAudio.Testing
         [SerializeField] Fading _fading = default;
         [SerializeField] float _delay = 0f;
         [SerializeField] float _offsetFromDSPTime = 0f;
+#if PACKAGE_ADDRESSABLES
+        [SerializeField] int _loadAssetIndex = 0; 
+#endif
 
         private IAudioPlayer _player;
 
@@ -60,5 +67,57 @@ namespace Ami.BroAudio.Testing
 
         public void AppendAsBGM() => _player.AsBGM().SetTransition(_transition, _fadeTime);
         public void PlayAsBGM() => _player = BroAudio.Play(_sound).AsBGM().SetTransition(_transition, _fadeTime);
+
+#if PACKAGE_ADDRESSABLES
+        public void LoadAllAssetAsync()
+        {
+            var handle = BroAudio.LoadAllAssetsAsync(_sound);
+            handle.Completed += OnLoadAllAssetsFinished;
+
+            void OnLoadAllAssetsFinished(AsyncOperationHandle<IList<AudioClip>> handle)
+            {
+                handle.Completed -= OnLoadAllAssetsFinished;
+                if (handle.Status != AsyncOperationStatus.Succeeded)
+                {
+                    Debug.LogError("Failed to load all assets.");
+                    return;
+                }
+
+                foreach (var clip in handle.Result)
+                {
+                    Debug.Log($"{clip.name} is loaded successfully!");
+                }
+            }
+        }
+
+        public void ReleaseAllAssets()
+        {
+            BroAudio.ReleaseAllAssets(_sound);
+        }
+
+        public void LoadAssetAsync()
+        {
+            var handle = BroAudio.LoadAssetAsync(_sound, _loadAssetIndex);
+            handle.Completed += OnLoadAssetFinished;
+
+            void OnLoadAssetFinished(AsyncOperationHandle<AudioClip> handle)
+            {
+                handle.Completed -= OnLoadAssetFinished;
+
+                if (handle.Status != AsyncOperationStatus.Succeeded)
+                {
+                    Debug.LogError("Failed to load all assets.");
+                    return;
+                }
+
+                Debug.Log($"{handle.Result.name} is loaded successfully!");
+            }
+        }
+
+        public void ReleaseAsset()
+        {
+            BroAudio.ReleaseAsset(_sound, _loadAssetIndex);
+        }
+#endif
     }
 }

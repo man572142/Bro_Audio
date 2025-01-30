@@ -108,6 +108,9 @@ namespace Ami.BroAudio.Testing
 #endif
             nameof(BroTesting.AppendAsBGM) => GetPlayerAppendMethodString(BGM) + GetPlayerAppendMethodString(Transition, TransitionParam, Fade),
             nameof(BroTesting.PlayAsBGM) => GetMainMethodText(Play) + GetPlayerAppendMethodString(BGM) + GetPlayerAppendMethodString(Transition, TransitionParam, Fade),
+
+            nameof(BroTesting.LoadAllAssetAsync) or nameof(BroTesting.LoadAssetAsync) or
+            nameof(BroTesting.ReleaseAllAssets) or nameof(BroTesting.ReleaseAsset) => methodName,
             _ => throw new System.NotImplementedException(),
         };
 

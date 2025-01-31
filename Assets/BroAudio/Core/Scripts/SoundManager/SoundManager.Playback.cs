@@ -48,7 +48,9 @@ namespace Ami.BroAudio.Runtime
 
             if(id <= 0 || !_audioBank.TryGetValue(id, out entity))
             {
-                Debug.LogError(LogTitle + $"The sound is missing or it has never been assigned. No sound will be played. Object:{id.DebugObject?.name}", id.DebugObject);
+#if UNITY_EDITOR
+                Debug.LogError(LogTitle + $"The sound is missing or it has never been assigned. No sound will be played. Object:{id.DebugObject?.name}", id.DebugObject); 
+#endif
                 return false;
             }
 

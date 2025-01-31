@@ -5,7 +5,9 @@ namespace Ami.BroAudio.Tools
 		public const string TempAssetName = "Temp";
         public const string AudioPlayerPrefabName = "AudioPlayer";
 
-		#region File Path
+        #region File Path
+        public const string ResourcesFolder = "Resources";
+        public const string EditorFolder = "Editor";
         public const string CoreDataName = "BroAudioData";
         public const string InstructionFileName = "BroInstruction";
 		public const string RuntimeSettingName = "BroRuntimeSetting";

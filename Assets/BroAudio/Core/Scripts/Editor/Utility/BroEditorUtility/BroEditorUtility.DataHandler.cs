@@ -32,22 +32,22 @@ namespace Ami.BroAudio.Editor
 
         public static T CreateScriptableObjectIfNotExist<T>(string path) where T : ScriptableObject
         {
-            T setting;
-            if (!TryLoadResources<T>(path, out setting))
+            T scriptableObj;
+            if (!TryLoadResources<T>(path, out scriptableObj))
             {
-                setting = ScriptableObject.CreateInstance<T>();
-                if (setting is EditorSetting editorSetting)
+                scriptableObj = ScriptableObject.CreateInstance<T>();
+                if (scriptableObj is EditorSetting editorSetting)
                 {
                     editorSetting.ResetToFactorySettings();
                 }
-                else if (setting is RuntimeSetting runtimeSetting)
+                else if (scriptableObj is RuntimeSetting runtimeSetting)
                 {
                     runtimeSetting.ResetToFactorySettings();
                 }
-                AssetDatabase.CreateAsset(setting, path);
-                EditorUtility.SetDirty(setting);
+                AssetDatabase.CreateAsset(scriptableObj, path);
+                EditorUtility.SetDirty(scriptableObj);
             }
-            return setting;
+            return scriptableObj;
         }
 
         public static void WriteAssetOutputPathToSetting(string path)
@@ -87,7 +87,16 @@ namespace Ami.BroAudio.Editor
 		public static void SaveToDisk(UnityEngine.Object obj)
 		{
 			EditorUtility.SetDirty(obj);
-			AssetDatabase.SaveAssetIfDirty(obj);
+			SaveAssetIfDirty(obj);
 		}
-	}
+
+        public static void SaveAssetIfDirty(UnityEngine.Object obj)
+        {
+#if UNITY_2020_3_OR_NEWER
+            AssetDatabase.SaveAssetIfDirty(obj);
+#else
+            AssetDatabase.SaveAssets();
+#endif
+        }
+    }
 }

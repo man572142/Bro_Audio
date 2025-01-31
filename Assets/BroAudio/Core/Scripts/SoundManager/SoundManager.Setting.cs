@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Runtime
 
                 if (!_setting)
                 {
-                    _setting = new RuntimeSetting();
+                    _setting = ScriptableObject.CreateInstance<RuntimeSetting>();
                     Debug.LogWarning(Utility.LogTitle + $"Can't load {BroName.RuntimeSettingName}.asset, all setting values will be as default. " +
                         "If your setting file is missing. Please reimport it from the asset package");
                 }

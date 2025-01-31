@@ -1,21 +1,29 @@
 using System;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Editor;
-using Ami.BroAudio.Runtime;
+using UnityEngine.Audio;
 using Ami.BroAudio;
 using System.IO;
 using UnityEditor;
 using static Ami.BroAudio.Editor.BroEditorUtility;
+using static Ami.BroAudio.Tools.BroName;
 using System.Collections.Generic;
 
 public class BroUpdater
 {
     private const string DemoAudioAssetGUID = "6ae8d9cb032bc1c40a8f7d4bd78c9337";
-    private static Version PlaybackGroupFirstReleasedVersion => new Version(1, 16);
+    private static Version PlaybackGroupFirstReleasedVersion => new Version(2,0,0);
 
-    public static void Process(SoundManager soundManager, BroAudioData coreData)
+    public static void Process(AudioMixer mixer, BroAudioData coreData)
     {
+        Version targetVersion = new Version(BroAudioData.CodeBaseVersion);
         Version currentVersion = coreData.Version;
+
+        if(currentVersion >= targetVersion)
+        {
+            return;
+        }
+
         if (TryLoadResources<RuntimeSetting>(RuntimeSettingPath, out var runtimeSetting))
         {
             bool isDirty = false;
@@ -39,12 +47,15 @@ public class BroUpdater
             }
         }
 
-        string mixerPath = AssetDatabase.GetAssetPath(soundManager.Mixer);
+        string mixerPath = AssetDatabase.GetAssetPath(mixer);
         string corePath = mixerPath.Remove(mixerPath.LastIndexOf('/'));
 
         MoveEditorAssets(corePath);
         RemoveDemoAssetsIfNotExist(corePath, coreData);
         coreData.UpdateVersion();
+        EditorUtility.SetDirty(coreData);
+        SaveAssetIfDirty(coreData);
+        UnityEngine.Debug.Log(Utility.LogTitle + $"BroAudio has been successfully upgraded from {currentVersion} to {targetVersion}!");
     }
 
     private static void AddPlaybackGroupDrawedProperty(ref bool isDirty, Version oldVersion, EditorSetting editorSetting)
@@ -90,20 +101,18 @@ public class BroUpdater
 
     private static void MoveEditorAssets(string corePath)
     {
-        const string Editor = "Editor";
-        const string Resources = "Resources";
-        string oldPath = corePath + $"/{Resources}/{Editor}";
-        string newPath = corePath + $"/{Editor}/{Resources}";
+        string oldPath = corePath + $"/{ResourcesFolder}/{EditorFolder}";
+        string newPath = corePath + $"/{EditorFolder}/{ResourcesFolder}";
 
         if (Directory.Exists(newPath))
         {
             return;
         }
-        AssetDatabase.RenameAsset(oldPath, Resources);
+        AssetDatabase.RenameAsset(oldPath, ResourcesFolder);
         string newPathRoot = newPath.Remove(newPath.LastIndexOf('/'));
         Directory.CreateDirectory(newPathRoot);
         AssetDatabase.Refresh();
-        AssetDatabase.MoveAsset(oldPath.Replace(Editor, Resources), newPathRoot + $"/{Resources}");
+        AssetDatabase.MoveAsset(oldPath.Replace(EditorFolder, ResourcesFolder), newPathRoot + $"/{ResourcesFolder}");
         AssetDatabase.Refresh();
     }
 

@@ -32,7 +32,7 @@ namespace Ami.BroAudio.Editor
 					{
                         EditorSetting.AssetOutputPath = DefaultAssetOutputPath;
 						EditorUtility.SetDirty(EditorSetting);
-                        AssetDatabase.SaveAssetIfDirty(EditorSetting);
+                        SaveAssetIfDirty(EditorSetting);
 					}
                     return EditorSetting.AssetOutputPath;
 				}

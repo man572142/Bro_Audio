@@ -1,50 +1,42 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using Ami.Extension;
-using System;
 using UnityEditor.IMGUI.Controls;
-using static Ami.BroAudio.SoundGroup;
-using Ami.BroAudio.Data;
-using Ami.BroAudio.Tools;
-using static Ami.Extension.EditorScriptingExtension;
+using System;
+using System.Reflection;
+using Ami.Extension;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Ami.BroAudio.Editor
 {
-    [CustomEditor(typeof(SoundGroup))]
+    [CustomEditor(typeof(SoundGroup), true)]
     public class SoundGroupEditor : UnityEditor.Editor
     {
         public const float AdditionalButtonWidth = 60f;
         public const float OverrideToggleWidth = 30f;
         public const float OverrideToggleOffsetX = 5f;
 
-        private SerializedProperty _optionsProp, _maxPlayableProp, _combTimeProp;
-        private GUIContent _toggleGUIContent, _combTimeGUIContent;
-
         private MultiColumnHeader _multiColumn = null;
         private BroInstructionHelper _instruction = new BroInstructionHelper();
+        private Dictionary<string, FieldInfo> _fieldInfoDict = null;
 
         private void OnEnable()
         {
-            InitGUIContents();
             InitMultiColumn();
 
-            _optionsProp = FindBackingProperty(nameof(SoundGroup.OverrideOptions));
-            _maxPlayableProp = FindBackingProperty(nameof(SoundGroup.MaxPlayableCount));
-            _combTimeProp = FindBackingProperty(nameof(SoundGroup.CombFilteringTime));
-
-            SerializedProperty FindBackingProperty(string path)
+            Type type = serializedObject.targetObject.GetType();
+            var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            var fields = type.GetFields(bindingFlags);
+            if(type.BaseType == typeof(DefaultSoundGroup))
             {
-                return serializedObject.FindBackingFieldProperty(path);
+                fields = fields.Concat(type.BaseType.GetFields(bindingFlags)).ToArray();
             }
-        }
 
-        private void InitGUIContents()
-        {
-            _toggleGUIContent = new GUIContent("", _instruction.GetText(Instruction.SoundGroup_Override));
-            _combTimeGUIContent = new GUIContent(BroName.CombFilteringTimeName, _instruction.GetText(Instruction.CombFilteringTooltip));
-
+            _fieldInfoDict = fields
+                .Where(x => x.FieldType.IsGenericType &&
+                    x.FieldType.GetGenericTypeDefinition() == typeof(SoundGroup.Rule<>) &&
+                    (x.GetCustomAttribute<Button>() != null || x.GetCustomAttribute<CustomEditorDrawingMethod>() != null))
+                .ToDictionary(x => x.Name);
         }
 
         private void InitMultiColumn()
@@ -62,8 +54,8 @@ namespace Ami.BroAudio.Editor
 
             var nameColumn = new MultiColumnHeaderState.Column()
             {
-                headerContent = new GUIContent("Name"),
-                width = 80f,
+                headerContent = new GUIContent("Rule"),
+                width = 60f,
                 canSort = false,
             };
 
@@ -82,91 +74,154 @@ namespace Ami.BroAudio.Editor
         {
             serializedObject.Update();
 
-            Rect columnRect = GUILayoutUtility.GetRect(EditorGUIUtility.currentViewWidth, EditorGUIUtility.singleLineHeight);           
-            _multiColumn.OnGUI(columnRect,0f);
+            Rect headerRect = GUILayoutUtility.GetRect(EditorGUIUtility.currentViewWidth, EditorGUIUtility.singleLineHeight);           
+            _multiColumn.OnGUI(headerRect, 0f);
 
             var toggleWidth = GUILayout.Width(_multiColumn.GetColumnRect(0).width - OverrideToggleOffsetX);
             var nameWidth = GUILayout.Width(_multiColumn.GetColumnRect(1).width);
 
-            DrawField(OverrideOption.MaxPlayableCount, DrawMaxPlayableCount);
-            DrawField(OverrideOption.CombFilteringTime, DrawCombFilteringSettings);
+            SerializedProperty property = serializedObject.GetIterator();
+            property.NextVisible(true); // Enter children and skip MonoScript field
+            int index = 0;
+            while (property.NextVisible(false))
+            {
+                DrawRule(property, toggleWidth, nameWidth);
+                DrawRuleTooltip(property, headerRect, index);
+                index++;
+            }
 
             serializedObject.ApplyModifiedProperties();
+        }
 
-            void DrawField(OverrideOption option, Action<GUILayoutOption> onDrawContent)
+        private void DrawRule(SerializedProperty property, GUILayoutOption toggleWidth, GUILayoutOption nameWidth)
+        {
+            EditorGUILayout.BeginHorizontal();
             {
-                EditorGUILayout.BeginHorizontal();
-                {
-                    GUILayout.Space(OverrideToggleOffsetX);
-                    var flags = (OverrideOption)_optionsProp.GetEnumFlag();
-                    EditorGUI.BeginChangeCheck();
-                    bool isOn = EditorGUILayout.Toggle(_toggleGUIContent, flags.Contains(option), toggleWidth);
-                    Rect toggleRect = GUILayoutUtility.GetLastRect();
-                    EditorGUI.LabelField(toggleRect,_toggleGUIContent);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        if (isOn)
-                        {
-                            flags |= option;
-                        }
-                        else
-                        {
-                            flags &= ~option;
-                        }
-                        _optionsProp.SetEnumFlag((int)flags);
-                    }
+                GUILayout.Space(OverrideToggleOffsetX);
 
-                    EditorGUI.BeginDisabledGroup(!isOn);
+                var overrideProp = property.FindPropertyRelative(SoundGroup.Rule<int>.NameOf.IsOverride);
+                overrideProp.boolValue = EditorGUILayout.Toggle(GUIContent.none, overrideProp.boolValue, toggleWidth);
+
+                EditorGUI.BeginDisabledGroup(!overrideProp.boolValue);
+                {
+                    EditorGUILayout.LabelField(property.displayName, nameWidth);
+                    var valueProp = property.FindPropertyRelative(nameof(SoundGroup.Rule<int>.Value));
+                    object customDrawerReturnValue = null;
+                    _fieldInfoDict.TryGetValue(property.name, out var fieldInfo);
+                    var customDrawer = fieldInfo?.GetCustomAttribute<CustomEditorDrawingMethod>();
+                    if (customDrawer != null && customDrawer.Method != null)
                     {
-                        onDrawContent?.Invoke(nameWidth);
+                        customDrawerReturnValue = customDrawer.Method.Invoke(target, new object[] { valueProp });
                     }
-                    EditorGUI.EndDisabledGroup();
+                    else
+                    {
+                        EditorGUILayout.PropertyField(valueProp, GUIContent.none);
+                    }
+                    DrawValueButton(fieldInfo, valueProp, customDrawerReturnValue);
                 }
-                EditorGUILayout.EndHorizontal();
+                EditorGUI.EndDisabledGroup();
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private void DrawRuleTooltip(SerializedProperty property, Rect headerRect, int index)
+        {
+            if (!string.IsNullOrEmpty(property.tooltip))
+            {
+                Rect rect = new Rect(headerRect);
+                rect.y += EditorGUIUtility.singleLineHeight * (index + 1);
+                EditorGUI.LabelField(rect, new GUIContent(string.Empty, property.tooltip));
             }
         }
 
-        private void DrawCombFilteringSettings(GUILayoutOption labelWidth)
+        private void DrawValueButton(FieldInfo fieldInfo, SerializedProperty valueProp, object customDrawerReturnValue)
         {
-            EditorGUILayout.LabelField(_combTimeGUIContent, labelWidth);
-            _combTimeProp.floatValue = Mathf.Max(EditorGUILayout.FloatField(_combTimeProp.floatValue), 0f);
-            EditorGUILayout.Space();
-
-            bool isDisabled = Mathf.Approximately(_combTimeProp.floatValue, RuntimeSetting.FactorySettings.CombFilteringPreventionInSeconds);
-            DrawDisableButton(isDisabled, new GUIContent("Default"), () => _combTimeProp.floatValue = 0.04f);
-        }
-
-        private void DrawMaxPlayableCount(GUILayoutOption labelWidth)
-        {
-            EditorGUILayout.LabelField(_maxPlayableProp.displayName, labelWidth);
-            float currentValue = _maxPlayableProp.intValue <= 0 ? float.PositiveInfinity : _maxPlayableProp.intValue;
-            EditorGUI.BeginChangeCheck();
-            float newValue = EditorGUILayout.FloatField(currentValue);
-            if (EditorGUI.EndChangeCheck())
+            if(fieldInfo != null && fieldInfo.GetCustomAttribute<Button>() is Button button)
             {
-                if (newValue <= 0f || float.IsInfinity(newValue) || float.IsNaN(newValue))
+                bool isDisabled = customDrawerReturnValue is bool ? (bool)customDrawerReturnValue : false;
+                using (new EditorGUI.DisabledScope(isDisabled))
                 {
-                    _maxPlayableProp.intValue = -1;
+                    DrawButton();
                 }
-                else
-                {
-                    _maxPlayableProp.intValue = newValue > currentValue ? Mathf.CeilToInt(newValue) : Mathf.FloorToInt(newValue);
-                }
-
-                serializedObject.ApplyModifiedProperties();
             }
-            EditorGUILayout.Space();
-            bool isDisabled = _maxPlayableProp.intValue <= 0;
-            DrawDisableButton(isDisabled, new GUIContent("Infinity"), () => _maxPlayableProp.intValue = -1);
-        }
 
-        private void DrawDisableButton(bool isDisabled, GUIContent content, Action onClick)
-        {
-            using (new EditorGUI.DisabledScope(isDisabled))
+            void DrawButton()
             {
-                if (GUILayout.Button(content, GUILayout.Width(AdditionalButtonWidth)))
+                var value = button.Value;
+                float width = button.ButtonWidth >= 0f ? button.ButtonWidth : AdditionalButtonWidth;
+                if (GUILayout.Button(button.Label, GUILayout.Width(width)))
                 {
-                    onClick?.Invoke();
+                    switch (valueProp.propertyType)
+                    {
+                        case SerializedPropertyType.Integer:
+                            valueProp.intValue = (int)value;
+                            break;
+                        case SerializedPropertyType.Boolean:
+                            valueProp.boolValue = (bool)value;
+                            break;
+                        case SerializedPropertyType.Float:
+                            valueProp.floatValue = (float)value;
+                            break;
+                        case SerializedPropertyType.String:
+                            valueProp.stringValue = (string)value;
+                            break;
+                        case SerializedPropertyType.Color:
+                            valueProp.colorValue = (Color)value;
+                            break;
+                        case SerializedPropertyType.ObjectReference:
+                            valueProp.objectReferenceValue = (UnityEngine.Object)value;
+                            break;
+                        case SerializedPropertyType.Enum:
+                            if (fieldInfo.FieldType.GetCustomAttribute<FlagsAttribute>() != null)
+                            {
+                                valueProp.SetEnumFlag((int)value);
+                            }
+                            else
+                            {
+                                valueProp.enumValueIndex = (int)value;
+                            }
+                            break;
+                        case SerializedPropertyType.Vector2:
+                            valueProp.vector2Value = (Vector2)value;
+                            break;
+                        case SerializedPropertyType.Vector3:
+                            valueProp.vector3Value = (Vector3)value;
+                            break;
+                        case SerializedPropertyType.Vector4:
+                            valueProp.vector4Value = (Vector4)value;
+                            break;
+                        case SerializedPropertyType.Rect:
+                            valueProp.rectValue = (Rect)value;
+                            break;
+                        case SerializedPropertyType.AnimationCurve:
+                            valueProp.animationCurveValue = (AnimationCurve)value;
+                            break;
+                        case SerializedPropertyType.Bounds:
+                            valueProp.boundsValue = (Bounds)value;
+                            break;
+                        case SerializedPropertyType.Quaternion:
+                            valueProp.quaternionValue = (Quaternion)value;
+                            break;
+                        case SerializedPropertyType.Vector2Int:
+                            valueProp.vector2IntValue = (Vector2Int)value;
+                            break;
+                        case SerializedPropertyType.Vector3Int:
+                            valueProp.vector3IntValue = (Vector3Int)value;
+                            break;
+                        case SerializedPropertyType.RectInt:
+                            valueProp.rectIntValue = (RectInt)value;
+                            break;
+                        case SerializedPropertyType.BoundsInt:
+                            valueProp.boundsIntValue = (BoundsInt)value;
+                            break;
+                        case SerializedPropertyType.ManagedReference:
+                            break;
+                        case SerializedPropertyType.Hash128:
+                            valueProp.hash128Value = (Hash128)value;
+                            break;
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
             }
         }

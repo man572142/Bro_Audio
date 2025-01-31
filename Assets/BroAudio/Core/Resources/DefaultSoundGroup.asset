@@ -9,9 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b243f3ab30ae6d84c97a6e127715e296, type: 3}
+  m_Script: {fileID: 11500000, guid: 638d5961028aa784bb903df907ebd8cb, type: 3}
   m_Name: DefaultSoundGroup
   m_EditorClassIdentifier: 
-  <MaxPlayableCount>k__BackingField: -1
-  <CombFilteringTime>k__BackingField: 0.04
-  <OverrideOptions>k__BackingField: 3
+  _maxPlayableCount:
+    Value: -1
+    _isOverride: 1
+  _combFilteringTime:
+    Value: 0.04
+    _isOverride: 1

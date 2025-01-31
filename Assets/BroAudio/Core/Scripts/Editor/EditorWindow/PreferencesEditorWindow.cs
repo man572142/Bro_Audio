@@ -321,16 +321,7 @@ namespace Ami.BroAudio.Editor.Setting
 
             void DrawDefaultSoundGroup()
             {
-                var group = (SoundGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _defaultGroupGUIContent, RuntimeSetting.DefaultSoundGroup, typeof(SoundGroup), false);
-                if(group.OverrideOptions != SoundGroup.OverrideOption.All)
-                {
-                    ShowNotification(new GUIContent("This group cannot be used as Default, see log"));
-                    Debug.LogWarning(LogTitle + "The DefaultSoundGroup must enable all override options, as it needs to represent the default value when no Group or Value is specified.");
-                }
-                else
-                {
-                    RuntimeSetting.DefaultSoundGroup = group;
-                }
+                RuntimeSetting.DefaultSoundGroup = (SoundGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _defaultGroupGUIContent, RuntimeSetting.DefaultSoundGroup, typeof(SoundGroup), false);
             }
 
             void DrawAudioFilterSlope()

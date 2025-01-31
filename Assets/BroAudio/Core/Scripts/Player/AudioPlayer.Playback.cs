@@ -283,7 +283,8 @@ namespace Ami.BroAudio.Runtime
 
             if (ID <= 0 || !AudioSource.isPlaying)
 			{
-				onFinished?.Invoke();
+                EndPlaying();
+                onFinished?.Invoke();
 				return;
 			}
 

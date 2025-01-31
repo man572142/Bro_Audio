@@ -147,11 +147,19 @@ namespace Ami.BroAudio
             => SoundManager.Instance.SetPitch(pitch, BroAudioType.All, BroAdvice.FadeTime_Immediate);
 
         /// <summary>
+        /// Deprecated: The argument order is changed, please use <see cref="SetPitch(BroAudioType, float)"></see> instead
+        /// </summary>
+        [Obsolete]
+        public static void SetPitch(float pitch, BroAudioType audioType)
+            => SoundManager.Instance.SetPitch(pitch, audioType.ConvertEverything(), BroAdvice.FadeTime_Immediate);
+
+
+        /// <summary>
         /// Set the pitch of the given audio type immediately
         /// </summary>
         /// <param name="pitch">values between -3 to 3, default is 1</param>
-        public static void SetPitch(float pitch, BroAudioType audioType)
-            => SoundManager.Instance.SetPitch(pitch, audioType.ConvertEverything(), BroAdvice.FadeTime_Immediate);
+        public static void SetPitch(BroAudioType audioType, float pitch)
+    => SoundManager.Instance.SetPitch(pitch, audioType.ConvertEverything(), BroAdvice.FadeTime_Immediate);
 
         /// <summary>
         /// Set all audio's pitch
@@ -161,10 +169,17 @@ namespace Ami.BroAudio
             => SoundManager.Instance.SetPitch(pitch, BroAudioType.All, fadeTime);
 
         /// <summary>
+        /// Deprecated: The argument order is changed, please use <see cref="SetPitch(BroAudioType, float, float)"></see> instead
+        /// </summary>
+        [Obsolete]
+        public static void SetPitch(float pitch, BroAudioType audioType, float fadeTime)
+            => SoundManager.Instance.SetPitch(pitch, audioType.ConvertEverything(), fadeTime);
+
+        /// <summary>
         /// Set the pitch of the given audio type
         /// </summary>
         /// <param name="pitch">values between -3 to 3, default is 1</param>
-        public static void SetPitch(float pitch, BroAudioType audioType, float fadeTime)
+        public static void SetPitch(BroAudioType audioType, float pitch, float fadeTime)
             => SoundManager.Instance.SetPitch(pitch, audioType.ConvertEverything(), fadeTime);
         #endregion
 

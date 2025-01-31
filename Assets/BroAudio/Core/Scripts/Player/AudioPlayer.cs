@@ -39,6 +39,7 @@ namespace Ami.BroAudio.Runtime
         public bool IsUsingEffect => CurrentActiveEffects != EffectType.None;
 		public bool IsDominator => HasDecoratorOf<DominatorPlayer>();
 		public bool IsBGM => HasDecoratorOf<MusicPlayer>();
+        public IBroAudioClip CurrentPlayingClip => _clip;
         IAudioSourceProxy IAudioPlayer.AudioSource
         {
             get

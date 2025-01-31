@@ -21,6 +21,8 @@ namespace Ami.BroAudio
         /// </summary>
         bool IsPlaying { get; }
 
+        Data.IBroAudioClip CurrentPlayingClip { get; }
+
         /// <summary>
         /// Triggered when the audio player has finished playing
         /// </summary>

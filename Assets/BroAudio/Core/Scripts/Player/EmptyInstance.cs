@@ -1,4 +1,5 @@
 using System;
+using Ami.BroAudio.Data;
 using Ami.Extension;
 using UnityEngine;
 
@@ -17,6 +18,7 @@ namespace Ami.BroAudio.Runtime
             bool IAudioPlayer.IsActive => false;
             bool IAudioPlayer.IsPlaying => false;
             IAudioSourceProxy IAudioPlayer.AudioSource => null;
+            public IBroAudioClip CurrentPlayingClip => null;
 
             event Action<SoundID> IAudioPlayer.OnEndPlaying
             {

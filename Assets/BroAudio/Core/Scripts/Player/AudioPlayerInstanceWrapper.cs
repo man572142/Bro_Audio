@@ -3,6 +3,7 @@ using Ami.BroAudio.Runtime;
 using Ami.Extension;
 using System;
 using System.Collections.Generic;
+using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio
 {
@@ -37,6 +38,7 @@ namespace Ami.BroAudio
         public SoundID ID => IsAvailable() ? Instance.ID : SoundID.Invalid;
         public bool IsActive => IsAvailable(false) && Instance.IsActive;
         public bool IsPlaying => IsAvailable(false) && Instance.IsPlaying;
+        public IBroAudioClip CurrentPlayingClip => Instance?.CurrentPlayingClip;
         IMusicPlayer IMusicDecoratable.AsBGM() => IsAvailable() ? Execute(Instance.AsBGM()) : Empty.MusicPlayer;
 #if !UNITY_WEBGL
         IPlayerEffect IEffectDecoratable.AsDominator() => IsAvailable() ? Execute(Instance.AsDominator()) : Empty.DominatorPlayer;

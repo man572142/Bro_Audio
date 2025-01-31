@@ -19,20 +19,13 @@ namespace Ami.BroAudio.Runtime
             return null;
         }
 
-        public void SetLoadAssetAsyncOperation(SoundID id, AsyncOperationHandle<IList<AudioClip>> handle)
+        public object GetAddressableKey(SoundID id, int index)
         {
             if (TryGetAddressableEntity(id, out var entity))
             {
-                handle.Completed += entity.SetLoadedClipList;
+                return entity.GetAddressableKey(index);
             }
-        }
-
-        public void SetLoadAssetAsyncOperation(SoundID id, AsyncOperationHandle<AudioClip> handle, int clipIndex)
-        {
-            if (TryGetAddressableEntity(id, out var entity) && clipIndex >= 0 && clipIndex < entity.Clips.Length)
-            {
-                handle.Completed += entity.Clips[clipIndex].SetLoadedClip;
-            }
+            return null;
         }
 
         public AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(SoundID id)

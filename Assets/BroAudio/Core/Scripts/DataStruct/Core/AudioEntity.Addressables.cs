@@ -21,6 +21,15 @@ namespace Ami.BroAudio.Data
             }
         }
 
+        public object GetAddressableKey(int index)
+        {
+            if(index >= 0 && index < Clips.Length)
+            {
+                return Clips[index].AddressableKey;
+            }
+            return string.Empty;
+        }
+
         public AsyncOperationHandle<IList<AudioClip>> LoadAssetsAsync()
         {
             if(Clips.Length == 0)

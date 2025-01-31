@@ -239,7 +239,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="id"></param>
         public static void ReleaseAsset(SoundID id)
-    => SoundManager.Instance.ReleaseAsset(id, 0);
+            => SoundManager.Instance.ReleaseAsset(id, 0);
 
         /// <summary>
         /// Releases the audio clip in the entity's clip list by index

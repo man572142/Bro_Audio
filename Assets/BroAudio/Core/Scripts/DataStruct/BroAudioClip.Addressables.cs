@@ -31,11 +31,6 @@ namespace Ami.BroAudio.Data
             _loadedAsset = clip;
         }
 
-        public void SetLoadedClip(AsyncOperationHandle<AudioClip> op)
-        {
-            _loadedAsset = op.Result;
-        }
-
         public AudioClip GetAudioClip()
         {
             if (AudioClip != null)

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Ami.BroAudio.Runtime;
+using System.Collections;
+
 #if PACKAGE_ADDRESSABLES
 using UnityEngine.ResourceManagement.AsyncOperations;
 #endif
@@ -104,28 +106,38 @@ namespace Ami.BroAudio
             => BroAudio.Play(id, followTarget, overrideGroup);
 
 #if PACKAGE_ADDRESSABLES
+        ///<inheritdoc cref="BroAudio.LoadAllAssetsAsync(SoundID)"/>
         public static AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(this SoundID id)
             => SoundManager.Instance.LoadAllAssetsAsync(id);
 
+        ///<inheritdoc cref="BroAudio.LoadAssetAsync(SoundID)"/>
         public static AsyncOperationHandle<AudioClip> LoadAssetAsync(this SoundID id)
             => LoadAssetAsync(id, 0);
+
+        ///<inheritdoc cref="BroAudio.LoadAssetAsync(SoundID,int)"/>
         public static AsyncOperationHandle<AudioClip> LoadAssetAsync(this SoundID id, int clipIndex)
             => SoundManager.Instance.LoadAssetAsync(id, clipIndex);
 
+        ///<inheritdoc cref="BroAudio.ReleaseAllAssets(SoundID)"/>
         public static void ReleaseAllAssets(this SoundID id)
             => SoundManager.Instance.ReleaseAllAssets(id);
 
+        ///<inheritdoc cref="BroAudio.ReleaseAsset(SoundID)"/>
         public static void ReleaseAsset(this SoundID id)
             => ReleaseAsset(id, 0);
+
+        ///<inheritdoc cref="BroAudio.ReleaseAsset(SoundID, int)"/>
         public static void ReleaseAsset(this SoundID id, int clipIndex)
             => SoundManager.Instance.ReleaseAsset(id, clipIndex);
 
-        public static void SetLoadAssetAsyncOperation(this SoundID id, AsyncOperationHandle<IList<AudioClip>> operationHandle)
-            => SoundManager.Instance.SetLoadAssetAsyncOperation(id, operationHandle);
-        public static void SetLoadAssetAsyncOperation(this SoundID id, AsyncOperationHandle<AudioClip> operationHandle)
-            => SetLoadAssetAsyncOperation(id, operationHandle, 0);
-        public static void SetLoadAssetAsyncOperation(this SoundID id, AsyncOperationHandle<AudioClip> operationHandle, int clipIndex)
-            => SoundManager.Instance.SetLoadAssetAsyncOperation(id, operationHandle, clipIndex);
+        public static IEnumerable GetAllAddressablesKeys(this SoundID id)
+            => SoundManager.Instance.GetAddressableKeys(id);
+
+        public static object GetAddressablesKey(this SoundID id)
+            => GetAddressablesKey(id, 0);
+
+        public static object GetAddressablesKey(this SoundID id, int index)
+            => SoundManager.Instance.GetAddressableKey(id, index);
 #endif
     }
 }

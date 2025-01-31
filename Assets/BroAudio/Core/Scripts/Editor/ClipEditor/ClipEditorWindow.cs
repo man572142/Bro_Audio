@@ -378,11 +378,11 @@ namespace Ami.BroAudio.Editor
 		}
 
 		public void OnPostprocessAllAssets()
-		{
-			if(string.IsNullOrEmpty(_currSavingFilePath))
-			{
-				return;
-			}
+        {
+            if (string.IsNullOrEmpty(_currSavingFilePath))
+            {
+                return;
+            }
 
             FindPreferencePropertiesIfNeeded(out _);
 
@@ -390,21 +390,29 @@ namespace Ami.BroAudio.Editor
             bool isNewClip = newClip != TargetClip;
             if (isNewClip)
             {
-                if(_pingNewClipProp.boolValue)
+                if (_pingNewClipProp.boolValue)
                 {
                     EditorGUIUtility.PingObject(newClip);
                 }
 
-                if(_editNewClipProp.boolValue)
+                if (_editNewClipProp.boolValue)
                 {
                     TargetClip = newClip;
+                    ResetTransport();
                 }
             }
-            _transport = new Transport(TargetClip.length);
+            else
+            {
+                ResetTransport();
+            }         
 
+            void ResetTransport()
+            {
+                _transport = new Transport(TargetClip.length);
+            }
         }
 
-		private void ResetSetting()
+        private void ResetSetting()
 		{
 			_currSavingFilePath = null;
 			_transport = default;

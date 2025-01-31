@@ -30,10 +30,14 @@ namespace Ami.BroAudio.Runtime
 
 		public MusicPlayer(AudioPlayer audioPlayer) : base(audioPlayer)
 		{
-		}
+        }
 
 		protected override void Recycle (AudioPlayer player)
 		{
+            if(CurrentPlayer == Instance)
+            {
+                CurrentPlayer = null;
+            }
 			base.Recycle(player);
 			_transition = default;
 			_stopMode = default;
@@ -45,12 +49,12 @@ namespace Ami.BroAudio.Runtime
 			_transition = transition;
 			_stopMode = stopMode;
 			_overrideFade = overrideFade;
-			return this;
+            return this;
 		}
 
 		public void Transition(ref PlaybackPreference pref)
 		{
-			if(CurrentPlayer != null)
+            if (CurrentPlayer != null)
 			{
 				pref.SetFadeTime(_transition, _overrideFade);
 				switch (_transition)

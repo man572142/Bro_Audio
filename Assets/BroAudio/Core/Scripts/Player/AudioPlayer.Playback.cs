@@ -283,9 +283,9 @@ namespace Ami.BroAudio.Runtime
 
             if (ID <= 0 || !AudioSource.isPlaying)
 			{
-                EndPlaying();
                 onFinished?.Invoke();
-				return;
+                EndPlaying();
+                return;
 			}
 
             this.StartCoroutineAndReassign(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _maxPlayableCount:
     Value: 3
-    _isOverride: 1
+    _isOverride: 0
   _combFilteringTime:
     Value: 0.04
     _isOverride: 1

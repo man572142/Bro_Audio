@@ -175,10 +175,10 @@ namespace Ami.BroAudio.Editor
 			public const DrawedProperty BasicDrawedProperty = DrawedProperty.Volume | DrawedProperty.PlaybackPosition | DrawedProperty.Fade | DrawedProperty.ClipPreview | DrawedProperty.MasterVolume;
 
 			public const DrawedProperty MusicDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop;
-			public const DrawedProperty UIDrawedProperties = BasicDrawedProperty;
+			public const DrawedProperty UIDrawedProperties = BasicDrawedProperty | DrawedProperty.PlaybackGroup;
 			public const DrawedProperty AmbienceDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop | DrawedProperty.SpatialSettings;
-			public const DrawedProperty SFXDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop | DrawedProperty.SpatialSettings | DrawedProperty.Pitch;
-			public const DrawedProperty VoiceOverDrawedProperties = BasicDrawedProperty;
+			public const DrawedProperty SFXDrawedProperties = BasicDrawedProperty | DrawedProperty.Loop | DrawedProperty.SpatialSettings | DrawedProperty.Pitch | DrawedProperty.PlaybackGroup;
+			public const DrawedProperty VoiceOverDrawedProperties = BasicDrawedProperty | DrawedProperty.PlaybackGroup;
 
             public const ReferenceConversionDecision DirectReferenceDecision = ReferenceConversionDecision.AlwaysAsk;
             public const ReferenceConversionDecision AddressableDecision = ReferenceConversionDecision.AlwaysAsk;

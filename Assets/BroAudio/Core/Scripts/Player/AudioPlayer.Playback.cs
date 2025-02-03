@@ -72,7 +72,6 @@ namespace Ami.BroAudio.Runtime
             }
             _clipVolume.Complete(0f, false);
             UpdateMixerVolume();
-            AudioTrack = _getAudioTrack?.Invoke(TrackType);
             int sampleRate = _clip.GetAudioClip().frequency;
             bool hasScheduled = false;
 
@@ -111,8 +110,9 @@ namespace Ami.BroAudio.Runtime
                     }
                 }
             }
+            AudioTrack = _getAudioTrack?.Invoke(TrackType);
 
-			do
+            do
             {
                 if(!hasScheduled)
                 {

@@ -244,8 +244,12 @@ namespace Ami.BroAudio.Editor
             }
             else if (current.keyCode == KeyCode.Delete)
             {
-                OnRemoveSelectedEntity(true);
-                current.Use();
+                var selectedProp = _entitiesList.serializedProperty.GetArrayElementAtIndex(_entitiesList.index);
+                if(!selectedProp.isExpanded)
+                {
+                    OnRemoveSelectedEntity(true);
+                    current.Use();
+                }
             }
         }
 

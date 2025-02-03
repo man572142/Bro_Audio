@@ -74,8 +74,7 @@ namespace Ami.BroAudio
             {
                 if (_logCombFilteringWarning)
                 {
-                    Debug.LogWarning(Utility.LogTitle + $"One of the plays of Audio:{((SoundID)id).ToName().ToWhiteBold()} has been rejected due to the concern about sound quality. " +
-                    $"For more information, please go to the [Comb Filtering] section in Tools/BroAudio/Preference.");
+                    Debug.LogWarning(Utility.LogTitle + $"One of the plays of Audio:{((SoundID)id).ToName().ToWhiteBold()} was rejected by the [Comb Filtering Time] rule.");
                 }
                 return false;
             }

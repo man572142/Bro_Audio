@@ -69,7 +69,12 @@ namespace Ami.BroAudio
         /// <returns></returns>
         protected IRule Initialize<T>(Rule<T> rule, IsPlayableDelegate ruleMethod)
         {
-            return rule.Initialize(ruleMethod, Parent ? Parent.GetRule : null);
+            Func<Type, IRule> onGetParentRule = null;
+            if (Parent)
+            {
+                onGetParentRule = Parent.GetRule;
+            }
+            return rule.Initialize(ruleMethod, onGetParentRule);
         }
 
         internal IRule GetRule(Type ruleType)

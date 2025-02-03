@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Ami.BroAudio.Runtime;
 
 namespace Ami.BroAudio
 {
@@ -21,9 +22,10 @@ namespace Ami.BroAudio
         {
             get
             {
-                if(!_parent)
+                var globalPlaybackGroup = SoundManager.Instance.Setting.GlobalPlaybackGroup;
+                if (!_parent && _parent != globalPlaybackGroup)
                 {
-                    _parent = Runtime.SoundManager.Instance.Setting.GlobalPlaybackGroup;
+                    _parent = globalPlaybackGroup;
                 }
                 return _parent;
             }
@@ -67,7 +69,7 @@ namespace Ami.BroAudio
         /// <returns></returns>
         protected IRule Initialize<T>(Rule<T> rule, IsPlayableDelegate ruleMethod)
         {
-            return rule.Initialize(ruleMethod, Parent.GetRule);
+            return rule.Initialize(ruleMethod, Parent ? Parent.GetRule : null);
         }
 
         internal IRule GetRule(Type ruleType)

@@ -31,13 +31,13 @@ namespace Ami.BroAudio.Editor
 
             foreach (var asset in coreData.Assets)
 			{
-				if (asset != null && !string.IsNullOrEmpty(asset.AssetName) && asset.Entities.Length > 0)
+				if (asset != null && !string.IsNullOrEmpty(asset.AssetName) && asset.EntitiesCount > 0)
 				{
 					AdvancedDropdownItem item = null;
 					foreach (var entity in asset.GetAllAudioEntities())
 					{
 						item ??= new AdvancedDropdownItem(asset.AssetName);
-                        item.AddChild(new SoundIDAdvancedDropdownItem(entity.Name, entity.ID, asset));
+                        item.AddChild(new SoundIDAdvancedDropdownItem(entity.Name, entity.ID, asset as Data.AudioAsset));
                     }
 
                     if(item != null)

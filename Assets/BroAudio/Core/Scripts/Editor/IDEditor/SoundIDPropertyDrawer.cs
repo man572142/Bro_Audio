@@ -53,7 +53,7 @@ namespace Ami.BroAudio.Editor
             {
                 foreach (var coreAsset in coreData.Assets)
                 {
-                    asset = coreAsset;
+                    asset = coreAsset as AudioAsset;
                     if (asset != null && BroEditorUtility.TryGetEntityName(asset, id, out name))
                     {
                         assetProp.objectReferenceValue = asset;

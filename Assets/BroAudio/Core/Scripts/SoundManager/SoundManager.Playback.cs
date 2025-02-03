@@ -54,7 +54,7 @@ namespace Ami.BroAudio.Runtime
                 return false;
             }
 
-            var validator = customValidator ?? entity.Group; // entity's group will be set in InitBank() if it's null
+            var validator = customValidator ?? entity.PlaybackGroup; // entity's runtime group will be set in InitBank() if it's null
 
             bool isValid = validator == null || validator.IsPlayable(id);
             bool result = isValid && TryGetAvailablePlayer(id, out player);

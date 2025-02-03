@@ -119,7 +119,7 @@ namespace Ami.BroAudio.Runtime
                 if (asset == null)
                     continue;
 
-                asset.Group = LinkPlaybackGroup(asset.Group, Setting.GlobalPlaybackGroup);
+                asset.LinkPlaybackGroup(Setting.GlobalPlaybackGroup);
 
                 foreach(var identity in asset.GetAllAudioEntities())
                 {
@@ -129,7 +129,7 @@ namespace Ami.BroAudio.Runtime
                     if (!_audioBank.ContainsKey(identity.ID))
                     {
                         var entity = identity as IAudioEntity;
-                        entity.Group = LinkPlaybackGroup(entity.Group, asset.Group);
+                        entity.LinkPlaybackGroup(asset.PlaybackGroup);
                         _audioBank.Add(identity.ID, entity);
                     }
                 }

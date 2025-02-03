@@ -7,7 +7,7 @@ namespace Ami.BroAudio.Editor
 	public class IdGenerator : IUniqueIDGenerator
 	{
 		private bool _isInit = false;
-        private IReadOnlyList<AudioAsset> _assetList = null;
+        private IReadOnlyList<IAudioAsset> _assetList = null;
 
         private void Init()
 		{

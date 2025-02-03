@@ -10,8 +10,14 @@ namespace Ami.BroAudio.Data
         public AudioEntity[] Entities;
         public PlaybackGroup Group;
 
+        private PlaybackGroup _upperGroup;
+
+        public PlaybackGroup PlaybackGroup => Group ? Group : _upperGroup;
+
+        public int EntitiesCount => Entities.Length;
+
 #if UNITY_EDITOR
-		[field: SerializeField] public string AssetName { get; set; }
+        [field: SerializeField] public string AssetName { get; set; }
 
         [SerializeField] private string _assetGUID;
 
@@ -41,5 +47,18 @@ namespace Ami.BroAudio.Data
                 yield return data;
             }
         }
-	}
+
+
+        public void LinkPlaybackGroup(PlaybackGroup upperGroup)
+        {
+            if (Group != null)
+            {
+                Group.SetParent(upperGroup);         
+            }
+            else
+            {
+                _upperGroup = upperGroup;
+            }
+        }
+    }
 }

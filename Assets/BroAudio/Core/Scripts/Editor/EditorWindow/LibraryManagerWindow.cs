@@ -222,7 +222,7 @@ namespace Ami.BroAudio.Editor
             {
                 string guid = pair.Key;
                 var editor = pair.Value;
-                if (guid == _allAssetGUIDs[list.index])
+                if (list.index >= 0 && guid == _allAssetGUIDs[list.index])
                 {
                     editor.RemoveEntitiesListener();
                     editor.AddEntitiesListener();

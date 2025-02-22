@@ -109,8 +109,8 @@ namespace Ami.BroAudio.Runtime
                         yield return null;
                     }
                 }
+                AudioTrack = _getAudioTrack?.Invoke(TrackType);
             }
-            AudioTrack = _getAudioTrack?.Invoke(TrackType);
 
             do
             {

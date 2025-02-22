@@ -63,15 +63,18 @@ BroAudio is a sound management and playback system designed for Unity. It's uniq
 
 ## Features
 
-* Fade In/Out and Cross Fade with multiple ease function
-* Seamless Loop
+* Fade In/Out and Crossfade with multiple ease function
+* Seamless Looping
 * Random Playback (with weight), Sequential Playback
-* Clip Editor for permanent clip editing
-* Dynamic audio effect
+* [SpectrumAnalyzer](https://man572142s-organization.gitbook.io/broaudio/core-features/no-code-components/spectrum-analyzer) for audio visualization
+* [SoundVolume](https://man572142s-organization.gitbook.io/broaudio/core-features/no-code-components/sound-volume) for instant game configuration
+* [Audio Clip Editor](https://man572142s-organization.gitbook.io/broaudio/tools/clip-editor) for permanent clip editing
+* Supports <b>Unity Addressables</b>
+* Dynamic audio effects
 * Enhanced Volume Control Range (up to +20dB)
 * Visualized waveform and visualized playback flow view
 * Customizable GUI settings
-* Write code in just one line
+* Simple one-line code integration
 * and more…
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

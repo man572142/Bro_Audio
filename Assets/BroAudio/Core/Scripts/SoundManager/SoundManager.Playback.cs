@@ -127,7 +127,7 @@ namespace Ami.BroAudio.Runtime
 
         public void Stop(BroAudioType targetType,float fadeTime)
         {
-            StopPlayer(fadeTime, targetType);
+            StopPlayer(fadeTime, targetType.ConvertEverythingFlag());
         }            
 
         private void StopPlayer<TParameter>(float fadeTime, TParameter parameter)
@@ -151,20 +151,21 @@ namespace Ami.BroAudio.Runtime
         }
         #endregion
 
+        #region Pause
         public void Pause(int id, bool isPause)
         {
-            Pause(id, isPause, AudioPlayer.UseEntitySetting);
+            Pause(id, AudioPlayer.UseEntitySetting, isPause);
         }
 
-        public void Pause(int id, bool isPause, float fadeTime)
+        public void Pause(int id, float fadeTime, bool isPause)
         {
-            foreach(var player in GetCurrentAudioPlayers())
+            foreach (var player in GetCurrentAudioPlayers())
             {
-                if(player.IsActive && player.ID == id)
+                if (player.IsActive && player.ID == id)
                 {
-                    if(isPause)
+                    if (isPause)
                     {
-                        player.Stop(fadeTime, StopMode.Pause, null);
+                        player.Pause(fadeTime);
                     }
                     else
                     {
@@ -173,6 +174,31 @@ namespace Ami.BroAudio.Runtime
                 }
             }
         }
+
+        public void Pause(BroAudioType targetType, bool isPause)
+        {
+            Pause(targetType, AudioPlayer.UseEntitySetting, isPause);
+        }
+
+        public void Pause(BroAudioType targetType, float fadeTime, bool isPause)
+        {
+            targetType = targetType.ConvertEverythingFlag();
+            foreach (var player in GetCurrentAudioPlayers())
+            {
+                if (player.IsActive && targetType.Contains(player.ID.ToAudioType()))
+                {
+                    if (isPause)
+                    {
+                        player.Pause(fadeTime);
+                    }
+                    else
+                    {
+                        player.UnPause(fadeTime);
+                    }
+                }
+            }
+        } 
+        #endregion
 
         public bool HasPassCombFilteringPreventionTime(SoundID id, float combFilteringTime, bool ignoreCombFilteringIfSameFrame)
         {

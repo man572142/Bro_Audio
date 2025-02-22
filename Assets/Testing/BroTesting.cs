@@ -12,8 +12,6 @@ namespace Ami.BroAudio.Testing
     {
         [SerializeField] SoundID _sound = default;
 
-        [SerializeField] private Button _btn;
-
         [Space]
         [SerializeField] float _fadeTime = 0f;
         [SerializeField] BroAudioType _audioType = default;
@@ -53,6 +51,8 @@ namespace Ami.BroAudio.Testing
         public void StopSoundID() => BroAudio.Stop(_sound, _fadeTime);
         public void Pause() => _player.Pause();
         public void UnPause() => _player.UnPause();
+        public void PauseAudioType() => BroAudio.Pause(_audioType, _fadeTime);
+        public void UnPauseAudioType() => BroAudio.UnPause(_audioType, _fadeTime);
 
 #if !UNITY_WEBGL
         public void SetLowPassFilter() => BroAudio.SetEffect(Effect.LowPass(_frequency, _fadeTime), _audioType);

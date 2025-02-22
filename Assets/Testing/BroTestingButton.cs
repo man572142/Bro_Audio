@@ -95,6 +95,8 @@ namespace Ami.BroAudio.Testing
             nameof(BroTesting.StopAudioType) => GetMainMethodText(Stop, AudioType, Fade),
             nameof(BroTesting.Pause) => GetPlayerAppendMethodString(Pause),
             nameof(BroTesting.UnPause) => GetPlayerAppendMethodString(UnPause),
+            nameof(BroTesting.PauseAudioType) => GetMainMethodText(Pause, AudioType),
+            nameof(BroTesting.UnPauseAudioType) => GetMainMethodText(UnPause, AudioType),
 
 #if !UNITY_WEBGL
             nameof(BroTesting.SetLowPassFilter) => GetMainMethodText(SetEffect, GetEffectFactoryText(LowPass, Frequency, Fade), AudioType),

@@ -142,6 +142,7 @@ namespace Ami.BroAudio.Runtime
         #region Volume
         public void SetVolume(float vol, BroAudioType targetType, float fadeTime)
         {
+            targetType = targetType.ConvertEverythingFlag();
             if (targetType == BroAudioType.None)
             {
                 Debug.LogWarning(LogTitle + $"SetVolume with {targetType} is meaningless");
@@ -243,6 +244,7 @@ namespace Ami.BroAudio.Runtime
 
         public IAutoResetWaitable SetEffect(BroAudioType targetType, Effect effect)
         {
+            targetType = targetType.ConvertEverythingFlag();
             SetEffectMode mode = SetEffectMode.Add;
             if(effect.Type == EffectType.None)
             {
@@ -294,6 +296,7 @@ namespace Ami.BroAudio.Runtime
 
         public void SetPitch(float pitch, BroAudioType targetType, float fadeTime)
         {
+            targetType = targetType.ConvertEverythingFlag();
             if (targetType == BroAudioType.None)
             {
                 Debug.LogWarning(LogTitle + $"SetPitch with {targetType} is meaningless");

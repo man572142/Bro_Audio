@@ -24,7 +24,7 @@ namespace Ami.BroAudio
         }
         #endregion
 
-        public static BroAudioType ConvertEverything(this BroAudioType audioType)
+        public static BroAudioType ConvertEverythingFlag(this BroAudioType audioType)
         {
             if((int)audioType == UnityEverythingFlag)
             {

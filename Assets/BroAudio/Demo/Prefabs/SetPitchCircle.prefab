@@ -129,6 +129,10 @@ PrefabInstance:
       propertyPath: m_Color.r
       value: 0.5707547
       objectReference: {fileID: 0}
+    - target: {fileID: 221247486566169817, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 2100000, guid: a00ecf65b4569a940b078c3a3b27e013, type: 2}
     - target: {fileID: 221247487175567480, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_Name
       value: UI_API
@@ -217,6 +221,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 869880269179753858, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_Color.a
+      value: 0.78431374
+      objectReference: {fileID: 0}
+    - target: {fileID: 869880269179753858, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_Maskable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 869880269179753858, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 2100000, guid: a00ecf65b4569a940b078c3a3b27e013, type: 2}
     - target: {fileID: 2002427728400643975, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -253,6 +269,22 @@ PrefabInstance:
       propertyPath: m_EffectColor.r
       value: 0.23024207
       objectReference: {fileID: 0}
+    - target: {fileID: 3630904498036858587, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3630904498036858587, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3630904498036858587, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3678926898671831848, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 2100000, guid: a00ecf65b4569a940b078c3a3b27e013, type: 2}
     - target: {fileID: 8279492738536436155, guid: 8ccad4cee309fb14e862e5c5630fc805, type: 3}
       propertyPath: _methodTexts.Array.data[0].Method
       value: SetPitch

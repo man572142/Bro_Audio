@@ -10,6 +10,7 @@ namespace Ami.BroAudio.Demo
         [SerializeField] CanvasGroup _instruction = null;
         [SerializeField] float _showingTime = default;
         [SerializeField] bool _lookAtPlayer = false;
+        [SerializeField] SoundSource _reminderSound = null;
 
         private Transform _instTransform = null;
         private Coroutine _coroutine = null;
@@ -39,6 +40,11 @@ namespace Ami.BroAudio.Demo
                 StopCoroutine(_coroutine);
             }
             _coroutine = StartCoroutine(AnimateCanvasGroup(isInZone));
+
+            if(isInZone && _reminderSound)
+            {
+                _reminderSound.Play();
+            }
         }
 
         private IEnumerator AnimateCanvasGroup(bool isOpening)

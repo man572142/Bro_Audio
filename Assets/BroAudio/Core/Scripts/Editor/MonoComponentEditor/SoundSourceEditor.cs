@@ -87,14 +87,13 @@ namespace Ami.BroAudio.Editor
 
             serializedObject.ApplyModifiedProperties();
 
-            if(Application.isPlaying && target is SoundSource source && 
-                source.CurrentPlayer != null && source.CurrentPlayer is AudioPlayerInstanceWrapper wrapper)
-            {
-                AudioPlayer player = wrapper;
+            if(Application.isPlaying && target is SoundSource source)
+            {                
+                AudioPlayer player = source.CurrentPlayer is AudioPlayerInstanceWrapper wrapper && wrapper.IsPlaying ? (AudioPlayer)wrapper : null;
                 EditorGUI.BeginDisabledGroup(true);
                 {
                     EditorGUILayout.Space();
-                    EditorGUILayout.ObjectField("Current Player",player, typeof(AudioPlayer), false);
+                    EditorGUILayout.ObjectField("Current Player", player, typeof(AudioPlayer), false);
                 }
                 EditorGUI.EndDisabledGroup();
             }

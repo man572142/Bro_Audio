@@ -172,6 +172,6 @@ namespace Ami.BroAudio
             return null;
         }
 
-        public static implicit operator AudioPlayer(AudioPlayerInstanceWrapper wrapper) => wrapper.IsAvailable() ? wrapper.Instance : null;
+        public static explicit operator AudioPlayer(AudioPlayerInstanceWrapper wrapper) => wrapper.IsAvailable(false) ? wrapper.Instance : null;
     }
 }

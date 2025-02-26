@@ -202,6 +202,11 @@ namespace Ami.BroAudio.Runtime
 
         public bool HasPassCombFilteringPreventionTime(SoundID id, float combFilteringTime, bool ignoreCombFilteringIfSameFrame)
         {
+            if(combFilteringTime <= 0f)
+            {
+                return true;
+            }
+
             if (_combFilteringPreventer != null && _combFilteringPreventer.TryGetValue(id, out var previousPlayer))
             {
                 int time = TimeExtension.UnscaledCurrentFrameBeganTime;

@@ -126,6 +126,7 @@ namespace Ami.BroAudio
             public const string OverrideFadeOut = nameof(_overrideFadeOut);
             public const string SoundID = nameof(_sound);
             public const string PositionMode = nameof(_positionMode);
+            public const string OverrideGroup = nameof(_overrideGroup);
         } 
 #endif
     }

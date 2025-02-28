@@ -100,9 +100,6 @@ namespace Ami.BroAudio.Editor
         {
             if (TryGetCoreData(out var coreData))
             {
-                coreData.RemoveEmpty();
-                SaveToDisk(coreData);
-
                 _allAssetGUIDs = coreData.GetGUIDList();
                 _hasOutputAssetPath = Directory.Exists(BroEditorUtility.EditorSetting.AssetOutputPath);
 

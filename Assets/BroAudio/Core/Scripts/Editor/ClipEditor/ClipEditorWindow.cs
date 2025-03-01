@@ -144,7 +144,6 @@ namespace Ami.BroAudio.Editor
 
             var isReverseProp = _serializedObject.FindProperty(nameof(_isReverse));
             var isMonoProp = _serializedObject.FindProperty(nameof(_isMono));
-            var monoModeProp = _serializedObject.FindProperty(nameof(_monoMode));
             isReverseProp.boolValue = EditorGUILayout.Toggle("Reverse", isReverseProp.boolValue);
 
             using (new EditorGUI.DisabledScope(TargetClip.channels != 2))
@@ -226,7 +225,9 @@ namespace Ami.BroAudio.Editor
         {
             if(userData is MonoConversionMode mode)
 			{
-				_monoMode = mode;
+                var monoModeProp = _serializedObject.FindProperty(nameof(_monoMode));
+                monoModeProp.enumValueIndex = (int)mode;
+                _serializedObject.ApplyModifiedProperties();
 			}
         }
 

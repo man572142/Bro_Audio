@@ -8,6 +8,8 @@ using UnityEditor;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Tools.BroName;
 using System.Collections.Generic;
+using Ami.BroAudio.Tools;
+using Ami.BroAudio.Editor.Setting;
 
 public class BroUpdater
 {
@@ -136,4 +138,16 @@ public class BroUpdater
             }
         }
     }
+
+#if BroAudio_DevOnly
+    [MenuItem(BroName.MenuItem_BroAudio + "Update Version", priority = BroAudioGUISetting.DevToolsMenuIndex + 14)]
+    public static void UpdateVersion()
+    {
+        if (TryGetCoreData(out var coreData))
+        {
+            coreData.UpdateVersion();
+            EditorUtility.SetDirty(coreData);
+        }
+    } 
+#endif
 }

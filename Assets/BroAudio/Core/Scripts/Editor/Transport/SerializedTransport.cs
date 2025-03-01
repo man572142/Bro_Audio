@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Editor
 	public class SerializedTransport : Transport
 	{
 		private readonly SerializedProperty DelayProp;
-		public readonly SerializedProperty StartPosProp;
+		private readonly SerializedProperty StartPosProp;
 		private readonly SerializedProperty EndPosProp;
 		private readonly SerializedProperty FadeInProp;
 		private readonly SerializedProperty FadeOutProp;

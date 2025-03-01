@@ -6,6 +6,7 @@ using System.IO;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.Extension.EditorScriptingExtension;
 using Ami.BroAudio.Tools;
+using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Editor
 {
@@ -20,22 +21,23 @@ namespace Ami.BroAudio.Editor
 
 		public event Action OnChangeAudioClip;
 
-		private AudioClip _targetClip = null;
-		private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper();
-		private Transport _transport = default;
-		private bool _isReverse = false;
-		private bool _isMono = false;
+        [SerializeField] private BroAudioClip _clip = null;
+        [SerializeField] private bool _isReverse = false;
+        [SerializeField] private bool _isMono = false;
+        [SerializeField] private MonoConversionMode _monoMode = MonoConversionMode.Downmixing;
+        private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper();
+		private SerializedTransport _transport = default;
 		private float _volume = AudioConstant.FullVolume;
 		private bool _isVolumeSnapped = false;
-		private MonoConversionMode _monoMode = MonoConversionMode.Downmixing;
 		private GenericMenu _monoModeMenu = null;
 		private bool _isLoop = false;
 		private bool _isPlaying = false;
         private bool _isShowPreferences = false;
-        private SerializedProperty _editNewClipProp = null;
-        private SerializedProperty _pingNewClipProp = null;
+        private SerializedObject _serializedObject = null;
+        private SerializedObject _editorSettingSO = null;
+        private SerializedProperty _audioClipProp = null;
 
-		private string _currSavingFilePath = null;
+        private string _currSavingFilePath = null;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
 
 		public bool HasEdited
@@ -52,15 +54,16 @@ namespace Ami.BroAudio.Editor
 
 		public AudioClip TargetClip
 		{
-			get => _targetClip;
-			private set
+			get => _audioClipProp.objectReferenceValue as AudioClip;
+            private set
 			{
-				bool hasChanged = value != _targetClip;
-				_targetClip = value;
+				bool hasChanged = value != _audioClipProp.objectReferenceValue;
+                _audioClipProp.objectReferenceValue = value;
 
 				if (hasChanged)
 				{
-					OnChangeAudioClip?.Invoke();
+                    _audioClipProp.serializedObject.ApplyModifiedProperties();
+                    OnChangeAudioClip?.Invoke();
 				}
 			}
 		}
@@ -77,13 +80,19 @@ namespace Ami.BroAudio.Editor
 		private void OnEnable()
 		{
             OnChangeAudioClip += ResetSetting;
+            Undo.undoRedoPerformed += Repaint;
+
+            _serializedObject = new SerializedObject(this);
+            _audioClipProp =  _serializedObject.FindProperty(nameof(_clip)).FindPropertyRelative(BroAudioClip.NameOf.AudioClip);
+
 			ResetSetting();
 		}
 
-		private void OnDisable()
+        private void OnDisable()
 		{
 			OnChangeAudioClip -= ResetSetting;
-		}
+            Undo.undoRedoPerformed -= Repaint;
+        }
 
         private void OnFocus()
         {
@@ -100,6 +109,7 @@ namespace Ami.BroAudio.Editor
 
 		private void OnGUI()
 		{
+            _serializedObject.Update();
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
@@ -132,11 +142,14 @@ namespace Ami.BroAudio.Editor
             DrawPlaybackPositionField();
             DrawFadingField();
 
-            _isReverse = EditorGUILayout.Toggle("Reverse", _isReverse);
+            var isReverseProp = _serializedObject.FindProperty(nameof(_isReverse));
+            var isMonoProp = _serializedObject.FindProperty(nameof(_isMono));
+            var monoModeProp = _serializedObject.FindProperty(nameof(_monoMode));
+            isReverseProp.boolValue = EditorGUILayout.Toggle("Reverse", isReverseProp.boolValue);
 
             using (new EditorGUI.DisabledScope(TargetClip.channels != 2))
             {
-                _isMono = EditorGUILayout.Toggle("Convert To Mono", _isMono);
+                isMonoProp.boolValue = EditorGUILayout.Toggle("Convert To Mono", isMonoProp.boolValue);
                 using (new EditorGUI.DisabledScope(!_isMono))
                 {
                     Rect monoModeRect = GUILayoutUtility.GetLastRect().DissolveHorizontal(0.5f);
@@ -155,16 +168,13 @@ namespace Ami.BroAudio.Editor
             _isShowPreferences = EditorGUILayout.BeginFoldoutHeaderGroup(_isShowPreferences, "Preferences");
             if (_isShowPreferences)
             {
-                FindPreferencePropertiesIfNeeded(out var editorSettingSO);
-                editorSettingSO.Update();
-
                 using (new EditorGUI.IndentLevelScope(1))
                 {
-                    _editNewClipProp.boolValue = EditorGUILayout.ToggleLeft("Edit The New Clip After [Save As]", _editNewClipProp.boolValue);
-                    _pingNewClipProp.boolValue = EditorGUILayout.ToggleLeft("Show The New Clip In Project Window After [Save As]", _pingNewClipProp.boolValue);
-                }
-                
-                editorSettingSO.ApplyModifiedProperties();
+                    GetPreferenceProperties(out var editNewClipOptionProp, out var pingNewClipOptionProp);
+                    editNewClipOptionProp.boolValue = EditorGUILayout.ToggleLeft("Edit The New Clip After [Save As]", editNewClipOptionProp.boolValue);
+                    pingNewClipOptionProp.boolValue = EditorGUILayout.ToggleLeft("Show The New Clip In Project Window After [Save As]", pingNewClipOptionProp.boolValue);
+                    _editorSettingSO.ApplyModifiedProperties();
+                }               
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
 
@@ -178,18 +188,16 @@ namespace Ami.BroAudio.Editor
             EditorGUILayout.EndVertical();
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
+            _serializedObject.ApplyModifiedProperties();
         }
 
-        private void FindPreferencePropertiesIfNeeded(out SerializedObject serializedObj)
+        private void GetPreferenceProperties(out SerializedProperty editNewClipOptionProp, out SerializedProperty pingNewClipOptionProp)
         {
-            serializedObj = null;
-            if (_editNewClipProp == null || _pingNewClipProp == null)
-            {
-                serializedObj = new SerializedObject(BroEditorUtility.EditorSetting);
-                _editNewClipProp = serializedObj.FindProperty(nameof(EditorSetting.EditTheNewClipAfterSaveAs));
-                _pingNewClipProp = serializedObj.FindProperty(nameof(EditorSetting.PingTheNewClipAfterSaveAs));
-            }
-            serializedObj = _editNewClipProp.serializedObject;
+            _editorSettingSO ??= new SerializedObject(BroEditorUtility.EditorSetting);
+            _editorSettingSO.Update();
+
+            editNewClipOptionProp = _editorSettingSO.FindProperty(nameof(EditorSetting.EditTheNewClipAfterSaveAs));
+            pingNewClipOptionProp = _editorSettingSO.FindProperty(nameof(EditorSetting.PingTheNewClipAfterSaveAs));
         }
 
 		private void ShowMonoModeMenu(Rect rect)
@@ -234,7 +242,8 @@ namespace Ami.BroAudio.Editor
 			TargetClip = EditorGUILayout.ObjectField("Audio Clip", TargetClip, typeof(AudioClip), false) as AudioClip;
 			if(EditorGUI.EndChangeCheck() && TargetClip)
 			{
-				_transport = new Transport(TargetClip.length);
+                var clipProp = _serializedObject.FindProperty(nameof(_clip));
+                _transport = new SerializedTransport(clipProp, TargetClip.length);
 			}
 		}
 
@@ -272,19 +281,19 @@ namespace Ami.BroAudio.Editor
 				{
 					EditorPlayAudioClip.Instance.StopAllClips();
 				}
-				else
+				else if(_audioClipProp.objectReferenceValue is AudioClip clip)
 				{
 					PreviewClip previewGUIClip;
 					if(Event.current.button == 0) // Left Click
 					{
-                        var clipData = new EditorPlayAudioClip.Data(_targetClip, _volume, _transport);
+                        var clipData = new EditorPlayAudioClip.Data(clip, _volume, _transport);
                         EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, _isLoop);
 						previewGUIClip = new PreviewClip(_transport);
                     }
 					else
 					{
-                        EditorPlayAudioClip.Instance.PlayClip(_targetClip, 0f, 0f, _isLoop);
-                        previewGUIClip = new PreviewClip(_targetClip.length);
+                        EditorPlayAudioClip.Instance.PlayClip(clip, 0f, 0f, _isLoop);
+                        previewGUIClip = new PreviewClip(clip.length);
                     }
 
                     _isPlaying = true;
@@ -384,18 +393,17 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
-            FindPreferencePropertiesIfNeeded(out _);
-
             AudioClip newClip = AssetDatabase.LoadAssetAtPath(_currSavingFilePath, typeof(AudioClip)) as AudioClip;
             bool isNewClip = newClip != TargetClip;
             if (isNewClip)
             {
-                if (_pingNewClipProp.boolValue)
+                GetPreferenceProperties(out var editNewClipOptionProp, out var pingNewClipOptionProp);
+                if (editNewClipOptionProp.boolValue)
                 {
                     EditorGUIUtility.PingObject(newClip);
                 }
 
-                if (_editNewClipProp.boolValue)
+                if (pingNewClipOptionProp.boolValue)
                 {
                     TargetClip = newClip;
                     ResetTransport();
@@ -408,7 +416,8 @@ namespace Ami.BroAudio.Editor
 
             void ResetTransport()
             {
-                _transport = new Transport(TargetClip.length);
+                var clipProp = _serializedObject.FindProperty(nameof(_clip));
+                _transport = new SerializedTransport(clipProp, TargetClip.length);
             }
         }
 
@@ -416,8 +425,7 @@ namespace Ami.BroAudio.Editor
 		{
 			_currSavingFilePath = null;
 			_transport = default;
-			_isReverse = false;
-		}
+        }
 
 		public void AddItemsToMenu(GenericMenu menu)
 		{

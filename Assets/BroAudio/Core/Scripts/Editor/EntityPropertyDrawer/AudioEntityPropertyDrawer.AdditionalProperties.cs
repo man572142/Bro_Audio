@@ -22,7 +22,7 @@ namespace Ami.BroAudio.Editor
         private readonly GUIContent _loopingLabel = new GUIContent("Looping");
         private readonly GUIContent _seamlessLabel = new GUIContent("Seamless Setting");
         private readonly GUIContent _pitchLabel = new GUIContent(nameof(AudioEntity.Pitch));
-        private readonly GUIContent _spatialLabel = new GUIContent("Spatial (3D Sound)");
+        private readonly GUIContent _spatialLabel = new GUIContent("Spatial & Mix Settings", "Configures 3D sound settings, Stereo Pan, Reverb Zone Mix, and other audio properties");
         private readonly float[] _seamlessSettingRectRatio = new float[] { 0.25f, 0.25f, 0.2f, 0.15f, 0.15f };
 
         private Rect[] _loopingRects = null;

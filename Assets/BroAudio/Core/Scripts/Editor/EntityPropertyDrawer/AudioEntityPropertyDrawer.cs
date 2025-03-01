@@ -65,7 +65,6 @@ namespace Ami.BroAudio.Editor
         private const float FoldoutArrowWidth = 15f;
         private const float MaxTextFieldWidth = 300f;
 
-        private readonly float[] _headerRatios = new float[] { 0.55f, 0.2f, 0.25f };
         private readonly GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume),"The playback volume of this clip");
         private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
         private readonly IUniqueIDGenerator _idGenerator = new IdGenerator();
@@ -75,7 +74,6 @@ namespace Ami.BroAudio.Editor
                 new TabViewData(0.475f, new GUIContent(nameof(Tab.Overall)), EditorPlayAudioClip.Instance.StopAllClips, null),
                 new TabViewData(0.05f, EditorGUIUtility.IconContent("pane options"), null, OnOpenOptionMenu),
             };
-        private Rect[] _headerRects = null;
 
         private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper();
         private Dictionary<string, ClipData> _clipDataDict = new Dictionary<string, ClipData>();
@@ -164,12 +162,16 @@ namespace Ami.BroAudio.Editor
             SerializedProperty idProp = property.FindBackingFieldProperty(nameof(IEntityIdentity.ID));
 
             Rect foldoutRect = GetRectAndIterateLine(position);
-            _headerRects ??= new Rect[_headerRatios.Length];
-
             float gap = 50f;
-            SplitRectHorizontal(foldoutRect, gap, _headerRects, _headerRatios);
-            Rect nameRect = _headerRects[0]; Rect previewButtonRect = _headerRects[1]; Rect audioTypeRect = _headerRects[2];
-            audioTypeRect.x += gap * 0.5f;
+
+            SplitRectHorizontal(foldoutRect, 0.55f, gap, out Rect nameRect, out Rect headerButtonRect);
+            SplitRectHorizontal(headerButtonRect, 0.5f, 5f, out Rect previewButtonRect, out Rect audioTypeRect);
+
+            GetOrCreateEntityDataDict(property, out var data);
+            if(EditorSetting.ShowPlayButtonWhenEntityCollapsed)
+            {
+                DrawEntityPreviewButton(previewButtonRect, property, data);
+            }
 
             EditorGUI.BeginChangeCheck();
             property.isExpanded = EditorGUI.Foldout(foldoutRect.AdjustWidth(-audioTypeRect.width), property.isExpanded, property.isExpanded ? string.Empty : nameProp.stringValue, !property.isExpanded);
@@ -183,10 +185,11 @@ namespace Ami.BroAudio.Editor
             {
                 return;
             }
-
-            GetOrCreateEntityDataDict(property, out var data);
             DrawEntityNameField(nameRect, nameProp, idProp.intValue);
-            DrawEntityPreviewButton(previewButtonRect, property, data);
+            if (!EditorSetting.ShowPlayButtonWhenEntityCollapsed)
+            {
+                DrawEntityPreviewButton(previewButtonRect, property, data);
+            }
 
             _clipPropHelper.DrawDraggableHiddenButton(data.HiddenButtonRects, setting);
 

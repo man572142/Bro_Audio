@@ -567,7 +567,13 @@ namespace Ami.BroAudio.Editor
         public void AddItemsToMenu(GenericMenu menu)
         {
             menu.AddSeparator(string.Empty);
+            menu.AddDisabledItem(new GUIContent("Bro Audio"));
             menu.AddItem(new GUIContent("Default Window Size"), false, () => position = new Rect(position.position, DefaultWindowSize));
+            menu.AddItem(new GUIContent(ShowPlayButtonWhenCollapsed), EditorSetting.ShowPlayButtonWhenEntityCollapsed, () => 
+            {
+                EditorSetting.ShowPlayButtonWhenEntityCollapsed = !EditorSetting.ShowPlayButtonWhenEntityCollapsed;
+                EditorUtility.SetDirty(EditorSetting);
+            });
             menu.AddItem(new GUIContent(OpenLastEditedAssetLabel), EditorSetting.OpenLastEditAudioAsset, () => 
             {
                 EditorSetting.OpenLastEditAudioAsset = !EditorSetting.OpenLastEditAudioAsset;

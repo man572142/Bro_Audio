@@ -40,6 +40,7 @@ namespace Ami.BroAudio.Editor
         public bool ShowAudioTypeOnSoundID;
 		public bool ShowVUColorOnVolumeSlider;
 		public bool ShowMasterVolumeOnClipListHeader;
+        public bool ShowPlayButtonWhenEntityCollapsed;
         public bool OpenLastEditAudioAsset;
         public string LastEditAudioAsset;
         public ReferenceConversionDecision DirectReferenceDecision = FactorySettings.DirectReferenceDecision;
@@ -130,6 +131,8 @@ namespace Ami.BroAudio.Editor
             AddressableDecision = FactorySettings.AddressableDecision;
             EditTheNewClipAfterSaveAs = FactorySettings.EditTheNewClipAfterSaveAs;
             PingTheNewClipAfterSaveAs = FactorySettings.PingTheNewClipAfterSaveAs;
+            ShowPlayButtonWhenEntityCollapsed = FactorySettings.ShowPlayButtonWhenEntityIsFolded;
+            OpenLastEditAudioAsset = FactorySettings.OpenLastEditAudioAsset;
             CreateNewAudioTypeSettings();
             CreateDefaultSpectrumColors();
 		}
@@ -167,8 +170,10 @@ namespace Ami.BroAudio.Editor
 			public const bool ShowAudioTypeOnSoundID = true;
 			public const bool ShowVUColorOnVolumeSlider = true;
 			public const bool ShowMasterVolumeOnClipListHeader = false;
+            public const bool OpenLastEditAudioAsset = false;
+            public const bool ShowPlayButtonWhenEntityIsFolded = false;
 
-			public const string MusicColor = "#012F874C";
+            public const string MusicColor = "#012F874C";
 			public const string UIColor = "#0E9C884C";
 			public const string AmbienceColor = "#00B0284C";
 			public const string SFXColor = "#FD803D96";

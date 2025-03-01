@@ -27,6 +27,7 @@ namespace Ami.BroAudio.Editor.Setting
         public const string AutoMatchTracksButtonText = "Auto-adding tracks to match audio voices.";
         public const string AssetOutputPathLabel = "Asset Output Path";
         public const string AssetOutputPathMissing = "The current audio asset output path is missing. Please select a new location.";
+        public const string OpenLastEditedAssetLabel = "Open last edited asset when Library Manager launches";
         public const string VUColorToggleLabel = "Show VU color on volume slider";
         public const string ShowAudioTypeToggleLabel = "Show audioType on SoundID";
         public const string ShowMasterVolumeLabel = "Show master volume on clip list header";
@@ -436,9 +437,12 @@ namespace Ami.BroAudio.Editor.Setting
         private void DrawGUISetting(Rect drawPosition)
         {
             drawPosition.width -= 15f;
+            var openLastEditedAssetProp = _editorSettingSO.FindProperty(nameof(Editor.EditorSetting.OpenLastEditAudioAsset));
             var showVuProp = _editorSettingSO.FindProperty(nameof(Editor.EditorSetting.ShowVUColorOnVolumeSlider));
             var showMasterProp = _editorSettingSO.FindProperty(nameof(Editor.EditorSetting.ShowMasterVolumeOnClipListHeader));
             var showAudioTypeProp = _editorSettingSO.FindProperty(nameof(Editor.EditorSetting.ShowAudioTypeOnSoundID));
+
+            openLastEditedAssetProp.boolValue = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), OpenLastEditedAssetLabel, openLastEditedAssetProp.boolValue);
             showVuProp.boolValue = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawPosition), VUColorToggleLabel, showVuProp.boolValue);
             DemonstrateSlider();
 

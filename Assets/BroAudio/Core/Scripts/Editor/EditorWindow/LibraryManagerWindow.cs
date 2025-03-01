@@ -13,6 +13,7 @@ using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.BroAudio.Editor.Setting.PreferencesEditorWindow;
+using Ami.BroAudio.Editor.Setting;
 
 namespace Ami.BroAudio.Editor
 {
@@ -46,6 +47,7 @@ namespace Ami.BroAudio.Editor
         public Vector2 EntitiesHeaderSize => new Vector2(200f, EditorGUIUtility.singleLineHeight * 2);
         public float DefaultLayoutPadding => GUI.skin.box.padding.top;
         public IUniqueIDGenerator IDGenerator => _idGenerator;
+        private EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
 
         [MenuItem(LibraryManagerMenuPath, false, LibraryManagerMenuIndex)]
         public static LibraryManagerWindow ShowWindow()
@@ -101,7 +103,7 @@ namespace Ami.BroAudio.Editor
             if (TryGetCoreData(out var coreData))
             {
                 _allAssetGUIDs = coreData.GetGUIDList();
-                _hasOutputAssetPath = Directory.Exists(BroEditorUtility.EditorSetting.AssetOutputPath);
+                _hasOutputAssetPath = Directory.Exists(EditorSetting.AssetOutputPath);
 
                 InitEditorDictionary();
                 InitReorderableList();
@@ -110,6 +112,12 @@ namespace Ami.BroAudio.Editor
 
             Undo.undoRedoPerformed += Repaint;
             AudioEntityPropertyDrawer.OnExpandAll += ResetEntitiesScrollPos;
+
+            if (EditorSetting.OpenLastEditAudioAsset && !string.IsNullOrEmpty(EditorSetting.LastEditAudioAsset))
+            {
+                SelectAsset(EditorSetting.LastEditAudioAsset);
+                _isInEntitiesEditMode = true;
+            }
         }
 
         private void OnDisable()
@@ -210,6 +218,11 @@ namespace Ami.BroAudio.Editor
                 _currSelectedAssetIndex = list.index;
                 EditorPlayAudioClip.Instance.StopAllClips();
                 RefreshAssetEditors(list);
+                if(EditorSetting.OpenLastEditAudioAsset)
+                {
+                    EditorSetting.LastEditAudioAsset = _allAssetGUIDs[_currSelectedAssetIndex];
+                    EditorUtility.SetDirty(EditorSetting);
+                }
             }
         }
 
@@ -555,6 +568,17 @@ namespace Ami.BroAudio.Editor
         {
             menu.AddSeparator(string.Empty);
             menu.AddItem(new GUIContent("Default Window Size"), false, () => position = new Rect(position.position, DefaultWindowSize));
+            menu.AddItem(new GUIContent(OpenLastEditedAssetLabel), EditorSetting.OpenLastEditAudioAsset, () => 
+            {
+                EditorSetting.OpenLastEditAudioAsset = !EditorSetting.OpenLastEditAudioAsset;
+                EditorSetting.LastEditAudioAsset = string.Empty;
+                if(EditorSetting.OpenLastEditAudioAsset && _assetReorderableList.count > 0 &&  _assetReorderableList.index >= 0)
+                {
+                    EditorSetting.LastEditAudioAsset = _allAssetGUIDs[_assetReorderableList.index];
+                    _isInEntitiesEditMode = true;
+                }
+                EditorUtility.SetDirty(EditorSetting);
+            });
         }
     }
 }

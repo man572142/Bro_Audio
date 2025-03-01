@@ -40,6 +40,8 @@ namespace Ami.BroAudio.Editor
         public bool ShowAudioTypeOnSoundID;
 		public bool ShowVUColorOnVolumeSlider;
 		public bool ShowMasterVolumeOnClipListHeader;
+        public bool OpenLastEditAudioAsset;
+        public string LastEditAudioAsset;
         public ReferenceConversionDecision DirectReferenceDecision = FactorySettings.DirectReferenceDecision;
         public ReferenceConversionDecision AddressableDecision = FactorySettings.AddressableDecision;
 

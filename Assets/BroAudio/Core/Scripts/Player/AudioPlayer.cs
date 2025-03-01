@@ -143,13 +143,14 @@ namespace Ami.BroAudio.Runtime
 					transform.position = position;
 					SetTo3D();
 				}
-				else if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D) && pref.Entity is IEntityIdentity entity)
-				{
-					Debug.LogWarning(Utility.LogTitle + $"You've set a non-2D SpatialBlend for :{entity.Name}, but didn't specify a position or a follow target when playing it");
-				}
-			}
+                // The log is unnecessary and may cause misunderstandings, as the Play method already provides clear summaries.
+                //else if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D) && pref.Entity is IEntityIdentity entity)
+                //{
+                //	Debug.LogWarning(Utility.LogTitle + $"You've set a non-2D SpatialBlend for :{entity.Name}, but didn't specify a position or a follow target when playing it");
+                //}
+            }
 
-			void SetTo3D()
+            void SetTo3D()
 			{
 				if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D))
 				{

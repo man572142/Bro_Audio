@@ -17,6 +17,7 @@ namespace Ami.BroAudio
         public T Value;
         private IsPlayableDelegate _ruleMethod;
         [SerializeField] private bool _isOverride = true;
+        public override string ToString() => base.ToString().Remove(0, "Ami.BroAudio.".Length) + " | Value: " + Value.ToString();
 
         public IsPlayableDelegate RuleMethod
         {

@@ -14,7 +14,7 @@ namespace Ami.BroAudio.Runtime
         {
             get
             {
-                _setting ??= Resources.Load<RuntimeSetting>(BroName.RuntimeSettingName);
+                _setting = _setting != null ? _setting : Resources.Load<RuntimeSetting>(BroName.RuntimeSettingName);
 
                 if (!_setting)
                 {

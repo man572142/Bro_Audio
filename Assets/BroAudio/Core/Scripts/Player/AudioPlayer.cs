@@ -85,7 +85,7 @@ namespace Ami.BroAudio.Runtime
 
         protected virtual void Awake()
         {
-            AudioSource ??= GetComponent<AudioSource>();
+            AudioSource = AudioSource != null ? AudioSource : GetComponent<AudioSource>();
             InitVolumeModule();
         }
 

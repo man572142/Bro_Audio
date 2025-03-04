@@ -24,7 +24,7 @@ namespace Ami.BroAudio.Demo
         {
             if(_lookAtPlayer && InteractiveZone.IsInZone && InteractiveZone.InZoneObject)
             {
-                _instTransform ??= _instruction.transform;
+                _instTransform = _instTransform != null ? _instTransform : _instruction.transform;
 
                 Vector3 playerPos = InteractiveZone.InZoneObject.transform.position;
                 Vector3 opppsitePos = _instTransform.position + (_instTransform.position - playerPos);

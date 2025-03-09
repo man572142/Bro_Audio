@@ -168,7 +168,7 @@ namespace Ami.BroAudio.Runtime
         private void SetMasterVolume(float targetVol, float fadeTime)
         {
 #if UNITY_WEBGL
-            if (Mathf.Approximately(WebGLMasterVolume, targetVol))
+            if (!Mathf.Approximately(WebGLMasterVolume, targetVol))
             {
                 if (fadeTime > 0f)
                 {

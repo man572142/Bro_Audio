@@ -122,15 +122,15 @@ namespace Ami.BroAudio.Runtime
 
         public void Stop(int id,float fadeTime)
         {
-            StopPlayer(fadeTime, id);
+            StopPlayer<int>(fadeTime, id);
         }
 
         public void Stop(BroAudioType targetType,float fadeTime)
         {
-            StopPlayer(fadeTime, targetType.ConvertEverythingFlag());
+            StopPlayer<BroAudioType>(fadeTime, (int)targetType.ConvertEverythingFlag());
         }            
 
-        private void StopPlayer<TParameter>(float fadeTime, TParameter parameter)
+        private void StopPlayer<T>(float fadeTime, int identity)
         {
             var players = GetCurrentAudioPlayers();
             for (int i = players.Count - 1; i >= 0; i--)
@@ -141,8 +141,9 @@ namespace Ami.BroAudio.Runtime
                     continue;
                 }
 
-                bool isIdAndMatch = parameter is int id && player.ID == id;
-                bool isAudioTypeAndMatch = parameter is BroAudioType audioType && audioType.Contains(player.ID.ToAudioType());
+                System.Type type = typeof(T);
+                bool isIdAndMatch = type == typeof(int) && player.ID == identity;
+                bool isAudioTypeAndMatch = type == typeof(BroAudioType) && ((BroAudioType)identity).Contains(player.ID.ToAudioType());
                 if (isIdAndMatch || isAudioTypeAndMatch)
                 {
                     player.Stop(fadeTime);

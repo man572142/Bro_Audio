@@ -10,7 +10,7 @@ namespace Ami.BroAudio.Runtime
 	{
         public const float DefaultClipVolume = 0f;
         public const float DefaultTrackVolume = AudioConstant.FullVolume;
-        public const float DefaultMixerDecibelVolume = int.MinValue;
+        public const float UnSetMixerDecibelVolume = float.MinValue;
 
         /// <summary>
         /// The playback volume of an audio track, it will be set by SetVolume() function.
@@ -27,7 +27,7 @@ namespace Ami.BroAudio.Runtime
         /// </summary>
         private Fader _audioTypeVolume = null;
 
-        private float _mixerDecibelVolume = DefaultMixerDecibelVolume;
+        private float _mixerDecibelVolume = UnSetMixerDecibelVolume;
 
         /// <summary>
         /// The final decibel volume that is set in the mixer.
@@ -36,9 +36,9 @@ namespace Ami.BroAudio.Runtime
         {
             get
             {
-                if(_mixerDecibelVolume == DefaultMixerDecibelVolume)
+                if(_mixerDecibelVolume == UnSetMixerDecibelVolume)
                 {
-                    if (_audioMixer.SafeGetFloat(VolumeParaName, out float currentVol))
+                    if (_mixer != null && _mixer.Mixer.SafeGetFloat(VolumeParaName, out float currentVol))
                     {
                         _mixerDecibelVolume = currentVol;
                     }
@@ -49,7 +49,7 @@ namespace Ami.BroAudio.Runtime
             private set
             {
                 _mixerDecibelVolume = value.ClampDecibel(true);
-				_audioMixer.SafeSetFloat(VolumeParaName, _mixerDecibelVolume);
+				_mixer?.Mixer.SafeSetFloat(VolumeParaName, _mixerDecibelVolume);
 			}
         }
 

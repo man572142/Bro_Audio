@@ -22,7 +22,7 @@ namespace Ami.BroAudio.Runtime
 			AudioPlayer player = base.Extract();
 			player.gameObject.SetActive(true);
 #if !UNITY_WEBGL
-			player.SetMixerData(_mixer.Mixer, _mixer.GetTrack);
+			player.SetMixerData(_mixer);
 #endif
 			_currentPlayers.Add(player);
 			return player;
@@ -30,8 +30,10 @@ namespace Ami.BroAudio.Runtime
 
 		public override void Recycle(AudioPlayer player)
 		{
-			_mixer.ReturnTrack(player.TrackType,player.AudioTrack);
-			RemoveFromCurrent(player);
+#if !UNITY_WEBGL
+            _mixer.ReturnTrack(player.TrackType, player.AudioTrack); 
+#endif
+            RemoveFromCurrent(player);
             player.gameObject.SetActive(false);
             base.Recycle(player);
         }

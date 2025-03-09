@@ -63,7 +63,11 @@ namespace Ami.BroAudio
         private static BroAudioClip PickRandomClip(this BroAudioClip[] clips, out int index)
         {
             index = 0;
-            int totalWeight = clips.Sum(x => x.Weight);
+            int totalWeight = 0;
+            foreach (var clip in clips)
+            {
+                totalWeight += clip.Weight;
+            }
 
             // No Weight
             if (totalWeight == 0)

@@ -109,7 +109,9 @@ namespace Ami.BroAudio.Runtime
                         yield return null;
                     }
                 }
-                AudioTrack = _getAudioTrack?.Invoke(TrackType);
+#if !UNITY_WEBGL
+                AudioTrack = _mixer.GetTrack(TrackType); 
+#endif
             }
 
             do

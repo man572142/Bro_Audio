@@ -17,8 +17,7 @@ namespace Ami.BroAudio.Runtime
         public event Action<AudioPlayer> OnRecycle;
 
         [SerializeField] private AudioSource AudioSource = null;
-        private AudioMixer _audioMixer;
-        private Func<AudioTrackType, AudioMixerGroup> _getAudioTrack;
+        private IAudioMixer _mixer;
 
         private IBroAudioClip _clip;
         private List<AudioPlayerDecorator> _decorators = null;
@@ -62,7 +61,7 @@ namespace Ami.BroAudio.Runtime
 				{
                     return _sendParaName;
 				}
-                else if(AudioTrack)
+                else if(!string.IsNullOrEmpty(_currTrackName))
 				{
                     return _currTrackName;
                 }
@@ -102,10 +101,9 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        public void SetMixerData(AudioMixer mixer, Func<AudioTrackType, AudioMixerGroup> getAudioTrack)
+        public void SetMixerData(IAudioMixer mixer)
 		{
-            _audioMixer = mixer;
-            _getAudioTrack = getAudioTrack;
+            _mixer = mixer;
 		}
 
 		private void SetSpatial(PlaybackPreference pref)
@@ -187,7 +185,7 @@ namespace Ami.BroAudio.Runtime
 
         public void SetEffect(EffectType effect,SetEffectMode mode)
 		{
-            if((effect == EffectType.None && mode != SetEffectMode.Override) || ID <= 0)
+            if(_mixer == null || ID <= 0 || (effect == EffectType.None && mode != SetEffectMode.Override))
             {
                 return;
             }
@@ -210,7 +208,7 @@ namespace Ami.BroAudio.Runtime
 			{
                 string from = IsUsingEffect ? _currTrackName : _sendParaName;
                 string to = IsUsingEffect ? _sendParaName : _currTrackName;
-                _audioMixer.ChangeChannel(from, to, MixerDecibelVolume);
+                _mixer.Mixer.ChangeChannel(from, to, MixerDecibelVolume);
 			}
 		}
 
@@ -218,7 +216,7 @@ namespace Ami.BroAudio.Runtime
 		{
             if(IsUsingEffect)
             {
-				_audioMixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
+                _mixer?.Mixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
 			}
             CurrentActiveEffects = EffectType.None;
 		}

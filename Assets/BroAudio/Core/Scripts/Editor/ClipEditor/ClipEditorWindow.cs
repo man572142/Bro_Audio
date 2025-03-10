@@ -25,9 +25,9 @@ namespace Ami.BroAudio.Editor
         [SerializeField] private bool _isReverse = false;
         [SerializeField] private bool _isMono = false;
         [SerializeField] private MonoConversionMode _monoMode = MonoConversionMode.Downmixing;
+        [SerializeField] private float _volume = AudioConstant.FullVolume;
         private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper();
-		private SerializedTransport _transport = default;
-		private float _volume = AudioConstant.FullVolume;
+		private SerializedTransport _transport = default;		
 		private bool _isVolumeSnapped = false;
 		private GenericMenu _monoModeMenu = null;
 		private bool _isLoop = false;
@@ -234,7 +234,8 @@ namespace Ami.BroAudio.Editor
         private void DrawVolumeSlider()
 		{
             Rect rect = EditorGUILayout.GetControlRect();
-			_volume = BroEditorUtility.DrawVolumeSlider(rect, new GUIContent("Volume"), _volume, _isVolumeSnapped, () => _isVolumeSnapped = !_isVolumeSnapped);
+            var volProp = _serializedObject.FindProperty(nameof(_volume));
+            volProp.floatValue = BroEditorUtility.DrawVolumeSlider(rect, new GUIContent("Volume"), volProp.floatValue, _isVolumeSnapped, () => _isVolumeSnapped = !_isVolumeSnapped);
 		}
 
 		private void DrawAudioClipObjectField()

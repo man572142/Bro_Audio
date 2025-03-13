@@ -2,6 +2,7 @@ using UnityEngine.Audio;
 using UnityEngine;
 using Ami.Extension;
 using System.Collections.Generic;
+using System;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -10,12 +11,14 @@ namespace Ami.BroAudio.Runtime
 		private Transform _parent = null;
 		private List<AudioPlayer> _currentPlayers = new List<AudioPlayer>();
 		private IAudioMixer _mixer = null;
+        private Action<AudioPlayer> _cachedRecycleDelegate;
 
 		public AudioPlayerObjectPool(AudioPlayer baseObject, Transform parent, int maxInternalPoolSize, IAudioMixer mixer) : base(baseObject, maxInternalPoolSize)
 		{
 			_parent = parent;
 			_mixer = mixer;
-		}
+            _cachedRecycleDelegate = Recycle;
+        }
 
 		public override AudioPlayer Extract()
 		{
@@ -41,13 +44,13 @@ namespace Ami.BroAudio.Runtime
 		protected override AudioPlayer CreateObject()
 		{
 			AudioPlayer newPlayer = GameObject.Instantiate(BaseObject, _parent);
-			newPlayer.OnRecycle += Recycle;
+			newPlayer.OnRecycle += _cachedRecycleDelegate;
 			return newPlayer;
 		}
 
 		protected override void DestroyObject(AudioPlayer player)
 		{
-            player.OnRecycle -= Recycle;
+            player.OnRecycle -= _cachedRecycleDelegate;
             GameObject.Destroy(player.gameObject);
 		}
 

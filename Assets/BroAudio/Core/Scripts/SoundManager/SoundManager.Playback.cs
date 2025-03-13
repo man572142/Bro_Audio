@@ -3,12 +3,14 @@ using UnityEngine;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using static Ami.BroAudio.Utility;
+using System;
 
 namespace Ami.BroAudio.Runtime
 {
     public partial class SoundManager : MonoBehaviour
     {
         private Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
+        private Action<SoundID> _removeFromPreventerDelegate;
 
         #region Play
         public IAudioPlayer Play(SoundID id, IPlayableValidator customValidator = null)
@@ -80,8 +82,9 @@ namespace Ami.BroAudio.Runtime
 
             // Whether there's any group implementing this or not, we're tracking it anyway
             _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
-            player.OnEnd(RemoveFromPreventer);
             _combFilteringPreventer[id] = player;
+            _removeFromPreventerDelegate ??= RemoveFromPreventer;
+            player.OnEnd(_removeFromPreventerDelegate);
 
             if (pref.Entity.SeamlessLoop)
             {

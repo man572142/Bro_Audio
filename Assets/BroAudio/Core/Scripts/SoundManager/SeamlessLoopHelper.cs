@@ -11,18 +11,11 @@ namespace Ami.BroAudio.Runtime
 		{
 			_getPlayerFunc = getPlayerFunc;
 			_playerWrapper = playerWrapper;
-			_playerWrapper.OnRecycle += Recycle;
 		}
-
-        private void Recycle(AudioPlayer player)
-        {
-            _playerWrapper.OnRecycle -= Recycle;
-            player.OnSeamlessLoopReplay -= Replay;
-        }
 
         public void AddReplayListener(AudioPlayer player)
 		{
-			player.OnSeamlessLoopReplay += Replay;
+			player.OnSeamlessLoopReplay = Replay;
 		}
 
 		private void Replay(int id, PlaybackPreference pref, EffectType previousEffect, float trackVolume, float pitch)
@@ -45,7 +38,7 @@ namespace Ami.BroAudio.Runtime
                 newPlayer.SetScheduledEndTime(pref.ScheduledEndTime);
             }
 
-            newPlayer.OnSeamlessLoopReplay += Replay;
+            newPlayer.OnSeamlessLoopReplay = Replay;
 		}
 	}
 }

@@ -18,24 +18,6 @@ namespace Ami.Extension
             }
 		}
 
-        public event Action<T> OnRecycle
-        {
-            add
-            {
-                if(_instance)
-                {
-                    _instance.OnRecycle += value;
-                }
-            }
-            remove
-            {
-                if (_instance)
-                {
-                    _instance.OnRecycle -= value;
-                }
-            }
-        }
-
         protected InstanceWrapper(T instance)
 		{
             _instance = instance;

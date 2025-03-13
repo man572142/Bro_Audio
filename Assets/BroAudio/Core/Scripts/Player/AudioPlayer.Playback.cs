@@ -14,7 +14,7 @@ namespace Ami.BroAudio.Runtime
 
         public static Dictionary<int, AudioPlayer> ResumablePlayers = null;
 
-        public event SeamlessLoopReplay OnSeamlessLoopReplay;
+        public SeamlessLoopReplay OnSeamlessLoopReplay;
         [Obsolete]
         public event Action<SoundID> OnEndPlaying
         {

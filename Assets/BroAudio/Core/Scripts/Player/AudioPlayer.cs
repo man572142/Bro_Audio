@@ -1,10 +1,10 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using static Ami.BroAudio.Tools.BroName;
-using System.Collections.Generic;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -263,11 +263,26 @@ namespace Ami.BroAudio.Runtime
             return onEndDelegates != null;
         }
 
-        internal bool TransferDecorators(out IEnumerable<AudioPlayerDecorator> decorators)
+        internal bool TransferDecorators(out IReadOnlyList<AudioPlayerDecorator> decorators)
         {
             decorators = _decorators;
             _decorators = null;
             return decorators != null;
+        }
+
+        internal void SetDecorators(IReadOnlyList<AudioPlayerDecorator> decorators)
+        {
+            _decorators = decorators as List<AudioPlayerDecorator>;
+        }
+
+        internal bool TryGetDecorator<T>(out T decorator) where T : AudioPlayerDecorator
+        {
+            decorator = null;
+            if (_decorators != null)
+            {
+                return _decorators.TryGetDecorator<T>(out decorator);
+            }
+            return false;
         }
 
         private bool HasDecoratorOf<T>() where T : AudioPlayerDecorator

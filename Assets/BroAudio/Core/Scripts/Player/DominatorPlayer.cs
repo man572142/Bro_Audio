@@ -3,8 +3,8 @@ using static UnityEngine.Debug;
 
 namespace Ami.BroAudio.Runtime
 {
-	public class DominatorPlayer : AudioPlayerDecorator, IPlayerEffect
-	{
+    public class DominatorPlayer : AudioPlayerDecorator, IPlayerEffect
+    {
         public DominatorPlayer(AudioPlayer instance) : base(instance)
         {
         }

@@ -38,7 +38,7 @@ namespace Ami.BroAudio.Runtime
             {
                 if(_mixerDecibelVolume == UnSetMixerDecibelVolume)
                 {
-                    if (_mixer != null && _mixer.Mixer.SafeGetFloat(VolumeParaName, out float currentVol))
+                    if (Mixer.AudioMixer.SafeGetFloat(VolumeParaName, out float currentVol))
                     {
                         _mixerDecibelVolume = currentVol;
                     }
@@ -49,7 +49,7 @@ namespace Ami.BroAudio.Runtime
             private set
             {
                 _mixerDecibelVolume = value.ClampDecibel(true);
-				_mixer?.Mixer.SafeSetFloat(VolumeParaName, _mixerDecibelVolume);
+                Mixer.AudioMixer.SafeSetFloat(VolumeParaName, _mixerDecibelVolume);
 			}
         }
 

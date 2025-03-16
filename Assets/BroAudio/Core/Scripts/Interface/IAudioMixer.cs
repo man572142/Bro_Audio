@@ -4,8 +4,9 @@ namespace Ami.BroAudio.Runtime
 {
 	public interface IAudioMixer
 	{
-        AudioMixer Mixer { get; }
+        AudioMixer AudioMixer { get; }
         internal AudioMixerGroup GetTrack(AudioTrackType trackType);
 		internal void ReturnTrack(AudioTrackType trackType, AudioMixerGroup track);
+        internal void ReturnPlayer(AudioPlayer player);
     }
 }

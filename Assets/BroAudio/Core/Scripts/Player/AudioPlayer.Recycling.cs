@@ -4,17 +4,32 @@ using Ami.Extension;
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
-	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
+    public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
-        private void Recycle()
+        private InstanceWrapper<AudioPlayer> _instanceWrapper;
+
+        internal void SetInstanceWrapper(InstanceWrapper<AudioPlayer> instance)
+        {
+            _instanceWrapper = instance;
+        }
+
+        public void Recycle()
         {
             ResetAudioSource();
             DestroyAudioFilterReader();
 
-            _onUpdate = null;
-            OnRecycle?.Invoke(this);
-
             TrackType = AudioTrackType.Generic;
+            _onUpdate = null;
+#if !UNITY_WEBGL
+            Mixer.ReturnTrack(TrackType, AudioTrack);
+#endif
+            Mixer.ReturnPlayer(this);
+            if (OnSeamlessLoopReplay == null)
+            {
+                _instanceWrapper.Recycle();
+            }
+            _instanceWrapper = null;
+            OnSeamlessLoopReplay = null;
             AudioTrack = null;
             _decorators = null;
         }

@@ -96,12 +96,12 @@ namespace Ami.BroAudio.Editor
         private void RemoveDuckVolume()
         {
             GameObject managerObj = Resources.Load(nameof(SoundManager)) as GameObject;
-            if(managerObj && managerObj.TryGetComponent<SoundManager>(out var soundManager) && soundManager.Mixer)
+            if(managerObj && managerObj.TryGetComponent<SoundManager>(out var soundManager) && soundManager.AudioMixer)
             {
-                AudioMixerGroup masterGroup = soundManager.Mixer.FindMatchingGroups(MasterTrackName)?.FirstOrDefault();
+                AudioMixerGroup masterGroup = soundManager.AudioMixer.FindMatchingGroups(MasterTrackName)?.FirstOrDefault();
                 if(masterGroup)
                 {
-                    BroAudioReflection.RemoveAudioEffect(soundManager.Mixer, BroAudioReflection.DuckVolumeEffect, masterGroup);
+                    BroAudioReflection.RemoveAudioEffect(soundManager.AudioMixer, BroAudioReflection.DuckVolumeEffect, masterGroup);
                 }
             }
             else

@@ -1,5 +1,4 @@
 using System;
-using Ami.Extension;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -31,13 +30,13 @@ namespace Ami.BroAudio.Runtime
 		{
         }
 
-		protected override void Recycle (AudioPlayer player)
+		public override void Recycle ()
 		{
             if(CurrentPlayer == Instance)
             {
                 CurrentPlayer = null;
             }
-			base.Recycle(player);
+			base.Recycle();
 			_transition = default;
 			_stopMode = default;
 			_overrideFade = AudioPlayer.UseEntitySetting;

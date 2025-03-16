@@ -30,6 +30,7 @@ namespace Ami.BroAudio
             if (SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)
             {
                 Debug.LogWarning(Utility.LogTitle + "Invalid operation. The audio player you're accessing has finished playing and has been recycled.");
+                Debug.Break();
             }
         }
 
@@ -122,6 +123,7 @@ namespace Ami.BroAudio
                 }
             }
             
+            // TODO: eliminate the decorators
             if(Instance.TransferDecorators(out var decorators))
             {
                 _decorators ??= new List<AudioPlayerDecorator>();

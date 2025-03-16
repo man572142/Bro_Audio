@@ -9,26 +9,23 @@ using System.Collections.Generic;
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource)), AddComponentMenu("")]
-	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
+    public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
         public const float UseEntitySetting = -1f;
         public const float Immediate = 0f;
 
-        public event Action<AudioPlayer> OnRecycle;
-
         [SerializeField] private AudioSource AudioSource = null;
-        private IAudioMixer _mixer;
 
         private IBroAudioClip _clip;
         private List<AudioPlayerDecorator> _decorators = null;
         private string _sendParaName = string.Empty;
-		private string _currTrackName = string.Empty;
+        private string _currTrackName = string.Empty;
         //private string _pitchParaName = string.Empty;
 
         private AudioSourceProxy _proxy = null;
         private AudioFilterReader _audioFilterReader = null;
 
-		public SoundID ID { get; private set; } = -1;
+        public SoundID ID { get; private set; } = -1;
 
         public bool IsActive => ID > 0;
         public bool IsPlaying => AudioSource.isPlaying;
@@ -36,8 +33,8 @@ namespace Ami.BroAudio.Runtime
         public bool IsFadingOut { get; private set; }
         public EffectType CurrentActiveEffects { get; private set; } = EffectType.None;
         public bool IsUsingEffect => CurrentActiveEffects != EffectType.None;
-		public bool IsDominator => HasDecoratorOf<DominatorPlayer>();
-		public bool IsBGM => HasDecoratorOf<MusicPlayer>();
+        public bool IsDominator => HasDecoratorOf<DominatorPlayer>();
+        public bool IsBGM => HasDecoratorOf<MusicPlayer>();
         public IBroAudioClip CurrentPlayingClip => _clip;
         IAudioSourceProxy IAudioPlayer.AudioSource
         {
@@ -53,38 +50,42 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-		public string VolumeParaName 
+        public string VolumeParaName 
         {
             get
-			{
+            {
                 if (IsUsingEffect)
-				{
+                {
                     return _sendParaName;
-				}
+                }
                 else if(!string.IsNullOrEmpty(_currTrackName))
-				{
+                {
                     return _currTrackName;
                 }
                 return string.Empty;
-			}
+            }
         }
 
-        public AudioTrackType TrackType { get; private set; } = AudioTrackType.Generic;
-        public AudioMixerGroup AudioTrack 
+        private AudioTrackType TrackType { get; set; } = AudioTrackType.Generic;
+        private AudioMixerGroup AudioTrack 
         {
             get => AudioSource.outputAudioMixerGroup;
-            private set
-			{
+            set
+            {
                 AudioSource.outputAudioMixerGroup = value;
                 _currTrackName = value == null? string.Empty : value.name;
                 _sendParaName = value == null ? string.Empty : _currTrackName + EffectParaNameSuffix;
-				//_pitchParaName = value == null ? string.Empty : _currTrackName + PitchParaNameSuffix;
-			}
-		}
+                //_pitchParaName = value == null ? string.Empty : _currTrackName + PitchParaNameSuffix;
+            }
+        }
+
+        IAudioMixer Mixer => SoundManager.Instance;
 
         protected virtual void Awake()
         {
-            AudioSource ??= GetComponent<AudioSource>();
+# pragma warning disable UNT0023
+            AudioSource ??= GetComponent<AudioSource>(); 
+# pragma warning restore UNT0023
             InitVolumeModule();
         }
 
@@ -101,46 +102,41 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        public void SetMixerData(IAudioMixer mixer)
-		{
-            _mixer = mixer;
-		}
+        private void SetSpatial(PlaybackPreference pref)
+        {
+            SpatialSetting setting = pref.Entity.SpatialSetting;
+            SetSpatialBlend();
 
-		private void SetSpatial(PlaybackPreference pref)
-		{
-			SpatialSetting setting = pref.Entity.SpatialSetting;
-			SetSpatialBlend();
+            if (setting == null)
+            {
+                return;
+            }
 
-			if (setting == null)
-			{
-				return;
-			}
+            AudioSource.panStereo = setting.StereoPan;
+            AudioSource.dopplerLevel = setting.DopplerLevel;
+            AudioSource.minDistance = setting.MinDistance;
+            AudioSource.maxDistance = setting.MaxDistance;
 
-			AudioSource.panStereo = setting.StereoPan;
-			AudioSource.dopplerLevel = setting.DopplerLevel;
-			AudioSource.minDistance = setting.MinDistance;
-			AudioSource.maxDistance = setting.MaxDistance;
+            AudioSource.SetCustomCurveOrResetDefault(setting.ReverbZoneMix, AudioSourceCurveType.ReverbZoneMix);
+            AudioSource.SetCustomCurveOrResetDefault(setting.Spread, AudioSourceCurveType.Spread);
 
-			AudioSource.SetCustomCurveOrResetDefault(setting.ReverbZoneMix, AudioSourceCurveType.ReverbZoneMix);
-			AudioSource.SetCustomCurveOrResetDefault(setting.Spread, AudioSourceCurveType.Spread);
+            AudioSource.rolloffMode = setting.RolloffMode;
+            if (setting.RolloffMode == AudioRolloffMode.Custom)
+            {
+                AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, setting.CustomRolloff);
+            }
 
-			AudioSource.rolloffMode = setting.RolloffMode;
-			if (setting.RolloffMode == AudioRolloffMode.Custom)
-			{
-				AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, setting.CustomRolloff);
-			}
-
-			void SetSpatialBlend()
-			{
-				if (pref.HasFollowTarget(out _))
-				{
-					SetTo3D();
-				}
-				else if (pref.HasPosition(out var position))
-				{
-					transform.position = position;
-					SetTo3D();
-				}
+            void SetSpatialBlend()
+            {
+                if (pref.HasFollowTarget(out _))
+                {
+                    SetTo3D();
+                }
+                else if (pref.HasPosition(out var position))
+                {
+                    transform.position = position;
+                    SetTo3D();
+                }
                 // The log is unnecessary and may cause misunderstandings, as the Play method already provides clear summaries.
                 //else if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D) && pref.Entity is IEntityIdentity entity)
                 //{
@@ -149,21 +145,21 @@ namespace Ami.BroAudio.Runtime
             }
 
             void SetTo3D()
-			{
-				if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D))
-				{
-					// Don't use SetCustomCurveOrResetDefault, it will set to 2D if isDefaultCurve.
-					AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, setting.SpatialBlend);
-				}
-				else
-				{
-					// force to 3D if it's played with a position or a follow target, even if it has no custom curve. 
-					AudioSource.spatialBlend = AudioConstant.SpatialBlend_3D;
-				}
-			}
-		}
+            {
+                if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D))
+                {
+                    // Don't use SetCustomCurveOrResetDefault, it will set to 2D if isDefaultCurve.
+                    AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, setting.SpatialBlend);
+                }
+                else
+                {
+                    // force to 3D if it's played with a position or a follow target, even if it has no custom curve. 
+                    AudioSource.spatialBlend = AudioConstant.SpatialBlend_3D;
+                }
+            }
+        }
 
-		private void ResetSpatial()
+        private void ResetSpatial()
         {
             AudioSource.spatialBlend = AudioConstant.SpatialBlend_2D;
             transform.position = Vector3.zero;
@@ -184,44 +180,44 @@ namespace Ami.BroAudio.Runtime
         }
 
         public void SetEffect(EffectType effect,SetEffectMode mode)
-		{
-            if(_mixer == null || ID <= 0 || (effect == EffectType.None && mode != SetEffectMode.Override))
+        {
+            if(ID <= 0 || (effect == EffectType.None && mode != SetEffectMode.Override))
             {
                 return;
             }
 
-			bool oldUsingEffectState = IsUsingEffect;
-			switch (mode)
-			{
-				case SetEffectMode.Add:
+            bool oldUsingEffectState = IsUsingEffect;
+            switch (mode)
+            {
+                case SetEffectMode.Add:
                     CurrentActiveEffects |= effect;
                     break;
-				case SetEffectMode.Remove:
+                case SetEffectMode.Remove:
                     CurrentActiveEffects &= ~effect;
                     break;
-				case SetEffectMode.Override:
+                case SetEffectMode.Override:
                     CurrentActiveEffects = effect;
                     break;
-			}
-			bool newUsingEffectState = IsUsingEffect;
-			if (oldUsingEffectState != newUsingEffectState)
-			{
+            }
+            bool newUsingEffectState = IsUsingEffect;
+            if (oldUsingEffectState != newUsingEffectState)
+            {
                 string from = IsUsingEffect ? _currTrackName : _sendParaName;
                 string to = IsUsingEffect ? _sendParaName : _currTrackName;
-                _mixer.Mixer.ChangeChannel(from, to, MixerDecibelVolume);
-			}
-		}
+                Mixer.AudioMixer.ChangeChannel(from, to, MixerDecibelVolume);
+            }
+        }
 
-		private void ResetEffect()
-		{
+        private void ResetEffect()
+        {
             if(IsUsingEffect)
             {
-                _mixer?.Mixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
-			}
+                Mixer.AudioMixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
+            }
             CurrentActiveEffects = EffectType.None;
-		}
+        }
 
-		IMusicPlayer IMusicDecoratable.AsBGM()
+        IMusicPlayer IMusicDecoratable.AsBGM()
         {
             return Utility.GetOrCreateDecorator(ref _decorators, () => new MusicPlayer(this));
         }

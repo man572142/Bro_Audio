@@ -1,5 +1,4 @@
 using System;
-using Ami.Extension;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -25,20 +24,19 @@ namespace Ami.BroAudio.Runtime
 		private StopMode _stopMode = default;
 		private float _overrideFade = AudioPlayer.UseEntitySetting;
 
-		public bool IsPlayingVirtually => IsActive && Instance?.MixerDecibelVolume <= AudioConstant.MinDecibelVolume;
 		public bool IsWaitingForTransition { get; private set; }
 
 		public MusicPlayer(AudioPlayer audioPlayer) : base(audioPlayer)
 		{
         }
 
-		protected override void Recycle (AudioPlayer player)
+		public override void Recycle ()
 		{
             if(CurrentPlayer == Instance)
             {
                 CurrentPlayer = null;
             }
-			base.Recycle(player);
+			base.Recycle();
 			_transition = default;
 			_stopMode = default;
 			_overrideFade = AudioPlayer.UseEntitySetting;

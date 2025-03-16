@@ -9,6 +9,7 @@ namespace Ami.BroAudio.Runtime
     public partial class SoundManager : MonoBehaviour
     {
         private Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
+        private AudioPlayer.SeamlessLoopReplay _seamlessLoopReplayDelegate;
 
         #region Play
         public IAudioPlayer Play(SoundID id, IPlayableValidator customValidator = null)
@@ -68,10 +69,11 @@ namespace Ami.BroAudio.Runtime
         private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref)
         {
             BroAudioType audioType = GetAudioType(id);
+            var wrapper = new AudioPlayerInstanceWrapper(player);
+            player.SetInstanceWrapper(wrapper);
             player.SetPlaybackData(id, pref);
 
             _playbackQueue.Enqueue(player);
-            var wrapper = new AudioPlayerInstanceWrapper(player);
 
             if (Setting.AlwaysPlayMusicAsBGM && audioType == BroAudioType.Music)
             {
@@ -80,23 +82,48 @@ namespace Ami.BroAudio.Runtime
 
             // Whether there's any group implementing this or not, we're tracking it anyway
             _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
-            player.OnEnd(RemoveFromPreventer);
             _combFilteringPreventer[id] = player;
 
             if (pref.Entity.SeamlessLoop)
             {
-                var seamlessLoopHelper = new SeamlessLoopHelper(wrapper, GetNewAudioPlayer);
-                seamlessLoopHelper.AddReplayListener(player);
+                _seamlessLoopReplayDelegate ??= Replay;
+                player.OnSeamlessLoopReplay = _seamlessLoopReplayDelegate;
             }
 
             return wrapper;
         }
 
-        private void RemoveFromPreventer(SoundID id)
+        private void Replay(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType previousEffect, float trackVolume, float pitch)
         {
-            if(_combFilteringPreventer != null)
+            var newPlayer = _audioPlayerPool.Extract();
+            wrapper.UpdateInstance(newPlayer);
+            newPlayer.SetInstanceWrapper(wrapper);
+
+#if !UNITY_WEBGL
+            newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
+#endif
+            newPlayer.SetVolume(trackVolume);
+            newPlayer.SetPitch(pitch);
+            newPlayer.SetPlaybackData(id, pref);
+            newPlayer.Play();
+            if (pref.ScheduledEndTime > 0d)
             {
-                _combFilteringPreventer.Remove(id);
+                newPlayer.SetScheduledEndTime(pref.ScheduledEndTime);
+            }
+
+            newPlayer.OnSeamlessLoopReplay = Replay;
+        }
+
+        private void RemoveFromPreventer(AudioPlayer target)
+        {
+            if(!target.IsActive)
+            {
+                throw new System.InvalidOperationException("Invalid target player");
+            }
+
+            if(_combFilteringPreventer.TryGetValue(target.ID, out var player) && player == target)
+            {
+                _combFilteringPreventer.Remove(target.ID);
             }
         }
 
@@ -122,15 +149,15 @@ namespace Ami.BroAudio.Runtime
 
         public void Stop(int id,float fadeTime)
         {
-            StopPlayer(fadeTime, id);
+            StopPlayer<int>(fadeTime, id);
         }
 
         public void Stop(BroAudioType targetType,float fadeTime)
         {
-            StopPlayer(fadeTime, targetType.ConvertEverythingFlag());
+            StopPlayer<BroAudioType>(fadeTime, (int)targetType.ConvertEverythingFlag());
         }            
 
-        private void StopPlayer<TParameter>(float fadeTime, TParameter parameter)
+        private void StopPlayer<T>(float fadeTime, int identity)
         {
             var players = GetCurrentAudioPlayers();
             for (int i = players.Count - 1; i >= 0; i--)
@@ -141,8 +168,9 @@ namespace Ami.BroAudio.Runtime
                     continue;
                 }
 
-                bool isIdAndMatch = parameter is int id && player.ID == id;
-                bool isAudioTypeAndMatch = parameter is BroAudioType audioType && audioType.Contains(player.ID.ToAudioType());
+                System.Type type = typeof(T);
+                bool isIdAndMatch = type == typeof(int) && player.ID == identity;
+                bool isAudioTypeAndMatch = type == typeof(BroAudioType) && ((BroAudioType)identity).Contains(player.ID.ToAudioType());
                 if (isIdAndMatch || isAudioTypeAndMatch)
                 {
                     player.Stop(fadeTime);

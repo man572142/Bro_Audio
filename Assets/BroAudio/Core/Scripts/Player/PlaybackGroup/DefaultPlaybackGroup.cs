@@ -44,6 +44,7 @@ namespace Ami.BroAudio
         #endregion
 
         private int _currentPlayingCount;
+        private Action<SoundID> _decreasePlayingCountDelegate;
 
         /// <inheritdoc cref="PlaybackGroup.InitializeRules"/>
         protected override IEnumerable<IRule> InitializeRules()
@@ -59,7 +60,8 @@ namespace Ami.BroAudio
         public override void OnGetPlayer(IAudioPlayer player)
         {
             _currentPlayingCount++;
-            player.OnEnd(_ => _currentPlayingCount--);
+            _decreasePlayingCountDelegate ??= _ => _currentPlayingCount--;
+            player.OnEnd(_decreasePlayingCountDelegate);
         }
 
         #region Rule Methods

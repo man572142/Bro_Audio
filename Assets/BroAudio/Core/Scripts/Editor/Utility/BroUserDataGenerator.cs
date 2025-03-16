@@ -33,7 +33,7 @@ namespace Ami.BroAudio.Editor
                     if(TryGetCoreData(out var currentCoreData))
                     {
                         soundManager.AssignCoreData(currentCoreData);
-                        BroUpdater.Process(soundManager.Mixer, currentCoreData);
+                        BroUpdater.Process(soundManager.AudioMixer, currentCoreData);
                     }
                     else
                     {

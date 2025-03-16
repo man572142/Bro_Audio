@@ -4,10 +4,9 @@ namespace Ami.BroAudio.Runtime
 {
 	public interface IAudioMixer
 	{
-#if !UNITY_WEBGL
-        AudioMixer Mixer { get; }
-#endif
+        AudioMixer AudioMixer { get; }
         internal AudioMixerGroup GetTrack(AudioTrackType trackType);
 		internal void ReturnTrack(AudioTrackType trackType, AudioMixerGroup track);
+        internal void ReturnPlayer(AudioPlayer player);
     }
 }

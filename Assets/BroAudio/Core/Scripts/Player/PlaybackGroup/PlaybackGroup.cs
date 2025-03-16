@@ -23,6 +23,11 @@ namespace Ami.BroAudio
             get
             {
                 var globalPlaybackGroup = SoundManager.Instance.Setting.GlobalPlaybackGroup;
+                if (this == globalPlaybackGroup)
+                {
+                    return null;
+                }
+
                 if (!_parent && _parent != globalPlaybackGroup)
                 {
                     _parent = globalPlaybackGroup;

@@ -11,6 +11,7 @@ namespace Ami.BroAudio.Runtime
     {
         private Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
         private Action<SoundID> _removeFromPreventerDelegate;
+        private AudioPlayer.SeamlessLoopReplay _seamlessLoopReplayDelegate;
 
         #region Play
         public IAudioPlayer Play(SoundID id, IPlayableValidator customValidator = null)
@@ -70,10 +71,11 @@ namespace Ami.BroAudio.Runtime
         private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref)
         {
             BroAudioType audioType = GetAudioType(id);
+            var wrapper = new AudioPlayerInstanceWrapper(player);
+            player.SetInstanceWrapper(wrapper);
             player.SetPlaybackData(id, pref);
 
             _playbackQueue.Enqueue(player);
-            var wrapper = new AudioPlayerInstanceWrapper(player);
 
             if (Setting.AlwaysPlayMusicAsBGM && audioType == BroAudioType.Music)
             {
@@ -83,16 +85,38 @@ namespace Ami.BroAudio.Runtime
             // Whether there's any group implementing this or not, we're tracking it anyway
             _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
             _combFilteringPreventer[id] = player;
+            // TODO: kill this
             _removeFromPreventerDelegate ??= RemoveFromPreventer;
             player.OnEnd(_removeFromPreventerDelegate);
 
             if (pref.Entity.SeamlessLoop)
             {
-                var seamlessLoopHelper = new SeamlessLoopHelper(wrapper, GetNewAudioPlayer);
-                seamlessLoopHelper.AddReplayListener(player);
+                _seamlessLoopReplayDelegate ??= Replay;
+                player.OnSeamlessLoopReplay = _seamlessLoopReplayDelegate;
             }
 
             return wrapper;
+        }
+
+        private void Replay(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType previousEffect, float trackVolume, float pitch)
+        {
+            var newPlayer = _audioPlayerPool.Extract();
+            wrapper.UpdateInstance(newPlayer);
+            newPlayer.SetInstanceWrapper(wrapper);
+
+#if !UNITY_WEBGL
+            newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
+#endif
+            newPlayer.SetVolume(trackVolume);
+            newPlayer.SetPitch(pitch);
+            newPlayer.SetPlaybackData(id, pref);
+            newPlayer.Play();
+            if (pref.ScheduledEndTime > 0d)
+            {
+                newPlayer.SetScheduledEndTime(pref.ScheduledEndTime);
+            }
+
+            newPlayer.OnSeamlessLoopReplay = Replay;
         }
 
         private void RemoveFromPreventer(SoundID id)

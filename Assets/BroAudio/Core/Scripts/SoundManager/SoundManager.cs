@@ -75,7 +75,7 @@ namespace Ami.BroAudio.Runtime
         public float WebGLMasterVolume { get; private set; } = AudioConstant.FullVolume;
 #endif
 
-        public AudioMixer Mixer => _broAudioMixer;
+        public AudioMixer AudioMixer => _broAudioMixer;
         public IReadOnlyDictionary<SoundID, AudioPlayer> CombFilteringPreventer => _combFilteringPreventer;
 
         private void Awake()
@@ -92,7 +92,7 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab, transform, Setting.DefaultAudioPlayerPoolSize, this);
+            _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab, transform, Setting.DefaultAudioPlayerPoolSize);
             AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups(GenericTrackName);
             AudioMixerGroup[] dominatorGroups = _broAudioMixer.FindMatchingGroups(DominatorTrackName);
             
@@ -356,6 +356,11 @@ namespace Ami.BroAudio.Runtime
         }
 
         #region Audio Player
+        void IAudioMixer.ReturnPlayer(AudioPlayer player)
+        {
+            _audioPlayerPool.Recycle(player);
+        }
+
         private IReadOnlyList<AudioPlayer> GetCurrentAudioPlayers()
         {
             return _audioPlayerPool.GetCurrentAudioPlayers();
@@ -363,27 +368,12 @@ namespace Ami.BroAudio.Runtime
 
         private bool TryGetAvailablePlayer(int id, out AudioPlayer audioPlayer)
         {
-            audioPlayer = null;
             if (AudioPlayer.ResumablePlayers == null || !AudioPlayer.ResumablePlayers.TryGetValue(id, out audioPlayer))
             {
-                if (TryGetNewAudioPlayer(out AudioPlayer newPlayer))
-                {
-                    audioPlayer = newPlayer;
-                }
+                audioPlayer = _audioPlayerPool.Extract();
             }
             return audioPlayer != null;
         }
-
-        private bool TryGetNewAudioPlayer(out AudioPlayer player)
-        {
-            player = _audioPlayerPool.Extract();
-            return player != null;
-        }
-
-        private AudioPlayer GetNewAudioPlayer()
-        {
-            return _audioPlayerPool.Extract();
-        } 
         #endregion
     }
 }

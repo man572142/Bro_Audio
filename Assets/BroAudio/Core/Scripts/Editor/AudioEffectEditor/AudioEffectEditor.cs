@@ -31,9 +31,9 @@ namespace Ami.BroAudio.Editor
 		private void OnEnable()
 		{
 			SoundManager manager = Resources.Load<SoundManager>(nameof(SoundManager));
-			if(manager && manager.Mixer)
+			if(manager && manager.AudioMixer)
 			{
-				_mixer = manager.Mixer;
+				_mixer = manager.AudioMixer;
 				var effectTrack = _mixer.FindMatchingGroups(EffectTrackName).FirstOrDefault();
 				if(effectTrack)
 				{

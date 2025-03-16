@@ -381,7 +381,7 @@ namespace Ami.BroAudio.Runtime
             _pref = default;
             ResetVolume();
             ResetPitch();
-
+            
             AudioSource.Stop();
             AudioSource.clip = null;
             _clip = null;
@@ -396,7 +396,6 @@ namespace Ami.BroAudio.Runtime
             _onEnd?.Invoke(ID);
             _onEnd = null;
 
-            ID = -1;
             Recycle();
         }
 

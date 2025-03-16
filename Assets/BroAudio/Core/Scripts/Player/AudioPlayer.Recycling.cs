@@ -32,6 +32,7 @@ namespace Ami.BroAudio.Runtime
             OnSeamlessLoopReplay = null;
             AudioTrack = null;
             _decorators = null;
+            ID = -1;
         }
 
         private void ResetAudioSource()

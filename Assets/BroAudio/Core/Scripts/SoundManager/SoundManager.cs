@@ -358,6 +358,7 @@ namespace Ami.BroAudio.Runtime
         #region Audio Player
         void IAudioMixer.ReturnPlayer(AudioPlayer player)
         {
+            RemoveFromPreventer(player);
             _audioPlayerPool.Recycle(player);
         }
 

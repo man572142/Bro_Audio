@@ -13,25 +13,41 @@ namespace Ami.BroAudio.Runtime
             _instanceWrapper = instance;
         }
 
+        internal IAudioPlayer GetInstanceWrapper()
+        {
+            return _instanceWrapper as IAudioPlayer;
+        }
+
         public void Recycle()
         {
             ResetAudioSource();
             DestroyAudioFilterReader();
-
-            TrackType = AudioTrackType.Generic;
             _onUpdate = null;
 #if !UNITY_WEBGL
             Mixer.ReturnTrack(TrackType, AudioTrack);
+            TrackType = AudioTrackType.Generic;
 #endif
+
             Mixer.ReturnPlayer(this);
+
+            if(_decorators != null)
+            {
+                foreach(var decorator in _decorators)
+                {
+                    decorator.Recycle();
+                }
+            }
+            _decorators = null;
+
             if (OnSeamlessLoopReplay == null)
             {
                 _instanceWrapper.Recycle();
             }
             _instanceWrapper = null;
+
             OnSeamlessLoopReplay = null;
             AudioTrack = null;
-            _decorators = null;
+
             ID = -1;
         }
 

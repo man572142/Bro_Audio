@@ -229,15 +229,18 @@ namespace Ami.BroAudio.Runtime
             {
                 yield break;
             }
-            var values = AnimationExtension.GetLerpValuesPerFrame(from, to, fadeTime, ease);
-            string secondaryParaName = hasSecondaryParameter ? paraName + "2" : null;
 
-            foreach (float value in values)
+            string secondaryParaName = hasSecondaryParameter ? paraName + "2" : null;
+            float currentTime = 0f;
+            while (currentTime < fadeTime)
             {
+                currentTime += Utility.GetDeltaTime();
+                float value = Mathf.Lerp(from, to, (currentTime / fadeTime).SetEase(ease));
                 _mixer.SafeSetFloat(paraName, value);
                 _mixer.SafeSetFloat(secondaryParaName, value);
                 yield return null;
             }
+
             _mixer.SafeSetFloat(paraName, to);
             _mixer.SafeSetFloat(secondaryParaName, to);
             onTweakingFinshed?.Invoke();

@@ -52,10 +52,6 @@ MonoBehaviour:
   - Key: 16
     Value: The attenuation per octave that the HighPass/LowPass Filter applies to.
       The higher value it set, the more frequencies are attenuated by the filter.
-  - Key: 20
-    Value: 'Copyright 2022-2024 CheHsiang Weng (Ami).
-
-      All rights reserved.'
   - Key: 30
     Value: Changes will be saved to the file permanently, and they cannot be undone.
       Would you like to proceed?
@@ -164,3 +160,6 @@ MonoBehaviour:
       When enabled, playback will be verified using
       the value of this group; otherwise, the Default Playback Group''s value will
       be used'
+  - Key: 19
+    Value: Determines whether audio changes, such as volume adjustments, pitch shifts,
+      fade-in/out, etc., are affected by Time.timeScale

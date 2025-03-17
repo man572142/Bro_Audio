@@ -33,6 +33,16 @@ namespace Ami.BroAudio
             return audioType;
         }
 
+        public static float GetDeltaTime()
+        {
+            var updateMode = SoundManager.Instance.Setting.UpdateMode;
+            if(updateMode == UnityEngine.Audio.AudioMixerUpdateMode.UnscaledTime)
+            {
+                return Time.unscaledDeltaTime;
+            }
+            return Time.deltaTime;
+        }
+
         public static int GetSample(int sampleRate, float seconds)
         {
             return (int)(sampleRate * seconds);

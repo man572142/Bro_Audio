@@ -76,7 +76,7 @@ namespace Ami.BroAudio.Runtime
             while (_timeBeforeStartSchedule > 0)
             {
                 yield return null;
-                _timeBeforeStartSchedule -= Time.deltaTime;
+                _timeBeforeStartSchedule -= Utility.GetDeltaTime();
             }
         }
 

@@ -90,8 +90,7 @@ namespace Ami.BroAudio
         }
 
         private void UpdateSpectrum()
-        {
-            float deltaTime = Time.deltaTime;
+        {          
             for (int i = 0; i < _bands.Length;i++)
             {
                 float minFreq = i > 0 ? _bands[i - 1].Frequency : AudioConstant.MinFrequency;
@@ -112,6 +111,7 @@ namespace Ami.BroAudio
                     changeDegree = MaxVolumeChange * sign;
                 }
 
+                float deltaTime = Utility.GetDeltaTime();
                 float change = changeTime > 0 ? deltaTime * 1000 * (changeDegree / changeTime) : float.MaxValue;
 
                 if ((diff * sign) <= change)

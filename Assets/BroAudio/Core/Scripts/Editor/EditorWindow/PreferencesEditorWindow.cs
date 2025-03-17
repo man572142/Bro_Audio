@@ -41,7 +41,8 @@ namespace Ami.BroAudio.Editor.Setting
         private readonly float[] _tabLabelRatios = new float[] { 0.33f,0.33f,0.34f};
 
         private GUIContent _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
-            ,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent,_dominatorTrackGUIContent, _regenerateUserDataGUIContent, _globalGroupGUIContent;
+            ,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent,_dominatorTrackGUIContent, _regenerateUserDataGUIContent
+            ,_globalGroupGUIContent, _updateModeGUIContent;
 
 #if PACKAGE_ADDRESSABLES
         private GUIContent _addressableConversionGUIContent, _directToAddressableGUIContent, _addressableToDirectGUIContent; 
@@ -126,6 +127,7 @@ namespace Ami.BroAudio.Editor.Setting
             _poolSizeCountGUIContent = new GUIContent("Audio Player Object Pool Size", _instruction.GetText(Instruction.AudioPlayerPoolSize));
             _dominatorTrackGUIContent = new GUIContent("Add Dominator Track", _instruction.GetText(Instruction.AddDominatorTrack));
             _regenerateUserDataGUIContent = new GUIContent("Regenerate User Data", _instruction.GetText(Instruction.RegenerateUserData));
+            _updateModeGUIContent = new GUIContent("Update Mode", _instruction.GetText(Instruction.UpdateMode));
 
 #if PACKAGE_ADDRESSABLES
             string aaTooltip = _instruction.GetText(Instruction.LibraryManager_AddressableConversionTooltip);
@@ -220,6 +222,7 @@ namespace Ami.BroAudio.Editor.Setting
             drawPosition.width -= Gap;
             DrawGlobalPlaybackGroup();
             DrawAudioFilterSlope();
+            DrawUpdateMode();
             DrawEmptyLine(1);
             DrawBGMSetting();
             // To make a room for other functions to use exposed parameters, we only use AudioSource.pitch for now
@@ -297,6 +300,12 @@ namespace Ami.BroAudio.Editor.Setting
             {
                 var filterSlopeProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.AudioFilterSlope));
                 filterSlopeProp.enumValueIndex = (int)(FilterSlope)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), _filterSlopeGUIContent, (FilterSlope)filterSlopeProp.enumValueIndex);
+            }
+
+            void DrawUpdateMode()
+            {
+                var updateModeProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.UpdateMode));
+                updateModeProp.enumValueIndex = (int)(AudioMixerUpdateMode)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), _updateModeGUIContent, (AudioMixerUpdateMode)updateModeProp.enumValueIndex);
             }
 
             void DrawAudioPlayerSetting()

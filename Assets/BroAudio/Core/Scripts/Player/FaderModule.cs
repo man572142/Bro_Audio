@@ -11,6 +11,7 @@ namespace Ami.BroAudio.Runtime
     public class Fader
     {
         private float _origin;
+        // TODO: use interface instead
         private Action _onUpdate;
         private Coroutine _coroutine;
 
@@ -58,7 +59,7 @@ namespace Ami.BroAudio.Runtime
                 Current = Mathf.Lerp(_origin, Target, (elapsedTime / fadeTime).SetEase(ease));
                 _onUpdate?.Invoke();
 
-                elapsedTime += Time.deltaTime;
+                elapsedTime += Utility.GetDeltaTime();
                 return true;
             }
 

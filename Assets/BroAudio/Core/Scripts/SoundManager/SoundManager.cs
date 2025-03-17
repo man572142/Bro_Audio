@@ -8,7 +8,6 @@ using System;
 using static Ami.BroAudio.Utility;
 using static Ami.Extension.CoroutineExtension;
 using static Ami.BroAudio.Tools.BroName;
-using static Ami.Extension.AnimationExtension;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -203,25 +202,27 @@ namespace Ami.BroAudio.Runtime
 
                 if(fadeTime != 0f)
                 {
-                    this.StartCoroutineAndReassign(SetMasterVolume(currentVol, targetVol, fadeTime, OnSetMasterVolume), ref _masterVolumeCoroutine);
+                    this.StartCoroutineAndReassign(SetMasterVolume(currentVol, targetVol, fadeTime), ref _masterVolumeCoroutine);
                 }
                 else
                 {
                     _broAudioMixer.SafeSetFloat(MasterTrackName, targetVol);
                 }
             }
-
-            void OnSetMasterVolume(float vol)
-            {
-                _broAudioMixer.SafeSetFloat(MasterTrackName, vol);
-            }
 #endif
         }
 
-        private IEnumerator SetMasterVolume(float currentVol, float targetVol, float fadeTime, Action<float> onSetMaster)
+        private IEnumerator SetMasterVolume(float currentVol, float targetVol, float fadeTime)
         {
             Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
-            yield return LerpValuesPerFrame(currentVol, targetVol, fadeTime, ease, onSetMaster);
+            float currentTime = 0f;
+            while (currentTime < fadeTime)
+            {
+                yield return null;
+                currentTime += Utility.GetDeltaTime();
+                float vol = Mathf.Lerp(currentVol, targetVol, (currentTime / fadeTime).SetEase(ease));
+                _broAudioMixer.SafeSetFloat(MasterTrackName, vol);
+            }
         }
 
         public void SetVolume(int id, float vol, float fadeTime)

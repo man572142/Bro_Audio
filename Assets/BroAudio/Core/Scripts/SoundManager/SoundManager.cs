@@ -134,7 +134,7 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
-            ForeachConcreteAudioType(audioType => _auidoTypePref.Add(audioType, new AudioTypePlaybackPreference()));
+            ForeachConcreteAudioType(new PlaybackPrefInitializer() { AudioTypePref = _auidoTypePref });
         }
         #endregion
 
@@ -344,16 +344,18 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
+        // For those which may be played in the future.
         private void SetPlaybackPrefByType<TParameter>(BroAudioType targetType, TParameter parameter, Action<AudioTypePlaybackPreference, TParameter> onModifyPref) where TParameter : struct
         {
-            // For those which may be played in the future.
-            ForeachConcreteAudioType((audioType) =>
+            var setter = new PlaybackPrefSetter<TParameter>()
             {
-                if (targetType.Contains(audioType) && _auidoTypePref.TryGetValue(audioType, out var pref))
-                {
-                    onModifyPref.Invoke(pref, parameter);
-                }
-            });
+                TargetType = targetType,
+                AudioTypePref = _auidoTypePref,
+                OnModifyPref = onModifyPref,
+                Parameter = parameter,
+            };
+
+            ForeachConcreteAudioType(setter);
         }
 
         #region Audio Player

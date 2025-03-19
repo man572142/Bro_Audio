@@ -99,7 +99,21 @@ namespace Ami.BroAudio
             }
         }
 
-		public static bool Validate(string name, IBroAudioClip[] clips, int id)
+        public static void ForeachConcreteAudioType<T>(T processor) where T : IAudioTypeIterable
+        {
+            BroAudioType currentType = BroAudioType.None;
+            while (currentType <= (BroAudioType)LastAudioType)
+            {
+                if (currentType.IsConcrete())
+                {
+                    processor.OnEachAudioType(currentType);
+                }
+
+                currentType = currentType.ToNext();
+            }
+        }
+
+        public static bool Validate(string name, IBroAudioClip[] clips, int id)
 		{
 			if (id <= 0)
 			{

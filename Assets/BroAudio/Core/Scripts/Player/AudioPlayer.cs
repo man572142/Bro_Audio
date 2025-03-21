@@ -50,7 +50,7 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        public string VolumeParaName 
+        private string VolumeParaName 
         {
             get
             {
@@ -69,7 +69,6 @@ namespace Ami.BroAudio.Runtime
         private AudioTrackType TrackType { get; set; } = AudioTrackType.Generic;
         private AudioMixerGroup AudioTrack 
         {
-            get => AudioSource.outputAudioMixerGroup;
             set
             {
                 AudioSource.outputAudioMixerGroup = value;
@@ -79,7 +78,14 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        IAudioMixer Mixer => SoundManager.Instance;
+        IAudioMixerPool MixerPool => SoundManager.Instance;
+
+        private bool TryGetMixerAndTrack(out AudioMixer mixer, out AudioMixerGroup track)
+        {
+            track = AudioSource.outputAudioMixerGroup;
+            mixer = SoundManager.Instance.AudioMixer;
+            return mixer != null && track != null;
+        }
 
         protected virtual void Awake()
         {
@@ -181,7 +187,8 @@ namespace Ami.BroAudio.Runtime
 
         public void SetEffect(EffectType effect,SetEffectMode mode)
         {
-            if(ID <= 0 || (effect == EffectType.None && mode != SetEffectMode.Override))
+            if(ID <= 0 || (effect == EffectType.None && mode != SetEffectMode.Override) 
+                || !TryGetMixerAndTrack(out var mixer, out _) || !TryGetMixerDecibelVolume(out float mixerDecibelVolume))
             {
                 return;
             }
@@ -204,15 +211,15 @@ namespace Ami.BroAudio.Runtime
             {
                 string from = IsUsingEffect ? _currTrackName : _sendParaName;
                 string to = IsUsingEffect ? _sendParaName : _currTrackName;
-                Mixer.AudioMixer.ChangeChannel(from, to, MixerDecibelVolume);
+                mixer.ChangeChannel(from, to, mixerDecibelVolume);
             }
         }
 
         private void ResetEffect()
         {
-            if(IsUsingEffect)
+            if(IsUsingEffect && TryGetMixerAndTrack(out var mixer, out _))
             {
-                Mixer.AudioMixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
+                mixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
             }
             CurrentActiveEffects = EffectType.None;
         }

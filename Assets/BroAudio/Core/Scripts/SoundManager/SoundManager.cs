@@ -12,7 +12,7 @@ using static Ami.BroAudio.Tools.BroName;
 namespace Ami.BroAudio.Runtime
 {
     [DisallowMultipleComponent, AddComponentMenu("")]
-    public partial class SoundManager : MonoBehaviour, IAudioMixer
+    public partial class SoundManager : MonoBehaviour, IAudioMixerPool
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
@@ -324,14 +324,14 @@ namespace Ami.BroAudio.Runtime
             return result != null;
         }
 
-        AudioMixerGroup IAudioMixer.GetTrack(AudioTrackType trackType) => trackType switch
+        AudioMixerGroup IAudioMixerPool.GetTrack(AudioTrackType trackType) => trackType switch
         {
             AudioTrackType.Generic => _audioTrackPool.Extract(),
             AudioTrackType.Dominator => _dominatorTrackPool.Extract(),
             _ => null,
         };
 
-        void IAudioMixer.ReturnTrack(AudioTrackType trackType, AudioMixerGroup track)
+        void IAudioMixerPool.ReturnTrack(AudioTrackType trackType, AudioMixerGroup track)
         {
             switch (trackType)
             {
@@ -359,7 +359,7 @@ namespace Ami.BroAudio.Runtime
         }
 
         #region Audio Player
-        void IAudioMixer.ReturnPlayer(AudioPlayer player)
+        void IAudioMixerPool.ReturnPlayer(AudioPlayer player)
         {
             RemoveFromPreventer(player);
             _audioPlayerPool.Recycle(player);

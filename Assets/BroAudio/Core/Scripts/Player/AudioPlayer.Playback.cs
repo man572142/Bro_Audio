@@ -71,7 +71,6 @@ namespace Ami.BroAudio.Runtime
                 _audioTypeVolume.Complete(audioTypePref.Volume, false);
             }
             _clipVolume.Complete(0f, false);
-            UpdateMixerVolume();
             int sampleRate = _clip.GetAudioClip().frequency;
             bool hasScheduled = false;
 
@@ -110,7 +109,7 @@ namespace Ami.BroAudio.Runtime
                     }
                 }
 #if !UNITY_WEBGL
-                AudioTrack = Mixer.GetTrack(TrackType); 
+                AudioTrack = MixerPool.GetTrack(TrackType); 
 #endif
             }
 

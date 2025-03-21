@@ -23,12 +23,13 @@ namespace Ami.BroAudio.Runtime
             ResetAudioSource();
             DestroyAudioFilterReader();
             _onUpdate = null;
-#if !UNITY_WEBGL
-            Mixer.ReturnTrack(TrackType, AudioTrack);
-            TrackType = AudioTrackType.Generic;
-#endif
 
-            Mixer.ReturnPlayer(this);
+            if(TryGetMixerAndTrack(out _, out var track))
+            {
+                MixerPool.ReturnTrack(TrackType, track);
+                TrackType = AudioTrackType.Generic;
+            }
+            MixerPool.ReturnPlayer(this);
 
             if(_decorators != null)
             {

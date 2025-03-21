@@ -130,12 +130,14 @@ namespace Ami.Extension
 			mixer.SafeSetFloat(to, targetVol);
 		}
 
-		public static void SafeSetFloat(this AudioMixer mixer, string parameterName, float value)
+		public static bool SafeSetFloat(this AudioMixer mixer, string parameterName, float value)
 		{
 			if (mixer && !string.IsNullOrEmpty(parameterName))
 			{
 				mixer.SetFloat(parameterName, value);
+                return true;
 			}
+            return false;
 		}
 
 		public static bool SafeGetFloat(this AudioMixer mixer, string parameterName, out float value)

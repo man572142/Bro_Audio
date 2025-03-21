@@ -67,8 +67,11 @@ namespace Ami.BroAudio.Runtime
 
         private void SetAllEffectExceptDominator(Effect effect)
         {
-            SoundManager.Instance.SetEffect(effect).While(PlayerIsPlaying);
-            Instance?.SetEffect(EffectType.None,SetEffectMode.Override);
+            if(Instance != null)
+            {
+                SoundManager.Instance.SetEffect(effect).While(PlayerIsPlaying);
+                Instance?.SetEffect(EffectType.None, SetEffectMode.Override);
+            }
         }
 
         private bool PlayerIsPlaying() => IsActive;

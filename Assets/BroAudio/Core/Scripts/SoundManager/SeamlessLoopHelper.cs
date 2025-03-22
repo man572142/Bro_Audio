@@ -1,9 +1,10 @@
-using System;
+//using System;
 
-namespace Ami.BroAudio.Runtime
-{
-	public class SeamlessLoopHelper
-	{
+//namespace Ami.BroAudio.Runtime
+//{
 
-	}
-}
+//	public class SeamlessLoopHelper
+//	{
+
+//	}
+//}

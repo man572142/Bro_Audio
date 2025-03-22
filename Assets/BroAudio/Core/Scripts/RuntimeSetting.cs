@@ -1,6 +1,7 @@
 using UnityEngine;
 using Ami.Extension;
 using Ami.BroAudio.Runtime;
+using System;
 
 namespace Ami.BroAudio.Data
 {
@@ -9,8 +10,8 @@ namespace Ami.BroAudio.Data
 #endif
 	public class RuntimeSetting : ScriptableObject
 	{
+        [Obsolete("This feature has been moved to " + nameof(PlaybackGroup)), HideInInspector]
 		public float CombFilteringPreventionInSeconds = FactorySettings.CombFilteringPreventionInSeconds;
-		public bool LogCombFilteringWarning = true;
 		public bool LogAccessRecycledPlayerWarning = true;
 		public Ease DefaultFadeInEase = FactorySettings.DefaultFadeInEase;
 		public Ease DefaultFadeOutEase = FactorySettings.DefaultFadeOutEase;
@@ -30,8 +31,6 @@ namespace Ami.BroAudio.Data
 #if UNITY_EDITOR
 		public void ResetToFactorySettings()
 		{
-			CombFilteringPreventionInSeconds = FactorySettings.CombFilteringPreventionInSeconds;
-			LogCombFilteringWarning = true;
 			DefaultFadeInEase = FactorySettings.DefaultFadeInEase;
 			DefaultFadeOutEase = FactorySettings.DefaultFadeOutEase;
 			SeamlessFadeInEase = FactorySettings.SeamlessFadeInEase;

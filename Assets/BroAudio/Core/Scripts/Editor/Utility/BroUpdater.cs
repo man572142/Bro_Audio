@@ -93,7 +93,9 @@ public class BroUpdater
             var combProp = serializeObj.FindProperty(DefaultPlaybackGroup.NameOf.CombFilteringTime)?.FindPropertyRelative(nameof(Rule<int>.Value));
             if (combProp != null)
             {
+#pragma warning disable CS0618
                 combProp.floatValue = runtimeSetting.CombFilteringPreventionInSeconds;
+#pragma warning restore CS0618
                 serializeObj.ApplyModifiedPropertiesWithoutUndo();
             }
             runtimeSetting.GlobalPlaybackGroup = globalPlaybackGroup;

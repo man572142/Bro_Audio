@@ -15,7 +15,8 @@ namespace Ami.BroAudio.Runtime
                 if (_currentPlayer != value)
                 {
                     _currentPlayer = value;
-                    OnBGMChanged?.Invoke(value.GetInstanceWrapper());
+                    var instance = value != null ? value.GetInstanceWrapper() : null;
+                    OnBGMChanged?.Invoke(instance);
                 }
             }
         }
@@ -32,7 +33,6 @@ namespace Ami.BroAudio.Runtime
 
         public override void Recycle ()
         {
-            UnityEngine.Debug.Log("Recycle");
             if(CurrentPlayer == Instance)
             {
                 CurrentPlayer = null;

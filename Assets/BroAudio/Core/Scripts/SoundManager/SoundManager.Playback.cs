@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Runtime
 {
     public partial class SoundManager : MonoBehaviour
     {
-        private Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
+        private readonly Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
         private AudioPlayer.SeamlessLoopReplay _seamlessLoopReplayDelegate;
 
         #region Play
@@ -58,12 +58,13 @@ namespace Ami.BroAudio.Runtime
             var validator = customValidator ?? entity.PlaybackGroup; // entity's runtime group will be set in InitBank() if it's null
 
             bool isValid = validator == null || validator.IsPlayable(id);
-            bool result = isValid && TryGetAvailablePlayer(id, out player);
-            if(validator != null && player != null)
+            player = _audioPlayerPool.Extract();
+            bool hasPlayer = player != null;
+            if (validator != null && hasPlayer)
             {
                 validator.OnGetPlayer(player);
             }
-            return result;
+            return isValid && hasPlayer;
         }
 
         private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref)

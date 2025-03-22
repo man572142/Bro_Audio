@@ -10,9 +10,8 @@ namespace Ami.BroAudio.Runtime
     /// </summary>
     public class Fader
     {
+        private readonly IAudioBus _bus;
         private float _origin;
-        // TODO: use interface instead
-        private Action _onUpdate;
         private Coroutine _coroutine;
 
         public float Current { get; private set; }
@@ -21,9 +20,9 @@ namespace Ami.BroAudio.Runtime
 
         private MonoBehaviour _coroutineExecutor => SoundManager.Instance;
 
-        public Fader(float value, Action onUpdate)
+        public Fader(float value, IAudioBus bus)
         {
-            _onUpdate = onUpdate;
+            _bus = bus;
             _origin = value;
             Target = value;
             Current = value;
@@ -35,14 +34,14 @@ namespace Ami.BroAudio.Runtime
             Target = value;
         }
 
-        public void Complete(float value, bool updateMixer = true)
+        public void Complete(float value, bool updateBus = true)
         {
             StopCoroutine();
             Current = value;
             Target = value;
-            if(updateMixer)
+            if(updateBus)
             {
-                _onUpdate?.Invoke();
+                _bus.UpdateVolume();
             }
         }
 
@@ -57,7 +56,7 @@ namespace Ami.BroAudio.Runtime
             if(elapsedTime < fadeTime)
             {
                 Current = Mathf.Lerp(_origin, Target, (elapsedTime / fadeTime).SetEase(ease));
-                _onUpdate?.Invoke();
+                _bus.UpdateVolume();
 
                 elapsedTime += Utility.GetDeltaTime();
                 return true;

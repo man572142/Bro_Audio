@@ -1,12 +1,11 @@
 using UnityEngine;
 using Ami.Extension;
 using System.Collections;
-using System;
 
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
-    public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
+    public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>, IAudioBus
     {
         public const float DefaultClipVolume = 0f;
         public const float DefaultTrackVolume = AudioConstant.FullVolume;
@@ -58,19 +57,18 @@ namespace Ami.BroAudio.Runtime
 
         private void InitVolumeModule()
         {
-            Action updateMixer = UpdateVolume;
-            _trackVolume = new Fader(DefaultTrackVolume, updateMixer);
-            _clipVolume = new Fader(DefaultClipVolume, updateMixer);
-            _audioTypeVolume = new Fader(DefaultTrackVolume, updateMixer);
+            _trackVolume = new Fader(DefaultTrackVolume, this);
+            _clipVolume = new Fader(DefaultClipVolume, this);
+            _audioTypeVolume = new Fader(DefaultTrackVolume, this);
         }
 
-        private void UpdateVolume()
+        public void UpdateVolume()
         {
 #if UNITY_WEBGL
             UpdateWebGLVolume();
 #else
             float vol = _clipVolume.Current * _trackVolume.Current * _audioTypeVolume.Current;
-            if(!TrySetMixerDecibelVolume(vol.ToDecibel()))
+            if (!TrySetMixerDecibelVolume(vol.ToDecibel()) && IsPlaying)
             {
                 AudioSource.volume = vol.ClampNormalize();
             }
@@ -88,15 +86,6 @@ namespace Ami.BroAudio.Runtime
             SetVolumeInternal(_audioTypeVolume, vol, fadeTime);
         }
 
-        private IEnumerator Fade(Fader volume, float fadeTime, Ease ease)
-        {
-            float elapsedTime = 0f;
-            while(volume.Update(ref elapsedTime, fadeTime, ease))
-            {
-                yield return null;
-            }
-        }
-
         private void SetVolumeInternal(Fader module, float vol, float fadeTime)
         {
             module.SetTarget(vol);
@@ -107,7 +96,16 @@ namespace Ami.BroAudio.Runtime
             }
             else
             {
-                module.Complete(vol, IsPlaying);
+                module.Complete(vol);
+            }
+        }
+
+        private IEnumerator Fade(Fader volume, float fadeTime, Ease ease)
+        {
+            float elapsedTime = 0f;
+            while (volume.Update(ref elapsedTime, fadeTime, ease))
+            {
+                yield return null;
             }
         }
 

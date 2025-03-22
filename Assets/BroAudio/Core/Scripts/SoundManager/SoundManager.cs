@@ -105,7 +105,6 @@ namespace Ami.BroAudio.Runtime
 
         private void OnDestroy()
         {
-            AudioPlayer.ResumablePlayers?.Clear();
             MusicPlayer.CleanUp();
             ResetClipSequencer();
         }
@@ -381,15 +380,6 @@ namespace Ami.BroAudio.Runtime
         private IReadOnlyList<AudioPlayer> GetCurrentAudioPlayers()
         {
             return _audioPlayerPool.GetCurrentAudioPlayers();
-        }
-
-        private bool TryGetAvailablePlayer(int id, out AudioPlayer audioPlayer)
-        {
-            if (AudioPlayer.ResumablePlayers == null || !AudioPlayer.ResumablePlayers.TryGetValue(id, out audioPlayer))
-            {
-                audioPlayer = _audioPlayerPool.Extract();
-            }
-            return audioPlayer != null;
         }
         #endregion
     }

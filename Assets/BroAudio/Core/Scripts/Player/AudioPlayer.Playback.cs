@@ -12,8 +12,6 @@ namespace Ami.BroAudio.Runtime
     {
         public delegate void SeamlessLoopReplay(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
 
-        public static Dictionary<int, AudioPlayer> ResumablePlayers = null;
-
         public SeamlessLoopReplay OnSeamlessLoopReplay;
         [Obsolete]
         public event Action<SoundID> OnEndPlaying
@@ -74,7 +72,7 @@ namespace Ami.BroAudio.Runtime
             int sampleRate = _clip.GetAudioClip().frequency;
             bool hasScheduled = false;
 
-            if (!RemoveFromResumablePlayer()) // if is not resumable (not paused)
+            if (_stopMode == StopMode.Stop) // we only do this process when it's fresh
             {
                 AudioSource.clip = _clip.GetAudioClip();
                 AudioSource.priority = _pref.Entity.Priority;
@@ -340,11 +338,9 @@ namespace Ami.BroAudio.Runtime
                     break;
                 case StopMode.Pause:
                     AudioSource.Pause();
-                    AddResumablePlayer();
                     break;
                 case StopMode.Mute:
                     this.SetVolume(0f, 0f);
-                    AddResumablePlayer();
                     break;
             }
             IsStopping = false;
@@ -359,17 +355,6 @@ namespace Ami.BroAudio.Runtime
                 fadeTime = overrideFade;
             }
             return fadeTime > Immediate;
-        }
-
-        private void AddResumablePlayer()
-        {
-            ResumablePlayers ??= new Dictionary<int, AudioPlayer>();
-            ResumablePlayers[ID] = this;
-        }
-
-        private bool RemoveFromResumablePlayer()
-        {
-            return ResumablePlayers != null && ResumablePlayers.Remove(ID);
         }
 
         private bool OnUpdate()
@@ -395,7 +380,6 @@ namespace Ami.BroAudio.Runtime
             // Don't add StopCoroutine(_playbackCoroutine) here, as this method is typically called within it, and further processing after this method cannot be guaranteed.
             _trackVolume.StopCoroutine();
             _audioTypeVolume.StopCoroutine();
-            RemoveFromResumablePlayer();
 
             _onEnd?.Invoke(ID);
             _onEnd = null;

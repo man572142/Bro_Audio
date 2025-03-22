@@ -158,10 +158,10 @@ namespace Ami.BroAudio.Runtime
                         }
                     }
 
-                    IsFadingOut = true;
                     TriggerSeamlessLoopReplay();
                     _clipVolume.SetTarget(0f);
                     elapsedTime = 0f;
+                    IsFadingOut = true;
                     while (_clipVolume.Update(ref elapsedTime, fadeOut, _pref.FadeOutEase))
                     {
                         yield return null;
@@ -249,6 +249,8 @@ namespace Ami.BroAudio.Runtime
         {
             ClearScheduleEndEvents(); // it should be rescheduled in the new player
             OnSeamlessLoopReplay?.Invoke(ID, _instanceWrapper, _pref, CurrentActiveEffects, _trackVolume.Target, StaticPitch);
+            OnSeamlessLoopReplay = null;
+            _instanceWrapper = null; // the instance has been transferred to the new player
         }
 
         #region Stop Overloads
@@ -284,11 +286,6 @@ namespace Ami.BroAudio.Runtime
                 onFinished?.Invoke();
                 EndPlaying();
                 return;
-            }
-
-            if(stopMode == StopMode.Stop)
-            {
-                OnSeamlessLoopReplay = null;
             }
 
             this.StartCoroutineAndReassign(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);
@@ -368,6 +365,8 @@ namespace Ami.BroAudio.Runtime
             PlaybackStartingTime = 0;
             _stopMode = default;
             _pref = default;
+            IsFadingOut = false;
+            IsStopping = false;
             ResetVolume();
             ResetPitch();
             

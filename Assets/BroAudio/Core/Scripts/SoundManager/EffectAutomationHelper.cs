@@ -70,15 +70,17 @@ namespace Ami.BroAudio.Runtime
         {
             public readonly IEnumerator Enumerator;
             public readonly Func<bool> Condition;
+            private readonly bool _invertCondition;
 
-            public TweakAndWaitUntil(IEnumerator enumerator, Func<bool> condition)
+            public TweakAndWaitUntil(IEnumerator enumerator, Func<bool> condition, bool invertCondition = false)
             {
                 Enumerator = enumerator;
                 Condition = condition;
+                _invertCondition = invertCondition;
             }
 
             public override IEnumerator GetYieldInstruction() => Enumerator;
-            public override bool IsFinished() => Condition();
+            public override bool IsFinished() => _invertCondition ? !Condition() : Condition();
         }
 
         private readonly AudioMixer _mixer = null;
@@ -109,11 +111,9 @@ namespace Ami.BroAudio.Runtime
         public WaitWhile While(Func<bool> condition)
         {
             var instruction = new WaitWhile(condition);
-            var decoration = new TweakAndWaitUntil(instruction, InvertCondition);
+            var decoration = new TweakAndWaitUntil(instruction, condition, true);
             DecorateTweakingWaitable(decoration);
             return instruction;
-
-            bool InvertCondition() => !condition();
         }
 
 
@@ -140,12 +140,12 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        public void SetEffectTrackParameter(Effect effect, Action<EffectType> OnReset)
+        public void SetEffectTrackParameter(Effect effect, Action<EffectType> onReset)
         {
             _latestEffect = effect.Type;
             if (_latestEffect == EffectType.None)
             {
-                ResetAllEffect(effect, OnReset);
+                ResetAllEffect(effect, onReset);
                 return;
             }
 
@@ -163,19 +163,10 @@ namespace Ami.BroAudio.Runtime
 
             if (!tweaker.IsTweaking || isMoreIntense)
             {
-                StartCoroutineAndReassign(TweakTrackParameter(tweaker, OnTweakingFinished), ref tweaker.Coroutine);
+                StartCoroutineAndReassign(TweakTrackParameter(tweaker, effect.Type, effect.IsDominator, onReset), ref tweaker.Coroutine);
                 if (effect.IsDominator)
                 {
                     SwitchMainTrackMode(true);
-                }
-            }
-            
-            void OnTweakingFinished()
-            {
-                OnReset?.Invoke(effect.Type);
-                if (effect.IsDominator)
-                {
-                    SwitchMainTrackMode(false);
                 }
             }
         }
@@ -188,7 +179,7 @@ namespace Ami.BroAudio.Runtime
             _mixer.ChangeChannel(from, to, AudioConstant.FullDecibelVolume);
         }
 
-        private IEnumerator TweakTrackParameter(Tweaker tweaker,Action onFinished)
+        private IEnumerator TweakTrackParameter(Tweaker tweaker, EffectType resetType, bool isDominator, Action<EffectType> onReset)
         {
             tweaker.IsTweaking = true;
             while (tweaker.WaitableList.Count > 0)
@@ -220,7 +211,11 @@ namespace Ami.BroAudio.Runtime
                 tweaker.WaitableList.RemoveAt(lastIndex);
             }
             tweaker.IsTweaking = false;
-            onFinished?.Invoke();
+            onReset?.Invoke(resetType);
+            if (isDominator)
+            {
+                SwitchMainTrackMode(false);
+            }
         }
 
         private IEnumerator Tweak(float from, float to, float fadeTime, Ease ease, string paraName,bool hasSecondaryParameter = false, Action onTweakingFinshed = null)
@@ -266,9 +261,10 @@ namespace Ami.BroAudio.Runtime
             return default;
         }
 
-        private void ResetAllEffect(Effect effect,Action<EffectType> OnResetFinished)
+        private void ResetAllEffect(Effect effect, Action<EffectType> onResetFinished)
         {
             int tweakingCount = 0;
+            Action onTweakFinished = OnTweakingFinished;
             foreach (var pair in _tweakerDict)
             {
                 Tweaker tweaker = pair.Value;
@@ -277,7 +273,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     string paraName = GetEffectParameterName(effect, out bool hasSecondaryParameter);
                     SafeStopCoroutine(tweaker.Coroutine);
-                    tweaker.Coroutine = StartCoroutine(Tweak(current, GetEffectDefaultValue(effectType), effect.Fading.FadeOut, effect.Fading.FadeOutEase, paraName, hasSecondaryParameter, OnTweakingFinished));
+                    tweaker.Coroutine = StartCoroutine(Tweak(current, GetEffectDefaultValue(effectType), effect.Fading.FadeOut, effect.Fading.FadeOutEase, paraName, hasSecondaryParameter, onTweakFinished));
                     tweaker.WaitableList.Clear();
                     tweakingCount++;
                 }
@@ -288,7 +284,7 @@ namespace Ami.BroAudio.Runtime
                 tweakingCount--;
                 if(tweakingCount <= 0)
                 {
-                    OnResetFinished?.Invoke(EffectType.All);
+                    onResetFinished?.Invoke(EffectType.All);
                 }
             }
         }

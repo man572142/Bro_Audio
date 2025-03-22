@@ -153,8 +153,7 @@ namespace Ami.BroAudio.Runtime
                 SetMasterVolume(vol,fadeTime);
                 return;
             }
-
-            SetPlaybackPrefByType(targetType, vol , AudioTypePlaybackPreference.SetVolume);
+            SetPlaybackPrefByType(targetType, vol , AudioTypePlaybackPreference.OnSetVolume);
             foreach (var player in GetCurrentAudioPlayers())
             {
                 if (player.IsActive && targetType.Contains(GetAudioType(player.ID)))
@@ -256,6 +255,7 @@ namespace Ami.BroAudio.Runtime
             return SetEffect(BroAudioType.All,effect);
         }
 
+
         public IAutoResetWaitable SetEffect(BroAudioType targetType, Effect effect)
         {
             targetType = targetType.ConvertEverythingFlag();
@@ -296,7 +296,7 @@ namespace Ami.BroAudio.Runtime
         private void SetPlayerEffect(BroAudioType targetType, EffectType effectType,SetEffectMode mode)
         {
             var parameter = new AudioTypePlaybackPreference.SetEffectParameter() { EffectType = effectType, Mode = mode};
-            SetPlaybackPrefByType(targetType, parameter, AudioTypePlaybackPreference.SetEffect);
+            SetPlaybackPrefByType(targetType, parameter, AudioTypePlaybackPreference.OnSetEffect);
 
             foreach (var player in GetCurrentAudioPlayers())
             {
@@ -317,7 +317,7 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            SetPlaybackPrefByType(targetType, pitch, AudioTypePlaybackPreference.SetPitch);
+            SetPlaybackPrefByType(targetType, pitch, AudioTypePlaybackPreference.OnSetpitch);
             foreach (var player in GetCurrentAudioPlayers())
             {
                 if (player.IsActive && targetType.Contains(GetAudioType(player.ID)))

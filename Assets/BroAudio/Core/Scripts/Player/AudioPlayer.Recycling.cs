@@ -40,10 +40,7 @@ namespace Ami.BroAudio.Runtime
             }
             _decorators = null;
 
-            if (OnSeamlessLoopReplay == null)
-            {
-                _instanceWrapper.Recycle();
-            }
+            _instanceWrapper?.Recycle();
             _instanceWrapper = null;
 
             OnSeamlessLoopReplay = null;

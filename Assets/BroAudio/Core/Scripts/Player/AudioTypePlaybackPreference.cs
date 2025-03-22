@@ -1,4 +1,5 @@
-﻿using Ami.Extension;
+﻿using System;
+using Ami.Extension;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -10,21 +11,25 @@ namespace Ami.BroAudio.Runtime
             public SetEffectMode Mode;
         }
 
+        public static readonly Action<AudioTypePlaybackPreference, float> OnSetVolume = SetVolume;
+        public static readonly Action<AudioTypePlaybackPreference, float> OnSetpitch = SetPitch;
+        public static readonly Action<AudioTypePlaybackPreference, SetEffectParameter> OnSetEffect = SetEffect;
+
         public float Volume { get; private set; } = AudioConstant.FullVolume;
 		public float Pitch { get; private set; } = AudioConstant.DefaultPitch;
 		public EffectType EffectType { get; private set; }
 
-		public static void SetVolume(AudioTypePlaybackPreference pref, float vol)
+		private static void SetVolume(AudioTypePlaybackPreference pref, float vol)
 		{
             pref.Volume = vol;
 		}
 
-        public static void SetPitch(AudioTypePlaybackPreference pref, float pitch)
+        private static void SetPitch(AudioTypePlaybackPreference pref, float pitch)
         {
             pref.Pitch = pitch;
         }
 
-		public static void SetEffect(AudioTypePlaybackPreference pref, SetEffectParameter parameter)
+        private static void SetEffect(AudioTypePlaybackPreference pref, SetEffectParameter parameter)
         {
             switch (parameter.Mode)
             {

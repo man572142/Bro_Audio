@@ -8,12 +8,11 @@ using System;
 using static Ami.BroAudio.Utility;
 using static Ami.Extension.CoroutineExtension;
 using static Ami.BroAudio.Tools.BroName;
-using static Ami.Extension.AnimationExtension;
 
 namespace Ami.BroAudio.Runtime
 {
     [DisallowMultipleComponent, AddComponentMenu("")]
-    public partial class SoundManager : MonoBehaviour, IAudioMixer
+    public partial class SoundManager : MonoBehaviour, IAudioMixerPool
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
@@ -106,7 +105,6 @@ namespace Ami.BroAudio.Runtime
 
         private void OnDestroy()
         {
-            AudioPlayer.ResumablePlayers?.Clear();
             MusicPlayer.CleanUp();
             ResetClipSequencer();
         }
@@ -135,7 +133,7 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
-            ForeachConcreteAudioType(audioType => _auidoTypePref.Add(audioType, new AudioTypePlaybackPreference()));
+            ForeachConcreteAudioType(new PlaybackPrefInitializer() { AudioTypePref = _auidoTypePref });
         }
         #endregion
 
@@ -154,8 +152,7 @@ namespace Ami.BroAudio.Runtime
                 SetMasterVolume(vol,fadeTime);
                 return;
             }
-
-            SetPlaybackPrefByType(targetType, vol , AudioTypePlaybackPreference.SetVolume);
+            SetPlaybackPrefByType(targetType, vol , AudioTypePlaybackPreference.OnSetVolume);
             foreach (var player in GetCurrentAudioPlayers())
             {
                 if (player.IsActive && targetType.Contains(GetAudioType(player.ID)))
@@ -172,15 +169,28 @@ namespace Ami.BroAudio.Runtime
             {
                 if (fadeTime > 0f)
                 {
-                    this.StartCoroutineAndReassign(SetMasterVolume(WebGLMasterVolume, targetVol, fadeTime, OnSetMaster), ref _masterVolumeCoroutine);
+                    this.StartCoroutineAndReassign(SetMasterVolume(WebGLMasterVolume, targetVol, fadeTime), ref _masterVolumeCoroutine);
                 }
                 else
                 {
-                    OnSetMaster(targetVol);
+                    SetWebGLMaster(targetVol);
                 }
             }
-            
-            void OnSetMaster(float vol)
+
+            IEnumerator SetMasterVolume(float currentVol, float targetVol, float fadeTime)
+            {
+                Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
+                float currentTime = 0f;
+                while (currentTime < fadeTime)
+                {
+                    yield return null;
+                    currentTime += Utility.GetDeltaTime();
+                    float vol = Mathf.Lerp(currentVol, targetVol, (currentTime / fadeTime).SetEase(ease));
+                    SetWebGLMaster(vol);
+                }
+            }
+
+            void SetWebGLMaster(float targetVol)
             {
                 WebGLMasterVolume = targetVol.ClampNormalize();
 
@@ -203,7 +213,7 @@ namespace Ami.BroAudio.Runtime
 
                 if(fadeTime != 0f)
                 {
-                    this.StartCoroutineAndReassign(SetMasterVolume(currentVol, targetVol, fadeTime, OnSetMasterVolume), ref _masterVolumeCoroutine);
+                    this.StartCoroutineAndReassign(SetMasterVolume(currentVol, targetVol, fadeTime), ref _masterVolumeCoroutine);
                 }
                 else
                 {
@@ -211,17 +221,19 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
-            void OnSetMasterVolume(float vol)
+            IEnumerator SetMasterVolume(float currentVol, float targetVol, float fadeTime)
             {
-                _broAudioMixer.SafeSetFloat(MasterTrackName, vol);
+                Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
+                float currentTime = 0f;
+                while (currentTime < fadeTime)
+                {
+                    yield return null;
+                    currentTime += Utility.GetDeltaTime();
+                    float vol = Mathf.Lerp(currentVol, targetVol, (currentTime / fadeTime).SetEase(ease));
+                    _broAudioMixer.SafeSetFloat(MasterTrackName, vol);
+                }
             }
 #endif
-        }
-
-        private IEnumerator SetMasterVolume(float currentVol, float targetVol, float fadeTime, Action<float> onSetMaster)
-        {
-            Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
-            yield return LerpValuesPerFrame(currentVol, targetVol, fadeTime, ease, onSetMaster);
         }
 
         public void SetVolume(int id, float vol, float fadeTime)
@@ -234,13 +246,14 @@ namespace Ami.BroAudio.Runtime
                 }
             }
         }
-#endregion
+        #endregion
 
         #region Effect
         public IAutoResetWaitable SetEffect(Effect effect)
         {
             return SetEffect(BroAudioType.All,effect);
         }
+
 
         public IAutoResetWaitable SetEffect(BroAudioType targetType, Effect effect)
         {
@@ -282,7 +295,7 @@ namespace Ami.BroAudio.Runtime
         private void SetPlayerEffect(BroAudioType targetType, EffectType effectType,SetEffectMode mode)
         {
             var parameter = new AudioTypePlaybackPreference.SetEffectParameter() { EffectType = effectType, Mode = mode};
-            SetPlaybackPrefByType(targetType, parameter, AudioTypePlaybackPreference.SetEffect);
+            SetPlaybackPrefByType(targetType, parameter, AudioTypePlaybackPreference.OnSetEffect);
 
             foreach (var player in GetCurrentAudioPlayers())
             {
@@ -303,7 +316,7 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            SetPlaybackPrefByType(targetType, pitch, AudioTypePlaybackPreference.SetPitch);
+            SetPlaybackPrefByType(targetType, pitch, AudioTypePlaybackPreference.OnSetpitch);
             foreach (var player in GetCurrentAudioPlayers())
             {
                 if (player.IsActive && targetType.Contains(GetAudioType(player.ID)))
@@ -323,14 +336,14 @@ namespace Ami.BroAudio.Runtime
             return result != null;
         }
 
-        AudioMixerGroup IAudioMixer.GetTrack(AudioTrackType trackType) => trackType switch
+        AudioMixerGroup IAudioMixerPool.GetTrack(AudioTrackType trackType) => trackType switch
         {
             AudioTrackType.Generic => _audioTrackPool.Extract(),
             AudioTrackType.Dominator => _dominatorTrackPool.Extract(),
             _ => null,
         };
 
-        void IAudioMixer.ReturnTrack(AudioTrackType trackType, AudioMixerGroup track)
+        void IAudioMixerPool.ReturnTrack(AudioTrackType trackType, AudioMixerGroup track)
         {
             switch (trackType)
             {
@@ -343,20 +356,22 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
+        // For those which may be played in the future.
         private void SetPlaybackPrefByType<TParameter>(BroAudioType targetType, TParameter parameter, Action<AudioTypePlaybackPreference, TParameter> onModifyPref) where TParameter : struct
         {
-            // For those which may be played in the future.
-            ForeachConcreteAudioType((audioType) =>
+            var setter = new PlaybackPrefSetter<TParameter>()
             {
-                if (targetType.Contains(audioType) && _auidoTypePref.TryGetValue(audioType, out var pref))
-                {
-                    onModifyPref.Invoke(pref, parameter);
-                }
-            });
+                TargetType = targetType,
+                AudioTypePref = _auidoTypePref,
+                OnModifyPref = onModifyPref,
+                Parameter = parameter,
+            };
+
+            ForeachConcreteAudioType(setter);
         }
 
         #region Audio Player
-        void IAudioMixer.ReturnPlayer(AudioPlayer player)
+        void IAudioMixerPool.ReturnPlayer(AudioPlayer player)
         {
             RemoveFromPreventer(player);
             _audioPlayerPool.Recycle(player);
@@ -365,15 +380,6 @@ namespace Ami.BroAudio.Runtime
         private IReadOnlyList<AudioPlayer> GetCurrentAudioPlayers()
         {
             return _audioPlayerPool.GetCurrentAudioPlayers();
-        }
-
-        private bool TryGetAvailablePlayer(int id, out AudioPlayer audioPlayer)
-        {
-            if (AudioPlayer.ResumablePlayers == null || !AudioPlayer.ResumablePlayers.TryGetValue(id, out audioPlayer))
-            {
-                audioPlayer = _audioPlayerPool.Extract();
-            }
-            return audioPlayer != null;
         }
         #endregion
     }

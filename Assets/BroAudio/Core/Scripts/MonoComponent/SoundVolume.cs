@@ -62,12 +62,11 @@ namespace Ami.BroAudio
             {
                 _originalVolume = _volume;
                 _systemOriginalVolumes = new Dictionary<BroAudioType, float>();
-                Utility.ForeachConcreteAudioType(type => 
+                
+                Utility.ForeachConcreteAudioType(new OriginVolumeRecorder() 
                 {
-                    if (_audioType.Contains(type) && SoundManager.Instance.TryGetAudioTypePref(type, out var pref))
-                    {
-                        _systemOriginalVolumes[type] = pref.Volume;
-                    }
+                    TargetType = _audioType,
+                    SystemOriginalVolumes = _systemOriginalVolumes,
                 });
             }
 

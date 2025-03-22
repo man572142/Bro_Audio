@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: BroRuntimeSetting
   m_EditorClassIdentifier: 
   CombFilteringPreventionInSeconds: 0.04
-  LogCombFilteringWarning: 0
   LogAccessRecycledPlayerWarning: 1
   DefaultFadeInEase: 2
   DefaultFadeOutEase: 11
   SeamlessFadeInEase: 8
   SeamlessFadeOutEase: 11
   AudioFilterSlope: 1
+  UpdateMode: 0
   DefaultAudioPlayerPoolSize: 5
   PitchSetting: 1
   AlwaysPlayMusicAsBGM: 1

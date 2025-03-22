@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Runtime
 {
     public partial class SoundManager : MonoBehaviour
     {
-        private Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
+        private readonly Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
         private AudioPlayer.SeamlessLoopReplay _seamlessLoopReplayDelegate;
 
         #region Play
@@ -58,12 +58,13 @@ namespace Ami.BroAudio.Runtime
             var validator = customValidator ?? entity.PlaybackGroup; // entity's runtime group will be set in InitBank() if it's null
 
             bool isValid = validator == null || validator.IsPlayable(id);
-            bool result = isValid && TryGetAvailablePlayer(id, out player);
-            if(validator != null && player != null)
+            player = _audioPlayerPool.Extract();
+            bool hasPlayer = player != null;
+            if (validator != null && hasPlayer)
             {
                 validator.OnGetPlayer(player);
             }
-            return result;
+            return isValid && hasPlayer;
         }
 
         private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref)
@@ -99,9 +100,6 @@ namespace Ami.BroAudio.Runtime
             wrapper.UpdateInstance(newPlayer);
             newPlayer.SetInstanceWrapper(wrapper);
 
-#if !UNITY_WEBGL
-            newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
-#endif
             newPlayer.SetVolume(trackVolume);
             newPlayer.SetPitch(pitch);
             newPlayer.SetPlaybackData(id, pref);
@@ -110,6 +108,9 @@ namespace Ami.BroAudio.Runtime
             {
                 newPlayer.SetScheduledEndTime(pref.ScheduledEndTime);
             }
+#if !UNITY_WEBGL
+            newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
+#endif
 
             newPlayer.OnSeamlessLoopReplay = Replay;
         }

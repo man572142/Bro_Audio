@@ -1,10 +1,10 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using static Ami.BroAudio.Tools.BroName;
-using System.Collections.Generic;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -50,7 +50,7 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        public string VolumeParaName 
+        private string VolumeParaName 
         {
             get
             {
@@ -69,7 +69,6 @@ namespace Ami.BroAudio.Runtime
         private AudioTrackType TrackType { get; set; } = AudioTrackType.Generic;
         private AudioMixerGroup AudioTrack 
         {
-            get => AudioSource.outputAudioMixerGroup;
             set
             {
                 AudioSource.outputAudioMixerGroup = value;
@@ -79,7 +78,14 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        IAudioMixer Mixer => SoundManager.Instance;
+        IAudioMixerPool MixerPool => SoundManager.Instance;
+
+        private bool TryGetMixerAndTrack(out AudioMixer mixer, out AudioMixerGroup track)
+        {
+            track = AudioSource.outputAudioMixerGroup;
+            mixer = SoundManager.Instance.AudioMixer;
+            return mixer != null && track != null;
+        }
 
         protected virtual void Awake()
         {
@@ -181,7 +187,8 @@ namespace Ami.BroAudio.Runtime
 
         public void SetEffect(EffectType effect,SetEffectMode mode)
         {
-            if(ID <= 0 || (effect == EffectType.None && mode != SetEffectMode.Override))
+            if(ID <= 0 || (effect == EffectType.None && mode != SetEffectMode.Override) 
+                || !TryGetMixerAndTrack(out var mixer, out _) || !TryGetMixerDecibelVolume(out float mixerDecibelVolume))
             {
                 return;
             }
@@ -204,15 +211,15 @@ namespace Ami.BroAudio.Runtime
             {
                 string from = IsUsingEffect ? _currTrackName : _sendParaName;
                 string to = IsUsingEffect ? _sendParaName : _currTrackName;
-                Mixer.AudioMixer.ChangeChannel(from, to, MixerDecibelVolume);
+                mixer.ChangeChannel(from, to, mixerDecibelVolume);
             }
         }
 
         private void ResetEffect()
         {
-            if(IsUsingEffect)
+            if(IsUsingEffect && TryGetMixerAndTrack(out var mixer, out _))
             {
-                Mixer.AudioMixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
+                mixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
             }
             CurrentActiveEffects = EffectType.None;
         }
@@ -263,11 +270,26 @@ namespace Ami.BroAudio.Runtime
             return onEndDelegates != null;
         }
 
-        internal bool TransferDecorators(out IEnumerable<AudioPlayerDecorator> decorators)
+        internal bool TransferDecorators(out IReadOnlyList<AudioPlayerDecorator> decorators)
         {
             decorators = _decorators;
             _decorators = null;
             return decorators != null;
+        }
+
+        internal void SetDecorators(IReadOnlyList<AudioPlayerDecorator> decorators)
+        {
+            _decorators = decorators as List<AudioPlayerDecorator>;
+        }
+
+        internal bool TryGetDecorator<T>(out T decorator) where T : AudioPlayerDecorator
+        {
+            decorator = null;
+            if (_decorators != null)
+            {
+                return _decorators.TryGetDecorator<T>(out decorator);
+            }
+            return false;
         }
 
         private bool HasDecoratorOf<T>() where T : AudioPlayerDecorator

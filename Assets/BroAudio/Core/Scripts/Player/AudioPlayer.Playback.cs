@@ -288,6 +288,11 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
+            if(stopMode == StopMode.Stop)
+            {
+                OnSeamlessLoopReplay = null;
+            }
+
             this.StartCoroutineAndReassign(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);
         }
 

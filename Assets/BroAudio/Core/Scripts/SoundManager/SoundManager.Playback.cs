@@ -99,9 +99,6 @@ namespace Ami.BroAudio.Runtime
             wrapper.UpdateInstance(newPlayer);
             newPlayer.SetInstanceWrapper(wrapper);
 
-#if !UNITY_WEBGL
-            newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
-#endif
             newPlayer.SetVolume(trackVolume);
             newPlayer.SetPitch(pitch);
             newPlayer.SetPlaybackData(id, pref);
@@ -110,6 +107,9 @@ namespace Ami.BroAudio.Runtime
             {
                 newPlayer.SetScheduledEndTime(pref.ScheduledEndTime);
             }
+#if !UNITY_WEBGL
+            newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
+#endif
 
             newPlayer.OnSeamlessLoopReplay = Replay;
         }

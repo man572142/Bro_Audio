@@ -171,15 +171,28 @@ namespace Ami.BroAudio.Runtime
             {
                 if (fadeTime > 0f)
                 {
-                    this.StartCoroutineAndReassign(SetMasterVolume(WebGLMasterVolume, targetVol, fadeTime, OnSetMaster), ref _masterVolumeCoroutine);
+                    this.StartCoroutineAndReassign(SetMasterVolume(WebGLMasterVolume, targetVol, fadeTime), ref _masterVolumeCoroutine);
                 }
                 else
                 {
-                    OnSetMaster(targetVol);
+                    SetWebGLMaster(targetVol);
                 }
             }
-            
-            void OnSetMaster(float vol)
+
+            IEnumerator SetMasterVolume(float currentVol, float targetVol, float fadeTime)
+            {
+                Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
+                float currentTime = 0f;
+                while (currentTime < fadeTime)
+                {
+                    yield return null;
+                    currentTime += Utility.GetDeltaTime();
+                    float vol = Mathf.Lerp(currentVol, targetVol, (currentTime / fadeTime).SetEase(ease));
+                    SetWebGLMaster(vol);
+                }
+            }
+
+            void SetWebGLMaster(float targetVol)
             {
                 WebGLMasterVolume = targetVol.ClampNormalize();
 
@@ -209,20 +222,20 @@ namespace Ami.BroAudio.Runtime
                     _broAudioMixer.SafeSetFloat(MasterTrackName, targetVol);
                 }
             }
-#endif
-        }
 
-        private IEnumerator SetMasterVolume(float currentVol, float targetVol, float fadeTime)
-        {
-            Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
-            float currentTime = 0f;
-            while (currentTime < fadeTime)
+            IEnumerator SetMasterVolume(float currentVol, float targetVol, float fadeTime)
             {
-                yield return null;
-                currentTime += Utility.GetDeltaTime();
-                float vol = Mathf.Lerp(currentVol, targetVol, (currentTime / fadeTime).SetEase(ease));
-                _broAudioMixer.SafeSetFloat(MasterTrackName, vol);
+                Ease ease = currentVol < targetVol ? FadeInEase : FadeOutEase;
+                float currentTime = 0f;
+                while (currentTime < fadeTime)
+                {
+                    yield return null;
+                    currentTime += Utility.GetDeltaTime();
+                    float vol = Mathf.Lerp(currentVol, targetVol, (currentTime / fadeTime).SetEase(ease));
+                    _broAudioMixer.SafeSetFloat(MasterTrackName, vol);
+                }
             }
+#endif
         }
 
         public void SetVolume(int id, float vol, float fadeTime)
@@ -235,7 +248,7 @@ namespace Ami.BroAudio.Runtime
                 }
             }
         }
-#endregion
+        #endregion
 
         #region Effect
         public IAutoResetWaitable SetEffect(Effect effect)

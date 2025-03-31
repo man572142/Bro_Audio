@@ -95,6 +95,9 @@ namespace Ami.BroAudio.Editor
             string sourceEntityName = sourceProp.FindBackingFieldProperty(nameof(AudioEntity.Name)).stringValue;
 
             var newProp = listProp.GetArrayElementAtIndex(sourceIndex + 1);
+            var newEntityIdProp = newProp.FindBackingFieldProperty(nameof(AudioEntity.ID));
+            newEntityIdProp.intValue = _idGenerator.GetSimpleUniqueID(Utility.GetAudioType(newEntityIdProp.intValue));
+
             var newEntityNameProp = newProp.FindBackingFieldProperty(nameof(AudioEntity.Name));
             int newNameIndex = 1;
             if (sourceEntityName[sourceEntityName.Length - 1] == ')')
@@ -200,6 +203,21 @@ namespace Ami.BroAudio.Editor
 
             void OnDropDwonRightClickMenu(Rect rect, SerializedProperty property)
             {
+                string buffer = EditorGUIUtility.systemCopyBuffer;
+                if(!string.IsNullOrEmpty(buffer) && buffer.StartsWith("GenericPropertyJSON:"))
+                {
+                    string targetString = "\"name\":\"<ID>k__BackingField\",\"type\":0,\"val\":";
+                    int idStartIndex = buffer.IndexOf(targetString);
+                    if(idStartIndex > 0)
+                    {
+                        int valStart = idStartIndex + targetString.Length;
+                        int valEnd = buffer.IndexOf('}', valStart);
+                        int id = property.FindBackingFieldProperty(nameof(AudioEntity.ID)).intValue;
+                        buffer = buffer.Remove(valStart, valEnd - valStart).Insert(valStart, id.ToString());
+                        EditorGUIUtility.systemCopyBuffer = buffer;
+                    }
+                }
+
                 // similar to the default context menu but with more customized features
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent($"Duplicate ^D"), false, OnDuplicateSelectedEntity);

@@ -28,6 +28,7 @@ namespace Ami.BroAudio.Editor
         }
 
         public Object DemoScene => Instruction?.DemoScene;
+        public Object URPDemoScene => Instruction?.URPDemoScene;
 
         public string GetText(Instruction instruction)
         {

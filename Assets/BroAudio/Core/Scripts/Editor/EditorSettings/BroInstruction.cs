@@ -22,6 +22,7 @@ namespace Ami.BroAudio.Editor.Setting
         }
 
         public Object DemoScene = null;
+        public Object URPDemoScene = null;
         [SerializeField, ListElementName] private InstructionDictionary[] _dictionary = null;
         
         private Dictionary<Instruction, string> _actualDict = new Dictionary<Instruction, string>();

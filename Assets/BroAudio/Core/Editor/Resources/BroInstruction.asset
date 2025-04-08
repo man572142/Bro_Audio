@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: BroInstruction
   m_EditorClassIdentifier: 
   DemoScene: {fileID: 102900000, guid: 05a9e41d79251594aad6850fbdf49b6f, type: 3}
+  URPDemoScene: {fileID: 102900000, guid: 70510791fa9fafc448d4f1e7ea030cab, type: 3}
   _dictionary:
   - Key: 0
     Value: Everything works great!

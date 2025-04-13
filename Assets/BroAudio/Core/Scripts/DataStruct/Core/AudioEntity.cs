@@ -25,6 +25,9 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public float Pitch { get; private set; }
         [field: SerializeField] public float PitchRandomRange { get; private set; }
         [field: SerializeField] public float VolumeRandomRange { get; private set; }
+
+        // This property checks whether an entity's random properties are active while preserving the range value.
+        // Without it, we'd have to set the range to something like -1 to indicate no randomness, which would erase the user's setting each time they toggle the RND button.
         [field: SerializeField] public RandomFlag RandomFlags { get; private set; }
         public PlaybackGroup PlaybackGroup => _group ? _group : _upperGroup;
 
@@ -61,8 +64,7 @@ namespace Ami.BroAudio.Data
                 _ => throw new System.InvalidOperationException(),
             };
 
-            float half = range * 0.5f;
-            return baseValue + Random.Range(-half, half);
+            return Utility.GetRandomValue(baseValue, range);
         }
 
         public void ResetShuffleInUseState()

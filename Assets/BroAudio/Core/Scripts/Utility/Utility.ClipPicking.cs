@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio
@@ -20,8 +19,8 @@ namespace Ami.BroAudio
         }
 
         public static IBroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index, int velocity = 0)
-		{
-			index = 0;
+        {
+            index = 0;
             if (clips == null || clips.Length <= 0)
             {
                 Debug.LogError(LogTitle + "There are no AudioClip in the entity");

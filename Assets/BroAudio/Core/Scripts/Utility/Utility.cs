@@ -43,6 +43,12 @@ namespace Ami.BroAudio
             return Time.deltaTime;
         }
 
+        public static float GetRandomValue(float baseValue, float range)
+        {
+            float half = range * 0.5f;
+            return baseValue + UnityEngine.Random.Range(-half, half);
+        }
+
         public static int GetSample(int sampleRate, float seconds)
         {
             return (int)(sampleRate * seconds);

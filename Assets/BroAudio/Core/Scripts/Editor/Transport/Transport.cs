@@ -16,9 +16,9 @@ namespace Ami.BroAudio.Editor
 		public float[] PlaybackValues { get; private set; }
 		public float[] FadingValues { get; private set; }
 
-		public Transport(float length)
+		public Transport(float fullLength)
 		{
-			FullLength = length;
+			FullLength = fullLength;
 			PlaybackValues = new float[3]; // StartPosition, EndPosition, Delay
 			FadingValues = new float[2]; // FadeIn, FadeOut
 		}

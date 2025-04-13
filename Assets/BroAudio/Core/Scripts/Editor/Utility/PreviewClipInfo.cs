@@ -2,27 +2,27 @@ using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Editor
 {
-	public struct PreviewClip : IClip
+	public struct PreviewClipInfo : IClip
 	{
 		public float StartPosition { get; set; }
 		public float EndPosition { get; set; }
 		public float FullLength { get; set; }
 
-		public PreviewClip(IClip clip)
+		public PreviewClipInfo(IClip clip)
 		{
 			StartPosition = clip.StartPosition;
 			EndPosition = clip.EndPosition;
 			FullLength = clip.FullLength;
 		}
 
-		public PreviewClip(IBroAudioClip clip)
+		public PreviewClipInfo(IBroAudioClip clip)
 		{
             StartPosition = clip.StartPosition;
             EndPosition = clip.EndPosition;
             FullLength = clip.GetAudioClip().length;
         }
 
-		public PreviewClip(float length) : this()
+		public PreviewClipInfo(float length) : this()
 		{
 			FullLength = length;
 		}

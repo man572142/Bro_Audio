@@ -27,14 +27,15 @@ namespace Ami.BroAudio.Editor
             public bool IsLoop;
             public bool IsPreviewing;
             public readonly Rect[] HiddenButtonRects = new Rect[4];
+            public readonly IEditorPreviewable Previewable;
 
-            public bool IsPlaying => IsPreviewing || (Clips != null && Clips.IsPlaying);
-
+            public bool IsPlaying => Previewable != null && Previewable.CurrentClipPath != null;
             public ReorderableClips Clips { get; private set; }
 
-            public EntityData(ReorderableClips clips)
+            public EntityData(ReorderableClips clips, IEditorPreviewable previewable)
             {
                 Clips = clips;
+                Previewable = previewable;
             }
 
             public void Dispose()
@@ -212,7 +213,7 @@ namespace Ami.BroAudio.Editor
                     SerializedProperty currSelectClip = data.Clips.CurrentSelectedClip;
                     if (data.Clips.TryGetSelectedAudioClip(out AudioClip audioClip))
                     {
-                        DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport, out float volume);
+                        DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport);
                         DrawAdditionalClipProperties(position, currSelectClip, setting);
                         if (setting.CanDraw(DrawedProperty.ClipPreview) && audioClip != null && Event.current.type != EventType.Layout)
                         {
@@ -220,7 +221,7 @@ namespace Ami.BroAudio.Editor
                             Rect previewRect = GetNextLineRect(position);
                             previewRect.y -= PreviewPrettinessOffsetY;
                             previewRect.height = ClipPreviewHeight;
-                            _clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, volume, currSelectClip.propertyPath, data.Clips.SetPlayingClip, DrawPlaybackValuePeeking);
+                            _clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, data.Previewable, currSelectClip.propertyPath, DrawPlaybackValuePeeking);
                             data.Clips.SetPreviewRect(previewRect);
                             Offset += ClipPreviewHeight + ClipPreviewPadding;
                         }
@@ -229,6 +230,11 @@ namespace Ami.BroAudio.Editor
                 case Tab.Overall:
                     DrawAdditionalBaseProperties(position, property, setting);
                     break;
+            }
+
+            if (data.IsPlaying && data.Previewable.CurrentClipPath != null && _clipDataDict.TryGetValue(data.Previewable.CurrentClipPath, out var clipData))
+            {
+                EditorPlayAudioClip.Instance.UpdatePreviewClipValues(data.Previewable.Volume, data.Previewable.Pitch, clipData.Transport);
             }
 
             var evt = Event.current;
@@ -373,8 +379,9 @@ namespace Ami.BroAudio.Editor
         {
             if (!_entityDataDict.TryGetValue(property.propertyPath, out data))
             {
-                var reorderableClips = new ReorderableClips(property);
-                data = new EntityData(reorderableClips);
+                var previewable = new EntityPropertyPreviewable(property);
+                var reorderableClips = new ReorderableClips(property, previewable);
+                data = new EntityData(reorderableClips, previewable);
                 _entityDataDict[property.propertyPath] = data;
             }
         }
@@ -486,7 +493,7 @@ namespace Ami.BroAudio.Editor
             return reorderableClips;
         }
 
-        private void DrawClipProperties(Rect position, SerializedProperty clipProp, AudioClip audioClip, EditorSetting.AudioTypeSetting setting, out ITransport transport, out float volume)
+        private void DrawClipProperties(Rect position, SerializedProperty clipProp, AudioClip audioClip, EditorSetting.AudioTypeSetting setting, out ITransport transport)
         {
             SerializedProperty volumeProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
 
@@ -506,7 +513,6 @@ namespace Ami.BroAudio.Editor
                     clipData.IsSnapToFullVolume = !clipData.IsSnapToFullVolume;
                 });
             }
-            volume = volumeProp.floatValue;
 
             if (setting.CanDraw(DrawedProperty.PlaybackPosition))
             {
@@ -541,27 +547,25 @@ namespace Ami.BroAudio.Editor
 
             _currentPreviewingEntity = entity;
             var clip = entity.PickNewClip(out int index);
-            data.Clips.SelectAndSetPlayingElement(index);
+            var clipProp = data.Clips.SelectAndSetPlayingElement(index);
 
-            float volume = clip.Volume * entity.GetMasterVolume();
-            float pitch = entity.GetPitch();
+            data.Previewable.StartPreview(clipProp.propertyPath, out float volume, out float pitch);
             Action onReplay = null;
             if (data.IsLoop)
             {
                 onReplay = ReplayPreview;
             }
 
-            var clipData = new EditorPlayAudioClip.Data(clip) { Volume = volume };
-            EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, false, onReplay, pitch);
+            var clipData = new EditorPlayAudioClip.Data(clip, pitch) { Volume = volume };
+            EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, false, onReplay);
             if (canDisplayIndicator)
             {
-                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip), entity.GetPitch());
+                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClipInfo(clip), pitch);
             }
             else
             {
-                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(default, default, entity.GetPitch());
+                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(default, default, pitch);
             }
-            data.IsPreviewing = true;
             EditorPlayAudioClip.Instance.OnFinished = OnPreviewFinished;
 
             void ReplayPreview()
@@ -571,8 +575,7 @@ namespace Ami.BroAudio.Editor
 
             void OnPreviewFinished()
             {
-                data.IsPreviewing = false;
-                data.Clips.SetPlayingClip(null);
+                data.Previewable.EndPreview();
             }
         }
 

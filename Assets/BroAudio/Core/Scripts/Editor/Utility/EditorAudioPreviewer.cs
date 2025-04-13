@@ -26,7 +26,6 @@ namespace Ami.BroAudio.Editor
 
         private float _elapsedTime = 0f;
         private float _dbVolume = 0f;
-        private float _pitch = 1f;
 
         private bool _isInitSuccessfully = false;
 
@@ -49,7 +48,7 @@ namespace Ami.BroAudio.Editor
             else
             {
                 Debug.LogError($"EditorAudioPreviewer initializing fail! make sure you have " +
-                    $"{BroName.EditorAudioMixerName}.mixer in Resources/Editor folder, " +
+                    $"{BroName.EditorAudioMixerName}.mixer in Resources folder, " +
                     $"an AudioMixerGroup named:{BroName.MasterTrackName}, " +
                     $"and a snapshot named:{DefaultSnapshotName}");
             }
@@ -57,10 +56,9 @@ namespace Ami.BroAudio.Editor
 
         protected override float UpdateInterval => 1 / 30f;
 
-        public void SetData(EditorPlayAudioClip.Data clipData, float pitch = 1f)
+        public void SetData(EditorPlayAudioClip.Data clipData)
         {
             _clipData = clipData;
-            _pitch = pitch;
 
             if (_isInitSuccessfully && _method == null)
             {
@@ -106,7 +104,7 @@ namespace Ami.BroAudio.Editor
             float fadeOutPos = _clipData.Duration - _clipData.FadeOut;
             bool hasFaddeOut = _clipData.FadeOut > 0f;
 
-            _elapsedTime += DeltaTime * _pitch;
+            _elapsedTime += DeltaTime * _clipData.Pitch;
             if (_elapsedTime < _clipData.FadeIn)
             {
                 float t = (_elapsedTime / _clipData.FadeIn).SetEase(_fadeInEase);

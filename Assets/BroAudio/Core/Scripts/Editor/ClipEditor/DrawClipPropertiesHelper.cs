@@ -52,7 +52,6 @@ namespace Ami.BroAudio.Editor
 
         private TransportType[] _allTransportType = Enum.GetValues(typeof(TransportType)) as TransportType[];
         private WaveformRenderHelper _waveformHelper = new WaveformRenderHelper();
-        private Action<string> _onPreviewingClip = null;
 
         public void DrawPlaybackPositionField(Rect position, ITransport transport)
         {
@@ -95,7 +94,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        public void DrawClipPreview(Rect previewRect, ITransport transport, AudioClip audioClip, float volume, string clipPath, Action<string> onPreviewClip, Action<ITransport, TransportType, Rect> onDrawValuePeeking = null)
+        public void DrawClipPreview(Rect previewRect, ITransport transport, AudioClip audioClip, IEditorPreviewable previewable, string clipPath, Action<ITransport, TransportType, Rect> onDrawValuePeeking = null)
         {
             _clipPreviewHeight = previewRect.height;
             Event currEvent = Event.current;
@@ -255,20 +254,33 @@ namespace Ami.BroAudio.Editor
                     && previewRect.Contains(currEvent.mousePosition))
                 {
                     float clickedPoint = currEvent.mousePosition.Scoping(previewRect).x / previewRect.width;
-                    int startSample = (int)Math.Round(clickedPoint * audioClip.samples, MidpointRounding.AwayFromZero);
-                    EditorPlayAudioClip.Instance.PlayClip(audioClip, startSample, 0);
-                    EditorPlayAudioClip.Instance.OnFinished = () => _onPreviewingClip?.Invoke(null);
+
+                    float pitch = 1f;
+                    switch(currEvent.button)
+                    {
+                        case 0:
+                            var previewTransport = new Transport(audioClip.length);
+                            previewTransport.PlaybackValues[0] = clickedPoint * audioClip.length; // Start Position
+                            previewable.StartPreview(clipPath, out float vol, out pitch);
+                            var clip = new EditorPlayAudioClip.Data(audioClip, vol, pitch, previewTransport);
+                            EditorPlayAudioClip.Instance.PlayClipByAudioSource(clip);
+                            break;
+                        case 1:
+                            int startSample = (int)Math.Round(clickedPoint * audioClip.samples, MidpointRounding.AwayFromZero);
+                            EditorPlayAudioClip.Instance.PlayClip(audioClip, startSample, 0);
+                            break;
+                    }
+
+                    EditorPlayAudioClip.Instance.OnFinished = previewable.EndPreview;
                     currEvent.Use();
 
-                    PreviewClip clip = new PreviewClip()
+                    PreviewClipInfo info = new PreviewClipInfo()
                     {
                         StartPosition = clickedPoint * audioClip.length,
                         EndPosition = 0f,
                         FullLength = audioClip.length,
                     };
-                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, clip);
-                    _onPreviewingClip = onPreviewClip;
-                    _onPreviewingClip?.Invoke(clipPath);
+                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, info, pitch);
                 }
             }
         }

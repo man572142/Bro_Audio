@@ -12,7 +12,7 @@ namespace Ami.Extension
 		public event Action OnEnd;
 
 		private Rect _waveformRect = default;
-		private PreviewClip _clip = default;
+		private PreviewClipInfo _info = default;
 		private double _playingStartTime = default;
 		private float _speed = 1f;
 		
@@ -23,32 +23,32 @@ namespace Ami.Extension
 
 		protected override float UpdateInterval => 0.02f;  // 50 FPS
 
-		public void SetClipInfo(Rect waveformRect, PreviewClip clip, float pitch = 1f) 
+		public void SetClipInfo(Rect waveformRect, PreviewClipInfo info, float pitch) 
 		{
 			_waveformRect = waveformRect;
-			_clip = clip;
+			_info = info;
 			_speed = pitch;
 		}
 
 		public Rect GetIndicatorPosition()
 		{
-			if(_clip.FullLength != 0f && _waveformRect != default)
+			if(_info.FullLength != 0f && _waveformRect != default)
 			{
 				double currentPlayedLength = (EditorApplication.timeSinceStartup - _playingStartTime) * _speed;
 				double currentPos;
 				if(IsLoop)
 				{
-					float targetPlayLength = _clip.FullLength - _clip.StartPosition - _clip.EndPosition;
-                    currentPos = _clip.StartPosition + currentPlayedLength % targetPlayLength;
+					float targetPlayLength = _info.FullLength - _info.StartPosition - _info.EndPosition;
+                    currentPos = _info.StartPosition + currentPlayedLength % targetPlayLength;
 				}
                 else
                 {
-					float endTime = _clip.FullLength - _clip.EndPosition;
-					currentPos = _clip.StartPosition + currentPlayedLength;
+					float endTime = _info.FullLength - _info.EndPosition;
+					currentPos = _info.StartPosition + currentPlayedLength;
                     currentPos = Math.Min(currentPos, endTime);
 				}
                 
-				float x = (float)(_waveformRect.x + (currentPos / _clip.FullLength * _waveformRect.width));
+				float x = (float)(_waveformRect.x + (currentPos / _info.FullLength * _waveformRect.width));
 				return new Rect(x,_waveformRect.y, AudioClipIndicatorWidth,_waveformRect.height);
 			}
 			return default;
@@ -56,8 +56,8 @@ namespace Ami.Extension
 
 		public Rect GetEndPos()
 		{
-			float endTime = _clip.FullLength - _clip.EndPosition;
-			return new Rect(_waveformRect.x + (endTime / _clip.FullLength * _waveformRect.width), _waveformRect.y, AudioClipIndicatorWidth, _waveformRect.height);
+			float endTime = _info.FullLength - _info.EndPosition;
+			return new Rect(_waveformRect.x + (endTime / _info.FullLength * _waveformRect.width), _waveformRect.y, AudioClipIndicatorWidth, _waveformRect.height);
 		}
 
 		public override void Start()

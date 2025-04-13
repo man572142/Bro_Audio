@@ -6,10 +6,10 @@ using UnityEngine;
 
 namespace Ami.BroAudio.Editor
 {
-	public static partial class BroEditorUtility
+    public static partial class BroEditorUtility
     {
         public static void ResetBroAudioClipSerializedProperties(SerializedProperty property)
-		{
+        {
 #if PACKAGE_ADDRESSABLES
             var assetRefGuidProp = property
                 .FindPropertyRelative(BroAudioClip.NameOf.AudioClipAssetReference)
@@ -17,20 +17,20 @@ namespace Ami.BroAudio.Editor
             assetRefGuidProp.stringValue = string.Empty; 
 #endif
             property.FindPropertyRelative(BroAudioClip.NameOf.AudioClip).objectReferenceValue = null;
-			property.FindPropertyRelative(nameof(BroAudioClip.Weight)).intValue = 0;
-			ResetBroClipPlaybackSetting(property);
-		}
+            property.FindPropertyRelative(nameof(BroAudioClip.Weight)).intValue = 0;
+            ResetBroClipPlaybackSetting(property);
+        }
 
-		public static void ResetBroClipPlaybackSetting(SerializedProperty property)
-		{
-			property.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = AudioConstant.FullVolume;
-			property.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue = 0f;
-			property.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue = 0f;
-			property.FindPropertyRelative(nameof(BroAudioClip.FadeIn)).floatValue = 0f;
-			property.FindPropertyRelative(nameof(BroAudioClip.FadeOut)).floatValue = 0f;
-		}
+        public static void ResetBroClipPlaybackSetting(SerializedProperty property)
+        {
+            property.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue = AudioConstant.FullVolume;
+            property.FindPropertyRelative(nameof(BroAudioClip.StartPosition)).floatValue = 0f;
+            property.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue = 0f;
+            property.FindPropertyRelative(nameof(BroAudioClip.FadeIn)).floatValue = 0f;
+            property.FindPropertyRelative(nameof(BroAudioClip.FadeOut)).floatValue = 0f;
+        }
 
-		public static void ResetEntitySerializedProperties(SerializedProperty property)
+        public static void ResetEntitySerializedProperties(SerializedProperty property)
         {
             //could use enumerator to improve this, but might have to deal with some property
             property.FindBackingFieldProperty(nameof(AudioEntity.Name)).stringValue = string.Empty;
@@ -49,21 +49,21 @@ namespace Ami.BroAudio.Editor
 #endif
 
             SerializedProperty spatialProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSetting)));
-			spatialProp.objectReferenceValue = null;
+            spatialProp.objectReferenceValue = null;
             spatialProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-		}
+        }
 
-		public static int GetSerializedEnumIndex(this BroAudioType audioType)
-		{
-			int index = 0;
-			int intAudioType = (int)audioType;
-			while (intAudioType > 0)
-			{
-				index++;
-				intAudioType = intAudioType >> 1;
-			}
-			return index;
-		}
+        public static int GetSerializedEnumIndex(this BroAudioType audioType)
+        {
+            int index = 0;
+            int intAudioType = (int)audioType;
+            while (intAudioType > 0)
+            {
+                index++;
+                intAudioType = intAudioType >> 1;
+            }
+            return index;
+        }
 
         public static BroAudioType GetAudioTypeByIndex(int enumIndex)
         {
@@ -83,5 +83,5 @@ namespace Ami.BroAudio.Editor
                 property.animationCurveValue = curve;
             }
         }
-	}
+    }
 }

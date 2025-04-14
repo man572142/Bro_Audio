@@ -12,7 +12,7 @@ namespace Ami.BroAudio.Data
 #endif
 	public class BroAudioData : ScriptableObject
 	{
-        public const string CodeBaseVersion = "2.0.4";
+        public const string CodeBaseVersion = "2.0.5";
 
         [SerializeField, ReadOnly] string _version;
         [SerializeField] List<AudioAsset> _assets = new List<AudioAsset>();

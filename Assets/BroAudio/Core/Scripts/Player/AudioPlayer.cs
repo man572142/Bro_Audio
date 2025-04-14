@@ -18,8 +18,8 @@ namespace Ami.BroAudio.Runtime
 
         private IBroAudioClip _clip;
         private List<AudioPlayerDecorator> _decorators = null;
-        private string _sendParaName = string.Empty;
-        private string _currTrackName = string.Empty;
+        private string _sendParaName = null;
+        private string _currTrackName = null;
         //private string _pitchParaName = string.Empty;
 
         private AudioSourceProxy _proxy = null;
@@ -50,33 +50,21 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        private string VolumeParaName 
-        {
-            get
-            {
-                if (IsUsingEffect)
-                {
-                    return _sendParaName;
-                }
-                else if(!string.IsNullOrEmpty(_currTrackName))
-                {
-                    return _currTrackName;
-                }
-                return string.Empty;
-            }
-        }
-
         private AudioTrackType TrackType { get; set; } = AudioTrackType.Generic;
         private AudioMixerGroup AudioTrack 
         {
             set
             {
                 AudioSource.outputAudioMixerGroup = value;
-                _currTrackName = value == null? string.Empty : value.name;
-                _sendParaName = value == null ? string.Empty : _currTrackName + EffectParaNameSuffix;
-                //_pitchParaName = value == null ? string.Empty : _currTrackName + PitchParaNameSuffix;
+                if(value == null)
+                {
+                    _currTrackName = null;
+                    _sendParaName = null;
+                }
             }
         }
+
+        private string VolumeParaName => IsUsingEffect ? GetSendParaName() : GetCurrentTrackName();
 
         IAudioMixerPool MixerPool => SoundManager.Instance;
 
@@ -209,8 +197,8 @@ namespace Ami.BroAudio.Runtime
             bool newUsingEffectState = IsUsingEffect;
             if (oldUsingEffectState != newUsingEffectState)
             {
-                string from = IsUsingEffect ? _currTrackName : _sendParaName;
-                string to = IsUsingEffect ? _sendParaName : _currTrackName;
+                string from = IsUsingEffect ? GetCurrentTrackName() : GetSendParaName();
+                string to = IsUsingEffect ? GetSendParaName() : GetCurrentTrackName();
                 mixer.ChangeChannel(from, to, mixerDecibelVolume);
             }
         }
@@ -219,9 +207,24 @@ namespace Ami.BroAudio.Runtime
         {
             if(IsUsingEffect && TryGetMixerAndTrack(out var mixer, out _))
             {
-                mixer.SafeSetFloat(_sendParaName, AudioConstant.MinDecibelVolume);
+                mixer.SafeSetFloat(GetSendParaName(), AudioConstant.MinDecibelVolume);
             }
             CurrentActiveEffects = EffectType.None;
+        }
+
+        private string GetSendParaName()
+        {
+            if(IsUsingEffect)
+            {
+                _sendParaName ??= GetCurrentTrackName() + EffectParaNameSuffix;
+            }
+            return _sendParaName ?? string.Empty;
+        }
+
+        private string GetCurrentTrackName()
+        {
+            _currTrackName ??= AudioSource.outputAudioMixerGroup.name;
+            return _currTrackName ?? string.Empty;
         }
 
         IMusicPlayer IMusicDecoratable.AsBGM()

@@ -56,15 +56,14 @@ namespace Ami.BroAudio.Runtime
             }
 
             var validator = customValidator ?? entity.PlaybackGroup; // entity's runtime group will be set in InitBank() if it's null
-
-            bool isValid = validator == null || validator.IsPlayable(id);
-            player = _audioPlayerPool.Extract();
-            bool hasPlayer = player != null;
-            if (validator != null && hasPlayer)
+            if (validator != null && !validator.IsPlayable(id))
             {
-                validator.OnGetPlayer(player);
+                return false;
             }
-            return isValid && hasPlayer;
+
+            player = _audioPlayerPool.Extract();
+            validator?.OnGetPlayer(player);
+            return true;
         }
 
         private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref)

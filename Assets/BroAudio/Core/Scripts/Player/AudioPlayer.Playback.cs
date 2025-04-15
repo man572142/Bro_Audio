@@ -247,10 +247,13 @@ namespace Ami.BroAudio.Runtime
 
         private void TriggerSeamlessLoopReplay()
         {
-            ClearScheduleEndEvents(); // it should be rescheduled in the new player
-            OnSeamlessLoopReplay?.Invoke(ID, _instanceWrapper, _pref, CurrentActiveEffects, _trackVolume.Target, StaticPitch);
-            OnSeamlessLoopReplay = null;
-            _instanceWrapper = null; // the instance has been transferred to the new player
+            if(_pref.Entity.SeamlessLoop)
+            {
+                ClearScheduleEndEvents(); // it should be rescheduled in the new player
+                OnSeamlessLoopReplay?.Invoke(ID, _instanceWrapper, _pref, CurrentActiveEffects, _trackVolume.Target, StaticPitch);
+                OnSeamlessLoopReplay = null;
+                _instanceWrapper = null; // the instance has been transferred to the new player
+            }
         }
 
         #region Stop Overloads

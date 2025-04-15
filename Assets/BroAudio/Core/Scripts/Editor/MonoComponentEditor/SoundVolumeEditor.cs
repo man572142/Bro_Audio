@@ -194,7 +194,7 @@ namespace Ami.BroAudio.Editor
             float drawedPosY = 1f;
 
             DrawBackgroudWindow(2, _inspectorPadding, ref drawedPosY);
-            DrawBoldToggle(ref _applyOnEnableProp, _inspectorPadding, _applyOnEnableGUIContent);
+            DrawBoldToggle(_applyOnEnableProp, _inspectorPadding, _applyOnEnableGUIContent);
             using (new EditorGUI.IndentLevelScope(1))
             using (new EditorGUI.DisabledGroupScope(!_applyOnEnableProp.boolValue))
             {

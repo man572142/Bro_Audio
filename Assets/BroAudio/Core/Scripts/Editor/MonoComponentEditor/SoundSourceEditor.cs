@@ -3,6 +3,8 @@ using UnityEditor;
 using Ami.BroAudio.Runtime;
 using static Ami.BroAudio.SoundSource.NameOf;
 using static Ami.Extension.EditorScriptingExtension;
+using System.Collections.Generic;
+using System;
 
 namespace Ami.BroAudio.Editor
 {
@@ -24,6 +26,7 @@ namespace Ami.BroAudio.Editor
             "[Stay Here] Plays as a 3D sound and stays where the GameObject is located\n\n" +
             "[Follow Target] Plays as a 3D sound and follows the GameObject as it moves");
         private GUIContent _overrideGroupContent = new GUIContent("Override Playback Group", "Overrides the PlaybackGroup of the sound");
+        private Dictionary<string, SerializedProperty> _mainPropertyDict = new Dictionary<string, SerializedProperty>();
 
         private void OnEnable()
         {
@@ -33,7 +36,12 @@ namespace Ami.BroAudio.Editor
 
         private SerializedProperty FindProperty(string path)
         {
-            return serializedObject.FindProperty(path);
+            if (!_mainPropertyDict.TryGetValue(path, out var property))
+            {
+                property = serializedObject.FindProperty(path);
+                _mainPropertyDict[path] = property;
+            }
+            return property;
         }
 
         public override void OnInspectorGUI()
@@ -53,7 +61,7 @@ namespace Ami.BroAudio.Editor
             _currentDrawedPosY = 1f;
 
             DrawBackgroudWindow(2, _inspectorPadding, ref _currentDrawedPosY);
-            DrawBoldToggle(ref playOnEnableProp, _inspectorPadding, _playOnEnableContent);
+            DrawBoldToggle(playOnEnableProp, _inspectorPadding, _playOnEnableContent);
             using (new EditorGUI.IndentLevelScope(1))
             using (new EditorGUI.DisabledGroupScope(!playOnEnableProp.boolValue))
             {
@@ -64,7 +72,7 @@ namespace Ami.BroAudio.Editor
             _currentDrawedPosY += GUILayoutUtility.GetLastRect().height + EditorGUIUtility.standardVerticalSpacing;
 
             DrawBackgroudWindow(2, _inspectorPadding, ref _currentDrawedPosY);
-            DrawBoldToggle(ref stopOnDisableProp, _inspectorPadding, _stopOnDisableContent);
+            DrawBoldToggle(stopOnDisableProp, _inspectorPadding, _stopOnDisableContent);
             using (new EditorGUI.IndentLevelScope(1))
             using (new EditorGUI.DisabledGroupScope(!stopOnDisableProp.boolValue))
             using (new EditorGUILayout.HorizontalScope())
@@ -87,6 +95,8 @@ namespace Ami.BroAudio.Editor
             EditorGUILayout.Space();
             EditorGUILayout.PropertyField(overrideGroupProp, _overrideGroupContent);
 
+            DrawOtherProperties();
+
             serializedObject.ApplyModifiedProperties();
 
             if(Application.isPlaying && target is SoundSource source)
@@ -99,6 +109,27 @@ namespace Ami.BroAudio.Editor
                     EditorGUILayout.ObjectField("Current Player", player, typeof(AudioPlayer), false);
                 }
                 EditorGUI.EndDisabledGroup();
+            }
+        }
+
+        private void DrawOtherProperties()
+        {
+            var property = serializedObject.GetIterator();
+            bool hasEntered = false;
+            bool hasScriptChecked = false;
+
+            while(property.NextVisible(!hasEntered))
+            {
+                hasEntered = true;
+
+                if(!hasScriptChecked && property.name == "m_Script")
+                {
+                    hasScriptChecked = true;
+                }
+                else if(!_mainPropertyDict.ContainsKey(property.name))
+                {
+                    EditorGUILayout.PropertyField(property);
+                }
             }
         }
     } 

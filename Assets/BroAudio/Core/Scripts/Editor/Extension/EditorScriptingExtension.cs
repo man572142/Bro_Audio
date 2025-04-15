@@ -680,7 +680,7 @@ namespace Ami.Extension
             return result != null;
         }
 
-        public static void DrawBoldToggle(ref SerializedProperty property, RectOffset padding, GUIContent content = null)
+        public static void DrawBoldToggle(SerializedProperty property, RectOffset padding, GUIContent content = null)
         {
             // We can't draw a field with Bold Label because it's used for prefab overrides
             content ??= TempContent(property.displayName);

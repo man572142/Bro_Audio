@@ -8,63 +8,63 @@ using UnityEngine;
 namespace Ami.BroAudio.Data
 {
 #if BroAudio_DevOnly
-	[CreateAssetMenu(menuName = nameof(BroAudio) + "/BroAudioData", fileName = "BroAudioData")]
+    [CreateAssetMenu(menuName = nameof(BroAudio) + "/BroAudioData", fileName = "BroAudioData")]
 #endif
-	public class BroAudioData : ScriptableObject
-	{
-        public const string CodeBaseVersion = "2.0.5";
+    public class BroAudioData : ScriptableObject
+    {
+        public const string CodeBaseVersion = "2.0.6";
 
         [SerializeField, ReadOnly] string _version;
         [SerializeField] List<AudioAsset> _assets = new List<AudioAsset>();
         
-		public IReadOnlyList<IAudioAsset> Assets => _assets;
+        public IReadOnlyList<IAudioAsset> Assets => _assets;
         // 1.15 is the last version without this version control mechanic
         public Version Version => string.IsNullOrEmpty(_version) ? new Version(1,15) : new Version(_version);
 
 #if UNITY_EDITOR
-		public List<string> GetGUIDList()
-		{
-			List<string> list = new List<string>();
-			foreach (var asset in _assets)
-			{
-				list.Add(asset.AssetGUID);
-			}
-			return list;
-		}
+        public List<string> GetGUIDList()
+        {
+            List<string> list = new List<string>();
+            foreach (var asset in _assets)
+            {
+                list.Add(asset.AssetGUID);
+            }
+            return list;
+        }
 
-		public void AddAsset(AudioAsset asset)
-		{
-			if(asset)
-			{
+        public void AddAsset(AudioAsset asset)
+        {
+            if(asset)
+            {
                 _assets.Add(asset);
             }	
-		}
+        }
 
-		public void RemoveEmpty()
-		{
-			for (int i = _assets.Count - 1; i >= 0; i--)
-			{
-				if (!_assets[i])
-				{
-					_assets.RemoveAt(i);
-				}
-			}
-		}
+        public void RemoveEmpty()
+        {
+            for (int i = _assets.Count - 1; i >= 0; i--)
+            {
+                if (!_assets[i])
+                {
+                    _assets.RemoveAt(i);
+                }
+            }
+        }
 
-		public void ReorderAssets(List<string> guids)
-		{
-			if (_assets.Count != guids.Count)
-			{
-				Debug.LogError(Utility.LogTitle + "Asset count is not match!");
-				return;
-			}
-			_assets = _assets.OrderBy(x => guids.IndexOf(x.AssetGUID)).ToList();
-		} 
+        public void ReorderAssets(List<string> guids)
+        {
+            if (_assets.Count != guids.Count)
+            {
+                Debug.LogError(Utility.LogTitle + "Asset count is not match!");
+                return;
+            }
+            _assets = _assets.OrderBy(x => guids.IndexOf(x.AssetGUID)).ToList();
+        } 
 
         public void UpdateVersion()
         {
             _version = CodeBaseVersion;
         }
 #endif
-	} 
+    } 
 }

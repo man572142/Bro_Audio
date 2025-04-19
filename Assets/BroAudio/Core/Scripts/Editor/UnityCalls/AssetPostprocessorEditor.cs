@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Editor
         {
             if (importedAssets.Length > 0 && EditorWindow.HasOpenInstances<ClipEditorWindow>())
             {
-                ClipEditorWindow window = EditorWindow.GetWindow(typeof(ClipEditorWindow)) as ClipEditorWindow;
+                ClipEditorWindow window = EditorWindow.GetWindow<ClipEditorWindow>(null, false);
                 window.OnPostprocessAllAssets();
             }
         }
@@ -34,7 +34,7 @@ namespace Ami.BroAudio.Editor
 
             if (EditorWindow.HasOpenInstances<LibraryManagerWindow>())
             {
-                LibraryManagerWindow editorWindow = EditorWindow.GetWindow(typeof(LibraryManagerWindow)) as LibraryManagerWindow;
+                var editorWindow = EditorWindow.GetWindow<LibraryManagerWindow>(null, false);
 
                 foreach (string path in deletedAssets)
                 {

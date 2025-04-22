@@ -69,11 +69,11 @@ namespace Ami.BroAudio.Editor
         private readonly GUIContent _volumeLabel = new GUIContent(nameof(BroAudioClip.Volume), "The playback volume of this clip");
         private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
         private readonly IUniqueIDGenerator _idGenerator = new IdGenerator();
-        private TabViewData[] _tabViewDatas = new TabViewData[]
+        private readonly TabViewData[] _tabViewDatas = new TabViewData[]
             {
-                new TabViewData(0.475f, new GUIContent(nameof(Tab.Clips)), EditorPlayAudioClip.Instance.StopAllClips, null),
-                new TabViewData(0.475f, new GUIContent(nameof(Tab.Overall)), EditorPlayAudioClip.Instance.StopAllClips, null),
-                new TabViewData(0.05f, EditorGUIUtility.IconContent("pane options"), null, OnOpenOptionMenu),
+                new TabViewData(0.475f, new GUIContent(nameof(Tab.Clips))),
+                new TabViewData(0.475f, new GUIContent(nameof(Tab.Overall))),
+                new TabViewData(0.05f, EditorGUIUtility.IconContent("pane options"), OnOpenOptionMenu),
             };
 
         private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper();
@@ -465,9 +465,9 @@ namespace Ami.BroAudio.Editor
                 }
             }
 
-            if (data.IsPlaying && data.SelectedTab != Tab.Clips)
+            if (data.IsPlaying)
             {
-                EditorPlayAudioClip.Instance.PlaybackIndicator.End();
+                EditorPlayAudioClip.Instance.PlaybackIndicator.SetVisible(data.SelectedTab == Tab.Clips);
             }
         }
 

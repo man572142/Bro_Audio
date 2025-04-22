@@ -15,6 +15,7 @@ namespace Ami.Extension
 		private PreviewClipInfo _info = default;
 		private double _playingStartTime = default;
 		private float _speed = 1f;
+        private bool _isVisible = false;
 		
 		public bool IsPlaying { get; private set; }
 		public bool IsLoop { get; private set; }
@@ -32,7 +33,7 @@ namespace Ami.Extension
 
 		public Rect GetIndicatorPosition()
 		{
-			if(_info.FullLength != 0f && _waveformRect != default)
+			if(_isVisible && _info.FullLength != 0f && _waveformRect != default)
 			{
 				double currentPlayedLength = (EditorApplication.timeSinceStartup - _playingStartTime) * _speed;
 				double currentPos;
@@ -54,15 +55,15 @@ namespace Ami.Extension
 			return default;
 		}
 
-		public Rect GetEndPos()
-		{
-			float endTime = _info.FullLength - _info.EndPosition;
-			return new Rect(_waveformRect.x + (endTime / _info.FullLength * _waveformRect.width), _waveformRect.y, AudioClipIndicatorWidth, _waveformRect.height);
-		}
+		public void SetVisible(bool isVisible)
+        {
+            _isVisible = isVisible;
+        }
 
 		public override void Start()
 		{
-			_playingStartTime = EditorApplication.timeSinceStartup;
+            _isVisible = true;
+            _playingStartTime = EditorApplication.timeSinceStartup;
 			IsPlaying = true;
 			IsLoop = false;
 			base.Start();
@@ -82,6 +83,7 @@ namespace Ami.Extension
 				OnEnd?.Invoke();
 			}
 			_playingStartTime = default;
+            _isVisible = false;
 			base.End();
 		}
 

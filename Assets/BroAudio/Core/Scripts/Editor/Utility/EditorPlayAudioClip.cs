@@ -10,6 +10,8 @@ using System.Reflection;
 using static Ami.BroAudio.Utility;
 using static Ami.Extension.Reflection.ClassReflectionHelper;
 using static Ami.Extension.TimeExtension;
+using Ami.BroAudio.Runtime;
+using Ami.BroAudio.Tools;
 
 #if UNITY_EDITOR
 namespace Ami.Extension
@@ -99,6 +101,12 @@ namespace Ami.Extension
         public EditorPlayAudioClip()
         {
             _mixer = Resources.Load<AudioMixer>(BroEditorUtility.EditorAudioMixerPath);
+            if(!_mixer)
+            {
+                Debug.LogError($"Fail to load {BroName.EditorAudioMixerName}.mixer!");
+                return;
+            }
+
             PlaybackIndicator = new PlaybackIndicatorUpdater();
             _volumeTransporter = new EditorAudioPreviewer(_mixer);
 

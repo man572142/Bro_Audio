@@ -215,8 +215,6 @@ namespace Ami.Extension
         {
             audioSource.clip = clip.AudioClip;
             audioSource.playOnAwake = false;
-            // TODO: bug
-            Debug.Log($"start:{clip.StartPosition} vol:{clip.Volume} pitch:{clip.Pitch}");
             audioSource.timeSamples = GetSample(clip.AudioClip.frequency, clip.StartPosition);
             audioSource.pitch = clip.Pitch;
             audioSource.outputAudioMixerGroup = GetEditorMasterTrack();

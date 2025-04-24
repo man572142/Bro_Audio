@@ -338,7 +338,7 @@ namespace Ami.BroAudio.Editor
                     }
 
                     _isPlaying = true;
-                    EditorPlayAudioClip.Instance.OnFinished = () => _isPlaying = false; ;
+                    EditorPlayAudioClip.Instance.OnFinished = () => _isPlaying = false;
                     EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, info, 1f);
                 }
             }

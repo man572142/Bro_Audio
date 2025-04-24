@@ -566,16 +566,11 @@ namespace Ami.BroAudio.Editor
             {
                 EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(default, default, pitch);
             }
-            EditorPlayAudioClip.Instance.OnFinished = OnPreviewFinished;
+            EditorPlayAudioClip.Instance.OnFinished = data.Previewable.EndPreview;
 
             void ReplayPreview()
             {
                 StartPreview(data, entity, canDisplayIndicator);
-            }
-
-            void OnPreviewFinished()
-            {
-                data.Previewable.EndPreview();
             }
         }
 

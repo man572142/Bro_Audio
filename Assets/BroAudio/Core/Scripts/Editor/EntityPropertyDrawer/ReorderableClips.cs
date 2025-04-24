@@ -28,15 +28,14 @@ namespace Ami.BroAudio.Editor
         private const float SliderLabelWidth = 25;
         private const float ObjectPickerRatio = 0.6f;
 
-        private ReorderableList _reorderableList;
-        private SerializedProperty _entityProp;
-        private SerializedProperty _playModeProp;
-        private SerializedProperty _useAddressablesProp;
-        private IEditorPreviewable _previewable;
+        private readonly ReorderableList _reorderableList;
+        private readonly SerializedProperty _entityProp;
+        private readonly SerializedProperty _playModeProp;
+        private readonly SerializedProperty _useAddressablesProp;
+        private readonly IEditorPreviewable _previewable;
         private int _currSelectedClipIndex = -1;
         private SerializedProperty _currSelectedClip;
         private Rect _previewRect = default;
-        private string _currentPlayingClipPath;
         private GUIContent _weightGUIContent = new GUIContent("Weight", "Probability = Weight / Total Weight");
 #if PACKAGE_ADDRESSABLES
         private List<AudioClip> _assetReferenceCachedClips = new List<AudioClip>();  
@@ -95,7 +94,6 @@ namespace Ami.BroAudio.Editor
         public void Dispose()
         {
             Undo.undoRedoPerformed -= OnUndoRedoPerformed;
-            _currentPlayingClipPath = null;
         }
 
         public void SetPreviewRect(Rect rect)
@@ -109,15 +107,9 @@ namespace Ami.BroAudio.Editor
             {
                 _reorderableList.index = index;
                 var clipProp = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
-                SetPlayingClip(clipProp.propertyPath);
                 return clipProp;
             }
             return null;
-        }
-
-        public void SetPlayingClip(string clipPath)
-        {
-            _currentPlayingClipPath = clipPath;
         }
 
         public bool TryGetSelectedAudioClip(out AudioClip audioClip)
@@ -434,7 +426,7 @@ namespace Ami.BroAudio.Editor
                 }
 
                 SetHasAny(true, referenceType);
-                bool isPlaying = string.Equals(_currentPlayingClipPath, clipProp.propertyPath);
+                bool isPlaying = string.Equals(_previewable.CurrentClipPath, clipProp.propertyPath);
                 var image = GetPlaybackButtonIcon(isPlaying).image;
                 GUIContent buttonGUIContent = new GUIContent(image, EditorPlayAudioClip.IgnoreSettingTooltip);
                 if (GUI.Button(buttonRect, buttonGUIContent))
@@ -485,6 +477,7 @@ namespace Ami.BroAudio.Editor
             {
                 PreviewClipInfo info;
                 float pitch = 1f;
+                EditorPlayAudioClip.Instance.OnFinished = null;
                 if (Event.current.button == 0) // Left Click
                 {
                     _previewable.StartPreview(clipProp.propertyPath, out float volume, out pitch);
@@ -499,15 +492,8 @@ namespace Ami.BroAudio.Editor
                     info = new PreviewClipInfo(audioClip.length);
                 }
 
-                _currentPlayingClipPath = clipProp.propertyPath;
-                EditorPlayAudioClip.Instance.OnFinished = EndPreview;
+                EditorPlayAudioClip.Instance.OnFinished = _previewable.EndPreview;
                 EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, info, pitch);
-            }
-
-            void EndPreview()
-            {
-                _currentPlayingClipPath = null;
-                _previewable?.EndPreview();
             }
 
             void DrawVolumeSlider()

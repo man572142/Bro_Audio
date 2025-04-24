@@ -255,18 +255,17 @@ namespace Ami.BroAudio.Editor
                 {
                     float clickedPoint = currEvent.mousePosition.Scoping(previewRect).x / previewRect.width;
                     float pitch = 1f;
-                    switch(currEvent.button)
+                    EditorPlayAudioClip.Instance.OnFinished = null;
+                    switch (currEvent.button)
                     {
                         case 0:
-                            EditorPlayAudioClip.Instance.OnFinished = null;
                             var previewTransport = new Transport(audioClip.length);
                             previewTransport.PlaybackValues[0] = clickedPoint * audioClip.length; // Start Position
                             previewable.StartPreview(clipPath, out float vol, out pitch);
                             var clip = new EditorPlayAudioClip.Data(audioClip, vol, pitch, previewTransport);
                             EditorPlayAudioClip.Instance.PlayClipByAudioSource(clip);
                             break;
-                        case 1:
-                            EditorPlayAudioClip.Instance.OnFinished = null;
+                        default:
                             int startSample = (int)Math.Round(clickedPoint * audioClip.samples, MidpointRounding.AwayFromZero);
                             EditorPlayAudioClip.Instance.PlayClip(audioClip, startSample, 0);
                             break;

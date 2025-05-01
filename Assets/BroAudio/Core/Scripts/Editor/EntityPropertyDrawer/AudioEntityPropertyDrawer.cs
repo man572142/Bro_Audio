@@ -605,9 +605,7 @@ namespace Ami.BroAudio.Editor
 
             GenericMenu menu = new GenericMenu();
             menu.AddDisabledItem(new GUIContent($"ID:{idProp.intValue}"));
-#if BroAudio_DevOnly
             menu.AddItem(new GUIContent("Copy ID to the clipboard"), false, CopyID);
-#endif
             menu.AddItem(new GUIContent($"Duplicate ^D"), false, () => OnDulicateEntity?.Invoke());
             menu.AddItem(new GUIContent($"Remove _DELETE"), false, () => OnRemoveEntity?.Invoke());
 
@@ -645,12 +643,10 @@ namespace Ami.BroAudio.Editor
                 }
             }
 
-#if BroAudio_DevOnly
             void CopyID()
             {
                 EditorGUIUtility.systemCopyBuffer = idProp.intValue.ToString();
             }
-#endif
         }
     }
 }

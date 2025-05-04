@@ -82,11 +82,7 @@ namespace Ami.BroAudio.Editor
             var newGO = ObjectFactory.CreateGameObject("Sound Source", typeof(SoundSource));
             Type goCreationClass = ClassReflectionHelper.GetUnityEditorClass("GOCreationCommands");
 
-#if UNITY_2020_3_OR_NEWER
             object[] parameters = new object[] { newGO, parent, true };
-#else
-            object[] parameters = new object[] { newGO, parent , };
-#endif
             ReflectionExtension.ExecuteMethod("Place", parameters, goCreationClass, null, BindingFlags.NonPublic | BindingFlags.Static);
         }
 #endif
@@ -299,7 +295,7 @@ namespace Ami.BroAudio.Editor
             DrawDecibelValuePeeking(currentValue, padding, sliderRect, newSliderValue);
 #else
             currentValue = GUI.HorizontalSlider(sliderRect, currentValue, 0f, FullVolume);
-			currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue),0f,FullVolume);
+            currentValue = Mathf.Clamp(EditorGUI.FloatField(fieldRect, currentValue),0f,FullVolume);
 #endif
 
             return currentValue;

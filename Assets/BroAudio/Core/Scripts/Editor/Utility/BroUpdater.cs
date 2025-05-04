@@ -56,7 +56,7 @@ public class BroUpdater
         RemoveDemoAssetsIfNotExist(corePath, coreData);
         coreData.UpdateVersion();
         EditorUtility.SetDirty(coreData);
-        SaveAssetIfDirty(coreData);
+        AssetDatabase.SaveAssetIfDirty(coreData);
         UnityEngine.Debug.Log(Utility.LogTitle + $"BroAudio has been successfully upgraded from {currentVersion} to {targetVersion}!");
     }
 

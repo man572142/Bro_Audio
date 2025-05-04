@@ -4,21 +4,23 @@ using static Ami.BroAudio.Editor.BroEditorUtility;
 
 namespace Ami.BroAudio.Editor
 {
-	public class IdGenerator : IUniqueIDGenerator
-	{
-		private bool _isInit = false;
+    public class IdGenerator : IUniqueIDGenerator
+    {
+        private bool _isInit = false;
         private IReadOnlyList<IAudioAsset> _assetList = null;
+        private Dictionary<BroAudioType, int> _lastIDs = null;
 
         private void Init()
-		{
+        {
             if(!TryGetCoreData(out var coreData))
             {
                 return;
             }
 
             _assetList = coreData.Assets;
-			_isInit = true;
-		}
+            _lastIDs = new Dictionary<BroAudioType, int>();
+            _isInit = true;
+        }
 
         public int GetSimpleUniqueID(BroAudioType audioType)
         {
@@ -28,30 +30,27 @@ namespace Ami.BroAudio.Editor
             }
 
             if(audioType == BroAudioType.None)
-			{
-                return default;
-			}
-
-            int lastID = default;
-            foreach (IAudioAsset asset in _assetList)
             {
-                foreach (var entity in asset.GetAllAudioEntities())
+                return default;
+            }
+
+            if(!_lastIDs.TryGetValue(audioType, out int lastID))
+            {
+                foreach (IAudioAsset asset in _assetList)
                 {
-                    if (Utility.GetAudioType(entity.ID) == audioType && entity.ID > lastID)
+                    foreach (var entity in asset.GetAllAudioEntities())
                     {
-                        lastID = entity.ID;
+                        if (Utility.GetAudioType(entity.ID) == audioType && entity.ID > lastID)
+                        {
+                            lastID = entity.ID;
+                        }
                     }
                 }
             }
 
-            if (lastID == default)
-            {
-                return audioType.GetInitialID();
-            }
-            else
-            {
-                return lastID + 1;
-            }
+            int newID = lastID == default ? audioType.GetInitialID() : lastID + 1;
+            _lastIDs[audioType] = newID;
+            return newID;
         }
-	} 
+    } 
 }

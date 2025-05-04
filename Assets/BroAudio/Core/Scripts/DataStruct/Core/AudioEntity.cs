@@ -109,6 +109,11 @@ namespace Ami.BroAudio.Data
         [SerializeField] private SeamlessType SeamlessTransitionType = SeamlessType.ClipSetting;
         [SerializeField] private TempoTransition TransitionTempo = default;
         [SerializeField] private bool SnapToFullVolume = false;
+
+        public void ReassignID(int id)
+        {
+            ID = id;
+        }
 #endif
     }
 }

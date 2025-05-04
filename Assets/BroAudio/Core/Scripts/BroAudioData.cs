@@ -40,15 +40,18 @@ namespace Ami.BroAudio.Data
             }	
         }
 
-        public void RemoveEmpty()
+        public bool RemoveEmpty()
         {
+            bool hasRemoved = false;
             for (int i = _assets.Count - 1; i >= 0; i--)
             {
                 if (!_assets[i])
                 {
                     _assets.RemoveAt(i);
+                    hasRemoved = true;
                 }
             }
+            return hasRemoved;
         }
 
         public void ReorderAssets(List<string> guids)

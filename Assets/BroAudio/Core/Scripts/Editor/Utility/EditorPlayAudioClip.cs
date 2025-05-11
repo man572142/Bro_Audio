@@ -1,17 +1,16 @@
 using UnityEngine;
 using UnityEditor;
-using System;
-using System.Threading;
+using UnityEngine.Audio;
 using Ami.BroAudio.Editor;
 using Ami.BroAudio.Data;
-using UnityEngine.Audio;
+using Ami.BroAudio.Tools;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Reflection;
 using static Ami.BroAudio.Utility;
 using static Ami.Extension.Reflection.ClassReflectionHelper;
 using static Ami.Extension.TimeExtension;
-using Ami.BroAudio.Runtime;
-using Ami.BroAudio.Tools;
 
 #if UNITY_EDITOR
 namespace Ami.Extension
@@ -200,6 +199,7 @@ namespace Ami.Extension
             if (_currentEditorAudioSource)
             {
                 CancelTask();
+                _currentEditorAudioSource.Stop();
             }
             else
             {
@@ -214,7 +214,7 @@ namespace Ami.Extension
         private void SetAudioSource(ref AudioSource audioSource, Data clip)
         {
             audioSource.clip = clip.AudioClip;
-            audioSource.playOnAwake = false;
+            audioSource.playOnAwake = false;       
             audioSource.timeSamples = GetSample(clip.AudioClip.frequency, clip.StartPosition);
             audioSource.pitch = clip.Pitch;
             audioSource.outputAudioMixerGroup = GetEditorMasterTrack();

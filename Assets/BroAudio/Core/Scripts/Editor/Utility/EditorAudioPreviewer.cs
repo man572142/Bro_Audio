@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Ami.Extension;
 using UnityEngine.Audio;
@@ -26,7 +24,6 @@ namespace Ami.BroAudio.Editor
 
         private float _elapsedTime = 0f;
         private float _dbVolume = 0f;
-
         private bool _isInitSuccessfully = false;
 
         public float CurrentDecibelVolume => _dbVolume;
@@ -102,7 +99,7 @@ namespace Ami.BroAudio.Editor
             }
 
             float fadeOutPos = _clipData.Duration - _clipData.FadeOut;
-            bool hasFaddeOut = _clipData.FadeOut > 0f;
+            bool hasFadeOut = _clipData.FadeOut > 0f;
 
             _elapsedTime += DeltaTime * _clipData.Pitch;
             if (_elapsedTime < _clipData.FadeIn)
@@ -110,14 +107,14 @@ namespace Ami.BroAudio.Editor
                 float t = (_elapsedTime / _clipData.FadeIn).SetEase(_fadeInEase);
                 SetVolume(Mathf.Lerp(0f, _clipData.Volume, t));
             }
-            else if (hasFaddeOut && _elapsedTime >= fadeOutPos && _elapsedTime < _clipData.Duration)
+            else if (hasFadeOut && _elapsedTime >= fadeOutPos && _elapsedTime < _clipData.Duration)
             {
                 float t = ((_elapsedTime - fadeOutPos) / _clipData.FadeOut).SetEase(_fadeOutEase);
                 SetVolume(Mathf.Lerp(_clipData.Volume, 0f, t));
             }
             else
             {
-                SetVolume(hasFaddeOut && _elapsedTime >= _clipData.Duration ? 0f : _clipData.Volume);
+                SetVolume(hasFadeOut && _elapsedTime >= _clipData.Duration ? 0f : _clipData.Volume);
             }
             base.Update();
         }

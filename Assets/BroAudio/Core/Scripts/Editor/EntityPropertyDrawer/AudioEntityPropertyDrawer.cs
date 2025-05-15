@@ -9,6 +9,7 @@ using System;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using Decision = Ami.BroAudio.Editor.EditorSetting.ReferenceConversionDecision;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace Ami.BroAudio.Editor
 {
@@ -175,7 +176,8 @@ namespace Ami.BroAudio.Editor
             }
 
             EditorGUI.BeginChangeCheck();
-            property.isExpanded = EditorGUI.Foldout(foldoutRect.AdjustWidth(-audioTypeRect.width), property.isExpanded, property.isExpanded ? string.Empty : nameProp.stringValue, !property.isExpanded);
+            string content = property.isExpanded ? string.Empty : nameProp.stringValue;
+            property.isExpanded = EditorGUI.Foldout(foldoutRect.AdjustWidth(-audioTypeRect.width), property.isExpanded, content, !property.isExpanded);
             if (EditorGUI.EndChangeCheck() && Event.current.alt)
             {
                 OnExpandAll?.Invoke(property.isExpanded);
@@ -455,19 +457,22 @@ namespace Ami.BroAudio.Editor
             {
                 if (data.IsPlaying)
                 {
+                    Debug.Log("Stop");
                     EditorPlayAudioClip.Instance.StopAllClips();
                     Utility.ClearClipsSequencer();
                     entity.Clips.ResetIsUse();
                 }
                 else
                 {
-                    StartPreview(data, entity, property.isExpanded);
+                    _currentPreviewingEntity = entity;
+                    StartPreview(data, property.isExpanded);
                 }
             }
 
             if (data.IsPlaying)
             {
                 EditorPlayAudioClip.Instance.PlaybackIndicator.SetVisible(data.SelectedTab == Tab.Clips);
+                EditorPlayAudioClip.Instance.PlaybackIndicator.SetSpeed(data.Previewable != null ? data.Previewable.Pitch : 1f);
             }
         }
 
@@ -538,26 +543,24 @@ namespace Ami.BroAudio.Editor
             _clipDataDict.Remove(clipPropPath);
         }
 
-        private void StartPreview(EntityData data, AudioEntity entity, bool canDisplayIndicator)
+        private void StartPreview(EntityData data, bool canDisplayIndicator, EditorPlayAudioClip.ReplayData replayData = default)
         {
-            if (entity == null)
+            if (_currentPreviewingEntity == null)
             {
                 return;
             }
-
-            _currentPreviewingEntity = entity;
-            var clip = entity.PickNewClip(out int index);
+  
+            var clip = _currentPreviewingEntity.PickNewClip(out int index);
             var clipProp = data.Clips.SelectAndSetPlayingElement(index);
 
             data.Previewable.StartPreview(clipProp.propertyPath, out float volume, out float pitch);
-            Action onReplay = null;
-            if (data.IsLoop)
+            if (data.IsLoop && replayData.OnReplay == null)
             {
-                onReplay = ReplayPreview;
+                replayData.OnReplay = ReplayPreview;
             }
 
             var clipData = new EditorPlayAudioClip.Data(clip, pitch) { Volume = volume };
-            EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, false, onReplay);
+            EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, false, replayData);
             if (canDisplayIndicator)
             {
                 EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClipInfo(clip), pitch);
@@ -568,9 +571,9 @@ namespace Ami.BroAudio.Editor
             }
             EditorPlayAudioClip.Instance.OnFinished = data.Previewable.EndPreview;
 
-            void ReplayPreview()
+            void ReplayPreview(EditorPlayAudioClip.ReplayData replayData)
             {
-                StartPreview(data, entity, canDisplayIndicator);
+                StartPreview(data, canDisplayIndicator, replayData);
             }
         }
 

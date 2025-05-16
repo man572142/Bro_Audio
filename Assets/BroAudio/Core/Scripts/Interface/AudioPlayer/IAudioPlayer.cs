@@ -11,14 +11,14 @@ namespace Ami.BroAudio
 		/// </summary>
 		SoundID ID { get; }
 
-        /// <summary>
-        /// Returns true if the player is about to play or is playing 
-        /// </summary>
+        /// <summary>  
+        /// Indicates whether the player is currently in the playback process, including queued, playing, or paused states.
+        /// </summary>  
         bool IsActive { get; }
 
-        /// <summary>
+        /// <summary>  
         /// Returns true if the player is playing
-        /// </summary>
+        /// </summary>  
         bool IsPlaying { get; }
 
         Data.IBroAudioClip CurrentPlayingClip { get; }

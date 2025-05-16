@@ -24,7 +24,13 @@ namespace Ami.BroAudio
         [SerializeField] PositionMode _positionMode = default;
 
         public IAudioPlayer CurrentPlayer { get; private set; }
+
+        ///<inheritdoc cref="IAudioPlayer.IsPlaying()"/>
         public bool IsPlaying => CurrentPlayer != null && CurrentPlayer.IsPlaying;
+
+        ///<inheritdoc cref="IAudioPlayer.IsActive()"/>
+        public bool IsActive => CurrentPlayer != null && CurrentPlayer.IsActive;
+
 
         private void OnEnable()
         {

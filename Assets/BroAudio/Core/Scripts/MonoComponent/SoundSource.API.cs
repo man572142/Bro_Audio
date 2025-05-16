@@ -1,6 +1,5 @@
 using Ami.BroAudio.Runtime;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Ami.BroAudio
 {
@@ -55,7 +54,7 @@ namespace Ami.BroAudio
         ///<inheritdoc cref="BroAudio.Stop(SoundID, float)"/>
         public void Stop(float fadeTime)
         {
-            if (IsPlaying)
+            if (IsActive)
             {
                 CurrentPlayer.Stop(fadeTime);
             }
@@ -67,7 +66,7 @@ namespace Ami.BroAudio
         ///<inheritdoc cref="BroAudio.Pause(SoundID, float)"/>
         public void Pause(float fadeTime)
         {
-            if (IsPlaying)
+            if (IsActive)
             {
                 CurrentPlayer.Pause(fadeTime);
             }
@@ -79,7 +78,7 @@ namespace Ami.BroAudio
         ///<inheritdoc cref="BroAudio.UnPause(SoundID, float)"/>
         public void UnPause(float fadeTime)
         {
-            if (IsPlaying)
+            if (IsActive)
             {
                 CurrentPlayer.UnPause(fadeTime);
             }

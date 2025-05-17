@@ -133,7 +133,7 @@ namespace Ami.BroAudio.Editor
             var weightedProp = elementProp.FindPropertyRelative(Band.NameOf.Weighted);
             float lastFreq = GetLastFrequency();
             SplitRectVertical(rect, 1f, _bandRects, _bandRectRatios);
-            string label = $"{lastFreq}Hz ~ " + $"{freqProp.floatValue}Hz".ToWhiteBold();
+            string label = $"{lastFreq}Hz - " + $"{freqProp.floatValue}Hz".ToWhiteBold();
             EditorGUI.LabelField(_bandRects[0], label, GUIStyleHelper.RichText);
 
             EditorGUI.BeginChangeCheck();
@@ -229,19 +229,20 @@ namespace Ami.BroAudio.Editor
 
         private void DrawSpectrumView()
         {
-            float width = EditorGUIUtility.currentViewWidth - 18f - 4f;
-            Rect rect = GUILayoutUtility.GetRect(width, SpectrumViewHeight + SpectrumViewLabelHeight * 2);
-            Rect viewRect = new Rect(rect.x - 16f, rect.y + SpectrumViewLabelHeight, width, SpectrumViewHeight);
+            EditorGUILayout.GetControlRect(GUILayout.Height(SpectrumViewHeight + SpectrumViewLabelHeight * 2));
+            Rect rect = GUILayoutUtility.GetLastRect();
+            const float extraWidth = 15f;
+            Rect viewRect = new Rect(rect.x - extraWidth, rect.y + SpectrumViewLabelHeight, rect.width + extraWidth, SpectrumViewHeight);
             if (Event.current.type == EventType.Repaint)
             {
                 GUI.skin.window.Draw(viewRect, false, false, false, false);
             }
 
-            viewRect = DrawReferenceView(width, viewRect);
-            DrawBands(width, viewRect, out float selectedBandX, out float previousBandOfSelectedX);
+            DrawReferenceView(viewRect);
+            DrawBands(viewRect, out float selectedBandX, out float previousBandOfSelectedX);
             DrawGradientRect(viewRect, selectedBandX, previousBandOfSelectedX);
 
-            void DrawBands(float width, Rect viewRect, out float selectedBandX, out float previousBandOfSelectedX)
+            void DrawBands(Rect viewRect, out float selectedBandX, out float previousBandOfSelectedX)
             {
                 Event evt = Event.current;
                 selectedBandX = viewRect.x;
@@ -252,7 +253,7 @@ namespace Ami.BroAudio.Editor
                     var elementProp = _bandsProp.Property.GetArrayElementAtIndex(i);
                     var freqProp = elementProp.FindPropertyRelative(nameof(Band.Frequency));
 
-                    float x = width * Mathf.InverseLerp(MinFrequencyLogValue, MaxFrequencyLogValue, Mathf.Log10(freqProp.floatValue));
+                    float x = viewRect.width * Mathf.InverseLerp(MinFrequencyLogValue, MaxFrequencyLogValue, Mathf.Log10(freqProp.floatValue));
                     Rect lineRect = new Rect(viewRect.x + x, viewRect.y, 2f, SpectrumViewHeight);
 
                     Color color = BroEditorUtility.EditorSetting.GetSpectrumColor(i);
@@ -290,7 +291,7 @@ namespace Ami.BroAudio.Editor
                         case EventType.MouseDrag:
                             if (GUIUtility.hotControl == controlID)
                             {
-                                float normalized = (x + evt.delta.x) / width;
+                                float normalized = (x + evt.delta.x) / viewRect.width;
                                 float log = Mathf.Lerp(MinFrequencyLogValue, MaxFrequencyLogValue, normalized);
                                 float freq = Mathf.Pow(10, log);
                                 if (evt.control)
@@ -344,14 +345,14 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private Rect DrawReferenceView(float width, Rect viewRect)
+        private void DrawReferenceView(Rect viewRect)
         {
             Color refColor = Color.gray;
             refColor.a = 0.2f;
             _referenceFrequencies ??= GetReferenceLogFrequencies();
             for (int i = 0; i < _referenceFrequencies.Count; i++)
             {
-                float x = width * Mathf.InverseLerp(MinFrequencyLogValue, MaxFrequencyLogValue, _referenceFrequencies[i].logFreq);
+                float x = viewRect.width * Mathf.InverseLerp(MinFrequencyLogValue, MaxFrequencyLogValue, _referenceFrequencies[i].logFreq);
                 Rect lineRect = new Rect(viewRect.x + x, viewRect.y + 1f, 1f, SpectrumViewHeight - 2f);
                 EditorGUI.DrawRect(lineRect, refColor);
 
@@ -365,11 +366,9 @@ namespace Ami.BroAudio.Editor
             for (int i = 1; i < AmplitubeScaleCount; i++)
             {
                 float y = SpectrumViewHeight / AmplitubeScaleCount * i;
-                Rect lineRect = new Rect(viewRect.x, viewRect.y + y, width, 1f);
+                Rect lineRect = new Rect(viewRect.x, viewRect.y + y, viewRect.width, 1f);
                 EditorGUI.DrawRect(lineRect, refColor);
             }
-
-            return viewRect;
         }
 
         float GetLastFrequency(int index)

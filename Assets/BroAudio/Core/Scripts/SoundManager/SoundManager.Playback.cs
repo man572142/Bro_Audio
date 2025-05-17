@@ -44,14 +44,10 @@ namespace Ami.BroAudio.Runtime
 
         private bool IsPlayable(SoundID id, IPlayableValidator customValidator, out IAudioEntity entity, out AudioPlayer player)
         {
-            entity = null;
             player = null;
 
-            if(id <= 0 || !_audioBank.TryGetValue(id, out entity))
+            if(!TryGetEntity(id, out entity))
             {
-#if UNITY_EDITOR
-                Debug.LogError(LogTitle + $"The sound is missing or it has never been assigned. No sound will be played. Object:{id.DebugObject?.name}", id.DebugObject); 
-#endif
                 return false;
             }
 

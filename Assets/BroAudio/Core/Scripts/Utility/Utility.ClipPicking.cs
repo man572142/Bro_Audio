@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio
@@ -20,8 +19,8 @@ namespace Ami.BroAudio
         }
 
         public static IBroAudioClip PickNewOne(this BroAudioClip[] clips, MulticlipsPlayMode playMode, int id, out int index, int velocity = 0)
-		{
-			index = 0;
+        {
+            index = 0;
             if (clips == null || clips.Length <= 0)
             {
                 Debug.LogError(LogTitle + "There are no AudioClip in the entity");
@@ -43,21 +42,25 @@ namespace Ami.BroAudio
             };
         }
 
-        private static BroAudioClip PickNextClip(this BroAudioClip[] clips, int id, out int index)
+        private static BroAudioClip PickNextClip(this BroAudioClip[] clips, int id, out int currentIndex)
         {
             ClipsSequencer ??= new Dictionary<int, int>();
 
-            index = 0;
-            if (ClipsSequencer.ContainsKey(id))
+            if(ClipsSequencer.TryGetValue(id, out currentIndex))
             {
-                ClipsSequencer[id] = ClipsSequencer[id] + 1 >= clips.Length ? 0 : ClipsSequencer[id] + 1;
-                index = ClipsSequencer[id];
+                int nextIndex = currentIndex + 1;
+                nextIndex = nextIndex >= clips.Length ? 0 : nextIndex;
+                if (clips[nextIndex].GetAudioClip() != null)
+                {
+                    ClipsSequencer[id] = nextIndex;
+                    currentIndex = nextIndex;
+                }          
             }
-            else
+            else if(clips[0].GetAudioClip() != null)
             {
                 ClipsSequencer.Add(id, 0);
             }
-            return clips[index];
+            return clips[currentIndex];
         }
 
         private static BroAudioClip PickRandomClip(this BroAudioClip[] clips, out int index)
@@ -86,7 +89,7 @@ namespace Ami.BroAudio
                 if (targetWeight < sum)
                 {
                     index = i;
-                    return clips[i]; ;
+                    return clips[i];
                 }
             }
             return default;
@@ -145,7 +148,7 @@ namespace Ami.BroAudio
             bool Use(int index, out BroAudioClip result)
             {
                 result = clips[index];
-                if (!result.IsUsed)
+                if (!result.IsUsed && result.GetAudioClip() != null)
                 {
                     result.IsUsed = true;
                     return true;

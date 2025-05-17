@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace Ami.BroAudio
 {
-	public interface IAudioPlayer : IEffectDecoratable, IVolumeSettable, IMusicDecoratable, IAudioStoppable, ISchedulable
+    public interface IAudioPlayer : IEffectDecoratable, IVolumeSettable, IMusicDecoratable, IAudioStoppable, ISchedulable
     {
-		/// <summary>
-		/// The SoundID of the player is playing
-		/// </summary>
-		SoundID ID { get; }
+        /// <summary>
+        /// The SoundID of the player is playing
+        /// </summary>
+        SoundID ID { get; }
 
         /// <summary>  
         /// Indicates whether the player is currently in the playback process, including queued, playing, or paused states.

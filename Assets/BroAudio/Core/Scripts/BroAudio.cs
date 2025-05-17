@@ -248,6 +248,12 @@ namespace Ami.BroAudio
 #endif
 
 #if PACKAGE_ADDRESSABLES
+        public static bool IsLoaded(SoundID id)
+            => SoundManager.Instance.IsLoaded(id);
+
+        public static bool IsLoaded(SoundID id, int clipIndex)
+            => SoundManager.Instance.IsLoaded(id, clipIndex);
+
         /// <summary>
         /// Loads all the audio clips in the entity
         /// </summary>

@@ -2,31 +2,31 @@ using UnityEngine;
 
 namespace Ami.BroAudio.Data
 {
-	[System.Serializable]
-	public partial class BroAudioClip : IBroAudioClip
-	{
-		[SerializeField] private AudioClip AudioClip;
+    [System.Serializable]
+    public partial class BroAudioClip : IBroAudioClip
+    {
+        [SerializeField] private AudioClip AudioClip;
 
-		public float Volume;
-		public float Delay;
-		public float StartPosition;
-		public float EndPosition;
-		public float FadeIn;
-		public float FadeOut;
+        public float Volume;
+        public float Delay;
+        public float StartPosition;
+        public float EndPosition;
+        public float FadeIn;
+        public float FadeOut;
 
-		// For random, velocity
-		public int Weight;
+        // For random, velocity
+        public int Weight;
 
-		// For shuffle (runtime-only)
-		[System.NonSerialized]
-		internal bool IsUsed;
+        // For shuffle (runtime-only)
+        [System.NonSerialized]
+        internal bool IsUsed;
 
-		float IBroAudioClip.Volume => Volume;
-		float IBroAudioClip.Delay => Delay;
-		float IBroAudioClip.StartPosition => StartPosition;
-		float IBroAudioClip.EndPosition => EndPosition;
-		float IBroAudioClip.FadeIn => FadeIn;
-		float IBroAudioClip.FadeOut => FadeOut;
+        float IBroAudioClip.Volume => Volume;
+        float IBroAudioClip.Delay => Delay;
+        float IBroAudioClip.StartPosition => StartPosition;
+        float IBroAudioClip.EndPosition => EndPosition;
+        float IBroAudioClip.FadeIn => FadeIn;
+        float IBroAudioClip.FadeOut => FadeOut;
         public int Velocity => Weight;
 
         public bool IsValid()
@@ -51,15 +51,15 @@ namespace Ami.BroAudio.Data
     }
 
     public interface IBroAudioClip
-	{
+    {
         AudioClip GetAudioClip();
         bool IsValid();
 
         float Volume { get; }
-		float Delay { get; }
-		float StartPosition { get; }
-		float EndPosition { get; }
-		float FadeIn { get;}
-		float FadeOut { get; }
-	}
+        float Delay { get; }
+        float StartPosition { get; }
+        float EndPosition { get; }
+        float FadeIn { get;}
+        float FadeOut { get; }
+    }
 }

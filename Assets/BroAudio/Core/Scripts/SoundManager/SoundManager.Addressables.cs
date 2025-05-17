@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Ami.BroAudio.Data;
 using System.Collections;
-using System;
+using Ami.Extension;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -26,6 +26,16 @@ namespace Ami.BroAudio.Runtime
                 return entity.GetAddressableKey(index);
             }
             return null;
+        }
+
+        public bool IsLoaded(SoundID id)
+        {
+            return TryGetAddressableEntity(id, out var entity) && entity.IsLoaded();
+        }
+
+        public bool IsLoaded(SoundID id, int clipIndex)
+        {
+            return TryGetAddressableEntity(id, out var entity) && entity.IsLoaded(clipIndex);
         }
 
         public AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(SoundID id)
@@ -66,9 +76,13 @@ namespace Ami.BroAudio.Runtime
         private bool TryGetAddressableEntity(SoundID id, out AudioEntity entity)
         {
             entity = null;
-            if(_audioBank.TryGetValue(id, out var e))
+            if(TryGetEntity(id, out var e))
             {
                 entity = e as AudioEntity;
+                if(!entity.UseAddressables)
+                {
+                    Debug.LogError($"The entity {id.ToName().ToBold()} isn’t marked as addressable. Please check its settings.");
+                }
                 return entity.UseAddressables;
             }
             return false;

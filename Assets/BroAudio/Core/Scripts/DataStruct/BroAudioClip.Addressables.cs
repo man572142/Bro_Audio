@@ -12,6 +12,7 @@ namespace Ami.BroAudio.Data
         private AudioClip _loadedAsset = null;
 
         public IKeyEvaluator AddressableKey => AudioClipAssetReference;
+        public bool IsLoaded => _loadedAsset != null || AudioClip != null || AudioClipAssetReference.Asset != null;
 
         public AsyncOperationHandle<AudioClip> LoadAssetAsync()
         {

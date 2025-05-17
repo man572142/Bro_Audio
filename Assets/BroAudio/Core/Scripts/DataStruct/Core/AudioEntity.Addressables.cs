@@ -30,11 +30,39 @@ namespace Ami.BroAudio.Data
             return string.Empty;
         }
 
+        public bool IsLoaded()
+        {
+            foreach (var clip in Clips)
+            {
+                if(!clip.IsLoaded)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public bool IsLoaded(int clipIndex)
+        {
+
+            return Clips[clipIndex].IsLoaded;
+        }
+
+        public bool IsValidClipIndex(int clipIndex, bool logError = true)
+        {
+            if (clipIndex < 0 || clipIndex >= Clips.Length)
+            {
+                Debug.LogError(Utility.LogTitle + $"Invalid clip index: {clipIndex}. The audio entity [{Name.ToWhiteBold()}] contains {Clips.Length} clips.");
+                return false;
+            }
+            return true;
+        }
+
         public AsyncOperationHandle<IList<AudioClip>> LoadAssetsAsync()
         {
             if(Clips.Length == 0)
             {
-                Debug.LogWarning(Utility.LogTitle + $"{Name.ToWhiteBold()} has no clips to load!");
+                Debug.LogError(Utility.LogTitle + $"{Name.ToWhiteBold()} has no clips to load!");
                 return default;
             }
 

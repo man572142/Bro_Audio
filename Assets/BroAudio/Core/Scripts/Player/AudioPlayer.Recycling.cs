@@ -22,18 +22,18 @@ namespace Ami.BroAudio.Runtime
         {
             ResetAudioSource();
             DestroyAudioFilterReader();
-            _onUpdate = null;
+            ClearEvents();
 
-            if(TryGetMixerAndTrack(out _, out var track))
+            if (TryGetMixerAndTrack(out _, out var track))
             {
                 MixerPool.ReturnTrack(TrackType, track);
                 TrackType = AudioTrackType.Generic;
             }
             MixerPool.ReturnPlayer(this);
 
-            if(_decorators != null)
+            if (_decorators != null)
             {
-                foreach(var decorator in _decorators)
+                foreach (var decorator in _decorators)
                 {
                     decorator.Recycle();
                 }
@@ -47,6 +47,13 @@ namespace Ami.BroAudio.Runtime
             AudioTrack = null;
 
             ID = -1;
+        }
+
+        private void ClearEvents()
+        {
+            _onStart = null;
+            _onUpdate = null;
+            _onEnd = null;
         }
 
         private void ResetAudioSource()

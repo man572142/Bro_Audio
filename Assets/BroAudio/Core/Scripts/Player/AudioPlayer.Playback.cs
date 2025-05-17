@@ -47,13 +47,22 @@ namespace Ami.BroAudio.Runtime
             {
                 PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
             }
-            
-            if (_stopMode == StopMode.Stop)
-            {
-                _clip = _pref.PickNewClip();
-            }
 
-            this.StartCoroutineAndReassign(PlayControl(), ref _playbackControlCoroutine);
+            try
+            {
+                if (_stopMode == StopMode.Stop)
+                {
+                    _clip = _pref.PickNewClip();
+                }
+
+                this.StartCoroutineAndReassign(PlayControl(), ref _playbackControlCoroutine);
+            }
+            catch (Exception ex)
+            {
+                ClearEvents();
+                EndPlaying();
+                Debug.LogException(ex);
+            }
         }
 
         private IEnumerator PlayControl()

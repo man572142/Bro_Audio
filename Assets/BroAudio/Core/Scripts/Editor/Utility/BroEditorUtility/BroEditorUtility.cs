@@ -21,6 +21,7 @@ namespace Ami.BroAudio.Editor
         public const string ProjectSettingsFolderName = "ProjectSettings";
         public const string VoiceCountPropertyName = "m_RealVoiceCount";
         public const string SettingFileMissingMegssage = "{0} asset file is missing! please relocate the file to any [Resource] folder or recreate a new one";
+        public const string ObjectCreationMenuPath = "GameObject/Audio/Bro Audio/";
 
         private const float LowVolumeSnappingThreshold = 0.05f;
         private const float HighVolumeSnappingThreshold = 0.2f;
@@ -74,18 +75,49 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-#if UNITY_EDITOR
-        [MenuItem("GameObject/Audio/Sound Source (Bro Audio)")]
-        public static void CreateSoundSourceGameObject(MenuCommand menuCommand)
+        const string SoundSourceName = "Sound Source";
+        [MenuItem(ObjectCreationMenuPath + SoundSourceName)]
+        public static void CreateSoundSourceGameObjectt(MenuCommand menuCommand)
+        {
+            CreateSoundSourceGameObject<SoundSource>(menuCommand, SoundSourceName);
+        }
+
+        const string SoundVolumeName = "Sound Volume";
+        [MenuItem(ObjectCreationMenuPath + SoundVolumeName)]
+        public static void CreateSoundVolumeGameObject(MenuCommand menuCommand)
+        {
+            CreateSoundSourceGameObject<SoundVolume>(menuCommand, SoundVolumeName);
+        }
+
+        const string SpectrumAnalyzerName = "Spectrum Analyzer";
+        [MenuItem(ObjectCreationMenuPath + SpectrumAnalyzerName)]
+        public static void CreateSpectrumAnalyzerGameObject(MenuCommand menuCommand)
+        {
+            CreateSoundSourceGameObject<SpectrumAnalyzer>(menuCommand, SpectrumAnalyzerName);
+        }
+
+        private static void CreateSoundSourceGameObject<T>(MenuCommand menuCommand, string objName) where T : class
         {
             var parent = menuCommand.context as GameObject;
-            var newGO = ObjectFactory.CreateGameObject("Sound Source", typeof(SoundSource));
+            var newGO = ObjectFactory.CreateGameObject(objName, typeof(T));
             Type goCreationClass = ClassReflectionHelper.GetUnityEditorClass("GOCreationCommands");
-
-            object[] parameters = new object[] { newGO, parent, true };
-            ReflectionExtension.ExecuteMethod("Place", parameters, goCreationClass, null, BindingFlags.NonPublic | BindingFlags.Static);
+            MethodInfo method = goCreationClass?.GetMethod("Place", BindingFlags.NonPublic | BindingFlags.Static);
+            if(method != null)
+            {
+                var parameters = method.GetParameters();
+                object[] values = new object[parameters.Length];
+                for(int i = 0; i < values.Length;i++)
+                {
+                    values[i] = i switch
+                    {
+                        0 => newGO,
+                        1 => parent,
+                        _ => parameters[i].DefaultValue,
+                    };
+                }
+                method.Invoke(null, values);
+            }
         }
-#endif
 
         private static float SliderFullScale => FullVolume / ((FullDecibelVolume - MinDecibelVolume) / DecibelVoulumeFullScale);
 

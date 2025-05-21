@@ -99,7 +99,7 @@ namespace Ami.BroAudio.Runtime
                     SetEffect(audioTypePref.EffectType, SetEffectMode.Add);
                 }
 
-                hasScheduled = TryScheduleStartTime();
+                SetScheduleTime(out hasScheduled);
                 if(hasScheduled)
                 {
                     yield return WaitForScheduledStartTime();

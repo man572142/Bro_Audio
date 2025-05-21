@@ -9,24 +9,28 @@ namespace Ami.BroAudio.Runtime
 	{
         private float _timeBeforeStartSchedule = 0f;
 
-        private bool TryScheduleStartTime()
+        private void SetScheduleTime(out bool isSchdeuledPlay)
         {
+            isSchdeuledPlay = false;
             if (_pref.ScheduledStartTime > 0d) // Scheduled has higher priority than clip.delay
             {
                 AudioSource.PlayScheduled(_pref.ScheduledStartTime);
                 _timeBeforeStartSchedule = (float)(_pref.ScheduledStartTime - AudioSettings.dspTime);
-                return true;
+                isSchdeuledPlay = true;
             }
             else if (_clip.Delay > 0f)
             {
                 // PlayDelayed() can also be rescheduled
                 AudioSource.PlayDelayed(_clip.Delay);
                 _timeBeforeStartSchedule = _clip.Delay;
-                return true;
+                isSchdeuledPlay = true;
             }
-            return false;
-        }
 
+            if (_pref.ScheduledEndTime > 0d)
+            {
+                AudioSource.SetScheduledEndTime(_pref.ScheduledEndTime);
+            }
+        }
 
         IAudioPlayer ISchedulable.SetScheduledStartTime(double dspTime)
         {
@@ -48,10 +52,14 @@ namespace Ami.BroAudio.Runtime
 
         IAudioPlayer ISchedulable.SetScheduledEndTime(double dspTime)
         {
-            AudioSource.SetScheduledEndTime(dspTime);
             _pref.ScheduledEndTime = dspTime;
             _onUpdate -= CheckScheduledEnd;
             _onUpdate += CheckScheduledEnd;
+
+            if (AudioSource.isPlaying)
+            {
+                AudioSource.SetScheduledEndTime(dspTime);
+            }
             return this;
         }
 

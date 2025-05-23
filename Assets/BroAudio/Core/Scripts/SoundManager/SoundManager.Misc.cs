@@ -75,17 +75,17 @@ namespace Ami.BroAudio.Runtime
             {
                 if (id == 0)
                 {
-                    Debug.LogError($"The SoundID hasn't been assigned yet! {GetDebugObjectName()}", id.DebugObject);
+                    Debug.LogError($"The SoundID hasn't been assigned yet! {GetDebugObjectName()}", GetDebugObject());
                     return false;
                 }
                 else if (id == SoundID.Invalid)
                 {
-                    Debug.LogError($"The SoundID:{id} is invalid! {GetDebugObjectName()}", id.DebugObject);
+                    Debug.LogError($"The SoundID:{id} is invalid! {GetDebugObjectName()}", GetDebugObject());
                     return false;
                 }
                 else if (!_audioBank.TryGetValue(id, out entity))
                 {
-                    Debug.LogError($"Missing audio entity for SoundID: {id}! {GetDebugObjectName()}", id.DebugObject);
+                    Debug.LogError($"Missing audio entity for SoundID: {id}! {GetDebugObjectName()}", GetDebugObject());
                     return false;
                 }
                 return true;
@@ -94,12 +94,19 @@ namespace Ami.BroAudio.Runtime
 
             string GetDebugObjectName()
             {
-                if(id.DebugObject)
+                var obj = GetDebugObject();
+                if (obj != null)
                 {
-                    return $"Source:{id.DebugObject.name.ToBold()}";
+                    return $"Source:{obj.name.ToBold()}";
                 }
                 return string.Empty;
             }
+
+#if UNITY_EDITOR
+            GameObject GetDebugObject() => id.DebugObject;
+#else
+            GameObject GetDebugObject() => null;
+#endif
         }
 
         private bool IsAvailable(bool logError = true)

@@ -78,7 +78,7 @@ namespace Ami.BroAudio.Editor
                 CacheDebugObject(property);
             }
 
-            Rect suffixRect = EditorGUI.PrefixLabel(position, new GUIContent(property.displayName, ToolTip));
+            Rect suffixRect = EditorGUI.PrefixLabel(position, new GUIContent(label) { tooltip = ToolTip });
             Rect dropdownRect = new Rect(suffixRect) { width = suffixRect.width - (ButtonWidth * 2)};
             Rect playbackButtonRect = new Rect(suffixRect) { width = ButtonWidth, x = dropdownRect.xMax };
             Rect libraryShortcutRect = new Rect(suffixRect) { width = ButtonWidth, x = playbackButtonRect.xMax };

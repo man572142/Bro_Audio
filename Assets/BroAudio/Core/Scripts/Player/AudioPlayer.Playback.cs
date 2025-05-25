@@ -286,14 +286,14 @@ namespace Ami.BroAudio.Runtime
         void IAudioStoppable.Stop(float fadeOut, Action onFinished)
             => Stop(fadeOut, StopMode.Stop, onFinished);
         #endregion
-        public void Stop(float overrideFade, StopMode stopMode,Action onFinished)
+        public void Stop(float overrideFade, StopMode stopMode, Action onFinished)
         {
             if (IsStopping && overrideFade != Immediate)
             {
                 return;
             }
 
-            if (ID <= 0 || !AudioSource.isPlaying)
+            if (ID <= 0 || (!AudioSource.isPlaying && stopMode == StopMode.Stop))
             {
                 onFinished?.Invoke();
                 EndPlaying();

@@ -183,8 +183,10 @@ namespace Ami.BroAudio.Runtime
 
         public void Pause(int id, float fadeTime, bool isPause)
         {
-            foreach (var player in GetCurrentAudioPlayers())
+            var players = GetCurrentAudioPlayers();
+            for (int i = players.Count - 1; i >= 0; i--)
             {
+                var player = players[i];
                 if (player.IsActive && player.ID == id)
                 {
                     if (isPause)
@@ -207,8 +209,10 @@ namespace Ami.BroAudio.Runtime
         public void Pause(BroAudioType targetType, float fadeTime, bool isPause)
         {
             targetType = targetType.ConvertEverythingFlag();
-            foreach (var player in GetCurrentAudioPlayers())
+            var players = GetCurrentAudioPlayers();
+            for (int i = players.Count - 1; i >= 0; i--)
             {
+                var player = players[i];
                 if (player.IsActive && targetType.Contains(player.ID.ToAudioType()))
                 {
                     if (isPause)

@@ -543,7 +543,7 @@ namespace Ami.BroAudio.Editor
             _clipDataDict.Remove(clipPropPath);
         }
 
-        private void StartPreview(EntityData data, bool canDisplayIndicator, EditorPlayAudioClip.ReplayData replayData = default)
+        private void StartPreview(EntityData data, bool canDisplayIndicator, ReplayData replayData = default)
         {
             if (_currentPreviewingEntity == null)
             {
@@ -559,7 +559,7 @@ namespace Ami.BroAudio.Editor
                 replayData.OnReplay = ReplayPreview;
             }
 
-            var clipData = new EditorPlayAudioClip.Data(clip, pitch) { Volume = volume };
+            var clipData = new PreviewData(clip, pitch) { Volume = volume };
             EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, false, replayData);
             if (canDisplayIndicator)
             {
@@ -571,7 +571,7 @@ namespace Ami.BroAudio.Editor
             }
             EditorPlayAudioClip.Instance.OnFinished = data.Previewable.EndPreview;
 
-            void ReplayPreview(EditorPlayAudioClip.ReplayData replayData)
+            void ReplayPreview(ReplayData replayData)
             {
                 StartPreview(data, canDisplayIndicator, replayData);
             }

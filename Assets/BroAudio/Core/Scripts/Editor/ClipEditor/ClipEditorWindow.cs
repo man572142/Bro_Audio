@@ -327,7 +327,7 @@ namespace Ami.BroAudio.Editor
                     PreviewClipInfo info;
                     if(Event.current.button == 0) // Left Click
                     {
-                        var clipData = new EditorPlayAudioClip.Data(clip, _previewHelper.Volume, _previewHelper.Pitch, _transport);
+                        var clipData = new PreviewData(clip, _previewHelper.Volume, _previewHelper.Pitch, _transport);
                         EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, _isLoop);
                         info = new PreviewClipInfo(_transport);
                     }

@@ -262,7 +262,7 @@ namespace Ami.BroAudio.Editor
                             var previewTransport = new Transport(audioClip.length);
                             previewTransport.PlaybackValues[0] = clickedPoint * audioClip.length; // Start Position
                             previewable.StartPreview(clipPath, out float vol, out pitch);
-                            var clip = new EditorPlayAudioClip.Data(audioClip, vol, pitch, previewTransport);
+                            var clip = new PreviewData(audioClip, vol, pitch, previewTransport);
                             EditorPlayAudioClip.Instance.PlayClipByAudioSource(clip, isTransportIgnored : true);
                             break;
                         case 1:

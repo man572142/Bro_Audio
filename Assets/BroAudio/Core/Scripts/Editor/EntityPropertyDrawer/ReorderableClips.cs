@@ -482,7 +482,7 @@ namespace Ami.BroAudio.Editor
                 {
                     _previewable.StartPreview(clipProp.propertyPath, out float volume, out pitch);
                     var transport = new SerializedTransport(clipProp, audioClip.length);
-                    var clipData = new EditorPlayAudioClip.Data(audioClip, volume, pitch, transport);
+                    var clipData = new PreviewData(audioClip, volume, pitch, transport);
                     EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData);
                     info = new PreviewClipInfo(transport);
                 }

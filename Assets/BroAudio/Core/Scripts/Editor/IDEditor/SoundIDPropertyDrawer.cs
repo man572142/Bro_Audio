@@ -142,7 +142,7 @@ namespace Ami.BroAudio.Editor
 
                 if (assetProp.objectReferenceValue is AudioAsset asset && TryGetEntity(asset, out var entity))
                 {
-                    var data = new EditorPlayAudioClip.Data(entity.PickNewClip(), entity.GetPitch());
+                    var data = new PreviewData(entity.PickNewClip(), entity.GetPitch());
                     EditorPlayAudioClip.Instance.PlayClipByAudioSource(data);
                     EditorPlayAudioClip.Instance.OnFinished = OnPreviewAudioFinished;
                     _currentPlayingID = id;

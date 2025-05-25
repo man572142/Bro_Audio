@@ -237,9 +237,9 @@ namespace Ami.BroAudio.Editor.Setting
 
             void DrawBGMSetting()
             {
-                var alwaysBGMProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.AlwaysPlayMusicAsBGM));
-                var bgmTransitionProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.DefaultBGMTransition));
-                var bgmTransitionTimeProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.DefaultBGMTransitionTime));
+                var alwaysBGMProp = _runtimeSettingSO.FindProperty(nameof(RuntimeSetting.AlwaysPlayMusicAsBGM));
+                var bgmTransitionProp = _runtimeSettingSO.FindProperty(nameof(RuntimeSetting.DefaultBGMTransition));
+                var bgmTransitionTimeProp = _runtimeSettingSO.FindProperty(nameof(RuntimeSetting.DefaultBGMTransitionTime));
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "BGM".ToWhiteBold(), GUIStyleHelper.RichText);
                 using (new EditorGUI.IndentLevelScope())
                 {
@@ -267,7 +267,7 @@ namespace Ami.BroAudio.Editor.Setting
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Default Easing".ToWhiteBold(), GUIStyleHelper.RichText);
                 using (new EditorGUI.IndentLevelScope())
                 {
-                    var fadeInProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.DefaultFadeInEase));
+                    var fadeInProp = _runtimeSettingSO.FindProperty(nameof(RuntimeSetting.DefaultFadeInEase));
                     var fadeOutProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.DefaultFadeOutEase));
                     fadeInProp.enumValueIndex =
                         (int)(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", (Ease)fadeInProp.enumValueIndex);
@@ -281,8 +281,8 @@ namespace Ami.BroAudio.Editor.Setting
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Seamless Loop Easing".ToWhiteBold(), GUIStyleHelper.RichText);
                 using (new EditorGUI.IndentLevelScope())
                 {
-                    var fadeInProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.SeamlessFadeInEase));
-                    var fadeOutProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.SeamlessFadeOutEase));
+                    var fadeInProp = _runtimeSettingSO.FindProperty(nameof(RuntimeSetting.SeamlessFadeInEase));
+                    var fadeOutProp = _runtimeSettingSO.FindProperty(nameof(RuntimeSetting.SeamlessFadeOutEase));
                     fadeInProp.enumValueIndex =
                         (int)(Ease)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), "Fade In", (Ease)fadeInProp.enumValueIndex);
                     fadeOutProp.enumValueIndex =
@@ -292,19 +292,19 @@ namespace Ami.BroAudio.Editor.Setting
 
             void DrawGlobalPlaybackGroup()
             {
-                var playbackGroupProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.GlobalPlaybackGroup));
+                var playbackGroupProp = _runtimeSettingSO.FindProperty(nameof(RuntimeSetting.GlobalPlaybackGroup));
                 playbackGroupProp.objectReferenceValue = (PlaybackGroup)EditorGUI.ObjectField(GetRectAndIterateLine(drawPosition), _globalGroupGUIContent, playbackGroupProp.objectReferenceValue, typeof(PlaybackGroup), false);
             }
 
             void DrawAudioFilterSlope()
             {
-                var filterSlopeProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.AudioFilterSlope));
+                var filterSlopeProp = _runtimeSettingSO.FindProperty(nameof(RuntimeSetting.AudioFilterSlope));
                 filterSlopeProp.enumValueIndex = (int)(FilterSlope)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), _filterSlopeGUIContent, (FilterSlope)filterSlopeProp.enumValueIndex);
             }
 
             void DrawUpdateMode()
             {
-                var updateModeProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.UpdateMode));
+                var updateModeProp = _runtimeSettingSO.FindProperty(nameof(RuntimeSetting.UpdateMode));
                 updateModeProp.enumValueIndex = (int)(AudioMixerUpdateMode)EditorGUI.EnumPopup(GetRectAndIterateLine(drawPosition), _updateModeGUIContent, (AudioMixerUpdateMode)updateModeProp.enumValueIndex);
             }
 
@@ -315,11 +315,11 @@ namespace Ami.BroAudio.Editor.Setting
                 {
                     using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.65f))
                     {
-                        var logProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.LogAccessRecycledPlayerWarning));
+                        var logProp = _runtimeSettingSO.FindProperty(nameof(RuntimeSetting.LogAccessRecycledPlayerWarning));
                         Rect accessRecycledWarnRect = GetRectAndIterateLine(drawPosition);
                         logProp.boolValue = EditorGUI.Toggle(accessRecycledWarnRect, _logAccessRecycledWarningGUIContent, logProp.boolValue);
 
-                        var poolSizeProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.DefaultAudioPlayerPoolSize));
+                        var poolSizeProp = _runtimeSettingSO.FindProperty(nameof(RuntimeSetting.DefaultAudioPlayerPoolSize));
                         Rect maxPoolSizeRect = GetRectAndIterateLine(drawPosition);
                         float fieldWidth = maxPoolSizeRect.width - EditorGUIUtility.labelWidth;
                         maxPoolSizeRect.width -= fieldWidth - 50f;

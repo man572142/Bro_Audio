@@ -83,19 +83,6 @@ namespace Ami.BroAudio.Data
         }
 
 #if UNITY_EDITOR
-        public enum SeamlessType
-        {
-            ClipSetting,
-            Time,
-            Tempo
-        }
-
-        [System.Serializable]
-        public struct TempoTransition
-        {
-            public float BPM;
-            public int Beats;
-        }
 
         public static class EditorPropertyName
 		{

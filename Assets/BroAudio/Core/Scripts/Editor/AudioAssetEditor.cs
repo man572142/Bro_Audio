@@ -38,14 +38,14 @@ namespace Ami.BroAudio.Editor
 
         public void AddEntitiesListener()
         {
-            AudioEntityPropertyDrawer.OnDulicateEntity += OnDuplicateSelectedEntity;
+            AudioEntityPropertyDrawer.OnDuplicateEntity += OnDuplicateSelectedEntity;
             AudioEntityPropertyDrawer.OnRemoveEntity += OnRemoveSelectedEntity;
             AudioEntityPropertyDrawer.OnExpandAll += SetAllElementsExpanded;
         }
 
         public void RemoveEntitiesListener()
         {
-            AudioEntityPropertyDrawer.OnDulicateEntity -= OnDuplicateSelectedEntity;
+            AudioEntityPropertyDrawer.OnDuplicateEntity -= OnDuplicateSelectedEntity;
             AudioEntityPropertyDrawer.OnRemoveEntity -= OnRemoveSelectedEntity;
             AudioEntityPropertyDrawer.OnExpandAll -= SetAllElementsExpanded;
         }
@@ -185,9 +185,8 @@ namespace Ami.BroAudio.Editor
                     _entitiesList.index = index;
                     _entitiesList.GrabKeyboardFocus();
                     string entityName = elementProp.FindBackingFieldProperty(nameof(AudioEntity.Name)).stringValue;
-                    Rect dropDownRect = new Rect(rect) { x = Event.current.mousePosition.x };
                     // the element background doesn't repaint right away, so we delay the dropdown to the next drawing process 
-                    _onDropDownMenu = () => OnDropDwonRightClickMenu(dropDownRect, elementProp);
+                    _onDropDownMenu = () => OnDropDwonRightClickMenu(elementProp);
                     EditorWindow.focusedWindow.Repaint();
                 }
 
@@ -201,7 +200,7 @@ namespace Ami.BroAudio.Editor
                 }
             }
 
-            void OnDropDwonRightClickMenu(Rect rect, SerializedProperty property)
+            void OnDropDwonRightClickMenu(SerializedProperty property)
             {
                 string buffer = EditorGUIUtility.systemCopyBuffer;
                 if(!string.IsNullOrEmpty(buffer) && buffer.StartsWith("GenericPropertyJSON:"))
@@ -226,7 +225,7 @@ namespace Ami.BroAudio.Editor
                 menu.AddSeparator(string.Empty);
                 menu.AddItem(new GUIContent("Copy Property Path"), false, OnCopyPropertyPath);
 
-                menu.DropDown(rect);
+                menu.ShowAsContext();
             }
 
             void OnReorder(ReorderableList list)

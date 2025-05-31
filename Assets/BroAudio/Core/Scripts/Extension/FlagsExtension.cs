@@ -23,6 +23,11 @@ namespace Ami.Extension
             flags &= ~remove;
         }
 
+        public static void OverwriteFlag(ref int flags, int targetFlag, int overwriteValue)
+        {
+            flags = (flags & ~targetFlag) | overwriteValue;
+        }
+
         public static int GetFlagsOnCount(int flags)
         {
             int count = 0;

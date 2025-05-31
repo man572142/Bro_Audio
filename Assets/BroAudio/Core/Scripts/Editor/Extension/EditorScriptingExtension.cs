@@ -12,9 +12,6 @@ namespace Ami.Extension
         public const float IndentInPixel = 15f;
         public const float LogarithmicMinValue = 0.0001f;
 
-        public const float WindowPaddingX = 10f;
-        public const float WindowPaddingY = 4f;
-
         // https://www.foundations.unity.com/patterns/content-organization
         public static RectOffset InspectorPadding => new RectOffset(18, 4, 8, 8);
 
@@ -131,7 +128,7 @@ namespace Ami.Extension
 
         public static void SplitRectHorizontal(Rect origin,float gap, Rect[] resultRects,params float[] ratios)
         {
-            if (ratios.Sum() != 1)
+            if (!Mathf.Approximately(ratios.Sum(), 1))
             {
                 Debug.LogError("[Editor] Split ratio's sum should be 1");
                 return;
@@ -166,7 +163,7 @@ namespace Ami.Extension
 
         public static void SplitRectVertical(Rect origin, float gap, Rect[] resultRects, params float[] ratios)
         {
-            if (ratios.Sum() != 1)
+            if (!Mathf.Approximately(ratios.Sum(), 1))
             {
                 Debug.LogError("[Editor] Split ratio's sum should be 1");
                 return;
@@ -602,11 +599,11 @@ namespace Ami.Extension
             float logResult = GUI.HorizontalSlider(sliderRect, logValue, logLeftValue, logRightValue);
             if (EditorGUI.EndChangeCheck())
             {
-                if (logResult == logLeftValue)
+                if (Mathf.Approximately(logResult, logLeftValue))
                 {
                     return leftValue;
                 }
-                else if (logResult == logRightValue)
+                else if (Mathf.Approximately(logResult, logRightValue))
                 {
                     return rightValue;
                 }

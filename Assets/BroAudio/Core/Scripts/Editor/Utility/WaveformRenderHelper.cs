@@ -26,7 +26,7 @@ namespace Ami.BroAudio.Editor
             if(_doRenderPreview == null)
             {
                 var method = _clipInspectorClass.GetMethod("DoRenderPreview", ReflectionExtension.PrivateFlag);
-                _doRenderPreview = (DoRenderPreview)method.CreateDelegate(typeof(DoRenderPreview), _editor);
+                _doRenderPreview = (DoRenderPreview)method?.CreateDelegate(typeof(DoRenderPreview), _editor);
             }
 
             _doRenderPreview?.Invoke(true, clip, importer, rect, 1f);

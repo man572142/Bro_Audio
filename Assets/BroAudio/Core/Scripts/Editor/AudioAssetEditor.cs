@@ -15,14 +15,14 @@ namespace Ami.BroAudio.Editor
     [CustomEditor(typeof(AudioAsset), true)]
     public class AudioAssetEditor : UnityEditor.Editor
     {
-        private ReorderableList _entitiesList = null;
-        private IUniqueIDGenerator _idGenerator = null;
+        private ReorderableList _entitiesList;
+        private IUniqueIDGenerator _idGenerator;
         private Action _onDropDownMenu;
         private Action<SerializedProperty, GenericMenu, Event> _setupPropertyCopyPasteDelegate;
 
         public Instruction CurrInstruction { get; private set; }
         public IAudioAsset Asset { get; private set; }
-        private Action<SerializedProperty, GenericMenu, Event> SetupPropertycopyPasteDelegate
+        private Action<SerializedProperty, GenericMenu, Event> SetupPropertyCopyPasteDelegate
         {
             get
             {
@@ -184,9 +184,8 @@ namespace Ami.BroAudio.Editor
                 {
                     _entitiesList.index = index;
                     _entitiesList.GrabKeyboardFocus();
-                    string entityName = elementProp.FindBackingFieldProperty(nameof(AudioEntity.Name)).stringValue;
                     // the element background doesn't repaint right away, so we delay the dropdown to the next drawing process 
-                    _onDropDownMenu = () => OnDropDwonRightClickMenu(elementProp);
+                    _onDropDownMenu = () => OnDropDownRightClickMenu(elementProp);
                     EditorWindow.focusedWindow.Repaint();
                 }
 
@@ -200,13 +199,13 @@ namespace Ami.BroAudio.Editor
                 }
             }
 
-            void OnDropDwonRightClickMenu(SerializedProperty property)
+            void OnDropDownRightClickMenu(SerializedProperty property)
             {
                 string buffer = EditorGUIUtility.systemCopyBuffer;
                 if(!string.IsNullOrEmpty(buffer) && buffer.StartsWith("GenericPropertyJSON:"))
                 {
-                    string targetString = "\"name\":\"<ID>k__BackingField\",\"type\":0,\"val\":";
-                    int idStartIndex = buffer.IndexOf(targetString);
+                    const string targetString = "\"name\":\"<ID>k__BackingField\",\"type\":0,\"val\":";
+                    int idStartIndex = buffer.IndexOf(targetString, StringComparison.Ordinal);
                     if(idStartIndex > 0)
                     {
                         int valStart = idStartIndex + targetString.Length;
@@ -221,7 +220,7 @@ namespace Ami.BroAudio.Editor
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent($"Duplicate ^D"), false, OnDuplicateSelectedEntity);
                 menu.AddItem(new GUIContent($"Remove _DELETE"), false, OnRemoveSelectedEntity);
-                SetupPropertycopyPasteDelegate?.Invoke(property, menu, Event.current);
+                SetupPropertyCopyPasteDelegate?.Invoke(property, menu, Event.current);
                 menu.AddSeparator(string.Empty);
                 menu.AddItem(new GUIContent("Copy Property Path"), false, OnCopyPropertyPath);
 

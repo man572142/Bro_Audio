@@ -22,6 +22,7 @@ namespace Ami.BroAudio
         [SerializeField] SoundID _sound = default;
         [SerializeField] PlaybackGroup _overrideGroup = null;
         [SerializeField] PositionMode _positionMode = default;
+        [SerializeField] float _delay = 0f;
 
         public IAudioPlayer CurrentPlayer { get; private set; }
 
@@ -40,6 +41,10 @@ namespace Ami.BroAudio
             }
 
             Play();
+            if (_delay > 0)
+            {
+                CurrentPlayer.SetDelay(_delay);
+            }
 
             if (_onlyPlayOnce)
             {
@@ -63,8 +68,9 @@ namespace Ami.BroAudio
             public const string OnlyPlayOnce = nameof(_onlyPlayOnce);
             public const string OverrideFadeOut = nameof(_overrideFadeOut);
             public const string SoundID = nameof(_sound);
-            public const string PositionMode = nameof(_positionMode);
+            public const string PositionModeProperty = nameof(_positionMode);
             public const string OverrideGroup = nameof(_overrideGroup);
+            public const string Delay = nameof(_delay);
         } 
 #endif
     }

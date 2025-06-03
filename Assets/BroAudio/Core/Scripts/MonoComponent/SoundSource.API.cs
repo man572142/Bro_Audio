@@ -39,7 +39,7 @@ namespace Ami.BroAudio
             CurrentPlayer = BroAudio.Play(_sound, followTarget, _overrideGroup);
         }
 
-        ///<inheritdoc cref="Play(SoundID, Vector3)"/>
+        ///<inheritdoc cref="BroAudio.Play(SoundID, Vector3)"/>
         public void Play(Vector3 positon)
         {
             Stop();

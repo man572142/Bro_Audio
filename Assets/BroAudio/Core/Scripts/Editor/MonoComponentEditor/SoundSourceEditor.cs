@@ -1,21 +1,21 @@
 using UnityEngine;
 using UnityEditor;
 using Ami.BroAudio.Runtime;
+using System.Collections.Generic;
 using static Ami.BroAudio.SoundSource.NameOf;
 using static Ami.Extension.EditorScriptingExtension;
-using System.Collections.Generic;
-using System;
 
 namespace Ami.BroAudio.Editor
 {
     [CustomEditor(typeof(SoundSource))]
     public class SoundSourceEditor : UnityEditor.Editor
     {
-        public const float FadeOutFieldWidth = 70f;
+        private const float FadeOutFieldWidth = 70f;
+        private const string TimeUnit = "sec";
 
-        private RectOffset _inspectorPadding = null;
-        private bool _isInit = false;
-        private float _currentDrawedPosY = 0f;
+        private RectOffset _inspectorPadding;
+        private bool _isInit;
+        private float _currentDrawnPosY;
 
         private GUIContent _playOnEnableContent = new GUIContent("Play On Enable", "Plays the sound whenever the GameObject is enabled");
         private GUIContent _onlyOnceContent = new GUIContent("Only Play Once", "Plays the sound only the first time the GameObject is enabled");
@@ -26,6 +26,7 @@ namespace Ami.BroAudio.Editor
             "[Stay Here] Plays as a 3D sound and stays where the GameObject is located\n\n" +
             "[Follow Target] Plays as a 3D sound and follows the GameObject as it moves");
         private GUIContent _overrideGroupContent = new GUIContent("Override Playback Group", "Overrides the PlaybackGroup of the sound");
+        private GUIContent _delayContent = new GUIContent("Delay", "Delays playback triggered on enable");
         private Dictionary<string, SerializedProperty> _mainPropertyDict = new Dictionary<string, SerializedProperty>();
 
         private void OnEnable()
@@ -50,41 +51,46 @@ namespace Ami.BroAudio.Editor
             {
                 return;
             }
-            SerializedProperty playOnEnableProp = FindProperty(PlayOnEnable);
-            SerializedProperty stopOnDisableProp = FindProperty(StopOnDisable);
-            SerializedProperty onlyOnceProp = FindProperty(OnlyPlayOnce);
-            SerializedProperty fadeOutProp = FindProperty(OverrideFadeOut);
-            SerializedProperty soundIDProp = FindProperty(SoundSource.NameOf.SoundID);
-            SerializedProperty positionModeProp = FindProperty(PositionMode);
-            SerializedProperty overrideGroupProp = FindProperty(OverrideGroup);
+            var playOnEnableProp = FindProperty(PlayOnEnable);
+            var stopOnDisableProp = FindProperty(StopOnDisable);
+            var onlyOnceProp = FindProperty(OnlyPlayOnce);
+            var fadeOutProp = FindProperty(OverrideFadeOut);
+            var soundIDProp = FindProperty(SoundSource.NameOf.SoundID);
+            var positionModeProp = FindProperty(PositionModeProperty);
+            var overrideGroupProp = FindProperty(OverrideGroup);
+            var delayProp = FindProperty(Delay);
 
-            _currentDrawedPosY = 1f;
+            _currentDrawnPosY = 1f;
 
-            DrawBackgroudWindow(2, _inspectorPadding, ref _currentDrawedPosY);
+            DrawBackgroudWindow(3, _inspectorPadding, ref _currentDrawnPosY);
             DrawBoldToggle(playOnEnableProp, _inspectorPadding, _playOnEnableContent);
             using (new EditorGUI.IndentLevelScope(1))
             using (new EditorGUI.DisabledGroupScope(!playOnEnableProp.boolValue))
             {
                 onlyOnceProp.boolValue = EditorGUILayout.Toggle(_onlyOnceContent, onlyOnceProp.boolValue);
+                EditorGUILayout.BeginHorizontal();
+                delayProp.floatValue = EditorGUILayout.FloatField(_delayContent, delayProp.floatValue);
+                EditorGUILayout.LabelField(TimeUnit);
+                EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.Space();
-            _currentDrawedPosY += GUILayoutUtility.GetLastRect().height + EditorGUIUtility.standardVerticalSpacing;
+            _currentDrawnPosY += GUILayoutUtility.GetLastRect().height + EditorGUIUtility.standardVerticalSpacing;
 
-            DrawBackgroudWindow(2, _inspectorPadding, ref _currentDrawedPosY);
+            DrawBackgroudWindow(2, _inspectorPadding, ref _currentDrawnPosY);
             DrawBoldToggle(stopOnDisableProp, _inspectorPadding, _stopOnDisableContent);
             using (new EditorGUI.IndentLevelScope(1))
             using (new EditorGUI.DisabledGroupScope(!stopOnDisableProp.boolValue))
             using (new EditorGUILayout.HorizontalScope())
             {
-                bool isOverrided = EditorGUILayout.Toggle(_fadeOutContent, fadeOutProp.floatValue >= 0f);
+                bool isOverrode = EditorGUILayout.Toggle(_fadeOutContent, fadeOutProp.floatValue >= 0f);
                 
-                EditorGUI.BeginDisabledGroup(!isOverrided);
+                EditorGUI.BeginDisabledGroup(!isOverrode);
                 {
                     float tempFadeOut = Mathf.Max(fadeOutProp.floatValue, 0f);
                     tempFadeOut = EditorGUILayout.FloatField(GUIContent.none, tempFadeOut, GUILayout.Width(FadeOutFieldWidth));
-                    fadeOutProp.floatValue = isOverrided && tempFadeOut >= 0f ? tempFadeOut : -1f;
-                    EditorGUILayout.LabelField("sec");
+                    fadeOutProp.floatValue = isOverrode && tempFadeOut >= 0f ? tempFadeOut : -1f;
+                    EditorGUILayout.LabelField(TimeUnit);
                 }
                 EditorGUI.EndDisabledGroup();
             }

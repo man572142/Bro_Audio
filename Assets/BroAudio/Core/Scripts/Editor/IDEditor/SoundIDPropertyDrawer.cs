@@ -142,8 +142,13 @@ namespace Ami.BroAudio.Editor
 
                 if (assetProp.objectReferenceValue is AudioAsset asset && TryGetEntity(asset, out var entity))
                 {
-                    var data = new EditorPlayAudioClip.Data(entity.PickNewClip());
-                    EditorPlayAudioClip.Instance.PlayClipByAudioSource(data, false, null, entity.GetPitch());
+                    // TODO: Might need direct play clip feature
+                    var req = new PreviewRequest(entity.PickNewClip())
+                    {
+                        MasterVolume = entity.GetMasterVolume(), 
+                        Pitch = entity.GetPitch()
+                    };
+                    EditorPlayAudioClip.Instance.PlayClipByAudioSource(req);
                     EditorPlayAudioClip.Instance.OnFinished = OnPreviewAudioFinished;
                     _currentPlayingID = id;
 

@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Editor
         private readonly bool _isInitSuccessfully;
         
         private MethodInfo _method;
-        private EditorPlayAudioClip.Data _clipData;
+        private PreviewRequest _currentReq;
         private float _elapsedTime;
         private float _dbVolume;
         private float _speed = 1f;
@@ -47,10 +47,10 @@ namespace Ami.BroAudio.Editor
 
         protected override float UpdateInterval => 1 / 30f;
 
-        public void SetData(EditorPlayAudioClip.Data clipData, float speed = 1f)
+        public void SetData(PreviewRequest req)
         {
-            _clipData = clipData;
-            _speed = speed;
+            _currentReq = req;
+            _speed = req.Pitch;
 
             if (_isInitSuccessfully && _method == null)
             {
@@ -59,18 +59,18 @@ namespace Ami.BroAudio.Editor
                 _method = reflection.MixerGroupClass.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public);
             }
 
-            float startVol = GetStartVolume(clipData);
+            float startVol = GetStartVolume(req);
             SetVolume(startVol, true);
         }
 
-        private static float GetStartVolume(EditorPlayAudioClip.Data clipData)
+        private static float GetStartVolume(PreviewRequest req)
         {
-            return clipData.FadeIn > 0f ? 0f : clipData.Volume;
+            return req.FadeIn > 0f ? 0f : req.Volume;
         }
 
-        public bool IsNewVolumeDifferentFromCurrent(EditorPlayAudioClip.Data clipData)
+        public bool IsNewVolumeDifferentFromCurrent(PreviewRequest req)
         {
-            float startVol = GetStartVolume(clipData);
+            float startVol = GetStartVolume(req);
             return !Mathf.Approximately(startVol.ToDecibel(), _dbVolume);
         }
 
@@ -93,23 +93,23 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
-            float fadeOutPos = _clipData.Duration - _clipData.FadeOut;
-            bool hasFadeOut = _clipData.FadeOut > 0f;
+            var fadeOutPos = _currentReq.Duration - _currentReq.FadeOut;
+            bool hasFadeOut = _currentReq.FadeOut > 0f;
 
             _elapsedTime += DeltaTime * _speed;
-            if (_elapsedTime < _clipData.FadeIn)
+            if (_elapsedTime < _currentReq.FadeIn)
             {
-                float t = (_elapsedTime / _clipData.FadeIn).SetEase(_fadeInEase);
-                SetVolume(Mathf.Lerp(0f, _clipData.Volume, t));
+                float t = (_elapsedTime / _currentReq.FadeIn).SetEase(_fadeInEase);
+                SetVolume(Mathf.Lerp(0f, _currentReq.Volume, t));
             }
-            else if (hasFadeOut && _elapsedTime >= fadeOutPos && _elapsedTime < _clipData.Duration)
+            else if (hasFadeOut && _elapsedTime >= fadeOutPos && _elapsedTime < _currentReq.Duration)
             {
-                float t = ((_elapsedTime - fadeOutPos) / _clipData.FadeOut).SetEase(_fadeOutEase);
-                SetVolume(Mathf.Lerp(_clipData.Volume, 0f, t));
+                float t = ((float)(_elapsedTime - fadeOutPos) / _currentReq.FadeOut).SetEase(_fadeOutEase);
+                SetVolume(Mathf.Lerp(_currentReq.Volume, 0f, t));
             }
             else
             {
-                SetVolume(hasFadeOut && _elapsedTime >= _clipData.Duration ? 0f : _clipData.Volume);
+                SetVolume(hasFadeOut && _elapsedTime >= _currentReq.Duration ? 0f : _currentReq.Volume);
             }
             base.Update();
         }

@@ -540,13 +540,14 @@ namespace Ami.BroAudio.Editor
             _currentPreviewingEntity = entity;
             var clip = entity.PickNewClip(out int index);
             data.Clips.SelectAndSetPlayingElement(index);
-
-            float volume = clip.Volume * entity.GetMasterVolume();
-            float pitch = entity.GetPitch();
+            
             ReplayData replayData = data.IsLoop ? new ReplayData(entity, data.Clips.SelectAndSetPlayingElement) : null;
-
-            var clipData = new EditorPlayAudioClip.Data(clip) { Volume = volume };
-            EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, false, replayData, pitch);
+            var req = new PreviewRequest(clip)
+            {
+                MasterVolume = entity.GetMasterVolume(), 
+                Pitch = entity.GetPitch()
+            };
+            EditorPlayAudioClip.Instance.PlayClipByAudioSource(req, false, replayData);
             if (canDisplayIndicator)
             {
                 EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip), entity.GetPitch());

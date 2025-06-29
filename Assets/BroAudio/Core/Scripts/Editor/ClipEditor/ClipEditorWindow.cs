@@ -133,7 +133,7 @@ namespace Ami.BroAudio.Editor
             EditorGUILayout.Space();
 			DrawClipPreview(position.height * 0.3f, _volume, out Rect previewRect);
             EditorGUILayout.Space();
-            DrawClipPropertiesHelper.DrawPlaybackIndicator(position.SetPosition(0f,0f));
+            EditorPlayAudioClip.Instance.PlaybackIndicator?.Draw(position.SetPosition(0f,0f));
 
             DrawPlaybackBar(previewRect);
             EditorGUILayout.Space();

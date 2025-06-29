@@ -8,21 +8,26 @@ namespace Ami.Extension
 	{
 		public event Action OnUpdate;
 
-		private double _lastUpdateTime = default;
+		private double _lastUpdateTime;
 		protected float DeltaTime;
 		protected abstract float UpdateInterval { get;}
+        private bool _hasUpdateSubscribed;
 
 		public virtual void Start()
 		{
-			EditorApplication.update -= UpdateInternal;
-			EditorApplication.update += UpdateInternal;
-
+            if (!_hasUpdateSubscribed)
+            {
+                EditorApplication.update += UpdateInternal;
+                _hasUpdateSubscribed = true;
+            }
+            
 			_lastUpdateTime = EditorApplication.timeSinceStartup;
 		}
 
 		public virtual void End()
 		{
 			EditorApplication.update -= UpdateInternal;
+            _hasUpdateSubscribed = false;
 		}
 
 		protected virtual void Update()
@@ -44,6 +49,7 @@ namespace Ami.Extension
         public virtual void Dispose()
         {
             EditorApplication.update -= UpdateInternal;
+            _hasUpdateSubscribed = false;
             OnUpdate = null;
         }
     }

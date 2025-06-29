@@ -7,21 +7,35 @@ namespace Ami.Extension
 {
 	public class PlaybackIndicatorUpdater : EditorUpdateHelper
 	{
-		public const float AudioClipIndicatorWidth = 2f;
+        private const float AudioClipIndicatorWidth = 2f;
 
 		public event Action OnEnd;
 
-		private Rect _waveformRect = default;
-		private PreviewClip _clip = default;
-		private double _playingStartTime = default;
+		private Rect _waveformRect;
+		private PreviewClip _clip;
+		private double _playingStartTime;
 		private float _speed = 1f;
-		
-		public bool IsPlaying { get; private set; }
-		public bool IsLoop { get; private set; }
+        private bool _isLoop;
 
-		public Color Color => new Color(1f,1f,1f,0.8f);
+        private bool _isPlaying;
+        private static Color Color => new Color(1f,1f,1f,0.8f);
 
 		protected override float UpdateInterval => 0.02f;  // 50 FPS
+        
+        public void Draw(Rect scope, Vector2 positionOffset = default)
+        {
+            if (!_isPlaying)
+            {
+                return;
+            }
+
+            GUI.BeginClip(scope);
+            {
+                Rect indicatorRect = GetIndicatorPosition();
+                EditorGUI.DrawRect(new Rect(indicatorRect.position + positionOffset, indicatorRect.size), Color);
+            }
+            GUI.EndClip();
+        }
 
 		public void SetClipInfo(Rect waveformRect, PreviewClip clip, float pitch = 1f) 
 		{
@@ -30,13 +44,13 @@ namespace Ami.Extension
 			_speed = pitch;
 		}
 
-		public Rect GetIndicatorPosition()
+        private Rect GetIndicatorPosition()
 		{
 			if(_clip.FullLength != 0f && _waveformRect != default)
 			{
 				double currentPlayedLength = (EditorApplication.timeSinceStartup - _playingStartTime) * _speed;
 				double currentPos;
-				if(IsLoop)
+				if(_isLoop)
 				{
 					float targetPlayLength = _clip.FullLength - _clip.StartPosition - _clip.EndPosition;
                     currentPos = _clip.StartPosition + currentPlayedLength % targetPlayLength;
@@ -54,31 +68,25 @@ namespace Ami.Extension
 			return default;
 		}
 
-		public Rect GetEndPos()
-		{
-			float endTime = _clip.FullLength - _clip.EndPosition;
-			return new Rect(_waveformRect.x + (endTime / _clip.FullLength * _waveformRect.width), _waveformRect.y, AudioClipIndicatorWidth, _waveformRect.height);
-		}
-
-		public override void Start()
+        public override void Start()
 		{
 			_playingStartTime = EditorApplication.timeSinceStartup;
-			IsPlaying = true;
-			IsLoop = false;
+			_isPlaying = true;
+			_isLoop = false;
 			base.Start();
 		}
 
 		public void Start(bool loop)
 		{
 			Start();
-			IsLoop = loop;
+			_isLoop = loop;
 		}
 
 		public override void End()
 		{
-			if(IsPlaying)
+			if(_isPlaying)
 			{
-				IsPlaying = false;
+				_isPlaying = false;
 				OnEnd?.Invoke();
 			}
 			_playingStartTime = default;

@@ -47,19 +47,16 @@ namespace Ami.Extension
 
             public float Duration => AudioClip.length - EndPosition - StartPosition;
         }
-        public enum MuteState { None, On, Off }
+
+        private enum MuteState { None, On, Off }
 
         public delegate void PlayPreviewClip(AudioClip audioClip, int startSample, bool loop);
         public delegate void StopAllPreviewClips();
 
-        public const string MixerSuspendFieldName = "m_EnableSuspend";
         public const string IgnoreSettingTooltip = "Right-click to play the audio clip directly";
-        public const string PlayClipMethodName = "PlayPreviewClip";
-        public const string StopClipMethodName = "StopAllPreviewClips";
-
-        // Not 100% sure but highly suspect the delay comes from the dsp time
-        // The worst case might be 4096 sample in 44.1KHz, which is ~0.09 sec per chunk
-        public const float MixerUpdateTime = 0.1f;
+        private const string MixerSuspendFieldName = "m_EnableSuspend";
+        private const string PlayClipMethodName = "PlayPreviewClip";
+        private const string StopClipMethodName = "StopAllPreviewClips";
 
         private static EditorPlayAudioClip _instance = null;
         public static EditorPlayAudioClip Instance
@@ -74,16 +71,16 @@ namespace Ami.Extension
         public PlaybackIndicatorUpdater PlaybackIndicator { get; private set; }
 
         public Action OnFinished;
-        public StopAllPreviewClips StopAllPreviewClipsDelegate = null;
-        public PlayPreviewClip PlayPreviewClipDelegate = null;
+        private readonly StopAllPreviewClips _stopAllPreviewClipsDelegate;
+        private readonly PlayPreviewClip _playPreviewClipDelegate;
 
         private CancellationTokenSource _cancellationSource = new CancellationTokenSource();
-        private AudioSource _currentEditorAudioSource = null;
-        private Data _currentPlayingClip = null;
-        private bool _isRecursionOutside = false;
-        private AudioMixer _mixer = null;
-        private AudioMixerGroup _masterTrack = null;
-        private EditorAudioPreviewer _volumeTransporter = null;
+        private AudioSource _currentEditorAudioSource;
+        private Data _currentPlayingClip;
+        private bool _isRecursionOutside;
+        private AudioMixer _mixer;
+        private AudioMixerGroup _masterTrack;
+        private EditorVolumeTransporter _volumeTransporter;
         private MuteState _previousMuteState = MuteState.None;
 
         private CancellationTokenSource CancellationSource => _cancellationSource ??= new CancellationTokenSource();
@@ -92,10 +89,10 @@ namespace Ami.Extension
         {
             _mixer = Resources.Load<AudioMixer>(BroEditorUtility.EditorAudioMixerPath);
             PlaybackIndicator = new PlaybackIndicatorUpdater();
-            _volumeTransporter = new EditorAudioPreviewer(_mixer);
+            _volumeTransporter = new EditorVolumeTransporter(_mixer);
 
-            StopAllPreviewClipsDelegate = GetAudioUtilMethodDelegate<StopAllPreviewClips>(StopClipMethodName);
-            PlayPreviewClipDelegate = GetAudioUtilMethodDelegate<PlayPreviewClip>(PlayClipMethodName);
+            _stopAllPreviewClipsDelegate = GetAudioUtilMethodDelegate<StopAllPreviewClips>(StopClipMethodName);
+            _playPreviewClipDelegate = GetAudioUtilMethodDelegate<PlayPreviewClip>(PlayClipMethodName);
 
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
@@ -126,12 +123,12 @@ namespace Ami.Extension
             _volumeTransporter.SetData(clip, pitch);
             SetMixerAutoSuspend(_mixer, false);
             
-            double startDspTime = AudioSettings.dspTime + MixerUpdateTime;
+            double startDspTime = AudioSettings.dspTime + AudioConstant.MixerWarmUpTime;
             float duration = clip.Duration / pitch;
             audioSource.PlayScheduled(startDspTime);
             audioSource.SetScheduledEndTime(startDspTime + duration);
 
-            await Task.Delay(SecToMs(MixerUpdateTime), CancellationSource.Token);
+            await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
             PlaybackIndicator.Start(selfLoop);
             _volumeTransporter.Start();
             EditorUtility.audioMasterMute = false;
@@ -193,7 +190,7 @@ namespace Ami.Extension
                 if (_volumeTransporter.IsNewVolumeDifferentFromCurrent(clip))
                 {
                     _volumeTransporter.SetData(clip, pitch);
-                    await Task.Delay(SecToMs(MixerUpdateTime), CancellationSource.Token);
+                    await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
                 }
 
                 double dspTime = AudioSettings.dspTime;
@@ -246,7 +243,7 @@ namespace Ami.Extension
         {
             StopAllClips();
 
-            PlayPreviewClipDelegate.Invoke(audioClip, startSample, loop);
+            _playPreviewClipDelegate.Invoke(audioClip, startSample, loop);
             PlaybackIndicator.Start(loop);
 
             int sampleLength = audioClip.samples - startSample - endSample;
@@ -269,10 +266,10 @@ namespace Ami.Extension
 
         private async Task AudioClipReplay(AudioClip audioClip, int startSample, bool loop, int lengthInMs)
         {
-            StopAllPreviewClipsDelegate.Invoke();
+            _stopAllPreviewClipsDelegate.Invoke();
             PlaybackIndicator.End();
 
-            PlayPreviewClipDelegate.Invoke(audioClip, startSample, loop);
+            _playPreviewClipDelegate.Invoke(audioClip, startSample, loop);
             PlaybackIndicator.Start();
 
             await Task.Delay(lengthInMs, CancellationSource.Token);
@@ -281,7 +278,7 @@ namespace Ami.Extension
         private void StopStaticPreviewClipsAndCancelTask()
         {
             CancelTask();
-            StopAllPreviewClipsDelegate.Invoke();
+            _stopAllPreviewClipsDelegate.Invoke();
             PlaybackIndicator.End();
             TriggerOnFinished();
         }

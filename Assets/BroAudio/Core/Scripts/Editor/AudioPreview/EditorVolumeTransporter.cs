@@ -21,7 +21,7 @@ namespace Ami.BroAudio.Editor
         private EditorPlayAudioClip.Data _clipData;
         private float _elapsedTime;
         private float _dbVolume;
-        private float _pitch = 1f;
+        private float _speed = 1f;
         
         public EditorVolumeTransporter(AudioMixer mixer)
         {
@@ -47,10 +47,10 @@ namespace Ami.BroAudio.Editor
 
         protected override float UpdateInterval => 1 / 30f;
 
-        public void SetData(EditorPlayAudioClip.Data clipData, float pitch = 1f)
+        public void SetData(EditorPlayAudioClip.Data clipData, float speed = 1f)
         {
             _clipData = clipData;
-            _pitch = pitch;
+            _speed = speed;
 
             if (_isInitSuccessfully && _method == null)
             {
@@ -96,7 +96,7 @@ namespace Ami.BroAudio.Editor
             float fadeOutPos = _clipData.Duration - _clipData.FadeOut;
             bool hasFadeOut = _clipData.FadeOut > 0f;
 
-            _elapsedTime += DeltaTime * _pitch;
+            _elapsedTime += DeltaTime * _speed;
             if (_elapsedTime < _clipData.FadeIn)
             {
                 float t = (_elapsedTime / _clipData.FadeIn).SetEase(_fadeInEase);

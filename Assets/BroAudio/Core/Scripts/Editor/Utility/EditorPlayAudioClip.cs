@@ -77,7 +77,6 @@ namespace Ami.Extension
         private CancellationTokenSource _cancellationSource = new CancellationTokenSource();
         private AudioSource _currentEditorAudioSource;
         private Data _currentPlayingClip;
-        private bool _isRecursionOutside;
         private AudioMixer _mixer;
         private AudioMixerGroup _masterTrack;
         private EditorVolumeTransporter _volumeTransporter;
@@ -98,16 +97,16 @@ namespace Ami.Extension
         }
 
         #region AudioSource
-        public async void PlayClipByAudioSource(Data clip, bool selfLoop = false, Action onReplay = null, float pitch = 1f)
+        public async void PlayClipByAudioSource(Data clip, bool selfLoop = false, ReplayData replayData = null, float pitch = 1f)
         {
             try
             {
-                await PlayClipByAudioSourceAsync(clip, selfLoop, onReplay, pitch);
+                await PlayClipByAudioSourceAsync(clip, selfLoop, replayData, pitch);
             }
             catch (OperationCanceledException) { }
         }
 
-        private async Task PlayClipByAudioSourceAsync(Data clip, bool selfLoop, Action onReplay, float pitch)
+        private async Task PlayClipByAudioSourceAsync(Data clip, bool selfLoop, ReplayData replayData, float pitch)
         {
             if(clip.AudioClip == null)
             {
@@ -129,25 +128,28 @@ namespace Ami.Extension
             audioSource.SetScheduledEndTime(startDspTime + duration);
 
             await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
-            PlaybackIndicator.Start(selfLoop);
+            PlaybackIndicator.Start(selfLoop || replayData != null);
             _volumeTransporter.Start();
             EditorUtility.audioMasterMute = false;
 
             await Task.Delay(SecToMs(duration), CancellationSource.Token);
             _volumeTransporter.End();
 
-            _isRecursionOutside = onReplay != null;
-            if (_isRecursionOutside)
-            {
-                onReplay.Invoke();
-                return;
-            }
-
             if (selfLoop)
             {
-                while (selfLoop)
+                while (true)
                 {
                     await AudioSourceReplay(clip, pitch);
+                }
+            }
+            else if (replayData != null)
+            {
+                while (true)
+                {
+                    replayData.NewReplay();
+                    clip.AudioClip = replayData.Clip.GetAudioClip();
+                    duration = clip.Duration / replayData.Pitch;
+                    await Task.Delay(SecToMs(duration), CancellationSource.Token);
                 }
             }
             else
@@ -286,7 +288,6 @@ namespace Ami.Extension
 
         public void StopAllClips()
         {
-            _isRecursionOutside = false;
             StopStaticPreviewClipsAndCancelTask();
             DestroyPreviewAudioSourceAndCancelTask();
 
@@ -299,11 +300,8 @@ namespace Ami.Extension
 
         private void TriggerOnFinished()
         {
-            if (!_isRecursionOutside)
-            {
-                OnFinished?.Invoke();
-                OnFinished = null;
-            }
+            OnFinished?.Invoke();
+            OnFinished = null;
         }
 
         public void AddPlaybackIndicatorListener(Action action)

@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -43,8 +42,8 @@ namespace Ami.BroAudio.Editor
         private Vector2 _assetListScrollPos = Vector2.zero;
         private Vector2 _entitiesScrollPos = Vector2.zero;
 
-        public Vector2 EntitiesHeaderSize => new Vector2(200f, EditorGUIUtility.singleLineHeight * 2);
-        public float DefaultLayoutPadding => GUI.skin.box.padding.top;
+        private static Vector2 EntitiesHeaderSize => new Vector2(200f, EditorGUIUtility.singleLineHeight * 2);
+        private static float DefaultLayoutPadding => GUI.skin.box.padding.top;
         public IUniqueIDGenerator IDGenerator => _idGenerator;
         private EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
 
@@ -285,7 +284,7 @@ namespace Ami.BroAudio.Editor
         #region Asset Creation
         private void ShowCreateAssetAskName()
         {
-            // In the following case. List has better performance than IEnumerable , even with a ToList() method.
+            // In the following case. List has better performance than IEnumerable, even with a ToList() method.
             List<string> assetNames = _assetEditorDict.Values.Select(x => x.Asset.AssetName).ToList();
             AssetNameEditorWindow.ShowWindow(assetNames, assetName => CreateAsset(assetName));
         }
@@ -446,7 +445,7 @@ namespace Ami.BroAudio.Editor
                     }
                 }
                 EditorGUILayout.EndScrollView();
-                DrawClipPropertiesHelper.DrawPlaybackIndicator(rect.Scoping(position, new Vector2(offsetX, offsetY)), -_entitiesScrollPos);
+                EditorPlayAudioClip.Instance.PlaybackIndicator?.Draw(rect.Scoping(position, new Vector2(offsetX, offsetY)), -_entitiesScrollPos);
             }
             EditorGUILayout.EndVertical();
         }

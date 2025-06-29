@@ -119,7 +119,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private static float SliderFullScale => FullVolume / ((FullDecibelVolume - MinDecibelVolume) / DecibelVoulumeFullScale);
+        private static float SliderFullScale => FullVolume / ((FullDecibelVolume - MinDecibelVolume) / DecibelVolumeFullScale);
 
         private static void OnPlayModeStateChanged(PlayModeStateChange mode)
         {

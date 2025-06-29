@@ -44,7 +44,7 @@ namespace Ami.BroAudio.Editor
 		{
 			get
 			{
-				return _volume != AudioConstant.FullVolume
+				return !Mathf.Approximately(_volume, AudioConstant.FullVolume)
 					|| _transport.HasDifferentPosition
 					|| _transport.HasFading
 					|| _isReverse
@@ -288,8 +288,8 @@ namespace Ami.BroAudio.Editor
 					PreviewClip previewGUIClip;
 					if(Event.current.button == 0) // Left Click
 					{
-                        var clipData = new EditorPlayAudioClip.Data(clip, _volume, _transport);
-                        EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData, _isLoop);
+                        var req = new PreviewRequest(clip, _volume, _transport);
+                        EditorPlayAudioClip.Instance.PlayClipByAudioSource(req, _isLoop);
 						previewGUIClip = new PreviewClip(_transport);
                     }
 					else
@@ -299,7 +299,7 @@ namespace Ami.BroAudio.Editor
                     }
 
                     _isPlaying = true;
-                    EditorPlayAudioClip.Instance.OnFinished = () => _isPlaying = false; ;
+                    EditorPlayAudioClip.Instance.OnFinished = () => _isPlaying = false;
                     EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, previewGUIClip);
 				}
 			}
@@ -359,7 +359,7 @@ namespace Ami.BroAudio.Editor
 					helper.AddSlient(_transport.Delay);
 				}
 
-				if(_volume != AudioConstant.FullVolume)
+				if(!Mathf.Approximately(_volume, AudioConstant.FullVolume))
 				{
 					helper.AdjustVolume(_volume);
 				}

@@ -16,38 +16,6 @@ namespace Ami.Extension
 {
     public class EditorPlayAudioClip
     {
-        public class Data
-        {
-            public AudioClip AudioClip;
-            public float Volume;
-            public float StartPosition;
-            public float EndPosition;
-            public float FadeIn;
-            public float FadeOut;
-
-            public Data(AudioClip audioClip, float volume, Transport transport)
-            {
-                AudioClip = audioClip;
-                Volume = volume;
-                StartPosition = transport.StartPosition;
-                EndPosition = transport.EndPosition;
-                FadeIn = transport.FadeIn;
-                FadeOut = transport.FadeOut;
-            }
-
-            public Data(IBroAudioClip broAudioClip)
-            {
-                AudioClip = broAudioClip.GetAudioClip();
-                Volume = broAudioClip.Volume;
-                StartPosition = broAudioClip.StartPosition;
-                EndPosition = broAudioClip.EndPosition;
-                FadeIn = broAudioClip.FadeIn;
-                FadeOut = broAudioClip.FadeOut;
-            }
-
-            public float Duration => AudioClip.length - EndPosition - StartPosition;
-        }
-
         private enum MuteState { None, On, Off }
 
         public delegate void PlayPreviewClip(AudioClip audioClip, int startSample, bool loop);
@@ -76,7 +44,7 @@ namespace Ami.Extension
 
         private CancellationTokenSource _cancellationSource = new CancellationTokenSource();
         private AudioSource _currentEditorAudioSource;
-        private Data _currentPlayingClip;
+        private PreviewRequest _currentPreviewRequest;
         private AudioMixer _mixer;
         private AudioMixerGroup _masterTrack;
         private EditorVolumeTransporter _volumeTransporter;
@@ -97,59 +65,56 @@ namespace Ami.Extension
         }
 
         #region AudioSource
-        public async void PlayClipByAudioSource(Data clip, bool selfLoop = false, ReplayData replayData = null, float pitch = 1f)
+        public async void PlayClipByAudioSource(PreviewRequest req, bool selfLoop = false, ReplayData replayData = null)
         {
             try
             {
-                await PlayClipByAudioSourceAsync(clip, selfLoop, replayData, pitch);
+                await PlayClipByAudioSourceAsync(req, selfLoop, replayData);
             }
             catch (OperationCanceledException) { }
         }
 
-        private async Task PlayClipByAudioSourceAsync(Data clip, bool selfLoop, ReplayData replayData, float pitch)
+        private async Task PlayClipByAudioSourceAsync(PreviewRequest req, bool selfLoop, ReplayData replayData)
         {
-            if(clip.AudioClip == null)
+            if(req.AudioClip == null)
             {
                 return;
             }
             StopStaticPreviewClipsAndCancelTask();
             ResetAndGetAudioSource(out var audioSource);
 
-            SetAudioSource(ref audioSource, clip, pitch);
-            _currentPlayingClip = clip;
+            SetAudioSource(ref audioSource, req);
+            _currentPreviewRequest = req;
             _previousMuteState = EditorUtility.audioMasterMute ? MuteState.On : MuteState.Off;
 
-            _volumeTransporter.SetData(clip, pitch);
+            _volumeTransporter.SetData(req);
             SetMixerAutoSuspend(_mixer, false);
             
             double startDspTime = AudioSettings.dspTime + AudioConstant.MixerWarmUpTime;
-            float duration = clip.Duration / pitch;
             audioSource.PlayScheduled(startDspTime);
-            audioSource.SetScheduledEndTime(startDspTime + duration);
+            audioSource.SetScheduledEndTime(startDspTime + req.Duration);
 
             await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
             PlaybackIndicator.Start(selfLoop || replayData != null);
             _volumeTransporter.Start();
             EditorUtility.audioMasterMute = false;
 
-            await Task.Delay(SecToMs(duration), CancellationSource.Token);
+            await Task.Delay(SecToMs(req.Duration), CancellationSource.Token);
             _volumeTransporter.End();
 
             if (selfLoop)
             {
                 while (true)
                 {
-                    await AudioSourceReplay(clip, pitch);
+                    await AudioSourceReplay(req);
                 }
             }
             else if (replayData != null)
             {
                 while (true)
                 {
-                    replayData.NewReplay();
-                    clip.AudioClip = replayData.Clip.GetAudioClip();
-                    duration = clip.Duration / replayData.Pitch;
-                    await Task.Delay(SecToMs(duration), CancellationSource.Token);
+                    req.SetReplay(replayData.NewReplay());
+                    await Task.Delay(SecToMs(req.Duration), CancellationSource.Token);
                 }
             }
             else
@@ -174,35 +139,35 @@ namespace Ami.Extension
             result = _currentEditorAudioSource;
         }
 
-        private void SetAudioSource(ref AudioSource audioSource, Data clip, float pitch)
+        private void SetAudioSource(ref AudioSource audioSource, PreviewRequest req)
         {
-            audioSource.clip = clip.AudioClip;
+            audioSource.clip = req.AudioClip;
             audioSource.playOnAwake = false;
-            audioSource.timeSamples = GetSample(clip.AudioClip.frequency, clip.StartPosition);
-            audioSource.pitch = pitch;
+            audioSource.timeSamples = GetSample(req.AudioClip.frequency, req.StartPosition);
+            audioSource.pitch = req.Pitch;
             audioSource.outputAudioMixerGroup = GetEditorMasterTrack();
             audioSource.reverbZoneMix = 0f;
         }
 
-        private async Task AudioSourceReplay(Data clip, float pitch)
+        private async Task AudioSourceReplay(PreviewRequest req)
         {
             if (_currentEditorAudioSource != null)
             {
                 PlaybackIndicator.End();
-                if (_volumeTransporter.IsNewVolumeDifferentFromCurrent(clip))
+                if (_volumeTransporter.IsNewVolumeDifferentFromCurrent(req))
                 {
-                    _volumeTransporter.SetData(clip, pitch);
+                    _volumeTransporter.SetData(req);
                     await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
                 }
 
                 double dspTime = AudioSettings.dspTime;
-                _currentEditorAudioSource.timeSamples = GetSample(clip.AudioClip.frequency, clip.StartPosition);
+                _currentEditorAudioSource.timeSamples = GetSample(req.AudioClip.frequency, req.StartPosition);
                 _currentEditorAudioSource.PlayScheduled(dspTime);
-                _currentEditorAudioSource.SetScheduledEndTime(dspTime + (clip.Duration / pitch));
+                _currentEditorAudioSource.SetScheduledEndTime(dspTime + req.Duration);
 
                 _volumeTransporter.Start();
                 PlaybackIndicator.Start();
-                await Task.Delay(SecToMs(_currentPlayingClip.Duration), CancellationSource.Token);
+                await Task.Delay(SecToMs(_currentPreviewRequest.Duration), CancellationSource.Token);
             }
         }
 
@@ -330,7 +295,7 @@ namespace Ami.Extension
         private void Dispose()
         {
             OnFinished = null;
-            _currentPlayingClip = null;
+            _currentPreviewRequest = null;
             _mixer = null;
             _volumeTransporter.Dispose();
             _volumeTransporter = null;
@@ -352,7 +317,7 @@ namespace Ami.Extension
             }
         }
 
-        private T GetAudioUtilMethodDelegate<T>(string methodName) where T : Delegate
+        private static T GetAudioUtilMethodDelegate<T>(string methodName) where T : Delegate
         {
             Type audioUtilClass = GetUnityEditorClass(AudioUtilClassName);
             MethodInfo method = audioUtilClass.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public);

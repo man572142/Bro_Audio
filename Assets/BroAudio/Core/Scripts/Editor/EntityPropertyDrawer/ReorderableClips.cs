@@ -480,8 +480,8 @@ namespace Ami.BroAudio.Editor
                 if (Event.current.button == 0) // Left Click
                 {
                     var transport = new SerializedTransport(clipProp, audioClip.length);
-                    var clipData = new EditorPlayAudioClip.Data(audioClip, volProp.floatValue, transport);
-                    EditorPlayAudioClip.Instance.PlayClipByAudioSource(clipData);
+                    var req = new PreviewRequest(audioClip, volProp.floatValue, transport);
+                    EditorPlayAudioClip.Instance.PlayClipByAudioSource(req);
 					previewClipGUI = new PreviewClip(transport);
                 }
                 else

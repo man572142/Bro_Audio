@@ -97,12 +97,12 @@ namespace Ami.BroAudio.Editor
 
         private void OnFocus()
         {
-            EditorPlayAudioClip.Instance.AddPlaybackIndicatorListener(Repaint);
+            EditorPlayAudioClip.Instance.OnPlaybackIndicatorUpdate += Repaint;
         }
 
         private void OnLostFocus()
 		{
-            EditorPlayAudioClip.Instance.RemovePlaybackIndicatorListener(Repaint);
+            EditorPlayAudioClip.Instance.OnPlaybackIndicatorUpdate -= Repaint;
             EditorPlayAudioClip.Instance.StopAllClips();
 			_isPlaying = false;
 

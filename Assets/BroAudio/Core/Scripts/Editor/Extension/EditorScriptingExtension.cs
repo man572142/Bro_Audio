@@ -47,14 +47,12 @@ namespace Ami.Extension
         {
             public float Ratio;
             public GUIContent Label;
-            public Action OnTabChanged;
             public Action<Rect, SerializedProperty> OnButtonClick;
 
-            public TabViewData(float ratio, GUIContent label, Action onTabChanged, Action<Rect, SerializedProperty> onButtonClick)
+            public TabViewData(float ratio, GUIContent label, Action<Rect, SerializedProperty> onButtonClick = null)
             {
                 Ratio = ratio;
                 Label = label;
-                OnTabChanged = onTabChanged;
                 OnButtonClick = onButtonClick;
             }
         }
@@ -425,7 +423,7 @@ namespace Ami.Extension
                 accumulatedWidth += rect.width;
 
                 GUIStyle style = GetTabStyle(i, datas.Length);
-                if (data.OnTabChanged != null)
+                if (data.OnButtonClick == null)
                 {
                     bool oldState = selectedTabIndex == i;
                     bool newState = GUI.Toggle(rect, oldState, data.Label, style);
@@ -434,13 +432,8 @@ namespace Ami.Extension
                     {
                         selectedTabIndex = i;
                     }
-
-                    if (isChanged)
-                    {
-                        data.OnTabChanged.Invoke();
-                    }
                 }
-                else if (data.OnButtonClick != null)
+                else
                 {
                     if(GUI.Button(rect, data.Label, style))
                     {

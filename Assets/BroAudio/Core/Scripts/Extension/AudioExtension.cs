@@ -62,10 +62,10 @@ namespace Ami.Extension
 
 		public static bool TryGetSampleData(this AudioClip originClip, out float[] sampleArray, float startPosInSecond, float endPosInSecond)
 		{
-			int dataSampleLength = GetDataSample(originClip, originClip.length - endPosInSecond - startPosInSecond);
+			int dataSampleLength = originClip.GetDataSample(originClip.length - endPosInSecond - startPosInSecond);
 
 			sampleArray = new float[dataSampleLength];
-			bool sucess = originClip.GetData(sampleArray, GetTimeSample(originClip, startPosInSecond));
+			bool sucess = originClip.GetData(sampleArray, originClip.GetTimeSample(startPosInSecond));
 
 			if (!sucess)
 			{
@@ -90,12 +90,12 @@ namespace Ami.Extension
 			return result;
 		}
 
-		public static int GetDataSample(AudioClip clip, float time, MidpointRounding rounding = MidpointRounding.AwayFromZero)
+		public static int GetDataSample(this AudioClip clip, float time, MidpointRounding rounding = MidpointRounding.AwayFromZero)
 		{
 			return (int)Math.Round(clip.frequency * clip.channels * time, rounding);
 		}
 
-		public static int GetTimeSample(AudioClip clip, float time, MidpointRounding rounding = MidpointRounding.AwayFromZero)
+		public static int GetTimeSample(this AudioClip clip, float time, MidpointRounding rounding = MidpointRounding.AwayFromZero)
 		{
 			return (int)Math.Round(clip.frequency * time, rounding);
 		}

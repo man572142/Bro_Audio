@@ -15,6 +15,12 @@ namespace Ami.BroAudio.Editor
         public float FadeOut;
         public float Pitch = AudioConstant.DefaultPitch;
 
+        public PreviewRequest(AudioClip audioClip)
+        {
+            AudioClip = audioClip;
+            ClipVolume = AudioConstant.FullVolume;
+        }
+
         public PreviewRequest(AudioClip audioClip, float volume, Transport transport)
         {
             AudioClip = audioClip;

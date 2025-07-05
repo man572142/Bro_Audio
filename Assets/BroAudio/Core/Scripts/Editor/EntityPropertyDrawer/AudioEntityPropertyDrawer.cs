@@ -52,7 +52,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        public enum Tab { Clips, Overall }
+        private enum Tab { Clips, Overall }
 
         public static event Action OnRemoveEntity;
         public static event Action OnDuplicateEntity;
@@ -80,6 +80,7 @@ namespace Ami.BroAudio.Editor
         private GenericMenu _changeAudioTypeMenu;
         private SerializedProperty _entityThatIsModifyingAudioType;
         private AudioEntity _currentPreviewingEntity;
+        private KeyValuePair<string, PreviewRequest> _currentPreviewRequest;
 
         public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
         private float TabLabelHeight => SingleLineSpace * 1.3f;
@@ -212,14 +213,14 @@ namespace Ami.BroAudio.Editor
                     SerializedProperty currSelectClip = data.Clips.CurrentSelectedClip;
                     if (data.Clips.TryGetSelectedAudioClip(out AudioClip audioClip))
                     {
-                        DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport, out float volume);
+                        DrawClipProperties(position, currSelectClip, audioClip, setting, out ITransport transport);
                         if (setting.CanDraw(DrawedProperty.ClipPreview) && audioClip != null && Event.current.type != EventType.Layout)
                         {
                             DrawEmptyLine(1);
                             Rect previewRect = GetNextLineRect(position);
                             previewRect.y -= PreviewPrettinessOffsetY;
                             previewRect.height = ClipPreviewHeight;
-                            _clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, volume, currSelectClip.propertyPath, data.Clips.SetPlayingClip, DrawPlaybackValuePeeking);
+                            _clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, currSelectClip.propertyPath, data.Clips.SetPlayingClip, DrawPlaybackValuePeeking);
                             data.Clips.SetPreviewRect(previewRect);
                             Offset += ClipPreviewHeight + ClipPreviewPadding;
                         }
@@ -372,9 +373,15 @@ namespace Ami.BroAudio.Editor
             if (!_entityDataDict.TryGetValue(property.propertyPath, out data))
             {
                 var reorderableClips = new ReorderableClips(property);
+                reorderableClips.OnPreviewRequestChanged += OnPreviewRequestChanged;
                 data = new EntityData(reorderableClips);
                 _entityDataDict[property.propertyPath] = data;
             }
+        }
+
+        private void OnPreviewRequestChanged(string clipPropertyPath, PreviewRequest request)
+        {
+            _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(clipPropertyPath, request);
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
@@ -483,7 +490,7 @@ namespace Ami.BroAudio.Editor
             reorderableClips.OnClipChanged = onClipChanged;
         }
 
-        private void DrawClipProperties(Rect position, SerializedProperty clipProp, AudioClip audioClip, EditorSetting.AudioTypeSetting setting, out ITransport transport, out float volume)
+        private void DrawClipProperties(Rect position, SerializedProperty clipProp, AudioClip audioClip, EditorSetting.AudioTypeSetting setting, out ITransport transport)
         {
             SerializedProperty volumeProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
 
@@ -502,9 +509,12 @@ namespace Ami.BroAudio.Editor
                 {
                     clipData.IsSnapToFullVolume = !clipData.IsSnapToFullVolume;
                 });
+                if (_currentPreviewRequest.Key == clipProp.propertyPath)
+                {
+                    _currentPreviewRequest.Value.ClipVolume = volumeProp.floatValue;
+                }
                 EditorGUI.EndProperty();
             }
-            volume = volumeProp.floatValue;
 
             if (setting.CanDraw(DrawedProperty.PlaybackPosition))
             {
@@ -547,6 +557,7 @@ namespace Ami.BroAudio.Editor
                 MasterVolume = entity.GetMasterVolume(), 
                 Pitch = entity.GetPitch()
             };
+            _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip.propertyPath, req);
             EditorPlayAudioClip.Instance.PlayClipByAudioSource(req, false, replayData);
             if (canDisplayIndicator)
             {
@@ -557,18 +568,12 @@ namespace Ami.BroAudio.Editor
                 EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(default, default, entity.GetPitch());
             }
             data.IsPreviewing = true;
-            EditorPlayAudioClip.Instance.OnFinished = OnPreviewFinished;
-
-            void ReplayPreview()
-            {
-                StartPreview(data, entity, canDisplayIndicator);
-            }
-
-            void OnPreviewFinished()
+            EditorPlayAudioClip.Instance.OnFinished = () =>
             {
                 data.IsPreviewing = false;
                 data.Clips.SetPlayingClip(null);
-            }
+                _currentPreviewRequest = default;
+            };
         }
 
         private void ResetPreview()

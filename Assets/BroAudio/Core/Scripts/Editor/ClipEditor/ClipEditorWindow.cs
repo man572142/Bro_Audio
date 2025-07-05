@@ -12,12 +12,12 @@ namespace Ami.BroAudio.Editor
 {
 	public class ClipEditorWindow : EditorWindow, IHasCustomMenu
 	{
-		public const string SaveFilePanelTitle = "Save as a new file";
-		public const string ConfirmOverwriteTitle = "Confirm overwrite";
-        public const string PrefKey = "LastClipEditorSavePath";
-		public const float Gap = 50f;
-		public const string DefaultFileExt = "wav";
-		public static Vector2 DefaultWindowSize => new Vector2(640f, 490f);
+        private const string SaveFilePanelTitle = "Save as a new file";
+        private const string ConfirmOverwriteTitle = "Confirm overwrite";
+        private const string PrefKey = "LastClipEditorSavePath";
+        private const float Gap = 50f;
+        private const string DefaultFileExt = "wav";
+        private static Vector2 DefaultWindowSize => new Vector2(640f, 490f);
 
 		public event Action OnChangeAudioClip;
 
@@ -39,8 +39,9 @@ namespace Ami.BroAudio.Editor
 
         private string _currSavingFilePath = null;
 		private BroInstructionHelper _instruction = new BroInstructionHelper();
+        private PreviewRequest _currentPreviewRequest;
 
-		public bool HasEdited
+        private bool HasEdited
 		{
 			get
 			{
@@ -52,10 +53,10 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public AudioClip TargetClip
+        private AudioClip TargetClip
 		{
 			get => _audioClipProp.objectReferenceValue as AudioClip;
-            private set
+            set
 			{
 				bool hasChanged = value != _audioClipProp.objectReferenceValue;
                 _audioClipProp.objectReferenceValue = value;
@@ -254,7 +255,7 @@ namespace Ami.BroAudio.Editor
             previewRect = EditorGUILayout.GetControlRect(GUILayout.Height(height));
             previewRect.width = position.width * 0.95f;
             previewRect.x = (position.width - previewRect.width) * 0.5f;
-            _clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip, volume, TargetClip.name, clipPath => _isPlaying = clipPath != null); // don't worry about any duplicate path, because there will only one clip in editing                                                                                                                                         //DrawEmptyLine(GetLineCountByPixels(height));
+            _clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip, TargetClip.name, clipPath => _isPlaying = clipPath != null); // don't worry about any duplicate path, because there will only one clip in editing                                                                                                                                         //DrawEmptyLine(GetLineCountByPixels(height));
 		}
 
 		private void DrawPlaybackPositionField()
@@ -288,8 +289,8 @@ namespace Ami.BroAudio.Editor
 					PreviewClip previewGUIClip;
 					if(Event.current.button == 0) // Left Click
 					{
-                        var req = new PreviewRequest(clip, _volume, _transport);
-                        EditorPlayAudioClip.Instance.PlayClipByAudioSource(req, _isLoop);
+                        _currentPreviewRequest = new PreviewRequest(clip, _volume, _transport);
+                        EditorPlayAudioClip.Instance.PlayClipByAudioSource(_currentPreviewRequest, _isLoop);
 						previewGUIClip = new PreviewClip(_transport);
                     }
 					else
@@ -299,7 +300,11 @@ namespace Ami.BroAudio.Editor
                     }
 
                     _isPlaying = true;
-                    EditorPlayAudioClip.Instance.OnFinished = () => _isPlaying = false;
+                    EditorPlayAudioClip.Instance.OnFinished = () =>
+                    {
+                        _isPlaying = false;
+                        _currentPreviewRequest = null;
+                    };
                     EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, previewGUIClip);
 				}
 			}

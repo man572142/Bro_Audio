@@ -19,6 +19,7 @@ namespace Ami.BroAudio.Editor
 	public class ReorderableClips
 	{
 		public Action<string> OnClipChanged;
+        public Action<string, PreviewRequest> OnPreviewRequestChanged;
 
 		public const MulticlipsPlayMode DefaultMulticlipsMode = MulticlipsPlayMode.Random;
 		private const float Gap = 5f;
@@ -412,7 +413,7 @@ namespace Ami.BroAudio.Editor
 				{
 					ResetBroClipPlaybackSetting(clipProp);
 					OnClipChanged?.Invoke(clipProp.propertyPath);
-                    if (!TryGetAudioClip(out AudioClip audioClip, out ReferenceType referenceType))
+                    if (!TryGetAudioClip(out _, out ReferenceType referenceType))
                     {
                         SetHasAny(false, referenceType);
                     }
@@ -483,6 +484,7 @@ namespace Ami.BroAudio.Editor
                     var req = new PreviewRequest(audioClip, volProp.floatValue, transport);
                     EditorPlayAudioClip.Instance.PlayClipByAudioSource(req);
 					previewClipGUI = new PreviewClip(transport);
+                    OnPreviewRequestChanged?.Invoke(clipProp.propertyPath, req);
                 }
                 else
                 {
@@ -491,8 +493,12 @@ namespace Ami.BroAudio.Editor
                 }
 
                 _currentPlayingClipPath = clipProp.propertyPath;
-                EditorPlayAudioClip.Instance.OnFinished = () => _currentPlayingClipPath = null;
                 EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, previewClipGUI);
+                EditorPlayAudioClip.Instance.OnFinished = () =>
+                {
+                    _currentPlayingClipPath = null;
+                    OnPreviewRequestChanged?.Invoke(null, null);
+                };
             }
 
 			void DrawVolumeSlider()
@@ -504,7 +510,7 @@ namespace Ami.BroAudio.Editor
 				float newVol = BroEditorUtility.DrawVolumeSlider(sliderRect, volProp.floatValue, out bool hasChanged, out float newSliderValue);
 				if (hasChanged)
 				{
-                    volProp.floatValue = newVol;	
+                    volProp.floatValue = newVol;
 				}
                 DrawDecibelValuePeeking(volProp.floatValue, 3f, sliderRect, newSliderValue);
             }

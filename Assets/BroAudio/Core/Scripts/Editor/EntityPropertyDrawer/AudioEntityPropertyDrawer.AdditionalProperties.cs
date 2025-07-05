@@ -123,6 +123,11 @@ namespace Ami.BroAudio.Editor
                     snapVolProp.boolValue = !snapVolProp.boolValue;
                 });
             }
+            
+            if (_currentPreviewRequest.Key != null && _currentPreviewRequest.Key.Contains(property.propertyPath))
+            {
+                _currentPreviewRequest.Value.MasterVolume = masterVolProp.floatValue;
+            }
 
             int flag = randFlagsProp.intValue & (int)RandomFlag.Volume;
             var rndData = GetMasterVolumeData(masterVolProp.floatValue, volRandProp.floatValue, flag);

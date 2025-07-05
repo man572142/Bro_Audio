@@ -50,9 +50,10 @@ namespace Ami.BroAudio.Editor
             SetAudioSource(ref audioSource, req);
             _currentPreviewRequest = req;
             _previousMuteState = EditorUtility.audioMasterMute ? MuteState.On : MuteState.Off;
+            EditorUtility.audioMasterMute = false;
+            SetMixerAutoSuspend(_mixer, false);
 
             _volumeTransporter.SetData(req);
-            SetMixerAutoSuspend(_mixer, false);
 
             double startDspTime = AudioSettings.dspTime + AudioConstant.MixerWarmUpTime;
             audioSource.PlayScheduled(startDspTime);
@@ -61,7 +62,6 @@ namespace Ami.BroAudio.Editor
             await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
             StartPlaybackIndicator(selfLoop || replayData != null);
             _volumeTransporter.Start();
-            EditorUtility.audioMasterMute = false;
 
             await Task.Delay(SecToMs(req.Duration), CancellationSource.Token);
             _volumeTransporter.End();

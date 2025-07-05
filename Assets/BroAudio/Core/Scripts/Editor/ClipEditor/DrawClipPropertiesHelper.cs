@@ -108,7 +108,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        public void DrawClipPreview(Rect previewRect, ITransport transport, AudioClip audioClip, float volume, string clipPath, Action<string> onPreviewClip, Action<ITransport, TransportType, Rect> onDrawValuePeeking = null)
+        public void DrawClipPreview(Rect previewRect, ITransport transport, AudioClip audioClip, string clipPath, Action<string> onPreviewClip, Action<ITransport, TransportType, Rect> onDrawValuePeeking = null)
         {
             _clipPreviewHeight = previewRect.height;
             Event currEvent = Event.current;
@@ -266,6 +266,7 @@ namespace Ami.BroAudio.Editor
                 if ((currEvent.type == EventType.MouseDown || currEvent.type == EventType.MouseDrag)
                     && previewRect.Contains(currEvent.mousePosition))
                 {
+                    // TODO: might also need to play with the settings instead of playing directly
                     float clickedPoint = currEvent.mousePosition.Scoping(previewRect).x / previewRect.width;
                     int startSample = (int)Math.Round(clickedPoint * audioClip.samples, MidpointRounding.AwayFromZero);
                     EditorPlayAudioClip.Instance.PlayClip(audioClip, startSample, 0);

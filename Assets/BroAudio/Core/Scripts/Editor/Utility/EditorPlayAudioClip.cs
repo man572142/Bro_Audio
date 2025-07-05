@@ -20,6 +20,8 @@ namespace Ami.Extension
             }
         }
 
+        public event Action OnPlaybackIndicatorUpdate;
+
         private EditorPreviewStrategy _currentStrategy;
         
         public PlaybackIndicatorUpdater PlaybackIndicator => _currentStrategy?.PlaybackIndicator;
@@ -74,19 +76,18 @@ namespace Ami.Extension
 
         public void StopAllClips()
         {
-            _currentStrategy?.Stop();
+            StopAndDestroyStrategy();
         }
 
         private void SwitchToStrategy(PreviewStrategyType strategyType)
         {
             if (_currentStrategy != null && GetCurrentStrategyType() != strategyType)
             {
-                _currentStrategy.Stop();
-                _currentStrategy.Dispose();
-                _currentStrategy = null;
+                StopAndDestroyStrategy();
             }
 
             _currentStrategy ??= CreateStrategy(strategyType);
+            _currentStrategy.AddPlaybackIndicatorListener(OnPlaybackIndicatorUpdate);
         }
 
         private EditorPreviewStrategy CreateStrategy(PreviewStrategyType strategyType)
@@ -104,15 +105,17 @@ namespace Ami.Extension
             AudioSourcePreviewStrategy => PreviewStrategyType.AudioSource,
             _ => PreviewStrategyType.DirectPlayback
         };
-
-        public void AddPlaybackIndicatorListener(Action action)
+        
+        private void StopAndDestroyStrategy()
         {
-            _currentStrategy?.AddPlaybackIndicatorListener(action);
-        }
-
-        public void RemovePlaybackIndicatorListener(Action action)
-        {
-            _currentStrategy?.RemovePlaybackIndicatorListener(action);
+            if (_currentStrategy == null)
+            {
+                return;
+            }
+            _currentStrategy.RemovePlaybackIndicatorListener(OnPlaybackIndicatorUpdate);
+            _currentStrategy.Stop();
+            _currentStrategy.Dispose();
+            _currentStrategy = null;
         }
 
         private void Dispose()

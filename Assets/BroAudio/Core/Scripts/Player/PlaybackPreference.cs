@@ -48,7 +48,8 @@ namespace Ami.BroAudio.Runtime
 
         public void ResetFading()
         {
-            SetFadeTime(Transition.Immediate, 0f);
+            FadeIn = UseEntitySetting;
+            FadeOut = UseEntitySetting;
         }
 
         public void SetFadeTime(Transition transition,float fadeTime)

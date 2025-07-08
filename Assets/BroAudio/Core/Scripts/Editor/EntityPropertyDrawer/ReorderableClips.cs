@@ -44,12 +44,14 @@ namespace Ami.BroAudio.Editor
 
         private Vector2 PlayButtonSize => new Vector2(30f, 20f);
         public bool IsMulticlips => _reorderableList.count > 1;
-		public float Height => _reorderableList.GetHeight();
+		public float Height => _reorderableList.GetHeight() + AdditionalHeight;
 		public Rect PreviewRect => _previewRect;
 		public bool IsPlaying => _currentPlayingClipPath != null;
         public bool HasAnyAudioClip { get; private set; }
         public bool HasAnyAddressableClip { get; private set; }
         public SerializedProperty CurrentPlayingClip { get; private set; }
+        private float AdditionalHeight => ShowNotEnoughClipsWarning() ? EditorGUIUtility.singleLineHeight : 0f;
+        private MulticlipsPlayMode CurrentPlayMode => (MulticlipsPlayMode)_playModeProp.enumValueIndex;
 
         public SerializedProperty CurrentSelectedClip
 		{
@@ -89,12 +91,12 @@ namespace Ami.BroAudio.Editor
 #endif
             _reorderableList = CreateReorderabeList(entityProperty);
             _onRequestClipPreview = onRequestClipPreview;
-			UpdatePlayMode();
+			UpdatePlayModeAndRequiredClipCount();
 
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
 		}
 
-		public void Dispose()
+        public void Dispose()
 		{
 			Undo.undoRedoPerformed -= OnUndoRedoPerformed;
 			_currentPlayingClipPath = null;
@@ -240,7 +242,18 @@ namespace Ami.BroAudio.Editor
 
 		public void DrawReorderableList(Rect position)
 		{
-			_reorderableList.DoList(position);
+            int requiredClipCount = CurrentPlayMode.GetRequiredClipCount();
+            if (ShowNotEnoughClipsWarning())
+            {
+                var helpBoxRect = new Rect(position) { height = EditorGUIUtility.singleLineHeight };
+                EditorGUI.HelpBox(helpBoxRect, $"The current play mode requires at least {requiredClipCount} clips", MessageType.Error);
+                var listRect = new Rect(position) { height = position.height - helpBoxRect.height, y = helpBoxRect.yMax + 1f };
+                _reorderableList.DoList(listRect);
+            }
+            else
+            {
+                _reorderableList.DoList(position);
+            }
 		}
 
 		private ReorderableList CreateReorderabeList(SerializedProperty entityProperty)
@@ -258,7 +271,7 @@ namespace Ami.BroAudio.Editor
 			return list;
 		}
 
-		private void UpdatePlayMode()
+		private void UpdatePlayModeAndRequiredClipCount()
 		{
 			if (!IsMulticlips)
 			{
@@ -268,7 +281,7 @@ namespace Ami.BroAudio.Editor
 			{
                 _playModeProp.enumValueIndex = (int)DefaultMulticlipsMode;
 			}
-		}
+        }
 
 		private void HandleClipsDragAndDrop(Rect rect)
 		{
@@ -284,7 +297,7 @@ namespace Ami.BroAudio.Editor
 						SerializedProperty audioClipProp = broClipProp.FindPropertyRelative(BroAudioClip.NameOf.AudioClip);
 						audioClipProp.objectReferenceValue = clipObj;
 					}
-                    UpdatePlayMode();
+                    UpdatePlayModeAndRequiredClipCount();
                     _reorderableList.serializedProperty.serializedObject.ApplyModifiedProperties();
 					DragAndDrop.AcceptDrag();
 				}
@@ -388,12 +401,11 @@ namespace Ami.BroAudio.Editor
 
 			float remainWidth = rect.width - buttonRect.width - valueRect.width;
             Rect clipRect = new Rect(rect) { width = (remainWidth * ObjectPickerRatio) - Gap, x = buttonRect.xMax + Gap};
-			Rect sliderRect = new Rect(rect) { width = (remainWidth * (1 - ObjectPickerRatio)) - Gap, x = clipRect.xMax + Gap};
-
-			DrawPlayClipButton();
-            bool isSingleMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex == MulticlipsPlayMode.Single;
-            EditorGUI.BeginDisabledGroup(isSingleMode && index > 0);
+            
+            var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+            EditorGUI.BeginDisabledGroup(index > 0 && index >= playMode.GetMaxAcceptableClipCount());
             {
+                DrawPlayClipButton();
                 DrawObjectPicker();
                 DrawVolumeSlider();
                 DrawMulticlipsValue();
@@ -501,9 +513,9 @@ namespace Ami.BroAudio.Editor
 
 			void DrawVolumeSlider()
 			{
-				Rect labelRect = new Rect(sliderRect) { width = SliderLabelWidth };
-				sliderRect.width -= SliderLabelWidth;
-				sliderRect.x = labelRect.xMax;
+                Rect labelRect = new Rect(rect) { width = SliderLabelWidth , x = clipRect.xMax + Gap};
+                Rect sliderRect = new Rect(rect) { width = (remainWidth * (1 - ObjectPickerRatio)) - Gap - SliderLabelWidth, x = labelRect.xMax};
+                sliderRect.y += 2f;
 				EditorGUI.LabelField(labelRect, EditorGUIUtility.IconContent(IconConstant.AudioSpeakerOn));
 				float newVol = BroEditorUtility.DrawVolumeSlider(sliderRect, volProp.floatValue, out bool hasChanged, out float newSliderValue);
 				if (hasChanged)
@@ -523,6 +535,9 @@ namespace Ami.BroAudio.Editor
 					case MulticlipsPlayMode.Sequence:
 						EditorGUI.LabelField(valueRect, index.ToString(), GUIStyleHelper.MiddleCenterText);
 						break;
+                    case MulticlipsPlayMode.Chained:
+                        EditorGUI.LabelField(valueRect, GetChainedModeText(index), GUIStyleHelper.MiddleCenterText);
+                        break;
 					case MulticlipsPlayMode.Random:
                     case MulticlipsPlayMode.Velocity:
                         SerializedProperty weightProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Weight));
@@ -532,7 +547,7 @@ namespace Ami.BroAudio.Editor
 						break;
 				}
 			}
-		}
+        }
 
         private void OnDrawFooter(Rect rect)
 		{
@@ -546,13 +561,13 @@ namespace Ami.BroAudio.Editor
 		private void OnRemove(ReorderableList list)
 		{
 			ReorderableList.defaultBehaviours.DoRemoveButton(list);
-			UpdatePlayMode();
+			UpdatePlayModeAndRequiredClipCount();
 		}
 
 		private void OnAdd(ReorderableList list)
         {
 			AddClip(list);
-            UpdatePlayMode();
+            UpdatePlayModeAndRequiredClipCount();
         }
 
         private void OnSelect(ReorderableList list)
@@ -581,6 +596,19 @@ namespace Ami.BroAudio.Editor
             var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
             ResetBroAudioClipSerializedProperties(clipProp);
 			return clipProp;
+        }
+        
+        private static string GetChainedModeText(int index) => index switch
+        {
+            0 => "Start",
+            1 => "Loop",
+            2 => "End",
+            _ => "<color=#FF3D3D>x</color>",
+        };
+
+        private bool ShowNotEnoughClipsWarning()
+        {
+            return _reorderableList?.count > 0 && _reorderableList?.count < CurrentPlayMode.GetRequiredClipCount();
         }
     }
 }

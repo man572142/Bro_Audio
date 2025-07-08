@@ -7,5 +7,7 @@ namespace Ami.BroAudio.Data
 		Random, // Play clip randomly with the given weight
         Shuffle, // Same as random but not repeating with the previous one
         Velocity, // Play clip by the specified velocity 
+        Chained, // Plays an intro clip once, then loops a middle clip continuously, and plays an outro clip when stopping
+        Layered,
     }
 }

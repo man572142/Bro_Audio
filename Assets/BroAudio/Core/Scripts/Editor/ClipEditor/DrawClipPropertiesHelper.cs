@@ -43,7 +43,6 @@ namespace Ami.BroAudio.Editor
         private readonly WaveformRenderHelper _waveformHelper = new WaveformRenderHelper();
         private readonly Dictionary<string, Dictionary<TransportType, DraggablePoint>> _clipDraggablePointsDict = new Dictionary<string, Dictionary<TransportType, DraggablePoint>>();
         private KeyValuePair<string, DraggablePoint> _currDraggedPoint;
-        private Action<string> _onPreviewingClip;
         private float _clipPreviewHeight;
         
         private static Color SilentMaskColor => new Color(0.2f, 0.2f, 0.2f, 0.8f);
@@ -108,7 +107,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        public void DrawClipPreview(Rect previewRect, ITransport transport, AudioClip audioClip, string clipPath, Action<string> onPreviewClip, Action<ITransport, TransportType, Rect> onDrawValuePeeking = null)
+        public void DrawClipWaveformAndVisualEditing(Rect previewRect, ITransport transport, AudioClip audioClip, string clipPath, RequestClipPreview requestClipPreview, Action<ITransport, TransportType, Rect> onDrawValuePeeking = null)
         {
             _clipPreviewHeight = previewRect.height;
             Event currEvent = Event.current;
@@ -122,7 +121,7 @@ namespace Ami.BroAudio.Editor
             DrawDraggable();
             DrawClipLengthLabel();
             HandleDraggable();
-            HandlePlayback();
+            HandlePlaybackOnClickedPoint();
 
             void DrawWaveformPreview()
             {
@@ -261,27 +260,21 @@ namespace Ami.BroAudio.Editor
                 EditorGUI.DropShadowLabel(silentRect, "Add Silence");
             }
 
-            void HandlePlayback()
+            void HandlePlaybackOnClickedPoint()
             {
                 if ((currEvent.type == EventType.MouseDown || currEvent.type == EventType.MouseDrag)
                     && previewRect.Contains(currEvent.mousePosition))
                 {
-                    // TODO: might also need to play with the settings instead of playing directly
                     float clickedPoint = currEvent.mousePosition.Scoping(previewRect).x / previewRect.width;
-                    int startSample = (int)Math.Round(clickedPoint * audioClip.samples, MidpointRounding.AwayFromZero);
-                    EditorPlayAudioClip.Instance.PlayClip(audioClip, startSample, 0);
-                    EditorPlayAudioClip.Instance.OnFinished = () => _onPreviewingClip?.Invoke(null);
-                    currEvent.Use();
-
-                    PreviewClip clip = new PreviewClip()
+                    var req = new PreviewRequest(audioClip) { StartPosition = clickedPoint * audioClip.length };
+                    requestClipPreview?.Invoke(clipPath, req);
+                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, new PreviewClip()
                     {
                         StartPosition = clickedPoint * audioClip.length,
                         EndPosition = 0f,
                         FullLength = audioClip.length,
-                    };
-                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, clip);
-                    _onPreviewingClip = onPreviewClip;
-                    _onPreviewingClip?.Invoke(clipPath);
+                    });
+                    currEvent.Use();
                 }
             }
         }

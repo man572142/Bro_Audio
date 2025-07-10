@@ -4,8 +4,10 @@ using UnityEngine;
 
 namespace Ami.BroAudio.Editor
 {
+    public delegate void RequestClipPreview(string clipPath, PreviewRequest request);
     public class PreviewRequest
     {
+        public PreviewStrategyType StrategyType;
         public AudioClip AudioClip;
         public float ClipVolume = AudioConstant.FullVolume;
         public float MasterVolume = AudioConstant.FullVolume;
@@ -21,7 +23,7 @@ namespace Ami.BroAudio.Editor
             ClipVolume = AudioConstant.FullVolume;
         }
 
-        public PreviewRequest(AudioClip audioClip, float volume, Transport transport)
+        public PreviewRequest(AudioClip audioClip, float volume, ITransport transport)
         {
             AudioClip = audioClip;
             ClipVolume = volume;
@@ -49,6 +51,24 @@ namespace Ami.BroAudio.Editor
             AudioClip = newReplay.Clip.GetAudioClip();
             MasterVolume = newReplay.MasterVolume;
             Pitch = newReplay.Pitch;
+        }
+    }
+
+    public static class PreviewRequestFactory
+    {
+        public static PreviewRequest CreatePreviewRequest(this Event evt, AudioClip audioClip)
+        {
+            return new PreviewRequest(audioClip) { StrategyType = evt.GetPreviewStrategyType()};
+        }
+
+        public static PreviewRequest CreatePreviewRequest(this Event evt, AudioClip audioClip, float volume, ITransport transport)
+        {
+            return new PreviewRequest(audioClip, volume, transport) { StrategyType = evt.GetPreviewStrategyType() };
+        }
+        
+        public static PreviewRequest CreatePreviewRequest(this Event evt, IBroAudioClip broAudioClip)
+        {
+            return new PreviewRequest(broAudioClip) { StrategyType = evt.GetPreviewStrategyType()};
         }
     }
 }

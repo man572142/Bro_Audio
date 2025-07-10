@@ -132,7 +132,7 @@ namespace Ami.BroAudio.Editor
 			}
 
             EditorGUILayout.Space();
-			DrawClipPreview(position.height * 0.3f, _volume, out Rect previewRect);
+			DrawClipWaveform(position.height * 0.3f, out Rect previewRect);
             EditorGUILayout.Space();
             EditorPlayAudioClip.Instance.PlaybackIndicator?.Draw(position.SetPosition(0f,0f));
 
@@ -250,12 +250,12 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		private void DrawClipPreview(float height, float volume, out Rect previewRect)
+		private void DrawClipWaveform(float height, out Rect waveformRect)
 		{
-            previewRect = EditorGUILayout.GetControlRect(GUILayout.Height(height));
-            previewRect.width = position.width * 0.95f;
-            previewRect.x = (position.width - previewRect.width) * 0.5f;
-            _clipPropHelper.DrawClipPreview(previewRect, _transport, TargetClip, TargetClip.name, clipPath => _isPlaying = clipPath != null); // don't worry about any duplicate path, because there will only one clip in editing                                                                                                                                         //DrawEmptyLine(GetLineCountByPixels(height));
+            waveformRect = EditorGUILayout.GetControlRect(GUILayout.Height(height));
+            waveformRect.width = position.width * 0.95f;
+            waveformRect.x = (position.width - waveformRect.width) * 0.5f;
+            _clipPropHelper.DrawClipWaveformAndVisualEditing(waveformRect, _transport, TargetClip, TargetClip.name, PlayClip);                                                                                                                               //DrawEmptyLine(GetLineCountByPixels(height));
 		}
 
 		private void DrawPlaybackPositionField()
@@ -286,25 +286,11 @@ namespace Ami.BroAudio.Editor
 				}
 				else if(_audioClipProp.objectReferenceValue is AudioClip clip)
 				{
-					PreviewClip previewGUIClip;
-					if(Event.current.button == 0) // Left Click
-					{
-                        _currentPreviewRequest = new PreviewRequest(clip, _volume, _transport);
-                        EditorPlayAudioClip.Instance.PlayClipByAudioSource(_currentPreviewRequest, _isLoop);
-						previewGUIClip = new PreviewClip(_transport);
-                    }
-					else
-					{
-                        EditorPlayAudioClip.Instance.PlayClip(clip, 0f, 0f, _isLoop);
-                        previewGUIClip = new PreviewClip(clip.length);
-                    }
-
-                    _isPlaying = true;
-                    EditorPlayAudioClip.Instance.OnFinished = () =>
-                    {
-                        _isPlaying = false;
-                        _currentPreviewRequest = null;
-                    };
+                    var evt = Event.current;
+                    PreviewClip previewGUIClip = evt.button == 0 ? new PreviewClip(_transport) : new PreviewClip(clip.length);
+                    float volume = evt.button == 0 ? _volume : AudioConstant.FullVolume;
+                    _currentPreviewRequest = evt.CreatePreviewRequest(clip, volume, _transport);
+                    PlayClip(clip.name, _currentPreviewRequest);
                     EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, previewGUIClip);
 				}
 			}
@@ -312,6 +298,17 @@ namespace Ami.BroAudio.Editor
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
 		}
+
+        private void PlayClip(string clipPath, PreviewRequest req)
+        {
+            
+            _isPlaying = true;
+            EditorPlayAudioClip.Instance.OnFinished = () =>
+            {
+                _isPlaying = false;
+                _currentPreviewRequest = null;
+            };
+        }
 
 		private void DrawSavingButton()
 		{

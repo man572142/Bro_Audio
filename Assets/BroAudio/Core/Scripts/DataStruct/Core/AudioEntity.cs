@@ -61,6 +61,11 @@ namespace Ami.BroAudio.Data
                 _ => throw new System.InvalidOperationException(),
             };
 
+            return GetRandomValue(baseValue, range);
+        }
+
+        public static float GetRandomValue(float baseValue, float range)
+        {
             float half = range * 0.5f;
             return baseValue + Random.Range(-half, half);
         }

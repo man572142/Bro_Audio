@@ -19,7 +19,6 @@ namespace Ami.BroAudio.Editor
 	public class ReorderableClips
 	{
 		public Action<string> OnClipChanged;
-        public Action<string, PreviewRequest> OnPreviewRequestChanged;
 
 		public const MulticlipsPlayMode DefaultMulticlipsMode = MulticlipsPlayMode.Random;
 		private const float Gap = 5f;
@@ -41,6 +40,7 @@ namespace Ami.BroAudio.Editor
 #if PACKAGE_ADDRESSABLES
         private List<AudioClip> _assetReferenceCachedClips = new List<AudioClip>();  
 #endif
+        private RequestClipPreview _onRequestClipPreview;
 
         private Vector2 PlayButtonSize => new Vector2(30f, 20f);
         public bool IsMulticlips => _reorderableList.count > 1;
@@ -79,7 +79,7 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public ReorderableClips(SerializedProperty entityProperty)
+		public ReorderableClips(SerializedProperty entityProperty, RequestClipPreview onRequestClipPreview)
 		{
 			_entityProp = entityProperty;
 			_playModeProp = entityProperty.FindPropertyRelative(AudioEntity.EditorPropertyName.MulticlipsPlayMode);
@@ -87,6 +87,7 @@ namespace Ami.BroAudio.Editor
             _useAddressablesProp = entityProperty.FindPropertyRelative(nameof(AudioEntity.UseAddressables)); 
 #endif
             _reorderableList = CreateReorderabeList(entityProperty);
+            _onRequestClipPreview = onRequestClipPreview;
 			UpdatePlayMode();
 
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
@@ -478,27 +479,27 @@ namespace Ami.BroAudio.Editor
 			void PreviewAudio(AudioClip audioClip)
 			{
                 PreviewClip previewClipGUI;
-                if (Event.current.button == 0) // Left Click
+                
+                var currentEvent = Event.current;
+                PreviewRequest req;
+                if (currentEvent.button == 0) // Left Click
                 {
                     var transport = new SerializedTransport(clipProp, audioClip.length);
-                    var req = new PreviewRequest(audioClip, volProp.floatValue, transport);
-                    EditorPlayAudioClip.Instance.PlayClipByAudioSource(req);
+                    GetMasterVolumeAndPitch(out float masterVol, out float pitch);
+                    req = currentEvent.CreatePreviewRequest(audioClip, volProp.floatValue, transport);
+                    req.MasterVolume = masterVol;
+                    req.Pitch = pitch;
 					previewClipGUI = new PreviewClip(transport);
-                    OnPreviewRequestChanged?.Invoke(clipProp.propertyPath, req);
                 }
                 else
                 {
-                    EditorPlayAudioClip.Instance.PlayClip(audioClip, 0f, 0f);
+                    req = currentEvent.CreatePreviewRequest(audioClip);
 					previewClipGUI = new PreviewClip(audioClip.length);
                 }
 
+                _onRequestClipPreview?.Invoke(clipProp.propertyPath, req);
                 _currentPlayingClipPath = clipProp.propertyPath;
                 EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, previewClipGUI);
-                EditorPlayAudioClip.Instance.OnFinished = () =>
-                {
-                    _currentPlayingClipPath = null;
-                    OnPreviewRequestChanged?.Invoke(null, null);
-                };
             }
 
 			void DrawVolumeSlider()
@@ -583,6 +584,17 @@ namespace Ami.BroAudio.Editor
             var clipProp = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
             ResetBroAudioClipSerializedProperties(clipProp);
 			return clipProp;
+        }
+
+        private void GetMasterVolumeAndPitch(out float masterVol, out float pitch)
+        {
+            var masterVolProp = _entityProp.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume));
+            var masterRandProp = _entityProp.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
+            masterVol = AudioEntity.GetRandomValue(masterVolProp.floatValue, masterRandProp.floatValue);
+            
+            var pitchProp = _entityProp.FindBackingFieldProperty(nameof(AudioEntity.Pitch));
+            var pitchRandProp = _entityProp.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
+            pitch = AudioEntity.GetRandomValue(pitchProp.floatValue, pitchRandProp.floatValue);
         }
     }
 }

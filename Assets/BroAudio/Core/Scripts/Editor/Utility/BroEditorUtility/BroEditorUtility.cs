@@ -26,6 +26,7 @@ namespace Ami.BroAudio.Editor
         private const float LowVolumeSnappingThreshold = 0.05f;
         private const float HighVolumeSnappingThreshold = 0.2f;
         private const string DbValueStringFormat = "0.##";
+        private const int ArrayPropertyPathDotCount = 2;
 
         public const string AssetReferenceGUIDFieldName = "m_AssetGUID";
 
@@ -523,6 +524,32 @@ namespace Ami.BroAudio.Editor
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        public static PreviewStrategyType GetPreviewStrategyType(this Event evt) => evt.button switch
+        {
+            0 => PreviewStrategyType.AudioSource,
+            _ => PreviewStrategyType.DirectPlayback,
+        };
+
+        public static string GetEntityPropertyPath(string clipPropPath)
+        {
+            int remainingDotCount = ArrayPropertyPathDotCount + 1;
+            int index = 0;
+            for (int i = clipPropPath.Length - 1; i >= 0; i--)
+            {
+                if (clipPropPath[i] == '.')
+                {
+                    remainingDotCount--;
+                }
+
+                if (remainingDotCount == 0)
+                {
+                    index = i;
+                    break;
+                }
+            }
+            return clipPropPath.Remove(index);
         }
     }
 }

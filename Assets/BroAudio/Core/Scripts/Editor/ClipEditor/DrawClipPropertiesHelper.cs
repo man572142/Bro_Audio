@@ -121,7 +121,7 @@ namespace Ami.BroAudio.Editor
             DrawDraggable();
             DrawClipLengthLabel();
             HandleDraggable();
-            HandlePlaybackOnClickedPoint();
+            PreviewAudioOnClickedPoint();
 
             void DrawWaveformPreview()
             {
@@ -260,13 +260,14 @@ namespace Ami.BroAudio.Editor
                 EditorGUI.DropShadowLabel(silentRect, "Add Silence");
             }
 
-            void HandlePlaybackOnClickedPoint()
+            void PreviewAudioOnClickedPoint()
             {
                 if ((currEvent.type == EventType.MouseDown || currEvent.type == EventType.MouseDrag)
                     && previewRect.Contains(currEvent.mousePosition))
                 {
                     float clickedPoint = currEvent.mousePosition.Scoping(previewRect).x / previewRect.width;
-                    var req = new PreviewRequest(audioClip) { StartPosition = clickedPoint * audioClip.length };
+                    var req = currEvent.CreatePreviewRequest(audioClip);
+                    req.StartPosition = clickedPoint * audioClip.length;
                     requestClipPreview?.Invoke(clipPath, req);
                     EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, new PreviewClip()
                     {

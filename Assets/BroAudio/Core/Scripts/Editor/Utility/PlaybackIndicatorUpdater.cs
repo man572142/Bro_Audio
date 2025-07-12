@@ -16,6 +16,7 @@ namespace Ami.Extension
 		private double _playingStartTime;
 		private float _speed = 1f;
         private bool _isLoop;
+        private bool _isVisible;
 
         private bool _isPlaying;
         private static Color Color => new Color(1f,1f,1f,0.8f);
@@ -24,7 +25,7 @@ namespace Ami.Extension
         
         public void Draw(Rect scope, Vector2 positionOffset = default)
         {
-            if (!_isPlaying)
+            if (!_isPlaying || !_isVisible)
             {
                 return;
             }
@@ -67,11 +68,17 @@ namespace Ami.Extension
 			}
 			return default;
 		}
+        
+        public void SetVisibility(bool isVisible)
+        {
+            _isVisible = isVisible;
+        }
 
         public override void Start()
 		{
 			_playingStartTime = EditorApplication.timeSinceStartup;
 			_isPlaying = true;
+            _isVisible = true;
 			_isLoop = false;
 			base.Start();
 		}
@@ -89,7 +96,8 @@ namespace Ami.Extension
 				_isPlaying = false;
 				OnEnd?.Invoke();
 			}
-			_playingStartTime = default;
+			_playingStartTime = 0;
+            _isVisible = false;
 			base.End();
 		}
 

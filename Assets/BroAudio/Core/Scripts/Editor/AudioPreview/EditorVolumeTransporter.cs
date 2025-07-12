@@ -21,7 +21,6 @@ namespace Ami.BroAudio.Editor
         private PreviewRequest _currentReq;
         private float _elapsedTime;
         private float _dbVolume;
-        private float _speed = 1f;
         
         public EditorVolumeTransporter(AudioMixer mixer)
         {
@@ -50,7 +49,6 @@ namespace Ami.BroAudio.Editor
         public void SetData(PreviewRequest req)
         {
             _currentReq = req;
-            _speed = req.Pitch;
 
             if (_isInitSuccessfully && _method == null)
             {
@@ -96,7 +94,7 @@ namespace Ami.BroAudio.Editor
             var fadeOutPos = _currentReq.Duration - _currentReq.FadeOut;
             bool hasFadeOut = _currentReq.FadeOut > 0f;
 
-            _elapsedTime += DeltaTime * _speed;
+            _elapsedTime += DeltaTime * _currentReq.Pitch;
             if (_elapsedTime < _currentReq.FadeIn)
             {
                 float t = (_elapsedTime / _currentReq.FadeIn).SetEase(_fadeInEase);

@@ -18,6 +18,11 @@ namespace Ami.BroAudio.Editor
         public abstract void Play(PreviewRequest request, bool loop = false, ReplayData replayData = null);
         public abstract void Stop();
 
+        public virtual void UpdatePreview()
+        {
+            
+        }
+
         protected void TriggerOnFinished()
         {
             OnFinished?.Invoke();

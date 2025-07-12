@@ -242,7 +242,7 @@ namespace Ami.BroAudio.Editor
 
             if (data.IsPlaying)
             {
-                UpdatePreviewValues(data);
+                UpdatePreview(data);
             }
 
             float GetTabWindowHeight()
@@ -269,16 +269,21 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private void UpdatePreviewValues(EntityData data)
+        private void UpdatePreview(EntityData data)
         {
             if (_currentPreviewRequest.Value == null)
             {
                 return;
             }
             
+            var masterVolProp = data.EntityProperty.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume));
+            var pitchProp = data.EntityProperty.FindBackingFieldProperty(nameof(AudioEntity.Pitch));
+            
             var req = _currentPreviewRequest.Value;
-            // TODO: implement for pitch and masterVol
+            req.UpdateRandomizedPreviewValue(RandomFlag.Volume, masterVolProp.floatValue);
+            req.UpdateRandomizedPreviewValue(RandomFlag.Pitch, pitchProp.floatValue);
             req.ClipVolume = data.Clips.CurrentPlayingClip.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
+            EditorPlayAudioClip.Instance.UpdatePreview();
         }
 
 #if PACKAGE_ADDRESSABLES
@@ -405,7 +410,8 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
-            GetMasterVolumeAndPitch(entityData.EntityProperty, out req.MasterVolume, out req.Pitch);
+            GetBaseAndRandomValue(RandomFlag.Volume, entityData.EntityProperty, out req.BaseMasterVolume, out req.MasterVolume);
+            GetBaseAndRandomValue(RandomFlag.Pitch, entityData.EntityProperty, out req.BasePitch, out req.Pitch);
             var clipProp = entityData.EntityProperty.serializedObject.FindProperty(clipPath);
             req.ClipVolume = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
             _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(clipPath, req);
@@ -585,19 +591,15 @@ namespace Ami.BroAudio.Editor
             ReplayData replayData = data.IsLoop ? new ReplayData(entity, data.Clips.SelectAndSetPlayingElement) : null;
             var req = new PreviewRequest(clip)
             {
-                MasterVolume = entity.GetMasterVolume(), 
-                Pitch = entity.GetPitch()
+                MasterVolume = entity.GetMasterVolume(),
+                BaseMasterVolume = entity.MasterVolume,
+                Pitch = entity.GetPitch(),
+                BasePitch = entity.Pitch,
             };
             _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip.propertyPath, req);
             EditorPlayAudioClip.Instance.Play(req, false, replayData);
-            if (canDisplayIndicator)
-            {
-                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(data.Clips.PreviewRect, new PreviewClip(clip), req.Pitch);
-            }
-            else
-            {
-                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(default, default, req.Pitch);
-            }
+            var previewRect = canDisplayIndicator ? data.Clips.PreviewRect : default;
+            EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, req);
             data.IsPreviewing = true;
             EditorPlayAudioClip.Instance.OnFinished = () =>
             {

@@ -90,6 +90,11 @@ namespace Ami.Extension
 			return result;
 		}
 
+        public static double GetPreciseLength(this AudioClip clip)
+        {
+            return (double)clip.samples / clip.frequency;
+        }
+
 		public static int GetDataSample(this AudioClip clip, float time, MidpointRounding rounding = MidpointRounding.AwayFromZero)
 		{
 			return (int)Math.Round(clip.frequency * clip.channels * time, rounding);

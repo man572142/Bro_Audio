@@ -52,6 +52,11 @@ namespace Ami.BroAudio.Editor
         {
             StopAndDestroyStrategy();
         }
+        
+        public void UpdatePreview()
+        {
+            _currentStrategy?.UpdatePreview();
+        }
 
         private void SwitchToStrategy(PreviewStrategyType strategyType)
         {

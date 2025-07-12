@@ -19,7 +19,7 @@ namespace Ami.BroAudio.Editor
         
         private MethodInfo _method;
         private PreviewRequest _currentReq;
-        private float _elapsedTime;
+        private float _playbackPos;
         private float _dbVolume;
         
         public EditorVolumeTransporter(AudioMixer mixer)
@@ -74,7 +74,7 @@ namespace Ami.BroAudio.Editor
 
         public override void Start()
         {
-            _elapsedTime = 0f;
+            _playbackPos = 0f;
             base.Start();
         }
 
@@ -91,23 +91,23 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
-            var fadeOutPos = _currentReq.Duration - _currentReq.FadeOut;
+            var fadeOutPos = _currentReq.NonPitchDuration - _currentReq.FadeOut;
             bool hasFadeOut = _currentReq.FadeOut > 0f;
 
-            _elapsedTime += DeltaTime * _currentReq.Pitch;
-            if (_elapsedTime < _currentReq.FadeIn)
+            _playbackPos += DeltaTime * _currentReq.Pitch;
+            if (_playbackPos < _currentReq.FadeIn)
             {
-                float t = (_elapsedTime / _currentReq.FadeIn).SetEase(_fadeInEase);
+                float t = (_playbackPos / _currentReq.FadeIn).SetEase(_fadeInEase);
                 SetVolume(Mathf.Lerp(0f, _currentReq.Volume, t));
             }
-            else if (hasFadeOut && _elapsedTime >= fadeOutPos && _elapsedTime < _currentReq.Duration)
+            else if (hasFadeOut && _playbackPos >= fadeOutPos && _playbackPos < _currentReq.NonPitchDuration)
             {
-                float t = ((float)(_elapsedTime - fadeOutPos) / _currentReq.FadeOut).SetEase(_fadeOutEase);
+                float t = ((float)(_playbackPos - fadeOutPos) / _currentReq.FadeOut).SetEase(_fadeOutEase);
                 SetVolume(Mathf.Lerp(_currentReq.Volume, 0f, t));
             }
             else
             {
-                SetVolume(hasFadeOut && _elapsedTime >= _currentReq.Duration ? 0f : _currentReq.Volume);
+                SetVolume(hasFadeOut && _playbackPos >= _currentReq.NonPitchDuration ? 0f : _currentReq.Volume);
             }
             base.Update();
         }

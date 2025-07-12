@@ -287,11 +287,10 @@ namespace Ami.BroAudio.Editor
 				else if(_audioClipProp.objectReferenceValue is AudioClip clip)
 				{
                     var evt = Event.current;
-                    PreviewClip previewGUIClip = evt.button == 0 ? new PreviewClip(_transport) : new PreviewClip(clip.length);
                     float volume = evt.button == 0 ? _volume : AudioConstant.FullVolume;
                     _currentPreviewRequest = evt.CreatePreviewRequest(clip, volume, _transport);
                     PlayClip(clip.name, _currentPreviewRequest);
-                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, previewGUIClip);
+                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, _currentPreviewRequest);
 				}
 			}
 			_isLoop = DrawButtonToggleLayout(_isLoop, EditorGUIUtility.IconContent(IconConstant.LoopIcon), width, height);

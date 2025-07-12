@@ -1,3 +1,4 @@
+using System;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using UnityEngine;
@@ -11,21 +12,26 @@ namespace Ami.BroAudio.Editor
         public AudioClip AudioClip;
         public float ClipVolume = AudioConstant.FullVolume;
         public float MasterVolume = AudioConstant.FullVolume;
+        public float BaseMasterVolume = AudioConstant.FullVolume;
+        public float Pitch = AudioConstant.DefaultPitch;
+        public float BasePitch = AudioConstant.DefaultPitch;
         public float StartPosition;
         public float EndPosition;
         public float FadeIn;
         public float FadeOut;
-        public float Pitch = AudioConstant.DefaultPitch;
-
+        public double PreciseAudioClipLength;
+        
         public PreviewRequest(AudioClip audioClip)
         {
             AudioClip = audioClip;
+            PreciseAudioClipLength = audioClip.GetPreciseLength();
             ClipVolume = AudioConstant.FullVolume;
         }
 
         public PreviewRequest(AudioClip audioClip, float volume, ITransport transport)
         {
             AudioClip = audioClip;
+            PreciseAudioClipLength = audioClip.GetPreciseLength();
             ClipVolume = volume;
             StartPosition = transport.StartPosition;
             EndPosition = transport.EndPosition;
@@ -36,6 +42,7 @@ namespace Ami.BroAudio.Editor
         public PreviewRequest(IBroAudioClip broAudioClip)
         {
             AudioClip = broAudioClip.GetAudioClip();
+            PreciseAudioClipLength = AudioClip.GetPreciseLength();
             ClipVolume = broAudioClip.Volume;
             StartPosition = broAudioClip.StartPosition;
             EndPosition = broAudioClip.EndPosition;
@@ -43,14 +50,42 @@ namespace Ami.BroAudio.Editor
             FadeOut = broAudioClip.FadeOut;
         }
 
-        public double Duration => ((double)AudioClip.samples / AudioClip.frequency - StartPosition - EndPosition) / Pitch;
+        public double Duration => (PreciseAudioClipLength - StartPosition - EndPosition) / Pitch;
+        public double NonPitchDuration => PreciseAudioClipLength - StartPosition - EndPosition;
+        public double AbsoluteEndPosition => PreciseAudioClipLength - EndPosition;
         public float Volume => ClipVolume * MasterVolume;
 
         public void SetReplay(ReplayData newReplay)
         {
             AudioClip = newReplay.Clip.GetAudioClip();
+            PreciseAudioClipLength = AudioClip.GetPreciseLength();
             MasterVolume = newReplay.MasterVolume;
             Pitch = newReplay.Pitch;
+        }
+
+        public void UpdateRandomizedPreviewValue(RandomFlag flag, float newBaseValue)
+        {
+            switch (flag)
+            {
+                case RandomFlag.Pitch:
+                    if (!Mathf.Approximately(newBaseValue, BasePitch))
+                    {
+                        float offset = newBaseValue - BasePitch;
+                        Pitch += offset;
+                        BasePitch = newBaseValue;
+                    }
+                    break;
+                case RandomFlag.Volume:
+                    if (!Mathf.Approximately(newBaseValue, BaseMasterVolume))
+                    {
+                        float offset = newBaseValue - BaseMasterVolume;
+                        MasterVolume += offset;
+                        BaseMasterVolume = newBaseValue;
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(flag), flag, null);
+            }
         }
     }
 

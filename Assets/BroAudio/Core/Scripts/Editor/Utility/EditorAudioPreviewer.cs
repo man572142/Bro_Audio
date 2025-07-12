@@ -1,1 +1,1 @@
-// OBSOLETE: Class has been rename to EditorVolumeTransporter
+// OBSOLETE: Class has been renamed to EditorVolumeTransporter

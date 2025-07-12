@@ -480,28 +480,23 @@ namespace Ami.BroAudio.Editor
 
 			void PreviewAudio(AudioClip audioClip)
 			{
-                PreviewClip previewClipGUI;
-                
                 var currentEvent = Event.current;
                 PreviewRequest req;
                 if (currentEvent.button == 0) // Left Click
                 {
                     var transport = new SerializedTransport(clipProp, audioClip.length);
-                    GetMasterVolumeAndPitch(_entityProp, out float masterVol, out float pitch);
                     req = currentEvent.CreatePreviewRequest(audioClip, volProp.floatValue, transport);
-                    req.MasterVolume = masterVol;
-                    req.Pitch = pitch;
-					previewClipGUI = new PreviewClip(transport);
+                    GetBaseAndRandomValue(RandomFlag.Volume, _entityProp, out req.BaseMasterVolume, out req.MasterVolume);
+                    GetBaseAndRandomValue(RandomFlag.Pitch, _entityProp, out req.BasePitch, out req.Pitch);
                 }
                 else
                 {
                     req = currentEvent.CreatePreviewRequest(audioClip);
-					previewClipGUI = new PreviewClip(audioClip.length);
                 }
 
                 _onRequestClipPreview?.Invoke(clipProp.propertyPath, req);
                 _currentPlayingClipPath = clipProp.propertyPath;
-                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, previewClipGUI);
+                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, req);
             }
 
 			void DrawVolumeSlider()

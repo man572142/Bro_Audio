@@ -12,11 +12,10 @@ namespace Ami.Extension
 		public event Action OnEnd;
 
 		private Rect _waveformRect;
-		private PreviewClip _clip;
-		private double _playingStartTime;
-		private float _speed = 1f;
+		private PreviewRequest _request;
         private bool _isLoop;
         private bool _isVisible;
+        private float _playbackPosition;
 
         private bool _isPlaying;
         private static Color Color => new Color(1f,1f,1f,0.8f);
@@ -38,36 +37,36 @@ namespace Ami.Extension
             GUI.EndClip();
         }
 
-		public void SetClipInfo(Rect waveformRect, PreviewClip clip, float pitch = 1f) 
+		public void SetClipInfo(Rect waveformRect, PreviewRequest req) 
 		{
 			_waveformRect = waveformRect;
-			_clip = clip;
-			_speed = pitch;
+			_request = req;
 		}
 
         private Rect GetIndicatorPosition()
-		{
-			if(_clip.FullLength != 0f && _waveformRect != default)
-			{
-				double currentPlayedLength = (EditorApplication.timeSinceStartup - _playingStartTime) * _speed;
-				double currentPos;
-				if(_isLoop)
-				{
-					float targetPlayLength = _clip.FullLength - _clip.StartPosition - _clip.EndPosition;
-                    currentPos = _clip.StartPosition + currentPlayedLength % targetPlayLength;
-				}
-                else
-                {
-					float endTime = _clip.FullLength - _clip.EndPosition;
-					currentPos = _clip.StartPosition + currentPlayedLength;
-                    currentPos = Math.Min(currentPos, endTime);
-				}
+        {
+            var fullLength = _request.PreciseAudioClipLength;
+            if (fullLength <= 0f || _waveformRect == default)
+            {
+                return default;
+            }
+            
+            double currentPos;
+            if(_isLoop)
+            {
+                var targetPlayLength = fullLength - _request.StartPosition - _request.EndPosition;
+                currentPos = _request.StartPosition + _playbackPosition % targetPlayLength;
+            }
+            else
+            {
+                var endTime = fullLength - _request.EndPosition;
+                currentPos = _request.StartPosition + _playbackPosition;
+                currentPos = Math.Min(currentPos, endTime);
+            }
                 
-				float x = (float)(_waveformRect.x + (currentPos / _clip.FullLength * _waveformRect.width));
-				return new Rect(x,_waveformRect.y, AudioClipIndicatorWidth,_waveformRect.height);
-			}
-			return default;
-		}
+            float x = (float)(_waveformRect.x + (currentPos / fullLength * _waveformRect.width));
+            return new Rect(x,_waveformRect.y, AudioClipIndicatorWidth,_waveformRect.height);
+        }
         
         public void SetVisibility(bool isVisible)
         {
@@ -76,7 +75,6 @@ namespace Ami.Extension
 
         public override void Start()
 		{
-			_playingStartTime = EditorApplication.timeSinceStartup;
 			_isPlaying = true;
             _isVisible = true;
 			_isLoop = false;
@@ -96,7 +94,6 @@ namespace Ami.Extension
 				_isPlaying = false;
 				OnEnd?.Invoke();
 			}
-			_playingStartTime = 0;
             _isVisible = false;
 			base.End();
 		}
@@ -105,6 +102,15 @@ namespace Ami.Extension
         {
 			OnEnd = null;
             base.Dispose();
+        }
+        
+        protected override void Update()
+        {
+            base.Update();
+            if (_request != null)
+            {
+                _playbackPosition += DeltaTime * _request.Pitch;
+            }
         }
     }
 }

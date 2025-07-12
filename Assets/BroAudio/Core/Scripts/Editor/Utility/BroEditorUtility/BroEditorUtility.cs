@@ -551,16 +551,26 @@ namespace Ami.BroAudio.Editor
             }
             return clipPropPath.Remove(index);
         }
-        
-        public static void GetMasterVolumeAndPitch(SerializedProperty entityProp,out float masterVol, out float pitch)
+
+        public static void GetBaseAndRandomValue(RandomFlag flag, SerializedProperty entityProp, out float baseValue, out float randomValue)
         {
-            var masterVolProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume));
-            var masterRandProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
-            masterVol = AudioEntity.GetRandomValue(masterVolProp.floatValue, masterRandProp.floatValue);
-            
-            var pitchProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.Pitch));
-            var pitchRandProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
-            pitch = AudioEntity.GetRandomValue(pitchProp.floatValue, pitchRandProp.floatValue);
+            switch (flag)
+            {
+                case RandomFlag.Pitch:
+                    baseValue = entityProp.FindBackingFieldProperty(nameof(AudioEntity.Pitch)).floatValue;
+                    var pitchRandProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
+                    randomValue = AudioEntity.GetRandomValue(baseValue, pitchRandProp.floatValue);
+                    break;
+                case RandomFlag.Volume:
+                    baseValue = entityProp.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume)).floatValue;
+                    var masterRandProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
+                    randomValue = AudioEntity.GetRandomValue(baseValue, masterRandProp.floatValue);
+                    break;
+                default:
+                    randomValue = 1f;
+                    baseValue = 0f;
+                    break;
+            }
         }
     }
 }

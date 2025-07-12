@@ -14,11 +14,13 @@ namespace Ami.BroAudio.Editor
         private const string MixerSuspendFieldName = "m_EnableSuspend";
 
         private AudioSource _currentEditorAudioSource;
-        private PreviewRequest _currentPreviewRequest;
+        private PreviewRequest _currentRequest;
         private AudioMixerGroup _masterTrack;
         private EditorVolumeTransporter _volumeTransporter;
         private AudioMixer _mixer;
         private MuteState _previousMuteState = MuteState.None;
+
+        private TaskCompletionSource<bool> _playbackCompletionSource;
 
         private enum MuteState { None, On, Off }
 
@@ -26,6 +28,32 @@ namespace Ami.BroAudio.Editor
         {
             _mixer = Resources.Load<AudioMixer>(BroEditorUtility.EditorAudioMixerPath);;
             _volumeTransporter = new EditorVolumeTransporter(_mixer);
+        }
+
+        public override void UpdatePreview()
+        {
+            base.UpdatePreview();
+            if (_currentRequest != null && _currentEditorAudioSource)
+            {
+                UpdatePitch();
+
+                if (_currentEditorAudioSource.time >=
+                    _currentRequest.AbsoluteEndPosition || !_currentEditorAudioSource.isPlaying)
+                {
+                    _playbackCompletionSource?.TrySetResult(true);
+                }
+            }
+        }
+
+        private void UpdatePitch()
+        {
+            bool isPitchChanged = !Mathf.Approximately(_currentRequest.Pitch, _currentEditorAudioSource.pitch);
+            _currentEditorAudioSource.pitch = _currentRequest.Pitch;
+            if (isPitchChanged)
+            {
+                var remainingTime = (_currentRequest.AbsoluteEndPosition - _currentEditorAudioSource.time) / _currentRequest.Pitch;
+                _currentEditorAudioSource.SetScheduledEndTime(AudioSettings.dspTime + remainingTime);
+            }
         }
 
         public override async void Play(PreviewRequest req, bool loop = false, ReplayData replayData = null)
@@ -48,7 +76,7 @@ namespace Ami.BroAudio.Editor
             ResetAndGetAudioSource(out var audioSource);
 
             SetAudioSource(ref audioSource, req);
-            _currentPreviewRequest = req;
+            _currentRequest = req;
             _previousMuteState = EditorUtility.audioMasterMute ? MuteState.On : MuteState.Off;
             EditorUtility.audioMasterMute = false;
             SetMixerAutoSuspend(_mixer, false);
@@ -62,8 +90,8 @@ namespace Ami.BroAudio.Editor
             await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
             StartPlaybackIndicator(selfLoop || replayData != null);
             _volumeTransporter.Start();
-
-            await Task.Delay(SecToMs(req.Duration), CancellationSource.Token);
+            
+            await WaitForPlaybackCompletion();
             _volumeTransporter.End();
 
             if (selfLoop)
@@ -78,12 +106,22 @@ namespace Ami.BroAudio.Editor
                 while (true)
                 {
                     req.SetReplay(replayData.NewReplay());
-                    await Task.Delay(SecToMs(req.Duration), CancellationSource.Token);
+                    await WaitForPlaybackCompletion();
                 }
             }
             else
             {
                 DestroyPreviewAudioSourceAndCancelTask();
+            }
+        }
+
+        private async Task WaitForPlaybackCompletion()
+        {
+            _playbackCompletionSource = new TaskCompletionSource<bool>();
+
+            using (CancellationSource.Token.Register(() => _playbackCompletionSource?.TrySetCanceled()))
+            {
+                await _playbackCompletionSource.Task;
             }
         }
 
@@ -131,7 +169,8 @@ namespace Ami.BroAudio.Editor
 
                 _volumeTransporter.Start();
                 StartPlaybackIndicator();
-                await Task.Delay(SecToMs(_currentPreviewRequest.Duration), CancellationSource.Token);
+
+                await WaitForPlaybackCompletion();
             }
         }
 
@@ -194,7 +233,7 @@ namespace Ami.BroAudio.Editor
         public override void Dispose()
         {
             base.Dispose();
-            _currentPreviewRequest = null;
+            _currentRequest = null;
             DestroyPreviewAudioSourceAndCancelTask();
             _volumeTransporter?.Dispose();
             _volumeTransporter = null;

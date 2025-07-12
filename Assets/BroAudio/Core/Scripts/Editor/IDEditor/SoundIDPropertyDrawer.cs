@@ -145,7 +145,9 @@ namespace Ami.BroAudio.Editor
 
                     var req = Event.current.CreatePreviewRequest(entity.PickNewClip());
                     req.MasterVolume = entity.GetMasterVolume();
+                    req.BaseMasterVolume = entity.MasterVolume;
                     req.Pitch = entity.GetPitch();
+                    req.Pitch = entity.Pitch;
                     EditorPlayAudioClip.Instance.Play(req);
                     EditorPlayAudioClip.Instance.OnFinished = OnPreviewAudioFinished;
                     _currentPlayingID = id;

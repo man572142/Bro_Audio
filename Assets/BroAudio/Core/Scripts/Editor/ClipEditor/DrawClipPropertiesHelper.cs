@@ -269,12 +269,7 @@ namespace Ami.BroAudio.Editor
                     var req = currEvent.CreatePreviewRequest(audioClip);
                     req.StartPosition = clickedPoint * audioClip.length;
                     requestClipPreview?.Invoke(clipPath, req);
-                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, new PreviewClip()
-                    {
-                        StartPosition = clickedPoint * audioClip.length,
-                        EndPosition = 0f,
-                        FullLength = audioClip.length,
-                    });
+                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, req);
                     currEvent.Use();
                 }
             }

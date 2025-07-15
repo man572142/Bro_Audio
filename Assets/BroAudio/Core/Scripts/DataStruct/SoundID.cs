@@ -93,6 +93,11 @@ namespace Ami.BroAudio
             return SoundManager.Instance.GetAudioClip(id, velocity);
         }
 
+        public static AudioClip GetAudioClip(this SoundID id, PlaybackStage chainedModeStage)
+        {
+            return SoundManager.Instance.GetAudioClip(id, chainedModeStage);
+        }
+
         /// <inheritdoc cref="BroAudio.Play(SoundID)"/>
         public static IAudioPlayer Play(this SoundID id, PlaybackGroup overrideGroup = null) 
             => BroAudio.Play(id, overrideGroup);

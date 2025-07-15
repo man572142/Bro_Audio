@@ -447,8 +447,8 @@ namespace Ami.BroAudio.Editor
                 if (data.IsPlaying)
                 {
                     EditorPlayAudioClip.Instance.StopAllClips();
-                    Utility.ClearClipsSequencer();
-                    entity.Clips.ResetIsUse();
+                    SequenceClipStrategy.ClearSequencer();
+                    ShuffleClipStrategy.ResetIsUse(entity.Clips);
                 }
                 else
                 {
@@ -576,8 +576,11 @@ namespace Ami.BroAudio.Editor
 
         private void ResetPreview()
         {
-            Utility.ClearClipsSequencer();
-            _currentPreviewingEntity?.Clips?.ResetIsUse();
+            SequenceClipStrategy.ClearSequencer();
+            if (_currentPreviewingEntity?.Clips != null)
+            {
+                ShuffleClipStrategy.ResetIsUse(_currentPreviewingEntity.Clips);
+            }
         }
 
         private bool TryGetEntityInstance(SerializedProperty property, out AudioEntity entity)

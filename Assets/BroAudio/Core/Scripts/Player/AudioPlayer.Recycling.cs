@@ -43,7 +43,7 @@ namespace Ami.BroAudio.Runtime
             _instanceWrapper?.Recycle();
             _instanceWrapper = null;
 
-            OnSeamlessLoopReplay = null;
+            OnPlaybackHandover = null;
             AudioTrack = null;
 
             ID = -1;

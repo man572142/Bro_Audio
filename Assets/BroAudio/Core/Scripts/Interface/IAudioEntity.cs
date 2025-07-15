@@ -11,11 +11,11 @@ namespace Ami.BroAudio.Data
         SpatialSetting SpatialSetting { get; }
 		int Priority { get; }
         IBroAudioClip PickNewClip();
-        IBroAudioClip PickNewClip(int velocity);
+        IBroAudioClip PickNewClip(int context);
         float GetMasterVolume();
 		float GetPitch();
 		float GetRandomValue(float baseValue, RandomFlag flags);
         void ResetShuffleInUseState();
-        void LinkPlaybackGroup(PlaybackGroup upperGroup);
+        MulticlipsPlayMode GetMulticlipsPlayMode();
     } 
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Ami.BroAudio.Data;
 using UnityEngine;
 using Ami.Extension;
 using static Ami.BroAudio.Utility;
@@ -10,9 +11,9 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource))]
     public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
-        public delegate void SeamlessLoopReplay(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
+        public delegate void PlaybackHandover(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
 
-        public SeamlessLoopReplay OnSeamlessLoopReplay;
+        public PlaybackHandover OnPlaybackHandover;
         [Obsolete]
         public event Action<SoundID> OnEndPlaying
         {
@@ -80,7 +81,6 @@ namespace Ami.BroAudio.Runtime
             _clipVolume.Complete(0f, false);
             int sampleRate = _clip.GetAudioClip().frequency;
             bool hasScheduled = false;
-
             if (_stopMode == StopMode.Stop) // we only do this process when it's fresh
             {
                 AudioSource.clip = _clip.GetAudioClip();
@@ -109,7 +109,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     AudioSource.reverbZoneMix = 0f;
                     AudioSource.priority = AudioConstant.HighestPriority;
-                    musicPlayer.Transition(ref _pref);
+                    musicPlayer.DoTransition(ref _pref);
                     while (musicPlayer.IsWaitingForTransition)
                     {
                         yield return null;
@@ -119,7 +119,7 @@ namespace Ami.BroAudio.Runtime
                 AudioTrack = MixerPool.GetTrack(TrackType); 
 #endif
             }
-
+            
             do
             {
                 if(!hasScheduled)
@@ -166,8 +166,8 @@ namespace Ami.BroAudio.Runtime
                             yield break;
                         }
                     }
-
-                    TriggerSeamlessLoopReplay();
+                    
+                    TriggerPlaybackHandover();
                     _clipVolume.SetTarget(0f);
                     elapsedTime = 0f;
                     IsFadingOut = true;
@@ -192,7 +192,7 @@ namespace Ami.BroAudio.Runtime
                             yield break;
                         }
                     }
-                    TriggerSeamlessLoopReplay();
+                    TriggerPlaybackHandover();
                 }
                 #endregion
 
@@ -201,7 +201,7 @@ namespace Ami.BroAudio.Runtime
                     _pref.ResetFading();
                 }
                 hasScheduled = false;
-            } while (_pref.Entity.Loop);
+            } while (_pref.Entity.Loop && CanLoopIfIsChainedMode());
 
             EndPlaying();
         }
@@ -254,15 +254,27 @@ namespace Ami.BroAudio.Runtime
             return hasPlayed && (currentSample <= startSample || currentSample >= endSample);
         }
 
-        private void TriggerSeamlessLoopReplay()
+        private void TriggerPlaybackHandover(bool isEnd = false)
         {
-            if(_pref.Entity.SeamlessLoop)
+            if (!_pref.IsHandoverRequired() && !isEnd)
             {
-                ClearScheduleEndEvents(); // it should be rescheduled in the new player
-                OnSeamlessLoopReplay?.Invoke(ID, _instanceWrapper, _pref, CurrentActiveEffects, _trackVolume.Target, StaticPitch);
-                OnSeamlessLoopReplay = null;
-                _instanceWrapper = null; // the instance has been transferred to the new player
+                return;
             }
+
+            var newPref = _pref;
+            if (newPref.IsChainedMode())
+            {
+                if (_pref.ChainedModeStage == PlaybackStage.End)
+                {
+                    return;
+                }
+                newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
+            }
+
+            ClearScheduleEndEvents(); // it should be rescheduled in the new player
+            OnPlaybackHandover?.Invoke(ID, _instanceWrapper, newPref, CurrentActiveEffects, _trackVolume.Target, StaticPitch);
+            OnPlaybackHandover = null;
+            _instanceWrapper = null; // the instance has been transferred to the new player
         }
 
         #region Stop Overloads
@@ -288,7 +300,7 @@ namespace Ami.BroAudio.Runtime
         #endregion
         public void Stop(float overrideFade, StopMode stopMode, Action onFinished)
         {
-            if (IsStopping && overrideFade != Immediate)
+            if (IsStopping && !Mathf.Approximately(overrideFade, Immediate))
             {
                 return;
             }
@@ -313,7 +325,8 @@ namespace Ami.BroAudio.Runtime
         {
             _stopMode = stopMode;
             IsStopping = true;
-
+            
+            TriggerPlaybackHandover(isEnd: true);
             #region FadeOut
             if (HasFading(_clip.FadeOut,overrideFade,out float fadeTime))
             {
@@ -348,21 +361,21 @@ namespace Ami.BroAudio.Runtime
             #endregion
             switch (stopMode)
             {
-                case StopMode.Stop:
+                case StopMode.Stop: 
                     EndPlaying();
                     break;
                 case StopMode.Pause:
                     AudioSource.Pause();
                     break;
                 case StopMode.Mute:
-                    this.SetVolume(0f, 0f);
+                    this.SetVolume(0f);
                     break;
             }
             IsStopping = false;
             onFinished?.Invoke();
         }
 
-        private bool HasFading(float clipFade, float overrideFade, out float fadeTime)
+        private static bool HasFading(float clipFade, float overrideFade, out float fadeTime)
         {
             fadeTime = clipFade;
             if (overrideFade >= 0f)
@@ -402,6 +415,11 @@ namespace Ami.BroAudio.Runtime
             _onEnd = null;
 
             Recycle();
+        }
+        
+        private bool CanLoopIfIsChainedMode()
+        {
+            return !_pref.IsChainedMode() || (_pref.IsChainedMode() && _pref.ChainedModeStage == PlaybackStage.Loop);
         }
 
         public IAudioPlayer OnEnd(Action<SoundID> onEnd)

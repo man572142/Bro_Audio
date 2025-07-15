@@ -30,11 +30,16 @@ namespace Ami.BroAudio.Data
 
         public IBroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);
         public IBroAudioClip PickNewClip(out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index);
-        public IBroAudioClip PickNewClip(int velocity) => Clips.PickNewOne(MulticlipsPlayMode, ID, out _, velocity);
+        public IBroAudioClip PickNewClip(int context) => Clips.PickNewOne(MulticlipsPlayMode, ID, out _, context);
 
         public bool Validate()
         {
             return Utility.Validate(Name, Clips, ID);
+        }
+
+        public MulticlipsPlayMode GetMulticlipsPlayMode()
+        {
+            return MulticlipsPlayMode;
         }
 
         public float GetMasterVolume()
@@ -72,7 +77,7 @@ namespace Ami.BroAudio.Data
 
         public void ResetShuffleInUseState()
         {
-            Clips.ResetIsUse();
+            ShuffleClipStrategy.ResetIsUse(Clips);
         }
 
         public void LinkPlaybackGroup(PlaybackGroup upperGroup)
@@ -85,6 +90,11 @@ namespace Ami.BroAudio.Data
             {
                 _upperGroup = upperGroup;
             }
+        }
+        
+        public override string ToString()
+        {
+            return Name;
         }
 
 #if UNITY_EDITOR

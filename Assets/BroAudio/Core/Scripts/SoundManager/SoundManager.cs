@@ -106,7 +106,7 @@ namespace Ami.BroAudio.Runtime
         private void OnDestroy()
         {
             MusicPlayer.CleanUp();
-            ResetClipSequencer();
+            SequenceClipStrategy.ResetAll();
         }
 
         #region InitBank
@@ -124,9 +124,8 @@ namespace Ami.BroAudio.Runtime
                     if (!identity.Validate())
                         continue;
 
-                    if (!_audioBank.ContainsKey(identity.ID))
+                    if (!_audioBank.ContainsKey(identity.ID) && identity is AudioEntity entity)
                     {
-                        var entity = identity as IAudioEntity;
                         entity.LinkPlaybackGroup(asset.PlaybackGroup);
                         _audioBank.Add(identity.ID, entity);
                     }

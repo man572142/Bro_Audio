@@ -18,6 +18,11 @@ namespace Ami.BroAudio.Runtime
             return GetAudioClip(id, x => x.PickNewClip(velocity));
         }
 
+        public AudioClip GetAudioClip(SoundID id, PlaybackStage chainedModeStage)
+        {
+            return GetAudioClip(id, x => x.PickNewClip((int)chainedModeStage));
+        }
+
         private AudioClip GetAudioClip(SoundID id, Func<IAudioEntity, IBroAudioClip> onGetAudioClip)
         {
             if (TryGetEntity(id, out var entity))

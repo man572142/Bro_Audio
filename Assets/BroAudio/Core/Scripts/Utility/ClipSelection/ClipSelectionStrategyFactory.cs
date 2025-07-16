@@ -9,10 +9,11 @@ namespace Ami.BroAudio
             new Dictionary<MulticlipsPlayMode, IClipSelectionStrategy>
             {
                 { MulticlipsPlayMode.Single, new SingleClipStrategy() },
-                { MulticlipsPlayMode.Chained, new ChainedClipStrategy() },
                 { MulticlipsPlayMode.Sequence, new SequenceClipStrategy() },
                 { MulticlipsPlayMode.Random, new RandomClipStrategy() },
                 { MulticlipsPlayMode.Shuffle, new ShuffleClipStrategy() },
+                { MulticlipsPlayMode.Chained, new ChainedClipStrategy() },
+                { MulticlipsPlayMode.Velocity, new VelocityClipStrategy() },
             };
         
         public static IClipSelectionStrategy GetClipSelectionStrategy(this MulticlipsPlayMode playMode)

@@ -526,12 +526,6 @@ namespace Ami.BroAudio.Editor
             }
         }
         
-        public static int GetRequiredClipCount(this MulticlipsPlayMode mode) => mode switch
-        {
-            MulticlipsPlayMode.Chained => 3,
-            _ => 1,
-        };
-        
         public static int GetMaxAcceptableClipCount(this MulticlipsPlayMode mode) => mode switch
         {
             MulticlipsPlayMode.Single => 1,

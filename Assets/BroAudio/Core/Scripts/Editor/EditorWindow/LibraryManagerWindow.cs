@@ -438,10 +438,10 @@ namespace Ami.BroAudio.Editor
                 {
                     DrawEntitiesHeader(editor.serializedObject, editor.SetAssetName);
                     editor.DrawEntitiesList(out float listHeight);
-                    float compenstateHeight = GetScrollPosCompenstateHeight(listHeight);
-                    if (compenstateHeight > 0f)
+                    float compensateHeight = GetScrollPosCompensateHeight(listHeight);
+                    if (compensateHeight > 0f)
                     {
-                        GUILayout.Space(compenstateHeight);
+                        GUILayout.Space(compensateHeight);
                     }
                 }
                 EditorGUILayout.EndScrollView();
@@ -450,7 +450,7 @@ namespace Ami.BroAudio.Editor
             EditorGUILayout.EndVertical();
         }
 
-        private float GetScrollPosCompenstateHeight(float listHeight)
+        private float GetScrollPosCompensateHeight(float listHeight)
         {
             float headerHeight = EntitiesHeaderSize.y + (DefaultLayoutPadding * 2) + ReorderableList.Defaults.padding;
             float scrollViewHeight = listHeight - (position.height - headerHeight);

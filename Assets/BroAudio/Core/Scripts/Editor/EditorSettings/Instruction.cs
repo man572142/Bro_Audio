@@ -51,6 +51,8 @@
         LibraryManager_AssetUnnamed,
         LibraryManager_AddressableConversionDialog,
         LibraryManager_AddressableConversionTooltip,
+        LibraryManager_NoLoopForChainedPlayMode,
+        LibraryManager_ApplyDefaultLoopForChainedPlayMode,
 
         // Sound Volume
         SoundVolume_ApplyOnEnable = 400,

@@ -7,6 +7,7 @@ using Ami.BroAudio.Editor.Setting;
 using System;
 using Ami.BroAudio.Tools;
 using System.Collections.Generic;
+using Ami.BroAudio.Runtime;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 
 #if PACKAGE_ADDRESSABLES
@@ -18,6 +19,21 @@ namespace Ami.BroAudio.Editor
 {
 	public class ReorderableClips
 	{
+        private struct NoLoopChainedPlayModeInfo
+        {
+            public GUIContent ApplyDefaultGUIContent;
+            public Action OnSetDefaultChainedPlayModeLoopSettings;
+            public string Message;
+        }
+        
+        private struct HeaderInfo
+        {
+            public string Message;
+            public MessageType MessageType;
+            public GUIContent ButtonText;
+            public Action OnClick;
+        }
+        
 		public Action<string> OnClipChanged;
 
 		public const MulticlipsPlayMode DefaultMulticlipsMode = MulticlipsPlayMode.Random;
@@ -34,9 +50,10 @@ namespace Ami.BroAudio.Editor
         private SerializedProperty _useAddressablesProp;
 		private int _currSelectedClipIndex = -1;
 		private SerializedProperty _currSelectedClip;
-		private Rect _previewRect = default;
 		private string _currentPlayingClipPath;
-		private GUIContent _weightGUIContent = new GUIContent("Weight", "Probability = Weight / Total Weight");
+        private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
+		private readonly GUIContent _weightGUIContent = new GUIContent("Weight", "Probability = Weight / Total Weight");
+        private readonly NoLoopChainedPlayModeInfo _noLoopChainedPlayModeInfo;
 #if PACKAGE_ADDRESSABLES
         private List<AudioClip> _assetReferenceCachedClips = new List<AudioClip>();  
 #endif
@@ -44,14 +61,15 @@ namespace Ami.BroAudio.Editor
 
         private Vector2 PlayButtonSize => new Vector2(30f, 20f);
         public bool IsMulticlips => _reorderableList.count > 1;
-		public float Height => _reorderableList.GetHeight() + AdditionalHeight;
-		public Rect PreviewRect => _previewRect;
+		public float Height => _reorderableList.GetHeight() + (HasHeaderMessage(out _) ? HeaderMessageHeight : 0f);
 		public bool IsPlaying => _currentPlayingClipPath != null;
         public bool HasAnyAudioClip { get; private set; }
         public bool HasAnyAddressableClip { get; private set; }
         public SerializedProperty CurrentPlayingClip { get; private set; }
         private float AdditionalHeight => ShowNotEnoughClipsWarning() ? EditorGUIUtility.singleLineHeight : 0f;
+        public Rect PreviewRect { get; set; }
         private MulticlipsPlayMode CurrentPlayMode => (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+        private static float HeaderMessageHeight => EditorGUIUtility.singleLineHeight + 3f;
 
         public SerializedProperty CurrentSelectedClip
 		{
@@ -93,6 +111,15 @@ namespace Ami.BroAudio.Editor
             _onRequestClipPreview = onRequestClipPreview;
 			UpdatePlayModeAndRequiredClipCount();
 
+            var setting = BroEditorUtility.RuntimeSetting;
+            float transitionTime = setting.DefaultChainedPlayModeLoop == LoopType.Loop ? 0f : setting.DefaultChainedPlayModeTransitionTime;
+            _noLoopChainedPlayModeInfo = new NoLoopChainedPlayModeInfo()
+            {
+                Message = string.Format(_instruction.GetText(Instruction.LibraryManager_NoLoopForChainedPlayMode), setting.DefaultChainedPlayModeLoop, transitionTime),
+                ApplyDefaultGUIContent = new GUIContent("Apply Defaults", _instruction.GetText(Instruction.LibraryManager_ApplyDefaultLoopForChainedPlayMode)),
+                OnSetDefaultChainedPlayModeLoopSettings = SetDefaultChainedPlayModeLoopSettings
+            };
+
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
 		}
 
@@ -101,11 +128,6 @@ namespace Ami.BroAudio.Editor
 			Undo.undoRedoPerformed -= OnUndoRedoPerformed;
 			_currentPlayingClipPath = null;
         }
-
-		public void SetPreviewRect(Rect rect)
-		{
-			_previewRect = rect;
-		}
 
 		public void SelectAndSetPlayingElement(int index)
 		{
@@ -242,12 +264,12 @@ namespace Ami.BroAudio.Editor
 
 		public void DrawReorderableList(Rect position)
 		{
-            int requiredClipCount = CurrentPlayMode.GetRequiredClipCount();
-            if (ShowNotEnoughClipsWarning())
+            if (HasHeaderMessage(out var headerInfo))
             {
-                var helpBoxRect = new Rect(position) { height = EditorGUIUtility.singleLineHeight };
-                EditorGUI.HelpBox(helpBoxRect, $"The current play mode requires at least {requiredClipCount} clips", MessageType.Error);
-                var listRect = new Rect(position) { height = position.height - helpBoxRect.height, y = helpBoxRect.yMax + 1f };
+                var helpBoxRect = new Rect(position) { height = HeaderMessageHeight };
+                EditorGUI.HelpBox(helpBoxRect, headerInfo.Message, headerInfo.MessageType);
+                DrawHeaderButton(headerInfo, helpBoxRect);
+                var listRect = new Rect(position) { height = position.height - helpBoxRect.height, y = helpBoxRect.yMax - 1f };
                 _reorderableList.DoList(listRect);
             }
             else
@@ -256,7 +278,7 @@ namespace Ami.BroAudio.Editor
             }
 		}
 
-		private ReorderableList CreateReorderabeList(SerializedProperty entityProperty)
+        private ReorderableList CreateReorderableList(SerializedProperty entityProperty)
 		{
 			SerializedProperty clipsProp = entityProperty.FindPropertyRelative(nameof(AudioEntity.Clips));
 			var list = new ReorderableList(clipsProp.serializedObject, clipsProp) 
@@ -606,9 +628,60 @@ namespace Ami.BroAudio.Editor
             _ => "<color=#FF3D3D>x</color>",
         };
 
-        private bool ShowNotEnoughClipsWarning()
+        private bool HasHeaderMessage(out HeaderInfo headerInfo)
         {
-            return _reorderableList?.count > 0 && _reorderableList?.count < CurrentPlayMode.GetRequiredClipCount();
+            headerInfo = default;
+            var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+            if (playMode == MulticlipsPlayMode.Chained && !IsLoopBy(nameof(AudioEntity.Loop)) && !IsLoopBy(nameof(AudioEntity.SeamlessLoop)))
+            {
+                headerInfo = GetHeaderInfo(_noLoopChainedPlayModeInfo);
+                return true;
+            }
+            return false;
+
+            bool IsLoopBy(string propPath) => _entityProp.FindBackingFieldProperty(propPath).boolValue;
+        }
+
+        private void SetDefaultChainedPlayModeLoopSettings()
+        {
+            var setting = BroEditorUtility.RuntimeSetting;
+            switch (setting.DefaultChainedPlayModeLoop)
+            {
+                case LoopType.Loop:
+                    _entityProp.FindBackingFieldProperty(nameof(AudioEntity.Loop)).boolValue = true;
+                    break;
+                case LoopType.SeamlessLoop:
+                    _entityProp.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop)).boolValue = true;
+                    _entityProp.FindBackingFieldProperty(nameof(AudioEntity.TransitionTime)).floatValue =
+                        setting.DefaultChainedPlayModeTransitionTime;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            _entityProp.serializedObject.ApplyModifiedProperties();
+        }
+
+        private static HeaderInfo GetHeaderInfo(NoLoopChainedPlayModeInfo info) => new()
+        {
+            Message = info.Message,
+            MessageType = MessageType.Warning,
+            ButtonText = info.ApplyDefaultGUIContent, 
+            OnClick = info.OnSetDefaultChainedPlayModeLoopSettings
+        };
+        
+        private static void DrawHeaderButton(HeaderInfo headerInfo, Rect headerRect)
+        {
+            if (headerInfo.OnClick == null)
+            {
+                return;
+            }
+            
+            var buttonSize = EditorStyles.miniButton.CalcSize(headerInfo.ButtonText);
+            var buttonRect = new Rect(headerRect) { size = buttonSize, x = headerRect.xMax - buttonSize.x };
+            if (GUI.Button(buttonRect, headerInfo.ButtonText))
+            {
+                headerInfo.OnClick.Invoke();
+            }
         }
     }
 }

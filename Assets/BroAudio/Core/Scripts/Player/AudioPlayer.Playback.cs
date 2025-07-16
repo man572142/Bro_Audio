@@ -148,7 +148,7 @@ namespace Ami.BroAudio.Runtime
                 }
                 #endregion
 
-                if (_pref.Entity.SeamlessLoop)
+                if (_pref.IsLoop(LoopType.SeamlessLoop))
                 {
                     _pref.ScheduledStartTime = 0d;
                     _pref.ApplySeamlessFade();
@@ -196,12 +196,12 @@ namespace Ami.BroAudio.Runtime
                 }
                 #endregion
 
-                if (_pref.Entity.Loop)
+                if (_pref.IsLoop(LoopType.Loop))
                 {
                     _pref.ResetFading();
                 }
                 hasScheduled = false;
-            } while (_pref.Entity.Loop && CanLoopIfIsChainedMode());
+            } while (_pref.IsLoop(LoopType.Loop) && CanLoopIfIsChainedMode());
 
             EndPlaying();
         }

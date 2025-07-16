@@ -164,3 +164,9 @@ MonoBehaviour:
   - Key: 19
     Value: Determines whether audio changes, such as volume adjustments, pitch shifts,
       fade-in/out, etc., are affected by Time.timeScale
+  - Key: 311
+    Value: No loop option set for Chained Play Mode! It'll default to {0} with a
+      {1}s transition at runtime.
+  - Key: 312
+    Value: Apply the default Chained Play Mode loop and transition settings to clear
+      this message

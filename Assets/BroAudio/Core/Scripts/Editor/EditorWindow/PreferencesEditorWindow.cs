@@ -8,6 +8,7 @@ using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Data;
+using Ami.BroAudio.Runtime;
 using static Ami.BroAudio.Editor.IconConstant;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
 using static Ami.BroAudio.Tools.BroName;
@@ -42,7 +43,7 @@ namespace Ami.BroAudio.Editor.Setting
 
         private GUIContent _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
             ,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent,_dominatorTrackGUIContent, _regenerateUserDataGUIContent
-            ,_globalGroupGUIContent, _updateModeGUIContent;
+            ,_globalGroupGUIContent, _updateModeGUIContent, _chainedModeLoopGUIContent, _defaultTransitionTimeGUIContent;
 
 #if PACKAGE_ADDRESSABLES
         private GUIContent _addressableConversionGUIContent, _directToAddressableGUIContent, _addressableToDirectGUIContent; 
@@ -128,7 +129,9 @@ namespace Ami.BroAudio.Editor.Setting
             _dominatorTrackGUIContent = new GUIContent("Add Dominator Track", _instruction.GetText(Instruction.AddDominatorTrack));
             _regenerateUserDataGUIContent = new GUIContent("Regenerate User Data", _instruction.GetText(Instruction.RegenerateUserData));
             _updateModeGUIContent = new GUIContent("Update Mode", _instruction.GetText(Instruction.UpdateMode));
-
+            _chainedModeLoopGUIContent = new GUIContent("Default Loop Type");
+            _defaultTransitionTimeGUIContent = new GUIContent("Default Transition Time");
+            
 #if PACKAGE_ADDRESSABLES
             string aaTooltip = _instruction.GetText(Instruction.LibraryManager_AddressableConversionTooltip);
             _addressableConversionGUIContent = new GUIContent("Addressable References Conversion".ToWhiteBold(), aaTooltip);
@@ -225,6 +228,9 @@ namespace Ami.BroAudio.Editor.Setting
             DrawUpdateMode();
             DrawEmptyLine(1);
             DrawBGMSetting();
+            DrawEmptyLine(1);
+            DrawChainedPlayMode();
+
             // To make a room for other functions to use exposed parameters, we only use AudioSource.pitch for now
             //DrawPitchSetting();
             DrawEmptyLine(1);
@@ -256,7 +262,29 @@ namespace Ami.BroAudio.Editor.Setting
                             Rect timeRect = GetRectAndIterateLine(drawPosition);
                             timeRect.width = 250f;
                             bgmTransitionTimeProp.floatValue = 
-                                EditorGUI.FloatField(timeRect, "Default Transition Time", bgmTransitionTimeProp.floatValue);
+                                EditorGUI.FloatField(timeRect, _defaultTransitionTimeGUIContent, bgmTransitionTimeProp.floatValue);
+                        }
+                    }
+                }
+            }
+            
+            void DrawChainedPlayMode()
+            {
+                var loopTypeProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.DefaultChainedPlayModeLoop));
+                var seamlessTransitionProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.DefaultChainedPlayModeTransitionTime));
+                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Chained Play Mode".ToWhiteBold(), GUIStyleHelper.RichText);
+                using (new EditorGUI.IndentLevelScope())
+                {
+                    Rect popupRect = GetRectAndIterateLine(drawPosition);
+                    using (new LabelWidthScope(EditorGUIUtility.labelWidth * 1.3f))
+                    {
+                        var loopType = (LoopType)EditorGUI.EnumPopup(popupRect, _chainedModeLoopGUIContent, (LoopType)loopTypeProp.enumValueIndex);
+                        loopTypeProp.enumValueIndex = (int)loopType;
+
+                        if (loopType == LoopType.SeamlessLoop)
+                        {
+                            seamlessTransitionProp.floatValue =
+                                EditorGUI.FloatField(GetRectAndIterateLine(drawPosition), _defaultTransitionTimeGUIContent, seamlessTransitionProp.floatValue);
                         }
                     }
                 }

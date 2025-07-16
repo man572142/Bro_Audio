@@ -254,7 +254,6 @@ namespace Ami.BroAudio.Runtime
             return SetEffect(BroAudioType.All,effect);
         }
 
-
         public IAutoResetWaitable SetEffect(BroAudioType targetType, Effect effect)
         {
             targetType = targetType.ConvertEverythingFlag();
@@ -307,6 +306,17 @@ namespace Ami.BroAudio.Runtime
         }
         #endregion
 
+        public void SetPitch(SoundID id, float pitch, float fadeTime)
+        {
+            foreach (var player in GetCurrentAudioPlayers())
+            {
+                if (player.IsActive && player.ID == id)
+                {
+                    player.SetPitch(pitch, fadeTime);
+                }
+            }
+        }
+        
         public void SetPitch(float pitch, BroAudioType targetType, float fadeTime)
         {
             targetType = targetType.ConvertEverythingFlag();

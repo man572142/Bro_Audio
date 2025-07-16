@@ -80,7 +80,7 @@ namespace Ami.BroAudio.Runtime
             _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
             _combFilteringPreventer[id] = player;
 
-            if (pref.Entity.SeamlessLoop || pref.Entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained)
+            if (pref.IsLoop(LoopType.SeamlessLoop) || pref.Entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained)
             {
                 _playbackHandoverDelegate ??= PlaybackHandover;
                 player.OnPlaybackHandover = _playbackHandoverDelegate;

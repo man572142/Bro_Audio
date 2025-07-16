@@ -220,7 +220,7 @@ namespace Ami.BroAudio.Editor
                             previewRect.y -= PreviewPrettinessOffsetY;
                             previewRect.height = ClipPreviewHeight;
                             _clipPropHelper.DrawClipPreview(previewRect, transport, audioClip, volume, currSelectClip.propertyPath, data.Clips.SetPlayingClip, DrawPlaybackValuePeeking);
-                            data.Clips.SetPreviewRect(previewRect);
+                            data.Clips.PreviewRect = previewRect;
                             Offset += ClipPreviewHeight + ClipPreviewPadding;
                         }
                     }

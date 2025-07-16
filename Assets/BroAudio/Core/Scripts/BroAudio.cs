@@ -59,7 +59,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Stop playing all audio that match the given audio type
         /// </summary>
-        /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
+        /// <param name="fadeOut">Duration in seconds to fade out. Set this value to override the LibraryManager's setting</param>
         public static void Stop(BroAudioType audioType, float fadeOut)
             => SoundManager.Instance.Stop(audioType, fadeOut);
 
@@ -72,7 +72,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Stop playing audio
         /// </summary>
-        /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
+        /// <param name="fadeOut">Duration in seconds to fade out. Set this value to override the LibraryManager's setting</param>
         public static void Stop(SoundID id, float fadeOut)
             => SoundManager.Instance.Stop(id,fadeOut);
         #endregion
@@ -87,7 +87,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Pause audio
         /// </summary>
-        /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
+        /// <param name="fadeOut">Duration in seconds to fade out. Set this value to override the LibraryManager's setting</param>
         public static void Pause(SoundID id, float fadeOut)
             => SoundManager.Instance.Pause(id, fadeOut, true);
 
@@ -100,7 +100,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Resume paused audio
         /// </summary>
-        /// <param name="fadeIn">Set this value to override the LibraryManager's setting</param>
+        /// <param name="fadeIn">Duration in seconds to fade in. Set this value to override the LibraryManager's setting</param>
         public static void UnPause(SoundID id, float fadeIn)
             => SoundManager.Instance.Pause(id, fadeIn, false);
 
@@ -113,7 +113,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Pause all audio that matches the given audio type
         /// </summary>
-        /// <param name="fadeOut">Set this value to override the LibraryManager's setting</param>
+        /// <param name="fadeOut">Duration in seconds to fade out. Set this value to override the LibraryManager's setting</param>
         public static void Pause(BroAudioType audioType, float fadeOut)
             => SoundManager.Instance.Pause(audioType, fadeOut, true);
 
@@ -126,7 +126,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Resume all audio that matches the given audio type
         /// </summary>
-        /// <param name="fadeIn">Set this value to override the LibraryManager's setting</param>
+        /// <param name="fadeOut">Duration in seconds to fade in. Set this value to override the LibraryManager's setting</param>
         public static void UnPause(BroAudioType audioType, float fadeIn)
             => SoundManager.Instance.Pause(audioType, fadeIn, false);
 
@@ -144,7 +144,7 @@ namespace Ami.BroAudio
         /// Set the volume of the given audio type
         /// </summary>
         /// <param name="vol">Accepts values from 0 to 10, default is 1</param>
-        /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
+        /// <param name="fadeTime">Duration in seconds to fade from current to target</param>
         public static void SetVolume(BroAudioType audioType, float vol, float fadeTime = BroAdvice.FadeTime_Immediate) 
             => SoundManager.Instance.SetVolume(vol, audioType, fadeTime);
 
@@ -159,12 +159,28 @@ namespace Ami.BroAudio
         /// Set the audio volume
         /// </summary>
         /// <param name="vol">Accepts values from 0 to 10, default is 1</param>
-        /// <param name="fadeTime">Set this value to override the LibraryManager's setting</param>
+        /// <param name="fadeTime">Duration in seconds to fade from current to target</param>
         public static void SetVolume(SoundID id, float vol, float fadeTime) 
             => SoundManager.Instance.SetVolume(id, vol, fadeTime);
         #endregion
 
         #region Pitch
+
+        /// <summary>
+        /// Set the audio pitch immediately
+        /// </summary>
+        /// <param name="pitch">values between -3 to 3, default is 1</param>
+        public static void SetPitch(SoundID id, float pitch)
+            => SoundManager.Instance.SetPitch(id, pitch, BroAdvice.FadeTime_Immediate);
+        
+        /// <summary>
+        /// Set the audio pitch
+        /// </summary>
+        /// <param name="pitch">values between -3 to 3, default is 1</param>
+        /// <param name="fadeTime">Duration in seconds to fade from current to target</param>
+        public static void SetPitch(SoundID id, float pitch, float fadeTime)
+            => SoundManager.Instance.SetPitch(id, pitch, fadeTime);
+        
         /// <summary>
         /// Set the pitch of all audio immediately
         /// </summary>
@@ -191,6 +207,7 @@ namespace Ami.BroAudio
         /// Set the pitch of all audio
         /// </summary>
         /// <param name="pitch">values between -3 to 3, default is 1</param>
+        /// <param name="fadeTime">Duration in seconds to fade from current to target</param>
         public static void SetPitch(float pitch, float fadeTime)
             => SoundManager.Instance.SetPitch(pitch, BroAudioType.All, fadeTime);
 
@@ -205,6 +222,7 @@ namespace Ami.BroAudio
         /// Set the pitch of the given audio type
         /// </summary>
         /// <param name="pitch">values between -3 to 3, default is 1</param>
+        /// <param name="fadeTime">Duration in seconds to fade from current to target</param>
         public static void SetPitch(BroAudioType audioType, float pitch, float fadeTime)
             => SoundManager.Instance.SetPitch(pitch, audioType, fadeTime);
         #endregion
@@ -235,9 +253,7 @@ namespace Ami.BroAudio
         /// Checks if the sound is playing anywhere
         /// </summary>
         public static bool HasAnyPlayingInstances(SoundID id)
-        {
-            return SoundManager.Instance.HasAnyPlayingInstances(id);
-        }
+            => SoundManager.Instance.HasAnyPlayingInstances(id);
 
 #if !UNITY_WEBGL
         #region Effect

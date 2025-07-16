@@ -231,6 +231,14 @@ namespace Ami.BroAudio
         } 
         #endregion
 
+        /// <summary>
+        /// Checks if the sound is playing anywhere
+        /// </summary>
+        public static bool HasAnyPlayingInstances(SoundID id)
+        {
+            return SoundManager.Instance.HasAnyPlayingInstances(id);
+        }
+
 #if !UNITY_WEBGL
         #region Effect
         /// <summary>

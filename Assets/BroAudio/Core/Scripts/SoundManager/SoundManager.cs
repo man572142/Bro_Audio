@@ -336,6 +336,18 @@ namespace Ami.BroAudio.Runtime
             return result != null;
         }
 
+        public bool HasAnyPlayingInstances(SoundID id)
+        {
+            foreach (var player in GetCurrentAudioPlayers())
+            {
+                if (player.IsActive && player.ID == id && player.IsPlaying)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         AudioMixerGroup IAudioMixerPool.GetTrack(AudioTrackType trackType) => trackType switch
         {
             AudioTrackType.Generic => _audioTrackPool.Extract(),

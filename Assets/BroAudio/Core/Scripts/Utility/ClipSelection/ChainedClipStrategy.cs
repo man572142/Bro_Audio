@@ -11,6 +11,7 @@ namespace Ami.BroAudio.Runtime
             index = context.Value - 1;
             if (index < 0 || index >= clips.Length)
             {
+                // TODO: EditorPreviewAudio
                 throw new IndexOutOfRangeException($"There's no clip for Chained Play Mode Stage:<b>{(PlaybackStage)context.Value}</b>");
             }
             return clips[index];

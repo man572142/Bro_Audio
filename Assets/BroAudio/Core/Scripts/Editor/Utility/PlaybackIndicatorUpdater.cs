@@ -78,6 +78,7 @@ namespace Ami.Extension
 			_isPlaying = true;
             _isVisible = true;
 			_isLoop = false;
+            _playbackPosition = 0f;
 			base.Start();
 		}
 

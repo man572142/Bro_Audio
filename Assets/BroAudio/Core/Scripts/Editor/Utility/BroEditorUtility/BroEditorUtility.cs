@@ -552,24 +552,38 @@ namespace Ami.BroAudio.Editor
             return clipPropPath.Remove(index);
         }
 
-        public static void GetBaseAndRandomValue(RandomFlag flag, SerializedProperty entityProp, out float baseValue, out float randomValue)
+        public static void GetBaseAndRandomValue(RandomFlag target, SerializedProperty entityProp, out float baseValue, out float randomValue)
         {
-            switch (flag)
+            switch (target)
             {
                 case RandomFlag.Pitch:
                     baseValue = entityProp.FindBackingFieldProperty(nameof(AudioEntity.Pitch)).floatValue;
-                    var pitchRandProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
-                    randomValue = AudioEntity.GetRandomValue(baseValue, pitchRandProp.floatValue);
+                    randomValue = baseValue;
+                    if (IsRandom())
+                    {
+                        var pitchRandProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
+                        randomValue = AudioEntity.GetRandomValue(baseValue, pitchRandProp.floatValue);
+                    }
                     break;
                 case RandomFlag.Volume:
                     baseValue = entityProp.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume)).floatValue;
-                    var masterRandProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
-                    randomValue = AudioEntity.GetRandomValue(baseValue, masterRandProp.floatValue);
+                    randomValue = baseValue;
+                    if (IsRandom())
+                    {
+                        var masterRandProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
+                        randomValue = AudioEntity.GetRandomValue(baseValue, masterRandProp.floatValue);
+                    }
                     break;
                 default:
                     randomValue = 1f;
-                    baseValue = 0f;
+                    baseValue = 1f;
                     break;
+            }
+
+            bool IsRandom()
+            {
+                var flags = (RandomFlag)entityProp.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags)).intValue;
+                return flags.Contains(target);
             }
         }
     }

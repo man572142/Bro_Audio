@@ -24,12 +24,10 @@ namespace Ami.BroAudio.Editor
         {
             public Tab SelectedTab;
             public bool IsLoop;
-            // TODO: could be removed?
-            public bool IsPreviewing;
             public readonly Rect[] HiddenButtonRects = new Rect[4];
             public readonly SerializedProperty EntityProperty;
             
-            public bool IsPlaying => IsPreviewing || (Clips != null && Clips.IsPlaying);
+            public bool IsPlaying => Clips != null && Clips.IsPlaying;
 
             public ReorderableClips Clips { get; private set; }
 
@@ -414,15 +412,11 @@ namespace Ami.BroAudio.Editor
             GetBaseAndRandomValue(RandomFlag.Pitch, entityData.EntityProperty, out req.BasePitch, out req.Pitch);
             var clipProp = entityData.EntityProperty.serializedObject.FindProperty(clipPath);
             req.ClipVolume = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
-            _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(clipPath, req);
-
+            
             EditorPlayAudioClip.Instance.Play(req);
             entityData.Clips.SetPlayingClip(clipPath);
-            EditorPlayAudioClip.Instance.OnFinished = () =>
-            {
-                _currentPreviewRequest = default;
-                entityData.Clips.SetPlayingClip(null);
-            };
+            _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(clipPath, req);
+            EditorPlayAudioClip.Instance.OnFinished = ResetPreview;
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
@@ -495,12 +489,10 @@ namespace Ami.BroAudio.Editor
                 if (data.IsPlaying)
                 {
                     EditorPlayAudioClip.Instance.StopAllClips();
-                    Utility.ClearClipsSequencer();
-                    entity.Clips.ResetIsUse();
                 }
                 else
                 {
-                    StartPreview(data, entity, property.isExpanded);
+                    EntityAudioPreview(data, entity, property.isExpanded);
                 }
             }
 
@@ -577,7 +569,7 @@ namespace Ami.BroAudio.Editor
             _clipDataDict.Remove(clipPropPath);
         }
 
-        private void StartPreview(EntityData data, AudioEntity entity, bool canDisplayIndicator)
+        private void EntityAudioPreview(EntityData data, AudioEntity entity, bool canDisplayIndicator)
         {
             if (entity == null)
             {
@@ -596,21 +588,23 @@ namespace Ami.BroAudio.Editor
                 Pitch = entity.GetPitch(),
                 BasePitch = entity.Pitch,
             };
-            _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip.propertyPath, req);
+            
             EditorPlayAudioClip.Instance.Play(req, false, replayData);
+            _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip.propertyPath, req);
             var previewRect = canDisplayIndicator ? data.Clips.PreviewRect : default;
             EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, req);
-            data.IsPreviewing = true;
-            EditorPlayAudioClip.Instance.OnFinished = () =>
-            {
-                data.IsPreviewing = false;
-                data.Clips.SetPlayingClip(null);
-                _currentPreviewRequest = default;
-            };
+            EditorPlayAudioClip.Instance.OnFinished = ResetPreview;
         }
 
         private void ResetPreview()
         {
+            if (!string.IsNullOrEmpty(_currentPreviewRequest.Key) && 
+                _entityDataDict.TryGetValue(GetEntityPropertyPath(_currentPreviewRequest.Key), out var entityData))
+            {
+                entityData.Clips.SetPlayingClip(null);
+            }
+
+            _currentPreviewRequest = default;
             Utility.ClearClipsSequencer();
             _currentPreviewingEntity?.Clips?.ResetIsUse();
         }

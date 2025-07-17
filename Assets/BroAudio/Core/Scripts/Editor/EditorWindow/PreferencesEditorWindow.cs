@@ -189,7 +189,7 @@ namespace Ami.BroAudio.Editor.Setting
             Rect tabWindowRect = GetRectAndIterateLine(drawPosition);
             tabWindowRect.yMax = drawPosition.yMax;
             _tabPreAllocRects ??= new Rect[_tabLabelRatios.Length];
-            _currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab, TabLabelHeight, _tabLabels, _tabLabelRatios, _tabPreAllocRects, EditorPlayAudioClip.Instance.StopAllClips);
+            _currSelectedTab = (Tab)DrawTabsView(tabWindowRect, (int)_currSelectedTab, TabLabelHeight, _tabLabels, _tabLabelRatios, _tabPreAllocRects, EditorAudioPreviewer.Instance.StopAllClips);
 
             using (new EditorGUI.IndentLevelScope())
             {

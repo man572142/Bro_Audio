@@ -135,7 +135,7 @@ namespace Ami.BroAudio.Editor
             {
                 if(_currentPlayingID == id)
                 {
-                    EditorPlayAudioClip.Instance.StopAllClips();
+                    EditorAudioPreviewer.Instance.StopAllClips();
                     _currentPlayingID = 0;
                     return;
                 }
@@ -148,8 +148,8 @@ namespace Ami.BroAudio.Editor
                     req.BaseMasterVolume = entity.MasterVolume;
                     req.Pitch = entity.GetPitch();
                     req.Pitch = entity.Pitch;
-                    EditorPlayAudioClip.Instance.Play(req);
-                    EditorPlayAudioClip.Instance.OnFinished = OnPreviewAudioFinished;
+                    EditorAudioPreviewer.Instance.Play(req);
+                    EditorAudioPreviewer.Instance.OnFinished = OnPreviewAudioFinished;
                     _currentPlayingID = id;
 
                     EditorApplication.update += OnPreviewAudioUpdate;
@@ -182,7 +182,7 @@ namespace Ami.BroAudio.Editor
             if(IsWindowFocusChanged())
             {
                 EditorApplication.update -= OnPreviewAudioUpdate;
-                EditorPlayAudioClip.Instance.StopAllClips();
+                EditorAudioPreviewer.Instance.StopAllClips();
                 _currentPlayingID = 0;
             }
         }

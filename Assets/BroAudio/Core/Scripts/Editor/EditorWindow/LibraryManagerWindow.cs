@@ -86,13 +86,13 @@ namespace Ami.BroAudio.Editor
 
         private void OnFocus()
         {
-            EditorPlayAudioClip.Instance.OnPlaybackIndicatorUpdate += Repaint;
+            EditorAudioPreviewer.Instance.OnPlaybackIndicatorUpdate += Repaint;
         }
 
         private void OnLostFocus()
         {
-            EditorPlayAudioClip.Instance.StopAllClips();
-            EditorPlayAudioClip.Instance.OnPlaybackIndicatorUpdate -= Repaint;
+            EditorAudioPreviewer.Instance.StopAllClips();
+            EditorAudioPreviewer.Instance.OnPlaybackIndicatorUpdate -= Repaint;
             OnLostFocusEvent?.Invoke();
         }
 
@@ -228,7 +228,7 @@ namespace Ami.BroAudio.Editor
             {
                 OnSelectAsset?.Invoke();
                 _currSelectedAssetIndex = list.index;
-                EditorPlayAudioClip.Instance.StopAllClips();
+                EditorAudioPreviewer.Instance.StopAllClips();
                 RefreshAssetEditors(list);
                 if(EditorSetting.OpenLastEditAudioAsset)
                 {
@@ -445,7 +445,7 @@ namespace Ami.BroAudio.Editor
                     }
                 }
                 EditorGUILayout.EndScrollView();
-                EditorPlayAudioClip.Instance.PlaybackIndicator?.Draw(rect.Scoping(position, new Vector2(offsetX, offsetY)), -_entitiesScrollPos);
+                EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw(rect.Scoping(position, new Vector2(offsetX, offsetY)), -_entitiesScrollPos);
             }
             EditorGUILayout.EndVertical();
         }

@@ -281,7 +281,7 @@ namespace Ami.BroAudio.Editor
             req.UpdateRandomizedPreviewValue(RandomFlag.Volume, masterVolProp.floatValue);
             req.UpdateRandomizedPreviewValue(RandomFlag.Pitch, pitchProp.floatValue);
             req.ClipVolume = data.Clips.CurrentPlayingClip.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
-            EditorPlayAudioClip.Instance.UpdatePreview();
+            EditorAudioPreviewer.Instance.UpdatePreview();
         }
 
 #if PACKAGE_ADDRESSABLES
@@ -295,7 +295,7 @@ namespace Ami.BroAudio.Editor
             useAddressablesProp.boolValue = EditorGUI.ToggleLeft(rect, "Addressables", useAddressablesProp.boolValue);
             if (EditorGUI.EndChangeCheck())
             {
-                EditorPlayAudioClip.Instance.StopAllClips();
+                EditorAudioPreviewer.Instance.StopAllClips();
                 SwitchAddressable(useAddressablesProp, clips);
             }
         }
@@ -413,10 +413,10 @@ namespace Ami.BroAudio.Editor
             var clipProp = entityData.EntityProperty.serializedObject.FindProperty(clipPath);
             req.ClipVolume = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
             
-            EditorPlayAudioClip.Instance.Play(req);
+            EditorAudioPreviewer.Instance.Play(req);
             entityData.Clips.SetPlayingClip(clipPath);
             _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(clipPath, req);
-            EditorPlayAudioClip.Instance.OnFinished = ResetPreview;
+            EditorAudioPreviewer.Instance.OnFinished = ResetPreview;
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
@@ -488,7 +488,7 @@ namespace Ami.BroAudio.Editor
             {
                 if (data.IsPlaying)
                 {
-                    EditorPlayAudioClip.Instance.StopAllClips();
+                    EditorAudioPreviewer.Instance.StopAllClips();
                 }
                 else
                 {
@@ -498,7 +498,7 @@ namespace Ami.BroAudio.Editor
 
             if (data.IsPlaying)
             {
-                EditorPlayAudioClip.Instance.PlaybackIndicator.SetVisibility(data.SelectedTab == Tab.Clips);
+                EditorAudioPreviewer.Instance.PlaybackIndicator.SetVisibility(data.SelectedTab == Tab.Clips);
             }
         }
 
@@ -589,11 +589,11 @@ namespace Ami.BroAudio.Editor
                 BasePitch = entity.Pitch,
             };
             
-            EditorPlayAudioClip.Instance.Play(req, false, replayData);
+            EditorAudioPreviewer.Instance.Play(req, false, replayData);
             _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip.propertyPath, req);
             var previewRect = canDisplayIndicator ? data.Clips.PreviewRect : default;
-            EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, req);
-            EditorPlayAudioClip.Instance.OnFinished = ResetPreview;
+            EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(previewRect, req);
+            EditorAudioPreviewer.Instance.OnFinished = ResetPreview;
         }
 
         private void ResetPreview()

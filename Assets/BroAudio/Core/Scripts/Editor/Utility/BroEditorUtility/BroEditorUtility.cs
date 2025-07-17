@@ -524,5 +524,12 @@ namespace Ami.BroAudio.Editor
                     throw new NotImplementedException();
             }
         }
+        
+        public static int GetMaxAcceptableClipCount(this MulticlipsPlayMode mode) => mode switch
+        {
+            MulticlipsPlayMode.Single => 1,
+            MulticlipsPlayMode.Chained => 3,
+            _ => Int32.MaxValue,
+        };
     }
 }

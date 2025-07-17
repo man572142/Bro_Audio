@@ -27,6 +27,9 @@ namespace Ami.BroAudio.Data
         public bool AlwaysPlayMusicAsBGM = true;
         public Transition DefaultBGMTransition = FactorySettings.DefaultBGMTransition;
         public float DefaultBGMTransitionTime = FactorySettings.DefaultBGMTransitionTime;
+        
+        public LoopType DefaultChainedPlayModeLoop = FactorySettings.DefaultChainedPlayModeLoop;
+        public float DefaultChainedPlayModeTransitionTime = FactorySettings.DefaultChainedPlayModeSeamlessTransitionTime;
 
         public PlaybackGroup GlobalPlaybackGroup = null;
 
@@ -60,6 +63,8 @@ namespace Ami.BroAudio.Data
             public const Transition DefaultBGMTransition = Transition.CrossFade;
             public const float DefaultBGMTransitionTime = 2f;
 
+            public const LoopType DefaultChainedPlayModeLoop = LoopType.SeamlessLoop;
+            public const float DefaultChainedPlayModeSeamlessTransitionTime = 0.1f;
         }
     }
 }

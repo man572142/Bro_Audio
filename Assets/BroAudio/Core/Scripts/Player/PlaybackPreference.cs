@@ -11,13 +11,20 @@ namespace Ami.BroAudio.Runtime
         private readonly Vector3 _position;
         private readonly Transform _followTarget;
 
-        private int _velocity;
+        private int _contextValue;
         public double ScheduledStartTime { get; set; }
         public double ScheduledEndTime { get; set; }
         public float FadeIn { get; set; }
         public float FadeOut { get; set; }
-        public Ease FadeInEase => Entity.SeamlessLoop ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
-        public Ease FadeOutEase => Entity.SeamlessLoop ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
+
+        public PlaybackStage ChainedModeStage
+        {
+            get => (PlaybackStage)_contextValue;
+            set => _contextValue = (int)value;
+        }
+        
+        public Ease FadeInEase => IsLoop(LoopType.SeamlessLoop) ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
+        public Ease FadeOutEase => IsLoop(LoopType.SeamlessLoop) ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
 
         public PlaybackPreference(IAudioEntity entity, Vector3 position) : this(entity)
         {
@@ -34,16 +41,16 @@ namespace Ami.BroAudio.Runtime
             Entity = entity;
             FadeIn = UseEntitySetting;
             FadeOut = UseEntitySetting;
-            ScheduledStartTime = default;
-            ScheduledEndTime = default;
+            ScheduledStartTime = 0;
+            ScheduledEndTime = 0;
             _position = Vector3.negativeInfinity;
             _followTarget = null;
-            _velocity = default;
+            _contextValue = GetContextValue(entity);
         }
 
         public IBroAudioClip PickNewClip()
         {
-            return Entity.PickNewClip(_velocity);
+            return Entity.PickNewClip(_contextValue);
         }
 
         public void ResetFading()
@@ -78,13 +85,21 @@ namespace Ami.BroAudio.Runtime
 
         public void ApplySeamlessFade()
         {
-            FadeIn = Entity.TransitionTime;
-            FadeOut = Entity.TransitionTime;
+            if (Entity.HasLoop(out var loopType, out var transitionTime) && loopType == LoopType.SeamlessLoop)
+            {
+                FadeIn = transitionTime;
+                FadeOut = transitionTime;
+            }
         }
 
         public void SetVelocity(int velocity)
         {
-            _velocity = velocity;
+            if (Entity.GetMulticlipsPlayMode() != MulticlipsPlayMode.Velocity)
+            {
+                Debug.LogError($"Cannot set velocity on [{Entity}] because it's not using VelocityPlayMode. (current : {Entity.GetMulticlipsPlayMode()})");
+                return;
+            }
+            _contextValue = velocity;
         }
 
         public bool HasFollowTarget(out Transform target)
@@ -98,5 +113,26 @@ namespace Ami.BroAudio.Runtime
             position = _position;
             return !_position.Equals(Vector3.negativeInfinity);
         }
+        
+        public bool IsHandoverRequired()
+        {
+            return IsLoop(LoopType.SeamlessLoop) || (IsChainedMode() && ChainedModeStage != PlaybackStage.Loop);
+        }
+
+        public bool IsChainedMode()
+        {
+            return Entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained;
+        }
+
+        public bool IsLoop(LoopType targetType)
+        {
+            return Entity.HasLoop(out var loopType, out _) && loopType == targetType;
+        }
+
+        private static int GetContextValue(IAudioEntity entity) => entity.GetMulticlipsPlayMode() switch
+        {
+            MulticlipsPlayMode.Chained => (int)PlaybackStage.Start,
+            _ => 0,
+        };
     }
 }

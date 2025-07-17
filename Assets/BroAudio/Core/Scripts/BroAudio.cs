@@ -230,12 +230,12 @@ namespace Ami.BroAudio
         #region Reset MultiClips Data
         public static void ResetSequence(SoundID id)
         {
-            Utility.ResetClipSequencer(id);
+            SequenceClipStrategy.Reset(id);
         }
 
         public static void ResetSequence()
         {
-            Utility.ResetClipSequencer();
+            SequenceClipStrategy.ResetAll();
         }
 
         public static void ResetShuffle(SoundID id)

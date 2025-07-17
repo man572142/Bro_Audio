@@ -433,12 +433,12 @@ namespace Ami.BroAudio.Editor
                 SetHasAny(true, referenceType);
                 bool isPlaying = string.Equals(_currentPlayingClipPath, clipProp.propertyPath);
                 var image = GetPlaybackButtonIcon(isPlaying).image;
-                GUIContent buttonGUIContent = new GUIContent(image, EditorPlayAudioClip.IgnoreSettingTooltip);
+                GUIContent buttonGUIContent = new GUIContent(image, EditorAudioPreviewer.IgnoreSettingTooltip);
                 if (GUI.Button(buttonRect, buttonGUIContent))
                 {
                     if (isPlaying)
                     {
-                        EditorPlayAudioClip.Instance.StopAllClips();
+                        EditorAudioPreviewer.Instance.StopAllClips();
                     }
                     else
                     {
@@ -496,7 +496,7 @@ namespace Ami.BroAudio.Editor
 
                 _onRequestClipPreview?.Invoke(clipProp.propertyPath, req);
                 _currentPlayingClipPath = clipProp.propertyPath;
-                EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(_previewRect, req);
+                EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(_previewRect, req);
             }
 
 			void DrawVolumeSlider()
@@ -557,7 +557,7 @@ namespace Ami.BroAudio.Editor
 
         private void OnSelect(ReorderableList list)
 		{
-			EditorPlayAudioClip.Instance.StopAllClips();
+			EditorAudioPreviewer.Instance.StopAllClips();
 		}
 
         private void SetHasAny(bool state, ReferenceType type)

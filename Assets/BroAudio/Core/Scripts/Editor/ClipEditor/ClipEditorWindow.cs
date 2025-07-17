@@ -97,13 +97,13 @@ namespace Ami.BroAudio.Editor
 
         private void OnFocus()
         {
-            EditorPlayAudioClip.Instance.OnPlaybackIndicatorUpdate += Repaint;
+            EditorAudioPreviewer.Instance.OnPlaybackIndicatorUpdate += Repaint;
         }
 
         private void OnLostFocus()
 		{
-            EditorPlayAudioClip.Instance.OnPlaybackIndicatorUpdate -= Repaint;
-            EditorPlayAudioClip.Instance.StopAllClips();
+            EditorAudioPreviewer.Instance.OnPlaybackIndicatorUpdate -= Repaint;
+            EditorAudioPreviewer.Instance.StopAllClips();
 			_isPlaying = false;
 
         }
@@ -134,7 +134,7 @@ namespace Ami.BroAudio.Editor
             EditorGUILayout.Space();
 			DrawClipWaveform(position.height * 0.3f, out Rect previewRect);
             EditorGUILayout.Space();
-            EditorPlayAudioClip.Instance.PlaybackIndicator?.Draw(position.SetPosition(0f,0f));
+            EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw(position.SetPosition(0f,0f));
 
             DrawPlaybackBar(previewRect);
             EditorGUILayout.Space();
@@ -277,12 +277,12 @@ namespace Ami.BroAudio.Editor
 			var width = GUILayout.Width(EditorGUIUtility.singleLineHeight * 2);
             var height = GUILayout.Height(EditorGUIUtility.singleLineHeight * 2);
             string icon = _isPlaying ? IconConstant.StopButton : IconConstant.PlayButton;
-			GUIContent playButtonContent = new GUIContent(EditorGUIUtility.IconContent(icon).image, EditorPlayAudioClip.IgnoreSettingTooltip);
+			GUIContent playButtonContent = new GUIContent(EditorGUIUtility.IconContent(icon).image, EditorAudioPreviewer.IgnoreSettingTooltip);
 			if (GUILayout.Button(playButtonContent, width, height))
 			{
 				if(_isPlaying)
 				{
-					EditorPlayAudioClip.Instance.StopAllClips();
+					EditorAudioPreviewer.Instance.StopAllClips();
 				}
 				else if(_audioClipProp.objectReferenceValue is AudioClip clip)
 				{
@@ -290,7 +290,7 @@ namespace Ami.BroAudio.Editor
                     float volume = evt.button == 0 ? _volume : AudioConstant.FullVolume;
                     _currentPreviewRequest = evt.CreatePreviewRequest(clip, volume, _transport);
                     PlayClip(clip.name, _currentPreviewRequest);
-                    EditorPlayAudioClip.Instance.PlaybackIndicator.SetClipInfo(previewRect, _currentPreviewRequest);
+                    EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(previewRect, _currentPreviewRequest);
 				}
 			}
 			_isLoop = DrawButtonToggleLayout(_isLoop, EditorGUIUtility.IconContent(IconConstant.LoopIcon), width, height);
@@ -302,7 +302,7 @@ namespace Ami.BroAudio.Editor
         {
             
             _isPlaying = true;
-            EditorPlayAudioClip.Instance.OnFinished = () =>
+            EditorAudioPreviewer.Instance.OnFinished = () =>
             {
                 _isPlaying = false;
                 _currentPreviewRequest = null;

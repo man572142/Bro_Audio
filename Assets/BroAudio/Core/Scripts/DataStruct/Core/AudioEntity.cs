@@ -1,3 +1,4 @@
+using Ami.BroAudio.Runtime;
 using UnityEngine;
 using Ami.Extension;
 
@@ -30,22 +31,12 @@ namespace Ami.BroAudio.Data
 
         public IBroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);
         public IBroAudioClip PickNewClip(out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index);
-        public IBroAudioClip PickNewClip(int velocity) => Clips.PickNewOne(MulticlipsPlayMode, ID, out _, velocity);
+        public IBroAudioClip PickNewClip(int context) => Clips.PickNewOne(MulticlipsPlayMode, ID, out _, context);
 
-        public bool Validate()
-        {
-            return Utility.Validate(Name, Clips, ID);
-        }
-
-        public float GetMasterVolume()
-        {
-            return GetRandomValue(MasterVolume, RandomFlag.Volume);
-        }
-
-        public float GetPitch()
-        {
-            return GetRandomValue(Pitch, RandomFlag.Pitch);
-        }
+        public bool Validate() => Utility.Validate(Name, Clips, ID);
+        public MulticlipsPlayMode GetMulticlipsPlayMode() => MulticlipsPlayMode;
+        public float GetMasterVolume() => GetRandomValue(MasterVolume, RandomFlag.Volume);
+        public float GetPitch() => GetRandomValue(Pitch, RandomFlag.Pitch);
 
         public float GetRandomValue(float baseValue, RandomFlag flag)
         {
@@ -69,10 +60,30 @@ namespace Ami.BroAudio.Data
             float half = range * 0.5f;
             return baseValue + Random.Range(-half, half);
         }
+        
+        public bool HasLoop(out LoopType loopType, out float transitionTime)
+        {
+            loopType = LoopType.None;
+            transitionTime = 0f;
+            if (Loop)
+            {
+                loopType = LoopType.Loop;
+            }
+            else if (SeamlessLoop)
+            {
+                loopType = LoopType.SeamlessLoop;
+            }
+            else if (MulticlipsPlayMode == MulticlipsPlayMode.Chained)
+            {
+                loopType = SoundManager.Instance.Setting.DefaultChainedPlayModeLoop;
+                transitionTime = SoundManager.Instance.Setting.DefaultChainedPlayModeTransitionTime;
+            }
+            return loopType != LoopType.None;
+        }
 
         public void ResetShuffleInUseState()
         {
-            Clips.ResetIsUse();
+            ShuffleClipStrategy.ResetIsUse(Clips);
         }
 
         public void LinkPlaybackGroup(PlaybackGroup upperGroup)
@@ -85,6 +96,11 @@ namespace Ami.BroAudio.Data
             {
                 _upperGroup = upperGroup;
             }
+        }
+        
+        public override string ToString()
+        {
+            return Name;
         }
 
 #if UNITY_EDITOR

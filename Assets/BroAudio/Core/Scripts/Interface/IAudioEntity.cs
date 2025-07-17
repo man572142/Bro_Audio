@@ -1,3 +1,4 @@
+using Ami.BroAudio.Runtime;
 using Ami.Extension;
 
 namespace Ami.BroAudio.Data
@@ -5,17 +6,15 @@ namespace Ami.BroAudio.Data
 	public interface IAudioEntity
 	{
         PlaybackGroup PlaybackGroup { get; }
-        bool Loop { get; }
-		bool SeamlessLoop { get; }
-		float TransitionTime { get; }
         SpatialSetting SpatialSetting { get; }
+        bool HasLoop(out LoopType loopType, out float transitionTime);
 		int Priority { get; }
         IBroAudioClip PickNewClip();
-        IBroAudioClip PickNewClip(int velocity);
+        IBroAudioClip PickNewClip(int context);
         float GetMasterVolume();
 		float GetPitch();
 		float GetRandomValue(float baseValue, RandomFlag flags);
         void ResetShuffleInUseState();
-        void LinkPlaybackGroup(PlaybackGroup upperGroup);
+        MulticlipsPlayMode GetMulticlipsPlayMode();
     } 
 }

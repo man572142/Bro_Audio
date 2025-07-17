@@ -51,20 +51,20 @@ namespace Ami.BroAudio.Runtime
             return this;
         }
 
-        public void Transition(ref PlaybackPreference pref)
+        public void DoTransition(ref PlaybackPreference pref)
         {
             if (CurrentPlayer != null)
             {
                 pref.SetFadeTime(_transition, _overrideFade);
                 switch (_transition)
                 {
-                    case Ami.BroAudio.Transition.Immediate:
-                    case Ami.BroAudio.Transition.OnlyFadeIn:
-                    case Ami.BroAudio.Transition.CrossFade:
+                    case Transition.Immediate:
+                    case Transition.OnlyFadeIn:
+                    case Transition.CrossFade:
                         StopCurrentMusic();
                         break;
-                    case Ami.BroAudio.Transition.Default:
-                    case Ami.BroAudio.Transition.OnlyFadeOut:
+                    case Transition.Default:
+                    case Transition.OnlyFadeOut:
                         if(CurrentPlayer.IsPlaying)
                         {
                             IsWaitingForTransition = true;
@@ -83,7 +83,7 @@ namespace Ami.BroAudio.Runtime
 
         private void StopCurrentMusic(Action onFinished = null)
         {
-            bool noFadeOut = _transition == Ami.BroAudio.Transition.Immediate || _transition == Ami.BroAudio.Transition.OnlyFadeIn;
+            bool noFadeOut = _transition == Transition.Immediate || _transition == Transition.OnlyFadeIn;
             float fadeOut =  noFadeOut? 0f : _overrideFade;
             CurrentPlayer.Stop(fadeOut, _stopMode, onFinished);
         }

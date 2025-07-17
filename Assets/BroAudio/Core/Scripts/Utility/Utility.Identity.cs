@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using static UnityEngine.Debug;
@@ -113,7 +114,7 @@ namespace Ami.BroAudio
             }
         }
 
-        public static bool Validate(string name, IBroAudioClip[] clips, int id)
+        public static bool Validate(string name, IReadOnlyList<IBroAudioClip> clips, int id)
 		{
 			if (id <= 0)
 			{
@@ -121,13 +122,13 @@ namespace Ami.BroAudio
 				return false;
 			}
 
-			if(clips == null || clips.Length == 0)
+			if(clips == null || clips.Count == 0)
 			{
 				LogWarning(LogTitle + $"{name.ToWhiteBold()} has no audio clips, please assign or delete the entity.");
 				return false;
 			}
 
-			for(int i = 0; i < clips.Length;i++)
+			for(int i = 0; i < clips.Count;i++)
 			{
 				if (!clips[i].IsValid())
 				{

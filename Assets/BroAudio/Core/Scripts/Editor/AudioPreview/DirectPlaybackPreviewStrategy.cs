@@ -19,7 +19,7 @@ namespace Ami.BroAudio.Editor
         private readonly StopAllPreviewClips _stopAllPreviewClipsDelegate = GetAudioUtilMethodDelegate<StopAllPreviewClips>(StopClipMethodName);
         private readonly PlayPreviewClip _playPreviewClipDelegate = GetAudioUtilMethodDelegate<PlayPreviewClip>(PlayClipMethodName);
 
-        public override async void Play(PreviewRequest request, bool loop = false, ReplayData replayData = null)
+        public override async void Play(PreviewRequest request, ReplayRequest replayRequest = null)
         {
             if (request?.AudioClip == null)
             {
@@ -28,12 +28,12 @@ namespace Ami.BroAudio.Editor
 
             try
             {
-                await PlayClipAsync(request, loop);
+                await PlayClipAsync(request);
             }
             catch (OperationCanceledException) { }
         }
 
-        private async Task PlayClipAsync(PreviewRequest request, bool loop)
+        private async Task PlayClipAsync(PreviewRequest request)
         {
             Stop();
 
@@ -41,38 +41,15 @@ namespace Ami.BroAudio.Editor
             int startSample = audioClip.GetTimeSample(request.StartPosition);
             int endSample = request.EndPosition > 0 ? audioClip.GetTimeSample(request.EndPosition) : 0;
 
-            _playPreviewClipDelegate.Invoke(audioClip, startSample, loop);
-            StartPlaybackIndicator(loop);
+            _playPreviewClipDelegate.Invoke(audioClip, startSample, false);
+            StartPlaybackIndicator();
 
             int sampleLength = audioClip.samples - startSample - endSample;
             int lengthInMs = (int)Math.Round(sampleLength / (double)audioClip.frequency * SecondInMilliseconds, MidpointRounding.AwayFromZero);
 
             await Task.Delay(lengthInMs, CancellationSource.Token);
 
-            if (loop)
-            {
-                while (loop)
-                {
-                    await AudioClipReplay(request, loop, lengthInMs);
-                }
-            }
-            else
-            {
-                StopPlayback();
-            }
-        }
-
-        private async Task AudioClipReplay(PreviewRequest request, bool loop, int lengthInMs)
-        {
-            _stopAllPreviewClipsDelegate.Invoke();
-            EndPlaybackIndicator();
-
-            int startSample = request.AudioClip.GetTimeSample(request.StartPosition);
-            // TODO: we don't need the loop for _playPreviewClipDelegate? or we don't need to call it again if it's capable to loop.
-            _playPreviewClipDelegate.Invoke(request.AudioClip, startSample, loop);
-            StartPlaybackIndicator();
-
-            await Task.Delay(lengthInMs, CancellationSource.Token);
+            StopPlayback();
         }
 
         private void StopPlayback()

@@ -44,10 +44,10 @@ namespace Ami.BroAudio.Editor
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
-        public void Play(PreviewRequest req, bool selfLoop = false, ReplayData replayData = null)
+        public void Play(PreviewRequest req, ReplayRequest replayRequest = null)
         {
             SwitchToStrategy(req.StrategyType);
-            _currentStrategy.Play(req, selfLoop, replayData);
+            _currentStrategy.Play(req, replayRequest);
         }
 
         public void StopAllClips()

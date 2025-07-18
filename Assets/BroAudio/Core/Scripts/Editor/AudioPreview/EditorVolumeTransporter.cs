@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using Ami.Extension;
 using UnityEngine.Audio;
@@ -16,17 +17,15 @@ namespace Ami.BroAudio.Editor
         private readonly Ease _fadeOutEase;
         private readonly object[] _parameters;
         private readonly bool _isInitSuccessfully;
-        
-        private MethodInfo _method;
+        private readonly MethodInfo _method;
         private PreviewRequest _currentReq;
         private float _playbackPos;
         private float _dbVolume;
         
-        public EditorVolumeTransporter(AudioMixer mixer)
+        public EditorVolumeTransporter(AudioMixer mixer, string trackName)
         {
             AudioMixerSnapshot snapshot = mixer.FindSnapshot(DefaultSnapshotName);
-            var tracks = mixer.FindMatchingGroups(BroName.MasterTrackName);
-            _mixerGroup = tracks != null && tracks.Length > 0 ? tracks[0] : null;
+            _mixerGroup = mixer.FindMatchingGroups(trackName).FirstOrDefault();
             _fadeInEase = BroEditorUtility.RuntimeSetting.DefaultFadeInEase;
             _fadeOutEase = BroEditorUtility.RuntimeSetting.DefaultFadeOutEase;
             _isInitSuccessfully = mixer && snapshot && _mixerGroup;
@@ -34,6 +33,9 @@ namespace Ami.BroAudio.Editor
             if(_isInitSuccessfully)
             {
                 _parameters = new object[] { mixer, snapshot, 0f };
+                var reflection = new ClassReflectionHelper();
+                const string methodName = nameof(BroAudioReflection.MethodName.SetValueForVolume);
+                _method = reflection.MixerGroupClass.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public);
             }
             else
             {
@@ -46,30 +48,16 @@ namespace Ami.BroAudio.Editor
 
         protected override float UpdateInterval => 1 / 30f;
 
-        public void SetData(PreviewRequest req)
+        public void Init(PreviewRequest req)
         {
             _currentReq = req;
+            SetStartVolume(req);
+        }
 
-            if (_isInitSuccessfully && _method == null)
-            {
-                var reflection = new ClassReflectionHelper();
-                const string methodName = nameof(BroAudioReflection.MethodName.SetValueForVolume);
-                _method = reflection.MixerGroupClass.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public);
-            }
-
-            float startVol = GetStartVolume(req);
+        public void SetStartVolume(PreviewRequest req)
+        {
+            float startVol = req.FadeIn > 0f ? 0f : req.Volume;
             SetVolume(startVol, true);
-        }
-
-        private static float GetStartVolume(PreviewRequest req)
-        {
-            return req.FadeIn > 0f ? 0f : req.Volume;
-        }
-
-        public bool IsNewVolumeDifferentFromCurrent(PreviewRequest req)
-        {
-            float startVol = GetStartVolume(req);
-            return !Mathf.Approximately(startVol.ToDecibel(), _dbVolume);
         }
 
         public override void Start()

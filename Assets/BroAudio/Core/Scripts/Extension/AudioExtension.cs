@@ -95,6 +95,11 @@ namespace Ami.Extension
             return (double)clip.samples / clip.frequency;
         }
 
+        public static double GetPreciseTime(this AudioSource source)
+        {
+            return (double)source.timeSamples / source.clip.frequency;
+        }
+
 		public static int GetDataSample(this AudioClip clip, float time, MidpointRounding rounding = MidpointRounding.AwayFromZero)
 		{
 			return (int)Math.Round(clip.frequency * clip.channels * time, rounding);

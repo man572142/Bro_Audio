@@ -2,117 +2,126 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Threading.Tasks;
+using Ami.BroAudio.Tools;
 using UnityEngine.Audio;
 using Ami.Extension;
 using static Ami.Extension.TimeExtension;
-using static Ami.BroAudio.Utility;
+using static Ami.BroAudio.Editor.AudioSourcePreviewStrategyExtension;
 
 namespace Ami.BroAudio.Editor
 {
     public class AudioSourcePreviewStrategy : EditorPreviewStrategy
     {
-        private const string MixerSuspendFieldName = "m_EnableSuspend";
-
-        private AudioSource _currentEditorAudioSource;
+        public const int AudioSourceCount = 2;
+        private enum MuteState { None, On, Off }
+        private struct AudioSourceContent
+        {
+            public AudioSource Source;
+            public EditorVolumeTransporter VolumeTransporter;
+        }
+        
+        private readonly AudioSourceContent[] _audioSources = new AudioSourceContent[AudioSourceCount];
+        private int _currentAudioSourceIndex = -1;
         private PreviewRequest _currentRequest;
-        private AudioMixerGroup _masterTrack;
-        private EditorVolumeTransporter _volumeTransporter;
         private AudioMixer _mixer;
         private MuteState _previousMuteState = MuteState.None;
-
         private TaskCompletionSource<bool> _playbackCompletionSource;
-
-        private enum MuteState { None, On, Off }
+        private double _previewDspTime;
+        private double _nextPreviewDspTime;
+        
+        private AudioSource CurrentEditorAudioSource => _currentAudioSourceIndex >= 0 ? _audioSources[_currentAudioSourceIndex].Source : null;
 
         public AudioSourcePreviewStrategy()
         {
-            _mixer = Resources.Load<AudioMixer>(BroEditorUtility.EditorAudioMixerPath);;
-            _volumeTransporter = new EditorVolumeTransporter(_mixer);
+            _mixer = Resources.Load<AudioMixer>(BroEditorUtility.EditorAudioMixerPath);
         }
 
         public override void UpdatePreview()
         {
             base.UpdatePreview();
-            if (_currentRequest != null && _currentEditorAudioSource)
+            if (_currentRequest != null && CurrentEditorAudioSource)
             {
                 UpdatePitch();
-
-                if (_currentEditorAudioSource.time >=
-                    _currentRequest.AbsoluteEndPosition || !_currentEditorAudioSource.isPlaying)
+                
+                if (CurrentEditorAudioSource.GetPreciseTime() >=
+                    _currentRequest.AbsoluteEndPosition || !CurrentEditorAudioSource.isPlaying)
                 {
                     _playbackCompletionSource?.TrySetResult(true);
                 }
             }
         }
-
+        
         private void UpdatePitch()
         {
-            bool isPitchChanged = !Mathf.Approximately(_currentRequest.Pitch, _currentEditorAudioSource.pitch);
-            _currentEditorAudioSource.pitch = _currentRequest.Pitch;
+            AudioSource audioSource = CurrentEditorAudioSource;
+            bool isPitchChanged = !Mathf.Approximately(_currentRequest.Pitch, audioSource.pitch);
+            audioSource.pitch = _currentRequest.Pitch;
             if (isPitchChanged)
             {
-                var remainingTime = (_currentRequest.AbsoluteEndPosition - _currentEditorAudioSource.time) / _currentRequest.Pitch;
-                _currentEditorAudioSource.SetScheduledEndTime(AudioSettings.dspTime + remainingTime);
+                var remainingTime = (_currentRequest.AbsoluteEndPosition - audioSource.GetPreciseTime()) / _currentRequest.Pitch;
+                _nextPreviewDspTime = AudioSettings.dspTime + remainingTime;
+                audioSource.SetScheduledEndTime(_nextPreviewDspTime);
+                GetNextAudioSource(out _).Source.SetScheduledStartTime(_nextPreviewDspTime);
             }
         }
 
-        public override async void Play(PreviewRequest req, bool loop = false, ReplayData replayData = null)
+        public override async void Play(PreviewRequest req, ReplayRequest replayRequest = null)
         {
             try
             {
-                await PlayClipByAudioSourceAsync(req, loop, replayData);
+                await PlayClipByAudioSourceAsync(req, replayRequest);
             }
             catch (OperationCanceledException) { }
         }
 
-        private async Task PlayClipByAudioSourceAsync(PreviewRequest req, bool selfLoop, ReplayData replayData)
+        private async Task PlayClipByAudioSourceAsync(PreviewRequest req, ReplayRequest replayRequest)
         {
-            if(req.AudioClip == null)
-            {
-                return;
-            }
-
+            if(req.AudioClip == null) return;
+            
             Stop();
-            ResetAndGetAudioSource(out var audioSource);
-
-            SetAudioSource(ref audioSource, req);
-            _currentRequest = req;
+            for (int i = 0; i < _audioSources.Length; i++)
+            {
+                _audioSources[i] = InstantiateAudioSource(i);
+            }
             _previousMuteState = EditorUtility.audioMasterMute ? MuteState.On : MuteState.Off;
             EditorUtility.audioMasterMute = false;
-            SetMixerAutoSuspend(_mixer, false);
+            _mixer.SetAutoSuspend(false);
+            
+            _currentRequest = req;
+            var audioSourceData = GetNextAudioSource(out _currentAudioSourceIndex);
+            var audioSource = audioSourceData.Source;
+            audioSource.SetPreviewRequest(req);
+            
+            var volumeTransporter = audioSourceData.VolumeTransporter;
+            volumeTransporter.Init(req);
 
-            _volumeTransporter.SetData(req);
-
-            double startDspTime = AudioSettings.dspTime + AudioConstant.MixerWarmUpTime;
+            _previewDspTime = AudioSettings.dspTime;
+            double startDspTime = _previewDspTime + AudioConstant.MixerWarmUpTime;
             audioSource.PlayScheduled(startDspTime);
             audioSource.SetScheduledEndTime(startDspTime + req.Duration);
-
             await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
-            StartPlaybackIndicator(selfLoop || replayData != null);
-            _volumeTransporter.Start();
+            _previewDspTime +=  AudioConstant.MixerWarmUpTime;
+            _nextPreviewDspTime = _previewDspTime + req.Duration;
+            
+            bool isReplayable = replayRequest != null;
+            if (isReplayable)
+            {
+                ScheduleNextPlayback(replayRequest, req);
+            }
+
+            StartPlaybackIndicator(isReplayable);
+            volumeTransporter.Start();
             
             await WaitForPlaybackCompletion();
-            _volumeTransporter.End();
+            volumeTransporter.End();
+            _previewDspTime = _nextPreviewDspTime;
 
-            if (selfLoop)
+            while (isReplayable)
             {
-                while (true)
-                {
-                    await AudioSourceReplay(req);
-                }
+                await AudioSourceReplay(req, replayRequest);
             }
-            else if (replayData != null)
-            {
-                while (true)
-                {
-                    req.SetReplay(replayData.NewReplay());
-                    await WaitForPlaybackCompletion();
-                }
-            }
-            else
-            {
-                DestroyPreviewAudioSourceAndCancelTask();
-            }
+            
+            DestroyPreviewAudioSourceAndCancelTask();
         }
 
         private async Task WaitForPlaybackCompletion()
@@ -125,97 +134,77 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private void ResetAndGetAudioSource(out AudioSource result)
+        private async Task AudioSourceReplay(PreviewRequest req, ReplayRequest replayReq)
         {
-            if (_currentEditorAudioSource)
-            {
-                CancelTask();
-            }
-            else
-            {
-                var gameObj = new GameObject("PreviewAudioClip");
-                gameObj.tag = "EditorOnly";
-                gameObj.hideFlags = HideFlags.HideAndDontSave;
-                _currentEditorAudioSource = gameObj.AddComponent<AudioSource>();
-            }
-            result = _currentEditorAudioSource;
+            EndPlaybackIndicator();
+            var currentSource = _audioSources[_currentAudioSourceIndex];
+            currentSource.VolumeTransporter.End();
+            
+            // The previous scheduled audioSource has started at this point, we can just renew the process and prepare the next one 
+            replayReq.Start();
+            req.SetReplay(replayReq);
+            _nextPreviewDspTime = _previewDspTime + req.Duration;
+            currentSource = GetNextAudioSource(out _currentAudioSourceIndex);
+            currentSource.Source.pitch = replayReq.Pitch;
+            currentSource.Source.SetScheduledEndTime(_nextPreviewDspTime);
+            currentSource.VolumeTransporter.Init(req);
+            currentSource.VolumeTransporter.Start();
+            StartPlaybackIndicator();
+            ScheduleNextPlayback(replayReq, req);
+            
+            await WaitForPlaybackCompletion();
+            _previewDspTime = _nextPreviewDspTime;
         }
-
-        private void SetAudioSource(ref AudioSource audioSource, PreviewRequest req)
+        
+        private void ScheduleNextPlayback(ReplayRequest replayRequest, PreviewRequest req)
         {
-            audioSource.clip = req.AudioClip;
-            audioSource.playOnAwake = false;
-            audioSource.timeSamples = GetSample(req.AudioClip.frequency, req.StartPosition);
-            audioSource.pitch = req.Pitch;
-            audioSource.outputAudioMixerGroup = GetEditorMasterTrack();
+            var source = GetNextAudioSource(out _);
+            source.VolumeTransporter.SetStartVolume(req);
+            var audioSource = source.Source;
+            audioSource.ScheduleReplay(replayRequest);
+            audioSource.PlayScheduled(_nextPreviewDspTime);
+            audioSource.SetScheduledEndTime(_nextPreviewDspTime + replayRequest.GetDuration());
+        }
+        
+        private AudioSourceContent InstantiateAudioSource(int index)
+        {
+            string trackName = BroName.GenericTrackName + (index + 1).ToString();
+            var gameObj = new GameObject("PreviewAudioClip");
+            gameObj.tag = "EditorOnly";
+            gameObj.hideFlags = HideFlags.HideAndDontSave;
+            var audioSource = gameObj.AddComponent<AudioSource>();
+            audioSource.outputAudioMixerGroup = GetEditorTrack(_mixer, trackName);
             audioSource.reverbZoneMix = 0f;
-        }
+            audioSource.playOnAwake = false;
 
-        private async Task AudioSourceReplay(PreviewRequest req)
-        {
-            if (_currentEditorAudioSource != null)
-            {
-                EndPlaybackIndicator();
-                if (_volumeTransporter.IsNewVolumeDifferentFromCurrent(req))
-                {
-                    _volumeTransporter.SetData(req);
-                    await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
-                }
-
-                double dspTime = AudioSettings.dspTime;
-                _currentEditorAudioSource.timeSamples = GetSample(req.AudioClip.frequency, req.StartPosition);
-                _currentEditorAudioSource.PlayScheduled(dspTime);
-                _currentEditorAudioSource.SetScheduledEndTime(dspTime + req.Duration);
-
-                _volumeTransporter.Start();
-                StartPlaybackIndicator();
-
-                await WaitForPlaybackCompletion();
-            }
+            var volumeTransporter = new EditorVolumeTransporter(_mixer, trackName);
+            return new AudioSourceContent() { Source = audioSource, VolumeTransporter = volumeTransporter };
         }
 
         private void DestroyPreviewAudioSourceAndCancelTask()
         {
-            SetMixerAutoSuspend(_mixer, true);
-            if (_currentEditorAudioSource)
+            _mixer.SetAutoSuspend(true);
+            if (_currentAudioSourceIndex >= 0 || _currentRequest != null)
             {
                 CancelTask();
 
-                _currentEditorAudioSource.Stop();
-                UnityEngine.Object.DestroyImmediate(_currentEditorAudioSource.gameObject);
+                for (int i = 0; i < AudioSourceCount; i++)
+                {
+                    var data = _audioSources[i];
+                    var audioSource = data.Source;
+                    if (audioSource)
+                    {
+                        audioSource.Stop();
+                        UnityEngine.Object.DestroyImmediate(audioSource.gameObject);
+                    }
+                    data.VolumeTransporter?.End();
+                    data.VolumeTransporter?.Dispose();
+                    _audioSources[i] = default;
+                }
+                _currentAudioSourceIndex = -1;
+                
                 EndPlaybackIndicator();
-                _volumeTransporter.End();
-                _volumeTransporter.Dispose();
-                _currentEditorAudioSource = null;
                 TriggerOnFinished();
-            }
-        }
-
-        private AudioMixerGroup GetEditorMasterTrack()
-        {
-            if (_masterTrack == null)
-            {
-                var tracks = _mixer != null ? _mixer.FindMatchingGroups("Master") : null;
-                if (tracks != null && tracks.Length > 0)
-                {
-                    _masterTrack = tracks[0];
-                }
-                else
-                {
-                    Debug.LogError("Can't find EditorBroAudioMixer's Master audioMixerGroup, the fading and extra volume is not applied to the preview");
-                }
-            }
-            return _masterTrack;
-        }
-
-        private static void SetMixerAutoSuspend(AudioMixer mixer, bool enable)
-        {
-            if(mixer)
-            {
-                SerializedObject serializedMixer = new SerializedObject(mixer);
-                serializedMixer.Update();
-                serializedMixer.FindProperty(MixerSuspendFieldName).boolValue = enable;
-                serializedMixer.ApplyModifiedProperties();
             }
         }
 
@@ -235,11 +224,68 @@ namespace Ami.BroAudio.Editor
             base.Dispose();
             _currentRequest = null;
             DestroyPreviewAudioSourceAndCancelTask();
-            _volumeTransporter?.Dispose();
-            _volumeTransporter = null;
-            _masterTrack = null;
-            SetMixerAutoSuspend(_mixer, true);
+            _mixer.SetAutoSuspend(true);
             _mixer = null;
+        }
+        
+        private AudioSourceContent GetNextAudioSource(out int newIndex)
+        {
+            newIndex = GetNextIndex(_currentAudioSourceIndex);
+            return _audioSources[newIndex];
+        }
+    }
+    
+    public static class AudioSourcePreviewStrategyExtension
+    {
+        private const string MixerSuspendFieldName = "m_EnableSuspend";
+        
+        public static AudioMixerGroup GetEditorTrack(AudioMixer mixer, string name)
+        {
+            var tracks = mixer != null ? mixer.FindMatchingGroups(name) : null;
+            if (tracks != null && tracks.Length > 0)
+            {
+                return tracks[0];
+            }
+            Debug.LogError($"Can't find {BroName.EditorAudioMixerName}'s {name} audioMixerGroup, the fading and extra volume is not applied to the preview");
+            return null;
+        }
+        
+        public static void SetAutoSuspend(this AudioMixer mixer, bool enable)
+        {
+            if (mixer)
+            {
+                SerializedObject serializedMixer = new SerializedObject(mixer);
+                serializedMixer.Update();
+                serializedMixer.FindProperty(MixerSuspendFieldName).boolValue = enable;
+                serializedMixer.ApplyModifiedProperties();
+            }
+        }
+        
+        public static void SetPreviewRequest(this AudioSource audioSource, PreviewRequest req)
+        {
+            if (audioSource)
+            {
+                audioSource.clip = req.AudioClip;
+                audioSource.timeSamples = req.AudioClip.GetTimeSample(req.StartPosition);
+                audioSource.pitch = req.Pitch;
+            }
+        }
+        
+        public static void ScheduleReplay(this AudioSource audioSource, ReplayRequest req)
+        {
+            if (audioSource)
+            {
+                audioSource.clip = req.GetAudioClipForScheduling();
+                audioSource.timeSamples = req.StartSample;
+                audioSource.pitch = req.Pitch;
+            }
+        }
+
+        public static int GetNextIndex(int index)
+        {
+            int newIndex = index + 1;
+            newIndex %= AudioSourcePreviewStrategy.AudioSourceCount;
+            return newIndex;
         }
     }
 }

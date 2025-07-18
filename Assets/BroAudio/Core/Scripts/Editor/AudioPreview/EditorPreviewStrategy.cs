@@ -15,7 +15,7 @@ namespace Ami.BroAudio.Editor
         public Action OnFinished;
         public PlaybackIndicatorUpdater PlaybackIndicator => _playbackIndicator;
 
-        public abstract void Play(PreviewRequest request, bool loop = false, ReplayData replayData = null);
+        public abstract void Play(PreviewRequest request, ReplayRequest replayRequest = null);
         public abstract void Stop();
 
         public virtual void UpdatePreview()

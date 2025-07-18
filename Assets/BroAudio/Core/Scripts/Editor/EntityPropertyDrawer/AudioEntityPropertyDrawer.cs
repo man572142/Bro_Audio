@@ -23,7 +23,7 @@ namespace Ami.BroAudio.Editor
         private class EntityData
         {
             public Tab SelectedTab;
-            public bool IsLoop;
+            public bool IsReplay;
             public readonly Rect[] HiddenButtonRects = new Rect[4];
             public readonly SerializedProperty EntityProperty;
             
@@ -164,9 +164,7 @@ namespace Ami.BroAudio.Editor
             SerializedProperty idProp = property.FindBackingFieldProperty(nameof(IEntityIdentity.ID));
 
             Rect foldoutRect = GetRectAndIterateLine(position);
-            float gap = 50f;
-
-            SplitRectHorizontal(foldoutRect, 0.55f, gap, out Rect nameRect, out Rect headerButtonRect);
+            SplitRectHorizontal(foldoutRect, 0.55f, 50f, out Rect nameRect, out Rect headerButtonRect);
             SplitRectHorizontal(headerButtonRect, 0.5f, 5f, out Rect previewButtonRect, out Rect audioTypeRect);
 
             GetOrCreateEntityDataDict(property, out var data);
@@ -483,7 +481,7 @@ namespace Ami.BroAudio.Editor
 
             rect = rect.SetHeight(h => h * 1.1f);
             SplitRectHorizontal(rect, 0.5f, 5f, out Rect playButtonRect, out Rect loopToggleRect);
-            data.IsLoop = DrawButtonToggle(loopToggleRect, data.IsLoop, EditorGUIUtility.IconContent(IconConstant.LoopIcon));
+            data.IsReplay = DrawButtonToggle(loopToggleRect, data.IsReplay, EditorGUIUtility.IconContent(IconConstant.LoopIcon));
             if (GUI.Button(playButtonRect, GetPlaybackButtonIcon(data.IsPlaying)) && TryGetEntityInstance(property, out var entity))
             {
                 if (data.IsPlaying)
@@ -580,7 +578,6 @@ namespace Ami.BroAudio.Editor
             var clip = entity.PickNewClip(out int index);
             data.Clips.SelectAndSetPlayingElement(index);
             
-            ReplayData replayData = data.IsLoop ? new ReplayData(entity, data.Clips.SelectAndSetPlayingElement) : null;
             var req = new PreviewRequest(clip)
             {
                 MasterVolume = entity.GetMasterVolume(),
@@ -588,8 +585,8 @@ namespace Ami.BroAudio.Editor
                 Pitch = entity.GetPitch(),
                 BasePitch = entity.Pitch,
             };
-            
-            EditorAudioPreviewer.Instance.Play(req, false, replayData);
+            var replayReq = data.IsReplay ? new ReplayRequest(entity, data.Clips.SelectAndSetPlayingElement) : null;
+            EditorAudioPreviewer.Instance.Play(req, replayReq);
             _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip.propertyPath, req);
             var previewRect = canDisplayIndicator ? data.Clips.PreviewRect : default;
             EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(previewRect, req);

@@ -55,7 +55,7 @@ namespace Ami.BroAudio.Editor
         public double AbsoluteEndPosition => PreciseAudioClipLength - EndPosition;
         public float Volume => ClipVolume * MasterVolume;
 
-        public void SetReplay(ReplayData newReplay)
+        public void SetReplay(ReplayRequest newReplay)
         {
             AudioClip = newReplay.Clip.GetAudioClip();
             PreciseAudioClipLength = AudioClip.GetPreciseLength();

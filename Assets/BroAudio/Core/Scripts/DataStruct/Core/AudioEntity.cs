@@ -72,6 +72,7 @@ namespace Ami.BroAudio.Data
             else if (SeamlessLoop)
             {
                 loopType = LoopType.SeamlessLoop;
+                transitionTime = TransitionTime;
             }
             else if (MulticlipsPlayMode == MulticlipsPlayMode.Chained)
             {

@@ -20,6 +20,8 @@ namespace Ami.BroAudio.Data
         // For shuffle (runtime-only)
         [System.NonSerialized]
         internal bool IsUsed;
+        [System.NonSerialized]
+        internal bool IsLastUsed;
 
         float IBroAudioClip.Volume => Volume;
         float IBroAudioClip.Delay => Delay;

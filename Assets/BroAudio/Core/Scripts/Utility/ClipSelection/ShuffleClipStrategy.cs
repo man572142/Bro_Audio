@@ -10,11 +10,24 @@ namespace Ami.BroAudio.Runtime
             index = Random.Range(0, clips.Length);
             BroAudioClip result;
 
-            if(Use(clips, index, out result))
+            if(Use(clips, index, out result, true))
             {
-                if(!HasAnyAvailable(clips))
+                bool hasAnyAvailable = false;
+                for (int i = 0; i < clips.Length; i++)
                 {
-                    ResetIsUse(clips, result);
+                    var clip = clips[i];
+                    clip.IsLastUsed = false;
+                    
+                    if (!clip.IsUsed)
+                    {
+                        hasAnyAvailable = true;
+                    }
+                }
+                
+                if(!hasAnyAvailable)
+                {
+                    ResetIsUse(clips);
+                    result.IsLastUsed = true;
                 }
                 return result;
             }
@@ -40,25 +53,20 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
-            ResetIsUse(clips, result);
+            result.IsLastUsed = true;
+            ResetIsUse(clips);
             return result;
         }
 
-        private static bool HasAnyAvailable(BroAudioClip[] clips)
-        {
-            for (int i = 0; i < clips.Length; i++)
-            {
-                if (!clips[i].IsUsed)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private static bool Use(BroAudioClip[] clips, int index, out BroAudioClip result)
+        private static bool Use(BroAudioClip[] clips, int index, out BroAudioClip result, bool checkLastUsed = false)
         {
             result = clips[index];
+            if (result.IsLastUsed && checkLastUsed)
+            {
+                result.IsLastUsed = false;
+                return false;
+            }
+            
             if (!result.IsUsed && result.GetAudioClip() != null)
             {
                 result.IsUsed = true;
@@ -68,15 +76,11 @@ namespace Ami.BroAudio.Runtime
             return false;
         }
 
-        public static void ResetIsUse(BroAudioClip[] clips, BroAudioClip exclude = null)
+        public static void ResetIsUse(BroAudioClip[] clips)
         {
             for (int i = 0; i < clips.Length; i++)
             {
-                var clip = clips[i];
-                if (clip != exclude)
-                {
-                    clips[i].IsUsed = false;
-                }
+                clips[i].IsUsed = false;
             }
         }
     }

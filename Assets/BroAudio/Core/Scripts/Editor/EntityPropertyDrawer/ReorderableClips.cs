@@ -68,7 +68,6 @@ namespace Ami.BroAudio.Editor
         public bool HasAnyAudioClip { get; private set; }
         public bool HasAnyAddressableClip { get; private set; }
         public SerializedProperty CurrentPlayingClip { get; private set; }
-        private float AdditionalHeight => ShowNotEnoughClipsWarning() ? EditorGUIUtility.singleLineHeight : 0f;
         public Rect PreviewRect { get; set; }
         private MulticlipsPlayMode CurrentPlayMode => (MulticlipsPlayMode)_playModeProp.enumValueIndex;
         private static float HeaderMessageHeight => EditorGUIUtility.singleLineHeight + 3f;
@@ -109,7 +108,7 @@ namespace Ami.BroAudio.Editor
 #if PACKAGE_ADDRESSABLES
             _useAddressablesProp = entityProperty.FindPropertyRelative(nameof(AudioEntity.UseAddressables)); 
 #endif
-            _reorderableList = CreateReorderabeList(entityProperty);
+            _reorderableList = CreateReorderableList(entityProperty);
             _onRequestClipPreview = onRequestClipPreview;
 			UpdatePlayModeAndRequiredClipCount();
 
@@ -535,7 +534,7 @@ namespace Ami.BroAudio.Editor
 
                 _onRequestClipPreview?.Invoke(clipProp.propertyPath, req);
                 _currentPlayingClipPath = clipProp.propertyPath;
-                EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(_previewRect, req);
+                EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(PreviewRect, req);
             }
 
 			void DrawVolumeSlider()

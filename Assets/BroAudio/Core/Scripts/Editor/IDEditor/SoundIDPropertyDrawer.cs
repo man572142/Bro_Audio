@@ -12,7 +12,7 @@ namespace Ami.BroAudio.Editor
     {
         public const string DefaultIDName = "None";
         public const string IDMissing = "Missing";
-        public const string ToolTip = "refering to an AudioEntity";
+        public const string EntityTooltip = "Identifier that points to a specific AudioEntity";
 
         private readonly string _missingMessage = IDMissing.ToBold().ToItalics().SetColor(new Color(1f, 0.3f, 0.3f));
         private int _currentPlayingID = 0;
@@ -78,12 +78,12 @@ namespace Ami.BroAudio.Editor
                 CacheDebugObject(property);
             }
 
-            Rect suffixRect = EditorGUI.PrefixLabel(position, new GUIContent(label) { tooltip = ToolTip });
+            Rect suffixRect = EditorGUI.PrefixLabel(position, label);
             Rect dropdownRect = new Rect(suffixRect) { width = suffixRect.width - (ButtonWidth * 2)};
             Rect playbackButtonRect = new Rect(suffixRect) { width = ButtonWidth, x = dropdownRect.xMax };
             Rect libraryShortcutRect = new Rect(suffixRect) { width = ButtonWidth, x = playbackButtonRect.xMax };
 
-            if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(entityName, ToolTip), FocusType.Keyboard, _dropdownStyle))
+            if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(entityName, EntityTooltip), FocusType.Keyboard, _dropdownStyle))
             {
                 var dropdown = new SoundIDAdvancedDropdown(new AdvancedDropdownState(), OnSelect);
                 dropdown.Show(dropdownRect);

@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using Ami.Extension;
 using Ami.BroAudio.Data;
+using Ami.BroAudio.Runtime;
 using System;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.BroAudio.Editor.BroEditorUtility;
@@ -575,7 +576,8 @@ namespace Ami.BroAudio.Editor
             }
 
             _currentPreviewingEntity = entity;
-            var clip = entity.PickNewClip(out int index);
+            var context = entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained ? (int)PlaybackStage.Start : 0;
+            var clip = entity.PickNewClip(context, out int index);
             data.Clips.SelectAndSetPlayingElement(index);
             
             var req = new PreviewRequest(clip)

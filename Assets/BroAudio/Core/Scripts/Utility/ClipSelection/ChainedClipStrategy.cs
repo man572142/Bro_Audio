@@ -1,7 +1,8 @@
 ﻿using System;
 using Ami.BroAudio.Data;
+using UnityEngine;
 
-namespace Ami.BroAudio
+namespace Ami.BroAudio.Runtime
 {
     public class ChainedClipStrategy : IClipSelectionStrategy
     {
@@ -10,7 +11,6 @@ namespace Ami.BroAudio
             index = context.Value - 1;
             if (index < 0 || index >= clips.Length)
             {
-                // TODO: EditorPreviewAudio
                 throw new IndexOutOfRangeException($"There's no clip for Chained Play Mode Stage:<b>{(PlaybackStage)context.Value}</b>");
             }
             return clips[index];

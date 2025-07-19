@@ -30,8 +30,8 @@ namespace Ami.BroAudio.Data
         public PlaybackGroup PlaybackGroup => _group ? _group : _upperGroup;
 
         public IBroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);
-        public IBroAudioClip PickNewClip(out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index);
         public IBroAudioClip PickNewClip(int context) => Clips.PickNewOne(MulticlipsPlayMode, ID, out _, context);
+        public IBroAudioClip PickNewClip(int context, out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index, context);
 
         public bool Validate() => Utility.Validate(Name, Clips, ID);
         public MulticlipsPlayMode GetMulticlipsPlayMode() => MulticlipsPlayMode;

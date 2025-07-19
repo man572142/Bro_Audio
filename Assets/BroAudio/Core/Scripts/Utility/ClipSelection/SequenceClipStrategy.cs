@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Ami.BroAudio.Data;
 
-namespace Ami.BroAudio
+namespace Ami.BroAudio.Runtime
 {
     /// <summary>
     /// Strategy for playing clips in sequential order

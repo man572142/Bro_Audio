@@ -1,7 +1,7 @@
 ﻿using Ami.BroAudio.Data;
 using UnityEngine;
 
-namespace Ami.BroAudio
+namespace Ami.BroAudio.Runtime
 {
     public class ShuffleClipStrategy : IClipSelectionStrategy
     {

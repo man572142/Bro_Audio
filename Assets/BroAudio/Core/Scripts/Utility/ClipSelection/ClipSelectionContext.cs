@@ -1,4 +1,4 @@
-﻿namespace Ami.BroAudio
+﻿namespace Ami.BroAudio.Runtime
 {
     /// <summary>
     /// Context class containing parameters required for clip selection

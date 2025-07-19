@@ -41,6 +41,11 @@ namespace Ami.BroAudio.Editor
 
         public PreviewRequest(IBroAudioClip broAudioClip)
         {
+            SetClip(broAudioClip);
+        }
+
+        private void SetClip(IBroAudioClip broAudioClip)
+        {
             AudioClip = broAudioClip.GetAudioClip();
             PreciseAudioClipLength = AudioClip.GetPreciseLength();
             ClipVolume = broAudioClip.Volume;
@@ -57,8 +62,7 @@ namespace Ami.BroAudio.Editor
 
         public void SetReplay(ReplayRequest newReplay)
         {
-            AudioClip = newReplay.Clip.GetAudioClip();
-            PreciseAudioClipLength = AudioClip.GetPreciseLength();
+            SetClip(newReplay.Clip);
             MasterVolume = newReplay.MasterVolume;
             Pitch = newReplay.Pitch;
         }

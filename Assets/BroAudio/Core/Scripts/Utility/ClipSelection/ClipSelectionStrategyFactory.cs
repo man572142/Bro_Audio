@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Ami.BroAudio.Data;
 
-namespace Ami.BroAudio
+namespace Ami.BroAudio.Runtime
 {
     public static class ClipSelectionStrategyFactory
     {

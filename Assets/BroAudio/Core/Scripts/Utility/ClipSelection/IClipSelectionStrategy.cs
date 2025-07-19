@@ -1,6 +1,6 @@
 ﻿using Ami.BroAudio.Data;
 
-namespace Ami.BroAudio
+namespace Ami.BroAudio.Runtime
 {
     /// <summary>
     /// Strategy interface for selecting audio clips based on different selection algorithms

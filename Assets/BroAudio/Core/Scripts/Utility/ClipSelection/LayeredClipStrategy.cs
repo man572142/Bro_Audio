@@ -1,6 +1,6 @@
 ﻿using Ami.BroAudio.Data;
 
-namespace Ami.BroAudio
+namespace Ami.BroAudio.Runtime
 {
     public class LayeredClipStrategy : IClipSelectionStrategy
     {

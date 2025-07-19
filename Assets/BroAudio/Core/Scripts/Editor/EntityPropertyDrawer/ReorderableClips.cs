@@ -33,17 +33,19 @@ namespace Ami.BroAudio.Editor
             public GUIContent ButtonText;
             public Action OnClick;
         }
-        
-		public Action<string> OnClipChanged;
 
-		public const MulticlipsPlayMode DefaultMulticlipsMode = MulticlipsPlayMode.Random;
+        private const MulticlipsPlayMode DefaultMulticlipsMode = MulticlipsPlayMode.Random;
 		private const float Gap = 5f;
 		private const float HeaderLabelWidth = 50f;
 		private const float MulticlipsValueLabelWidth = 60f;
 		private const float MulticlipsValueFieldWidth = 40f;
 		private const float SliderLabelWidth = 25;
 		private const float ObjectPickerRatio = 0.6f;
-
+        
+        private static Dictionary<int, int> _selectedClipIndexCache = new Dictionary<int, int>();
+        
+        public Action<string> OnClipChanged;
+        
 		private ReorderableList _reorderableList;
 		private SerializedProperty _entityProp;
 		private SerializedProperty _playModeProp;
@@ -290,6 +292,9 @@ namespace Ami.BroAudio.Editor
                 onRemoveCallback = OnRemove,
                 onSelectCallback = OnSelect,
             };
+            
+            var id = entityProperty.FindBackingFieldProperty(nameof(AudioEntity.ID)).intValue;
+            list.index = _selectedClipIndexCache.GetValueOrDefault(id, 0);
 			return list;
 		}
 
@@ -593,9 +598,10 @@ namespace Ami.BroAudio.Editor
         }
 
         private void OnSelect(ReorderableList list)
-		{
-			EditorAudioPreviewer.Instance.StopAllClips();
-		}
+        {
+            var id = _entityProp.FindBackingFieldProperty(nameof(AudioEntity.ID)).intValue;
+            _selectedClipIndexCache[id] = list.index;
+        }
 
         private void SetHasAny(bool state, ReferenceType type)
         {

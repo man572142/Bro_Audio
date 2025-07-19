@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,42 +7,47 @@ namespace Ami.BroAudio.Demo
     {
         [SerializeField] Cannon _controller = null;
 
-        [SerializeField] Text _apiTextComponent = null;
+        [SerializeField] Text _velocityApiTextComponent = null;
+        [SerializeField] Text _chainedPlayModeTextComponent = null;
         [SerializeField] Slider _progressBar = null;
         [SerializeField] Image _fillImage = null;
         [SerializeField] Gradient _fillGradient = null;
 
-        private string _apiText = null;
+        private string _velocityApiFormat = null;
+        private string _chainedPlayModeFormat = null;
 
         private void Awake ()
         {
             _controller.OnForceChanged += UpdateForceUI;
             _controller.OnCoolDownFinished += OpenUI;
+            _controller.OnChainedPlayModeStageChanged += UpdateChainedModeStage;
 
             _progressBar.maxValue = _controller.MaxForce;
             _progressBar.value = _progressBar.minValue;
-            _apiText = _apiTextComponent.text;
+            _velocityApiFormat = _velocityApiTextComponent.text;
+            _chainedPlayModeFormat = _chainedPlayModeTextComponent.text;
             UpdateForceUI(0f);
+            UpdateChainedModeStage(PlaybackStage.None);
+        }
+
+        private void UpdateChainedModeStage(PlaybackStage stage)
+        {
+            _chainedPlayModeTextComponent.text = string.Format(_chainedPlayModeFormat, stage.ToString());
         }
 
         private void OnDestroy()
         {
             _controller.OnForceChanged -= UpdateForceUI;
             _controller.OnCoolDownFinished -= OpenUI;
+            _controller.OnChainedPlayModeStageChanged -= UpdateChainedModeStage;
         }
 
         private void UpdateForceUI(float force)
         {
-            _apiTextComponent.text = string.Format(_apiText, (int)force);
+            _velocityApiTextComponent.text = string.Format(_velocityApiFormat, (int)force);
             _progressBar.value = force;
 
             _fillImage.color = _fillGradient.Evaluate(force / _controller.MaxForce);
-        }
-
-        private void CloseUI(float force)
-        {
-            _apiTextComponent.text = string.Format(_apiText, (int)force);
-            gameObject.SetActive(false);
         }
 
         private void OpenUI()

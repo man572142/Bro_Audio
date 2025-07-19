@@ -721,7 +721,7 @@ MonoBehaviour:
   - UseAddressables: 0
     <Name>k__BackingField: Charging
     <ID>k__BackingField: 1073741836
-    MulticlipsPlayMode: 0
+    MulticlipsPlayMode: 5
     _group: {fileID: 0}
     Clips:
     - AudioClipAssetReference:
@@ -733,14 +733,40 @@ MonoBehaviour:
       Volume: 1
       Delay: 0
       StartPosition: 0
+      EndPosition: 2.552
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    - AudioClipAssetReference:
+        m_AssetGUID: 
+        m_SubObjectName: 
+        m_SubObjectType: 
+        m_EditorAssetChanged: 0
+      AudioClip: {fileID: 8300000, guid: 2cd1432e8b64c5f47a8ef0c6c1aa49c6, type: 3}
+      Volume: 1
+      Delay: 0
+      StartPosition: 1.25
+      EndPosition: 0.961
+      FadeIn: 0
+      FadeOut: 0
+      Weight: 0
+    - AudioClipAssetReference:
+        m_AssetGUID: 
+        m_SubObjectName: 
+        m_SubObjectType: 
+        m_EditorAssetChanged: 0
+      AudioClip: {fileID: 8300000, guid: 28ef8377ab702ce40b6f59340bfd7699, type: 3}
+      Volume: 1
+      Delay: 0
+      StartPosition: 0.538
       EndPosition: 0
       FadeIn: 0
       FadeOut: 0
       Weight: 0
     <MasterVolume>k__BackingField: 1
     <Loop>k__BackingField: 0
-    <SeamlessLoop>k__BackingField: 0
-    <TransitionTime>k__BackingField: 0.5
+    <SeamlessLoop>k__BackingField: 1
+    <TransitionTime>k__BackingField: 0.2
     <SpatialSetting>k__BackingField: {fileID: 0}
     <Priority>k__BackingField: 128
     <Pitch>k__BackingField: 1

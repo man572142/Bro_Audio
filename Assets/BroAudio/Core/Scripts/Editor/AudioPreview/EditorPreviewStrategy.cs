@@ -1,7 +1,6 @@
 using Ami.Extension;
 using System;
 using System.Threading;
-using UnityEngine;
 
 namespace Ami.BroAudio.Editor
 {

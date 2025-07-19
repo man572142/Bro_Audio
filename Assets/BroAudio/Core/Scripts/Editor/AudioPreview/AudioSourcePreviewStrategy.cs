@@ -42,7 +42,6 @@ namespace Ami.BroAudio.Editor
             if (_currentRequest != null && CurrentEditorAudioSource)
             {
                 UpdatePitch();
-                
                 if (CurrentEditorAudioSource.GetPreciseTime() >=
                     _currentRequest.AbsoluteEndPosition || !CurrentEditorAudioSource.isPlaying)
                 {
@@ -275,6 +274,7 @@ namespace Ami.BroAudio.Editor
         {
             if (audioSource)
             {
+                audioSource.Stop();
                 audioSource.clip = req.GetAudioClipForScheduling();
                 audioSource.timeSamples = req.StartSample;
                 audioSource.pitch = req.Pitch;

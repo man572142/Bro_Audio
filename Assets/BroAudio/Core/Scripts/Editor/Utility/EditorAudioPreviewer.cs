@@ -83,7 +83,7 @@ namespace Ami.BroAudio.Editor
 
         private PreviewStrategyType GetCurrentStrategyType() => _currentStrategy switch
         {
-            AudioSourcePreviewStrategy => PreviewStrategyType.AudioSource,
+            AudioSourcePreviewStrategy _ => PreviewStrategyType.AudioSource,
             _ => PreviewStrategyType.DirectPlayback
         };
         

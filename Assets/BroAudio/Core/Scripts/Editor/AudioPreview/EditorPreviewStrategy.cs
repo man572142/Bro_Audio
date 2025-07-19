@@ -6,8 +6,8 @@ namespace Ami.BroAudio.Editor
 {
     public abstract class EditorPreviewStrategy
     {
-        private CancellationTokenSource _cancellationSource = new();
-        private PlaybackIndicatorUpdater _playbackIndicator = new();
+        private CancellationTokenSource _cancellationSource = new CancellationTokenSource();
+        private PlaybackIndicatorUpdater _playbackIndicator = new PlaybackIndicatorUpdater();
 
         protected CancellationTokenSource CancellationSource => _cancellationSource ??= new CancellationTokenSource();
 

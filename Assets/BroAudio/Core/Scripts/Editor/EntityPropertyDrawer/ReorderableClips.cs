@@ -293,7 +293,7 @@ namespace Ami.BroAudio.Editor
             };
             
             var id = entityProperty.FindBackingFieldProperty(nameof(AudioEntity.ID)).intValue;
-            list.index = _selectedClipIndexCache.GetValueOrDefault(id, 0);
+            list.index = _selectedClipIndexCache.TryGetValue(id, out int index) ? index : 0;
 			return list;
 		}
 
@@ -666,7 +666,7 @@ namespace Ami.BroAudio.Editor
             _entityProp.serializedObject.ApplyModifiedProperties();
         }
 
-        private static HeaderInfo GetHeaderInfo(NoLoopChainedPlayModeInfo info) => new()
+        private static HeaderInfo GetHeaderInfo(NoLoopChainedPlayModeInfo info) => new HeaderInfo()
         {
             Message = info.Message,
             MessageType = MessageType.Warning,

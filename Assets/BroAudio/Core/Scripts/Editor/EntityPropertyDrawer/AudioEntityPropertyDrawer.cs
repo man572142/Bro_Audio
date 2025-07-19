@@ -186,7 +186,7 @@ namespace Ami.BroAudio.Editor
             {
                 return;
             }
-            DrawEntityNameField(nameRect, nameProp);
+            DrawEntityNameField(nameRect, nameProp, idProp.intValue);
             if (!EditorSetting.ShowPlayButtonWhenEntityCollapsed)
             {
                 DrawEntityPreviewButton(previewButtonRect, property, data);
@@ -459,18 +459,14 @@ namespace Ami.BroAudio.Editor
         };
         #endregion
 
-        private void DrawEntityNameField(Rect position, SerializedProperty nameProp)
+        private void DrawEntityNameField(Rect position, SerializedProperty nameProp, int id)
         {
             Rect nameRect = new Rect(position) { height = EditorGUIUtility.singleLineHeight };
             nameRect.x += FoldoutArrowWidth;
             nameRect.width = Mathf.Min(nameRect.width - FoldoutArrowWidth, MaxTextFieldWidth);
             nameRect.y += 1f;
-
-            GUIContent content = new GUIContent();
-#if !BroAudio_DevOnly
-            content.tooltip = id.ToString(); 
-#endif
-            nameProp.stringValue = EditorGUI.TextField(nameRect, content, nameProp.stringValue);
+            
+            nameProp.stringValue = EditorGUI.TextField(nameRect, GUIContent.none, nameProp.stringValue);
         }
 
         private void DrawEntityPreviewButton(Rect rect, SerializedProperty property, EntityData data)

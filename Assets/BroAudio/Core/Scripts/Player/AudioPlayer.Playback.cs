@@ -254,7 +254,7 @@ namespace Ami.BroAudio.Runtime
 
         private void TriggerPlaybackHandover(bool isEnd = false)
         {
-            if (!_pref.IsHandoverRequired() && !isEnd)
+            if ((isEnd && !_pref.CanHandoverToEnd()) || (!isEnd && !_pref.CanHandoverToLoop()))
             {
                 return;
             }
@@ -262,10 +262,6 @@ namespace Ami.BroAudio.Runtime
             var newPref = _pref;
             if (newPref.IsChainedMode())
             {
-                if (_pref.ChainedModeStage == PlaybackStage.End)
-                {
-                    return;
-                }
                 newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
             }
 

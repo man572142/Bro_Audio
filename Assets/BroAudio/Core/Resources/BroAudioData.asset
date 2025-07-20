@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6ab9a5469d53d54097f703211bd8369, type: 3}
   m_Name: BroAudioData
   m_EditorClassIdentifier: 
-  _version: 2.0.8
+  _version: 2.1.0
   _assets:
   - {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}

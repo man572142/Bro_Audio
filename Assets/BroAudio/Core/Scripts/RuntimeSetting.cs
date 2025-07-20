@@ -46,6 +46,8 @@ namespace Ami.BroAudio.Data
             AlwaysPlayMusicAsBGM = true;
             DefaultBGMTransition = FactorySettings.DefaultBGMTransition;
             DefaultBGMTransitionTime = FactorySettings.DefaultBGMTransitionTime;
+            DefaultChainedPlayModeLoop = FactorySettings.DefaultChainedPlayModeLoop;
+            DefaultChainedPlayModeTransitionTime = FactorySettings.DefaultChainedPlayModeSeamlessTransitionTime;
         }
 #endif
         public class FactorySettings

@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Ami.Extension;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,10 +13,10 @@ namespace Ami.BroAudio.Demo
 		public static IPauseMenu Instance = null;
 
 		[SerializeField] GameObject _ui = null;
-		[SerializeField] float _fadeTime = default;
-#pragma warning disable 414
-        [SerializeField, Frequency] float _othersLowPasFreq = default;
-#pragma warning restore 414
+#if !UNITY_WEBGL
+        [SerializeField] float _fadeTime;
+        [SerializeField, Frequency] float _othersLowPasFreq;
+#endif
 #if UNITY_EDITOR
         [SerializeField] GameObject _hierarchyLocateTarget = null;
 #endif

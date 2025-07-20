@@ -42,7 +42,7 @@ namespace Ami.BroAudio.Editor
                     var copied = JsonUtility.FromJson<TValue>(EditorGUIUtility.systemCopyBuffer);
                     return copied.Type == _value.Type;
                 }
-                catch (ArgumentException e)
+                catch (ArgumentException)
                 {
                     return false;
                 }

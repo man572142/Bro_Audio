@@ -55,7 +55,7 @@ namespace Ami.BroAudio.Editor
         {
             if (!path.Contains(Application.dataPath))
             {
-                Debug.LogError(Utility.LogTitle + "The path must be under Assets folder or its sub-folder");
+                Debug.LogError(Utility.LogTitle + "The path must be under the Assets folder or its subfolders");
                 return false;
             }
             return true;

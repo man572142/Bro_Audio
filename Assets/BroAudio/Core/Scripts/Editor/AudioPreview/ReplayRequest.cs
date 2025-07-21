@@ -1,60 +1,33 @@
-using System;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using UnityEngine;
-using Ami.BroAudio.Runtime;
 
 namespace Ami.BroAudio.Editor
 {
     public class ReplayRequest
     {
-        private readonly AudioEntity _entity;
-        private readonly Action<int> _onReplay;
-        
-        private int _clipIndex;
-        private int _context;
-
-        public IBroAudioClip Clip { get; private set; }
-        public float MasterVolume { get; private set; } = AudioConstant.FullVolume;
-        public float Pitch { get; private set; } = AudioConstant.DefaultPitch;
+        public IBroAudioClip Clip { get; protected set; }
+        public virtual float MasterVolume =>AudioConstant.FullVolume;
+        public virtual float Pitch => AudioConstant.DefaultPitch;
         public int StartSample => Clip.GetAudioClip().GetTimeSample(Clip.StartPosition);
 
-        public ReplayRequest(AudioEntity entity, Action<int> onReplay)
+        public ReplayRequest(IBroAudioClip clip)
         {
-            _entity = entity;
-            _onReplay = onReplay;
-            if (entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained)
-            {
-                _context = (int)PlaybackStage.Loop;
-            }
+            Clip = clip;
         }
 
-        public bool CanReplay()
+        public virtual bool CanReplay()
         {
-            if (_entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained)
-            {
-                return _entity.Clips.Length > _context - 1;
-            }
             return true;
         }
         
-        public AudioClip GetAudioClipForScheduling()
+        public virtual AudioClip GetAudioClipForScheduling()
         {
-            Clip = _entity.PickNewClip(_context, out _clipIndex);
-            return Clip.GetAudioClip();
+            return Clip?.GetAudioClip();
         }
 
-        public void Start()
+        public virtual void Start()
         {
-            MasterVolume = _entity.GetMasterVolume();
-            Pitch = _entity.GetPitch();
-            _onReplay?.Invoke(_clipIndex);
-
-            if (_entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained)
-            {
-                var nextStage = _context == (int)PlaybackStage.End ? (int)PlaybackStage.Start : _context + 1;
-                _context = nextStage;
-            }
         }
 
         public double GetDuration()

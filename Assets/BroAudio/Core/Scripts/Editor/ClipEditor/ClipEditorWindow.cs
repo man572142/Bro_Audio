@@ -19,33 +19,32 @@ namespace Ami.BroAudio.Editor
         private const string DefaultFileExt = "wav";
         private static Vector2 DefaultWindowSize => new Vector2(640f, 490f);
 
-        private event Action OnAudioClipChanged;
-
-        [SerializeField] private BroAudioClip _clip = null;
-        [SerializeField] private bool _isReverse = false;
-        [SerializeField] private bool _isMono = false;
+        // The serialization is used for Undo/Redo 
+        [SerializeField] private BroAudioClip _clip;
+        [SerializeField] private bool _isReverse;
+        [SerializeField] private bool _isMono;
         [SerializeField] private MonoConversionMode _monoMode = MonoConversionMode.Downmixing;
-        [SerializeField] private float _volume = AudioConstant.FullVolume;
         private DrawClipPropertiesHelper _clipPropHelper = new DrawClipPropertiesHelper();
-		private SerializedTransport _transport = default;		
-		private bool _isVolumeSnapped = false;
-		private GenericMenu _monoModeMenu = null;
-		private bool _isLoop = false;
-		private bool _isPlaying = false;
-        private bool _isShowPreferences = false;
-        private SerializedObject _serializedObject = null;
-        private SerializedObject _editorSettingSO = null;
-        private SerializedProperty _audioClipProp = null;
+		private SerializedTransport _transport;		
+		private bool _isVolumeSnapped;
+		private GenericMenu _monoModeMenu;
+		private bool _isLoop;
+		private bool _isPlaying;
+        private bool _isShowPreferences;
+        private SerializedObject _serializedObject;
+        private SerializedObject _editorSettingSO;
+        private SerializedProperty _audioClipProp;
+        private SerializedProperty _clipProp;
 
-        private string _currSavingFilePath = null;
-		private BroInstructionHelper _instruction = new BroInstructionHelper();
+        private string _currSavingFilePath;
         private PreviewRequest _currentPreviewRequest;
-
+		private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
+        
         private bool HasEdited
 		{
 			get
 			{
-				return !Mathf.Approximately(_volume, AudioConstant.FullVolume)
+				return !Mathf.Approximately(_clip.Volume, AudioConstant.FullVolume)
 					|| _transport.HasDifferentPosition
 					|| _transport.HasFading
 					|| _isReverse
@@ -58,14 +57,12 @@ namespace Ami.BroAudio.Editor
 			get => _audioClipProp.objectReferenceValue as AudioClip;
             set
 			{
-				bool hasChanged = value != _audioClipProp.objectReferenceValue;
-                _audioClipProp.objectReferenceValue = value;
-                
-				if (hasChanged)
-				{
+                if (value != _audioClipProp.objectReferenceValue)
+                {
+                    ResetSettings();
+                    _audioClipProp.objectReferenceValue = value;
                     _audioClipProp.serializedObject.ApplyModifiedProperties();
-                    OnAudioClipChanged?.Invoke();
-				}
+                }
 			}
 		}
 
@@ -80,18 +77,17 @@ namespace Ami.BroAudio.Editor
 
 		private void OnEnable()
 		{
-            OnAudioClipChanged += ResetSettings;
             Undo.undoRedoPerformed += Repaint;
 
             _serializedObject = new SerializedObject(this);
-            _audioClipProp = _serializedObject.FindProperty(nameof(_clip)).FindPropertyRelative(BroAudioClip.NameOf.AudioClip);
+            _clipProp = _serializedObject.FindProperty(nameof(_clip));
+            _audioClipProp = _clipProp.FindPropertyRelative(BroAudioClip.NameOf.AudioClip);
 
 			ResetSettings();
 		}
 
         private void OnDisable()
 		{
-			OnAudioClipChanged -= ResetSettings;
             Undo.undoRedoPerformed -= Repaint;
         }
 
@@ -134,7 +130,6 @@ namespace Ami.BroAudio.Editor
             EditorGUILayout.Space();
 			DrawClipWaveform(position.height * 0.3f, out Rect previewRect);
             EditorGUILayout.Space();
-            EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw(position.SetPosition(0f,0f));
 
             DrawPlaybackBar(previewRect);
             EditorGUILayout.Space();
@@ -189,6 +184,12 @@ namespace Ami.BroAudio.Editor
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             _serializedObject.ApplyModifiedProperties();
+
+            if (_isPlaying)
+            {
+                EditorAudioPreviewer.Instance.UpdatePreview();
+                EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw(position.SetPosition(0f,0f));
+            }
         }
 
         private void GetPreferenceProperties(out SerializedProperty editNewClipOptionProp, out SerializedProperty pingNewClipOptionProp)
@@ -235,7 +236,7 @@ namespace Ami.BroAudio.Editor
         private void DrawVolumeSlider()
 		{
             Rect rect = EditorGUILayout.GetControlRect();
-            var volProp = _serializedObject.FindProperty(nameof(_volume));
+            var volProp = _clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
             volProp.floatValue = BroEditorUtility.DrawVolumeSlider(rect, new GUIContent("Volume"), volProp.floatValue, _isVolumeSnapped, () => _isVolumeSnapped = !_isVolumeSnapped);
 		}
 
@@ -256,7 +257,7 @@ namespace Ami.BroAudio.Editor
             waveformRect = EditorGUILayout.GetControlRect(GUILayout.Height(height));
             waveformRect.width = position.width * 0.95f;
             waveformRect.x = (position.width - waveformRect.width) * 0.5f;
-            _clipPropHelper.DrawClipWaveformAndVisualEditing(waveformRect, _transport, TargetClip, TargetClip.name, PlayClip);                                                                                                                               //DrawEmptyLine(GetLineCountByPixels(height));
+            _clipPropHelper.DrawClipWaveformAndVisualEditing(waveformRect, _transport, TargetClip, TargetClip.name, PlayClipByWaveform);                                                                                                                               //DrawEmptyLine(GetLineCountByPixels(height));
 		}
 
 		private void DrawPlaybackPositionField()
@@ -286,11 +287,11 @@ namespace Ami.BroAudio.Editor
 					EditorAudioPreviewer.Instance.StopAllClips();
 				}
 				else if(_audioClipProp.objectReferenceValue is AudioClip clip)
-				{
+                {
                     var evt = Event.current;
-                    float volume = evt.button == 0 ? _volume : AudioConstant.FullVolume;
+                    float volume = evt.button == 0 ? _clipProp.FindPropertyRelative(nameof(_clip.Volume)).floatValue : AudioConstant.FullVolume;
                     _currentPreviewRequest = evt.CreatePreviewRequest(clip, volume, _transport);
-                    PlayClip(clip.name, _currentPreviewRequest);
+                    PlayClip(_currentPreviewRequest, _isLoop ? new ReplayRequest(_clip) : null);
                     EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(previewRect, _currentPreviewRequest);
 				}
 			}
@@ -299,15 +300,21 @@ namespace Ami.BroAudio.Editor
             EditorGUILayout.EndHorizontal();
 		}
 
-        private void PlayClip(string clipPath, PreviewRequest req)
+        private void PlayClip(PreviewRequest req, ReplayRequest replayRequest = null)
         {
-            
-            _isPlaying = true;
+            EditorAudioPreviewer.Instance.Play(req, replayRequest);
             EditorAudioPreviewer.Instance.OnFinished = () =>
             {
                 _isPlaying = false;
                 _currentPreviewRequest = null;
             };
+            _isPlaying = true;
+        }
+        
+        private void PlayClipByWaveform(string clipPath, PreviewRequest req)
+        {
+            req.ClipVolume = _clipProp.FindPropertyRelative(nameof(_clip.Volume)).floatValue;
+            PlayClip(req);
         }
 
 		private void DrawSavingButton()
@@ -360,10 +367,11 @@ namespace Ami.BroAudio.Editor
                 helper.AddSlient(_transport.Delay);
             }
 
-				if(!Mathf.Approximately(_volume, AudioConstant.FullVolume))
-				{
-					helper.AdjustVolume(_volume);
-				}
+            var volume = _clipProp.FindPropertyRelative(nameof(_clip.Volume)).floatValue;
+			if(!Mathf.Approximately(volume, AudioConstant.FullVolume))
+			{
+				helper.AdjustVolume(volume);
+			}
 
             if(_transport.FadeIn != 0f)
             {
@@ -425,11 +433,10 @@ namespace Ami.BroAudio.Editor
             _isReverse = false;
             _isMono = false;
             _monoMode = MonoConversionMode.Downmixing;
-            _volume = AudioConstant.FullVolume;
             
             _serializedObject = new SerializedObject(this);
-            var clipProp = _serializedObject.FindProperty(nameof(_clip));
-            _transport = TargetClip ? new SerializedTransport(clipProp, TargetClip.length) : null;
+            _clipProp = _serializedObject.FindProperty(nameof(_clip));
+            _transport = TargetClip ? new SerializedTransport(_clipProp, TargetClip.length) : null;
         }
         
 		public void AddItemsToMenu(GenericMenu menu)

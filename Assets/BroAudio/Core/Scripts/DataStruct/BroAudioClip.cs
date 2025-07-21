@@ -1,3 +1,4 @@
+using Ami.Extension;
 using UnityEngine;
 
 namespace Ami.BroAudio.Data
@@ -7,7 +8,7 @@ namespace Ami.BroAudio.Data
     {
         [SerializeField] private AudioClip AudioClip;
 
-        public float Volume;
+        public float Volume = AudioConstant.FullVolume;
         public float Delay;
         public float StartPosition;
         public float EndPosition;

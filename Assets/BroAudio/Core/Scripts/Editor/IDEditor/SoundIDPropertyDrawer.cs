@@ -178,6 +178,7 @@ namespace Ami.BroAudio.Editor
 
         private void OnPreviewAudioUpdate()
         {
+            EditorAudioPreviewer.Instance.UpdatePreview();
             if(IsWindowFocusChanged())
             {
                 EditorApplication.update -= OnPreviewAudioUpdate;

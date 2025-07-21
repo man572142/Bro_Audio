@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Ami.BroAudio;
 using Ami.BroAudio.Data;
@@ -8,32 +7,49 @@ using Ami.BroAudio.Editor;
 using Ami.BroAudio.Tools;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 
-public class AssetTypeUsageFinder : EditorWindow
+public class AssetFieldUsageFinder : EditorWindow
 {
     [MenuItem(BroName.MenuItem_BroAudio + "Others/Find SoundID Usage")]
     public static void ShowWindow()
     {
-        GetWindow<AssetTypeUsageFinder>("Type Usage Finder");
+        var window = GetWindow<AssetFieldUsageFinder>("Field Usage Finder");
     }
     
     private const string RootPath = "Assets";
 
     private string _targetTypeName = nameof(SoundID);
     private string _targetPath = RootPath;
-    private bool _findInPrefab = false;
-    private bool _findInScriptableObject = false;
-    private bool _findInScene = false;
+    private bool _findInPrefab;
+    private bool _findInScriptableObject;
+    private bool _findInScene;
     private Vector2 _scrollPosition;
     private readonly List<UsageResult> _results = new List<UsageResult>();
     
     private Dictionary<int, IEntityIdentity> _broAudioEntities = new Dictionary<int, IEntityIdentity>();
 
+    private MultiColumnHeader _multiColumnHeader;
+    private MultiColumnHeaderState _multiColumnHeaderState;
+    private int _sortedColumnIndex = -1;
+    private bool _sortedAscending = true;
+
+    private enum ColumnType
+    {
+        Source,
+        GameObjectPath,
+        ComponentType,
+        FieldName,
+        Value,
+        FullAssetPath,
+    }
+
     private class UsageResult
     {
         public string AssetPath;
+        public string AssetFileName;
         public string GameObjectPath;
         public string ComponentType;
         public string FieldName;
@@ -44,6 +60,8 @@ public class AssetTypeUsageFinder : EditorWindow
 
     private void OnEnable()
     {
+        InitializeMultiColumnHeader();
+        
         if (BroEditorUtility.TryGetCoreData(out var data))
         {
             foreach (var asset in data.Assets)
@@ -63,6 +81,77 @@ public class AssetTypeUsageFinder : EditorWindow
                 }
             }
         }
+    }
+
+    private void InitializeMultiColumnHeader()
+    {
+        var columns = new MultiColumnHeaderState.Column[]
+        {
+            CreateColumn("Source", 100),
+            CreateColumn("GameObject", 150),
+            CreateColumn("Component", 120),
+            CreateColumn("Field", 100),
+            CreateColumn("Value", 150),
+            CreateColumn("Asset Path", 200),
+        };
+
+        _multiColumnHeaderState = new MultiColumnHeaderState(columns);
+        _multiColumnHeader = new MultiColumnHeader(_multiColumnHeaderState);
+        _multiColumnHeader.sortingChanged += OnSortingChanged;
+        _multiColumnHeader.ResizeToFit();
+    }
+    
+    private MultiColumnHeaderState.Column CreateColumn(string header, float width)
+    {
+        return new MultiColumnHeaderState.Column
+        {
+            headerContent = new GUIContent(header),
+            headerTextAlignment = TextAlignment.Left,
+            sortedAscending = true,
+            sortingArrowAlignment = TextAlignment.Center,
+            width = width,
+            minWidth = 50,
+            autoResize = true,
+            allowToggleVisibility = true,
+        };
+    }
+
+    private void OnSortingChanged(MultiColumnHeader multiColumnHeader)
+    {
+        _sortedColumnIndex = multiColumnHeader.sortedColumnIndex;
+        _sortedAscending = multiColumnHeader.GetColumn(_sortedColumnIndex).sortedAscending;
+        SortResults();
+        Repaint();
+    }
+
+    private void SortResults()
+    {
+        if (_sortedColumnIndex < 0 || _results.Count == 0)
+            return;
+
+        var columnType = (ColumnType)_sortedColumnIndex;
+        
+        switch (columnType)
+        {
+            case ColumnType.Source:
+                _results.Sort((a, b) => Compare(a.AssetFileName, b.AssetFileName));
+                break;
+            case ColumnType.GameObjectPath:
+                _results.Sort((a, b) => Compare(a.GameObjectPath, b.GameObjectPath));
+                break;
+            case ColumnType.ComponentType:
+                _results.Sort((a, b) => Compare(a.ComponentType, b.ComponentType));
+                break;
+            case ColumnType.FieldName:
+                _results.Sort((a, b) => Compare(a.FieldName, b.FieldName));
+                break;
+            case ColumnType.Value:
+                _results.Sort((a, b) => Compare(a.Value, b.Value));
+                break;
+        }
+        
+        int Compare(string a, string b) => _sortedAscending ? 
+            string.Compare(a, b, StringComparison.Ordinal) : string.Compare(b, a, StringComparison.Ordinal);
     }
 
     private void OnGUI()
@@ -96,35 +185,64 @@ public class AssetTypeUsageFinder : EditorWindow
         if (_results.Count > 0)
         {
             GUILayout.Label($"Found {_results.Count} usage(s):", EditorStyles.boldLabel);
+            
+            var headerRect = GUILayoutUtility.GetRect(0, _multiColumnHeader.height, GUILayout.ExpandWidth(true));
+            _multiColumnHeader.OnGUI(headerRect, 0.0f);
+            
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             
-            foreach (var result in _results)
+            for (int i = 0; i < _results.Count; i++)
             {
-                EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button(result.AssetPath, EditorStyles.linkLabel))
-                {
-                    if (result.GameObject != null)
-                    {
-                        Selection.activeGameObject = result.GameObject;
-                        EditorGUIUtility.PingObject(result.GameObject);
-                    }
-                    else if (result.Asset != null)
-                    {
-                        Selection.activeObject = result.Asset;
-                        EditorGUIUtility.PingObject(result.GameObject);
-                    }
-                }
-                EditorGUILayout.EndHorizontal();
+                var result = _results[i];
+                var rowRect = GUILayoutUtility.GetRect(0, EditorGUIUtility.singleLineHeight, GUILayout.ExpandWidth(true));
                 
-                EditorGUILayout.LabelField($"  GameObject: {result.GameObjectPath}");
-                EditorGUILayout.LabelField($"  Component: {result.ComponentType}");
-                EditorGUILayout.LabelField($"  Field: {result.FieldName}");
-                EditorGUILayout.LabelField($"  Value: {result.Value}");
-                EditorGUILayout.Space();
+                if (i % 2 == 0)
+                {
+                    EditorGUI.DrawRect(rowRect, new Color(0f, 0f, 0f, 0.1f));
+                }
+                
+                DrawResultRow(rowRect, result);
             }
             
             EditorGUILayout.EndScrollView();
         }
+    }
+
+    private void DrawResultRow(Rect rowRect, UsageResult result)
+    {
+        float[] columnWidths = new float[_multiColumnHeaderState.columns.Length];
+        for (int i = 0; i < _multiColumnHeaderState.columns.Length; i++)
+        {
+            columnWidths[i] = _multiColumnHeaderState.columns[i].width;
+        }
+
+        Rect[] columnRects = new Rect[columnWidths.Length];
+        float x = rowRect.x;
+        for (int i = 0; i < columnWidths.Length; i++)
+        {
+            columnRects[i] = new Rect(x, rowRect.y, columnWidths[i], rowRect.height);
+            x += columnWidths[i];
+        }
+        
+        if (GUI.Button(columnRects[(int)ColumnType.Source], result.AssetFileName, EditorStyles.linkLabel))
+        {
+            if (result.GameObject != null)
+            {
+                Selection.activeGameObject = result.GameObject;
+                EditorGUIUtility.PingObject(result.GameObject);
+            }
+            else if (result.Asset != null)
+            {
+                Selection.activeObject = result.Asset;
+                EditorGUIUtility.PingObject(result.Asset);
+            }
+        }
+        
+        GUI.Label(columnRects[(int)ColumnType.GameObjectPath], result.GameObjectPath);
+        GUI.Label(columnRects[(int)ColumnType.ComponentType], result.ComponentType);
+        GUI.Label(columnRects[(int)ColumnType.FieldName], result.FieldName);
+        GUI.Label(columnRects[(int)ColumnType.Value], result.Value);
+        GUI.Label(columnRects[(int)ColumnType.FullAssetPath], result.AssetPath);
     }
 
     private void DrawPathTextField()
@@ -151,8 +269,7 @@ public class AssetTypeUsageFinder : EditorWindow
     private void FindTypeUsage()
     {
         _results.Clear();
-
-        // Find the target type
+        
         Type targetType = FindTypeByName(_targetTypeName);
         if (targetType == null)
         {
@@ -160,50 +277,45 @@ public class AssetTypeUsageFinder : EditorWindow
             return;
         }
 
-        var allAssetPaths = AssetDatabase.GetAllAssetPaths().Where(x => x.StartsWith(_targetPath));
-        var prefabPaths = _findInPrefab ? allAssetPaths.Where(x => x.EndsWith(".prefab")).ToArray() : Array.Empty<string>();
-        var scenePaths = _findInScene ? allAssetPaths.Where(x => x.EndsWith(".unity")).ToArray() : Array.Empty<string>();
-        var scriptableObjectPaths = _findInScriptableObject ? allAssetPaths.Where(x => x.EndsWith(".asset")).ToArray() : Array.Empty<string>();
-        
-        float totalAssets = prefabPaths.Length + scenePaths.Length + scriptableObjectPaths.Length;
+        var allAssetPaths = AssetDatabase.GetAllAssetPaths();
         int currentAsset = 0;
-        
         try
         {
-            foreach (var path in prefabPaths)
+            foreach (var path in allAssetPaths)
             {
                 currentAsset++;
-                if (DisplayCancelableProgressBar(path, currentAsset, totalAssets))
+                if (DisplayCancelableProgressBar(path, currentAsset, allAssetPaths.Length))
                 {
                     break;
                 }
 
-                CheckPrefab(path, targetType);
-            }
-            
-            foreach (var path in scenePaths)
-            {
-                currentAsset++;
-                if (DisplayCancelableProgressBar(path, currentAsset, totalAssets))
+                if (!path.StartsWith(_targetPath))
                 {
-                    break;
+                    continue;
                 }
-                CheckScene(path, targetType);
-            }
-            
-            foreach (var path in scriptableObjectPaths)
-            {
-                currentAsset++;
-                if (DisplayCancelableProgressBar(path, currentAsset, totalAssets))
+
+                if (_findInPrefab && path.EndsWith(".prefab"))
                 {
-                    break;
+                    CheckPrefab(path, targetType);
+                } 
+                else if (_findInScene && path.EndsWith(".unity"))
+                {
+                    CheckScene(path, targetType);
                 }
-                CheckScriptableObject(path, targetType);
+                else if (_findInScriptableObject && path.EndsWith(".asset"))
+                {
+                    CheckScriptableObject(path, targetType);
+                }
             }
         }
         finally
         {
             EditorUtility.ClearProgressBar();
+        }
+        
+        if (_sortedColumnIndex >= 0)
+        {
+            SortResults();
         }
 
         Debug.Log($"Search completed. Found {_results.Count} usage(s) of {_targetTypeName}");
@@ -225,7 +337,6 @@ public class AssetTypeUsageFinder : EditorWindow
 
     private Type FindTypeByName(string typeName)
     {
-        // Search in all loaded assemblies
         foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
             try
@@ -339,6 +450,7 @@ public class AssetTypeUsageFinder : EditorWindow
                 _results.Add(new UsageResult
                 {
                     AssetPath = assetPath,
+                    AssetFileName = assetPath.Substring(assetPath.LastIndexOf('/') + 1),
                     GameObjectPath = gameObjectPath,
                     ComponentType = componentType,
                     FieldName = field.Name,

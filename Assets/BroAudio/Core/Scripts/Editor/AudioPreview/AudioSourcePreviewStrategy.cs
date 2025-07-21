@@ -102,20 +102,19 @@ namespace Ami.BroAudio.Editor
             _previewDspTime +=  AudioConstant.MixerWarmUpTime;
             _nextPreviewDspTime = _previewDspTime + req.Duration;
             
-            bool isReplayable = replayRequest != null;
-            if (isReplayable)
+            if (replayRequest != null)
             {
                 ScheduleNextPlayback(replayRequest, req);
             }
 
-            StartPlaybackIndicator(isReplayable);
+            StartPlaybackIndicator(replayRequest != null);
             volumeTransporter.Start();
             
             await WaitForPlaybackCompletion();
             volumeTransporter.End();
             _previewDspTime = _nextPreviewDspTime;
 
-            while (isReplayable)
+            while (replayRequest != null && replayRequest.CanReplay())
             {
                 await AudioSourceReplay(req, replayRequest);
             }
@@ -149,7 +148,10 @@ namespace Ami.BroAudio.Editor
             currentSource.VolumeTransporter.Init(req);
             currentSource.VolumeTransporter.Start();
             StartPlaybackIndicator();
-            ScheduleNextPlayback(replayReq, req);
+            if (replayReq.CanReplay())
+            {
+                ScheduleNextPlayback(replayReq, req);
+            }
             
             await WaitForPlaybackCompletion();
             _previewDspTime = _nextPreviewDspTime;

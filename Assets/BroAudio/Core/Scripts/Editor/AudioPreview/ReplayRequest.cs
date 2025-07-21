@@ -29,6 +29,15 @@ namespace Ami.BroAudio.Editor
             }
         }
 
+        public bool CanReplay()
+        {
+            if (_entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained)
+            {
+                return _entity.Clips.Length > _context - 1;
+            }
+            return true;
+        }
+        
         public AudioClip GetAudioClipForScheduling()
         {
             Clip = _entity.PickNewClip(_context, out _clipIndex);

@@ -142,7 +142,6 @@ namespace Ami.BroAudio.Editor
 
                 if (assetProp.objectReferenceValue is AudioAsset asset && TryGetEntity(asset, out var entity))
                 {
-
                     var req = Event.current.CreatePreviewRequest(entity.PickNewClip());
                     req.MasterVolume = entity.GetMasterVolume();
                     req.BaseMasterVolume = entity.MasterVolume;

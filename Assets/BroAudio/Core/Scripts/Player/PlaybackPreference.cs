@@ -126,7 +126,18 @@ namespace Ami.BroAudio.Runtime
 
         public bool CanHandoverToEnd()
         {
-            return IsChainedMode() && ChainedModeStage != PlaybackStage.End && ChainedModeStage != PlaybackStage.None;
+            if (!IsChainedMode())
+            {
+                return false;
+            }
+
+            if (ChainedModeStage == PlaybackStage.Loop && Entity is AudioEntity entity && 
+                entity.Clips.Length < (int)PlaybackStage.End)
+            {
+                return false;
+            }
+            
+            return ChainedModeStage != PlaybackStage.End && ChainedModeStage != PlaybackStage.None;
         }
 
         public bool IsChainedMode()

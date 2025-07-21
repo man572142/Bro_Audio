@@ -43,7 +43,7 @@ namespace Ami.BroAudio.Editor.Setting
 
         private GUIContent _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _filterSlopeGUIContent, _acceptAudioMixerGUIContent
             ,_playMusicAsBgmGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent,_dominatorTrackGUIContent, _regenerateUserDataGUIContent
-            ,_globalGroupGUIContent, _updateModeGUIContent, _chainedModeLoopGUIContent, _defaultTransitionTimeGUIContent;
+            ,_globalGroupGUIContent, _updateModeGUIContent, _chainedModeLoopGUIContent, _defaultTransitionTimeGUIContent, _showWarnForNoLoopChainedModeGUIContent;
 
 #if PACKAGE_ADDRESSABLES
         private GUIContent _addressableConversionGUIContent, _directToAddressableGUIContent, _addressableToDirectGUIContent; 
@@ -131,6 +131,7 @@ namespace Ami.BroAudio.Editor.Setting
             _updateModeGUIContent = new GUIContent("Update Mode", _instruction.GetText(Instruction.UpdateMode));
             _chainedModeLoopGUIContent = new GUIContent("Default Loop Type");
             _defaultTransitionTimeGUIContent = new GUIContent("Default Transition Time");
+            _showWarnForNoLoopChainedModeGUIContent = new GUIContent("Show Warning If No Loop", "Displays a warning if the entity has no loop options set and will fall back to default settings");
             
 #if PACKAGE_ADDRESSABLES
             string aaTooltip = _instruction.GetText(Instruction.LibraryManager_AddressableConversionTooltip);
@@ -272,6 +273,7 @@ namespace Ami.BroAudio.Editor.Setting
             {
                 var loopTypeProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.DefaultChainedPlayModeLoop));
                 var seamlessTransitionProp = _runtimeSettingSO.FindProperty(nameof(Data.RuntimeSetting.DefaultChainedPlayModeTransitionTime));
+                var showWarningProp = _editorSettingSO.FindProperty(nameof(EditorSetting.ShowWarningWhenEntityHasNoLoopInChainedMode));
                 EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "Chained Play Mode".ToWhiteBold(), GUIStyleHelper.RichText);
                 using (new EditorGUI.IndentLevelScope())
                 {
@@ -286,6 +288,8 @@ namespace Ami.BroAudio.Editor.Setting
                             seamlessTransitionProp.floatValue =
                                 EditorGUI.FloatField(GetRectAndIterateLine(drawPosition), _defaultTransitionTimeGUIContent, seamlessTransitionProp.floatValue);
                         }
+
+                        showWarningProp.boolValue = EditorGUI.Toggle(GetRectAndIterateLine(drawPosition), _showWarnForNoLoopChainedModeGUIContent, showWarningProp.boolValue);
                     }
                 }
             }

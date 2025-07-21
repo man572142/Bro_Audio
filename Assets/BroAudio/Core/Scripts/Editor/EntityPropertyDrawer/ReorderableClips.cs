@@ -637,7 +637,9 @@ namespace Ami.BroAudio.Editor
         {
             headerInfo = default;
             var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
-            if (playMode == MulticlipsPlayMode.Chained && !IsLoopBy(nameof(AudioEntity.Loop)) && !IsLoopBy(nameof(AudioEntity.SeamlessLoop)))
+            if (playMode == MulticlipsPlayMode.Chained &&
+                BroEditorUtility.EditorSetting.ShowWarningWhenEntityHasNoLoopInChainedMode &&
+                !IsLoopBy(nameof(AudioEntity.Loop)) && !IsLoopBy(nameof(AudioEntity.SeamlessLoop)))
             {
                 headerInfo = GetHeaderInfo(_noLoopChainedPlayModeInfo);
                 return true;

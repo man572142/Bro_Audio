@@ -37,11 +37,12 @@ namespace Ami.BroAudio.Editor
 		}
 
         public string AssetOutputPath;
-        public bool ShowAudioTypeOnSoundID;
-		public bool ShowVUColorOnVolumeSlider;
-		public bool ShowMasterVolumeOnClipListHeader;
-        public bool ShowPlayButtonWhenEntityCollapsed;
-        public bool OpenLastEditAudioAsset;
+        public bool ShowAudioTypeOnSoundID = FactorySettings.ShowAudioTypeOnSoundID;
+		public bool ShowVUColorOnVolumeSlider = FactorySettings.ShowVUColorOnVolumeSlider;
+		public bool ShowMasterVolumeOnClipListHeader = FactorySettings.ShowMasterVolumeOnClipListHeader;
+        public bool ShowPlayButtonWhenEntityCollapsed = FactorySettings.ShowPlayButtonWhenEntityIsFolded;
+        public bool ShowWarningWhenEntityHasNoLoopInChainedMode = FactorySettings.ShowWarningWhenEntityHasNoLoopInChainedMode;
+        public bool OpenLastEditAudioAsset = FactorySettings.OpenLastEditAudioAsset;
         public string LastEditAudioAsset;
         public ReferenceConversionDecision DirectReferenceDecision = FactorySettings.DirectReferenceDecision;
         public ReferenceConversionDecision AddressableDecision = FactorySettings.AddressableDecision;
@@ -127,6 +128,7 @@ namespace Ami.BroAudio.Editor
 			ShowVUColorOnVolumeSlider = FactorySettings.ShowVUColorOnVolumeSlider;
 			ShowAudioTypeOnSoundID = FactorySettings.ShowAudioTypeOnSoundID;
 			ShowMasterVolumeOnClipListHeader = FactorySettings.ShowMasterVolumeOnClipListHeader;
+            ShowWarningWhenEntityHasNoLoopInChainedMode = FactorySettings.ShowWarningWhenEntityHasNoLoopInChainedMode;
             DirectReferenceDecision = FactorySettings.DirectReferenceDecision;
             AddressableDecision = FactorySettings.AddressableDecision;
             EditTheNewClipAfterSaveAs = FactorySettings.EditTheNewClipAfterSaveAs;
@@ -172,6 +174,7 @@ namespace Ami.BroAudio.Editor
 			public const bool ShowMasterVolumeOnClipListHeader = false;
             public const bool OpenLastEditAudioAsset = false;
             public const bool ShowPlayButtonWhenEntityIsFolded = false;
+            public const bool ShowWarningWhenEntityHasNoLoopInChainedMode = true;
 
             public const string MusicColor = "#012F874C";
 			public const string UIColor = "#0E9C884C";

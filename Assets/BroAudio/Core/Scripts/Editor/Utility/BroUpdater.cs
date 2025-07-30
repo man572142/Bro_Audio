@@ -123,7 +123,7 @@ public class BroUpdater
     private static void RemoveDemoAssetsIfNotExist(string corePath, BroAudioData coreData)
     {
         string broPath = corePath.Remove(corePath.LastIndexOf('/'));
-        string demoPath = Combine(broPath, "Demo");
+        string demoPath = Combine(broPath, Demo);
 
         if (Directory.Exists(demoPath))
         {
@@ -132,7 +132,7 @@ public class BroUpdater
 
         for(int i = 0; i < coreData.Assets.Count; i++)
         {
-            if (coreData.Assets[i].AssetGUID == DemoAudioAssetGUID && coreData.Assets[i].AssetName == "Demo" && 
+            if (coreData.Assets[i].AssetGUID == DemoAudioAssetGUID && coreData.Assets[i].AssetName == Demo && 
                 coreData.Assets is List<AudioAsset> assetList)
             {
                 // Removing the reference instead of deleting the asset in case the user actually needs it

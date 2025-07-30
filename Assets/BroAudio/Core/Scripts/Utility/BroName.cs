@@ -4,6 +4,7 @@ namespace Ami.BroAudio.Tools
 	{
 		public const string TempAssetName = "Temp";
         public const string AudioPlayerPrefabName = "AudioPlayer";
+        public const string Demo = "Demo";
 
         #region File Path
         public const string ResourcesFolder = "Resources";
@@ -25,6 +26,7 @@ namespace Ami.BroAudio.Tools
 		public const string MenuItem_EffectEditor = "Audio Effect Editor";
 		public const string MenuItem_Preferences = "Preferences";
 		public const string MenuItem_Info = "Info";
+        public const string MenuItem_SetupWizard = "Setup Wizard";
 		#endregion
 
 		#region Audio Mixer

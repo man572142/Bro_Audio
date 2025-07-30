@@ -109,8 +109,8 @@ namespace Ami.BroAudio.Editor
             {
                 audioAssetOutputPath = DefaultAssetOutputPath;
                 string broPath = DefaultAssetOutputPath.Remove(DefaultAssetOutputPath.LastIndexOf('/'));
-                string demoAssetPath = Combine(DefaultAssetOutputPath, "Demo.asset");
-                if (Directory.Exists(Combine(broPath, "Demo")))
+                string demoAssetPath = Combine(DefaultAssetOutputPath, Demo + ".asset");
+                if (Directory.Exists(Combine(broPath, Demo)))
                 {
                     var demoAsset = AssetDatabase.LoadAssetAtPath<AudioAsset>(demoAssetPath);
                     onGetAsset?.Invoke(demoAsset);

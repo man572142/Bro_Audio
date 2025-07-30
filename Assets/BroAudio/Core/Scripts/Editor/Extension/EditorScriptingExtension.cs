@@ -56,7 +56,7 @@ namespace Ami.Extension
                 OnButtonClick = onButtonClick;
             }
         }
-
+        
         public static Rect GetRectAndIterateLine(IEditorDrawLineCounter drawer, Rect position)
         {
             Rect newRect = new Rect(position.x, position.y + drawer.SingleLineSpace * drawer.DrawLineCount + drawer.Offset, position.width, EditorGUIUtility.singleLineHeight);

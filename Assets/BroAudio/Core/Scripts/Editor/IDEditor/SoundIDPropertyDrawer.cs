@@ -10,9 +10,10 @@ namespace Ami.BroAudio.Editor
     [CustomPropertyDrawer(typeof(SoundID))]
     public class SoundIDPropertyDrawer : PropertyDrawer
     {
-        public const string DefaultIDName = "None";
-        public const string IDMissing = "Missing";
-        public const string EntityTooltip = "Identifier that points to a specific AudioEntity";
+        private const string DefaultIDName = "None";
+        private const string IDMissing = "Missing";
+        private const string EntityTooltip = "Identifier that points to a specific AudioEntity";
+        private const float AudioTypeDissolveRatio = 0.65f;
 
         private readonly string _missingMessage = IDMissing.ToBold().ToItalics().SetColor(new Color(1f, 0.3f, 0.3f));
         private int _currentPlayingID = 0;
@@ -123,7 +124,7 @@ namespace Ami.BroAudio.Editor
             {
                 dropdownRect = dropdownRect.PolarCoordinates(-2f);
                 BroAudioType audioType = Utility.GetAudioType(id);
-                Rect audioTypeRect = EditorScriptingExtension.DissolveHorizontal(dropdownRect, 0.7f);
+                Rect audioTypeRect = EditorScriptingExtension.DissolveHorizontal(dropdownRect, AudioTypeDissolveRatio);
                 EditorGUI.DrawRect(audioTypeRect, BroEditorUtility.EditorSetting.GetAudioTypeColor(audioType));
                 EditorGUI.LabelField(audioTypeRect, audioType.ToString(), GUIStyleHelper.MiddleCenterText);
             }

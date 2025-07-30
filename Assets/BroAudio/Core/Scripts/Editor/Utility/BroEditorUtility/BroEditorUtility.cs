@@ -281,9 +281,8 @@ namespace Ami.BroAudio.Editor
                 }
             }
             Rect browserIconRect = rect;
-            browserIconRect.width = EditorGUIUtility.singleLineHeight;
-            browserIconRect.height = EditorGUIUtility.singleLineHeight;
-            browserIconRect.x = rect.xMax - EditorGUIUtility.singleLineHeight;
+            browserIconRect.width = rect.height;
+            browserIconRect.x = rect.xMax - browserIconRect.width;
             GUI.DrawTexture(browserIconRect, EditorGUIUtility.IconContent(IconConstant.AssetOutputBrowser).image);
             EditorGUI.DrawRect(browserIconRect, BroAudioGUISetting.ShadowMaskColor);
         }
@@ -340,12 +339,10 @@ namespace Ami.BroAudio.Editor
                 {
                     return;
                 }
-
-                float scale = Utility.GetBroVolumeStep(true);
+                
                 float sliderValue = Utility.BroVolumeToSlider(FullVolume);
 
-                Rect rect = new Rect(sliderPosition);
-                rect.width = 30f;
+                Rect rect = new Rect(sliderPosition) { width = 30f };
                 rect.x = sliderPosition.x + sliderPosition.width * sliderValue - (rect.width * 0.5f) + 1f; // add 1 pixel for more precise position
                 rect.y -= sliderPosition.height;
                 var icon = new GUIContent(EditorGUIUtility.IconContent(IconConstant.VolumeSnapPointer));

@@ -6,7 +6,7 @@ namespace Ami.BroAudio.Editor.Setting
     public class DisplayedPropertiesPage : WizardPage
     {
         public override string PageTitle => "Displayed Properties";
-        public override string PageDescription => "Configure which properties are displayed in the Library Manager window.";
+        public override string PageDescription => "Select which properties appear in the Library Manager.";
         protected override (string Name, string Url)[] DocReferences { get; set; } =
         {
             ("#Displayed Properties", "https://man572142s-organization.gitbook.io/broaudio/core-features/customization#displayed-properties"),
@@ -23,7 +23,7 @@ namespace Ami.BroAudio.Editor.Setting
 
 
             DrawOpenLibraryManagerButton(true);
-            EditorGUILayout.HelpBox("You can also adjust them by selecting in the entity's option dropdown menu in Library Manager at anytime", MessageType.Info);
+            EditorGUILayout.HelpBox("You can also toggle these properties anytime by clicking an entity’s dropdown in the Library Manager", MessageType.Info);
         }
     }
 }

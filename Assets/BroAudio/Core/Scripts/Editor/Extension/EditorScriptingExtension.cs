@@ -56,6 +56,31 @@ namespace Ami.Extension
                 OnButtonClick = onButtonClick;
             }
         }
+
+        public struct CenterScope : IDisposable
+        {
+            private bool _isVerticalContent;
+            public CenterScope(bool isVerticalContent)
+            {
+                _isVerticalContent = isVerticalContent;
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                if (isVerticalContent)
+                {
+                    GUILayout.BeginVertical();
+                }
+            }
+            
+            public void Dispose()
+            {
+                if (_isVerticalContent)
+                {
+                    GUILayout.EndVertical();
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
+        }
         
         public static Rect GetRectAndIterateLine(IEditorDrawLineCounter drawer, Rect position)
         {

@@ -66,5 +66,8 @@
 
         // Playback Group
         PlaybackGroup_Override = 500,
+        
+        // Others
+        PlayDemo = 1000,
     }
 }

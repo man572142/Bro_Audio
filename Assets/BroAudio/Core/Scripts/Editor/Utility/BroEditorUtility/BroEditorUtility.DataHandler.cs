@@ -21,6 +21,18 @@ namespace Ami.BroAudio.Editor
             return coreData;
         }
 
+        public static bool TryGetDemoData(out IAudioAsset demoAsset, out IEntityIdentity firstEntity)
+        {
+            demoAsset = null;
+            firstEntity = null;
+            if (TryGetCoreData(out var coreData))
+            {
+                demoAsset = coreData.Assets.FirstOrDefault(x => x.AssetName == BroName.Demo);
+                firstEntity = demoAsset?.GetAllAudioEntities().FirstOrDefault();
+            }
+            return demoAsset != null && firstEntity != null;
+        }
+
         public static bool TryGetAssetByGUID(string assetGUID,out IAudioAsset asset)
         {
             return TryGetAssetByPath(AssetDatabase.GUIDToAssetPath(assetGUID) ,out asset);

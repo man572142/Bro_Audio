@@ -25,6 +25,11 @@ namespace Ami.Extension
             DrawLineCount += count;
         }
 
+        protected void DrawEmptyLine()
+        {
+            DrawLineCount++;
+        }
+
         protected Rect GetRectAndIterateLine(Rect position)
         {
             return EditorScriptingExtension.GetRectAndIterateLine(this, position);

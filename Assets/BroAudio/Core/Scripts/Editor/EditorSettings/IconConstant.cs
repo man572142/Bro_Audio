@@ -35,6 +35,7 @@ namespace Ami.BroAudio.Editor
         public const string CogIcon = "_Popup@2x";
         public const string InfoTab = "UnityEditor.InspectorWindow@2x";
         public const string AudioSettingTab = "AudioMixerController On Icon";
+        public const string SetupWizard = "WelcomeScreen.AssetStoreLogo";
 
         // Message Icon
         public const string InfoMessage = "console.infoicon";

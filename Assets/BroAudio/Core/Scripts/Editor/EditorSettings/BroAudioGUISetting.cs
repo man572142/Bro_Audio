@@ -14,17 +14,18 @@ namespace Ami.BroAudio.Editor.Setting
 
         public const int PreferencesMenuIndex = 11;
 		public const string PreferencesMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_Preferences;
-
-		public const int InfoWindowMenuIndex = 12;
+        public const int SetupWizardMenuIndex = 12;
+        public const string SetupWizardMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_SetupWizard;
+		public const int InfoWindowMenuIndex = 13;
 		public const string InfoWindowMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_Info;
 
-		public const int ClipEditorMenuIndex = 23;
+		public const int ClipEditorMenuIndex = 24;
 		public const string ClipEditorMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_ClipEditor;
 
-		public const int AudioEffectEditorMenuIndex = 24;
+		public const int AudioEffectEditorMenuIndex = 25;
 		public const string AudioEffectMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_EffectEditor;
 
-		public const int DevToolsMenuIndex = 35;
+		public const int DevToolsMenuIndex = 36;
 
 		public static Color MainTitleColor => new Color(0.04f, 0.82f, 0.7f);
 		public static Color ClipLabelColor => new Color(0f, 0.9f, 0.5f);

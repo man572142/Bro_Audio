@@ -61,11 +61,13 @@ namespace Ami.BroAudio.Editor
         public const float AdditionalButtonWidth = 60f;
         public const float OverrideToggleWidth = 30f;
         public const float OverrideToggleOffsetX = 5f;
-
+        
         private MultiColumnHeader _multiColumn = null;
         private BroInstructionHelper _instruction = new BroInstructionHelper();
         private Dictionary<string, AttributesContainer> _attributesDict = null;
 
+        public float OffsetWidth { get; set; }
+        
         private void OnEnable()
         {
             InitMultiColumn();
@@ -117,8 +119,7 @@ namespace Ami.BroAudio.Editor
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-
-            Rect headerRect = GUILayoutUtility.GetRect(EditorGUIUtility.currentViewWidth, EditorGUIUtility.singleLineHeight);           
+            Rect headerRect = GUILayoutUtility.GetRect(EditorGUIUtility.currentViewWidth - OffsetWidth, EditorGUIUtility.singleLineHeight);           
             _multiColumn.OnGUI(headerRect, 0f);
 
             var toggleWidth = GUILayout.Width(_multiColumn.GetColumnRect(0).width - OverrideToggleOffsetX);

@@ -129,9 +129,10 @@ MonoBehaviour:
     Value: Whether to log a warning when trying to access an AudioPlayer that has
       finished playing and has been recycled into the Object Pool.
   - Key: 3
-    Value: "The capacity of the Audio Player Object Pool. \nIt's recommended to set
-      to the average number of Audio Players that your game would use most of the
-      time."
+    Value: "The maximum number of unused Audio Players the pool will keep around.
+      If more than this number are unused, the extra ones will be destroyed instead
+      of pooled. You usually don\u2019t need to tweak this unless you\u2019re running
+      into performance issues."
   - Key: 4
     Value: Click here to add more Dominator tracks to avoid exceeding the maximum
       number of tracks and losing their functionality
@@ -170,3 +171,6 @@ MonoBehaviour:
   - Key: 312
     Value: Apply the default Chained Play Mode loop and transition settings to clear
       this message
+  - Key: 1000
+    Value: The demo not only shows all of the features, but also how to use the API
+      and how they're implemented

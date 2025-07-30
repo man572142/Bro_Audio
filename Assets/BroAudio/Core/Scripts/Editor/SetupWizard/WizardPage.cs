@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using Ami.BroAudio.Tools;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,8 +17,8 @@ namespace Ami.BroAudio.Editor.Setting
         private const float DocReferencesWidthRatio = 0.85f;
 
         private readonly GUIContent _buttonGUIContent = new GUIContent("Open Library Manager", 
-            "It's recommended opening the Library Manager to see the difference in action side-by-side.\n" +
-            "If you didn't see changes, try hovering your mouse in the Library Manager window to trigger the repaint process");
+            "It's recommended to open the Library Manager so you can see the difference side by side.\n" +
+            "If you don't see any changes, try hovering your mouse over the Library Manager window to trigger a repaint.");
         public abstract string PageTitle { get; }
         public abstract string PageDescription { get; }
         public virtual SetupDepth RequiredDepth => SetupDepth.Essential;

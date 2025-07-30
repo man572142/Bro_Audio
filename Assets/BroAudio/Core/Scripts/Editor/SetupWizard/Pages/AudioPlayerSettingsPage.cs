@@ -7,8 +7,8 @@ namespace Ami.BroAudio.Editor.Setting
 {
     public class AudioPlayerSettingsPage : WizardPage
     {
-        public override string PageTitle => "Audio Player Settings";
-        public override string PageDescription => "Configure object pool size for audio players";
+        public override string PageTitle => "Audio Player";
+        public override string PageDescription => "Configure audio player object pool settings";
         public override SetupDepth RequiredDepth => SetupDepth.Advanced;
         protected override (string Name, string Url)[] DocReferences { get; set; } =
         {

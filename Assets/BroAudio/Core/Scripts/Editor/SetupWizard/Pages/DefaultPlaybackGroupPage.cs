@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Ami.BroAudio.Editor.Setting
 {
-    public class GlobalPlaybackGroupPage : WizardPage
+    public class DefaultPlaybackGroupPage : WizardPage
     {
         private UnityEditor.Editor _editor;
         public override string PageTitle => "Default Playback Group";
@@ -14,7 +14,7 @@ namespace Ami.BroAudio.Editor.Setting
         {
             ("#Playback Group", "https://man572142s-organization.gitbook.io/broaudio/core-features/playback-group"),
             ("#Max Playable Count", "https://man572142s-organization.gitbook.io/broaudio/core-features/playback-group#rule-and-value"),
-            ("#Comb Filtering", "https://man572142s-organization.gitbook.io/broaudio/reference/audio-terminology#comb-filtering"),
+            ("#Comb Filtering", "https://man572142s-organization.gitbook.io/broaudio/reference/technical-details#preventing-comb-filtering"),
         };
 
         public override void OnEnable()
@@ -29,8 +29,11 @@ namespace Ami.BroAudio.Editor.Setting
 
         public override void DrawContent()
         {
-            GUILayout.FlexibleSpace();
+            EditorGUILayout.Space(5f);
             _editor.OnInspectorGUI();
+            EditorGUILayout.Space(5f);
+            EditorGUILayout.HelpBox("These default rules apply when an entity doesn't have a PlaybackGroup. " +
+                                    "Hover over a rule for a tooltip, or check the docs for more details.", MessageType.Info);
         }
     }
 }

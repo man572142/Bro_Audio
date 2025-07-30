@@ -5,8 +5,8 @@ namespace Ami.BroAudio.Editor.Setting
     public class GUICustomizationPage : WizardPage
     {
         private float _demoSliderValue = 1f;
-        public override string PageTitle => "GUI Customization";
-        public override string PageDescription => "Determines whether to display some additional information or controls";
+        public override string PageTitle => "UI Customization";
+        public override string PageDescription => "Control which extra UI elements and controls appear in the editor.";
         public override SetupDepth RequiredDepth => SetupDepth.Comprehensive;
 
         public override void DrawContent()

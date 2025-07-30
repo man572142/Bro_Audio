@@ -6,7 +6,7 @@ namespace Ami.BroAudio.Editor.Setting
     public class EasingPage : WizardPage
     {
         public override string PageTitle => "Transition Easing";
-        public override string PageDescription => "Configure the default easing function for fade in and fade out.";
+        public override string PageDescription => "Choose the default easing curve for fade‑ins and fade‑outs.";
         public override SetupDepth RequiredDepth => SetupDepth.Comprehensive;
         protected override (string Name, string Url)[] DocReferences { get; set; } =
         {

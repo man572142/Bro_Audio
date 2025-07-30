@@ -59,7 +59,7 @@ namespace Ami.BroAudio.Editor.Setting
                 // Advanced
                 CreatePage<AudioPlayerSettingsPage>(),
                 CreatePage<OutputPathPage>(),
-                CreatePage<GlobalPlaybackGroupPage>(),
+                CreatePage<DefaultPlaybackGroupPage>(),
                 CreatePage<ChainedPlayModePage>(),
                 
                 // Comprehensive

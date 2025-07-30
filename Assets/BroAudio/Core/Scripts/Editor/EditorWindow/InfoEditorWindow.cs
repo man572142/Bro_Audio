@@ -92,7 +92,7 @@ namespace Ami.BroAudio.Editor
 
                 EditorGUI.ObjectField(demoRect, _instruction.DemoScene, typeof(SceneAsset), false);
                 EditorGUI.ObjectField(demoURPRect, _instruction.URPDemoScene, typeof(SceneAsset), false);
-                DrawParagraph(drawPosition, "The demo not only shows all of the features, but also how to use the API and how they're implemented", 2);
+                DrawParagraph(drawPosition, _instruction.GetText(Instruction.PlayDemo), 2);
             }
         }
 

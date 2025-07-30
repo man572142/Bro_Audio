@@ -6,7 +6,7 @@ namespace Ami.BroAudio.Editor.Setting
     public class ChainedPlayModePage : WizardPage
     {
         public override string PageTitle => "Chained Play Mode";
-        public override string PageDescription => "Configure the default loop settings for entities that are played in Chained Play Mode.";
+        public override string PageDescription => "Set default loop behavior for chained playback.";
         public override SetupDepth RequiredDepth => SetupDepth.Advanced;
         protected override (string Name, string Url)[] DocReferences { get; set; } =
         {

@@ -6,8 +6,8 @@ namespace Ami.BroAudio.Editor.Setting
 {
     public class AddressableConversionPage : WizardPage
     {
-        public override string PageTitle => "Addressables Conversion Options";
-        public override string PageDescription => "Configure the default behavior when marking an entity as Addressables.";
+        public override string PageTitle => "Addressables Conversion";
+        public override string PageDescription => "Choose how Bro Audio handles entities when you mark them as Addressables.";
         public override SetupDepth RequiredDepth => SetupDepth.Comprehensive;
         protected override (string Name, string Url)[] DocReferences { get; set; } =
         {

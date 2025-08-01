@@ -49,6 +49,7 @@ namespace Ami.BroAudio.Editor
 
         public bool EditTheNewClipAfterSaveAs = FactorySettings.EditTheNewClipAfterSaveAs;
         public bool PingTheNewClipAfterSaveAs = FactorySettings.PingTheNewClipAfterSaveAs;
+        public bool HasSetupWizardAutoLaunched = false;
 
         public List<AudioTypeSetting> AudioTypeSettings;
         public List<Color> SpectrumBandColors; 

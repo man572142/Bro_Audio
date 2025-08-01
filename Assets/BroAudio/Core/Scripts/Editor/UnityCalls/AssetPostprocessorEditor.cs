@@ -11,8 +11,13 @@ namespace Ami.BroAudio.Editor
             if(importedAssets.Length > 0 && importedAssets[0].Contains("BroAudio"))
             {
                 BroEditorUtility.FixDuplicateSoundIDs();
-                BroUserDataGenerator.CheckAndGenerateUserData();
+                BroUserDataGenerator.CheckAndGenerateUserData(OnUserDataChecked);
             }
+        }
+
+        private static void OnUserDataChecked()
+        {
+            Setting.SetupWizardWindow.CheckAndShowForFirstSetup();
         }
 
         private static void OnReimportAsset(string[] importedAssets)

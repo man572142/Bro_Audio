@@ -60,7 +60,11 @@ namespace Ami.BroAudio.Editor
                 var remainingTime = (_currentRequest.AbsoluteEndPosition - audioSource.GetPreciseTime()) / _currentRequest.Pitch;
                 _nextPreviewDspTime = AudioSettings.dspTime + remainingTime;
                 audioSource.SetScheduledEndTime(_nextPreviewDspTime);
-                GetNextAudioSource(out _).Source.SetScheduledStartTime(_nextPreviewDspTime);
+                var nextAudioSource = GetNextAudioSource(out _).Source;
+                if (nextAudioSource.clip != null)
+                {
+                    nextAudioSource.SetScheduledStartTime(_nextPreviewDspTime);
+                }
             }
         }
 

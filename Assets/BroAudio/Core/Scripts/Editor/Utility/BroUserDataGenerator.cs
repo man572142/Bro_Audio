@@ -14,7 +14,7 @@ namespace Ami.BroAudio.Editor
     {
         private static bool _isLoading = false;
 
-        public static void CheckAndGenerateUserData()
+        public static void CheckAndGenerateUserData(Action onFinished = null)
         {
             if (_isLoading)
             {
@@ -39,6 +39,7 @@ namespace Ami.BroAudio.Editor
                     {
                         StartGeneratingUserData(soundManager);
                     }
+                    onFinished?.Invoke();
                 }
                 else
                 {

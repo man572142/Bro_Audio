@@ -116,6 +116,8 @@ namespace Ami.BroAudio.Editor
                 SelectAsset(EditorSetting.LastEditAudioAsset);
                 _isInEntitiesEditMode = true;
             }
+
+            InitBackgroundLogo();
         }
 
         private void OnDisable()

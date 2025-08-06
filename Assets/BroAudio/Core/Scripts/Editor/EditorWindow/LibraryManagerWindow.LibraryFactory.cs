@@ -1,5 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Tools;
 using Ami.Extension;
@@ -66,20 +66,26 @@ namespace Ami.BroAudio.Editor
 			}
 			EditorGUILayout.EndVertical();
 		}
+        
+        private void InitBackgroundLogo()
+        {
+            _backgroundLogo = Resources.Load<Texture>(BroEditorUtility.TransparentLogoPath);
+            _backgroundLogoMat = (Material)EditorGUIUtility.LoadRequired("Inspectors/InactiveGUI.mat");
+        }
 
 		private void DrawBackgroundLogo(Rect entitiesRect)
-		{
-			if (Event.current.type == EventType.Repaint)
-			{
-				Vector2 audioIconSize = new Vector2(BackgroundLogoSize, BackgroundLogoSize);
-				float offsetX = DefaultLayoutPadding * 2f;
-				Vector2 logoPos = entitiesRect.size * 0.5f - audioIconSize * 0.5f + new Vector2(offsetX, 0f);
-				Rect audioIconRect = new Rect(logoPos, audioIconSize);
-                _backgroundLogo = _backgroundLogo ? _backgroundLogo : Resources.Load<Texture>(BroEditorUtility.TransparentLogoPath);
-                _backgroundLogoMat = _backgroundLogoMat ? _backgroundLogoMat : (Material)EditorGUIUtility.LoadRequired("Inspectors/InactiveGUI.mat");
-				EditorGUI.DrawPreviewTexture(audioIconRect, _backgroundLogo, _backgroundLogoMat, ScaleMode.ScaleToFit);
-			}
-		}
+        {
+            if (Event.current.type != EventType.Repaint || _backgroundLogo == null|| _backgroundLogoMat == null)
+            {
+                return;
+            }
+
+            Vector2 audioIconSize = new Vector2(BackgroundLogoSize, BackgroundLogoSize);
+            float offsetX = DefaultLayoutPadding * 2f;
+            Vector2 logoPos = entitiesRect.size * 0.5f - audioIconSize * 0.5f + new Vector2(offsetX, 0f);
+            Rect audioIconRect = new Rect(logoPos, audioIconSize);
+            EditorGUI.DrawPreviewTexture(audioIconRect, _backgroundLogo, _backgroundLogoMat, ScaleMode.ScaleToFit);
+        }
 
 		private void HandleObjectPicker()
 		{
@@ -181,22 +187,5 @@ namespace Ami.BroAudio.Editor
 			_isInEntitiesEditMode = true;
 
         }
-
-		//private void ToggleTempGuidingFlash(bool hasAssetName)
-		//{
-		//	if (!hasAssetName && !_flasingHelper.IsUpdating)
-		//	{
-		//		_flasingHelper.Start();
-		//	}
-		//	else if (hasAssetName && _flasingHelper.IsUpdating)
-		//	{
-		//		_flasingHelper.End();
-		//	}
-		//}
-
-		//private void DrawFlashingReminder(Rect headerRect)
-		//{
-		//	GUI.DrawTexture(headerRect, Texture2D.whiteTexture, ScaleMode.ScaleAndCrop, true, 0f, Color.white, 0f, 4f);
-		//}
-	}
+    }
 }

@@ -45,7 +45,7 @@ namespace Ami.Extension
 
         private Rect GetIndicatorPosition()
         {
-            var fullLength = _request.PreciseAudioClipLength;
+            var fullLength = _request?.PreciseAudioClipLength ?? 0f;
             if (fullLength <= 0f || _waveformRect == default)
             {
                 return default;

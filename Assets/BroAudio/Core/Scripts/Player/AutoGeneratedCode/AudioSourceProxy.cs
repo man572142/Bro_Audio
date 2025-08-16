@@ -1,311 +1,345 @@
 // Auto-generated code
 using UnityEngine;
 using UnityEngine.Audio;
+using System;
 
 namespace Ami.Extension
 {
-    public partial class AudioSourceProxy : BroModifier<AudioSource>, IAudioSourceProxy
+    public partial class AudioSourceProxy : IDisposable, IAudioSourceProxy
     {
-        public AudioSourceProxy(AudioSource @base) : base(@base) {}
+        private AudioSource _source;
+        public AudioSourceProxy(AudioSource source) => _source = source;
 
-        private bool _hasVolumeResetAction = false;
+        private bool _isVolumeModified = false;
         public float volume
         {
-            get => Base.volume;
+            get => _source.volume;
             set
             {
-                AddResetAction(ref _hasVolumeResetAction, () => Base.volume = 1);
-                Base.volume = value;
+                _isVolumeModified = true;
+                _source.volume = value;
             }
         }
 
-        private bool _hasPitchResetAction = false;
+        private bool _isPitchModified = false;
         public float pitch
         {
-            get => Base.pitch;
+            get => _source.pitch;
             set
             {
-                AddResetAction(ref _hasPitchResetAction, () => Base.pitch = 1);
-                Base.pitch = value;
+                _isPitchModified = true;
+                _source.pitch = value;
             }
         }
 
-        private bool _hasTimeResetAction = false;
+        private bool _isTimeModified = false;
         public float time
         {
-            get => Base.time;
+            get => _source.time;
             set
             {
-                AddResetAction(ref _hasTimeResetAction, () => Base.time = 0);
-                Base.time = value;
+                _isTimeModified = true;
+                _source.time = value;
             }
         }
 
-        private bool _hasTimeSamplesResetAction = false;
+        private bool _isTimeSamplesModified = false;
         public int timeSamples
         {
-            get => Base.timeSamples;
+            get => _source.timeSamples;
             set
             {
-                AddResetAction(ref _hasTimeSamplesResetAction, () => Base.timeSamples = 0);
-                Base.timeSamples = value;
+                _isTimeSamplesModified = true;
+                _source.timeSamples = value;
             }
         }
 
-        private bool _hasClipResetAction = false;
+        private bool _isClipModified = false;
         public AudioClip clip
         {
-            get => Base.clip;
+            get => _source.clip;
             set
             {
-                AddResetAction(ref _hasClipResetAction, () => Base.clip = default);
-                Base.clip = value;
+                _isClipModified = true;
+                _source.clip = value;
             }
         }
 
-        private bool _hasOutputAudioMixerGroupResetAction = false;
+        private bool _isOutputAudioMixerGroupModified = false;
         public AudioMixerGroup outputAudioMixerGroup
         {
-            get => Base.outputAudioMixerGroup;
+            get => _source.outputAudioMixerGroup;
             set
             {
-                AddResetAction(ref _hasOutputAudioMixerGroupResetAction, () => Base.outputAudioMixerGroup = default);
-                Base.outputAudioMixerGroup = value;
+                _isOutputAudioMixerGroupModified = true;
+                _source.outputAudioMixerGroup = value;
             }
         }
 
 #if (UNITY_EDITOR && UNITY_2021_3_OR_NEWER) || UNITY_PS4 || UNITY_PS5
-        private bool _hasGamepadSpeakerOutputTypeResetAction = false;
+        private bool _isGamepadSpeakerOutputTypeModified = false;
         public GamepadSpeakerOutputType gamepadSpeakerOutputType
         {
-            get => Base.gamepadSpeakerOutputType;
+            get => _source.gamepadSpeakerOutputType;
             set
             {
-                AddResetAction(ref _hasGamepadSpeakerOutputTypeResetAction, () => Base.gamepadSpeakerOutputType = UnityEngine.GamepadSpeakerOutputType.Speaker);
-                Base.gamepadSpeakerOutputType = value;
+                _isGamepadSpeakerOutputTypeModified = true;
+                _source.gamepadSpeakerOutputType = value;
             }
         }
 #endif
 
-        private bool _hasLoopResetAction = false;
+        private bool _isLoopModified = false;
         public bool loop
         {
-            get => Base.loop;
+            get => _source.loop;
             set
             {
-                AddResetAction(ref _hasLoopResetAction, () => Base.loop = false);
-                Base.loop = value;
+                _isLoopModified = true;
+                _source.loop = value;
             }
         }
 
-        private bool _hasIgnoreListenerVolumeResetAction = false;
+        private bool _isIgnoreListenerVolumeModified = false;
         public bool ignoreListenerVolume
         {
-            get => Base.ignoreListenerVolume;
+            get => _source.ignoreListenerVolume;
             set
             {
-                AddResetAction(ref _hasIgnoreListenerVolumeResetAction, () => Base.ignoreListenerVolume = false);
-                Base.ignoreListenerVolume = value;
+                _isIgnoreListenerVolumeModified = true;
+                _source.ignoreListenerVolume = value;
             }
         }
 
-        private bool _hasPlayOnAwakeResetAction = false;
+        private bool _isPlayOnAwakeModified = false;
         public bool playOnAwake
         {
-            get => Base.playOnAwake;
+            get => _source.playOnAwake;
             set
             {
-                AddResetAction(ref _hasPlayOnAwakeResetAction, () => Base.playOnAwake = true);
-                Base.playOnAwake = value;
+                _isPlayOnAwakeModified = true;
+                _source.playOnAwake = value;
             }
         }
 
-        private bool _hasIgnoreListenerPauseResetAction = false;
+        private bool _isIgnoreListenerPauseModified = false;
         public bool ignoreListenerPause
         {
-            get => Base.ignoreListenerPause;
+            get => _source.ignoreListenerPause;
             set
             {
-                AddResetAction(ref _hasIgnoreListenerPauseResetAction, () => Base.ignoreListenerPause = false);
-                Base.ignoreListenerPause = value;
+                _isIgnoreListenerPauseModified = true;
+                _source.ignoreListenerPause = value;
             }
         }
 
-        private bool _hasVelocityUpdateModeResetAction = false;
+        private bool _isVelocityUpdateModeModified = false;
         public AudioVelocityUpdateMode velocityUpdateMode
         {
-            get => Base.velocityUpdateMode;
+            get => _source.velocityUpdateMode;
             set
             {
-                AddResetAction(ref _hasVelocityUpdateModeResetAction, () => Base.velocityUpdateMode = UnityEngine.AudioVelocityUpdateMode.Auto);
-                Base.velocityUpdateMode = value;
+                _isVelocityUpdateModeModified = true;
+                _source.velocityUpdateMode = value;
             }
         }
 
-        private bool _hasPanStereoResetAction = false;
+        private bool _isPanStereoModified = false;
         public float panStereo
         {
-            get => Base.panStereo;
+            get => _source.panStereo;
             set
             {
-                AddResetAction(ref _hasPanStereoResetAction, () => Base.panStereo = 0);
-                Base.panStereo = value;
+                _isPanStereoModified = true;
+                _source.panStereo = value;
             }
         }
 
-        private bool _hasSpatialBlendResetAction = false;
+        private bool _isSpatialBlendModified = false;
         public float spatialBlend
         {
-            get => Base.spatialBlend;
+            get => _source.spatialBlend;
             set
             {
-                AddResetAction(ref _hasSpatialBlendResetAction, () => Base.spatialBlend = 0);
-                Base.spatialBlend = value;
+                _isSpatialBlendModified = true;
+                _source.spatialBlend = value;
             }
         }
 
-        private bool _hasSpatializeResetAction = false;
+        private bool _isSpatializeModified = false;
         public bool spatialize
         {
-            get => Base.spatialize;
+            get => _source.spatialize;
             set
             {
-                AddResetAction(ref _hasSpatializeResetAction, () => Base.spatialize = false);
-                Base.spatialize = value;
+                _isSpatializeModified = true;
+                _source.spatialize = value;
             }
         }
 
-        private bool _hasSpatializePostEffectsResetAction = false;
+        private bool _isSpatializePostEffectsModified = false;
         public bool spatializePostEffects
         {
-            get => Base.spatializePostEffects;
+            get => _source.spatializePostEffects;
             set
             {
-                AddResetAction(ref _hasSpatializePostEffectsResetAction, () => Base.spatializePostEffects = false);
-                Base.spatializePostEffects = value;
+                _isSpatializePostEffectsModified = true;
+                _source.spatializePostEffects = value;
             }
         }
 
-        private bool _hasReverbZoneMixResetAction = false;
+        private bool _isReverbZoneMixModified = false;
         public float reverbZoneMix
         {
-            get => Base.reverbZoneMix;
+            get => _source.reverbZoneMix;
             set
             {
-                AddResetAction(ref _hasReverbZoneMixResetAction, () => Base.reverbZoneMix = 1);
-                Base.reverbZoneMix = value;
+                _isReverbZoneMixModified = true;
+                _source.reverbZoneMix = value;
             }
         }
 
-        private bool _hasBypassEffectsResetAction = false;
+        private bool _isBypassEffectsModified = false;
         public bool bypassEffects
         {
-            get => Base.bypassEffects;
+            get => _source.bypassEffects;
             set
             {
-                AddResetAction(ref _hasBypassEffectsResetAction, () => Base.bypassEffects = false);
-                Base.bypassEffects = value;
+                _isBypassEffectsModified = true;
+                _source.bypassEffects = value;
             }
         }
 
-        private bool _hasBypassListenerEffectsResetAction = false;
+        private bool _isBypassListenerEffectsModified = false;
         public bool bypassListenerEffects
         {
-            get => Base.bypassListenerEffects;
+            get => _source.bypassListenerEffects;
             set
             {
-                AddResetAction(ref _hasBypassListenerEffectsResetAction, () => Base.bypassListenerEffects = false);
-                Base.bypassListenerEffects = value;
+                _isBypassListenerEffectsModified = true;
+                _source.bypassListenerEffects = value;
             }
         }
 
-        private bool _hasBypassReverbZonesResetAction = false;
+        private bool _isBypassReverbZonesModified = false;
         public bool bypassReverbZones
         {
-            get => Base.bypassReverbZones;
+            get => _source.bypassReverbZones;
             set
             {
-                AddResetAction(ref _hasBypassReverbZonesResetAction, () => Base.bypassReverbZones = false);
-                Base.bypassReverbZones = value;
+                _isBypassReverbZonesModified = true;
+                _source.bypassReverbZones = value;
             }
         }
 
-        private bool _hasDopplerLevelResetAction = false;
+        private bool _isDopplerLevelModified = false;
         public float dopplerLevel
         {
-            get => Base.dopplerLevel;
+            get => _source.dopplerLevel;
             set
             {
-                AddResetAction(ref _hasDopplerLevelResetAction, () => Base.dopplerLevel = 1);
-                Base.dopplerLevel = value;
+                _isDopplerLevelModified = true;
+                _source.dopplerLevel = value;
             }
         }
 
-        private bool _hasSpreadResetAction = false;
+        private bool _isSpreadModified = false;
         public float spread
         {
-            get => Base.spread;
+            get => _source.spread;
             set
             {
-                AddResetAction(ref _hasSpreadResetAction, () => Base.spread = 0);
-                Base.spread = value;
+                _isSpreadModified = true;
+                _source.spread = value;
             }
         }
 
-        private bool _hasPriorityResetAction = false;
+        private bool _isPriorityModified = false;
         public int priority
         {
-            get => Base.priority;
+            get => _source.priority;
             set
             {
-                AddResetAction(ref _hasPriorityResetAction, () => Base.priority = 128);
-                Base.priority = value;
+                _isPriorityModified = true;
+                _source.priority = value;
             }
         }
 
-        private bool _hasMuteResetAction = false;
+        private bool _isMuteModified = false;
         public bool mute
         {
-            get => Base.mute;
+            get => _source.mute;
             set
             {
-                AddResetAction(ref _hasMuteResetAction, () => Base.mute = false);
-                Base.mute = value;
+                _isMuteModified = true;
+                _source.mute = value;
             }
         }
 
-        private bool _hasMinDistanceResetAction = false;
+        private bool _isMinDistanceModified = false;
         public float minDistance
         {
-            get => Base.minDistance;
+            get => _source.minDistance;
             set
             {
-                AddResetAction(ref _hasMinDistanceResetAction, () => Base.minDistance = 1);
-                Base.minDistance = value;
+                _isMinDistanceModified = true;
+                _source.minDistance = value;
             }
         }
 
-        private bool _hasMaxDistanceResetAction = false;
+        private bool _isMaxDistanceModified = false;
         public float maxDistance
         {
-            get => Base.maxDistance;
+            get => _source.maxDistance;
             set
             {
-                AddResetAction(ref _hasMaxDistanceResetAction, () => Base.maxDistance = 500);
-                Base.maxDistance = value;
+                _isMaxDistanceModified = true;
+                _source.maxDistance = value;
             }
         }
 
-        private bool _hasRolloffModeResetAction = false;
+        private bool _isRolloffModeModified = false;
         public AudioRolloffMode rolloffMode
         {
-            get => Base.rolloffMode;
+            get => _source.rolloffMode;
             set
             {
-                AddResetAction(ref _hasRolloffModeResetAction, () => Base.rolloffMode = UnityEngine.AudioRolloffMode.Logarithmic);
-                Base.rolloffMode = value;
+                _isRolloffModeModified = true;
+                _source.rolloffMode = value;
             }
         }
 
+        public void Dispose()
+        {
+            if (_isVolumeModified) {_source.volume = 1f; _isVolumeModified = false;}
+            if (_isPitchModified) {_source.pitch = 1f; _isPitchModified = false;}
+            if (_isTimeModified) {_source.time = 0f; _isTimeModified = false;}
+            if (_isTimeSamplesModified) {_source.timeSamples = 0; _isTimeSamplesModified = false;}
+            if (_isClipModified) {_source.clip = null; _isClipModified = false;}
+            if (_isOutputAudioMixerGroupModified) {_source.outputAudioMixerGroup = null; _isOutputAudioMixerGroupModified = false;}
+#if (UNITY_EDITOR && UNITY_2021_3_OR_NEWER) || UNITY_PS4 || UNITY_PS5
+            if (_isGamepadSpeakerOutputTypeModified) {_source.gamepadSpeakerOutputType = GamepadSpeakerOutputType.Speaker; _isGamepadSpeakerOutputTypeModified = false;}
+#endif
+            if (_isLoopModified) {_source.loop = false; _isLoopModified = false;}
+            if (_isIgnoreListenerVolumeModified) {_source.ignoreListenerVolume = false; _isIgnoreListenerVolumeModified = false;}
+            if (_isPlayOnAwakeModified) {_source.playOnAwake = true; _isPlayOnAwakeModified = false;}
+            if (_isIgnoreListenerPauseModified) {_source.ignoreListenerPause = false; _isIgnoreListenerPauseModified = false;}
+            if (_isVelocityUpdateModeModified) {_source.velocityUpdateMode = AudioVelocityUpdateMode.Auto; _isVelocityUpdateModeModified = false;}
+            if (_isPanStereoModified) {_source.panStereo = 0f; _isPanStereoModified = false;}
+            if (_isSpatialBlendModified) {_source.spatialBlend = 0f; _isSpatialBlendModified = false;}
+            if (_isSpatializeModified) {_source.spatialize = false; _isSpatializeModified = false;}
+            if (_isSpatializePostEffectsModified) {_source.spatializePostEffects = false; _isSpatializePostEffectsModified = false;}
+            if (_isReverbZoneMixModified) {_source.reverbZoneMix = 1f; _isReverbZoneMixModified = false;}
+            if (_isBypassEffectsModified) {_source.bypassEffects = false; _isBypassEffectsModified = false;}
+            if (_isBypassListenerEffectsModified) {_source.bypassListenerEffects = false; _isBypassListenerEffectsModified = false;}
+            if (_isBypassReverbZonesModified) {_source.bypassReverbZones = false; _isBypassReverbZonesModified = false;}
+            if (_isDopplerLevelModified) {_source.dopplerLevel = 1f; _isDopplerLevelModified = false;}
+            if (_isSpreadModified) {_source.spread = 0f; _isSpreadModified = false;}
+            if (_isPriorityModified) {_source.priority = 128; _isPriorityModified = false;}
+            if (_isMuteModified) {_source.mute = false; _isMuteModified = false;}
+            if (_isMinDistanceModified) {_source.minDistance = 1f; _isMinDistanceModified = false;}
+            if (_isMaxDistanceModified) {_source.maxDistance = 500f; _isMaxDistanceModified = false;}
+            if (_isRolloffModeModified) {_source.rolloffMode = AudioRolloffMode.Logarithmic; _isRolloffModeModified = false;}
+        }
     }
 }

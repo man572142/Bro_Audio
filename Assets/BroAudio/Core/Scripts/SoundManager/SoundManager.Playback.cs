@@ -88,7 +88,7 @@ namespace Ami.BroAudio.Runtime
             return wrapper;
         }
 
-        private void PlaybackHandover(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType previousEffect, float trackVolume, float pitch)
+        private void PlaybackHandover(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType prevTrackEffect, float trackVolume, float pitch)
         {
             var newPlayer = _audioPlayerPool.Extract();
             wrapper.UpdateInstance(newPlayer);
@@ -103,7 +103,7 @@ namespace Ami.BroAudio.Runtime
                 newPlayer.SetScheduledEndTime(pref.ScheduledEndTime);
             }
 #if !UNITY_WEBGL
-            newPlayer.SetEffect(previousEffect, SetEffectMode.Override);
+            newPlayer.SetTrackEffect(prevTrackEffect, SetEffectMode.Override);
 #endif
 
             newPlayer.OnPlaybackHandover = PlaybackHandover;

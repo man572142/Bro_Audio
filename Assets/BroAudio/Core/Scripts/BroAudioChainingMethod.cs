@@ -1,4 +1,6 @@
 ﻿using System;
+using Ami.Extension;
+using UnityEngine;
 using static Ami.BroAudio.BroAdvice;
 
 namespace Ami.BroAudio
@@ -128,6 +130,50 @@ namespace Ami.BroAudio
         {
             return player?.OnAudioFilterRead(onAudioFilterRead);
         }
+
+        #region Set Effect
+        /// <summary>
+        /// Adds a chorus effect to the audio player, creating multiple delayed copies of the sound to produce a richer, fuller tone
+        /// </summary>
+        /// <param name="onSet">Optional callback to configure the chorus settings</param>
+        public static IAudioPlayer AddChorusEffect(this IAudioPlayer player, Action<IAudioChorusFilterProxy> onSet = null) 
+            => player?.AddEffect<AudioChorusFilter, IAudioChorusFilterProxy>(onSet);
+        
+        /// <summary>
+        /// Adds a distortion effect to the audio player, creating audio clipping and harmonic distortion
+        /// </summary>
+        /// <param name="onSet">Optional callback to configure the distortion settings</param>
+        public static IAudioPlayer AddDistortionEffect(this IAudioPlayer player, Action<IAudioDistortionFilterProxy> onSet = null) 
+            => player?.AddEffect<AudioDistortionFilter, IAudioDistortionFilterProxy>(onSet);
+        
+        /// <summary>
+        /// Adds an echo effect to the audio player, creating delayed repetitions of the original sound
+        /// </summary>
+        /// <param name="onSet">Optional callback to configure the echo settings</param>
+        public static IAudioPlayer AddEchoEffect(this IAudioPlayer player, Action<IAudioEchoFilterProxy> onSet = null) 
+            => player?.AddEffect<AudioEchoFilter, IAudioEchoFilterProxy>(onSet);
+        
+        /// <summary>
+        /// Adds a high-pass filter effect to the audio player, attenuating low frequencies below the cutoff point
+        /// </summary>
+        /// <param name="onSet">Optional callback to configure the high-pass filter settings</param>
+        public static IAudioPlayer AddHighPassEffect(this IAudioPlayer player, Action<IAudioHighPassFilterProxy> onSet = null) 
+            => player?.AddEffect<AudioHighPassFilter, IAudioHighPassFilterProxy>(onSet);
+
+        /// <summary>
+        /// Adds a low-pass filter effect to the audio player, attenuating high frequencies above the cutoff point
+        /// </summary>
+        /// <param name="onSet">Optional callback to configure the low-pass filter settings</param>
+        public static IAudioPlayer AddLowPassEffect(this IAudioPlayer player, Action<IAudioLowPassFilterProxy> onSet = null) 
+            => player?.AddEffect<AudioLowPassFilter, IAudioLowPassFilterProxy>(onSet);
+        
+        /// <summary>
+        /// Adds a reverb effect to the audio player, simulating acoustic reflections in various environments
+        /// </summary>
+        /// <param name="onSet">Optional callback to configure the reverb settings</param>
+        public static IAudioPlayer AddReverbEffect(this IAudioPlayer player, Action<IAudioReverbFilterProxy> onSet = null) 
+            => player?.AddEffect<AudioReverbFilter, IAudioReverbFilterProxy>(onSet);
+        #endregion
 
 #if !UNITY_WEBGL
         #region As Dominator

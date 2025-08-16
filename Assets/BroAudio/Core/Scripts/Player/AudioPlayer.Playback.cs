@@ -94,7 +94,7 @@ namespace Ami.BroAudio.Runtime
                 }
                 else
                 {
-                    SetEffect(audioTypePref.EffectType, SetEffectMode.Add);
+                    SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
                 }
 
                 SetScheduleTime(out hasScheduled);
@@ -266,7 +266,7 @@ namespace Ami.BroAudio.Runtime
             }
 
             ClearScheduleEndEvents(); // it should be rescheduled in the new player
-            OnPlaybackHandover?.Invoke(ID, _instanceWrapper, newPref, CurrentActiveEffects, _trackVolume.Target, StaticPitch);
+            OnPlaybackHandover?.Invoke(ID, _instanceWrapper, newPref, CurrentActiveTrackEffects, _trackVolume.Target, StaticPitch);
             OnPlaybackHandover = null;
             _instanceWrapper = null; // the instance has been transferred to the new player
         }

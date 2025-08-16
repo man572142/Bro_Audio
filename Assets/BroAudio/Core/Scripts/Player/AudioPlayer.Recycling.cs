@@ -22,6 +22,7 @@ namespace Ami.BroAudio.Runtime
         {
             ResetAudioSource();
             DestroyAudioFilterReader();
+            DestroyAddedEffectComponents();
             ClearEvents();
 
             if (TryGetMixerAndTrack(out _, out var track))
@@ -73,6 +74,21 @@ namespace Ami.BroAudio.Runtime
             if(_audioFilterReader)
             {
                 Destroy(_audioFilterReader);
+            }
+        }
+
+        private void DestroyAddedEffectComponents()
+        {
+            if (_addedEffects != null)
+            {
+                foreach (var effect in _addedEffects)
+                {
+                    if (effect.Component)
+                    {
+                        Destroy(effect.Component);
+                    }
+                }
+                _addedEffects = null;
             }
         }
     }

@@ -33,6 +33,8 @@ namespace Ami.BroAudio.Runtime
 
             void IAudioPlayer.GetOutputData(float[] samples, int channels) { }
             void IAudioPlayer.GetSpectrumData(float[] samples, int channels, FFTWindow window) { }
+            
+            IAudioPlayer IAudioPlayer.AddEffect<T, TProxy>(Action<TProxy> onSet) => this;
             IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead) => this;
             IAudioPlayer IAudioPlayer.OnEnd(Action<SoundID> onEnd) => this;
             IAudioPlayer IAudioPlayer.OnStart(Action<IAudioPlayer> onStart) => this;

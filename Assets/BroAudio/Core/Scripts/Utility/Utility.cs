@@ -3,6 +3,7 @@ using Ami.Extension;
 using Ami.BroAudio.Runtime;
 using System.Collections.Generic;
 using System;
+using System.Reflection;
 using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio
@@ -100,6 +101,46 @@ namespace Ami.BroAudio
             AudioSourceCurveType.Spread => AudioConstant.DefaultSpread,
             _ => default,
         };
+        
+        public static IAudioEffectModifier CreateAudioEffectProxy<T>(T component) where T : Behaviour
+        {
+            return component switch
+            {
+                AudioHighPassFilter highPass => new AudioHighPassFilterProxy(highPass),
+                AudioLowPassFilter lowPass => new AudioLowPassFilterProxy(lowPass),
+                AudioReverbFilter reverb => new AudioReverbFilterProxy(reverb),
+                AudioDistortionFilter distortion => new AudioDistortionFilterProxy(distortion),
+                AudioEchoFilter echo => new AudioEchoFilterProxy(echo),
+                AudioChorusFilter chorus => new AudioChorusFilterProxy(chorus),
+                _ => LogAndReturnNull()
+            };
+            
+            IAudioEffectModifier LogAndReturnNull()
+            {
+                Debug.LogWarning(Utility.LogTitle + $"No proxy implementation found for {typeof(T).Name}");
+                return null;
+            }
+        }
+
+        public static Type GetFilterTypeFromProxy(IAudioEffectModifier proxy)
+        {
+            return proxy switch
+            {
+                AudioHighPassFilterProxy _ => typeof(AudioHighPassFilter),
+                AudioLowPassFilterProxy _ => typeof(AudioLowPassFilter),
+                AudioReverbFilterProxy _ => typeof(AudioReverbFilter),
+                AudioDistortionFilterProxy _ => typeof(AudioDistortionFilter),
+                AudioEchoFilterProxy _ => typeof(AudioEchoFilter),
+                AudioChorusFilterProxy _ => typeof(AudioChorusFilter),
+                _ => LogAndReturnNull()
+            };
+
+            Type LogAndReturnNull()
+            {
+                Debug.LogWarning(Utility.LogTitle + $"No filter type mapping found for {proxy?.GetType().Name}");
+                return null;
+            }
+        }
 
         internal static T GetOrCreateDecorator<T>(ref List<AudioPlayerDecorator> list, Func<T> onCreateDecorator) where T : AudioPlayerDecorator
         {

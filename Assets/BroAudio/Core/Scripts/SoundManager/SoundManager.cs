@@ -299,7 +299,7 @@ namespace Ami.BroAudio.Runtime
             {
                 if (player.IsActive && targetType.Contains(GetAudioType(player.ID)) && !player.IsDominator)
                 {
-                    player.SetEffect(effectType, mode);
+                    player.SetTrackEffect(effectType, mode);
                 }
             }
         }

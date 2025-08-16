@@ -18,5 +18,8 @@ namespace Ami.Extension
         /// <inheritdoc cref="AudioEchoFilter.wetMix"/>
         float wetMix { get; set; }
 
+        /// <inheritdoc cref="AudioEchoFilter.enabled"/>
+        bool enabled { get; set; }
+
     }
 }

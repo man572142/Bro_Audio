@@ -174,6 +174,17 @@ namespace Ami.Extension
             }
         }
 
+        private bool _isEnabledModified = false;
+        public bool enabled
+        {
+            get => _source.enabled;
+            set
+            {
+                _isEnabledModified = true;
+                _source.enabled = value;
+            }
+        }
+
         public void TransferValueTo<T>(T target) where T : UnityEngine.Behaviour
         {
             if (_source == null || !(target is AudioReverbFilter targetComponent)) return;
@@ -193,6 +204,7 @@ namespace Ami.Extension
             if (_isHfReferenceModified) targetComponent.hfReference = _source.hfReference;
             if (_isRoomLFModified) targetComponent.roomLF = _source.roomLF;
             if (_isLfReferenceModified) targetComponent.lfReference = _source.lfReference;
+            if (_isEnabledModified) targetComponent.enabled = _source.enabled;
 
             _source = targetComponent;
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Data;
@@ -259,11 +260,17 @@ namespace Ami.BroAudio.Runtime
             return this;
         }
 
-        IAudioPlayer IAudioPlayer.AddEffect<T, TProxy>(Action<TProxy> onSet)
+        IAudioPlayer IAudioPlayer.AddAudioEffect<T, TProxy>(Action<TProxy> onSet)
         {
             if (!IsActive)
             {
                 Debug.LogError(Utility.LogTitle + $"Cannot add {typeof(T).Name} to inactive audio player!");
+                return this;
+            }
+
+            if (_addedEffects != null && _addedEffects.Any(x => x.Component is T))
+            {
+                Debug.LogWarning(Utility.LogTitle + $"Effect {typeof(T).Name} already exists!");
                 return this;
             }
 
@@ -274,6 +281,36 @@ namespace Ami.BroAudio.Runtime
             _addedEffects.Add(new AddedEffect { Component = component, Modifier = modifier });
 
             onSet?.Invoke(modifier as TProxy);
+            return this;
+        }
+
+        IAudioPlayer IAudioPlayer.RemoveAudioEffect<T>()
+        {
+            if (!IsActive)
+            {
+                Debug.LogError(Utility.LogTitle + $"Cannot remove {typeof(T).Name} from inactive audio player!");
+                return this;
+            }
+
+            if (_addedEffects == null || _addedEffects.Count == 0)
+            {
+                Debug.LogWarning(Utility.LogTitle + $"No effects to remove from audio player!");
+                return this;
+            }
+
+            for (int i = _addedEffects.Count - 1; i >= 0; i--)
+            {
+                var effect = _addedEffects[i];
+                if (effect.Component is T)
+                {
+                    if (effect.Component != null)
+                    {
+                        Destroy(effect.Component);
+                    }
+                    _addedEffects.RemoveAt(i);
+                    break; // Remove only the first matching effect
+                }
+            }
             return this;
         }
 

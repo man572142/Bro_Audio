@@ -11,5 +11,8 @@ namespace Ami.Extension
         /// <inheritdoc cref="AudioHighPassFilter.highpassResonanceQ"/>
         float highpassResonanceQ { get; set; }
 
+        /// <inheritdoc cref="AudioHighPassFilter.enabled"/>
+        bool enabled { get; set; }
+
     }
 }

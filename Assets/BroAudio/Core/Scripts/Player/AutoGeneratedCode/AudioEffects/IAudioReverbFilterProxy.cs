@@ -51,5 +51,8 @@ namespace Ami.Extension
         /// <inheritdoc cref="AudioReverbFilter.lfReference"/>
         float lfReference { get; set; }
 
+        /// <inheritdoc cref="AudioReverbFilter.enabled"/>
+        bool enabled { get; set; }
+
     }
 }

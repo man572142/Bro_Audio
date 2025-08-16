@@ -86,6 +86,17 @@ namespace Ami.Extension
             }
         }
 
+        private bool _isEnabledModified = false;
+        public bool enabled
+        {
+            get => _source.enabled;
+            set
+            {
+                _isEnabledModified = true;
+                _source.enabled = value;
+            }
+        }
+
         public void TransferValueTo<T>(T target) where T : UnityEngine.Behaviour
         {
             if (_source == null || !(target is AudioChorusFilter targetComponent)) return;
@@ -97,6 +108,7 @@ namespace Ami.Extension
             if (_isDelayModified) targetComponent.delay = _source.delay;
             if (_isRateModified) targetComponent.rate = _source.rate;
             if (_isDepthModified) targetComponent.depth = _source.depth;
+            if (_isEnabledModified) targetComponent.enabled = _source.enabled;
 
             _source = targetComponent;
         }

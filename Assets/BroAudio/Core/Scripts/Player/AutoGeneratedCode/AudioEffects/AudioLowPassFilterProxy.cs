@@ -42,6 +42,17 @@ namespace Ami.Extension
             }
         }
 
+        private bool _isEnabledModified = false;
+        public bool enabled
+        {
+            get => _source.enabled;
+            set
+            {
+                _isEnabledModified = true;
+                _source.enabled = value;
+            }
+        }
+
         public void TransferValueTo<T>(T target) where T : UnityEngine.Behaviour
         {
             if (_source == null || !(target is AudioLowPassFilter targetComponent)) return;
@@ -49,6 +60,7 @@ namespace Ami.Extension
             if (_isCustomCutoffCurveModified) targetComponent.customCutoffCurve = _source.customCutoffCurve;
             if (_isCutoffFrequencyModified) targetComponent.cutoffFrequency = _source.cutoffFrequency;
             if (_isLowpassResonanceQModified) targetComponent.lowpassResonanceQ = _source.lowpassResonanceQ;
+            if (_isEnabledModified) targetComponent.enabled = _source.enabled;
 
             _source = targetComponent;
         }

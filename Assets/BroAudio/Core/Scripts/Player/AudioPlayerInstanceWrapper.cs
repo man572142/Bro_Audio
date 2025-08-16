@@ -76,8 +76,11 @@ namespace Ami.BroAudio
 
         public void GetOutputData(float[] samples, int channels) => Instance?.GetOutputData(samples, channels);
         public void GetSpectrumData(float[] samples, int channels, FFTWindow window) => Instance?.GetSpectrumData(samples, channels, window);
-        IAudioPlayer IAudioPlayer.AddEffect<T, TProxy>(Action<TProxy> onSet) 
-            => IsAvailable() ? Wrap(((IAudioPlayer)Instance).AddEffect<T, TProxy>(onSet)) : Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.AddAudioEffect<T, TProxy>(Action<TProxy> onSet) 
+            => IsAvailable() ? Wrap(((IAudioPlayer)Instance).AddAudioEffect<T, TProxy>(onSet)) : Empty.AudioPlayer;
+        
+        IAudioPlayer IAudioPlayer.RemoveAudioEffect<T>() 
+            => IsAvailable() ? Wrap(((IAudioPlayer)Instance).RemoveAudioEffect<T>()) : Empty.AudioPlayer;
 
         IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead) 
             => IsAvailable() ? Wrap(Instance.OnAudioFilterRead(onAudioFilterRead)) : Empty.AudioPlayer;

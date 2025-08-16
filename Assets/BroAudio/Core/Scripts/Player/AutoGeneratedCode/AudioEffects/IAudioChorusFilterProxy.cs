@@ -27,5 +27,8 @@ namespace Ami.Extension
         /// <inheritdoc cref="AudioChorusFilter.depth"/>
         float depth { get; set; }
 
+        /// <inheritdoc cref="AudioChorusFilter.enabled"/>
+        bool enabled { get; set; }
+
     }
 }

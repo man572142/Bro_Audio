@@ -53,6 +53,17 @@ namespace Ami.Extension
             }
         }
 
+        private bool _isEnabledModified = false;
+        public bool enabled
+        {
+            get => _source.enabled;
+            set
+            {
+                _isEnabledModified = true;
+                _source.enabled = value;
+            }
+        }
+
         public void TransferValueTo<T>(T target) where T : UnityEngine.Behaviour
         {
             if (_source == null || !(target is AudioEchoFilter targetComponent)) return;
@@ -61,6 +72,7 @@ namespace Ami.Extension
             if (_isDecayRatioModified) targetComponent.decayRatio = _source.decayRatio;
             if (_isDryMixModified) targetComponent.dryMix = _source.dryMix;
             if (_isWetMixModified) targetComponent.wetMix = _source.wetMix;
+            if (_isEnabledModified) targetComponent.enabled = _source.enabled;
 
             _source = targetComponent;
         }

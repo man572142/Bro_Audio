@@ -9,5 +9,8 @@ namespace Ami.Extension
         /// <inheritdoc cref="AudioDistortionFilter.distortionLevel"/>
         float distortionLevel { get; set; }
 
+        /// <inheritdoc cref="AudioDistortionFilter.enabled"/>
+        bool enabled { get; set; }
+
     }
 }

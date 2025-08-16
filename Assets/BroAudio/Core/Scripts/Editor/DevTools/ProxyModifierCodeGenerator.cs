@@ -57,7 +57,7 @@ namespace Ami.Extension.Reflection
             public string ScriptName;
             public string Path;
             public List<string> Usings;
-            public bool IncludeBaseTypeMembers;
+            public List<Type> IncludedBaseTypes;
             public string[] MethodNameList;
             public Type[] DependencyComponentTypes;
             public string InterfaceImplementation;
@@ -82,9 +82,10 @@ namespace Ami.Extension.Reflection
             }
 
             var filteredProperties = members
-                .Where(x => (x.MemberType == MemberTypes.Property) &&
-                (!parameters.IncludeBaseTypeMembers && x.DeclaringType == typeof(T)) &&
-                x is PropertyInfo property && property.CanWrite && x.GetCustomAttribute(typeof(ObsoleteAttribute)) == null).ToList();
+                .Where(m => m.MemberType == MemberTypes.Property)
+                .Select(m => m as PropertyInfo)
+                .Where(p => p.CanWrite && !IsObsolete(p) && IsFromIncludedType(p))
+                .ToList();
 
             var defaultValueMap = GetDefaultValueMap<T>(filteredProperties, parameters.DependencyComponentTypes);
             CreateModifierInterface<T>(parameters, filteredProperties, isEffectModifier);
@@ -94,6 +95,10 @@ namespace Ami.Extension.Reflection
                 CreateEmptyModifierClass<T>(parameters, filteredProperties, defaultValueMap);
             }
             AssetDatabase.Refresh();
+            
+            bool IsFromIncludedType(MemberInfo m) => 
+                (parameters.IncludedBaseTypes?.Contains(m.DeclaringType) ?? false) || m.DeclaringType == typeof(T);
+            bool IsObsolete(MemberInfo m) => m.GetCustomAttribute(typeof(ObsoleteAttribute)) != null;
         }
 
         private static void CreateModifierInterface<T>(Parameters parameters, IEnumerable<MemberInfo> members, bool isEffectModifier) where T : Component

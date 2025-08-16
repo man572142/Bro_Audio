@@ -31,12 +31,24 @@ namespace Ami.Extension
             }
         }
 
+        private bool _isEnabledModified = false;
+        public bool enabled
+        {
+            get => _source.enabled;
+            set
+            {
+                _isEnabledModified = true;
+                _source.enabled = value;
+            }
+        }
+
         public void TransferValueTo<T>(T target) where T : UnityEngine.Behaviour
         {
             if (_source == null || !(target is AudioHighPassFilter targetComponent)) return;
 
             if (_isCutoffFrequencyModified) targetComponent.cutoffFrequency = _source.cutoffFrequency;
             if (_isHighpassResonanceQModified) targetComponent.highpassResonanceQ = _source.highpassResonanceQ;
+            if (_isEnabledModified) targetComponent.enabled = _source.enabled;
 
             _source = targetComponent;
         }

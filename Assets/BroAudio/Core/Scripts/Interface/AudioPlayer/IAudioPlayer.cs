@@ -61,8 +61,14 @@ namespace Ami.BroAudio
         /// Adds an audio effect component to the audio player
         /// </summary>
         /// <param name="onSet">Optional callback to configure the component after creation</param>
-        internal IAudioPlayer AddEffect<T, TProxy>(Action<TProxy> onSet)
+        internal IAudioPlayer AddAudioEffect<T, TProxy>(Action<TProxy> onSet)
             where T : Behaviour 
             where TProxy : class;
+
+        /// <summary>
+        /// Removes a specified audio effect component from the audio player
+        /// </summary>
+        internal IAudioPlayer RemoveAudioEffect<T>()
+            where T : Behaviour;
     }
 }

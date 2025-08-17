@@ -24,5 +24,6 @@ namespace Ami.Extension
         public const string SpatialBlend = "panLevelCustomCurve";
         public const string Spread = "spreadCustomCurve";
         public const string ReverbZoneMix = "reverbZoneMixCustomCurve";
+        public const string LowpassCustomCurve = "lowpassLevelCustomCurve";
     }
 }

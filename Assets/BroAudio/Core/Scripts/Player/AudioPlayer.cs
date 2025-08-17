@@ -129,6 +129,12 @@ namespace Ami.BroAudio.Runtime
                 AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, setting.CustomRolloff);
             }
 
+            if (setting.HasLowPassFilter && setting.LowpassLevelCustomCurve != null && 
+                _addedEffects == null) // addedEffect might be transferred from the previous player, so we don't need to set it here.'
+            {
+                this.AddLowPassEffect(x => x.customCutoffCurve = setting.LowpassLevelCustomCurve);
+            }
+
             void SetSpatialBlend()
             {
                 if (pref.HasFollowTarget(out _))
@@ -270,7 +276,7 @@ namespace Ami.BroAudio.Runtime
 
             if (_addedEffects != null && _addedEffects.Any(x => x.Component is T))
             {
-                Debug.LogWarning(Utility.LogTitle + $"Effect {typeof(T).Name} already exists!");
+                Debug.LogWarning(Utility.LogTitle + $"Effect {typeof(T).Name} already exists!", this);
                 return this;
             }
 
@@ -351,23 +357,23 @@ namespace Ami.BroAudio.Runtime
         internal void TransferAddedEffectComponents(AudioPlayer newInstance)
         {
             newInstance.SetAddedEffectComponents(_addedEffects);
-            _addedEffects = null;
         }
 
-        private void SetAddedEffectComponents(List<AddedEffect> addedEffects)
+        private void SetAddedEffectComponents(IReadOnlyList<AddedEffect> previousPlayerEffects)
         {
-            _addedEffects = addedEffects;
-            if (_addedEffects != null)
+            if (previousPlayerEffects == null)
             {
-                var go = gameObject;
-                for (int i = 0; i < _addedEffects.Count; i++)
-                {
-                    var effect = _addedEffects[i];
-                    var newComponent = go.AddComponent(Utility.GetFilterTypeFromProxy(effect.Modifier));
-                    effect.Modifier.TransferValueTo(newComponent as Behaviour);
-                    effect.Component = newComponent;
-                    _addedEffects[i] = effect;
-                }
+                return;
+            }
+            var go = gameObject;
+            for (int i = 0; i < previousPlayerEffects.Count; i++)
+            {
+                var copiedEffect = previousPlayerEffects[i];
+                var newComponent = go.AddComponent(Utility.GetFilterTypeFromProxy(copiedEffect.Modifier));
+                copiedEffect.Modifier.TransferValueTo(newComponent as Behaviour);
+                copiedEffect.Component = newComponent;
+                _addedEffects ??= new List<AddedEffect>();
+                _addedEffects.Add(copiedEffect);
             }
         }
 

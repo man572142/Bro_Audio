@@ -6,66 +6,67 @@ using Ami.Extension;
 using UnityEditor;
 using UnityEngine;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
+using System.Linq;
 
 namespace Ami.BroAudio.Editor
 {
-	public partial class LibraryManagerWindow : EditorWindow
-	{
-		private enum MultiClipsImportOption
-		{
-			MultipleForEach,
-			Cancel,
-			OneForAll,
-		}
+    public partial class LibraryManagerWindow : EditorWindow
+    {
+        private enum MultiClipsImportOption
+        {
+            MultipleForEach,
+            Cancel,
+            OneForAll,
+        }
 
-		public const float CenterLineGap = 30f;
-		public const float CenterLength = 130f;
-		public const float BackgroundLogoSize = 500f;
-		public const int DragAndDropFontSize = 35;
+        public const float CenterLineGap = 30f;
+        public const float CenterLength = 130f;
+        public const float BackgroundLogoSize = 500f;
+        public const int DragAndDropFontSize = 35;
 
         private int _pickerID = -1;
-		private Texture _backgroundLogo = null;
-		private Material _backgroundLogoMat = null;
+        private Texture _backgroundLogo = null;
+        private Material _backgroundLogoMat = null;
 
         public Vector2 BrowseButtonSize => new Vector2(80f,30f);
-		
-		private void DrawEntityFactory(Rect factoryRect)
-		{
-			EditorGUILayout.BeginVertical();
-			{
-				HandleDragAndDrop(factoryRect);
-				DrawBackgroundLogo(factoryRect);
+        
+        private void DrawEntityFactory(Rect factoryRect)
+        {
+            EditorGUILayout.BeginVertical();
+            {
+                HandleDragAndDrop(factoryRect);
+                DrawBackgroundLogo(factoryRect);
 
-				GUILayout.Space(factoryRect.height * 0.4f);
-				EditorGUILayout.LabelField("Drag & Drop".SetSize(DragAndDropFontSize).SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
-				GUILayout.Space(15f);
-				EditorGUILayout.LabelField("or".SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
+                GUILayout.Space(factoryRect.height * 0.4f);
+                EditorGUILayout.LabelField("Drag & Drop".SetSize(DragAndDropFontSize).SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
+                GUILayout.Space(15f);
+                EditorGUILayout.LabelField("or".SetColor(DefaultLabelColor), GUIStyleHelper.MiddleCenterRichText);
 
-				Rect centerLineRect = GUILayoutUtility.GetLastRect();
-				using (new Handles.DrawingScope(Color.grey))
-				{
-					float middleX = centerLineRect.xMin + centerLineRect.width * 0.5f;
-					float middleY = centerLineRect.yMin + centerLineRect.height * 0.5f;
-					Handles.DrawAAPolyLine(2f, new Vector3(middleX - CenterLineGap - CenterLength, middleY), new Vector3(middleX - CenterLineGap, middleY));
-					Handles.DrawAAPolyLine(2f, new Vector3(middleX + CenterLineGap + CenterLength, middleY), new Vector3(middleX + CenterLineGap, middleY));
-				}
+                Rect centerLineRect = GUILayoutUtility.GetLastRect();
+                using (new Handles.DrawingScope(Color.grey))
+                {
+                    float middleX = centerLineRect.xMin + centerLineRect.width * 0.5f;
+                    float middleY = centerLineRect.yMin + centerLineRect.height * 0.5f;
+                    Handles.DrawAAPolyLine(2f, new Vector3(middleX - CenterLineGap - CenterLength, middleY), new Vector3(middleX - CenterLineGap, middleY));
+                    Handles.DrawAAPolyLine(2f, new Vector3(middleX + CenterLineGap + CenterLength, middleY), new Vector3(middleX + CenterLineGap, middleY));
+                }
 
-				GUILayout.Space(15f);
-				EditorGUILayout.BeginHorizontal();
-				{
-					GUILayout.FlexibleSpace();
-					if (GUILayout.Button("Browse", GUILayout.Width(BrowseButtonSize.x), GUILayout.Height(BrowseButtonSize.y)))
-					{
-						_pickerID = EditorGUIUtility.GetControlID(FocusType.Passive);
-						EditorGUIUtility.ShowObjectPicker<AudioClip>(null, false, string.Empty, _pickerID);
-					}
-					GUILayout.FlexibleSpace();
-				}
-				EditorGUILayout.EndHorizontal();
-				HandleObjectPicker();
-			}
-			EditorGUILayout.EndVertical();
-		}
+                GUILayout.Space(15f);
+                EditorGUILayout.BeginHorizontal();
+                {
+                    GUILayout.FlexibleSpace();
+                    if (GUILayout.Button("Browse", GUILayout.Width(BrowseButtonSize.x), GUILayout.Height(BrowseButtonSize.y)))
+                    {
+                        _pickerID = EditorGUIUtility.GetControlID(FocusType.Passive);
+                        EditorGUIUtility.ShowObjectPicker<AudioClip>(null, false, string.Empty, _pickerID);
+                    }
+                    GUILayout.FlexibleSpace();
+                }
+                EditorGUILayout.EndHorizontal();
+                HandleObjectPicker();
+            }
+            EditorGUILayout.EndVertical();
+        }
         
         private void InitBackgroundLogo()
         {
@@ -73,7 +74,7 @@ namespace Ami.BroAudio.Editor
             _backgroundLogoMat = (Material)EditorGUIUtility.LoadRequired("Inspectors/InactiveGUI.mat");
         }
 
-		private void DrawBackgroundLogo(Rect entitiesRect)
+        private void DrawBackgroundLogo(Rect entitiesRect)
         {
             if (Event.current.type != EventType.Repaint || _backgroundLogo == null|| _backgroundLogoMat == null)
             {
@@ -87,104 +88,102 @@ namespace Ami.BroAudio.Editor
             EditorGUI.DrawPreviewTexture(audioIconRect, _backgroundLogo, _backgroundLogoMat, ScaleMode.ScaleToFit);
         }
 
-		private void HandleObjectPicker()
-		{
-			if (Event.current.type == EventType.ExecuteCommand && Event.current.commandName == "ObjectSelectorClosed" 
-				&& EditorGUIUtility.GetObjectPickerControlID() == _pickerID)
-			{
-				AudioClip audioClip = EditorGUIUtility.GetObjectPickerObject() as AudioClip;
-				if (audioClip)
-				{
-					AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName);
-					CreateNewEntity(tempEditor, audioClip);
-				}
-				_pickerID = -1;
-			}
-		}
+        private void HandleObjectPicker()
+        {
+            if (Event.current.type == EventType.ExecuteCommand && Event.current.commandName == "ObjectSelectorClosed" 
+                && EditorGUIUtility.GetObjectPickerControlID() == _pickerID)
+            {
+                AudioClip audioClip = EditorGUIUtility.GetObjectPickerObject() as AudioClip;
+                if (audioClip)
+                {
+                    AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName);
+                    CreateNewEntity(tempEditor, audioClip);
+                }
+                _pickerID = -1;
+            }
+        }
 
-		private void HandleDragAndDrop(Rect entitiesRect)
-		{
-			DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
-			if (Event.current.type == EventType.DragPerform && entitiesRect.Scoping(position).Contains(Event.current.mousePosition))
-			{
-				var objs = DragAndDrop.objectReferences;
-
-                List<AudioClip> clips = new List<AudioClip>();
-                foreach (UnityEngine.Object obj in objs)
-				{
-					if(obj is AudioClip clip)
-					{
-						clips.Add(clip);
-                    }
-				}
-
-				if(clips.Count == 0 && objs.Length > 0)
-				{
+        private void HandleDragAndDrop(Rect entitiesRect)
+        {
+            DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
+            if (Event.current.type == EventType.DragPerform && entitiesRect.Scoping(position).Contains(Event.current.mousePosition))
+            {
+                var clips = GetAudioClipsFromDragAndDrop();
+                if(clips.Any())
+                {
+                    var tempEditor = CreateAsset(BroName.TempAssetName);
+                    ProcessDraggingClips(tempEditor, clips);
+                }
+                else if (DragAndDrop.objectReferences.Length > 0)
+                {
                     Debug.LogWarning(Utility.LogTitle + "The file isn't an Audio Clip");
-					return;
                 }
+            }
+        }
 
-                AudioAssetEditor tempEditor = null;	
-                if (clips.Count > 1)
-				{
-                    var option = (MultiClipsImportOption)EditorUtility.DisplayDialogComplex(
-						_instruction.GetText(Instruction.LibraryManager_MultiClipsImportTitle), // Title
-						_instruction.GetText(Instruction.LibraryManager_MultiClipsImportDialog), //Message
-						MultiClipsImportOption.MultipleForEach.ToString(), // OK
-						MultiClipsImportOption.Cancel.ToString(), // Cancel
-						MultiClipsImportOption.OneForAll.ToString()); // Alt
+        private List<AudioClip> GetAudioClipsFromDragAndDrop()
+        {
+            return DragAndDrop.objectReferences.OfType<AudioClip>().ToList();
+        }
 
-                    switch (option)
-                    {
-                        case MultiClipsImportOption.MultipleForEach:
-                            tempEditor = CreateAsset(BroName.TempAssetName);
-                            foreach (AudioClip clip in clips)
-							{
-                                CreateNewEntity(tempEditor, clip);
-                            }
-                            break;
-                        case MultiClipsImportOption.Cancel:
-							return;
-                        case MultiClipsImportOption.OneForAll:
-                            tempEditor = CreateAsset(BroName.TempAssetName);
-                            CreateNewEntity(tempEditor, clips);
-                            break;
-                    }
+        private void ProcessDraggingClips(AudioAssetEditor assetEditor, List<AudioClip> clips)
+        {
+            if (clips.Count > 1)
+            {
+                var option = (MultiClipsImportOption)EditorUtility.DisplayDialogComplex(
+                    _instruction.GetText(Instruction.LibraryManager_MultiClipsImportTitle), // Title
+                    _instruction.GetText(Instruction.LibraryManager_MultiClipsImportDialog), //Message
+                    MultiClipsImportOption.MultipleForEach.ToString(), // OK
+                    MultiClipsImportOption.Cancel.ToString(), // Cancel
+                    MultiClipsImportOption.OneForAll.ToString()); // Alt
+
+                switch (option)
+                {
+                    case MultiClipsImportOption.MultipleForEach:
+                        foreach (AudioClip clip in clips)
+                        {
+                            CreateNewEntity(assetEditor, clip);
+                        }
+                        break;
+                    case MultiClipsImportOption.Cancel:
+                        return;
+                    case MultiClipsImportOption.OneForAll:
+                        CreateNewEntity(assetEditor, clips);
+                        break;
                 }
-                else if(clips.Count == 1)
-				{
-                    tempEditor = CreateAsset(BroName.TempAssetName);
-                    CreateNewEntity(tempEditor, clips[0]);
-				}
+            }
+            else if (clips.Count == 1)
+            {
+                CreateNewEntity(assetEditor, clips[0]);
+            }
 
-				if(tempEditor != null)
-				{
-                    tempEditor.Verify();
-                    tempEditor.serializedObject.ApplyModifiedProperties();
-                }
-			}
+            if (assetEditor != null)
+            {
+                assetEditor.Verify();
+                assetEditor.serializedObject.ApplyModifiedProperties();
+            }
         }
 
         private void CreateNewEntity(AudioAssetEditor editor, AudioClip clip)
         {
             SerializedProperty entity = editor.CreateNewEntity();
-			entity.FindPropertyRelative(EditorScriptingExtension.GetBackingFieldName(nameof(AudioEntity.Name))).stringValue = clip.name;
+            entity.FindPropertyRelative(EditorScriptingExtension.GetBackingFieldName(nameof(AudioEntity.Name))).stringValue = clip.name;
             SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioEntity.Clips));
 
-			editor.SetClipList(clipListProp, 0, clip);
+            editor.SetClipList(clipListProp, 0, clip);
             _isInEntitiesEditMode = true;
         }
 
-		private void CreateNewEntity(AudioAssetEditor editor, List<AudioClip> clips)
-		{
-			SerializedProperty entity = editor.CreateNewEntity();
-			SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioEntity.Clips));
+        private void CreateNewEntity(AudioAssetEditor editor, List<AudioClip> clips)
+        {
+            SerializedProperty entity = editor.CreateNewEntity();
+            SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioEntity.Clips));
 
-			for(int i = 0; i < clips.Count;i++)
-			{
-				editor.SetClipList(clipListProp, i, clips[i]);
-			}
-			_isInEntitiesEditMode = true;
+            for(int i = 0; i < clips.Count;i++)
+            {
+                editor.SetClipList(clipListProp, i, clips[i]);
+            }
+            _isInEntitiesEditMode = true;
 
         }
     }

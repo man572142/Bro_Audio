@@ -20,6 +20,8 @@ namespace Ami.BroAudio.Editor
         private const int AssetNameFontSize = 16;
         private const float BackButtonSize = 28f;
         private const float EntitiesFactoryRatio = 0.65f;
+        private const string ModifyAssetKey = "ModifyAsset";
+        private const string DragAndDropKey = "DragAndDrop";
 
         public static event Action OnCloseLibraryManagerWindow;
         public static event Action OnLostFocusEvent;
@@ -29,6 +31,7 @@ namespace Ami.BroAudio.Editor
         private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
         //private readonly EditorFlashingHelper _flasingHelper = new EditorFlashingHelper(Color.white, 1f, Ease.InCubic);
         private readonly IUniqueIDGenerator _idGenerator = new IdGenerator();
+        private readonly Dictionary<string, string> _instructionHelpBoxKeys = new Dictionary<string, string>();
 
         private List<string> _allAssetGUIDs;
         private ReorderableList _assetReorderableList;
@@ -194,9 +197,13 @@ namespace Ami.BroAudio.Editor
                 if (_assetEditorDict.TryGetValue(_allAssetGUIDs[index], out var editor))
                 {
                     if (editor.Asset == null)
+                    {
                         return;
+                    }
 
                     EditorGUI.LabelField(rect, editor.Asset.AssetName, GUIStyleHelper.RichText);
+
+                    HandleDragAndDropToAsset(rect, editor);
                 }
 
                 if (index == _currSelectedAssetIndex && Event.current.isMouse && Event.current.clickCount >= 2)
@@ -210,6 +217,18 @@ namespace Ami.BroAudio.Editor
             void OnReordered(ReorderableList list)
             {
                 _hasAssetListReordered = true;
+            }
+        }
+
+        private void HandleDragAndDropToAsset(Rect rect, AudioAssetEditor editor)
+        {
+            if(Event.current.type == EventType.DragPerform && rect.Contains(Event.current.mousePosition))
+            {
+                var clips = GetAudioClipsFromDragAndDrop();
+                if(clips.Any())
+                {
+                    ProcessDraggingClips(editor, clips);
+                }
             }
         }
 
@@ -401,7 +420,7 @@ namespace Ami.BroAudio.Editor
                 }
                 else if (_assetReorderableList.count > 0)
                 {
-                    EditorGUILayout.HelpBox(_instruction.GetText(Instruction.LibraryManager_ModifyAsset), MessageType.Info);
+                    DrawLibraryManagerInstructions();
                 }
             }
             EditorGUILayout.EndVertical();
@@ -417,12 +436,32 @@ namespace Ami.BroAudio.Editor
                         RichTextHelpBox(String.Format(text, assetName), MessageType.Error);
                         break;
                     case Instruction.None:
-                        EditorGUILayout.HelpBox(_instruction.GetText(Instruction.LibraryManager_ModifyAsset), MessageType.Info);
+                        DrawLibraryManagerInstructions();
                         break;
                     default:
                         EditorGUILayout.HelpBox(text, MessageType.Error);
                         break;
                 }
+            }
+        }
+
+        private void DrawLibraryManagerInstructions()
+        {
+            DrawInstructionHelpBox(ModifyAssetKey, _instruction.GetText(Instruction.LibraryManager_ModifyAsset));
+            DrawInstructionHelpBox(DragAndDropKey, "You can also drag and drop audio clips onto an asset to add them.");
+        }
+
+        private void DrawInstructionHelpBox(string messageName, string message)
+        {
+            if(!_instructionHelpBoxKeys.TryGetValue(messageName, out string key))
+            {
+                key = $"BroHelpBox_{Application.dataPath.GetHashCode()}_{messageName}";
+                _instructionHelpBoxKeys.Add(messageName, key);
+            }
+
+            if (!EditorPrefs.GetBool(key))
+            {
+                HelpBoxClosable(message, MessageType.Info, () => EditorPrefs.SetBool(key, true));
             }
         }
 

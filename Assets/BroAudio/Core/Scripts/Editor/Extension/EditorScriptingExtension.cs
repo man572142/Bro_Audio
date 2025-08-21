@@ -262,14 +262,14 @@ namespace Ami.Extension
             return newProperty != null;
         }
 
-        public static void RichTextHelpBox(Rect position,string message, MessageType messageType)
+        public static void RichTextHelpBox(Rect position, string message, MessageType messageType, Action onClose = null)
         {
-            RichTextHelpBox(position,message, GetIconName(messageType));
+            RichTextHelpBox(position,message, GetIconName(messageType), onClose);
         }
 
-        public static void RichTextHelpBox(string message, MessageType messageType)
+        public static void RichTextHelpBox(string message, MessageType messageType, Action onClose = null)
         {
-            RichTextHelpBox(message, GetIconName(messageType));
+            RichTextHelpBox(message, GetIconName(messageType), onClose);
         }
 
         private static string GetIconName(MessageType messageType) => messageType switch
@@ -280,16 +280,44 @@ namespace Ami.Extension
             _ => string.Empty,
         };
 
-        public static void RichTextHelpBox(Rect position,string message, string icon)
+        public static void RichTextHelpBox(Rect position, string message, string icon, Action onClose = null)
         {
             GUIContent content = GetRichTextContent(message, icon);
             EditorGUI.LabelField(position, content, GUIStyleHelper.RichTextHelpBox);
+            DrawHelpBoxCloseButton(position, onClose);
         }
 
-        public static void RichTextHelpBox(string message, string icon)
+        public static void RichTextHelpBox(string message, string icon, Action onClose = null)
         {
             GUIContent content = GetRichTextContent(message, icon);
             EditorGUILayout.LabelField(content, GUIStyleHelper.RichTextHelpBox);
+            DrawHelpBoxCloseButton(GUILayoutUtility.GetLastRect(), onClose);
+        }
+
+        public static void HelpBoxClosable(Rect position, string message, MessageType type, Action onClose)
+        {
+            EditorGUI.HelpBox(position, message, type);
+            DrawHelpBoxCloseButton(position, onClose);
+        }
+        
+        public static void HelpBoxClosable(string message, MessageType type, Action onClose)
+        {
+            EditorGUILayout.HelpBox(message, type);
+            DrawHelpBoxCloseButton(GUILayoutUtility.GetLastRect(), onClose);
+        }
+
+        private static void DrawHelpBoxCloseButton(Rect position, Action onClose)
+        {
+            if (onClose == null || !position.Contains(Event.current.mousePosition))
+            {
+                return;
+            }
+            
+            Rect buttonRect = new Rect(position.xMax - 16f, position.y, 16f, 16f);
+            if (GUI.Button(buttonRect, EditorGUIUtility.IconContent("winbtn_win_close_a"), GUIStyle.none))
+            {
+                onClose.Invoke();
+            }
         }
 
         private static GUIContent GetRichTextContent(string message, string icon)

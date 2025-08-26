@@ -102,7 +102,7 @@ namespace Ami.BroAudio
 
             private void OnValueChanged(float sliderValue)
             {
-                float volume = Utility.SliderToVolume(SliderType, sliderValue, AllowBoost);
+                float volume = Utility.SliderToVolume(SliderType, _slider.normalizedValue, AllowBoost);
                 _volume = volume;
                 BroAudio.SetVolume(_audioType, volume);
             }

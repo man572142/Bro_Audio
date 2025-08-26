@@ -10,7 +10,9 @@ namespace Ami.BroAudio.Data
         public float DopplerLevel = AudioConstant.DefaultDoppler;
         public float MinDistance = AudioConstant.AttenuationMinDistance;
         public float MaxDistance = AudioConstant.AttenuationMaxDistance;
+        public bool HasLowPassFilter;
 
+        public AnimationCurve LowpassLevelCustomCurve;
         public AnimationCurve SpatialBlend;
         public AnimationCurve ReverbZoneMix;
         public AnimationCurve Spread;

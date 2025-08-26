@@ -1,6 +1,7 @@
 ﻿#if BroAudio_DevOnly
 using System.IO;
 using System;
+using System.Collections.Generic;
 using static Ami.Extension.Reflection.ProxyModifierCodeGenerator;
 
 namespace Ami.Extension.Reflection
@@ -29,11 +30,12 @@ namespace Ami.Extension.Reflection
             _file?.Dispose();
         }
 
-        public void Write(string[] usings, string @namespace, string codeName, Type scriptType, string implementation = "", bool isPartial = false)
+        public void Write(IEnumerable<string> usings, string @namespace, string codeName, Type scriptType, string implementation = "", bool isPartial = false)
         {
             _file.WriteLine(Title);
             _file.WriteUsings(usings);
             _file.WriteLine();
+            implementation = string.IsNullOrEmpty(implementation) ? implementation : " : " + implementation;
             string partial = isPartial ? "partial " : string.Empty;
             _namespace = _file.WriteBraces("namespace " + @namespace, ref Indent);
             _codeBlock = _file.WriteBraces("public " + partial + GetScriptType(scriptType) + " " + codeName + implementation, ref Indent);

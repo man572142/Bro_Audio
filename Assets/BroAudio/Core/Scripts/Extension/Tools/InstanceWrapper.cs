@@ -5,17 +5,7 @@ namespace Ami.Extension
     public abstract class InstanceWrapper<T> : IRecyclable<InstanceWrapper<T>> where T : UnityEngine.Object
     {
         private T _instance = null;
-        protected T Instance
-        {
-            get
-            {
-                if (IsAvailable())
-                {
-                    return _instance;
-                }
-                return null;
-            }
-        }
+        protected T Instance => IsAvailable() ? _instance : null;
 
         protected InstanceWrapper(T instance)
         {

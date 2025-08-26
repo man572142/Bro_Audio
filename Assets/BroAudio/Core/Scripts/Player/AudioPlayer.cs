@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Data;
@@ -22,8 +23,15 @@ namespace Ami.BroAudio.Runtime
         private string _currTrackName = null;
         //private string _pitchParaName = string.Empty;
 
-        private AudioSourceProxy _proxy = null;
+        private IDisposable _proxy = null;
         private AudioFilterReader _audioFilterReader = null;
+        
+        private struct AddedEffect
+        {
+            public Component Component;
+            public IAudioEffectModifier Modifier;
+        }
+        private List<AddedEffect> _addedEffects = null;
 
         public SoundID ID { get; private set; } = -1;
 
@@ -32,8 +40,8 @@ namespace Ami.BroAudio.Runtime
         public Vector3 PlayingPosition => _pref.Position;
         public bool IsStopping { get; private set; }
         public bool IsFadingOut { get; private set; }
-        public EffectType CurrentActiveEffects { get; private set; } = EffectType.None;
-        public bool IsUsingEffect => CurrentActiveEffects != EffectType.None;
+        public EffectType CurrentActiveTrackEffects { get; private set; } = EffectType.None;
+        public bool IsUsingTrackEffect => CurrentActiveTrackEffects != EffectType.None;
         public bool IsDominator => HasDecoratorOf<DominatorPlayer>();
         public bool IsBGM => HasDecoratorOf<MusicPlayer>();
         public IBroAudioClip CurrentPlayingClip => _clip;
@@ -47,7 +55,8 @@ namespace Ami.BroAudio.Runtime
                         "The audio player is not playing! Please consider accessing the AudioSource via OnStart() or OnUpdate() methods.");
                     return Empty.AudioSource;
                 }
-                return _proxy ??= new AudioSourceProxy(AudioSource);
+                _proxy ??= new AudioSourceProxy(AudioSource);
+                return _proxy as IAudioSourceProxy;
             }
         }
 
@@ -65,7 +74,7 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        private string VolumeParaName => IsUsingEffect ? GetSendParaName() : GetCurrentTrackName();
+        private string VolumeParaName => IsUsingTrackEffect ? GetSendParaName() : GetCurrentTrackName();
 
         IAudioMixerPool MixerPool => SoundManager.Instance;
 
@@ -121,6 +130,12 @@ namespace Ami.BroAudio.Runtime
                 AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, setting.CustomRolloff);
             }
 
+            if (setting.HasLowPassFilter && setting.LowpassLevelCustomCurve != null && 
+                _addedEffects == null) // addedEffect might be transferred from the previous player, so we don't need to set it here.'
+            {
+                this.AddLowPassEffect(x => x.customCutoffCurve = setting.LowpassLevelCustomCurve);
+            }
+
             void SetSpatialBlend()
             {
                 if (pref.HasFollowTarget(out _))
@@ -174,7 +189,7 @@ namespace Ami.BroAudio.Runtime
             return this;
         }
 
-        public void SetEffect(EffectType effect,SetEffectMode mode)
+        public void SetTrackEffect(EffectType effect, SetEffectMode mode)
         {
             if(ID <= 0 || (effect == EffectType.None && mode != SetEffectMode.Override) 
                 || !TryGetMixerAndTrack(out var mixer, out _) || !TryGetMixerDecibelVolume(out float mixerDecibelVolume))
@@ -182,40 +197,40 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            bool oldUsingEffectState = IsUsingEffect;
+            bool oldUsingEffectState = IsUsingTrackEffect;
             switch (mode)
             {
                 case SetEffectMode.Add:
-                    CurrentActiveEffects |= effect;
+                    CurrentActiveTrackEffects |= effect;
                     break;
                 case SetEffectMode.Remove:
-                    CurrentActiveEffects &= ~effect;
+                    CurrentActiveTrackEffects &= ~effect;
                     break;
                 case SetEffectMode.Override:
-                    CurrentActiveEffects = effect;
+                    CurrentActiveTrackEffects = effect;
                     break;
             }
-            bool newUsingEffectState = IsUsingEffect;
+            bool newUsingEffectState = IsUsingTrackEffect;
             if (oldUsingEffectState != newUsingEffectState)
             {
-                string from = IsUsingEffect ? GetCurrentTrackName() : GetSendParaName();
-                string to = IsUsingEffect ? GetSendParaName() : GetCurrentTrackName();
+                string from = IsUsingTrackEffect ? GetCurrentTrackName() : GetSendParaName();
+                string to = IsUsingTrackEffect ? GetSendParaName() : GetCurrentTrackName();
                 mixer.ChangeChannel(from, to, mixerDecibelVolume);
             }
         }
 
         private void ResetEffect()
         {
-            if(IsUsingEffect && TryGetMixerAndTrack(out var mixer, out _))
+            if(IsUsingTrackEffect && TryGetMixerAndTrack(out var mixer, out _))
             {
                 mixer.SafeSetFloat(GetSendParaName(), AudioConstant.MinDecibelVolume);
             }
-            CurrentActiveEffects = EffectType.None;
+            CurrentActiveTrackEffects = EffectType.None;
         }
 
         private string GetSendParaName()
         {
-            if(IsUsingEffect)
+            if(IsUsingTrackEffect)
             {
                 _sendParaName ??= GetCurrentTrackName() + EffectParaNameSuffix;
             }
@@ -249,6 +264,60 @@ namespace Ami.BroAudio.Runtime
                 _audioFilterReader = gameObject.AddComponent<AudioFilterReader>();
             }
             _audioFilterReader.OnTriggerAudioFilterRead = onAudioFilterRead;
+            return this;
+        }
+
+        IAudioPlayer IAudioPlayer.AddAudioEffect<T, TProxy>(Action<TProxy> onSet)
+        {
+            if (!IsActive)
+            {
+                Debug.LogError(Utility.LogTitle + $"Cannot add {typeof(T).Name} to inactive audio player!");
+                return this;
+            }
+
+            if (_addedEffects != null && _addedEffects.Any(x => x.Component is T))
+            {
+                Debug.LogWarning(Utility.LogTitle + $"Effect {typeof(T).Name} already exists!", this);
+                return this;
+            }
+
+            T component = gameObject.AddComponent<T>();
+            var modifier = Utility.CreateAudioEffectProxy(component);
+
+            _addedEffects ??= new List<AddedEffect>();
+            _addedEffects.Add(new AddedEffect { Component = component, Modifier = modifier });
+
+            onSet?.Invoke(modifier as TProxy);
+            return this;
+        }
+
+        IAudioPlayer IAudioPlayer.RemoveAudioEffect<T>()
+        {
+            if (!IsActive)
+            {
+                Debug.LogError(Utility.LogTitle + $"Cannot remove {typeof(T).Name} from inactive audio player!");
+                return this;
+            }
+
+            if (_addedEffects == null || _addedEffects.Count == 0)
+            {
+                Debug.LogWarning(Utility.LogTitle + $"No effects to remove from audio player!");
+                return this;
+            }
+
+            for (int i = _addedEffects.Count - 1; i >= 0; i--)
+            {
+                var effect = _addedEffects[i];
+                if (effect.Component is T)
+                {
+                    if (effect.Component != null)
+                    {
+                        Destroy(effect.Component);
+                    }
+                    _addedEffects.RemoveAt(i);
+                    break; // Remove only the first matching effect
+                }
+            }
             return this;
         }
 
@@ -286,6 +355,29 @@ namespace Ami.BroAudio.Runtime
             _decorators = decorators as List<AudioPlayerDecorator>;
         }
 
+        internal void TransferAddedEffectComponents(AudioPlayer newInstance)
+        {
+            newInstance.SetAddedEffectComponents(_addedEffects);
+        }
+
+        private void SetAddedEffectComponents(IReadOnlyList<AddedEffect> previousPlayerEffects)
+        {
+            if (previousPlayerEffects == null)
+            {
+                return;
+            }
+            var go = gameObject;
+            for (int i = 0; i < previousPlayerEffects.Count; i++)
+            {
+                var copiedEffect = previousPlayerEffects[i];
+                var newComponent = go.AddComponent(Utility.GetFilterTypeFromProxy(copiedEffect.Modifier));
+                copiedEffect.Modifier.TransferValueTo(newComponent as Behaviour);
+                copiedEffect.Component = newComponent;
+                _addedEffects ??= new List<AddedEffect>();
+                _addedEffects.Add(copiedEffect);
+            }
+        }
+
         internal bool TryGetDecorator<T>(out T decorator) where T : AudioPlayerDecorator
         {
             decorator = null;
@@ -298,11 +390,7 @@ namespace Ami.BroAudio.Runtime
 
         private bool HasDecoratorOf<T>() where T : AudioPlayerDecorator
         {
-            if(_decorators != null)
-            {
-                return _decorators.TryGetDecorator<T>(out _);
-            }
-            return false;
+            return _decorators != null && _decorators.TryGetDecorator<T>(out _);
         }
     }
 }

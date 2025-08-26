@@ -70,7 +70,7 @@ namespace Ami.BroAudio.Runtime
             if(Instance != null)
             {
                 SoundManager.Instance.SetEffect(effect).While(PlayerIsPlaying);
-                Instance?.SetEffect(EffectType.None, SetEffectMode.Override);
+                Instance?.SetTrackEffect(EffectType.None, SetEffectMode.Override);
             }
         }
 

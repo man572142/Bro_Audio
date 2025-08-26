@@ -11,6 +11,7 @@ namespace Ami.BroAudio
     {
         public const string LogTitle = "<b><color=#F3E9D7>[BroAudio] </color></b>";
         public const int UnityEverythingFlag = -1;
+        public static Vector3 GloballyPlayedPosition => Vector3.negativeInfinity;
 
         #region Efficient HasFlag
         // faster than Enum.HasFlag, could be used in runtime.
@@ -129,6 +130,22 @@ namespace Ami.BroAudio
                 }
             }
             return false;
+        }
+
+        public static bool IsPlayedGlobally(Vector3 playPos)
+        {
+            return (GloballyPlayedPosition.IsNegativeInfinity() && playPos.IsNegativeInfinity()) ||
+                   (GloballyPlayedPosition.IsPositiveInfinity() && playPos.IsPositiveInfinity());
+        }
+        
+        public static bool IsPositiveInfinity(this Vector3 v)
+        {
+            return float.IsPositiveInfinity(v.x) && float.IsPositiveInfinity(v.y) && float.IsPositiveInfinity(v.z);
+        }
+        
+        public static bool IsNegativeInfinity(this Vector3 v)
+        {
+            return float.IsNegativeInfinity(v.x) && float.IsNegativeInfinity(v.y) && float.IsNegativeInfinity(v.z);
         }
     }
 }

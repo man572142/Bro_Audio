@@ -33,14 +33,20 @@ namespace Ami.BroAudio
         [SerializeField]
         [DerivativeProperty]
         [InspectorName("Ignore If Same Frame")]
-        [Tooltip("Ignore the Comb-Filtering prevention if the sound is played within the same frame")]
+        [Tooltip("Ignore Comb-filtering prevention if identical sounds are played within the same frame")]
         private bool _ignoreCombFilteringIfSameFrame = false;
+        
+        [SerializeField]
+        [DerivativeProperty]
+        [InspectorName("Ignore If Distance Is Greater Than")]
+        [Tooltip("Ignore Comb-filtering prevention if identical sounds are played farther apart than the specified distance")]
+        private float _ignoreIfDistanceIsGreaterThan = 0.1f;
 
         [SerializeField]
         [DerivativeProperty(isEnd: true)]
         [InspectorName("Log Warning When Occurs")]
         [Tooltip("Log a warning message when the Comb-Filtering occurs")]
-        private bool _logCombFilteringWarning = true; 
+        private bool _logCombFilteringWarning = true;
         #endregion
 
         private int _currentPlayingCount;
@@ -50,7 +56,7 @@ namespace Ami.BroAudio
         protected override IEnumerable<IRule> InitializeRules()
         {
             yield return Initialize(_maxPlayableCount, IsPlayableLimitNotReached);
-            yield return Initialize(_combFilteringTime, CheckCombFiltering);
+            yield return Initialize(_combFilteringTime, HasPassedCombFilteringRule);
         }
 
         /// <summary>
@@ -65,22 +71,59 @@ namespace Ami.BroAudio
         }
 
         #region Rule Methods
-        protected virtual bool IsPlayableLimitNotReached(SoundID id)
+        protected virtual bool IsPlayableLimitNotReached(SoundID id, Vector3 position)
         {
             return _maxPlayableCount <= 0 || _currentPlayingCount < _maxPlayableCount;
         }
 
-        protected virtual bool CheckCombFiltering(SoundID id)
+        protected virtual bool HasPassedCombFilteringRule(SoundID id, Vector3 currentPlayPos)
         {
-            if (!SoundManager.Instance.HasPassCombFilteringPreventionTime(id, _combFilteringTime, _ignoreCombFilteringIfSameFrame))
+            if (_combFilteringTime <= 0f || !SoundManager.Instance.TryGetPreviousPlayerFromCombFilteringPreventer(id, out var previousPlayer))
+            {
+                return true;
+            }
+            
+            if (!HasPassedCombFilteringRule(previousPlayer, currentPlayPos))
             {
                 if (_logCombFilteringWarning)
                 {
-                    Debug.LogWarning(Utility.LogTitle + $"One of the plays of Audio:{((SoundID)id).ToName().ToWhiteBold()} was rejected by the [Comb Filtering Time] rule.");
+                    Debug.LogWarning(Utility.LogTitle + $"One of the plays of Audio:{id.ToName().ToWhiteBold()} was rejected by the [Comb Filtering Time] rule.");
                 }
                 return false;
             }
             return true;
+        }
+
+        private bool HasPassedCombFilteringRule(AudioPlayer previousPlayer, Vector3 currentPlayPos)
+        {
+            int time = TimeExtension.UnscaledCurrentFrameBeganTime;
+            int previousPlayTime = previousPlayer.PlaybackStartingTime;
+            // the previous has been added to the queue but hasn't played yet, i.e., The current and the previous will end up being played in the same frame
+            bool previousIsInQueue = Mathf.Approximately(previousPlayTime, 0f); 
+            float difference = time - previousPlayTime;
+            // If is played in the same frame
+            if((previousIsInQueue || Mathf.Approximately(difference, 0f)) && _ignoreCombFilteringIfSameFrame)
+            {
+                return true;
+            }
+
+            // If the difference is greater than the comb-filtering time
+            if (difference >= TimeExtension.SecToMs(_combFilteringTime))
+            {
+                return true;
+            }
+            
+            var previousPlayPos = previousPlayer.PlayingPosition;
+            if (!Utility.IsPlayedGlobally(currentPlayPos) && !Utility.IsPlayedGlobally(previousPlayPos))
+            {
+                // If the distance is greater than the specified value
+                var sqrDistance = (currentPlayPos - previousPlayPos).sqrMagnitude;
+                if (sqrDistance > Mathf.Pow(_ignoreIfDistanceIsGreaterThan, 2))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         #endregion
 

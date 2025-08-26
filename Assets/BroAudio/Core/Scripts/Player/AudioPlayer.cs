@@ -29,6 +29,7 @@ namespace Ami.BroAudio.Runtime
 
         public bool IsActive => ID > 0;
         public bool IsPlaying => AudioSource.isPlaying;
+        public Vector3 PlayingPosition => _pref.Position;
         public bool IsStopping { get; private set; }
         public bool IsFadingOut { get; private set; }
         public EffectType CurrentActiveEffects { get; private set; } = EffectType.None;
@@ -126,7 +127,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     SetTo3D();
                 }
-                else if (pref.HasPosition(out var position))
+                else if (pref.HasSpecifiedPosition(out var position))
                 {
                     transform.position = position;
                     SetTo3D();

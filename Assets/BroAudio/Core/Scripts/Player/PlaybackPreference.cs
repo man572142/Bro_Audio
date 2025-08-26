@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Runtime
     public struct PlaybackPreference
     {
         public readonly IAudioEntity Entity;
-        private readonly Vector3 _position;
+        private readonly Vector3? _position;
         private readonly Transform _followTarget;
 
         private int _contextValue;
@@ -25,6 +25,18 @@ namespace Ami.BroAudio.Runtime
         
         public Ease FadeInEase => IsLoop(LoopType.SeamlessLoop) ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
         public Ease FadeOutEase => IsLoop(LoopType.SeamlessLoop) ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
+
+        public Vector3 Position
+        {
+            get
+            {
+                if (!_position.HasValue)
+                {
+                    return _followTarget != null ? _followTarget.position : Utility.GloballyPlayedPosition;
+                }
+                return _position.Value;
+            }
+        }
 
         public PlaybackPreference(IAudioEntity entity, Vector3 position) : this(entity)
         {
@@ -43,7 +55,7 @@ namespace Ami.BroAudio.Runtime
             FadeOut = UseEntitySetting;
             ScheduledStartTime = 0;
             ScheduledEndTime = 0;
-            _position = Vector3.negativeInfinity;
+            _position = Utility.GloballyPlayedPosition;
             _followTarget = null;
             _contextValue = GetContextValue(entity);
         }
@@ -108,10 +120,10 @@ namespace Ami.BroAudio.Runtime
             return target != null;
         }
 
-        public bool HasPosition(out Vector3 position)
+        public bool HasSpecifiedPosition(out Vector3 position)
         {
-            position = _position;
-            return !_position.Equals(Vector3.negativeInfinity);
+            position = _position.GetValueOrDefault();
+            return _position.HasValue && !Utility.IsPlayedGlobally(position);
         }
         
         public bool CanHandoverToLoop()

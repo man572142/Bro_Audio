@@ -14,7 +14,7 @@ namespace Ami.BroAudio.Runtime
         #region Play
         public IAudioPlayer Play(SoundID id, IPlayableValidator customValidator = null)
         {
-            if (IsPlayable(id, customValidator, out var entity, out var player))
+            if (IsPlayable(id, customValidator, GloballyPlayedPosition, out var entity, out var player))
             {
                 var pref = new PlaybackPreference(entity);
                 return PlayerToPlay(id, player, pref);
@@ -24,7 +24,7 @@ namespace Ami.BroAudio.Runtime
 
         public IAudioPlayer Play(SoundID id, Vector3 position, IPlayableValidator customValidator = null)
         {
-            if (IsPlayable(id, customValidator, out var entity, out var player))
+            if (IsPlayable(id, customValidator, position, out var entity, out var player))
             {
                 var pref = new PlaybackPreference(entity, position);
                 return PlayerToPlay(id, player, pref);
@@ -34,7 +34,7 @@ namespace Ami.BroAudio.Runtime
 
         public IAudioPlayer Play(SoundID id, Transform followTarget, IPlayableValidator customValidator = null)
         {
-            if (IsPlayable(id, customValidator, out var entity, out var player))
+            if (IsPlayable(id, customValidator, followTarget.position, out var entity, out var player))
             {
                 var pref = new PlaybackPreference(entity, followTarget);
                 return PlayerToPlay(id, player, pref);
@@ -42,7 +42,7 @@ namespace Ami.BroAudio.Runtime
             return Empty.AudioPlayer;
         }
 
-        private bool IsPlayable(SoundID id, IPlayableValidator customValidator, out IAudioEntity entity, out AudioPlayer player)
+        private bool IsPlayable(SoundID id, IPlayableValidator customValidator, Vector3 position, out IAudioEntity entity, out AudioPlayer player)
         {
             player = null;
 
@@ -52,7 +52,7 @@ namespace Ami.BroAudio.Runtime
             }
 
             var validator = customValidator ?? entity.PlaybackGroup; // entity's runtime group will be set in InitBank() if it's null
-            if (validator != null && !validator.IsPlayable(id))
+            if (validator != null && !validator.IsPlayable(id, position))
             {
                 return false;
             }
@@ -227,28 +227,10 @@ namespace Ami.BroAudio.Runtime
         } 
         #endregion
 
-        public bool HasPassCombFilteringPreventionTime(SoundID id, float combFilteringTime, bool ignoreCombFilteringIfSameFrame)
+        public bool TryGetPreviousPlayerFromCombFilteringPreventer(SoundID id, out AudioPlayer previousPlayer)
         {
-            if(combFilteringTime <= 0f)
-            {
-                return true;
-            }
-
-            if (_combFilteringPreventer != null && _combFilteringPreventer.TryGetValue(id, out var previousPlayer))
-            {
-                int time = TimeExtension.UnscaledCurrentFrameBeganTime;
-                int previousPlayTime = previousPlayer.PlaybackStartingTime;
-                // the previous has been added to the queue but hasn't played yet, i.e. The current and the previous will end up being played in the same frame
-                bool previousIsInQueue = Mathf.Approximately(previousPlayTime, 0f); 
-                float difference = time - previousPlayTime;
-                if(previousIsInQueue || Mathf.Approximately(difference, 0f))
-                {
-                    return ignoreCombFilteringIfSameFrame;
-                }
-
-                return difference >= TimeExtension.SecToMs(combFilteringTime);
-            }
-            return true;
+            previousPlayer = null;
+            return _combFilteringPreventer != null && _combFilteringPreventer.TryGetValue(id, out previousPlayer);
         }
     }
 }

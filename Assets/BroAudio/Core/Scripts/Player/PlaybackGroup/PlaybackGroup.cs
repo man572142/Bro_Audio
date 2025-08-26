@@ -13,7 +13,7 @@ namespace Ami.BroAudio
     /// </remarks>
     public abstract partial class PlaybackGroup : ScriptableObject, IPlayableValidator
     {
-        public delegate bool IsPlayableDelegate(SoundID id);
+        public delegate bool IsPlayableDelegate(SoundID id, Vector3 position);
 
         private PlaybackGroup _parent;
         private List<IRule> _rules = null;
@@ -51,13 +51,13 @@ namespace Ami.BroAudio
         /// <summary>
         /// Checks if the sound is playable.
         /// </summary>
-        public bool IsPlayable(SoundID id)
+        public bool IsPlayable(SoundID id, Vector3 position)
         {
             _rules ??= new List<IRule>(InitializeRules());
 
             foreach (var rule in _rules)
             {
-                bool isPlayable = rule.RuleMethod.Invoke(id);
+                bool isPlayable = rule.RuleMethod.Invoke(id, position);
                 if(!isPlayable)
                 {
                     return false;

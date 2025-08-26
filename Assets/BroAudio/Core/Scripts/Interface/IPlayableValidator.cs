@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Ami.BroAudio
 {
     /// <summary>
@@ -8,7 +10,7 @@ namespace Ami.BroAudio
     {
 
         ///<inheritdoc cref="PlaybackGroup.IsPlayable(SoundID)"/>
-        bool IsPlayable(SoundID id);
+        bool IsPlayable(SoundID id, Vector3 position);
 
         ///<inheritdoc cref="PlaybackGroup.OnGetPlayer(IAudioPlayer)"/>
         void OnGetPlayer(IAudioPlayer player);

@@ -18,7 +18,7 @@ namespace Ami.BroAudio
         private IsPlayableDelegate _ruleMethod;
         [SerializeField] private bool _isOverride = true;
         public override string ToString() => base.ToString().Remove(0, "Ami.BroAudio.".Length) + " | Value: " + Value.ToString();
-
+        
         public IsPlayableDelegate RuleMethod
         {
             get
@@ -26,7 +26,7 @@ namespace Ami.BroAudio
                 if(_ruleMethod == null)
                 {
                     Debug.LogError($"{GetType()} is not initialized yet! As a result, a method that always passes will be returned.");
-                    return _ => true;
+                    return RuleExtension.EmptyRuleMethod;;
                 }
                 return _ruleMethod;
             }
@@ -48,13 +48,13 @@ namespace Ami.BroAudio
             if (_isOverride)
             {
                 _ruleMethod = ruleMethod;
-                _ruleMethod ??= _ => true;
+                _ruleMethod ??= RuleExtension.EmptyRuleMethod;;
                 return this;
             }
 
             var parentRule = onGetParentRule?.Invoke(GetType());
             _ruleMethod = parentRule?.RuleMethod;
-            _ruleMethod ??= _ => true;
+            _ruleMethod ??= RuleExtension.EmptyRuleMethod;;
             return this;
         }
 
@@ -73,6 +73,11 @@ namespace Ami.BroAudio
             Debug.LogError($"Can't find a valid rule instance of {ruleType}, It might not be initialized, or there's no default rule available when the override option is off. As a result, a method that always passes is returned");
         }
 
-        public IsPlayableDelegate RuleMethod => _ => true;
+        public IsPlayableDelegate RuleMethod => RuleExtension.EmptyRuleMethod;
+    }
+
+    public static class RuleExtension
+    {
+        public static IsPlayableDelegate EmptyRuleMethod = (_,_) => true;
     }
 }

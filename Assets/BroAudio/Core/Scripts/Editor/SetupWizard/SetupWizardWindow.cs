@@ -29,6 +29,10 @@ namespace Ami.BroAudio.Editor.Setting
             window.minSize = new Vector2(WindowWidth, WindowHeight);
             window.maxSize = new Vector2(WindowWidth * 1.5f, WindowHeight * 1.5f);
             window.titleContent = new GUIContent("Setup Wizard", EditorGUIUtility.IconContent(IconConstant.SetupWizard).image);
+            if (BroEditorUtility.EditorSetting.HasSetupWizardAutoLaunched)
+            {
+                window.position = new Rect(window.position.x, window.position.y, WindowWidth, WindowHeight);
+            }
             window.Show();
         }
 

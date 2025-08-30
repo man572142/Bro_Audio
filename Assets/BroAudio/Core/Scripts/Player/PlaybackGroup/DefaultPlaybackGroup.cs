@@ -101,29 +101,33 @@ namespace Ami.BroAudio
             // the previous has been added to the queue but hasn't played yet, i.e., The current and the previous will end up being played in the same frame
             bool previousIsInQueue = Mathf.Approximately(previousPlayTime, 0f); 
             float difference = time - previousPlayTime;
-            // If is played in the same frame
-            if((previousIsInQueue || Mathf.Approximately(difference, 0f)) && _ignoreCombFilteringIfSameFrame)
+            if((_ignoreCombFilteringIfSameFrame && IsSameFrame()) || HasPassedCombFilteringTime())
             {
                 return true;
             }
 
-            // If the difference is greater than the comb-filtering time
-            if (difference >= TimeExtension.SecToMs(_combFilteringTime))
+            bool currentIsGlobal = Utility.IsPlayedGlobally(currentPlayPos);
+            bool previousIsGlobal = Utility.IsPlayedGlobally(previousPlayer.PlayingPosition);
+            // Both are played in the world space
+            if (!currentIsGlobal && !previousIsGlobal)
             {
-                return true;
-            }
-            
-            var previousPlayPos = previousPlayer.PlayingPosition;
-            if (!Utility.IsPlayedGlobally(currentPlayPos) && !Utility.IsPlayedGlobally(previousPlayPos))
-            {
-                // If the distance is greater than the specified value
-                var sqrDistance = (currentPlayPos - previousPlayPos).sqrMagnitude;
+                var sqrDistance = (currentPlayPos - previousPlayer.PlayingPosition).sqrMagnitude;
                 if (sqrDistance > Mathf.Pow(_ignoreIfDistanceIsGreaterThan, 2))
                 {
                     return true;
                 }
             }
+            
+            // Only one is played globally
+            // TODO: use the AudioListener's position as the global position?
+            if ((currentIsGlobal != previousIsGlobal) && _ignoreIfDistanceIsGreaterThan > 0f)
+            {
+                return true;
+            }
             return false;
+
+            bool IsSameFrame() => previousIsInQueue || Mathf.Approximately(difference, 0f);
+            bool HasPassedCombFilteringTime() => difference >= TimeExtension.SecToMs(_combFilteringTime);
         }
         #endregion
 

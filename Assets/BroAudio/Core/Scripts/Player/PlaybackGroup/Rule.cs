@@ -78,6 +78,6 @@ namespace Ami.BroAudio
 
     public static class RuleExtension
     {
-        public static IsPlayableDelegate EmptyRuleMethod = (_,_) => true;
+        public static IsPlayableDelegate EmptyRuleMethod = (x,y) => true;
     }
 }

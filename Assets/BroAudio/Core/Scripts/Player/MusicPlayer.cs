@@ -5,16 +5,16 @@ namespace Ami.BroAudio.Runtime
     public class MusicPlayer : AudioPlayerDecorator, IMusicPlayer
     {
         internal static event Action<IAudioPlayer> OnBGMChanged;
-        private static AudioPlayer _currentPlayer = null;
+        private static AudioPlayer _currentBGMPlayer = null;
 
-        public static AudioPlayer CurrentPlayer
+        public static AudioPlayer CurrentBGMPlayer
         {
-            get => _currentPlayer;
+            get => _currentBGMPlayer;
             set
             {
-                if (_currentPlayer != value)
+                if (_currentBGMPlayer != value)
                 {
-                    _currentPlayer = value;
+                    _currentBGMPlayer = value;
                     var instance = value != null ? value.GetInstanceWrapper() : null;
                     OnBGMChanged?.Invoke(instance);
                 }
@@ -33,9 +33,9 @@ namespace Ami.BroAudio.Runtime
 
         public override void Recycle ()
         {
-            if(CurrentPlayer == Instance)
+            if(CurrentBGMPlayer == Instance)
             {
-                CurrentPlayer = null;
+                CurrentBGMPlayer = null;
             }
             base.Recycle();
             _transition = default;
@@ -53,45 +53,59 @@ namespace Ami.BroAudio.Runtime
 
         public void DoTransition(ref PlaybackPreference pref)
         {
-            if (CurrentPlayer != null)
+            // No BGM is playing
+            if (CurrentBGMPlayer == null)
             {
-                pref.SetFadeTime(_transition, _overrideFade);
-                switch (_transition)
+                CurrentBGMPlayer = Instance;
+                return;
+            }
+
+            HandleCurrentBGM();
+            HandleNewBGM(ref pref);
+            
+            void HandleCurrentBGM()
+            {
+                IsWaitingForTransition = _transition is Transition.Default or Transition.OnlyFadeOut &&
+                                         CurrentBGMPlayer.IsPlaying;
+                if (IsWaitingForTransition)
                 {
-                    case Transition.Immediate:
-                    case Transition.OnlyFadeIn:
-                    case Transition.CrossFade:
-                        StopCurrentMusic();
-                        break;
-                    case Transition.Default:
-                    case Transition.OnlyFadeOut:
-                        if(CurrentPlayer.IsPlaying)
-                        {
-                            IsWaitingForTransition = true;
-                            StopCurrentMusic(() =>
-                            {
-                                IsWaitingForTransition = false;
-                                CurrentPlayer = Instance;
-                            });
-                            return;
-                        }	
-                        break;
+                    StopCurrentPlayer(FinishTransition);
+                }
+                else
+                {
+                    StopCurrentPlayer();
+                    CurrentBGMPlayer = Instance;
                 }
             }
-            CurrentPlayer = Instance;
+
+            void HandleNewBGM(ref PlaybackPreference pref)
+            {
+                pref.FadeIn = _transition switch
+                {
+                    Transition.Immediate or Transition.OnlyFadeOut => 0f,
+                    Transition.OnlyFadeIn or Transition.Default or Transition.CrossFade => _overrideFade,
+                    _ => pref.FadeIn
+                };
+            }
         }
 
-        private void StopCurrentMusic(Action onFinished = null)
+        private void FinishTransition()
+        {
+            IsWaitingForTransition = false;
+            CurrentBGMPlayer = Instance;
+        }
+
+        private void StopCurrentPlayer(Action onFinished = null)
         {
             bool noFadeOut = _transition == Transition.Immediate || _transition == Transition.OnlyFadeIn;
             float fadeOut =  noFadeOut? 0f : _overrideFade;
-            CurrentPlayer.Stop(fadeOut, _stopMode, onFinished);
+            CurrentBGMPlayer.Stop(fadeOut, _stopMode, onFinished);
         }
 
         public static void CleanUp()
         {
             OnBGMChanged = null;
-            _currentPlayer = null;
+            _currentBGMPlayer = null;
         }
     }
 }

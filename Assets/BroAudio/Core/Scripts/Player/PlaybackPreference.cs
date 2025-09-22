@@ -71,30 +71,6 @@ namespace Ami.BroAudio.Runtime
             FadeOut = UseEntitySetting;
         }
 
-        public void SetFadeTime(Transition transition,float fadeTime)
-        {
-            switch (transition)
-            {
-                case Transition.Immediate:
-                    FadeIn = 0f;
-                    FadeOut = 0f;
-                    break;
-                case Transition.OnlyFadeIn:
-                    FadeIn = fadeTime;
-                    FadeOut = 0f;
-                    break;
-                case Transition.OnlyFadeOut:
-                    FadeIn = 0f;
-                    FadeOut = fadeTime;
-                    break;
-                case Transition.Default:
-                case Transition.CrossFade:
-                    FadeIn = fadeTime;
-                    FadeOut = fadeTime;
-                    break;
-            }
-        }
-
         public void ApplySeamlessFade()
         {
             if (Entity.HasLoop(out var loopType, out var transitionTime) && loopType == LoopType.SeamlessLoop)

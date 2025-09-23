@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using Ami.BroAudio.Tools;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,7 +11,7 @@ namespace Ami.Extension.Reflection
 {
     public static class AudioSourceProxyGenerator
     {
-        [MenuItem("Tools/BroAudio/Generate Audio Source Proxy")]
+        [MenuItem(BroName.MenuItem_BroAudio + "Others/Generate Audio Source Proxy")]
         public static void GenerateAudioSourceProxy()
         {
             ProxyModifierCodeGenerator.Parameters parameters = new ProxyModifierCodeGenerator.Parameters()
@@ -27,10 +29,22 @@ namespace Ami.Extension.Reflection
                 }
             };
 
-            ProxyModifierCodeGenerator.GenerateModifierCode<AudioSource>(parameters, needEmpty: true);
+            ProxyModifierCodeGenerator.GenerateModifierCode<AudioSource>(parameters, needEmpty: true, orderBy: ClipPropertyAtLast);
+        }
+
+        private static int ClipPropertyAtLast(PropertyInfo x, PropertyInfo y)
+        {
+            bool xIsClip = x != null && x.Name == nameof(AudioSource.clip);
+            bool yIsClip = y != null && y.Name == nameof(AudioSource.clip);
+
+            if (xIsClip == yIsClip)
+            {
+                return 0;
+            }
+            return xIsClip ? 1 : -1;
         }
         
-        [MenuItem("Tools/BroAudio/Generate Audio Effect Proxies")]
+        [MenuItem(BroName.MenuItem_BroAudio + "Others/Generate Audio Effect Proxies")]
         public static void GenerateAudioEffectProxies()
         {
             ProxyModifierCodeGenerator.Parameters parameters = new ProxyModifierCodeGenerator.Parameters()

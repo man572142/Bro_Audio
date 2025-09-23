@@ -18,9 +18,6 @@ namespace Ami.Extension
         /// <inheritdoc cref="AudioSource.timeSamples"/>
         int timeSamples { get; set; }
 
-        /// <inheritdoc cref="AudioSource.clip"/>
-        AudioClip clip { get; set; }
-
         /// <inheritdoc cref="AudioSource.outputAudioMixerGroup"/>
         AudioMixerGroup outputAudioMixerGroup { get; set; }
 
@@ -88,6 +85,9 @@ namespace Ami.Extension
 
         /// <inheritdoc cref="AudioSource.rolloffMode"/>
         AudioRolloffMode rolloffMode { get; set; }
+
+        /// <inheritdoc cref="AudioSource.clip"/>
+        AudioClip clip { get; set; }
 
         /// <inheritdoc cref="AudioSource.GetCustomCurve"/>
         AnimationCurve GetCustomCurve(AudioSourceCurveType type);

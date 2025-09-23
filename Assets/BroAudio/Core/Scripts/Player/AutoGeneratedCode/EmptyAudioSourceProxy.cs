@@ -11,7 +11,6 @@ namespace Ami.Extension
         public float pitch { get => 1f; set { } }
         public float time { get => 0f; set { } }
         public int timeSamples { get => 0; set { } }
-        public AudioClip clip { get => null; set { } }
         public AudioMixerGroup outputAudioMixerGroup { get => null; set { } }
 #if (UNITY_EDITOR && UNITY_2021_3_OR_NEWER) || UNITY_PS4 || UNITY_PS5
         public GamepadSpeakerOutputType gamepadSpeakerOutputType { get => UnityEngine.GamepadSpeakerOutputType.Speaker; set { } }
@@ -36,6 +35,7 @@ namespace Ami.Extension
         public float minDistance { get => 1f; set { } }
         public float maxDistance { get => 500f; set { } }
         public AudioRolloffMode rolloffMode { get => UnityEngine.AudioRolloffMode.Logarithmic; set { } }
+        public AudioClip clip { get => null; set { } }
         public AnimationCurve GetCustomCurve(AudioSourceCurveType type) { return default; }
 
         public void SetCustomCurve(AudioSourceCurveType type, AnimationCurve curve) {  }

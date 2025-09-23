@@ -54,17 +54,6 @@ namespace Ami.Extension
             }
         }
 
-        private bool _isClipModified = false;
-        public AudioClip clip
-        {
-            get => _source.clip;
-            set
-            {
-                _isClipModified = true;
-                _source.clip = value;
-            }
-        }
-
         private bool _isOutputAudioMixerGroupModified = false;
         public AudioMixerGroup outputAudioMixerGroup
         {
@@ -309,22 +298,32 @@ namespace Ami.Extension
             }
         }
 
+        private bool _isClipModified = false;
+        public AudioClip clip
+        {
+            get => _source.clip;
+            set
+            {
+                _isClipModified = true;
+                _source.clip = value;
+            }
+        }
+
         public void Dispose()
         {
             if (_isVolumeModified) {_source.volume = 1f; _isVolumeModified = false;}
             if (_isPitchModified) {_source.pitch = 1f; _isPitchModified = false;}
             if (_isTimeModified) {_source.time = 0f; _isTimeModified = false;}
             if (_isTimeSamplesModified) {_source.timeSamples = 0; _isTimeSamplesModified = false;}
-            if (_isClipModified) {_source.clip = null; _isClipModified = false;}
             if (_isOutputAudioMixerGroupModified) {_source.outputAudioMixerGroup = null; _isOutputAudioMixerGroupModified = false;}
 #if (UNITY_EDITOR && UNITY_2021_3_OR_NEWER) || UNITY_PS4 || UNITY_PS5
-            if (_isGamepadSpeakerOutputTypeModified) {_source.gamepadSpeakerOutputType = GamepadSpeakerOutputType.Speaker; _isGamepadSpeakerOutputTypeModified = false;}
+            if (_isGamepadSpeakerOutputTypeModified) {_source.gamepadSpeakerOutputType = UnityEngine.GamepadSpeakerOutputType.Speaker; _isGamepadSpeakerOutputTypeModified = false;}
 #endif
             if (_isLoopModified) {_source.loop = false; _isLoopModified = false;}
             if (_isIgnoreListenerVolumeModified) {_source.ignoreListenerVolume = false; _isIgnoreListenerVolumeModified = false;}
             if (_isPlayOnAwakeModified) {_source.playOnAwake = true; _isPlayOnAwakeModified = false;}
             if (_isIgnoreListenerPauseModified) {_source.ignoreListenerPause = false; _isIgnoreListenerPauseModified = false;}
-            if (_isVelocityUpdateModeModified) {_source.velocityUpdateMode = AudioVelocityUpdateMode.Auto; _isVelocityUpdateModeModified = false;}
+            if (_isVelocityUpdateModeModified) {_source.velocityUpdateMode = UnityEngine.AudioVelocityUpdateMode.Auto; _isVelocityUpdateModeModified = false;}
             if (_isPanStereoModified) {_source.panStereo = 0f; _isPanStereoModified = false;}
             if (_isSpatialBlendModified) {_source.spatialBlend = 0f; _isSpatialBlendModified = false;}
             if (_isSpatializeModified) {_source.spatialize = false; _isSpatializeModified = false;}
@@ -339,7 +338,8 @@ namespace Ami.Extension
             if (_isMuteModified) {_source.mute = false; _isMuteModified = false;}
             if (_isMinDistanceModified) {_source.minDistance = 1f; _isMinDistanceModified = false;}
             if (_isMaxDistanceModified) {_source.maxDistance = 500f; _isMaxDistanceModified = false;}
-            if (_isRolloffModeModified) {_source.rolloffMode = AudioRolloffMode.Logarithmic; _isRolloffModeModified = false;}
+            if (_isRolloffModeModified) {_source.rolloffMode = UnityEngine.AudioRolloffMode.Logarithmic; _isRolloffModeModified = false;}
+            if (_isClipModified) {_source.clip = null; _isClipModified = false;}
         }
     }
 }

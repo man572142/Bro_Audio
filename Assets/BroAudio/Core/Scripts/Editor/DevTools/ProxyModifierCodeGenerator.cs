@@ -51,6 +51,8 @@ namespace Ami.Extension.Reflection
     {
         public const string Title = "// Auto-generated code";
         public const string GamepadSpeakerCondition = "(UNITY_EDITOR && UNITY_2021_3_OR_NEWER) || UNITY_PS4 || UNITY_PS5";
+        private const BindingFlags PublicInstance = BindingFlags.Public | BindingFlags.Instance;
+
         public struct Parameters
         {
             public string Namespace;
@@ -64,7 +66,7 @@ namespace Ami.Extension.Reflection
             public string ClassImplementation;
         }
 
-        public static void GenerateModifierCode<T>(Parameters parameters, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance, bool needEmpty = false, bool isEffectModifier = false) where T : Component
+        public static void GenerateModifierCode<T>(Parameters parameters, BindingFlags bindingFlags = PublicInstance, bool needEmpty = false, bool isEffectModifier = false, Comparison<PropertyInfo> orderBy = null) where T : Component
         {
             Type type = typeof(T);
             MemberInfo[] members = type.GetMembers(bindingFlags);
@@ -86,6 +88,13 @@ namespace Ami.Extension.Reflection
                 .Select(m => m as PropertyInfo)
                 .Where(p => p.CanWrite && !IsObsolete(p) && IsFromIncludedType(p))
                 .ToList();
+
+            if (orderBy != null)
+            {
+                filteredProperties = filteredProperties
+                    .OrderBy(p => p, Comparer<PropertyInfo>.Create(orderBy))
+                    .ToList();
+            }
 
             var defaultValueMap = GetDefaultValueMap<T>(filteredProperties, parameters.DependencyComponentTypes);
             CreateModifierInterface<T>(parameters, filteredProperties, isEffectModifier);
@@ -133,7 +142,7 @@ namespace Ami.Extension.Reflection
                 {
                     foreach (string methodName in parameters.MethodNameList)
                     {
-                        var method = typeof(T).GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
+                        var method = typeof(T).GetMethod(methodName, PublicInstance);
                         if (method == null)
                         {
                             continue;
@@ -185,7 +194,7 @@ namespace Ami.Extension.Reflection
                 {
                     foreach (string methodName in parameters.MethodNameList)
                     {
-                        var method = typeof(T).GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
+                        var method = typeof(T).GetMethod(methodName, PublicInstance);
                         if (method == null)
                         {
                             continue;
@@ -324,7 +333,7 @@ namespace Ami.Extension.Reflection
                 {
                     foreach (string methodName in parameters.MethodNameList)
                     {
-                        var method = typeof(T).GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
+                        var method = typeof(T).GetMethod(methodName, PublicInstance);
                         if (method == null)
                         {
                             continue;

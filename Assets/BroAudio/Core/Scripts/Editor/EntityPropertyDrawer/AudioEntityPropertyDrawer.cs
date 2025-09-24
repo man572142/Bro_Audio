@@ -572,7 +572,7 @@ namespace Ami.BroAudio.Editor
             }
 
             _currentPreviewingEntity = entity;
-            var context = entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained ? (int)PlaybackStage.Start : 0;
+            var context = entity.PlayMode == MulticlipsPlayMode.Chained ? (int)PlaybackStage.Start : 0;
             var clip = entity.PickNewClip(context, out int index);
             data.Clips.SelectAndSetPlayingElement(index);
             

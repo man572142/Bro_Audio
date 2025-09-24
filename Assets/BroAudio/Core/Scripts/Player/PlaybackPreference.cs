@@ -82,9 +82,9 @@ namespace Ami.BroAudio.Runtime
 
         public void SetVelocity(int velocity)
         {
-            if (Entity.GetMulticlipsPlayMode() != MulticlipsPlayMode.Velocity)
+            if (Entity.PlayMode != MulticlipsPlayMode.Velocity)
             {
-                Debug.LogError($"Cannot set velocity on [{Entity}] because it's not using VelocityPlayMode. (current : {Entity.GetMulticlipsPlayMode()})");
+                Debug.LogError($"Cannot set velocity on [{Entity}] because it's not using VelocityPlayMode. (current : {Entity.PlayMode})");
                 return;
             }
             _contextValue = velocity;
@@ -130,7 +130,7 @@ namespace Ami.BroAudio.Runtime
 
         public bool IsChainedMode()
         {
-            return Entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained;
+            return Entity.PlayMode == MulticlipsPlayMode.Chained;
         }
         
         public bool IsLoop(LoopType targetType)
@@ -138,7 +138,7 @@ namespace Ami.BroAudio.Runtime
             return Entity.HasLoop(out var loopType, out _) && loopType == targetType;
         }
 
-        private static int GetContextValue(IAudioEntity entity) => entity.GetMulticlipsPlayMode() switch
+        private static int GetContextValue(IAudioEntity entity) => entity.PlayMode switch
         {
             MulticlipsPlayMode.Chained => (int)PlaybackStage.Start,
             _ => 0,

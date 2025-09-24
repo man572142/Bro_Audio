@@ -15,6 +15,6 @@ namespace Ami.BroAudio.Data
 		float GetPitch();
 		float GetRandomValue(float baseValue, RandomFlag flags);
         void ResetShuffleInUseState();
-        MulticlipsPlayMode GetMulticlipsPlayMode();
+        MulticlipsPlayMode PlayMode { get; }
     } 
 }

@@ -23,7 +23,7 @@ namespace Ami.BroAudio.Editor
         {
             _entity = entity;
             _onReplay = onReplay;
-            if (entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained)
+            if (entity.PlayMode == MulticlipsPlayMode.Chained)
             {
                 _context = (int)PlaybackStage.Loop;
             }
@@ -31,7 +31,7 @@ namespace Ami.BroAudio.Editor
 
         public override bool CanReplay()
         {
-            if (_entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained)
+            if (_entity.PlayMode == MulticlipsPlayMode.Chained)
             {
                 return _entity.Clips.Length > _context - 1;
             }
@@ -50,7 +50,7 @@ namespace Ami.BroAudio.Editor
             _pitch = _entity.GetPitch();
             _onReplay?.Invoke(_clipIndex);
 
-            if (_entity.GetMulticlipsPlayMode() == MulticlipsPlayMode.Chained)
+            if (_entity.PlayMode == MulticlipsPlayMode.Chained)
             {
                 var nextStage = _context == (int)PlaybackStage.End ? (int)PlaybackStage.Start : _context + 1;
                 _context = nextStage;

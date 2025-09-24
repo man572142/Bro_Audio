@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Ami.BroAudio.Runtime;
 using UnityEngine;
 using Ami.Extension;
@@ -5,7 +6,7 @@ using Ami.Extension;
 namespace Ami.BroAudio.Data
 {
     [System.Serializable]
-    public partial class AudioEntity : IEntityIdentity, IAudioEntity
+    public partial class AudioEntity : IEntityIdentity, IAudioEntity, IReadOnlyAudioEntity
     {
         [field: SerializeField] public string Name { get; private set; }
         [field: SerializeField] public int ID { get; private set; }
@@ -28,13 +29,15 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public float VolumeRandomRange { get; private set; }
         [field: SerializeField] public RandomFlag RandomFlags { get; private set; }
         public PlaybackGroup PlaybackGroup => _group ? _group : _upperGroup;
+        IReadOnlyList<IBroAudioClip> IReadOnlyAudioEntity.Clips => Clips;
 
         public IBroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);
         public IBroAudioClip PickNewClip(int context) => Clips.PickNewOne(MulticlipsPlayMode, ID, out _, context);
         public IBroAudioClip PickNewClip(int context, out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index, context);
 
         public bool Validate() => Utility.Validate(Name, Clips, ID);
-        public MulticlipsPlayMode GetMulticlipsPlayMode() => MulticlipsPlayMode;
+        public MulticlipsPlayMode PlayMode => MulticlipsPlayMode;
+
         public float GetMasterVolume() => GetRandomValue(MasterVolume, RandomFlag.Volume);
         public float GetPitch() => GetRandomValue(Pitch, RandomFlag.Pitch);
 

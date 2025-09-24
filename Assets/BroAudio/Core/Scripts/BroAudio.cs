@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Ami.BroAudio.Runtime;
+using Ami.BroAudio.Data;
 using System;
 
 #if PACKAGE_ADDRESSABLES
@@ -254,6 +255,20 @@ namespace Ami.BroAudio
         /// </summary>
         public static bool HasAnyPlayingInstances(SoundID id)
             => SoundManager.Instance.HasAnyPlayingInstances(id);
+
+        /// <summary>
+        /// Get the read-only information of an audio entity
+        /// </summary>
+        public static bool TryGetEntityInfo(SoundID id, out IReadOnlyAudioEntity entityInfo)
+        {
+            entityInfo = null;
+            if (SoundManager.Instance != null && SoundManager.Instance.TryGetEntity(id, out var entity, false))
+            {
+                entityInfo = entity as IReadOnlyAudioEntity;
+                return entityInfo != null;
+            }
+            return false;
+        }
 
 #if !UNITY_WEBGL
         #region Effect

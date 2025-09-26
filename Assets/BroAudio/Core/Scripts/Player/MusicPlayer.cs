@@ -65,7 +65,7 @@ namespace Ami.BroAudio.Runtime
             
             void HandleCurrentBGM()
             {
-                IsWaitingForTransition = _transition is Transition.Default or Transition.OnlyFadeOut &&
+                IsWaitingForTransition = (_transition == Transition.Default || _transition == Transition.OnlyFadeOut) &&
                                          CurrentBGMPlayer.IsPlaying;
                 if (IsWaitingForTransition)
                 {
@@ -82,8 +82,11 @@ namespace Ami.BroAudio.Runtime
             {
                 pref.FadeIn = _transition switch
                 {
-                    Transition.Immediate or Transition.OnlyFadeOut => 0f,
-                    Transition.OnlyFadeIn or Transition.Default or Transition.CrossFade => _overrideFade,
+                    Transition.Immediate => 0f,
+                    Transition.OnlyFadeOut => 0f,
+                    Transition.OnlyFadeIn => _overrideFade,
+                    Transition.Default => _overrideFade,
+                    Transition.CrossFade => _overrideFade,
                     _ => pref.FadeIn
                 };
             }

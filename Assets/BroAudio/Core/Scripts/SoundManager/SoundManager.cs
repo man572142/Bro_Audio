@@ -14,7 +14,9 @@ namespace Ami.BroAudio.Runtime
     [DisallowMultipleComponent, AddComponentMenu("")]
     public partial class SoundManager : MonoBehaviour, IAudioMixerPool
     {
+#if !BroAudio_InitManually
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+#endif
         public static void Init()
         {
             var prefab = Resources.Load(nameof(SoundManager)) as GameObject;
@@ -51,7 +53,7 @@ namespace Ami.BroAudio.Runtime
                     return null;
                 } 
 #endif
-                return _instance;
+                return _instance == null ? throw new BroAudioException("Bro Audio is not initialized! Please call <b>BroAudio.Init()</b> first when using manual initialization.") : _instance;
             } 
         }
 

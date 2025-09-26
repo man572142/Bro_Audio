@@ -12,6 +12,13 @@ namespace Ami.BroAudio
 {
     public static class BroAudio
     {
+#if BroAudio_InitManually
+        public static void Init()
+        {
+            SoundManager.Init();
+        }
+#endif
+        
         public static event Action<IAudioPlayer> OnBGMChanged
         {
             add => MusicPlayer.OnBGMChanged += value;

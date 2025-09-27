@@ -174,3 +174,6 @@ MonoBehaviour:
   - Key: 1000
     Value: The demo not only shows all of the features, but also how to use the API
       and how they're implemented
+  - Key: 6
+    Value: Toggle the scripting define symbol to enable/disable manual initialization
+      of BroAudio

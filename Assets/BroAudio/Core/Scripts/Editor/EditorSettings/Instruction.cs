@@ -10,6 +10,7 @@
         AudioPlayerPoolSize,
         AddDominatorTrack,
         RegenerateUserData,
+        ManualInitialization,
 
         // Settings/Audio
         CombFilteringTooltip = 10,

@@ -8,7 +8,9 @@ using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Data;
-using Ami.BroAudio.Runtime;
+#if UNITY_2022_3_OR_NEWER
+using UnityEditor.Build;
+#endif
 using static Ami.BroAudio.Editor.IconConstant;
 using static Ami.BroAudio.Editor.Section;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
@@ -23,7 +25,6 @@ namespace Ami.BroAudio.Editor.Setting
         public enum Tab { Audio, GUI, Miscellaneous,}
 
         private const float Gap = 50f;
-        private const string ManualInitScriptingDefineSymbol = "BroAudio_InitManually";
         public const string ResetSettingButtonText = "Reset To Factory Settings";
         public const string AutoMatchTracksButtonText = "Auto-adding tracks to match audio voices.";
         public const string AssetOutputPathLabel = "Asset Output Path";
@@ -122,7 +123,7 @@ namespace Ami.BroAudio.Editor.Setting
             _virtualTracksGUIContent = new GUIContent("Bro Virtual Tracks", _instruction.GetText(Instruction.BroVirtualToolTip));
             _dominatorTrackGUIContent = new GUIContent("Add Dominator Track", _instruction.GetText(Instruction.AddDominatorTrack));
             _regenerateUserDataGUIContent = new GUIContent("Regenerate User Data", _instruction.GetText(Instruction.RegenerateUserData));
-            _addManualInitGUIContent = new GUIContent("Initialize Bro Audio Manually", $"Toggle the {ManualInitScriptingDefineSymbol} scripting define symbol to enable/disable manual initialization of BroAudio");
+            _addManualInitGUIContent = new GUIContent("Initialize Bro Audio Manually", _instruction.GetText(Instruction.ManualInitialization));
             
 #if PACKAGE_ADDRESSABLES
             string aaTooltip = _instruction.GetText(Instruction.LibraryManager_AddressableConversionTooltip);
@@ -420,6 +421,7 @@ namespace Ami.BroAudio.Editor.Setting
                     GetRectAndIterateLine(drawPosition), GetRectAndIterateLine(drawPosition));
             }
             DrawEmptyLine(1);
+#endif
             drawPosition.xMax += Gap;
             
             DrawManualInitializationToggle(drawPosition);
@@ -450,7 +452,6 @@ namespace Ami.BroAudio.Editor.Setting
                 Rect buttonRect = GetRectAndIterateLine(drawPosition).GetHorizontalCenterRect(350f, SingleLineSpace * 1.5f);
                 return GUI.Button(buttonRect, label);
             }
-#endif
         }
 
         private void DrawManualInitializationToggle(Rect drawPosition)
@@ -473,145 +474,11 @@ namespace Ami.BroAudio.Editor.Setting
             else if (EditorGUI.EndChangeCheck())
             {
 #if BroAudio_InitManually
-                RemoveManualInitScriptingDefineSymbol();
+                ScriptingDefinesUtility.RemoveManualInitScriptingDefineSymbol();
 #else
-                AddManualInitScriptingDefineSymbol();
+                ScriptingDefinesUtility.AddManualInitScriptingDefineSymbol();
 #endif
             }
-        }
-
-        private void AddManualInitScriptingDefineSymbol()
-        {
-            var target = EditorUserBuildSettings.selectedBuildTargetGroup;
-            string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
-
-            if (!defines.Contains(ManualInitScriptingDefineSymbol))
-            {
-                if (!string.IsNullOrEmpty(defines))
-                {
-                    defines += $";{ManualInitScriptingDefineSymbol}";
-                }
-                else
-                {
-                    defines = ManualInitScriptingDefineSymbol;
-                }
-
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(target, defines);
-                CompilationPipeline.compilationFinished += OnCompilationFinishedAddedSymbol;
-            }
-            else
-            {
-                Debug.Log(LogTitle + ManualInitScriptingDefineSymbol + " scripting define symbol is already present in project settings.");
-            }
-        }
-
-        private void RemoveManualInitScriptingDefineSymbol()
-        {
-            var target = EditorUserBuildSettings.selectedBuildTargetGroup;
-            string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
-
-            if (defines.Contains(ManualInitScriptingDefineSymbol))
-            {
-                var definesList = defines.Split(';').ToList();
-                definesList.Remove(ManualInitScriptingDefineSymbol);
-                defines = string.Join(";", definesList);
-
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(target, defines);
-                CompilationPipeline.compilationFinished += OnCompilationFinishedRemovedSymbol;
-            }
-        }
-
-        private void OnCompilationFinishedAddedSymbol(object obj)
-        {
-            CompilationPipeline.compilationFinished -= OnCompilationFinishedAddedSymbol;
-            Debug.Log($"{LogTitle}Added {ManualInitScriptingDefineSymbol} scripting define symbol to project settings.");
-        }
-
-        private void OnCompilationFinishedRemovedSymbol(object obj)
-        {
-            CompilationPipeline.compilationFinished -= OnCompilationFinishedRemovedSymbol;
-            Debug.Log($"{LogTitle}Removed {ManualInitScriptingDefineSymbol} scripting define symbol from project settings.");
-        }
-#endif
-
-        private void DrawManualInitializationToggle(Rect drawPosition)
-        {
-            EditorGUI.BeginChangeCheck();
-            using (new EditorGUI.DisabledScope(EditorApplication.isCompiling))
-            {
-                var toggleRect  = GetRectAndIterateLine(drawPosition);
-#if BroAudio_InitManually
-                EditorGUI.ToggleLeft(toggleRect, _addManualInitGUIContent, true);
-#else
-                EditorGUI.ToggleLeft(toggleRect, _addManualInitGUIContent, false);
-#endif
-            }
-
-            if (EditorApplication.isCompiling)
-            {
-                EditorGUI.LabelField(GetRectAndIterateLine(drawPosition), "      Waiting for compilation...");
-            }
-            else if (EditorGUI.EndChangeCheck())
-            {
-#if BroAudio_InitManually
-                RemoveManualInitScriptingDefineSymbol();
-#else
-                AddManualInitScriptingDefineSymbol();
-#endif
-            }
-        }
-
-        private void AddManualInitScriptingDefineSymbol()
-        {
-            var target = EditorUserBuildSettings.selectedBuildTargetGroup;
-            string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
-
-            if (!defines.Contains(ManualInitScriptingDefineSymbol))
-            {
-                if (!string.IsNullOrEmpty(defines))
-                {
-                    defines += $";{ManualInitScriptingDefineSymbol}";
-                }
-                else
-                {
-                    defines = ManualInitScriptingDefineSymbol;
-                }
-
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(target, defines);
-                CompilationPipeline.compilationFinished += OnCompilationFinishedAddedSymbol;
-            }
-            else
-            {
-                Debug.Log(LogTitle + ManualInitScriptingDefineSymbol + " scripting define symbol is already present in project settings.");
-            }
-        }
-
-        private void RemoveManualInitScriptingDefineSymbol()
-        {
-            var target = EditorUserBuildSettings.selectedBuildTargetGroup;
-            string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
-
-            if (defines.Contains(ManualInitScriptingDefineSymbol))
-            {
-                var definesList = defines.Split(';').ToList();
-                definesList.Remove(ManualInitScriptingDefineSymbol);
-                defines = string.Join(";", definesList);
-
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(target, defines);
-                CompilationPipeline.compilationFinished += OnCompilationFinishedRemovedSymbol;
-            }
-        }
-
-        private void OnCompilationFinishedAddedSymbol(object obj)
-        {
-            CompilationPipeline.compilationFinished -= OnCompilationFinishedAddedSymbol;
-            Debug.Log($"{LogTitle}Added {ManualInitScriptingDefineSymbol} scripting define symbol to project settings.");
-        }
-
-        private void OnCompilationFinishedRemovedSymbol(object obj)
-        {
-            CompilationPipeline.compilationFinished -= OnCompilationFinishedRemovedSymbol;
-            Debug.Log($"{LogTitle}Removed {ManualInitScriptingDefineSymbol} scripting define symbol from project settings.");
         }
 
         private void DrawAssetOutputPath(Rect drawPosition)

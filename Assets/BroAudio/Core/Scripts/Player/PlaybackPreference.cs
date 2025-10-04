@@ -1,7 +1,6 @@
 using UnityEngine;
 using Ami.BroAudio.Data;
 using Ami.Extension;
-using static Ami.BroAudio.Runtime.AudioPlayer;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -11,20 +10,17 @@ namespace Ami.BroAudio.Runtime
         private readonly Vector3? _position;
         private readonly Transform _followTarget;
 
+        private FadeData _fadeInData;
+        private FadeData _fadeOutData;
         private int _contextValue;
         public double ScheduledStartTime { get; set; }
         public double ScheduledEndTime { get; set; }
-        public float FadeIn { get; set; }
-        public float FadeOut { get; set; }
 
         public PlaybackStage ChainedModeStage
         {
             get => (PlaybackStage)_contextValue;
             set => _contextValue = (int)value;
         }
-        
-        public Ease FadeInEase => IsLoop(LoopType.SeamlessLoop) ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
-        public Ease FadeOutEase => IsLoop(LoopType.SeamlessLoop) ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
 
         public Vector3 Position
         {
@@ -51,8 +47,8 @@ namespace Ami.BroAudio.Runtime
         public PlaybackPreference(IAudioEntity entity)
         {
             Entity = entity;
-            FadeIn = UseEntitySetting;
-            FadeOut = UseEntitySetting;
+            _fadeInData = new FadeData(entity.GetFadeInEase(), SoundManager.FadeInEase);
+            _fadeOutData = new FadeData(entity.GetFadeOutEase(), SoundManager.FadeOutEase);
             ScheduledStartTime = 0;
             ScheduledEndTime = 0;
             _position = Utility.GloballyPlayedPosition;
@@ -60,24 +56,52 @@ namespace Ami.BroAudio.Runtime
             _contextValue = GetContextValue(entity);
         }
 
+        public bool HasFadeIn(float clipFade, out float fadeIn, out Ease ease)
+        {
+            return HasFading(clipFade, SoundManager.FadeInEase, ref _fadeInData, out fadeIn, out ease);
+        }
+
+        public bool HasFadeOut(float clipFade, out float fadeOut, out Ease ease)
+        {
+            return HasFading(clipFade, SoundManager.FadeOutEase, ref _fadeOutData, out fadeOut, out ease);
+        }
+
+        private static bool HasFading(float clipFade, Ease clipEase, ref FadeData overrideData, out float fadeIn, out Ease ease)
+        {
+            fadeIn = clipFade;
+            ease = clipEase;
+            if (overrideData.TryGetOrConsumeOverride(out var overrideFade, out var overrideEase))
+            {
+                fadeIn = overrideFade;
+                ease = overrideEase;
+            }
+            return fadeIn > FadeData.Immediate;
+        }
+
         public IBroAudioClip PickNewClip()
         {
             return Entity.PickNewClip(_contextValue);
-        }
-
-        public void ResetFading()
-        {
-            FadeIn = UseEntitySetting;
-            FadeOut = UseEntitySetting;
         }
 
         public void ApplySeamlessFade()
         {
             if (Entity.HasLoop(out var loopType, out var transitionTime) && loopType == LoopType.SeamlessLoop)
             {
-                FadeIn = transitionTime;
-                FadeOut = transitionTime;
+                _fadeInData.Base = transitionTime;
+                _fadeOutData.Base = transitionTime;
             }
+        }
+
+        public PlaybackPreference SetNextFadeIn(float fadeTime)
+        {
+            _fadeInData.Next = fadeTime;
+            return this;
+        }
+
+        public PlaybackPreference SetNextFadeOut(float fadeTime)
+        {
+            _fadeOutData.Next = fadeTime;
+            return this;
         }
 
         public void SetVelocity(int velocity)

@@ -12,9 +12,6 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource)), AddComponentMenu("")]
     public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
-        public const float UseEntitySetting = -1f;
-        public const float Immediate = 0f;
-
         [SerializeField] private AudioSource AudioSource = null;
 
         private IBroAudioClip _clip;

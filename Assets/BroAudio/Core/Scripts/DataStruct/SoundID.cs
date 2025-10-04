@@ -104,17 +104,29 @@ namespace Ami.BroAudio
             return SoundManager.Instance.HasAnyPlayingInstances(id);
         }
 
-        /// <inheritdoc cref="BroAudio.Play(SoundID)"/>
-        public static IAudioPlayer Play(this SoundID id, PlaybackGroup overrideGroup = null) 
-            => BroAudio.Play(id, overrideGroup);
+        /// <inheritdoc cref="BroAudio.Play(SoundID, IPlayableValidator)"/>
+        public static IAudioPlayer Play(this SoundID id, IPlayableValidator playableValidator = null) 
+            => BroAudio.Play(id, playableValidator);
 
-        /// <inheritdoc cref="BroAudio.Play(SoundID, Vector3)"/>
-        public static IAudioPlayer Play(this SoundID id, Vector3 position, PlaybackGroup overrideGroup = null) 
-            => BroAudio.Play(id, position, overrideGroup);
+        /// <inheritdoc cref="BroAudio.Play(SoundID, float, IPlayableValidator)"/>
+        public static IAudioPlayer Play(this SoundID id, float fadeIn, IPlayableValidator playableValidator = null) 
+            => BroAudio.Play(id, fadeIn, playableValidator);
 
-        /// <inheritdoc cref="BroAudio.Play(SoundID, Transform)"/>
-        public static IAudioPlayer Play(this SoundID id, Transform followTarget, PlaybackGroup overrideGroup = null) 
-            => BroAudio.Play(id, followTarget, overrideGroup);
+        /// <inheritdoc cref="BroAudio.Play(SoundID, Vector3, IPlayableValidator)"/>
+        public static IAudioPlayer Play(this SoundID id, Vector3 position, IPlayableValidator playableValidator = null) 
+            => BroAudio.Play(id, position, playableValidator);
+
+        /// <inheritdoc cref="BroAudio.Play(SoundID, Vector3, float, IPlayableValidator)"/>
+        public static IAudioPlayer Play(this SoundID id, Vector3 position, float fadeIn, IPlayableValidator playableValidator = null) 
+            => BroAudio.Play(id, position, fadeIn, playableValidator);
+
+        /// <inheritdoc cref="BroAudio.Play(SoundID, Transform, IPlayableValidator)"/>
+        public static IAudioPlayer Play(this SoundID id, Transform followTarget, IPlayableValidator playableValidator = null) 
+            => BroAudio.Play(id, followTarget, playableValidator);
+
+        /// <inheritdoc cref="BroAudio.Play(SoundID, Transform, float, IPlayableValidator)"/>
+        public static IAudioPlayer Play(this SoundID id, Transform followTarget, float fadeIn, IPlayableValidator playableValidator = null) 
+            => BroAudio.Play(id, followTarget, fadeIn, playableValidator);
 
 #if PACKAGE_ADDRESSABLES
         ///<inheritdoc cref="BroAudio.LoadAllAssetsAsync(SoundID)"/>

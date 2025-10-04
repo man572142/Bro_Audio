@@ -315,7 +315,7 @@ namespace Ami.BroAudio.Editor
                     transitionTimeProp.floatValue = Mathf.Abs(AudioExtension.TempoToTime(bpmProp.floatValue, beatsProp.intValue));
                     break;
                 case SeamlessType.ClipSetting:
-                    transitionTimeProp.floatValue = AudioPlayer.UseEntitySetting;
+                    transitionTimeProp.floatValue = FadeData.UseClipSetting;
                     break;
             }
             data.TransitionTime = transitionTimeProp.floatValue;

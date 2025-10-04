@@ -108,7 +108,7 @@ namespace Ami.BroAudio
         /// <param name="transition">Transition type</param>
         /// <returns></returns>
         public static IAudioPlayer SetTransition(this IMusicPlayer player, Transition transition) 
-            => player?.SetTransition(transition, Runtime.AudioPlayer.UseEntitySetting);
+            => player?.SetTransition(transition, Runtime.FadeData.UseClipSetting);
 
         /// <param name="overrideFade">Override value of the fading time</param>
         /// <inheritdoc cref="SetTransition(IMusicPlayer, Transition)"/>
@@ -118,7 +118,7 @@ namespace Ami.BroAudio
         /// <param name="stopMode">The stop mode of the previous player</param>
         /// <inheritdoc cref="SetTransition(IMusicPlayer, Transition)"/>
         public static IAudioPlayer SetTransition(this IMusicPlayer player, Transition transition, StopMode stopMode)
-            => player?.SetTransition(transition, stopMode, Runtime.AudioPlayer.UseEntitySetting);
+            => player?.SetTransition(transition, stopMode, Runtime.FadeData.UseClipSetting);
 
         /// <param name="overrideFade">Override value of the fading time</param>
         /// <inheritdoc cref="SetTransition(IMusicPlayer, Transition,StopMode)"/>

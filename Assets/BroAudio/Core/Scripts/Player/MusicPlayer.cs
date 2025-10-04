@@ -23,7 +23,7 @@ namespace Ami.BroAudio.Runtime
 
         private Transition _transition = default;
         private StopMode _stopMode = default;
-        private float _overrideFade = AudioPlayer.UseEntitySetting;
+        private float _overrideFade = FadeData.UseClipSetting;
 
         public bool IsWaitingForTransition { get; private set; }
 
@@ -40,7 +40,7 @@ namespace Ami.BroAudio.Runtime
             base.Recycle();
             _transition = default;
             _stopMode = default;
-            _overrideFade = AudioPlayer.UseEntitySetting;
+            _overrideFade = FadeData.UseClipSetting;
         }
 
         IAudioPlayer IMusicPlayer.SetTransition(Transition transition, StopMode stopMode, float overrideFade)
@@ -80,15 +80,16 @@ namespace Ami.BroAudio.Runtime
 
             void HandleNewBGM(ref PlaybackPreference pref)
             {
-                pref.FadeIn = _transition switch
+                float fadeIn = _transition switch
                 {
                     Transition.Immediate => 0f,
                     Transition.OnlyFadeOut => 0f,
                     Transition.OnlyFadeIn => _overrideFade,
                     Transition.Default => _overrideFade,
                     Transition.CrossFade => _overrideFade,
-                    _ => pref.FadeIn
+                    _ => throw new ArgumentOutOfRangeException(),
                 };
+                pref.SetNextFadeIn(fadeIn);
             }
         }
 

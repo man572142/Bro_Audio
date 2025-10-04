@@ -29,32 +29,38 @@ namespace Ami.BroAudio
         /// <summary>
         /// Plays audio globally (2D)
         /// </summary>
-        public static IAudioPlayer Play(SoundID id) 
-            => Play(id, (IPlayableValidator)null);
+        /// <param name="playableValidator">Overrides the validation rule of the <see cref="PlaybackGroup"/></param>
+        public static IAudioPlayer Play(SoundID id, IPlayableValidator playableValidator = null)
+            => Play(id, FadeData.UseClipSetting, playableValidator);
 
-        ///<inheritdoc cref="Play(SoundID)"/>
-        public static IAudioPlayer Play(SoundID id, IPlayableValidator customValidator)
-            => SoundManager.Instance.Play(id, customValidator);
+        /// <param name="fadeIn">Time in seconds to fade in at start</param>
+        /// <inheritdoc cref="Play(SoundID, IPlayableValidator)"/>
+        public static IAudioPlayer Play(SoundID id, float fadeIn, IPlayableValidator playableValidator = null)
+            => SoundManager.Instance.Play(id, fadeIn, playableValidator);
 
         /// <summary>
         /// Plays audio in 3D space at the given position
         /// </summary>
-        public static IAudioPlayer Play(SoundID id, Vector3 position)
-            => Play(id, position, null);
-
-        ///<inheritdoc cref="Play(SoundID, Vector3)"/>
-        public static IAudioPlayer Play(SoundID id, Vector3 position, IPlayableValidator customValidator)
-            => SoundManager.Instance.Play(id, position, customValidator);
+        /// <param name="playableValidator">Overrides the validation rule of the <see cref="PlaybackGroup"/></param>
+        public static IAudioPlayer Play(SoundID id, Vector3 position, IPlayableValidator playableValidator = null)
+            => Play(id, position, FadeData.UseClipSetting, playableValidator);
+        
+        /// <param name="fadeIn">Time in seconds to fade in at start</param>
+        /// <inheritdoc cref="Play(SoundID, Vector3, IPlayableValidator)"/>
+        public static IAudioPlayer Play(SoundID id, Vector3 position, float fadeIn, IPlayableValidator playableValidator = null)
+            => SoundManager.Instance.Play(id, position, fadeIn, playableValidator);
 
         /// <summary>
         /// Plays audio in 3D space and keeps it following the target continuously
         /// </summary>
-        public static IAudioPlayer Play(SoundID id, Transform followTarget)
-            => SoundManager.Instance.Play(id, followTarget, null);
-
-        ///<inheritdoc cref="Play(SoundID, Transform)"/>
-        public static IAudioPlayer Play(SoundID id, Transform followTarget, IPlayableValidator customValidator)
-            => SoundManager.Instance.Play(id, followTarget, customValidator);
+        /// <param name="playableValidator">Overrides the validation rule of the <see cref="PlaybackGroup"/></param>
+        public static IAudioPlayer Play(SoundID id, Transform followTarget, IPlayableValidator playableValidator = null)
+            => Play(id, followTarget, FadeData.UseClipSetting, playableValidator);
+        
+        /// <param name="fadeIn">Time in seconds to fade in at start</param>
+        /// <inheritdoc cref="Play(SoundID, Transform, IPlayableValidator)"/>
+        public static IAudioPlayer Play(SoundID id, Transform followTarget, float fadeIn, IPlayableValidator playableValidator = null)
+            => SoundManager.Instance.Play(id, followTarget, fadeIn, playableValidator);
         #endregion
 
         #region Stop

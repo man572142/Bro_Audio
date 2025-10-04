@@ -142,6 +142,21 @@ namespace Ami.BroAudio
                 return null;
             }
         }
+        
+        public static Ease GetFadeInEase(this IAudioEntity entity)
+        {
+            return entity.IsLoop(LoopType.SeamlessLoop) ? SoundManager.SeamlessFadeIn : SoundManager.FadeInEase;
+        }
+        
+        public static Ease GetFadeOutEase(this IAudioEntity entity)
+        {
+            return entity.IsLoop(LoopType.SeamlessLoop) ? SoundManager.SeamlessFadeOut : SoundManager.FadeOutEase;
+        }
+
+        public static bool IsLoop(this IAudioEntity entity, LoopType targetType)
+        {
+            return entity.HasLoop(out var loopType, out _) && loopType == targetType;
+        }
 
         internal static T GetOrCreateDecorator<T>(ref List<AudioPlayerDecorator> list, Func<T> onCreateDecorator) where T : AudioPlayerDecorator
         {

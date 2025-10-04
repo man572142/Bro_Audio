@@ -128,10 +128,10 @@ namespace Ami.BroAudio.Runtime
                 float elapsedTime = 0f;
 
                 #region FadeIn
-                if (HasFading(_clip.FadeIn, _pref.FadeIn, out float fadeIn))
+                if (_pref.HasFadeIn(_clip.FadeIn, out var fadeIn, out var fadeInEase))
                 {
                     _clipVolume.SetTarget(targetClipVolume);
-                    while (_clipVolume.Update(ref elapsedTime, fadeIn, _pref.FadeInEase))
+                    while (_clipVolume.Update(ref elapsedTime, fadeIn, fadeInEase))
                     {
                         yield return null;
                         if (!OnUpdate())
@@ -154,7 +154,7 @@ namespace Ami.BroAudio.Runtime
 
                 #region FadeOut
                 int endSample = AudioSource.clip.samples - GetSample(sampleRate, _clip.EndPosition);
-                if (HasFading(_clip.FadeOut, _pref.FadeOut, out float fadeOut))
+                if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
                 {
                     while (endSample - AudioSource.timeSamples > fadeOut * sampleRate)
                     {
@@ -169,7 +169,7 @@ namespace Ami.BroAudio.Runtime
                     _clipVolume.SetTarget(0f);
                     elapsedTime = 0f;
                     IsFadingOut = true;
-                    while (_clipVolume.Update(ref elapsedTime, fadeOut, _pref.FadeOutEase))
+                    while (_clipVolume.Update(ref elapsedTime, fadeOut, fadeOutEase))
                     {
                         yield return null;
                         if (!OnUpdate())
@@ -193,11 +193,6 @@ namespace Ami.BroAudio.Runtime
                     TriggerPlaybackHandover();
                 }
                 #endregion
-
-                if (_pref.IsLoop(LoopType.Loop))
-                {
-                    _pref.ResetFading();
-                }
                 hasScheduled = false;
             } while (_pref.IsLoop(LoopType.Loop) && CanLoopIfIsChainedMode());
 
@@ -273,28 +268,28 @@ namespace Ami.BroAudio.Runtime
 
         #region Stop Overloads
         void IAudioStoppable.Pause()
-            => this.Pause(UseEntitySetting);
+            => this.Pause(FadeData.UseClipSetting);
         void IAudioStoppable.Pause(float fadeOut)
             => Stop(fadeOut, StopMode.Pause, null);
         void IAudioStoppable.UnPause()
-            => this.UnPause(UseEntitySetting);
+            => this.UnPause(FadeData.UseClipSetting);
         void IAudioStoppable.UnPause(float fadeIn)
         {
-            _pref.FadeIn = fadeIn;
+            _pref.SetNextFadeIn(fadeIn);
             Play();
         }
         void IAudioStoppable.Stop()
-            => this.Stop(UseEntitySetting);
+            => this.Stop(FadeData.UseClipSetting);
         void IAudioStoppable.Stop(float fadeOut)
             => this.Stop(fadeOut, null);
         void IAudioStoppable.Stop(Action onFinished)
-            => this.Stop(UseEntitySetting, onFinished);
+            => this.Stop(FadeData.UseClipSetting, onFinished);
         void IAudioStoppable.Stop(float fadeOut, Action onFinished)
             => Stop(fadeOut, StopMode.Stop, onFinished);
         #endregion
         public void Stop(float overrideFade, StopMode stopMode, Action onFinished)
         {
-            if (IsStopping && !Mathf.Approximately(overrideFade, Immediate))
+            if (IsStopping && !Mathf.Approximately(overrideFade, FadeData.Immediate))
             {
                 return;
             }
@@ -319,14 +314,15 @@ namespace Ami.BroAudio.Runtime
         {
             _stopMode = stopMode;
             IsStopping = true;
+            _pref.SetNextFadeOut(overrideFade);
             
             TriggerPlaybackHandover(isEnd: true);
             #region FadeOut
-            if (HasFading(_clip.FadeOut,overrideFade,out float fadeTime))
+            if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
             {
                 if (IsFadingOut)
                 {
-                    // if is fading out. then don't stop. just wait for it
+                    // if it's fading out. then don't stop. just wait for it
                     AudioClip clip = AudioSource.clip;
                     float endSample = clip.samples - (_clip.EndPosition * clip.frequency);
                     while(AudioSource.timeSamples < endSample)
@@ -342,7 +338,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     float elapsedTime = 0f;
                     _clipVolume.SetTarget(0f);
-                    while(_clipVolume.Update(ref elapsedTime, fadeTime, SoundManager.FadeOutEase))
+                    while(_clipVolume.Update(ref elapsedTime, fadeOut, fadeOutEase))
                     {
                         yield return null;
                         if (!OnUpdate())
@@ -367,16 +363,6 @@ namespace Ami.BroAudio.Runtime
             }
             IsStopping = false;
             onFinished?.Invoke();
-        }
-
-        private static bool HasFading(float clipFade, float overrideFade, out float fadeTime)
-        {
-            fadeTime = clipFade;
-            if (overrideFade >= 0f)
-            {
-                fadeTime = overrideFade;
-            }
-            return fadeTime > Immediate;
         }
 
         private bool OnUpdate()

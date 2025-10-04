@@ -49,7 +49,7 @@ namespace Ami.BroAudio
 
         #region Stop and Pause
         ///<inheritdoc cref="BroAudio.Stop(SoundID)"/>
-        public void Stop() => Stop(AudioPlayer.UseEntitySetting);
+        public void Stop() => Stop(FadeData.UseClipSetting);
 
         ///<inheritdoc cref="BroAudio.Stop(SoundID, float)"/>
         public void Stop(float fadeTime)
@@ -61,7 +61,7 @@ namespace Ami.BroAudio
         }
 
         ///<inheritdoc cref="BroAudio.Pause(SoundID)"/>
-        public void Pause() => Pause(AudioPlayer.UseEntitySetting);
+        public void Pause() => Pause(FadeData.UseClipSetting);
 
         ///<inheritdoc cref="BroAudio.Pause(SoundID, float)"/>
         public void Pause(float fadeTime)
@@ -73,7 +73,7 @@ namespace Ami.BroAudio
         }
 
         ///<inheritdoc cref="BroAudio.UnPause(SoundID)"/>
-        public void UnPause() => UnPause(AudioPlayer.UseEntitySetting);
+        public void UnPause() => UnPause(FadeData.UseClipSetting);
 
         ///<inheritdoc cref="BroAudio.UnPause(SoundID, float)"/>
         public void UnPause(float fadeTime)

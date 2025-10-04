@@ -12,31 +12,31 @@ namespace Ami.BroAudio.Runtime
         private AudioPlayer.PlaybackHandover _playbackHandoverDelegate;
 
         #region Play
-        public IAudioPlayer Play(SoundID id, IPlayableValidator customValidator = null)
+        public IAudioPlayer Play(SoundID id, float fadeIn, IPlayableValidator customValidator = null)
         {
             if (IsPlayable(id, customValidator, GloballyPlayedPosition, out var entity, out var player))
             {
-                var pref = new PlaybackPreference(entity);
+                var pref = new PlaybackPreference(entity).SetNextFadeIn(fadeIn);
                 return PlayerToPlay(id, player, pref);
             }
             return Empty.AudioPlayer;
         }
 
-        public IAudioPlayer Play(SoundID id, Vector3 position, IPlayableValidator customValidator = null)
+        public IAudioPlayer Play(SoundID id, Vector3 position, float fadeIn, IPlayableValidator customValidator = null)
         {
             if (IsPlayable(id, customValidator, position, out var entity, out var player))
             {
-                var pref = new PlaybackPreference(entity, position);
+                var pref = new PlaybackPreference(entity, position).SetNextFadeIn(fadeIn);
                 return PlayerToPlay(id, player, pref);
             }
             return Empty.AudioPlayer;
         }
 
-        public IAudioPlayer Play(SoundID id, Transform followTarget, IPlayableValidator customValidator = null)
+        public IAudioPlayer Play(SoundID id, Transform followTarget, float fadeIn, IPlayableValidator customValidator = null)
         {
             if (IsPlayable(id, customValidator, followTarget.position, out var entity, out var player))
             {
-                var pref = new PlaybackPreference(entity, followTarget);
+                var pref = new PlaybackPreference(entity, followTarget).SetNextFadeIn(fadeIn);
                 return PlayerToPlay(id, player, pref);
             }
             return Empty.AudioPlayer;
@@ -134,12 +134,12 @@ namespace Ami.BroAudio.Runtime
         #region Stop
         public void Stop(BroAudioType targetType)
         {
-            Stop(targetType,AudioPlayer.UseEntitySetting);
+            Stop(targetType,FadeData.UseClipSetting);
         }
 
         public void Stop(int id)
         {
-            Stop(id, AudioPlayer.UseEntitySetting);
+            Stop(id, FadeData.UseClipSetting);
         }
 
         public void Stop(int id,float fadeTime)
@@ -177,7 +177,7 @@ namespace Ami.BroAudio.Runtime
         #region Pause
         public void Pause(int id, bool isPause)
         {
-            Pause(id, AudioPlayer.UseEntitySetting, isPause);
+            Pause(id, FadeData.UseClipSetting, isPause);
         }
 
         public void Pause(int id, float fadeTime, bool isPause)
@@ -202,7 +202,7 @@ namespace Ami.BroAudio.Runtime
 
         public void Pause(BroAudioType targetType, bool isPause)
         {
-            Pause(targetType, AudioPlayer.UseEntitySetting, isPause);
+            Pause(targetType, FadeData.UseClipSetting, isPause);
         }
 
         public void Pause(BroAudioType targetType, float fadeTime, bool isPause)

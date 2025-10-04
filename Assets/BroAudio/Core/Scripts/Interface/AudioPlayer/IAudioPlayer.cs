@@ -46,6 +46,16 @@ namespace Ami.BroAudio
         /// Triggered when the AudioPlayer stops playing
         /// </summary>
         IAudioPlayer OnEnd(Action<SoundID> onEnd);
+        
+        /// <summary>
+        /// Sets the fade in easing function for this player
+        /// </summary>
+        IAudioPlayer SetFadeInEase(Ease ease);
+        
+        /// <summary>
+        /// Sets the fade out easing function for this player
+        /// </summary>
+        IAudioPlayer SetFadeOutEase(Ease ease);
 
         internal IAudioPlayer OnAudioFilterRead(Action<float[], int> onAudioFilterRead);
 

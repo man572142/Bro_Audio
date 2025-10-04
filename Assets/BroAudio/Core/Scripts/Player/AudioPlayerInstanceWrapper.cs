@@ -57,6 +57,10 @@ namespace Ami.BroAudio
         IAudioPlayer IAudioPlayer.OnStart(Action<IAudioPlayer> onStart) => IsAvailable() ? Wrap(Instance.OnStart(onStart)) : Empty.AudioPlayer;
         IAudioPlayer IAudioPlayer.OnUpdate(Action<IAudioPlayer> onUpdate) => IsAvailable() ? Wrap(Instance.OnUpdate(onUpdate)) : Empty.AudioPlayer;
         IAudioPlayer IAudioPlayer.OnEnd(Action<SoundID> onEnd) => IsAvailable() ? Wrap(Instance.OnEnd(onEnd)) : Empty.AudioPlayer;
+        
+        public IAudioPlayer SetFadeInEase(Ease ease) => IsAvailable() ? Wrap(Instance.SetFadeInEase(ease)) : Empty.AudioPlayer;
+        public IAudioPlayer SetFadeOutEase(Ease ease) => IsAvailable() ? Wrap(Instance.SetFadeOutEase(ease)) : Empty.AudioPlayer;
+        
         IAudioSourceProxy IAudioPlayer.AudioSource
         {
             get

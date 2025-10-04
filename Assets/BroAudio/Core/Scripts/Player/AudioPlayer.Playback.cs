@@ -422,5 +422,17 @@ namespace Ami.BroAudio.Runtime
             _onStart += onStart;
             return this;
         }
+
+        public IAudioPlayer SetFadeInEase(Ease ease)
+        {
+            _pref.SetFadeInEase(ease);
+            return this;
+        }
+
+        public IAudioPlayer SetFadeOutEase(Ease ease)
+        {
+            _pref.SetFadeOutEase(ease);
+            return this;
+        }
     }
 }

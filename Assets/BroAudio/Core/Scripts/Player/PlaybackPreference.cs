@@ -56,6 +56,16 @@ namespace Ami.BroAudio.Runtime
             _contextValue = GetContextValue(entity);
         }
 
+        public void SetFadeInEase(Ease ease)
+        {
+            _fadeInData.SetEase(ease);
+        }
+
+        public void SetFadeOutEase(Ease ease)
+        {
+            _fadeOutData.SetEase(ease);
+        }
+
         public bool HasFadeIn(float clipFade, out float fadeIn, out Ease ease)
         {
             return HasFading(clipFade, SoundManager.FadeInEase, ref _fadeInData, out fadeIn, out ease);

@@ -16,8 +16,14 @@ namespace Ami.BroAudio.Runtime
         {
             Base = UseClipSetting;
             _baseEase = ease;
-            Next = UseClipSetting;;
+            Next = UseClipSetting;
             _nextEase = nextEase;
+        }
+
+        public void SetEase(Ease ease)
+        {
+            _nextEase = ease;
+            _baseEase = ease;
         }
 
         public bool TryGetOrConsumeOverride(out float fade, out Ease ease)

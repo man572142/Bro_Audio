@@ -101,7 +101,8 @@ namespace Ami.BroAudio
             // the previous has been added to the queue but hasn't played yet, i.e., The current and the previous will end up being played in the same frame
             bool previousIsInQueue = Mathf.Approximately(previousPlayTime, 0f); 
             float difference = time - previousPlayTime;
-            if((_ignoreCombFilteringIfSameFrame && IsSameFrame()) || HasPassedCombFilteringTime())
+            bool isSameFrame = previousIsInQueue || Mathf.Approximately(difference, 0f);
+            if((isSameFrame && _ignoreCombFilteringIfSameFrame) || (!isSameFrame && HasPassedCombFilteringTime()))
             {
                 return true;
             }
@@ -126,7 +127,6 @@ namespace Ami.BroAudio
             }
             return false;
 
-            bool IsSameFrame() => previousIsInQueue || Mathf.Approximately(difference, 0f);
             bool HasPassedCombFilteringTime() => difference >= TimeExtension.SecToMs(_combFilteringTime);
         }
         #endregion

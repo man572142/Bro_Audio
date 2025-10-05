@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Ami.Extension.EditorScriptingExtension;
@@ -50,6 +49,7 @@ namespace Ami.BroAudio.Editor
         public bool EditTheNewClipAfterSaveAs = FactorySettings.EditTheNewClipAfterSaveAs;
         public bool PingTheNewClipAfterSaveAs = FactorySettings.PingTheNewClipAfterSaveAs;
         public bool HasSetupWizardAutoLaunched = false;
+        public int VirtualTrackCount = FactorySettings.VirtualTrackCount;
 
         public List<AudioTypeSetting> AudioTypeSettings;
         public List<Color> SpectrumBandColors; 
@@ -168,7 +168,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        public class FactorySettings
+        public static class FactorySettings
 		{
 			public const bool ShowAudioTypeOnSoundID = true;
 			public const bool ShowVUColorOnVolumeSlider = true;
@@ -196,6 +196,8 @@ namespace Ami.BroAudio.Editor
 
             public const bool EditTheNewClipAfterSaveAs = true;
             public const bool PingTheNewClipAfterSaveAs = true;
+
+            public const int VirtualTrackCount = 4;
         }
 	}
 }

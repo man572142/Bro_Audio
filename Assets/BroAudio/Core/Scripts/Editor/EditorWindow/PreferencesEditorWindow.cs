@@ -52,7 +52,6 @@ namespace Ami.BroAudio.Editor.Setting
         private Tab _currSelectedTab = Tab.Audio;
         private int _currProjectSettingVoiceCount = -1;
         private int _currentMixerTracksCount = -1;
-        private int _broVirtualTracksCount = BroAdvice.VirtualTrackCount;
         private BroInstructionHelper _instruction = new BroInstructionHelper();
         private AudioMixerGroup _duplicateTrackSource = null;
         private AudioMixer _mixer = null;
@@ -260,23 +259,15 @@ namespace Ami.BroAudio.Editor.Setting
             if (HasValidProjectSettingVoiceCount())
             {
                 EditorGUI.BeginDisabledGroup(true);
-                {
-                    Rect voiceRect = GetRectAndIterateLine(drawPos);
-                    EditorGUI.LabelField(voiceRect, _audioVoicesGUIContent);
-                    voiceRect.x += 150f;
-                    voiceRect.width = 100f;
-                    EditorGUI.IntField(voiceRect, _currProjectSettingVoiceCount);
-
-                    Rect virtualTracksRect = GetRectAndIterateLine(drawPos);
-                    EditorGUI.LabelField(virtualTracksRect, _virtualTracksGUIContent);
-                    virtualTracksRect.x += 150f;
-                    virtualTracksRect.width = 100f;
-                    EditorGUI.IntField(virtualTracksRect, _broVirtualTracksCount);
-                }
+                Rect voiceRect = VoiceSettingPrefixLabel(_audioVoicesGUIContent);
+                EditorGUI.IntField(voiceRect, _currProjectSettingVoiceCount);
                 EditorGUI.EndDisabledGroup();
+                
+                Rect virtualTracksRect = VoiceSettingPrefixLabel(_virtualTracksGUIContent);
+                EditorSetting.VirtualTrackCount = EditorGUI.IntField(virtualTracksRect, EditorSetting.VirtualTrackCount);
             }
 
-            if (HasValidMixerTracksCount() && _currentMixerTracksCount < _currProjectSettingVoiceCount + _broVirtualTracksCount)
+            if (HasValidMixerTracksCount() && _currentMixerTracksCount < _currProjectSettingVoiceCount + EditorSetting.VirtualTrackCount)
             {
                 Rect warningBoxRect = GetRectAndIterateLine(drawPos);
                 warningBoxRect.height *= 3;
@@ -295,19 +286,28 @@ namespace Ami.BroAudio.Editor.Setting
                 autoMatchBtnRect.height *= 2f;
                 autoMatchBtnRect.x += IndentInPixel *2;
                 autoMatchBtnRect.width -= IndentInPixel *2;
-                if (GUI.Button(autoMatchBtnRect, AutoMatchTracksButtonText)
-                    && EditorUtility.DisplayDialog("Confirmation", _instruction.GetText(Instruction.AddTracksConfirmationDialog), "OK", "Cancel"))
+                if (GUI.Button(autoMatchBtnRect, AutoMatchTracksButtonText) 
+                    && EditorUtility.DisplayDialog("Auto-Add Tracks to Match Voice Count", _instruction.GetText(Instruction.AddTracksConfirmationDialog), "OK", "Cancel"))
                 {
                     AutoMatchAudioVoices();
                 }
                 DrawEmptyLine(2); // For Match Button
+            }
+
+            Rect VoiceSettingPrefixLabel(GUIContent label)
+            {
+                Rect rect = GetRectAndIterateLine(drawPos);
+                EditorGUI.LabelField(rect, label);
+                rect.x += 150f;
+                rect.width = 100f;
+                return rect;
             }
         }
 
         private void AutoMatchAudioVoices()
         {
             AudioMixerGroup mainTrack = AudioMixer.FindMatchingGroups(MainTrackName)?.Where(x => x.name.Length == MainTrackName.Length).FirstOrDefault();
-            if (mainTrack == default || _currentMixerTracksCount == default)
+            if (mainTrack == null || _currentMixerTracksCount == 0)
             {
                 Debug.LogError(LogTitle + "Can't get the Main track or other BroAudio track");
                 return;
@@ -315,7 +315,7 @@ namespace Ami.BroAudio.Editor.Setting
 
             if(_duplicateTrackSource)
             {
-                for(int i = _currentMixerTracksCount +1 ; i <= _currProjectSettingVoiceCount + _broVirtualTracksCount; i++)
+                for(int i = _currentMixerTracksCount +1 ; i <= _currProjectSettingVoiceCount + EditorSetting.VirtualTrackCount; i++)
                 {
                     string trackName = $"{GenericTrackName}{i}";
                     BroAudioReflection.DuplicateBroAudioTrack(AudioMixer, mainTrack, _duplicateTrackSource, trackName);

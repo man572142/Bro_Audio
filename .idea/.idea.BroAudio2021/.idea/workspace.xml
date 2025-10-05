@@ -1,8 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="6f8dfd69-8768-41b0-8ace-427486db97f8" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.BroAudio2021/.idea/AndroidProjectSystem.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.BroAudio2021/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BroAudio2021/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Packages/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Packages/packages-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/packages-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/ProjectVersion.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ProjectVersion.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/ShaderGraphSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ShaderGraphSettings.asset" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;man572142&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/man572142/Bro_Audio.git&quot;,
+    &quot;accountId&quot;: &quot;131ee5f8-4115-492e-8a8d-518420a37220&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/metadata/2a3b1fc140ae44e9a4476e34a2a2972615b000/09/0abb6803/PropertyAttribute.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/metadata/2a3b1fc140ae44e9a4476e34a2a2972615b000/c0/6cff980b/TooltipAttribute.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/metadata/6007fc10abfe494b91c6b555814a821b10000/c1/14357977/AudioListener.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/metadata/6007fc10abfe494b91c6b555814a821b10000/d3/59a393b5/AudioSource.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/metadata/f93bd3edf91b4a63915fe4205912d7fa828000/01/45cc5204/PlayerSettings.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/metadata/f93bd3edf91b4a63915fe4205912d7fa828000/74/ecc049d7/EditorGUI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/9ca561723f4a8e911b7d44c66181e3d6b8e89a27c74522eae2e712614f5e46c/System.Diagnostics.CodeAnalysis.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/BroAudio/Core/Scripts/Interface/IReadOnlyAudioEntity.cs" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <McpServerCommand>
+      <option name="allowedToolsNames" />
+      <option name="enabled" value="true" />
+      <option name="name" value="context7" />
+      <option name="programPath" value="npx.cmd" />
+      <option name="arguments" value="-y @upstash/context7-mcp" />
+      <option name="workingDirectory" value="D:\UnityProjects\BroAudio2021" />
+      <envs />
+    </McpServerCommand>
+  </component>
+  <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="320M3yc8tToRBzxZOCaPzfMfcdb" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;DEV&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;llm.McpServerEditPanel.switcher&quot;: &quot;1&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;ml.llm.mcp&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
   <component name="RunManager" selected="Attach to Unity Editor.Attach to Unity Editor">
+    <configuration name="Standalone Player" type="RunUnityExe" factoryName="Unity Executable">
+      <option name="EXE_PATH" value="$PROJECT_DIR$/../Build/Bro2021\BroAudio.exe" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="D:\UnityProjects\Build\Bro2021" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="ENV_FILE_PATHS" value="" />
+      <option name="REDIRECT_INPUT_PATH" value="" />
+      <option name="PTY_MODE" value="Auto" />
+      <option name="MIXED_MODE_DEBUG" value="0" />
+      <method v="2" />
+    </configuration>
     <configuration name="Start Unity" type="RunUnityExe" factoryName="Unity Executable">
-      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\2021.3.36f1\Editor\Unity.exe" />
+      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\2021.3.45f2\Editor\Unity.exe" />
       <option name="PROGRAM_PARAMETERS" value="-projectPath D:\UnityProjects\BroAudio2021 -debugCodeOptimization" />
       <option name="WORKING_DIRECTORY" value="D:\UnityProjects\BroAudio2021" />
       <option name="PASS_PARENT_ENVS" value="1" />
@@ -10,10 +103,11 @@
       <option name="ENV_FILE_PATHS" value="" />
       <option name="REDIRECT_INPUT_PATH" value="" />
       <option name="PTY_MODE" value="Auto" />
+      <option name="MIXED_MODE_DEBUG" value="0" />
       <method v="2" />
     </configuration>
     <configuration name="Unit Tests (batch mode)" type="RunUnityExe" factoryName="Unity Executable">
-      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\2021.3.36f1\Editor\Unity.exe" />
+      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\2021.3.45f2\Editor\Unity.exe" />
       <option name="PROGRAM_PARAMETERS" value="-runTests -batchmode -projectPath D:\UnityProjects\BroAudio2021 -testResults Logs/results.xml -logFile Logs/Editor.log -testPlatform EditMode -debugCodeOptimization" />
       <option name="WORKING_DIRECTORY" value="D:\UnityProjects\BroAudio2021" />
       <option name="PASS_PARENT_ENVS" value="1" />
@@ -21,6 +115,7 @@
       <option name="ENV_FILE_PATHS" value="" />
       <option name="REDIRECT_INPUT_PATH" value="" />
       <option name="PTY_MODE" value="Auto" />
+      <option name="MIXED_MODE_DEBUG" value="0" />
       <method v="2" />
     </configuration>
     <configuration name="Attach to Unity Editor &amp; Play" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="UNITY_ATTACH_AND_PLAY" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
@@ -51,5 +146,125 @@
       <option name="useMixedMode" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="Attach to Device" type="UnityDevicePlayer" factoryName="UnityAttachToDevicePlayer">
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6f8dfd69-8768-41b0-8ace-427486db97f8" name="Changes" comment="" />
+      <created>1756552840524</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1756552840524</updated>
+      <workItem from="1756552842491" duration="133000" />
+      <workItem from="1756556282558" duration="22000" />
+      <workItem from="1756559093233" duration="334000" />
+      <workItem from="1756561369507" duration="1293000" />
+      <workItem from="1756573337757" duration="1344000" />
+      <workItem from="1756625367891" duration="3862000" />
+      <workItem from="1756629483028" duration="54000" />
+      <workItem from="1756639670721" duration="599000" />
+      <workItem from="1756768551824" duration="1505000" />
+      <workItem from="1756770348545" duration="517000" />
+      <workItem from="1757090639540" duration="236000" />
+      <workItem from="1758554484870" duration="110000" />
+      <workItem from="1758554644884" duration="3185000" />
+      <workItem from="1758580001881" duration="6784000" />
+      <workItem from="1758637206073" duration="257000" />
+      <workItem from="1758637487154" duration="1222000" />
+      <workItem from="1758645340723" duration="1642000" />
+      <workItem from="1758669999424" duration="1719000" />
+      <workItem from="1758714216757" duration="844000" />
+      <workItem from="1758724823805" duration="212000" />
+      <workItem from="1758725205729" duration="6829000" />
+      <workItem from="1758890913716" duration="123000" />
+      <workItem from="1758891111501" duration="212000" />
+      <workItem from="1758897126707" duration="1571000" />
+      <workItem from="1758899822863" duration="702000" />
+      <workItem from="1758901570964" duration="53000" />
+      <workItem from="1758974563156" duration="192000" />
+      <workItem from="1758976313384" duration="346000" />
+      <workItem from="1758988930029" duration="4602000" />
+      <workItem from="1759025592301" duration="1144000" />
+      <workItem from="1759045718517" duration="1804000" />
+      <workItem from="1759079427726" duration="2097000" />
+      <workItem from="1759417008289" duration="529000" />
+      <workItem from="1759417567974" duration="27000" />
+      <workItem from="1759419743927" duration="778000" />
+      <workItem from="1759420540354" duration="4568000" />
+      <workItem from="1759508220856" duration="193000" />
+      <workItem from="1759509007941" duration="3653000" />
+      <workItem from="1759548223734" duration="581000" />
+      <workItem from="1759555714111" duration="608000" />
+      <workItem from="1759556563812" duration="13217000" />
+    </task>
+    <task id="LOCAL-00001" summary="Fixed BGM fading out unexpectedly on the first loop after a transition, and refactored the transition function">
+      <option name="closed" value="true" />
+      <created>1758583857296</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1758583857296</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Reordered clip property in AudioSource proxies to avoid issues when resetting values while a clip is still assigned">
+      <option name="closed" value="true" />
+      <created>1758637804337</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1758637804337</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Added `TryGetPlayMode` method">
+      <option name="closed" value="true" />
+      <created>1758646823789</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1758646823789</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Make the player’s volume more accessible for users who may want to use it">
+      <option name="closed" value="true" />
+      <created>1758991928179</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1758991928179</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
+  <component name="UnityProjectConfiguration" hasMinimizedUI="true" />
+  <component name="UnityProjectDiscoverer">
+    <option name="hasUnityReference" value="true" />
+    <option name="unityProject" value="true" />
+    <option name="unityProjectFolder" value="true" />
+  </component>
+  <component name="UnityUnitTestConfiguration" currentTestLauncher="Both" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Fixed BGM fading out unexpectedly on the first loop after a transition, and refactored the transition function" />
+    <MESSAGE value="Reordered clip property in AudioSource proxies to avoid issues when resetting values while a clip is still assigned" />
+    <MESSAGE value="Added `TryGetPlayMode` method" />
+    <MESSAGE value="Make the player’s volume more accessible for users who may want to use it" />
+    <option name="LAST_COMMIT_MESSAGE" value="Make the player’s volume more accessible for users who may want to use it" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

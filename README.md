@@ -84,7 +84,13 @@ BroAudio is a sound management and playback system designed for Unity. It's uniq
 
 ## Install
 
+### Via Unity Asset Store Package (.unitypackage)
 Get it from [Unity Asset Store](https://assetstore.unity.com/packages/tools/audio/bro-audio-257362), install it from Package Manager
+
+### Via Unity Package Manager (UPM)
+* Navigate to Windows -> Package Manager
+* Use the PLUS button in the top left and choose "Install from git URL"
+* Enter `https://github.com/man572142/Bro_Audio.git?path=/Assets/BroAudio` appending `#tag_name` to tie to a specific release
 
 ## Creating sound libraries
 * Locate <span style="color: #FF9333;"><i>Tools/BroAudio/Library Manager</i></span> in the Unity menu bar.

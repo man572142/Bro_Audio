@@ -1,24 +1,22 @@
 using UnityEngine;
 using System.IO;
 using UnityEditor;
-using Ami.BroAudio.Tools;
 
 namespace Ami.BroAudio.Editor
 {
     public static partial class BroEditorUtility
     {
-        public const string CoreDataResourcesPath = BroName.CoreDataName;
+        public const string CoreDataResourcesPath = Tools.BroName.CoreDataName;
         public const string DefaultRelativeAssetOutputPath = "BroAudio/AudioAssets";
         public const string DefaultAssetOutputPath = "Assets/" + DefaultRelativeAssetOutputPath;
-        public const string EditorSettingPath = BroName.EditorSettingName;
-        public const string RuntimeSettingPath = BroName.RuntimeSettingName;
-        public const string GlobalPlaybackGroupPath = BroName.GlobalPlaybackGroupName;
+        public static readonly string UnityProjectRootPath = Application.dataPath.Replace("/Assets", string.Empty);
+        public const string EditorSettingPath = Tools.BroName.EditorSettingName;
+        public const string RuntimeSettingPath = Tools.BroName.RuntimeSettingName;
+        public const string GlobalPlaybackGroupPath = Tools.BroName.GlobalPlaybackGroupName;
 
         public const string MainLogoPath = "Logo_Editor";
         public const string TransparentLogoPath = "Logo_Transparent";
-        public const string EditorAudioMixerPath = BroName.EditorAudioMixerName;
-
-        public static readonly string UnityProjectRootPath = Application.dataPath.Replace("/Assets", string.Empty);
+        public const string EditorAudioMixerPath = Tools.BroName.EditorAudioMixerName;
 
         public static string AssetOutputPath
         {
@@ -61,15 +59,7 @@ namespace Ami.BroAudio.Editor
             return true;
         }
 
-        public static string ToUnitySeparator(this string value) => value.Replace('\\','/');
-        public static string ToMicrosoftSeparator(this string value) => value.Replace('/', '\\');
-
         #region Path Combine
-        public static string Combine(string path1,string path2)
-        {
-            return path1 + "/" + path2;
-        }
-
         public static string Combine(string path1,string path2,string path3)
         {
             return path1 + "/" + path2 + "/" + path3;
@@ -93,5 +83,4 @@ namespace Ami.BroAudio.Editor
         }
         #endregion
     }
-
 }

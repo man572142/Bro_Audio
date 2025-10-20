@@ -31,6 +31,7 @@ namespace Ami.BroAudio.Editor
 
             try
             {
+                //EnsurePackage();
                 EnsureAllResources();
 
                 request = Resources.LoadAsync<SoundManager>(nameof(SoundManager));
@@ -73,15 +74,62 @@ namespace Ami.BroAudio.Editor
             }
         }
 
+#if false // Cannot install as a local package, since Unity doesn't let you automatically add embedded packages via 
+        private static void EnsurePackage([System.Runtime.CompilerServices.CallerFilePath] string callerFilePath = "")
+        {
+            try
+            {
+                var package = UnityEditor.PackageManager.PackageInfo.FindForPackageName("com.ami.broaudio");
+
+                if (package != null) // Already installed as a package
+                {
+                    return;
+                }
+
+                // Loop upwards until we find package.json
+                string packageJsonPath = null;
+                string currentPath = Path.GetDirectoryName(callerFilePath);
+                var cwd = Directory.GetCurrentDirectory();
+
+                // Loop until we reach the project root
+                while (!string.IsNullOrEmpty(currentPath) && (currentPath.Contains(cwd, StringComparison.OrdinalIgnoreCase) || !Path.IsPathRooted(currentPath)))
+                {
+                    var path = Path.Combine(currentPath, "package.json");
+
+                    if (File.Exists(path))
+                    {
+                        packageJsonPath = path;
+                        break;
+                    }
+
+                    currentPath = Path.GetDirectoryName(currentPath);
+                }
+
+                if (packageJsonPath == null)
+                {
+                    Debug.Log($"Could not find package.json for BroAudio");
+                    return;
+                }
+
+                UnityEditor.PackageManager.Client.Add($"file:{Path.GetDirectoryName(packageJsonPath).Replace('\\', '/')}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
+#endif
+
         private static void EnsureAllResources([System.Runtime.CompilerServices.CallerFilePath] string callerFilePath = "")
         {
+            
             // Loop upwards and find all Resources~ directories
             string currentPath = Path.GetDirectoryName(callerFilePath);
             var cwd = Directory.GetCurrentDirectory();
             int changed = 0;
 
             // Loop until we reach the project root
-            while (!string.IsNullOrEmpty(currentPath) && (cwd.Contains(currentPath, StringComparison.OrdinalIgnoreCase) || !Path.IsPathRooted(currentPath)))
+            while (!string.IsNullOrEmpty(currentPath) && (currentPath.Contains(cwd, StringComparison.OrdinalIgnoreCase) || !Path.IsPathRooted(currentPath)))
             {
                 var resourcesPath = Path.Combine(currentPath, "Resources~");
 
@@ -271,4 +319,4 @@ namespace Ami.BroAudio.Editor
         }
     }
 #endif
-                    }
+    }

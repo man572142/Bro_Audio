@@ -26,12 +26,16 @@ namespace Ami.BroAudio.Editor.DevTool
 
 		private static bool IsBroAudioAsset(string path)
 		{
-			return path.StartsWith("Packages/com.broaudio", StringComparison.OrdinalIgnoreCase) ||
+			return path.StartsWith("Packages/com.ami.broaudio", StringComparison.OrdinalIgnoreCase) ||
 				   path.StartsWith("Assets/BroAudio", StringComparison.OrdinalIgnoreCase);
 		}
 
 		private static bool IsExcludedFile(string path)
 		{
+			if (path.EndsWith("package.json", System.StringComparison.Ordinal))
+			{
+				return true;
+			}
 			if (!path.EndsWith(".asset", System.StringComparison.Ordinal))
 			{
 				return false;

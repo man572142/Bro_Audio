@@ -70,3 +70,9 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Resources that should not be automatically included
+/[Aa]ssets/BroAudio/Resources/*
+/[Aa]ssets/BroAudio/Resources.meta
+/[Aa]ssets/BroAudio/Editor/Resources/*
+/[Aa]ssets/BroAudio/Editor/Resources.meta

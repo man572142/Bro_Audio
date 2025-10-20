@@ -13,7 +13,7 @@ namespace Ami.BroAudio.Editor
             {
                 if (importedAssets[0].Contains("BroAudio", System.StringComparison.OrdinalIgnoreCase) ||
                     importedAssets[0].Contains("Bro_Audio", System.StringComparison.OrdinalIgnoreCase) ||
-                    importedAssets[0].Contains("com.broaudio", System.StringComparison.OrdinalIgnoreCase))
+                    importedAssets[0].Contains("com.ami.broaudio", System.StringComparison.OrdinalIgnoreCase))
                 {
                     BroEditorUtility.FixDuplicateSoundIDs();
                     BroUserDataGenerator.CheckAndGenerateUserData(OnUserDataChecked);

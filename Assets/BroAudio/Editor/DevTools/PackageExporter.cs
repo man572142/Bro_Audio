@@ -16,6 +16,7 @@ namespace Ami.BroAudio.Editor.DevTool
         public static void Export()
         {
             Copy("Assets/BroAudio/Samples~", "Assets/BroAudio/Samples", recursive: true);
+            Copy("Assets/BroAudio/Documentation~", "Assets/BroAudio/Documentation", recursive: true);
             Copy("Assets/BroAudio/Resources~", "Assets/BroAudio/Resources", recursive: false);
             Copy("Assets/BroAudio/Resources~/Editor", "Assets/BroAudio/Editor/Resources", recursive: false);
 

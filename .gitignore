@@ -76,3 +76,5 @@ crashlytics-build.properties
 /[Aa]ssets/BroAudio/Resources.meta
 /[Aa]ssets/BroAudio/Editor/Resources/*
 /[Aa]ssets/BroAudio/Editor/Resources.meta
+/[Aa]ssets/BroAudio/Samples/*
+/[Aa]ssets/BroAudio/Samples.meta

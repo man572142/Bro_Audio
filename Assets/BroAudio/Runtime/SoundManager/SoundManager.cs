@@ -72,6 +72,10 @@ namespace Ami.BroAudio.Runtime
         private Dictionary<SoundID, AudioPlayer> _combFilteringPreventer = null;
         private Coroutine _masterVolumeCoroutine;
 
+        // Tracking for loaded addressable entities
+        private Dictionary<SoundID, double> _loadedEntityLastPlayedTime = new Dictionary<SoundID, double>();
+        private Coroutine _addressableCleanupCoroutine = null;
+
 #if UNITY_WEBGL
         public float WebGLMasterVolume { get; private set; } = AudioConstant.FullVolume;
 #endif
@@ -102,12 +106,26 @@ namespace Ami.BroAudio.Runtime
             InitBank();
             _automationHelper = new EffectAutomationHelper(this, _broAudioMixer);
             _dominatorAutomationHelper = new EffectAutomationHelper(this, _broAudioMixer);
+
+#if PACKAGE_ADDRESSABLES
+            // Start the coroutine to cleanup unused loaded addressable entities
+            _addressableCleanupCoroutine = StartCoroutine(AddressableCleanupRoutine());
+#endif
         }
 
         private void OnDestroy()
         {
             MusicPlayer.CleanUp();
             SequenceClipStrategy.ResetAll();
+
+#if PACKAGE_ADDRESSABLES
+            // Stop the cleanup coroutine
+            if (_addressableCleanupCoroutine != null)
+            {
+                StopCoroutine(_addressableCleanupCoroutine);
+                _addressableCleanupCoroutine = null;
+            }
+#endif
         }
 
         #region InitBank
@@ -402,6 +420,64 @@ namespace Ami.BroAudio.Runtime
         private IReadOnlyList<AudioPlayer> GetCurrentAudioPlayers()
         {
             return _audioPlayerPool.GetCurrentAudioPlayers();
+        }
+        #endregion
+
+        #region Addressable Cleanup
+        private static readonly WaitForSecondsRealtime _addressableCleanupInterval = new WaitForSecondsRealtime(5f);
+        private readonly List<SoundID> _addressableCleanupEntitiesList = new List<SoundID>();
+        private IEnumerator AddressableCleanupRoutine()
+        {
+            while (true)
+            {
+                yield return _addressableCleanupInterval;
+
+                double currentTime = Time.unscaledTimeAsDouble;
+                _addressableCleanupEntitiesList.AddRange(_loadedEntityLastPlayedTime.Keys);
+
+                foreach (var id in _addressableCleanupEntitiesList)
+                {
+                    if (!_loadedEntityLastPlayedTime.TryGetValue(id, out var lastPlayedTime))
+                    {
+                        continue;
+                    }
+
+                    // Check if this entity is currently being played
+                    if (!HasAnyPlayingInstances(id))
+                    {
+                        // If not playing and hasn't been played for 60 seconds, unload it
+                        if (currentTime - lastPlayedTime > 60.0)
+                        {
+                            UnloadAddressableEntity(id);
+                            _loadedEntityLastPlayedTime.Remove(id);
+                        }
+                    }
+                    else
+                    {
+                        // Update the last played time since it's currently playing
+                        _loadedEntityLastPlayedTime[id] = currentTime;
+                    }
+                }
+
+                // Remove unloaded entities from tracking
+                _addressableCleanupEntitiesList.Clear();
+            }
+        }
+
+        private void UnloadAddressableEntity(SoundID id)
+        {
+            if (TryGetEntity(id, out var entity) && entity is AudioEntity audioEntity && audioEntity.UseAddressables)
+            {
+                audioEntity.ReleaseAllAssets();
+            }
+        }
+
+        public void UpdateLoadedEntityLastPlayedTime(SoundID id)
+        {
+            if (_loadedEntityLastPlayedTime.ContainsKey(id))
+            {
+                _loadedEntityLastPlayedTime[id] = Time.unscaledTimeAsDouble;
+            }
         }
         #endregion
     }

@@ -18,13 +18,13 @@ namespace Ami.BroAudio.Runtime
             {
                 int nextIndex = currentIndex + 1;
                 nextIndex = nextIndex >= clips.Length ? 0 : nextIndex;
-                if (clips[nextIndex].GetAudioClip() != null)
+                if (clips[nextIndex].IsSet)
                 {
                     _sequencer[context.Id] = nextIndex;
                     currentIndex = nextIndex;
                 }
             }
-            else if(clips[0].GetAudioClip() != null)
+            else if(clips[0].IsSet)
             {
                 _sequencer.Add(context.Id, 0);
             }

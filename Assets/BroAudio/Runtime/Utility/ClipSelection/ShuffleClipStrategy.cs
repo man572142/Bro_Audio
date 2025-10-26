@@ -67,7 +67,7 @@ namespace Ami.BroAudio.Runtime
                 return false;
             }
             
-            if (!result.IsUsed && result.GetAudioClip() != null)
+            if (!result.IsUsed && result.IsSet)
             {
                 result.IsUsed = true;
                 return true;

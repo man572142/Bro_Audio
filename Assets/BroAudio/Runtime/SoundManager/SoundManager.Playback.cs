@@ -85,7 +85,31 @@ namespace Ami.BroAudio.Runtime
                 _playbackHandoverDelegate ??= PlaybackHandover;
                 player.OnPlaybackHandover = _playbackHandoverDelegate;
             }
+
+            // Start loading addressable clips if needed
+            StartLoadingAddressableClips(pref.Entity, id);
+
             return wrapper;
+        }
+
+        private void StartLoadingAddressableClips(IAudioEntity entity, SoundID id)
+        {
+#if PACKAGE_ADDRESSABLES
+            if (entity is AudioEntity audioEntity && audioEntity.UseAddressables)
+            {
+                // Start loading all addressable clips asynchronously if not already loaded/loading
+                foreach (var clip in audioEntity.Clips)
+                {
+                    if (clip.IsAddressablesAvailable() && !clip.IsLoaded && !clip.IsLoading)
+                    {
+                        clip.LoadAssetAsync();
+
+                        // Track that this entity has started loading
+                        UpdateLoadedEntityLastPlayedTime(id);
+                    }
+                }
+            }
+#endif
         }
 
         private void PlaybackHandover(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType prevTrackEffect, float trackVolume, float pitch)

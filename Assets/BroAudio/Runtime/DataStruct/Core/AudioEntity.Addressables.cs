@@ -11,7 +11,6 @@ namespace Ami.BroAudio.Data
     public partial class AudioEntity : IEntityIdentity, IAudioEntity
     {
         public bool UseAddressables = false;
-        private IList<AudioClip> _batchLoadedClips = null;
 
         public IEnumerable GetAllAddressableKeys()
         {
@@ -60,28 +59,51 @@ namespace Ami.BroAudio.Data
 
         public AsyncOperationHandle<IList<AudioClip>> LoadAssetsAsync()
         {
-            if(Clips.Length == 0)
+            // A whole bunch of code so we can still return an AsyncOperationHandle<IList<AudioClip>>, since we need to group them all together
+            var handles = new List<AsyncOperationHandle>();
+
+            foreach (var clip in Clips)
+            {
+                if (clip.IsAddressablesAvailable() && !clip.IsLoaded && !clip.IsLoading)
+                {
+                    handles.Add(clip.LoadAssetAsync());
+                }
+                else
+                {
+                    handles.Add(clip.GetCurrentOperationHandle());
+                }
+            }
+
+            if (handles.Count == 0)
             {
                 Debug.LogError(Utility.LogTitle + $"{Name.ToWhiteBold()} has no clips to load!");
                 return default;
             }
 
-            var op = Addressables.LoadAssetsAsync<AudioClip>(GetAllAddressableKeys(), null, Addressables.MergeMode.Union);
-            op.Completed += SetLoadedClipList;
-            return op;
+            var groupHandle = Addressables.ResourceManager.CreateGenericGroupOperation(handles);
+
+            var finalHandle = Addressables.ResourceManager.CreateChainOperation<IList<AudioClip>>(groupHandle, op =>
+            {
+                var result = new List<AudioClip>(handles.Count);
+                foreach (var h in handles)
+                {
+                    result.Add(h.Result as AudioClip);
+                }
+                return Addressables.ResourceManager.CreateCompletedOperation<IList<AudioClip>>(result, string.Empty);
+            });
+
+            return finalHandle;
         }
 
+        [System.Obsolete("Batch loading is no longer supported. Use individual clip loading instead.")]
         public void SetLoadedClipList(AsyncOperationHandle<IList<AudioClip>> handle)
         {
             handle.Completed -= SetLoadedClipList;
 
             if(handle.Status == AsyncOperationStatus.Succeeded && handle.Result.Count == Clips.Length)
             {
-                _batchLoadedClips = handle.Result;
-                for(int i = 0; i < _batchLoadedClips.Count; i++)
-                {
-                    Clips[i].SetLoadedAsset(_batchLoadedClips[i]);
-                }
+                // No longer storing batch loaded clips or calling SetLoadedAsset
+                // Individual clips should be loaded separately as needed
             }
             else
             {
@@ -91,20 +113,10 @@ namespace Ami.BroAudio.Data
 
         public void ReleaseAllAssets()
         {
-            bool hasReleased = false;
-            if(_batchLoadedClips != null)
-            {
-                Addressables.Release(_batchLoadedClips);
-                hasReleased = true;
-            }
-
+            // Release individual clip assets
             foreach (var clip in Clips)
             {
-                clip.SetLoadedAsset(null);
-                if(!hasReleased)
-                {
-                    clip.ReleaseAsset();
-                }
+                clip.ReleaseAsset();
             }
         }
     }

@@ -1,5 +1,8 @@
 using Ami.Extension;
 using UnityEngine;
+#if PACKAGE_ADDRESSABLES
+using UnityEngine.ResourceManagement.AsyncOperations;
+#endif
 
 namespace Ami.BroAudio.Data
 {
@@ -41,6 +44,18 @@ namespace Ami.BroAudio.Data
             return IsAddressablesAvailable();
         }
 
+        public bool IsSet
+        {
+            get
+            {
+                if(AudioClip != null)
+                {
+                    return true;
+                }
+                return IsAddressablesAvailable();
+            }
+        }
+
 #if !PACKAGE_ADDRESSABLES
         public AudioClip GetAudioClip() => AudioClip;
         public bool IsAddressablesAvailable() => false;
@@ -57,6 +72,7 @@ namespace Ami.BroAudio.Data
     {
         AudioClip GetAudioClip();
         bool IsValid();
+        bool IsSet { get; }
 
         float Volume { get; }
         float Delay { get; }

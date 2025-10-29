@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource))]
     public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
-        public delegate void PlaybackHandover(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
+        public delegate void PlaybackHandover(SoundID id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
 
         public PlaybackHandover OnPlaybackHandover;
         [Obsolete]
@@ -29,7 +29,7 @@ namespace Ami.BroAudio.Runtime
 
         public int PlaybackStartingTime { get; private set; }
 
-        public void SetPlaybackData(int id, PlaybackPreference pref)
+        public void SetPlaybackData(SoundID id, PlaybackPreference pref)
         {
             ID = id;
             _pref = pref;
@@ -37,7 +37,7 @@ namespace Ami.BroAudio.Runtime
 
         public void Play()
         {
-            if(IsStopping || ID <= 0 || _pref.Entity == null)
+            if(IsStopping || !ID.IsValid() || _pref.Entity == null)
             {
                 return;
             }
@@ -328,7 +328,7 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            if (ID <= 0 || !isPlaying)
+            if (!ID.IsValid() || !isPlaying)
             {
                 onFinished?.Invoke();
                 EndPlaying();

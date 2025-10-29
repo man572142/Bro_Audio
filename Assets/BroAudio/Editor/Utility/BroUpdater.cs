@@ -10,16 +10,19 @@ using static Ami.BroAudio.Tools.BroName;
 using System.Collections.Generic;
 using Ami.BroAudio.Tools;
 using Ami.BroAudio.Editor.Setting;
+using UnityEngine;
 
 public class BroUpdater
 {
     private const string DemoAudioAssetGUID = "6ae8d9cb032bc1c40a8f7d4bd78c9337";
     private static Version PlaybackGroupFirstReleasedVersion => new Version(2,0,0);
 
+#pragma warning disable CS0618 // Type or member is obsolete
     public static void Process(AudioMixer mixer, BroAudioData coreData)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
-        Version targetVersion = new Version(BroAudioData.CodeBaseVersion);
-        Version currentVersion = coreData.Version;
+        Version targetVersion = Version.Parse(BroVersion.CodeBaseVersion);
+        Version currentVersion = BroVersion.Version;
 
         if(currentVersion >= targetVersion)
         {
@@ -54,10 +57,37 @@ public class BroUpdater
 
         MoveEditorAssets(corePath);
         RemoveDemoAssetsIfNotExist(corePath, coreData);
-        coreData.UpdateVersion();
-        EditorUtility.SetDirty(coreData);
-        AssetDatabase.SaveAssetIfDirty(coreData);
+
+        if (BroVersion.Version.Major < 3)
+        {
+            UpgradeSoundIDs();
+        }
+
+        BroVersion.UpdateVersion();
+
+        if (coreData != null)
+        {
+            EditorUtility.SetDirty(coreData);
+            AssetDatabase.SaveAssetIfDirty(coreData);
+        }
+
         UnityEngine.Debug.Log(Utility.LogTitle + $"BroAudio has been successfully upgraded from {currentVersion} to {targetVersion}!");
+    }
+
+    private static void UpgradeSoundIDs()
+    {
+        var choice = EditorUtility.DisplayDialog("Existing BroAudio Sound IDs must be upgraded",
+            "All existing Sound IDs must be upgraded to the new version. This process may take a long time and it will not be undoable without version control or backups.\n" +
+            "If you skip this process, existing Sound IDs will not be upgraded and may be broken.\n" +
+            "The process can be done at any time by using Tools > BroAudio > Other > Upgrade Sound IDs.",
+            "OK", "Skip");
+
+        if (choice)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            SoundIDUpgrader.StartUpgrade();
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
     }
 
     private static void AddPlaybackGroupDrawedProperty(ref bool isDirty, Version oldVersion, EditorSetting editorSetting)
@@ -120,8 +150,15 @@ public class BroUpdater
         AssetDatabase.Refresh();
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     private static void RemoveDemoAssetsIfNotExist(string corePath, BroAudioData coreData)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
+        if (coreData == null)
+        {
+            return;
+        }
+
         string broPath = corePath.Remove(corePath.LastIndexOf('/'));
         string demoPath = Combine(broPath, Demo);
 
@@ -130,7 +167,8 @@ public class BroUpdater
             return;
         }
 
-        for(int i = 0; i < coreData.Assets.Count; i++)
+#pragma warning disable CS0618 // Type or member is obsolete
+        for (int i = 0; i < coreData.Assets.Count; i++)
         {
             if (coreData.Assets[i].AssetGUID == DemoAudioAssetGUID && coreData.Assets[i].AssetName == Demo && 
                 coreData.Assets is List<AudioAsset> assetList)
@@ -139,17 +177,6 @@ public class BroUpdater
                 assetList.RemoveAt(i);
             }
         }
+#pragma warning restore CS0618 // Type or member is obsolete
     }
-
-#if BroAudio_DevOnly
-    [MenuItem(BroName.MenuItem_BroAudio + "Update Version", priority = BroAudioGUISetting.DevToolsMenuIndex + 14)]
-    public static void UpdateVersion()
-    {
-        if (TryGetCoreData(out var coreData))
-        {
-            coreData.UpdateVersion();
-            EditorUtility.SetDirty(coreData);
-        }
-    } 
-#endif
 }

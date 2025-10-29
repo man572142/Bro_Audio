@@ -1,4 +1,5 @@
 ﻿using System;
+using Ami.BroAudio.Data;
 using UnityEditor;
 using UnityEngine;
 
@@ -84,12 +85,15 @@ namespace Ami.BroAudio.Editor.Setting
             GUILayout.FlexibleSpace();
             if (GUILayout.Button(_buttonGUIContent, GUILayout.Width(200), GUILayout.Height(30)))
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 if (selectDemo && BroEditorUtility.TryGetDemoData(out var demoAsset, out var entity))
                 {
-                    LibraryManagerWindow.ShowWindowAndLocateToEntity(demoAsset.AssetGUID, entity.ID);
+                    LibraryManagerWindow.ShowWindowAndLocateToEntity(demoAsset as AudioAsset, entity);
                     EditorGUILayout.EndHorizontal();
                     return;
                 }
+#pragma warning restore CS0618 // Type or member is obsolete
+
                 LibraryManagerWindow.ShowWindow();
             }
             

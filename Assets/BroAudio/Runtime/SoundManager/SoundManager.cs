@@ -48,7 +48,7 @@ namespace Ami.BroAudio.Runtime
             get 
             {
 #if UNITY_EDITOR
-                if (!Application.isPlaying)
+                if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
                 {
                     return null;
                 } 
@@ -63,9 +63,11 @@ namespace Ami.BroAudio.Runtime
         private ObjectPool<AudioMixerGroup> _dominatorTrackPool = null;
 
         [SerializeField] AudioMixer _broAudioMixer = null;
+
+        [System.Obsolete("Only for backwards compatibility")]
         [SerializeField] BroAudioData _data = null;
 
-        private Dictionary<int, IAudioEntity> _audioBank = new Dictionary<int, IAudioEntity>();
+        //private Dictionary<int, IAudioEntity> _audioBank = new Dictionary<int, IAudioEntity>();
         private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
         private EffectAutomationHelper _dominatorAutomationHelper = null;
@@ -74,7 +76,9 @@ namespace Ami.BroAudio.Runtime
 
         // Tracking for loaded addressable entities
         private Dictionary<SoundID, double> _loadedEntityLastPlayedTime = new Dictionary<SoundID, double>();
+#if PACKAGE_ADDRESSABLES
         private Coroutine _addressableCleanupCoroutine = null;
+#endif
 
 #if UNITY_WEBGL
         public float WebGLMasterVolume { get; private set; } = AudioConstant.FullVolume;
@@ -116,7 +120,6 @@ namespace Ami.BroAudio.Runtime
         private void OnDestroy()
         {
             MusicPlayer.CleanUp();
-            SequenceClipStrategy.ResetAll();
 
 #if PACKAGE_ADDRESSABLES
             // Stop the cleanup coroutine
@@ -131,26 +134,6 @@ namespace Ami.BroAudio.Runtime
         #region InitBank
         private void InitBank()
         {
-            foreach (var asset in _data.Assets)
-            {
-                if (asset == null)
-                    continue;
-
-                asset.LinkPlaybackGroup(Setting.GlobalPlaybackGroup);
-
-                foreach(var identity in asset.GetAllAudioEntities())
-                {
-                    if (!identity.Validate())
-                        continue;
-
-                    if (!_audioBank.ContainsKey(identity.ID) && identity is AudioEntity entity)
-                    {
-                        entity.LinkPlaybackGroup(asset.PlaybackGroup);
-                        _audioBank.Add(identity.ID, entity);
-                    }
-                }
-            }
-
             ForeachConcreteAudioType(new PlaybackPrefInitializer() { AudioTypePref = _auidoTypePref });
         }
         #endregion
@@ -173,7 +156,7 @@ namespace Ami.BroAudio.Runtime
             SetPlaybackPrefByType(targetType, vol , AudioTypePlaybackPreference.OnSetVolume);
             foreach (var player in GetCurrentAudioPlayers())
             {
-                if (player.IsActive && targetType.Contains(GetAudioType(player.ID)))
+                if (player.IsActive && targetType.Contains(player.ID.ToAudioType()))
                 {
                     player.SetAudioTypeVolume(vol, fadeTime);
                 }
@@ -254,11 +237,11 @@ namespace Ami.BroAudio.Runtime
 #endif
         }
 
-        public void SetVolume(int id, float vol, float fadeTime)
+        public void SetVolume(SoundID id, float vol, float fadeTime)
         {
             foreach (var player in GetCurrentAudioPlayers())
             {
-                if (player.IsActive && player.ID == id)
+                if (player.IsActive && player.ID.Equals(id))
                 {
                     player.SetVolume(vol, fadeTime);
                 }
@@ -316,7 +299,7 @@ namespace Ami.BroAudio.Runtime
 
             foreach (var player in GetCurrentAudioPlayers())
             {
-                if (player.IsActive && targetType.Contains(GetAudioType(player.ID)) && !player.IsDominator)
+                if (player.IsActive && targetType.Contains(player.ID.ToAudioType()) && !player.IsDominator)
                 {
                     player.SetTrackEffect(effectType, mode);
                 }
@@ -328,7 +311,7 @@ namespace Ami.BroAudio.Runtime
         {
             foreach (var player in GetCurrentAudioPlayers())
             {
-                if (player.IsActive && player.ID == id)
+                if (player.IsActive && player.ID.Equals(id))
                 {
                     player.SetPitch(pitch, fadeTime);
                 }
@@ -347,7 +330,7 @@ namespace Ami.BroAudio.Runtime
             SetPlaybackPrefByType(targetType, pitch, AudioTypePlaybackPreference.OnSetpitch);
             foreach (var player in GetCurrentAudioPlayers())
             {
-                if (player.IsActive && targetType.Contains(GetAudioType(player.ID)))
+                if (player.IsActive && targetType.Contains(player.ID.ToAudioType()))
                 {
                     player.SetPitch(pitch, fadeTime);
                 }
@@ -368,7 +351,7 @@ namespace Ami.BroAudio.Runtime
         {
             foreach (var player in GetCurrentAudioPlayers())
             {
-                if (player.IsActive && player.ID == id && player.IsPlaying)
+                if (player.IsActive && player.ID.Equals(id) && player.IsPlaying)
                 {
                     return true;
                 }
@@ -466,10 +449,12 @@ namespace Ami.BroAudio.Runtime
 
         private void UnloadAddressableEntity(SoundID id)
         {
+#if PACKAGE_ADDRESSABLES
             if (TryGetEntity(id, out var entity) && entity is AudioEntity audioEntity && audioEntity.UseAddressables)
             {
                 audioEntity.ReleaseAllAssets();
             }
+#endif
         }
 
         public void UpdateLoadedEntityLastPlayedTime(SoundID id)
@@ -480,5 +465,37 @@ namespace Ami.BroAudio.Runtime
             }
         }
         #endregion
+
+
+        [System.Obsolete("Only for backwards compatibility")]
+        public bool TryConvertIdToEntity(int id, out AudioEntity entity)
+        {
+            if (id == 0 || id == -1)
+            {
+                entity = null;
+                return false;
+            }
+
+            if (_data == null)
+            {
+                entity = null;
+                return false;
+            }
+
+            foreach (var asset in _data.Assets)
+            {
+                if (asset is AudioAsset audioAsset)
+                {
+                    if (audioAsset.TryGetEntityFromId(id, out entity))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            Debug.LogError(LogTitle + $"Can't find entity with id {id}");
+            entity = null;
+            return false;
+        }
     }
 }

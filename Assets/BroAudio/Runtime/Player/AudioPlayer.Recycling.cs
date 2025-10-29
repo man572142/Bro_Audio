@@ -47,7 +47,7 @@ namespace Ami.BroAudio.Runtime
             OnPlaybackHandover = null;
             AudioTrack = null;
 
-            ID = -1;
+            ID = SoundID.Invalid;
         }
 
         private void ClearEvents()

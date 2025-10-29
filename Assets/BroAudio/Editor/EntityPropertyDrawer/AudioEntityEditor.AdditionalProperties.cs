@@ -14,8 +14,7 @@ using static Ami.Extension.FlagsExtension;
 
 namespace Ami.BroAudio.Editor
 {
-    [CustomPropertyDrawer(typeof(AudioEntity))]
-    public partial class AudioEntityPropertyDrawer : MiPropertyDrawer
+    public partial class AudioEntityEditor
     {
         private const float Percentage = 100f;
         private const float RandomToolBarWidth = 40f;
@@ -33,48 +32,48 @@ namespace Ami.BroAudio.Editor
 
         private static int OverallDrawedPropStartIndex => DrawedPropertyConstant.OverallPropertyStartIndex;
 
-        private float GetAdditionalBasePropertiesHeight(SerializedProperty property, AudioTypeSetting setting)
+        private float GetAdditionalBasePropertiesHeight(AudioTypeSetting setting)
         {
             var drawFlags = setting.DrawedProperty;
             ConvertUnityEverythingFlagsToAll(ref drawFlags);
             int intBits = 32;
-            int lineCount = GetDrawingLineCount(property, drawFlags, OverallDrawedPropStartIndex, intBits, IsDefaultValue);
-            var seamlessProp = property.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop));
+            int lineCount = GetDrawingLineCount(drawFlags, OverallDrawedPropStartIndex, intBits, IsDefaultValue);
+            var seamlessProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop));
             if (seamlessProp.boolValue)
             {
                 lineCount++;
             }
 
             float offset = 0f;
-            offset += IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.Priority) ? 0f : TwoSidesLabelOffsetY;
-            offset += IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.MasterVolume) ? 0f : SnapVolumePadding;
+            offset += IsDefaultValueAndCanNotDraw(drawFlags, DrawedProperty.Priority) ? 0f : TwoSidesLabelOffsetY;
+            offset += IsDefaultValueAndCanNotDraw(drawFlags, DrawedProperty.MasterVolume) ? 0f : SnapVolumePadding;
 
             return lineCount * SingleLineSpace + offset;
         }
 
-        private float GetAdditionalClipPropertiesHeight(SerializedProperty property, AudioTypeSetting setting)
+        private float GetAdditionalClipPropertiesHeight(AudioTypeSetting setting)
         {
             var drawFlags = setting.DrawedProperty;
             ConvertUnityEverythingFlagsToAll(ref drawFlags);
-            int lineCount = GetDrawingLineCount(property, drawFlags, 0, OverallDrawedPropStartIndex - 1, IsDefaultValue);
+            int lineCount = GetDrawingLineCount(drawFlags, 0, OverallDrawedPropStartIndex - 1, IsDefaultValue);
             return lineCount * SingleLineSpace;
         }
 
-        private void DrawAdditionalBaseProperties(Rect position, SerializedProperty property, AudioTypeSetting setting)
+        private void DrawAdditionalBaseProperties(Rect position, AudioTypeSetting setting)
         {
             var drawFlags = setting.DrawedProperty;
             ConvertUnityEverythingFlagsToAll(ref drawFlags);
-            DrawPlaybackGroup(property, drawFlags, position);
-            DrawMasterVolume(property, drawFlags, position);
-            DrawPitchProperty(property, drawFlags, position);
-            DrawPriorityProperty(property, drawFlags, position);
-            DrawLoopProperty(property, drawFlags, position);
-            DrawSpatialSetting(property, drawFlags, position);
+            DrawPlaybackGroup(drawFlags, position);
+            DrawMasterVolume(drawFlags, position);
+            DrawPitchProperty(drawFlags, position);
+            DrawPriorityProperty(drawFlags, position);
+            DrawLoopProperty(drawFlags, position);
+            DrawSpatialSetting(drawFlags, position);
         }
         
-        private void DrawPlaybackGroup(SerializedProperty property, DrawedProperty drawFlags, Rect position)
+        private void DrawPlaybackGroup(DrawedProperty drawFlags, Rect position)
         {
-            if(IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.PlaybackGroup, out var groupProp, out _))
+            if(IsDefaultValueAndCanNotDraw(drawFlags, DrawedProperty.PlaybackGroup, out var groupProp, out _))
             {
                 return;
             }
@@ -84,9 +83,9 @@ namespace Ami.BroAudio.Editor
             EditorGUI.PropertyField(groupRect, groupProp);
         }
         
-        private void DrawMasterVolume(SerializedProperty property, DrawedProperty drawFlags, Rect position)
+        private void DrawMasterVolume(DrawedProperty drawFlags, Rect position)
         {
-            if (IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.MasterVolume, out var masterVolProp, out var volRandProp))
+            if (IsDefaultValueAndCanNotDraw(drawFlags, DrawedProperty.MasterVolume, out var masterVolProp, out var volRandProp))
             {
                 return;
             }
@@ -96,7 +95,7 @@ namespace Ami.BroAudio.Editor
             masterVolRect.width *= DefaultFieldRatio;
 
             Rect randButtonRect = new Rect(masterVolRect.xMax + 5f, masterVolRect.y, RandomToolBarWidth, masterVolRect.height);
-            SerializedProperty randFlagsProp = property.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags));
+            SerializedProperty randFlagsProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags));
             if (DrawRandomButton(randButtonRect, RandomFlag.Volume, randFlagsProp))
             {
                     
@@ -117,7 +116,7 @@ namespace Ami.BroAudio.Editor
             }
             else
             {
-                SerializedProperty snapVolProp = property.FindPropertyRelative(EditorPropertyName.SnapToFullVolume);
+                SerializedProperty snapVolProp = serializedObject.FindProperty(EditorPropertyName.SnapToFullVolume);
                 masterVolProp.floatValue = DrawVolumeSlider(masterVolRect, _masterVolLabel, masterVolProp.floatValue, snapVolProp.boolValue, () =>
                 {
                     snapVolProp.boolValue = !snapVolProp.boolValue;
@@ -126,23 +125,23 @@ namespace Ami.BroAudio.Editor
 
             int flag = randFlagsProp.intValue & (int)RandomFlag.Volume;
             var rndData = GetMasterVolumeData(masterVolProp.floatValue, volRandProp.floatValue, flag);
-            PropertyClipboard.HandleClipboardContextMenu(masterVolRect, property, rndData, OnPasteMasterVolumeValues);
+            PropertyClipboard.HandleClipboardContextMenu(masterVolRect, serializedObject, rndData, OnPasteMasterVolumeValues);
                 
-            static void OnPasteMasterVolumeValues(SerializedProperty property, RandomizableData data)
+            static void OnPasteMasterVolumeValues(SerializedObject serializedObject, RandomizableData data)
             {
-                property.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume)).floatValue = data.Main;
-                property.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange)).floatValue = data.RandomRange;
-                var flagsProp = property.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags));
+                serializedObject.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume)).floatValue = data.Main;
+                serializedObject.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange)).floatValue = data.RandomRange;
+                var flagsProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags));
                 int flags = flagsProp.intValue;
                 OverwriteFlag(ref flags, (int)RandomFlag.Volume, data.RandomFlag);
                 flagsProp.intValue = flags;
-                property.serializedObject.ApplyModifiedProperties();
+                serializedObject.ApplyModifiedProperties();
             }
         }
         
-        private void DrawPitchProperty(SerializedProperty property, DrawedProperty drawFlags, Rect position)
+        private void DrawPitchProperty(DrawedProperty drawFlags, Rect position)
         {
-            if (IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.Pitch, out var pitchProp, out var pitchRandProp))
+            if (IsDefaultValueAndCanNotDraw(drawFlags, DrawedProperty.Pitch, out var pitchProp, out var pitchRandProp))
             {
                 return;
             }
@@ -157,7 +156,7 @@ namespace Ami.BroAudio.Editor
             _pitchLabel.tooltip = $"According to the current preference setting, the Pitch will be set on [{pitchSetting}] ";
 
             Rect randButtonRect = new Rect(pitchRect.xMax + 5f, pitchRect.y, RandomToolBarWidth, pitchRect.height);
-            SerializedProperty randFlagsProp = property.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags));
+            SerializedProperty randFlagsProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags));
             bool hasRandom = DrawRandomButton(randButtonRect, RandomFlag.Pitch, randFlagsProp);
 
             float pitch = Mathf.Clamp(pitchProp.floatValue, minPitch, maxPitch);
@@ -204,23 +203,23 @@ namespace Ami.BroAudio.Editor
                 
             int flag = randFlagsProp.intValue & (int)RandomFlag.Pitch;
             var rndData = GetPitchData(pitchProp.floatValue, pitchRandProp.floatValue, flag);
-            PropertyClipboard.HandleClipboardContextMenu(pitchRect, property, rndData, OnPastePitchValues);
+            PropertyClipboard.HandleClipboardContextMenu(pitchRect, serializedObject, rndData, OnPastePitchValues);
                 
-            static void OnPastePitchValues(SerializedProperty property, RandomizableData data)
+            static void OnPastePitchValues(SerializedObject serializedObject, RandomizableData data)
             {
-                property.FindBackingFieldProperty(nameof(AudioEntity.Pitch)).floatValue = data.Main;
-                property.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange)).floatValue = data.RandomRange;
-                var flagsProp = property.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags));
+                serializedObject.FindBackingFieldProperty(nameof(AudioEntity.Pitch)).floatValue = data.Main;
+                serializedObject.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange)).floatValue = data.RandomRange;
+                var flagsProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags));
                 int flags = flagsProp.intValue;
                 OverwriteFlag(ref flags, (int)RandomFlag.Pitch, data.RandomFlag);
                 flagsProp.intValue = flags;
-                property.serializedObject.ApplyModifiedProperties();
+                serializedObject.ApplyModifiedProperties();
             }
         }
         
-        private void DrawPriorityProperty(SerializedProperty property, DrawedProperty drawFlags, Rect position)
+        private void DrawPriorityProperty(DrawedProperty drawFlags, Rect position)
         {
-            if (IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.Priority, out var priorityProp, out _))
+            if (IsDefaultValueAndCanNotDraw(drawFlags, DrawedProperty.Priority, out var priorityProp, out _))
             {
                 return;
             }
@@ -235,9 +234,9 @@ namespace Ami.BroAudio.Editor
             EditorGUI.EndProperty();
         }
 
-        private void DrawLoopProperty(SerializedProperty property, DrawedProperty drawFlags, Rect position)
+        private void DrawLoopProperty(DrawedProperty drawFlags, Rect position)
         {
-            if (IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.Loop, out var loopProp, out var seamlessProp))
+            if (IsDefaultValueAndCanNotDraw(drawFlags, DrawedProperty.Loop, out var loopProp, out var seamlessProp))
             {
                 return;
             }
@@ -255,26 +254,26 @@ namespace Ami.BroAudio.Editor
             var data = GetLoopData(loopProp.boolValue, seamlessProp.boolValue);
             if (seamlessProp.boolValue)
             {
-                DrawSeamlessSetting(position, property, ref data);
+                DrawSeamlessSetting(position, ref data);
                 totalRect.height += EditorGUIUtility.singleLineHeight;
             }
                 
-            PropertyClipboard.HandleClipboardContextMenu(totalRect, property, data, OnPasteLoopSettingValues);
+            PropertyClipboard.HandleClipboardContextMenu(totalRect, serializedObject, data, OnPasteLoopSettingValues);
             
-            static void OnPasteLoopSettingValues(SerializedProperty property, LoopData value)
+            static void OnPasteLoopSettingValues(SerializedObject serializedObject, LoopData value)
             {
-                property.FindBackingFieldProperty(nameof(AudioEntity.Loop)).boolValue = value.Loop;
-                property.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop)).boolValue = value.SeamlessLoop;
-                property.FindBackingFieldProperty(nameof(AudioEntity.TransitionTime)).floatValue = value.TransitionTime;
-                property.FindPropertyRelative(EditorPropertyName.SeamlessType).intValue = (int)value.SeamlessTransitionType;
-                var tempoProp = property.FindPropertyRelative(EditorPropertyName.TransitionTempo);
+                serializedObject.FindBackingFieldProperty(nameof(AudioEntity.Loop)).boolValue = value.Loop;
+                serializedObject.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop)).boolValue = value.SeamlessLoop;
+                serializedObject.FindBackingFieldProperty(nameof(AudioEntity.TransitionTime)).floatValue = value.TransitionTime;
+                serializedObject.FindProperty(EditorPropertyName.SeamlessType).intValue = (int)value.SeamlessTransitionType;
+                var tempoProp = serializedObject.FindProperty(EditorPropertyName.TransitionTempo);
                 tempoProp.FindPropertyRelative(nameof(TempoTransition.BPM)).floatValue = value.TransitionTempo.BPM;
                 tempoProp.FindPropertyRelative(nameof(TempoTransition.Beats)).intValue = value.TransitionTempo.Beats;
-                property.serializedObject.ApplyModifiedProperties();
+                serializedObject.ApplyModifiedProperties();
             }
         }
         
-        private void DrawSeamlessSetting(Rect totalPosition, SerializedProperty property, ref LoopData data)
+        private void DrawSeamlessSetting(Rect totalPosition, ref LoopData data)
         {
             Rect suffixRect = EditorGUI.PrefixLabel(GetRectAndIterateLine(totalPosition), _seamlessLabel);
             _seamlessRects ??= new Rect[_seamlessSettingRectRatio.Length];
@@ -284,21 +283,21 @@ namespace Ami.BroAudio.Editor
             EditorGUI.LabelField(_seamlessRects[drawIndex], "Transition By");
             drawIndex++;
 
-            var seamlessTypeProp = property.FindPropertyRelative(EditorPropertyName.SeamlessType);
+            var seamlessTypeProp = serializedObject.FindProperty(EditorPropertyName.SeamlessType);
             SeamlessType currentType = (SeamlessType)seamlessTypeProp.enumValueIndex;
             currentType = (SeamlessType)EditorGUI.EnumPopup(_seamlessRects[drawIndex], currentType);
             seamlessTypeProp.enumValueIndex = (int)currentType;
             data.SeamlessTransitionType = currentType;
             drawIndex++;
 
-            var transitionTimeProp = property.FindBackingFieldProperty(nameof(AudioEntity.TransitionTime));
+            var transitionTimeProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.TransitionTime));
             switch (currentType)
             {
                 case SeamlessType.Time:
                     transitionTimeProp.floatValue = Mathf.Abs(EditorGUI.FloatField(_seamlessRects[drawIndex], transitionTimeProp.floatValue));
                     break;
                 case SeamlessType.Tempo:
-                    var tempoProp = property.FindPropertyRelative(EditorPropertyName.TransitionTempo);
+                    var tempoProp = serializedObject.FindProperty(EditorPropertyName.TransitionTempo);
                     var bpmProp = tempoProp.FindPropertyRelative(nameof(TempoTransition.BPM));
                     var beatsProp = tempoProp.FindPropertyRelative(nameof(TempoTransition.Beats));
 
@@ -321,9 +320,9 @@ namespace Ami.BroAudio.Editor
             data.TransitionTime = transitionTimeProp.floatValue;
         }
         
-        private void DrawSpatialSetting(SerializedProperty property, DrawedProperty drawFlags, Rect position)
+        private void DrawSpatialSetting(DrawedProperty drawFlags, Rect position)
         {
-            if (IsDefaultValueAndCanNotDraw(property, drawFlags, DrawedProperty.SpatialSettings, out var spatialProp, out _))
+            if (IsDefaultValueAndCanNotDraw(drawFlags, DrawedProperty.SpatialSettings, out var spatialProp, out _))
             {
                 return;
             }
@@ -340,8 +339,7 @@ namespace Ami.BroAudio.Editor
             {
                 if (!hasSetting)
                 {
-                    string entityName = property.FindPropertyRelative(GetBackingFieldName(nameof(IEntityIdentity.Name))).stringValue;
-                    string path = EditorUtility.SaveFilePanelInProject("Save Spatial Setting", entityName + "_Spatial", "asset", "Message");
+                    string path = EditorUtility.SaveFilePanelInProject("Save Spatial Setting", target.name + "_Spatial", "asset", "Message");
                     if (!string.IsNullOrEmpty(path))
                     {
                         var newSetting = ScriptableObject.CreateInstance<SpatialSetting>();
@@ -362,50 +360,50 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private static bool IsDefaultValue(SerializedProperty property, DrawedProperty drawedProperty)
+        private bool IsDefaultValue(DrawedProperty drawedProperty)
         {
-            return IsDefaultValue(property, drawedProperty, out _, out _);
+            return IsDefaultValue(drawedProperty, out _, out _);
         }
 
-        private static bool IsDefaultValue(SerializedProperty property, DrawedProperty drawedProperty, out SerializedProperty mainProp, out SerializedProperty secondaryProp)
+        private bool IsDefaultValue(DrawedProperty drawedProperty, out SerializedProperty mainProp, out SerializedProperty secondaryProp)
         {
             mainProp = null;
             secondaryProp = null;
             switch (drawedProperty)
             {
                 case DrawedProperty.MasterVolume:
-                    mainProp = property.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume));
-                    secondaryProp = property.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
+                    mainProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume));
+                    secondaryProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
                     return Mathf.Approximately(mainProp.floatValue, AudioConstant.FullVolume) && secondaryProp.floatValue == 0f;
                 case DrawedProperty.Loop:
-                    mainProp = property.FindBackingFieldProperty(nameof(AudioEntity.Loop));
-                    secondaryProp = property.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop));
+                    mainProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.Loop));
+                    secondaryProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop));
                     return !mainProp.boolValue && !secondaryProp.boolValue;
                 case DrawedProperty.Priority:
-                    mainProp = property.FindBackingFieldProperty(nameof(AudioEntity.Priority));
+                    mainProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.Priority));
                     return mainProp.intValue == AudioConstant.DefaultPriority;
                 case DrawedProperty.SpatialSettings:
-                    mainProp = property.FindBackingFieldProperty(nameof(AudioEntity.SpatialSetting));
+                    mainProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.SpatialSetting));
                     return mainProp.objectReferenceValue == null;
                 case DrawedProperty.Pitch:
-                    mainProp = property.FindBackingFieldProperty(nameof(AudioEntity.Pitch));
-                    secondaryProp = property.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
+                    mainProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.Pitch));
+                    secondaryProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
                     return Mathf.Approximately(mainProp.floatValue, AudioConstant.DefaultPitch) && secondaryProp.floatValue == 0f;
                 case DrawedProperty.PlaybackGroup:
-                    mainProp = property.FindPropertyRelative(EditorPropertyName.PlaybackGroup);
+                    mainProp = serializedObject.FindProperty(EditorPropertyName.PlaybackGroup);
                     return mainProp.objectReferenceValue == null;
             }
             return true;
         }
 
-        private static bool IsDefaultValueAndCanNotDraw(SerializedProperty checkedProp, DrawedProperty drawFlags, DrawedProperty drawTarget)
+        private bool IsDefaultValueAndCanNotDraw(DrawedProperty drawFlags, DrawedProperty drawTarget)
         {
-            return IsDefaultValueAndCanNotDraw(checkedProp, drawFlags, drawTarget, out _, out _);
+            return IsDefaultValueAndCanNotDraw(drawFlags, drawTarget, out _, out _);
         }
 
-        private static bool IsDefaultValueAndCanNotDraw(SerializedProperty checkedProp, DrawedProperty drawFlags, DrawedProperty drawTarget, out SerializedProperty mainProp, out SerializedProperty secondaryProp)
+        private bool IsDefaultValueAndCanNotDraw(DrawedProperty drawFlags, DrawedProperty drawTarget, out SerializedProperty mainProp, out SerializedProperty secondaryProp)
         {
-            return IsDefaultValue(checkedProp, drawTarget, out mainProp, out secondaryProp) && !drawFlags.Contains(drawTarget);
+            return IsDefaultValue(drawTarget, out mainProp, out secondaryProp) && !drawFlags.Contains(drawTarget);
         }
 
         private static void DrawPercentageLabel(Rect fieldRect)
@@ -415,7 +413,7 @@ namespace Ami.BroAudio.Editor
             EditorGUI.LabelField(percentageRect, "%");
         }
 
-        private static bool DrawRandomButton(Rect rect, RandomFlag targetFlag, SerializedProperty property)
+        private bool DrawRandomButton(Rect rect, RandomFlag targetFlag, SerializedProperty property)
         {
             RandomFlag randomFlags = (RandomFlag)property.intValue;
             bool hasRandom = randomFlags.Contains(targetFlag);
@@ -425,7 +423,7 @@ namespace Ami.BroAudio.Editor
             return hasRandom;
         }
         
-        private static int GetDrawingLineCount(SerializedProperty property, DrawedProperty flags, int startIndex, int lastIndex, Func<SerializedProperty, DrawedProperty, bool> onGetIsDefaultValue)
+        private static int GetDrawingLineCount(DrawedProperty flags, int startIndex, int lastIndex, Func<DrawedProperty, bool> onGetIsDefaultValue)
         {
             int count = 0;
             for (int i = startIndex; i <= lastIndex; i++)
@@ -441,7 +439,7 @@ namespace Ami.BroAudio.Editor
                 }
                 
                 bool canDraw = ((int)flags & drawFlag) != 0;
-                if (canDraw || !onGetIsDefaultValue.Invoke(property, (DrawedProperty)drawFlag))
+                if (canDraw || !onGetIsDefaultValue.Invoke((DrawedProperty)drawFlag))
                 {
                     count++;
                 }

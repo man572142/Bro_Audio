@@ -8,45 +8,39 @@ namespace Ami.BroAudio.Runtime
     /// </summary>
     public class SequenceClipStrategy : IClipSelectionStrategy
     {
-        private static Dictionary<int, int> _sequencer = new Dictionary<int, int>();
+        private int _sequenceIndex = -1;
 
         public IBroAudioClip SelectClip(BroAudioClip[] clips, ClipSelectionContext context, out int currentIndex)
         {
-            _sequencer ??= new Dictionary<int, int>();
+            int nextIndex = 0;
 
-            if(_sequencer.TryGetValue(context.Id, out currentIndex))
+            if(_sequenceIndex > -1)
             {
-                int nextIndex = currentIndex + 1;
+                nextIndex = _sequenceIndex + 1;
                 nextIndex = nextIndex >= clips.Length ? 0 : nextIndex;
-                if (clips[nextIndex].IsSet)
-                {
-                    _sequencer[context.Id] = nextIndex;
-                    currentIndex = nextIndex;
-                }
             }
-            else if(clips[0].IsSet)
+            else if (clips[0].IsSet)
             {
-                _sequencer.Add(context.Id, 0);
+                nextIndex = 0;
             }
-            return clips[currentIndex];
+
+            if (clips[nextIndex].IsSet)
+            {
+                _sequenceIndex = nextIndex;
+                currentIndex = nextIndex;
+            }
+            else
+            {
+                _sequenceIndex = -1;
+                currentIndex = -1;
+            }
+
+            return clips[_sequenceIndex];
         }
 
-        public static void Reset(int id)
+        public void Reset()
         {
-            _sequencer?.Remove(id);
+            _sequenceIndex = -1;
         }
-
-        public static void ResetAll()
-        {
-            _sequencer?.Clear();
-        }
-
-#if UNITY_EDITOR
-        public static void ClearSequencer()
-        {
-            _sequencer?.Clear();
-            _sequencer = null;
-        }
-#endif
     }
 }

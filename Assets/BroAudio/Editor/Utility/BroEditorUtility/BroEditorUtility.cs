@@ -11,9 +11,11 @@ using static Ami.Extension.AudioConstant;
 using static Ami.Extension.EditorScriptingExtension;
 using System.Reflection;
 using Ami.Extension.Reflection;
+using System.Collections.Generic;
 
 namespace Ami.BroAudio.Editor
 {
+    [InitializeOnLoad]
     public static partial class BroEditorUtility
     {
         public const string AudioSettingPath = "Project/Audio";
@@ -74,6 +76,10 @@ namespace Ami.BroAudio.Editor
                 }
                 return _editorSetting;
             }
+        }
+
+        static BroEditorUtility() // Now we should have fields filled on the main thread
+        {
         }
 
         const string SoundSourceName = "Sound Source";
@@ -174,14 +180,6 @@ namespace Ami.BroAudio.Editor
             return default;
         }
 
-        public static bool IsTempReservedName(string name)
-        {
-            string tempName = BroName.TempAssetName;
-            bool sameLength = name.Length == tempName.Length;
-            bool couldBeTempWithNumber = name.Length > tempName.Length && Char.IsNumber(name[name.Length - 1]);
-            return (sameLength || couldBeTempWithNumber) && name[0] == 'T' && name.StartsWith(tempName, StringComparison.Ordinal);
-        }
-
         public static bool IsInvalidName(string name, out ValidationErrorCode errorCode)
         {
             if (String.IsNullOrWhiteSpace(name))
@@ -217,20 +215,6 @@ namespace Ami.BroAudio.Editor
         public static bool IsValidWord(this Char word)
         {
             return IsEnglishLetter(word) || Char.IsNumber(word) || word == '_' || Char.IsWhiteSpace(word);
-        }
-
-        public static bool TryGetEntityName(IAudioAsset asset, int id, out string name)
-        {
-            name = null;
-            foreach (var entity in asset.GetAllAudioEntities())
-            {
-                if (entity.ID == id)
-                {
-                    name = entity.Name;
-                    return true;
-                }
-            }
-            return false;
         }
 
         public static void ForeachConcreteDrawedProperty(Action<DrawedProperty> onGetDrawedProperty)
@@ -556,25 +540,25 @@ namespace Ami.BroAudio.Editor
             return clipPropPath.Remove(index);
         }
 
-        public static void GetBaseAndRandomValue(RandomFlag target, SerializedProperty entityProp, out float baseValue, out float randomValue)
+        public static void GetBaseAndRandomValue(RandomFlag target, SerializedObject serializedObject, out float baseValue, out float randomValue)
         {
             switch (target)
             {
                 case RandomFlag.Pitch:
-                    baseValue = entityProp.FindBackingFieldProperty(nameof(AudioEntity.Pitch)).floatValue;
+                    baseValue = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.Pitch)).floatValue;
                     randomValue = baseValue;
                     if (IsRandom())
                     {
-                        var pitchRandProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
+                        var pitchRandProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange));
                         randomValue = AudioEntity.GetRandomValue(baseValue, pitchRandProp.floatValue);
                     }
                     break;
                 case RandomFlag.Volume:
-                    baseValue = entityProp.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume)).floatValue;
+                    baseValue = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume)).floatValue;
                     randomValue = baseValue;
                     if (IsRandom())
                     {
-                        var masterRandProp = entityProp.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
+                        var masterRandProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
                         randomValue = AudioEntity.GetRandomValue(baseValue, masterRandProp.floatValue);
                     }
                     break;
@@ -586,8 +570,117 @@ namespace Ami.BroAudio.Editor
 
             bool IsRandom()
             {
-                var flags = (RandomFlag)entityProp.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags)).intValue;
+                var flags = (RandomFlag)serializedObject.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags)).intValue;
                 return flags.Contains(target);
+            }
+        }
+
+        [System.Obsolete("legacy conversion only")]
+        public static bool TryConvertIdToEntity(int id, out AudioEntity entity)
+        {
+            entity = AudioAssetCache.AudioEntities.Find(e => e.ID == id);
+            return entity != null;
+        }
+
+        public static void GetAudioAssets(List<AudioAsset> audioAssets)
+        {
+            audioAssets.Clear();
+
+            if (AudioAssetCache.AudioAssets == null)
+            {
+                AudioAssetCache.RefreshCache();
+            }
+
+            audioAssets.AddRange(AudioAssetCache.AudioAssets.FindAll(a => a != null));
+        }
+
+        public static void GetAudioEntities(List<AudioEntity> audioEntities, AudioAsset insideAudioAsset = null)
+        {
+            audioEntities.Clear();
+
+            if (AudioAssetCache.AudioEntities == null)
+            {
+                AudioAssetCache.RefreshCache();
+            }
+
+            if (insideAudioAsset != null)
+            {
+                audioEntities.AddRange(AudioAssetCache.AudioEntities.FindAll(e => e != null && e.AudioAsset == insideAudioAsset));
+            }
+            else
+            {
+                audioEntities.AddRange(AudioAssetCache.AudioEntities.FindAll(e => e != null));
+            }
+        }
+
+        internal class AudioAssetCache : AssetPostprocessor
+        {
+            private static readonly HashSet<string> _trackedPaths = new HashSet<string>();
+            public static readonly List<AudioAsset> AudioAssets = new List<AudioAsset>();
+            public static readonly List<AudioEntity> AudioEntities = new List<AudioEntity>();
+
+            private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
+            {
+                if (_trackedPaths.Overlaps(deletedAssets))
+                {
+                    RefreshCache(fullRefresh: true);
+                    return;
+                }
+                else if (_trackedPaths.Overlaps(importedAssets) || _trackedPaths.Overlaps(movedAssets) || _trackedPaths.Overlaps(movedFromAssetPaths))
+                {
+                    RefreshCache();
+                    return;
+                }
+
+                foreach (var importedAsset in importedAssets)
+                {
+                    if (importedAsset.Contains(AssetOutputPath))
+                    {
+                        RefreshCache();
+                        return;
+                    }
+                }
+            }
+
+            [InitializeOnLoadMethod]
+            private static void Initialize()
+            {
+                RefreshCache(fullRefresh: true);
+            }
+
+            public static void RefreshCache(bool fullRefresh = false)
+            {
+                var audioAssetGUIDs = AssetDatabase.FindAssets($"t:{nameof(AudioAsset)}");
+                var audioEntityGUIDs = AssetDatabase.FindAssets($"t:{nameof(AudioEntity)}");
+
+                _trackedPaths.Clear();
+
+                foreach (var guid in audioAssetGUIDs)
+                {
+                    var path = AssetDatabase.GUIDToAssetPath(guid);
+                    _trackedPaths.Add(path);
+                    AudioAssets.Add(AssetDatabase.LoadAssetAtPath<AudioAsset>(path));
+                }
+
+                foreach (var guid in audioEntityGUIDs)
+                {
+                    var path = AssetDatabase.GUIDToAssetPath(guid);
+                    _trackedPaths.Add(path);
+                    AudioEntities.Add(AssetDatabase.LoadAssetAtPath<AudioEntity>(path));
+                }
+
+                if (fullRefresh)
+                {
+                    if (EditorWindow.HasOpenInstances<LibraryManagerWindow>())
+                    {
+                        var editorWindow = EditorWindow.GetWindow<LibraryManagerWindow>(null, false);
+
+                        if (editorWindow != null)
+                        {
+                            editorWindow.Refresh();
+                        }
+                    }
+                }
             }
         }
     }

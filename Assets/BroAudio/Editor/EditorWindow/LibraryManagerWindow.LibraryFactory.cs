@@ -96,8 +96,10 @@ namespace Ami.BroAudio.Editor
                 AudioClip audioClip = EditorGUIUtility.GetObjectPickerObject() as AudioClip;
                 if (audioClip)
                 {
-                    AudioAssetEditor tempEditor = CreateAsset(BroName.TempAssetName);
-                    CreateNewEntity(tempEditor, audioClip);
+                    ShowCreateAssetAskName((editor) =>
+                    {
+                        CreateNewEntity(editor, audioClip);
+                    });
                 }
                 _pickerID = -1;
             }
@@ -111,8 +113,10 @@ namespace Ami.BroAudio.Editor
                 var clips = GetAudioClipsFromDragAndDrop();
                 if(clips.Any())
                 {
-                    var tempEditor = CreateAsset(BroName.TempAssetName);
-                    ProcessDraggingClips(tempEditor, clips);
+                    ShowCreateAssetAskName((editor) =>
+                    {
+                        ProcessDraggingClips(editor, clips);
+                    });
                 }
                 else if (DragAndDrop.objectReferences.Length > 0)
                 {
@@ -166,23 +170,26 @@ namespace Ami.BroAudio.Editor
 
         private void CreateNewEntity(AudioAssetEditor editor, AudioClip clip)
         {
-            SerializedProperty entity = editor.CreateNewEntity();
-            entity.FindPropertyRelative(EditorScriptingExtension.GetBackingFieldName(nameof(AudioEntity.Name))).stringValue = clip.name;
-            SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioEntity.Clips));
+            var (_, entityEditor) = editor.CreateNewEntity(clip.name);
+            SerializedProperty clipListProp = entityEditor.serializedObject.FindProperty(nameof(AudioEntity.Clips));
 
             editor.SetClipList(clipListProp, 0, clip);
+            entityEditor.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            entityEditor.serializedObject.Update();
             _isInEntitiesEditMode = true;
         }
 
         private void CreateNewEntity(AudioAssetEditor editor, List<AudioClip> clips)
         {
-            SerializedProperty entity = editor.CreateNewEntity();
-            SerializedProperty clipListProp = entity.FindPropertyRelative(nameof(AudioEntity.Clips));
+            var (_, entityEditor) = editor.CreateNewEntity(clips[0].name);
+            SerializedProperty clipListProp = entityEditor.serializedObject.FindProperty(nameof(AudioEntity.Clips));
 
             for(int i = 0; i < clips.Count;i++)
             {
                 editor.SetClipList(clipListProp, i, clips[i]);
             }
+            entityEditor.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            entityEditor.serializedObject.Update();
             _isInEntitiesEditMode = true;
 
         }

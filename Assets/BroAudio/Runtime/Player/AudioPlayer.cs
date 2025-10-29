@@ -30,9 +30,9 @@ namespace Ami.BroAudio.Runtime
         }
         private List<AddedEffect> _addedEffects = null;
 
-        public SoundID ID { get; private set; } = -1;
+        public SoundID ID { get; private set; } = SoundID.Invalid;
 
-        public bool IsActive => ID > 0;
+        public bool IsActive => ID.IsValid();
         public bool IsPlaying => AudioSource.isPlaying;
         public Vector3 PlayingPosition => _pref.Position;
         public bool IsStopping { get; private set; }
@@ -188,7 +188,7 @@ namespace Ami.BroAudio.Runtime
 
         public void SetTrackEffect(EffectType effect, SetEffectMode mode)
         {
-            if(ID <= 0 || (effect == EffectType.None && mode != SetEffectMode.Override) 
+            if(!ID.IsValid() || (effect == EffectType.None && mode != SetEffectMode.Override) 
                 || !TryGetMixerAndTrack(out var mixer, out _) || !TryGetMixerDecibelVolume(out float mixerDecibelVolume))
             {
                 return;

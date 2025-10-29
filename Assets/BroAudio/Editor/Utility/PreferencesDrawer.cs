@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Ami.BroAudio.Data;
 using Ami.BroAudio.Editor.Setting;
 using Ami.BroAudio.Runtime;
 using Ami.BroAudio.Tools;
@@ -216,13 +217,17 @@ namespace Ami.BroAudio.Editor
 
         private SerializedProperty GetSoundIDDemoSerializedProperty()
         {
-            int id = 0;
+            SoundID id = default;
+
+#pragma warning disable CS0618 // Type or member is obsolete
             if (BroEditorUtility.TryGetDemoData(out _, out var entity))
             {
-                id = entity.ID;
+                id = new SoundID(entity);
             }
+#pragma warning restore CS0618 // Type or member is obsolete
+
             var scriptableObject = ScriptableObject.CreateInstance<SoundIDDemonstration>();
-            scriptableObject.Demonstration = id;
+            scriptableObject.Demonstration = new SoundID(entity);
             return new SerializedObject(scriptableObject).FindProperty(nameof(SoundIDDemonstration.Demonstration));
         }
     }

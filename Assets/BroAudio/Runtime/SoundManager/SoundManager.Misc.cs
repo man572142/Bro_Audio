@@ -36,66 +36,37 @@ namespace Ami.BroAudio.Runtime
             return null;
         }
 
-        public void ResetShuffleInUseState(int id)
+        public void ResetMultiClipStrategy(SoundID id)
         {
             if(TryGetEntity(id, out IAudioEntity entity))
             {
-                entity.ResetShuffleInUseState();
+                entity.ResetMultiClipStrategy();
             }
         }
 
-        public void ResetShuffleInUseState()
-        {
-            foreach(var entity in _audioBank.Values)
-            {
-                entity.ResetShuffleInUseState();
-            }
-        }
-
-        public string GetNameByID(int id)
+        public string GetNameByID(SoundID id)
         {
             if(!IsAvailable())
             {
                 return string.Empty;
             }
-
-            string result = string.Empty;
-            if(TryGetEntity(id,out var entity))
-            {
-                IEntityIdentity entityIdentity = entity as IEntityIdentity;
-                result = entityIdentity?.Name;
-            }
-            return result;
-        }
-
-        public bool IsIdInBank(SoundID id)
-        {
-            return _audioBank.ContainsKey(id);
+            return id.ToString();
         }
 
         public bool TryGetEntity(SoundID id, out IAudioEntity entity, bool logError = true)
         {
-            entity = null;
+            entity = id.Entity;
             if (logError)
             {
-                if (id == 0)
+                if (!id.IsValid())
                 {
                     Debug.LogError($"The SoundID hasn't been assigned yet! {GetDebugObjectName()}", GetDebugObject());
                     return false;
                 }
-                else if (id == SoundID.Invalid)
-                {
-                    Debug.LogError($"The SoundID:{id} is invalid! {GetDebugObjectName()}", GetDebugObject());
-                    return false;
-                }
-                else if (!_audioBank.TryGetValue(id, out entity))
-                {
-                    Debug.LogError($"Missing audio entity for SoundID: {id}! {GetDebugObjectName()}", GetDebugObject());
-                    return false;
-                }
                 return true;
             }
-            return id > 0 && _audioBank.TryGetValue(id, out entity);
+
+            return true;
 
             string GetDebugObjectName()
             {

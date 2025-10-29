@@ -2,7 +2,6 @@ namespace Ami.BroAudio.Tools
 {
 	public static class BroName
 	{
-		public const string TempAssetName = "Temp";
         public const string AudioPlayerPrefabName = "AudioPlayer";
         public const string Demo = "Demo";
 

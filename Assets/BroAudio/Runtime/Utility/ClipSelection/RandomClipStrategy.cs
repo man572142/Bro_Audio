@@ -36,5 +36,7 @@ namespace Ami.BroAudio.Runtime
             }
             return null;
         }
+
+        public void Reset() { }
     }
 }

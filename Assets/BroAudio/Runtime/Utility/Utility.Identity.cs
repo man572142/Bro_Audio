@@ -9,10 +9,14 @@ namespace Ami.BroAudio
 	public static partial class Utility
 	{
         public const int LastAudioType = ((int)BroAudioType.All + 1) >> 1;
-		public const int IDCapacity = 0x10000000; // 1000 0000 in HEX. 268,435,456 in DEC
 
+        [System.Obsolete("IDs are irrelevant", true)]
+        public const int IDCapacity = 0x10000000; // 1000 0000 in HEX. 268,435,456 in DEC
+
+        [System.Obsolete("IDs are irrelevant", true)]
         public static int FinalIDLimit => ((BroAudioType)LastAudioType).GetInitialID() + IDCapacity;
 
+        [System.Obsolete("IDs are irrelevant", true)]
         public static int GetInitialID(this BroAudioType audioType)
 		{
 			if (audioType == BroAudioType.None)
@@ -51,6 +55,7 @@ namespace Ami.BroAudio
 			return (BroAudioType)next;
 		}
 
+        [System.Obsolete("Type is direct on the entity now", true)]
 		public static BroAudioType GetAudioType(int id)
 		{
 			if(id >= FinalIDLimit)
@@ -114,14 +119,8 @@ namespace Ami.BroAudio
             }
         }
 
-        public static bool Validate(string name, IReadOnlyList<IBroAudioClip> clips, int id)
+        public static bool Validate(string name, IReadOnlyList<IBroAudioClip> clips)
 		{
-			if (id <= 0)
-			{
-				LogWarning(LogTitle + $"There is a missing or unassigned SoundID.");
-				return false;
-			}
-
 			if(clips == null || clips.Count == 0)
 			{
 				LogWarning(LogTitle + $"{name.ToWhiteBold()} has no audio clips, please assign or delete the entity.");

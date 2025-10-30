@@ -654,6 +654,8 @@ namespace Ami.BroAudio.Editor
                 var audioEntityGUIDs = AssetDatabase.FindAssets($"t:{nameof(AudioEntity)}");
 
                 _trackedPaths.Clear();
+                AudioAssets.Clear();
+                AudioEntities.Clear();
 
                 foreach (var guid in audioAssetGUIDs)
                 {

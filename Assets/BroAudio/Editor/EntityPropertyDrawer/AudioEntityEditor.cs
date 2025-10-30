@@ -533,7 +533,7 @@ namespace Ami.BroAudio.Editor
 
         private void DrawEntityPreviewButton(Rect rect, EntityData data)
         {
-            if (!data.Clips.TryGetSelectedAudioClip(out _))
+            if (!data.Clips.HasClips)
             {
                 return;
             }

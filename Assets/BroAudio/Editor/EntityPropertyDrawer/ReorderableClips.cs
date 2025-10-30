@@ -99,6 +99,8 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
+        public bool HasClips => _reorderableList != null && _reorderableList.count > 0;
+
 		public ReorderableClips(SerializedObject serializedObject, RequestClipPreview onRequestClipPreview)
 		{
 			_entity = serializedObject;

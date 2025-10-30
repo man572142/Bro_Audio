@@ -177,6 +177,10 @@ namespace Ami.BroAudio.Data
             entity.SnapToFullVolume = legacy.SnapToFullVolume;
 #endif
 
+#if PACKAGE_ADDRESSABLES
+            entity.UseAddressables = legacy.UseAddressables;
+#endif
+
             return entity;
         }
 

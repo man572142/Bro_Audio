@@ -38,5 +38,9 @@ namespace Ami.BroAudio.Data
         [SerializeField] public TempoTransition TransitionTempo = default;
         [SerializeField] public bool SnapToFullVolume = false;
 #endif
+
+#if PACKAGE_ADDRESSABLES
+        public bool UseAddressables = false;
+#endif
     }
 }

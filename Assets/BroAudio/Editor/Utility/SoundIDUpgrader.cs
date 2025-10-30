@@ -239,12 +239,18 @@ namespace Ami.BroAudio.Editor
                     return changed;
                 }
 
-                if (obj is IEnumerable enumerable)
+                try
                 {
-                    foreach (var item in enumerable)
+                    if (obj is IEnumerable enumerable)
                     {
-                        changed |= UpgradeObject(item);
+                        foreach (var item in enumerable)
+                        {
+                            changed |= UpgradeObject(item);
+                        }
                     }
+                }
+                catch
+                {
                 }
 
                 foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy))

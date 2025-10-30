@@ -17,9 +17,21 @@ namespace Ami.BroAudio.Editor
     [CustomEditor(typeof(AudioAsset), true)]
     public class AudioAssetEditor : UnityEditor.Editor
     {
-        private ReorderableList _entitiesList;
+        private ReorderableList _list;
+        private ReorderableList list
+        {
+            get
+            {
+                if (_list != null)
+                {
+                    return _list;
+                }
 
-        private readonly List<AudioEntityEditor> _entityEditors = new List<AudioEntityEditor>();
+                RebuildList();
+
+                return _list;
+            }
+        }
 
         public Instruction CurrInstruction { get; private set; }
         public IAudioAsset Asset { get; private set; }
@@ -46,7 +58,6 @@ namespace Ami.BroAudio.Editor
         public void Init()
         {
             Asset = target as IAudioAsset;
-            InitReorderableList(); 
         }
 
         private void OnRemoveSelectedEntity(AudioEntityEditor editor)
@@ -64,7 +75,11 @@ namespace Ami.BroAudio.Editor
                 }
             }
 
-            _entityEditors.Remove(editor);
+            if (_list != null)
+            {
+                _list.list.Remove(editor);
+            }
+
             AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(editor.target));
             DestroyImmediate(editor.target, true);
         }
@@ -78,8 +93,11 @@ namespace Ami.BroAudio.Editor
                 newEntity.name = Path.GetFileNameWithoutExtension(path);
                 AssetDatabase.CreateAsset(newEntity, path);
                 var newEditor = CreateEditor(newEntity, typeof(AudioEntityEditor)) as AudioEntityEditor;
-                _entityEditors.Add(newEditor);
-                _entitiesList.index = _entityEditors.Count - 1;
+                if (_list != null)
+                {
+                    _list.list.Add(newEditor);
+                    _list.index = _list.count - 1;
+                }
                 newEditor.IsExpanded = true;
             }
         }
@@ -113,30 +131,45 @@ namespace Ami.BroAudio.Editor
             return AssetOutputPath;
         }
 
-        private void InitReorderableList()
+        private AudioEntityEditor GetAudioEntityEditor(int index)
         {
-            _entityEditors.Clear();
-
-            if (Asset != null)
+            if (list != null && index >= 0 && index < _list.count)
             {
-                List<AudioEntity> entities = new List<AudioEntity>();
-                GetAudioEntities(entities, Asset as AudioAsset);
-
-                foreach (var entity in entities)
-                {
-                    AudioEntityEditor entityEditor = (AudioEntityEditor)CreateEditor(entity, typeof(AudioEntityEditor));
-                    _entityEditors.Add(entityEditor);
-                }
-
-                _entitiesList = new ReorderableList(_entityEditors, typeof(AudioEntityEditor),
-                    draggable: false, displayHeader: false, displayAddButton: true, displayRemoveButton: true)
-                {
-                    onAddCallback = OnAdd,
-                    onRemoveCallback = OnRemove,
-                    drawElementCallback = OnDrawElement,
-                    elementHeightCallback = OnGetPropertyHeight
-                };
+                return list.list[index] as AudioEntityEditor;
             }
+
+            return null;
+        }
+
+        public void RebuildList()
+        {
+            var audioAsset = Asset as AudioAsset;
+
+            if (audioAsset == null)
+            {
+                _list = new ReorderableList(new List<AudioEntityEditor>(), typeof(AudioEntityEditor));
+                return;
+            }
+
+            List<AudioEntity> entities = new List<AudioEntity>();
+            GetAudioEntities(entities, Asset as AudioAsset);
+
+            List<AudioEntityEditor> editors = new List<AudioEntityEditor>(entities.Count);
+
+            foreach (var entity in entities)
+            {
+                AudioEntityEditor entityEditor = (AudioEntityEditor)CreateEditor(entity, typeof(AudioEntityEditor));
+                editors.Add(entityEditor);
+            }
+
+            _list = new ReorderableList(editors, typeof(AudioEntityEditor),
+                draggable: false, displayHeader: false, displayAddButton: true, displayRemoveButton: true)
+            {
+                onAddCallback = OnAdd,
+                onRemoveCallback = OnRemove,
+                drawElementCallback = OnDrawElement,
+                elementHeightCallback = OnGetPropertyHeight
+            };
 
             void OnAdd(ReorderableList list)
             {
@@ -144,7 +177,7 @@ namespace Ami.BroAudio.Editor
 
                 if (list.count > 0)
                 {
-                    var lastEditor = _entityEditors[list.count - 1];
+                    var lastEditor = GetAudioEntityEditor(list.count - 1);
                     if (lastEditor.target is AudioEntity entity)
                     {
                         audioType = entity.AudioType;
@@ -156,20 +189,22 @@ namespace Ami.BroAudio.Editor
 
             void OnRemove(ReorderableList list)
             {
-                if (list.index >= 0 && list.index < _entityEditors.Count)
+                var editor = GetAudioEntityEditor(list.index);
+                if (editor != null)
                 {
-                    OnRemoveSelectedEntity(true, _entityEditors[list.index]);
+                    OnRemoveSelectedEntity(true, editor);
                 }
             }
 
             void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
             {
-                if (_entityEditors[index] is AudioEntityEditor editor)
+                var editor = GetAudioEntityEditor(index);
+                if (editor != null)
                 {
                     if (!editor.IsExpanded && EventExtension.IsRightClick(rect))
                     {
-                        _entitiesList.index = index;
-                        _entitiesList.GrabKeyboardFocus();
+                        list.index = index;
+                        list.GrabKeyboardFocus();
                         // the element background doesn't repaint right away, so we delay the dropdown to the next drawing process 
                         EditorApplication.delayCall += () => editor.OnOpenOptionMenu();
                         EditorWindow.focusedWindow.Repaint();
@@ -183,13 +218,20 @@ namespace Ami.BroAudio.Editor
 
             float OnGetPropertyHeight(int index)
             {
-                if (_entityEditors[index] is AudioEntityEditor editor)
+                var editor = GetAudioEntityEditor(index);
+
+                if (editor != null)
                 {
                     return editor.GetHeight();
                 }
 
                 return EditorGUIUtility.singleLineHeight;
             }
+        }
+
+        public void ClearList()
+        {
+            _list = null;
         }
 
         private void HandleKeyboardShortcuts()
@@ -201,7 +243,7 @@ namespace Ami.BroAudio.Editor
             }
 
             bool isCtrl = current.control || current.modifiers == EventModifiers.Control;
-            if (_entitiesList.index >= 0 && _entitiesList.index < _entityEditors.Count && _entityEditors[_entitiesList.index] is AudioEntityEditor selected)
+            if (_list != null && GetAudioEntityEditor(_list.index) is AudioEntityEditor selected)
             {
                 if (isCtrl && current.keyCode == KeyCode.D)
                 {
@@ -235,15 +277,18 @@ namespace Ami.BroAudio.Editor
 
         public void DrawEntitiesList(out float height)
         {
-            _entitiesList.DoLayoutList();
-            height = _entitiesList.GetHeight();
+            list.DoLayoutList();
+            height = list.GetHeight();
         }
 
         private void SetAllElementsExpanded(bool isExpanded)
         {
-            foreach (var editor in _entityEditors)
+            foreach (var editor in list.list)
             {
-                editor.IsExpanded = isExpanded;
+                if (editor is AudioEntityEditor entityEditor)
+                {
+                    entityEditor.IsExpanded = isExpanded;
+                }
             }
         }
 
@@ -269,7 +314,7 @@ namespace Ami.BroAudio.Editor
             AssetDatabase.CreateAsset(newEntity, path);
 
             var editor = (AudioEntityEditor)CreateEditor(newEntity, typeof(AudioEntityEditor));
-            _entityEditors.Add(editor);
+            list.list.Add(editor);
 
             return (newEntity, editor);
         }
@@ -285,14 +330,17 @@ namespace Ami.BroAudio.Editor
         public void SelectEntity(AudioEntity entity, out float entityVerticalPos)
         {
             entityVerticalPos = 0f;
-            foreach (var editor in _entityEditors)
+            foreach (var editor in list.list)
             {
-                var isTarget = editor.target == entity;
-                editor.IsExpanded = isTarget;
-                if (isTarget)
+                if (editor is AudioEntityEditor entityEditor)
                 {
-                    _entitiesList.index = _entityEditors.IndexOf(editor);
-                    entityVerticalPos = _entitiesList.index * _entitiesList.elementHeight;
+                    var isTarget = entityEditor.target == entity;
+                    entityEditor.IsExpanded = isTarget;
+                    if (isTarget)
+                    {
+                        list.index = list.list.IndexOf(editor);
+                        entityVerticalPos = list.index * list.elementHeight;
+                    }
                 }
             }
         }

@@ -299,6 +299,7 @@ namespace Ami.BroAudio.Editor
                     editor.RemoveEntitiesListener();
                     editor.AddEntitiesListener();
                     editor.Verify();
+                    editor.RebuildList();
                 }
                 else
                 {
@@ -505,12 +506,16 @@ namespace Ami.BroAudio.Editor
             {
                 _entitiesScrollPos = EditorGUILayout.BeginScrollView(_entitiesScrollPos);
                 {
-                    DrawEntitiesHeader(editor.serializedObject, editor.SetAssetName);
-                    editor.DrawEntitiesList(out float listHeight);
-                    float compensateHeight = GetScrollPosCompensateHeight(listHeight);
-                    if (compensateHeight > 0f)
+                    DrawEntitiesHeader(editor, editor.serializedObject, editor.SetAssetName);
+
+                    if (_isInEntitiesEditMode) // don't draw if we backed out
                     {
-                        GUILayout.Space(compensateHeight);
+                        editor.DrawEntitiesList(out float listHeight);
+                        float compensateHeight = GetScrollPosCompensateHeight(listHeight);
+                        if (compensateHeight > 0f)
+                        {
+                            GUILayout.Space(compensateHeight);
+                        }
                     }
                 }
                 EditorGUILayout.EndScrollView();
@@ -536,12 +541,13 @@ namespace Ami.BroAudio.Editor
 
         // The ReorderableList default header background GUIStyle has set fixedHeight to non-0 and stretchHeight to false, which is unreasonable...
         // Use another style or Draw it manually could solve the problem and accept more customization.
-        private void DrawEntitiesHeader(SerializedObject serializedAsset, Action<string> onAssetNameChanged)
+        private void DrawEntitiesHeader(AudioAssetEditor editor, SerializedObject serializedAsset, Action<string> onAssetNameChanged)
         {
             EditorGUILayout.BeginHorizontal();
             {
                 if (GUILayout.Button(EditorGUIUtility.IconContent(IconConstant.BackButton), GUILayout.Width(BackButtonSize), GUILayout.Height(BackButtonSize)))
                 {
+                    editor.ClearList();
                     _isInEntitiesEditMode = false;
                     _assetReorderableList.index = -1;
                 }

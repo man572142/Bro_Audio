@@ -158,7 +158,7 @@ namespace Ami.BroAudio.Editor
 
         private bool Upgrade(SerializedProperty property)
         {
-            HashSet<object> traversed;
+            HashSet<object> traversed = null;
             bool changed = false;
 
             if (property.propertyType == SerializedPropertyType.Generic)

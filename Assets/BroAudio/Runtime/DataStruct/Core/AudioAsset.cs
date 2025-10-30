@@ -105,8 +105,11 @@ namespace Ami.BroAudio.Data
                         }
 
                         ConvertedEntities.Add(entity);
+                        UnityEditor.EditorUtility.SetDirty(this);
                     }
                 }
+                
+                UnityEditor.AssetDatabase.SaveAssetIfDirty(this);
             }
         }
 

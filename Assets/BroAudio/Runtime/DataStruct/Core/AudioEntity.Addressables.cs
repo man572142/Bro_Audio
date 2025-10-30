@@ -8,7 +8,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace Ami.BroAudio.Data
 {
-    public partial class AudioEntity : IEntityIdentity, IAudioEntity
+    public partial class AudioEntity : IAudioEntity
     {
         public bool UseAddressables = false;
 

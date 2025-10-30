@@ -92,7 +92,7 @@ namespace Ami.BroAudio.Editor
                 var cwd = Directory.GetCurrentDirectory();
 
                 // Loop until we reach the project root
-                while (!string.IsNullOrEmpty(currentPath) && (currentPath.Contains(cwd, StringComparison.OrdinalIgnoreCase) || !Path.IsPathRooted(currentPath)))
+                while (!string.IsNullOrEmpty(currentPath) && (currentPath.Contains(cwd) || !Path.IsPathRooted(currentPath)))
                 {
                     var path = Path.Combine(currentPath, "package.json");
 
@@ -129,7 +129,7 @@ namespace Ami.BroAudio.Editor
             int changed = 0;
 
             // Loop until we reach the project root
-            while (!string.IsNullOrEmpty(currentPath) && (currentPath.Contains(cwd, StringComparison.OrdinalIgnoreCase) || !Path.IsPathRooted(currentPath)))
+            while (!string.IsNullOrEmpty(currentPath) && (currentPath.Contains(cwd) || !Path.IsPathRooted(currentPath)))
             {
                 var resourcesPath = Path.Combine(currentPath, "Resources~");
 
@@ -226,7 +226,7 @@ namespace Ami.BroAudio.Editor
                     string assetFileName = Path.GetFileName(assetPath);
 
                     // Check if the asset is in a Resources folder and has the same name
-                    if (assetPath.Contains("/Resources/", StringComparison.OrdinalIgnoreCase) && assetFileName.Equals(fileName, StringComparison.OrdinalIgnoreCase))
+                    if (assetPath.Contains("/Resources/") && assetFileName.Equals(fileName, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -235,7 +235,7 @@ namespace Ami.BroAudio.Editor
                 // Not found, so do a deeper dive to see if it exists in any subfolders
                 foreach (string assetPath in Directory.EnumerateFiles("Assets", fileName, SearchOption.AllDirectories))
                 {
-                    if (assetPath.Contains("/Resources/", StringComparison.OrdinalIgnoreCase))
+                    if (assetPath.Contains("/Resources/"))
                     {
                         return true;
                     }

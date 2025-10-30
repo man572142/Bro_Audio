@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Ami.BroAudio.Data;
 using Ami.BroAudio.Tools;
 using NUnit.Framework;
 using UnityEditor;
@@ -67,6 +68,14 @@ namespace Ami.BroAudio.Editor
                 {
                     CheckScriptableObject(assetPath);
                 }
+            }
+
+            // And once all is said and done, clear out our stored entities
+            List<AudioAsset> audioAssets = new List<AudioAsset>();
+            BroEditorUtility.GetAudioAssets(audioAssets);
+            foreach (var audioAsset in audioAssets)
+            {
+                audioAsset.ClearStoredEntities();
             }
         }
 

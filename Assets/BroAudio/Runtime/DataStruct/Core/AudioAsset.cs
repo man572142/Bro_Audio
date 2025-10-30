@@ -108,7 +108,7 @@ namespace Ami.BroAudio.Data
                         UnityEditor.EditorUtility.SetDirty(this);
                     }
                 }
-                
+
                 UnityEditor.AssetDatabase.SaveAssetIfDirty(this);
             }
         }
@@ -225,6 +225,25 @@ namespace Ami.BroAudio.Data
 
             entity = null;
             return false;
+        }
+
+        [System.Obsolete("Clearing down after ID upgrades are all done", true)]
+        public void ClearStoredEntities()
+        {
+            if (Entities != null) 
+            {
+                Entities = new AudioEntity_LEGACY[0];
+            }
+
+            if (ConvertedEntities != null)
+            {
+                ConvertedEntities.Clear();
+            }
+
+#if UNITY_EDITOR
+            UnityEditor.EditorUtility.SetDirty(this);
+            UnityEditor.AssetDatabase.SaveAssetIfDirty(this);
+#endif
         }
     }
 }

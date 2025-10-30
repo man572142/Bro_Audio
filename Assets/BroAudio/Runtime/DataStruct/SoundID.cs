@@ -81,9 +81,9 @@ namespace Ami.BroAudio
 
         public static SoundID Invalid => new SoundID();
 
-        public override string ToString() => Entity == null ? Entity.Name : "not set";
+        public override string ToString() => Entity != null ? Entity.Name : "not set";
         public override bool Equals(object obj) => obj is SoundID soundID && Equals(soundID);
-        public override int GetHashCode() => Entity == null ? Entity.GetHashCode() : 0;
+        public override int GetHashCode() => Entity != null ? Entity.GetHashCode() : 0;
         public bool Equals(SoundID other) => other.Entity == Entity;
         public bool Equals(SoundID x, SoundID y) => x.Entity == y.Entity;
         public int GetHashCode(SoundID obj) => obj.Entity != null ? obj.Entity.GetHashCode() : 0;

@@ -24,6 +24,7 @@ namespace Ami.BroAudio.Editor
 
         private class EntityData
         {
+            public bool IsInspector;
             public bool IsExpanded;
             public Tab SelectedTab;
             public bool IsReplay;
@@ -163,7 +164,12 @@ namespace Ami.BroAudio.Editor
                 }
 
                 EditorGUI.BeginChangeCheck();
-                data.IsExpanded = EditorGUI.Foldout(foldoutRect.AdjustWidth(-audioTypeRect.width), data.IsExpanded, data.IsExpanded ? string.Empty : target.name, !data.IsExpanded);
+
+                if (!data.IsExpanded || !data.IsInspector)
+                {
+                    data.IsExpanded = EditorGUI.Foldout(foldoutRect.AdjustWidth(-audioTypeRect.width), data.IsExpanded, data.IsExpanded ? string.Empty : target.name, !data.IsExpanded);
+                }
+
                 if (EditorGUI.EndChangeCheck() && Event.current.alt)
                 {
                     OnExpandAll?.Invoke(data.IsExpanded);
@@ -264,6 +270,11 @@ namespace Ami.BroAudio.Editor
 
         public override void OnInspectorGUI()
         {
+            GetOrCreateEntityDataDict(out var data);
+
+            data.IsExpanded = true;
+            data.IsInspector = true;
+
             var position = EditorGUILayout.GetControlRect(false, GetHeight(), GUILayout.ExpandWidth(true));
             DrawGUI(position);
         }

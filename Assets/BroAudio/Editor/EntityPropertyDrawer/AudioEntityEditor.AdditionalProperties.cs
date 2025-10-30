@@ -44,6 +44,10 @@ namespace Ami.BroAudio.Editor
                 lineCount++;
             }
 
+#if PACKAGE_ADDRESSABLES
+            lineCount++;
+#endif
+
             float offset = 0f;
             offset += IsDefaultValueAndCanNotDraw(drawFlags, DrawedProperty.Priority) ? 0f : TwoSidesLabelOffsetY;
             offset += IsDefaultValueAndCanNotDraw(drawFlags, DrawedProperty.MasterVolume) ? 0f : SnapVolumePadding;
@@ -61,6 +65,10 @@ namespace Ami.BroAudio.Editor
 
         private void DrawAdditionalBaseProperties(Rect position, AudioTypeSetting setting)
         {
+#if PACKAGE_ADDRESSABLES
+            DrawEntityAddressableProperty(position);
+#endif
+
             var drawFlags = setting.DrawedProperty;
             ConvertUnityEverythingFlagsToAll(ref drawFlags);
             DrawPlaybackGroup(drawFlags, position);
@@ -70,7 +78,89 @@ namespace Ami.BroAudio.Editor
             DrawLoopProperty(drawFlags, position);
             DrawSpatialSetting(drawFlags, position);
         }
-        
+
+        private void DrawEntityAddressableProperty(Rect position)
+        {
+            var entity = serializedObject.targetObject as AudioEntity;
+            if (entity == null)
+                return;
+
+#if PACKAGE_ADDRESSABLES
+            Rect rect = GetRectAndIterateLine(position);
+            Offset -= SingleLineSpace * 0.5f;
+            Offset += 3f;
+
+            var settings = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
+            if (settings == null)
+            {
+                EditorGUI.LabelField(rect, "Addressables not configured");
+                return;
+            }
+
+            var addressableGUIContent = new GUIContent("Addressable");
+            var addressableToggleSize = EditorStyles.toggle.CalcSize(addressableGUIContent);
+
+            // Checkbox at the start
+            var checkboxRect = new Rect(rect.x, rect.y, addressableToggleSize.x, rect.height);
+            rect.xMin = checkboxRect.xMax + 5f;
+
+            // Get asset path and entry
+            string assetPath = AssetDatabase.GetAssetPath(entity);
+            var guid = AssetDatabase.AssetPathToGUID(assetPath);
+            var entry = settings.FindAssetEntry(guid);
+
+            bool isAddressable = entry != null;
+
+            EditorGUI.BeginChangeCheck();
+            isAddressable = EditorGUI.ToggleLeft(checkboxRect, addressableGUIContent, isAddressable);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (isAddressable)
+                {
+                    // Make addressable
+                    entry = settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
+                    //entry.address = entity.name;
+                    EditorUtility.SetDirty(settings);
+                }
+                else
+                {
+                    // Unset addressable
+                    settings.RemoveAssetEntry(guid);
+                    EditorUtility.SetDirty(settings);
+                }
+            }
+
+            if (isAddressable)
+            {
+                EditorGUI.BeginChangeCheck();
+
+                var groupRect = new Rect(rect);
+                groupRect.xMin = (groupRect.xMax + groupRect.xMin) * 0.5f; // half the size
+                groupRect.xMin = Mathf.Max(groupRect.xMax - 200f, groupRect.xMin); // max 200
+
+                // Address field
+                var addressRect = new Rect(rect);
+                addressRect.xMax = groupRect.xMin - 5f;
+
+                string newAddress = EditorGUI.DelayedTextField(addressRect, entry.address);
+
+                var newGroup = EditorGUI.ObjectField(groupRect, entry.parentGroup, typeof(UnityEditor.AddressableAssets.Settings.AddressableAssetGroup), false) as UnityEditor.AddressableAssets.Settings.AddressableAssetGroup;
+
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (newAddress != entry.address)
+                        entry.address = newAddress;
+
+                    if (newGroup != entry.parentGroup)
+                        settings.MoveEntry(entry, newGroup);
+
+                    EditorUtility.SetDirty(settings);
+                }
+            }
+#endif
+        }
+
         private void DrawPlaybackGroup(DrawedProperty drawFlags, Rect position)
         {
             if(IsDefaultValueAndCanNotDraw(drawFlags, DrawedProperty.PlaybackGroup, out var groupProp, out _))

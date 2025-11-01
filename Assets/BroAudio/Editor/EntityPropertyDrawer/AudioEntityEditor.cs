@@ -294,6 +294,8 @@ namespace Ami.BroAudio.Editor
             req.UpdateRandomizedPreviewValue(RandomFlag.Pitch, pitchProp.floatValue);
             req.ClipVolume = data.Clips.CurrentPlayingClip.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
             EditorAudioPreviewer.Instance.UpdatePreview();
+
+            EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw();
         }
 
 #if PACKAGE_ADDRESSABLES

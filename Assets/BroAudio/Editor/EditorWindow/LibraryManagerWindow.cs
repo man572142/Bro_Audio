@@ -524,7 +524,7 @@ namespace Ami.BroAudio.Editor
                     }
                 }
                 EditorGUILayout.EndScrollView();
-                EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw(rect.Scoping(position, new Vector2(offsetX, offsetY)), -_entitiesScrollPos);
+                //EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw(rect.Scoping(position, new Vector2(offsetX, offsetY)), -_entitiesScrollPos);
             }
             EditorGUILayout.EndVertical();
         }

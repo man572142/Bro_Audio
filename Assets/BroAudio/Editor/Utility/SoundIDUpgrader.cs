@@ -47,25 +47,35 @@ namespace Ami.BroAudio.Editor
         private void Upgrade()
         {
             // find all scenes, prefabs, and scriptable objects
-            var assetPaths = AssetDatabase.FindAssets("t:Scene", new string[] { "Assets" })
-                .Concat(AssetDatabase.FindAssets("t:Prefab", new string[] { "Assets" }))
-                .Concat(AssetDatabase.FindAssets("t:ScriptableObject", new string[] { "Assets" }))
+            var assetPaths = AssetDatabase.FindAssets("t:Object", new string[] { "Assets", "Packages" })
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .ToArray();
 
             foreach (var assetPath in assetPaths)
             {
-                if (assetPath.EndsWith(".unity"))
+                if (assetPath.StartsWith("Packages/", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    // packages need to be checked to see if they're actually editable
+                    var info = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(assetPath);
+                    if (info == null)
+                    {
+                        continue;
+                    }
+
+                    // Editable if the package is local or embedded
+                    if (info.source != UnityEditor.PackageManager.PackageSource.Embedded && info.source != UnityEditor.PackageManager.PackageSource.Local)
+                    {
+                        continue;
+                    }
+                }
+
+                if (assetPath.EndsWith(".unity", System.StringComparison.OrdinalIgnoreCase))
                 {
                     CheckScene(assetPath);
                 }
-                else if (assetPath.EndsWith(".prefab"))
+                else
                 {
-                    CheckPrefab(assetPath);
-                }
-                else if (assetPath.EndsWith(".asset"))
-                {
-                    CheckScriptableObject(assetPath);
+                    CheckObject(assetPath);
                 }
             }
 
@@ -76,6 +86,8 @@ namespace Ami.BroAudio.Editor
             {
                 audioAsset.ClearStoredEntities();
             }
+
+            EditorUtility.UnloadUnusedAssetsImmediate();
         }
 
         private void CheckScene(string assetPath)
@@ -94,21 +106,19 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private void CheckPrefab(string assetPath)
+        private void CheckObject(string assetPath)
         {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
-            if (Upgrade(prefab))
+            List<UnityEngine.Object> objects = new List<UnityEngine.Object>
             {
-                AssetDatabase.SaveAssets();
-            }
-        }
+                AssetDatabase.LoadMainAssetAtPath(assetPath)
+            };
 
-        private void CheckScriptableObject(string assetPath)
-        {
-            var scriptableObject = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
-            if (Upgrade(scriptableObject))
+            foreach (var obj in objects)
             {
-                AssetDatabase.SaveAssets();
+                if (Upgrade(obj))
+                {
+                    AssetDatabase.SaveAssetIfDirty(obj);
+                }
             }
         }
 
@@ -166,6 +176,11 @@ namespace Ami.BroAudio.Editor
 
         private bool Upgrade(SerializedProperty property)
         {
+            if (property.isInstantiatedPrefab && !property.prefabOverride)
+            {
+                return false;
+            }
+
             HashSet<object> traversed = null;
             bool changed = false;
 
@@ -189,6 +204,11 @@ namespace Ami.BroAudio.Editor
                             idProperty.propertyType == SerializedPropertyType.Integer &&
                             entityProperty.propertyType == SerializedPropertyType.ObjectReference)
                         {
+                            if (property.isInstantiatedPrefab && property.prefabOverride)
+                            {
+                                Debug.Log($"Check {property.serializedObject.targetObject.name} property {property.propertyPath} in asset {AssetDatabase.GetAssetOrScenePath(property.serializedObject.targetObject)}");
+                            }
+
                             if (idProperty.intValue != 0 && idProperty.intValue != -1)
                             {
                                 if (entityProperty.objectReferenceValue == null)

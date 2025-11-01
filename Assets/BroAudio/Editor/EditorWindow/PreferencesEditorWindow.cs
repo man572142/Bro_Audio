@@ -77,10 +77,20 @@ namespace Ami.BroAudio.Editor.Setting
             {
                 if (!_mixer)
                 {
-                    string[] mixerGUIDs = AssetDatabase.FindAssets(MixerName);
-                    if (mixerGUIDs != null && mixerGUIDs.Length > 0)
+                    string[] mixerGUIDs = AssetDatabase.FindAssets($"{MixerName} t:{nameof(UnityEngine.Audio.AudioMixer)}");
+
+                    if (mixerGUIDs != null)
                     {
-                        _mixer = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(mixerGUIDs[0]), typeof(AudioMixer)) as AudioMixer;
+                        foreach (string guid in mixerGUIDs)
+                        {
+                            var mixer = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(guid), typeof(AudioMixer)) as AudioMixer;
+
+                            if (mixer != null && mixer.name == MixerName)
+                            {
+                                _mixer = mixer;
+                                break;
+                            }
+                        }
                     }
                 }
                 return _mixer;

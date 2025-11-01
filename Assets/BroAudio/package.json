@@ -1,0 +1,30 @@
+{
+  "name": "com.ami.broaudio",
+  "version": "3.0.0",
+  "displayName": "BroAudio",
+  "description": "A simple and intuitive Audio Middleware for Unity.",
+  "unity": "2020.3",
+  "dependencies": {
+    
+  },
+  "keywords": [
+    "audio",
+    "sound",
+    "middleware",
+    "unity"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/man572142/Bro_Audio.git"
+  },
+  "license": "MIT",
+  "licenseUrl": "https://github.com/man572142/Bro_Audio/blob/main/LICENSE",
+  "samples": [
+    {
+      "displayName": "BroAudio Demo",
+      "description": "Demo scene showcasing BroAudio features",
+      "path": "Samples~/Demo"
+    }
+  ],
+  "documentationUrl": "https://man572142s-organization.gitbook.io/broaudio/"
+}

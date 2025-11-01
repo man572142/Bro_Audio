@@ -8,10 +8,16 @@ namespace Ami.BroAudio.Editor
         {
             OnDeleteAssets(deletedAssets);
             OnReimportAsset(importedAssets);
-            if(importedAssets.Length > 0 && importedAssets[0].Contains("BroAudio"))
+
+            if(importedAssets.Length > 0)
             {
-                BroEditorUtility.FixDuplicateSoundIDs();
-                BroUserDataGenerator.CheckAndGenerateUserData(OnUserDataChecked);
+                if (importedAssets[0].Contains("BroAudio") ||
+                    importedAssets[0].Contains("Bro_Audio") ||
+                    importedAssets[0].Contains("com.ami.broaudio"))
+                {
+                    BroEditorUtility.FixDuplicateSoundIDs();
+                    BroUserDataGenerator.CheckAndGenerateUserData(OnUserDataChecked);
+                }
             }
         }
 

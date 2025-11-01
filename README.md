@@ -11,7 +11,7 @@
 <br />
 <div align="center">
   <a href="Bro Audio Logo">
-    <img src="https://raw.githubusercontent.com/man572142/Bro_Audio/main/Assets/BroAudio/Logo.png" alt="Logo" width="128" height="128">
+    <img src="https://raw.githubusercontent.com/man572142/Bro_Audio/refs/heads/main/Assets/BroAudio/Documentation%7E/Images/Logo.png" alt="Logo" width="128" height="128">
   </a>
 
   <!-- PROJECT Title -->
@@ -89,7 +89,7 @@ Get it from [Unity Asset Store](https://assetstore.unity.com/packages/tools/audi
 
 ### Via Unity Package Manager (UPM)
 * Navigate to Windows -> Package Manager
-* Use the PLUS button in the top left and choose "Install from git URL"
+* Use the PLUS button in the top left and choose "[Install from git URL](https://docs.unity3d.com/6000.2/Documentation/Manual/upm-ui-giturl.html)"
 * Enter `https://github.com/man572142/Bro_Audio.git?path=/Assets/BroAudio` appending `#tag_name` to tie to a specific release
 
 ## Creating sound libraries

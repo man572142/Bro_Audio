@@ -41,15 +41,15 @@ namespace Ami.BroAudio
         [System.Obsolete("Raw entities are now used")]
         private void _fixLegacyId()
         {
-            if (ID == 0 || ID == -1)
+            if (_entity != null)
             {
+                //Debug.LogError($"ID {ID} is already set to {_entity.Name}");
+                //ID = 0;
                 return;
             }
 
-            if (_entity != null)
+            if (ID == 0 || ID == -1)
             {
-                Debug.LogError($"ID {ID} is already set to {_entity.Name}");
-                ID = 0;
                 return;
             }
 
@@ -60,7 +60,7 @@ namespace Ami.BroAudio
                 return;
             }
 
-            ID = 0;
+            //ID = 0;
         }
 
 #if !UNITY_EDITOR
@@ -89,6 +89,12 @@ namespace Ami.BroAudio
         public int GetHashCode(SoundID obj) => obj.Entity != null ? obj.Entity.GetHashCode() : 0;
         public int CompareTo(SoundID other) => Entity != null && other.Entity != null ? StringComparer.OrdinalIgnoreCase.Compare(Entity.Name, other.Entity.Name) : 0;
         public int Compare(SoundID x, SoundID y) => x.Entity != null && y.Entity != null ? StringComparer.OrdinalIgnoreCase.Compare(x.Entity.Name, y.Entity.Name) : 0;
+
+        [System.Obsolete("legacy upgrade only", true)]
+        public static void __setLegacyId(ref SoundID soundId, int id)
+        {
+            soundId.ID = id;
+        }
 
 #if UNITY_EDITOR
         public static class NameOf

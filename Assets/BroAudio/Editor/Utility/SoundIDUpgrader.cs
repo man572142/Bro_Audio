@@ -204,22 +204,14 @@ namespace Ami.BroAudio.Editor
                             idProperty.propertyType == SerializedPropertyType.Integer &&
                             entityProperty.propertyType == SerializedPropertyType.ObjectReference)
                         {
-                            if (property.isInstantiatedPrefab && property.prefabOverride)
+                            if (entityProperty.objectReferenceValue == null && idProperty.intValue != 0 && idProperty.intValue != -1)
                             {
-                                Debug.Log($"Check {property.serializedObject.targetObject.name} property {property.propertyPath} in asset {AssetDatabase.GetAssetOrScenePath(property.serializedObject.targetObject)}");
-                            }
-
-                            if (idProperty.intValue != 0 && idProperty.intValue != -1)
-                            {
-                                if (entityProperty.objectReferenceValue == null)
+                                if (BroAudio.TryConvertIdToEntity(idProperty.intValue, out var entity))
                                 {
-                                    if (BroAudio.TryConvertIdToEntity(idProperty.intValue, out var entity))
-                                    {
-                                        entityProperty.objectReferenceValue = entity;
-                                    }
+                                    entityProperty.objectReferenceValue = entity;
                                 }
 
-                                idProperty.intValue = 0;
+                                //idProperty.intValue = 0;
                                 changed = true;
                             }
                         }
@@ -285,21 +277,27 @@ namespace Ami.BroAudio.Editor
 
                     if (fieldType.IsValueType && fieldType == typeof(SoundID) && value is SoundID soundId)
                     {
-                        var idField = fieldType.GetField(SoundID.NameOf.ID, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                        var id = (int)idField.GetValue(soundId);
-
-                        // upgrade it
-
-                        if (id != 0 && id != -1)
+                        if (soundId.Entity == null)
                         {
-                            if (BroAudio.TryConvertIdToEntity(id, out var entity))
+                            var idField = fieldType.GetField(SoundID.NameOf.ID, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                            var id = (int)idField.GetValue(soundId);
+
+                            // upgrade it
+
+                            if (id != 0 && id != -1)
                             {
-                                field.SetValue(value, new SoundID(entity));
-                                changed = true;
-                            }
-                            else
-                            {
-                                Debug.LogError($"Unable to convert SoundID {id} to entity");
+                                if (BroAudio.TryConvertIdToEntity(id, out var entity))
+                                {
+                                    var newSoundId = new SoundID(entity);
+                                    SoundID.__setLegacyId(ref newSoundId, id);
+                                    field.SetValue(value, newSoundId);
+
+                                    changed = true;
+                                }
+                                else
+                                {
+                                    Debug.LogError($"Unable to convert SoundID {id} to entity");
+                                }
                             }
                         }
                     }

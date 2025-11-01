@@ -48,7 +48,7 @@ namespace Ami.BroAudio.Editor
 #pragma warning restore CS0618 // Type or member is obsolete
 
             entityProp.objectReferenceValue = entity;
-            idProp.intValue = 0;
+            //idProp.intValue = 0;
             property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
 
             return entityProp.objectReferenceValue as AudioEntity;

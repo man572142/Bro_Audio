@@ -45,7 +45,8 @@ namespace Ami.BroAudio.Editor.Setting
         private GUIContent _pitchGUIContent, _audioVoicesGUIContent, _virtualTracksGUIContent, _dominatorTrackGUIContent, _regenerateUserDataGUIContent, _addManualInitGUIContent;
 
 #if PACKAGE_ADDRESSABLES
-        private GUIContent _addressableConversionGUIContent; 
+        private GUIContent _addressableConversionGUIContent;
+        private GUIContent _addressableSettingsGUIContent = new GUIContent("Addressable Settings".ToWhiteBold());
 #endif
 
         private GUIContent[] _tabLabels = null;
@@ -430,6 +431,12 @@ namespace Ami.BroAudio.Editor.Setting
                 _preferenceDrawer.DrawAddressableNeverAskOptions(
                     GetRectAndIterateLine(drawPosition), GetRectAndIterateLine(drawPosition));
             }
+
+            using (NewSection(_addressableSettingsGUIContent, GetRectAndIterateLine(drawPosition)))
+            {
+                _preferenceDrawer.DrawAddressableSettings(this, ref drawPosition);
+            }
+
             DrawEmptyLine(1);
 #endif
             drawPosition.xMax += Gap;

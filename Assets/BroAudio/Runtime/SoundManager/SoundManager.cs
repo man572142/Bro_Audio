@@ -407,13 +407,23 @@ namespace Ami.BroAudio.Runtime
         #endregion
 
         #region Addressable Cleanup
-        private static readonly WaitForSecondsRealtime _addressableCleanupInterval = new WaitForSecondsRealtime(5f);
+        private WaitForSecondsRealtime _addressableCleanupInterval = null;
         private readonly List<SoundID> _addressableCleanupEntitiesList = new List<SoundID>();
         private IEnumerator AddressableCleanupRoutine()
         {
+            if (_addressableCleanupInterval == null)
+            {
+                _addressableCleanupInterval = new WaitForSecondsRealtime(Mathf.Clamp(Setting.AutomaticallyUnloadUnusedAddressableAudioClipsAfter, 1f, 5f));
+            }
+
             while (true)
             {
                 yield return _addressableCleanupInterval;
+
+                if (!Setting.AutomaticallyLoadAddressableAudioClips)
+                {
+                    continue;
+                }
 
                 double currentTime = Time.unscaledTimeAsDouble;
                 _addressableCleanupEntitiesList.AddRange(_loadedEntityLastPlayedTime.Keys);
@@ -459,9 +469,14 @@ namespace Ami.BroAudio.Runtime
 
         public void UpdateLoadedEntityLastPlayedTime(SoundID id)
         {
-            if (_loadedEntityLastPlayedTime.ContainsKey(id))
+            // Don't track if we're not meant to automatically load
+            // It's on the dev to manage their own memory
+            if (Setting.AutomaticallyLoadAddressableAudioClips)
             {
-                _loadedEntityLastPlayedTime[id] = Time.unscaledTimeAsDouble;
+                if (_loadedEntityLastPlayedTime.ContainsKey(id))
+                {
+                    _loadedEntityLastPlayedTime[id] = Time.unscaledTimeAsDouble;
+                }
             }
         }
         #endregion

@@ -91,8 +91,21 @@ namespace Ami.BroAudio.Runtime
                     }
                     else
                     {
-                        // Start loading and wait for it
+                        // Start loading and wait for it no matter what the user has set
                         yield return broAudioClip.LoadAssetAsync();
+
+                        if (SoundManager.Instance != null && !SoundManager.Instance.Setting.AutomaticallyLoadAddressableAudioClips) // but let them know if we had to
+                        {
+                            var loadedAudioClip = _clip.GetAudioClip();
+                            if (loadedAudioClip != null)
+                            {
+                                Debug.LogWarning(LogTitle + $"Lazy loaded addressable audio clip {loadedAudioClip.name} for {ID}");
+                            }
+                            else
+                            {
+                                Debug.LogWarning(LogTitle + $"Failed to load addressable audio clip for {ID}");
+                            }
+                        }
                     }
 
                     // Update tracking when playback starts

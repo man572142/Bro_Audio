@@ -95,6 +95,11 @@ namespace Ami.BroAudio.Runtime
         private void StartLoadingAddressableClips(IAudioEntity entity, SoundID id)
         {
 #if PACKAGE_ADDRESSABLES
+            if (!Setting.AutomaticallyLoadAddressableAudioClips) // You better have preloaded them
+            {
+                return;
+            }
+
             if (entity is AudioEntity audioEntity && audioEntity.UseAddressables)
             {
                 // Start loading all addressable clips asynchronously if not already loaded/loading

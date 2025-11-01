@@ -650,25 +650,28 @@ namespace Ami.BroAudio.Editor
 
             public static void RefreshCache(bool fullRefresh = false)
             {
-                var audioAssetGUIDs = AssetDatabase.FindAssets($"t:{nameof(AudioAsset)}");
-                var audioEntityGUIDs = AssetDatabase.FindAssets($"t:{nameof(AudioEntity)}");
+                var assetGUIDs = AssetDatabase.FindAssets($"t:{nameof(AudioAsset)} t:{nameof(AudioEntity)}");
 
                 _trackedPaths.Clear();
                 AudioAssets.Clear();
                 AudioEntities.Clear();
 
-                foreach (var guid in audioAssetGUIDs)
+                foreach (var guid in assetGUIDs)
                 {
                     var path = AssetDatabase.GUIDToAssetPath(guid);
                     _trackedPaths.Add(path);
-                    AudioAssets.Add(AssetDatabase.LoadAssetAtPath<AudioAsset>(path));
-                }
 
-                foreach (var guid in audioEntityGUIDs)
-                {
-                    var path = AssetDatabase.GUIDToAssetPath(guid);
-                    _trackedPaths.Add(path);
-                    AudioEntities.Add(AssetDatabase.LoadAssetAtPath<AudioEntity>(path));
+                    foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(path))
+                    {
+                        if (asset is AudioAsset audioAsset)
+                        {
+                            AudioAssets.Add(audioAsset);
+                        }
+                        else if (asset is AudioEntity audioEntity)
+                        {
+                            AudioEntities.Add(audioEntity);
+                        }
+                    }
                 }
 
                 if (fullRefresh)

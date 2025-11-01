@@ -172,6 +172,11 @@ namespace Ami.BroAudio.Editor
                 draggable = false
             };
 
+            if (_currSelectedAssetIndex >= 0 && _currSelectedAssetIndex < _allAssets.Count)
+            {
+                _assetReorderableList.index = _currSelectedAssetIndex;
+            }
+
             void OnDrawHeader(Rect rect)
             {
                 EditorGUI.LabelField(rect, "Asset List");

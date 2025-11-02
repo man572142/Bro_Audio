@@ -15,6 +15,7 @@ namespace Ami.BroAudio.Tools
         public const string EditorSettingName = "BroEditorSetting";
         public const string GlobalPlaybackGroupName = "GlobalPlaybackGroup";
 		public const string EditorAudioMixerName = "EditorBroAudioMixer";
+        public const string MainAssetPath = "Assets/BroAudio";
         #endregion
 
         public const string CombFilteringTimeName = "Time To Prevent Comb Filtering";

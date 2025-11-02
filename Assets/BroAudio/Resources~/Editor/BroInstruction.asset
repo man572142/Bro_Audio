@@ -177,3 +177,5 @@ MonoBehaviour:
   - Key: 6
     Value: Toggle the scripting define symbol to enable/disable manual initialization
       of BroAudio
+  - Key: 7
+    Value: Please specify a default output path.

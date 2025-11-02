@@ -49,25 +49,36 @@ namespace Ami.BroAudio.Editor
             // find all scenes, prefabs, and scriptable objects
             var assetPaths = AssetDatabase.FindAssets("t:Object", new string[] { "Assets", "Packages" })
                 .Select(AssetDatabase.GUIDToAssetPath)
-                .ToArray();
+                .ToList();
 
-            foreach (var assetPath in assetPaths)
+            for (int i = assetPaths.Count - 1; i >= 0; i--)
             {
+                var assetPath = assetPaths[i];
+
                 if (assetPath.StartsWith("Packages/", System.StringComparison.OrdinalIgnoreCase))
                 {
                     // packages need to be checked to see if they're actually editable
                     var info = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(assetPath);
                     if (info == null)
                     {
+                        assetPaths.RemoveAt(i);
                         continue;
                     }
 
                     // Editable if the package is local or embedded
                     if (info.source != UnityEditor.PackageManager.PackageSource.Embedded && info.source != UnityEditor.PackageManager.PackageSource.Local)
                     {
+                        assetPaths.RemoveAt(i);
                         continue;
                     }
                 }
+            }
+
+            for (int i = 0, count = assetPaths.Count; i < count; i++)
+            {
+                EditorUtility.DisplayProgressBar("Upgrading", $"Upgrading assets ({i + 1}/{count})", (i + 1) / (float)count);
+
+                var assetPath = assetPaths[i];
 
                 if (assetPath.EndsWith(".unity", System.StringComparison.OrdinalIgnoreCase))
                 {

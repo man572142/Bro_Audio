@@ -11,6 +11,7 @@
         AddDominatorTrack,
         RegenerateUserData,
         ManualInitialization,
+        DefaultOutputPathMissing,
 
         // Settings/Audio
         CombFilteringTooltip = 10,

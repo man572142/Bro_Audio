@@ -9,12 +9,16 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
 using static Ami.Extension.EditorScriptingExtension;
+using System;
 
 namespace Ami.BroAudio.Editor
 {
     public class PreferencesDrawer
     {
-        private readonly GUIContent _filterSlopeGUIContent, _playMusicAsBgmGUIContent, _showWarnForNoLoopChainedModeGUIContent,
+		public const string AssetOutputPathLabel = "Asset Output Path";
+		public const string PromptForPathOnAssetCreationLabel = "Always prompt for save location on asset creation";
+
+		private readonly GUIContent _filterSlopeGUIContent, _playMusicAsBgmGUIContent, _showWarnForNoLoopChainedModeGUIContent,
             _updateModeGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent, _globalGroupGUIContent;
 #if PACKAGE_ADDRESSABLES
         private readonly GUIContent _directToAddressableGUIContent, _addressableToDirectGUIContent;
@@ -212,6 +216,22 @@ namespace Ami.BroAudio.Editor
         {
             _soundIDDemoProp ??= GetSoundIDDemoSerializedProperty();
             EditorGUI.PropertyField(fieldRect, _soundIDDemoProp);
+        }
+        
+        public void DrawAssetOutputPath(Func<Rect> onGetRect, bool hasOutputAssetPath, BroInstructionHelper instruction, Action onSetOutputPath)
+        {
+            if (!hasOutputAssetPath)
+            {
+                RichTextHelpBox(onGetRect(), instruction.GetText(Instruction.DefaultOutputPathMissing), MessageType.Error);
+            }
+            
+            Rect suffixRect = EditorGUI.PrefixLabel(onGetRect(), new GUIContent("Default"));
+            suffixRect.width *= 0.9f;
+
+            BroEditorUtility.DrawAssetOutputPath(suffixRect, instruction, onSetOutputPath);
+
+            var promptForPathProp = EditorSettingSO.FindProperty(nameof(EditorSetting.PromptForPathOnAssetCreation));
+            promptForPathProp.boolValue = EditorGUI.ToggleLeft(onGetRect(), PromptForPathOnAssetCreationLabel, promptForPathProp.boolValue);
         }
 
         private SerializedProperty GetSoundIDDemoSerializedProperty()

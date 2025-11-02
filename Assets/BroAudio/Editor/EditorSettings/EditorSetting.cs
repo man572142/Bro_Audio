@@ -48,6 +48,7 @@ namespace Ami.BroAudio.Editor
 
         public bool EditTheNewClipAfterSaveAs = FactorySettings.EditTheNewClipAfterSaveAs;
         public bool PingTheNewClipAfterSaveAs = FactorySettings.PingTheNewClipAfterSaveAs;
+        public bool PromptForPathOnAssetCreation = FactorySettings.PromptForPathOnAssetCreation;
         public bool HasSetupWizardAutoLaunched = false;
         public int VirtualTrackCount = FactorySettings.VirtualTrackCount;
 
@@ -134,6 +135,7 @@ namespace Ami.BroAudio.Editor
             AddressableDecision = FactorySettings.AddressableDecision;
             EditTheNewClipAfterSaveAs = FactorySettings.EditTheNewClipAfterSaveAs;
             PingTheNewClipAfterSaveAs = FactorySettings.PingTheNewClipAfterSaveAs;
+            PromptForPathOnAssetCreation = FactorySettings.PromptForPathOnAssetCreation;
             ShowPlayButtonWhenEntityCollapsed = FactorySettings.ShowPlayButtonWhenEntityIsFolded;
             OpenLastEditAudioAsset = FactorySettings.OpenLastEditAudioAsset;
             CreateNewAudioTypeSettings();
@@ -196,6 +198,7 @@ namespace Ami.BroAudio.Editor
 
             public const bool EditTheNewClipAfterSaveAs = true;
             public const bool PingTheNewClipAfterSaveAs = true;
+            public const bool PromptForPathOnAssetCreation = false;
 
             public const int VirtualTrackCount = 4;
         }

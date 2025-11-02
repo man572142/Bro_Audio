@@ -1,15 +1,11 @@
 using System;
-using System.IO;
-using System.Linq;
 using Ami.BroAudio.Editor.Setting;
 using Ami.BroAudio.Runtime;
-using Ami.BroAudio.Tools;
 using Ami.Extension;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
 using static Ami.Extension.EditorScriptingExtension;
-using System;
 
 namespace Ami.BroAudio.Editor
 {

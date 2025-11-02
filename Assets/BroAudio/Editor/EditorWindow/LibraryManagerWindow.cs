@@ -27,16 +27,28 @@ namespace Ami.BroAudio.Editor
         public static event Action OnLostFocusEvent;
         public static event Action OnSelectAsset;
 
+        private ReorderableList _assetList;
+        private ReorderableList assetList
+        {
+            get
+            {
+                if (_assetList != null)
+                {
+                    return _assetList;
+                }
+
+                RebuildList();
+
+                return _assetList;
+            }
+        }
+
         private readonly GapDrawingHelper _verticalGapDrawer = new GapDrawingHelper();
         private readonly BroInstructionHelper _instruction = new BroInstructionHelper();
         //private readonly EditorFlashingHelper _flasingHelper = new EditorFlashingHelper(Color.white, 1f, Ease.InCubic);
         private readonly Dictionary<string, string> _instructionHelpBoxKeys = new Dictionary<string, string>();
 
-        //private List<string> _allAssetGUIDs;
-        private List<AudioAsset> _allAssets = new List<AudioAsset>();
-        private ReorderableList _assetReorderableList;
         private int _currSelectedAssetIndex = -1;
-        private Dictionary<AudioAsset, AudioAssetEditor> _assetEditorDict = new Dictionary<AudioAsset, AudioAssetEditor>();
         private bool _isInEntitiesEditMode;
         private bool _hasOutputAssetPath;
         private bool _showSettings;
@@ -66,24 +78,158 @@ namespace Ami.BroAudio.Editor
             window.SelectEntity(asset, entity);
         }
 
-        public void SelectAsset(AudioAsset asset)
+        public void RebuildList()
         {
-            int index = _allAssets.IndexOf(asset);
-            if (index >= 0)
+            List<AudioAsset> assets = new List<AudioAsset>();
+            GetAudioAssets(assets);
+
+            List<AudioAssetEditor> editors = new List<AudioAssetEditor>(assets.Count);
+
+            if (_assetList != null) // Some logic to retain the current sorting
             {
-                _assetReorderableList.index = index;
-                OnSelect(_assetReorderableList);
+                foreach (AudioAssetEditor editor in _assetList.list)
+                {
+                    var asset = editor.target as AudioAsset;
+                    var assetListIndex = assets.IndexOf(asset);
+
+                    if (assetListIndex == -1)
+                    {
+                        continue; // Not included in the list
+                    }
+
+                    assets.RemoveAt(assetListIndex);
+                    editors.Add(editor);
+                }
+            }
+
+            foreach (var asset in assets)
+            {
+                AudioAssetEditor editor = (AudioAssetEditor)UnityEditor.Editor.CreateEditor(asset, typeof(AudioAssetEditor));
+                editors.Add(editor);
+            }
+
+            _assetList = new ReorderableList(editors, typeof(AudioAssetEditor))
+            {
+                drawHeaderCallback = OnDrawHeader,
+                onAddCallback = OnAdd,
+                onRemoveCallback = OnRemove,
+                drawElementCallback = OnDrawElement,
+                onSelectCallback = OnSelect,
+                draggable = false
+            };
+
+            if (_currSelectedAssetIndex >= 0 && _currSelectedAssetIndex < _assetList.count)
+            {
+                _assetList.index = _currSelectedAssetIndex;
+            }
+            else
+            {
+                _currSelectedAssetIndex = -1;
+            }
+
+            void OnDrawHeader(Rect rect)
+            {
+                EditorGUI.LabelField(rect, "Asset List");
+            }
+
+            void OnAdd(ReorderableList list)
+            {
+                ShowCreateAssetAskName();
+                GUIUtility.ExitGUI();
+            }
+
+            void OnRemove(ReorderableList list)
+            {
+                var assetEditor = list.list[list.index] as AudioAssetEditor;
+                var asset = assetEditor.target as AudioAsset;
+                var choice = EditorUtility.DisplayDialogComplex(
+                    "Delete Audio Asset?",
+                    "Are you sure you want to delete the audio asset [" + asset.AssetName + "]?",
+                    "Yes, and all sounds inside", "No", "Yes, but leave the sounds alone");
+
+                if (choice == 1)
+                {
+                    return;
+                }
+
+                try
+                {
+                    AssetDatabase.StartAssetEditing();
+
+                    if (choice == 0)
+                    {
+                        // delete the entities
+                        List<AudioEntity> entities = new List<AudioEntity>();
+                        GetAudioEntities(entities, asset);
+
+                        for (int i = entities.Count - 1; i >= 0; i--)
+                        {
+                            AudioEntity entity = entities[i];
+
+                            AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(entity));
+                        }
+                    }
+
+                    string path = AssetDatabase.GetAssetPath(asset);
+                    AssetDatabase.DeleteAsset(path);
+                }
+                finally
+                {
+                    AssetDatabase.StopAssetEditing();
+                }
+
+                AssetDatabase.Refresh();
+                RebuildList();
+            }
+
+            void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
+            {
+                var assetEditor = _assetList.list[index] as AudioAssetEditor;
+                if (assetEditor == null || assetEditor.Asset == null)
+                {
+                    return;
+                }
+                var asset = assetEditor.Asset;
+
+                EditorGUI.LabelField(rect, asset.AssetName, GUIStyleHelper.RichText);
+                HandleDragAndDropToAsset(rect, assetEditor);
+
+                if (index == _currSelectedAssetIndex && Event.current.isMouse && Event.current.clickCount >= 2)
+                {
+                    _isInEntitiesEditMode = true;
+                }
+
+                HandleContextMenu(rect, asset as AudioAsset);
             }
         }
 
-        public void RemoveAssetEditor(AudioAsset asset)
+        public void SelectAsset(AudioAsset asset)
         {
-            if (_assetEditorDict.TryGetValue(asset, out var editor))
+            for (int i = 0, count = assetList.list.Count; i < count; i++)
             {
-                DestroyImmediate(editor);
+                if (assetList.list[i] is AudioAssetEditor editor && editor.target == asset)
+                {
+                    assetList.index = i;
+                    OnSelect(assetList);
+                    return;
+                }
             }
-            _assetEditorDict.Remove(asset);
-            _allAssets.Remove(asset);
+        }
+
+        private void SelectEntity(AudioAsset asset, AudioEntity entity)
+        {
+            _isInEntitiesEditMode = true;
+
+            for (int i = 0, count = assetList.list.Count; i < count; i++)
+            {
+                if (assetList.list[i] is AudioAssetEditor editor && editor.target == asset)
+                {
+                    editor.SelectEntity(entity, out float entityPos);
+                    entityPos += EntitiesHeaderSize.y + ReorderableList.Defaults.padding + DefaultLayoutPadding;
+                    _entitiesScrollPos = new Vector2(_entitiesScrollPos.x, entityPos);
+                    return;
+                }
+            }
         }
 
         private void OnFocus()
@@ -100,23 +246,20 @@ namespace Ami.BroAudio.Editor
 
         private void OnEnable()
         {
-            GetAudioAssets(_allAssets);
             _hasOutputAssetPath = Directory.Exists(EditorSetting.AssetOutputPath);
 
-            InitEditorDictionary();
-            InitReorderableList();
-            RefreshAssetEditors(_assetReorderableList);
+            RefreshAssetEditors(assetList);
 
             Undo.undoRedoPerformed += Repaint;
             AudioEntityEditor.OnExpandAll += ResetEntitiesScrollPos;
 
             if (EditorSetting.OpenLastEditAudioAsset && !string.IsNullOrEmpty(EditorSetting.LastEditAudioAsset))
             {
-                foreach (var asset in _allAssets)
+                foreach (AudioAssetEditor editor in assetList.list)
                 {
-                    if (AssetDatabase.GetAssetPath(asset) == EditorSetting.LastEditAudioAsset)
+                    if (AssetDatabase.GetAssetPath(editor.target) == EditorSetting.LastEditAudioAsset)
                     {
-                        SelectAsset(asset);
+                        SelectAsset(editor.target as AudioAsset);
                         _isInEntitiesEditMode = true;
                         break;
                     }
@@ -129,9 +272,13 @@ namespace Ami.BroAudio.Editor
         private void OnDisable()
         {
             OnCloseLibraryManagerWindow?.Invoke();
-            foreach (AudioAssetEditor editor in _assetEditorDict.Values)
+
+            if (_assetList != null)
             {
-                DestroyImmediate(editor);
+                foreach (AudioAssetEditor editor in _assetList.list)
+                {
+                    DestroyImmediate(editor);
+                }
             }
             Undo.undoRedoPerformed -= Repaint;
             AudioEntityEditor.OnExpandAll -= ResetEntitiesScrollPos;
@@ -142,118 +289,6 @@ namespace Ami.BroAudio.Editor
         }
 
         #region Initialization
-        private void InitEditorDictionary(bool clear = true)
-        {
-            if (clear)
-            {
-                _assetEditorDict.Clear();
-            }
-
-            foreach (var asset in _allAssets)
-            {
-                if (asset != null && !_assetEditorDict.ContainsKey(asset))
-                {
-                    AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(asset, typeof(AudioAssetEditor)) as AudioAssetEditor;
-                    editor.Init();
-                    _assetEditorDict.Add(asset, editor);
-                }
-            }
-        }
-
-        private void InitReorderableList()
-        {
-            _assetReorderableList = new ReorderableList(_allAssets, typeof(string))
-            {
-                drawHeaderCallback = OnDrawHeader, 
-                onAddCallback = OnAdd, 
-                onRemoveCallback = OnRemove,
-                drawElementCallback = OnDrawElement,
-                onSelectCallback = OnSelect,
-                draggable = false
-            };
-
-            if (_currSelectedAssetIndex >= 0 && _currSelectedAssetIndex < _allAssets.Count)
-            {
-                _assetReorderableList.index = _currSelectedAssetIndex;
-            }
-
-            void OnDrawHeader(Rect rect)
-            {
-                EditorGUI.LabelField(rect, "Asset List");
-            }
-
-            void OnAdd(ReorderableList list)
-            {
-                ShowCreateAssetAskName();
-                GUIUtility.ExitGUI();
-            }
-
-            void OnRemove(ReorderableList list)
-            {
-                var asset = _allAssets[list.index];
-                var choice = EditorUtility.DisplayDialogComplex(
-                    "Delete Audio Asset?", 
-                    "Are you sure you want to delete the audio asset [" + asset.AssetName + "]?",
-                    "Yes, and all sounds inside", "No", "Yes, but leave the sounds alone");
-
-                if (choice == 1)
-                {
-                    return;
-                }
-
-                try
-                {
-                    AssetDatabase.StartAssetEditing();
-
-                    if (choice == 2)
-                    {
-                        // delete the entities
-                        List<AudioEntity> entities = new List<AudioEntity>();
-                        GetAudioEntities(entities, asset);
-
-                        for (int i = entities.Count - 1; i >= 0; i--)
-                        {
-                            AudioEntity entity = entities[i];
-
-                            AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(entity));
-                        }
-                    }
-
-                    string path = AssetDatabase.GetAssetPath(_allAssets[list.index]);
-                    AssetDatabase.DeleteAsset(path);
-                }
-                finally
-                {
-                    AssetDatabase.StopAssetEditing();
-                }
-
-                AssetDatabase.Refresh();
-            }
-
-            void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
-            {
-                var asset = _allAssets[index];
-                if (_assetEditorDict.TryGetValue(asset, out var editor))
-                {
-                    if (editor.Asset == null)
-                    {
-                        return;
-                    }
-
-                    EditorGUI.LabelField(rect, editor.Asset.AssetName, GUIStyleHelper.RichText);
-
-                    HandleDragAndDropToAsset(rect, editor);
-                }
-
-                if (index == _currSelectedAssetIndex && Event.current.isMouse && Event.current.clickCount >= 2)
-                {
-                    _isInEntitiesEditMode = true;
-                }
-
-                HandleContextMenu(rect, editor.Asset as AudioAsset);
-            }
-        }
-
         private void HandleDragAndDropToAsset(Rect rect, AudioAssetEditor editor)
         {
             if(Event.current.type == EventType.DragPerform && rect.Contains(Event.current.mousePosition))
@@ -285,9 +320,9 @@ namespace Ami.BroAudio.Editor
                 _currSelectedAssetIndex = list.index;
                 EditorAudioPreviewer.Instance.StopAllClips();
                 RefreshAssetEditors(list);
-                if(EditorSetting.OpenLastEditAudioAsset)
+                if(EditorSetting.OpenLastEditAudioAsset && list.list[list.index] is AudioAssetEditor editor)
                 {
-                    EditorSetting.LastEditAudioAsset = AssetDatabase.GetAssetPath(_allAssets[_currSelectedAssetIndex]);
+                    EditorSetting.LastEditAudioAsset = AssetDatabase.GetAssetPath(editor.target);
                     EditorUtility.SetDirty(EditorSetting);
                 }
             }
@@ -295,21 +330,16 @@ namespace Ami.BroAudio.Editor
 
         private void RefreshAssetEditors(ReorderableList list)
         {
-            foreach (var pair in _assetEditorDict)
+            foreach (AudioAssetEditor editor in list.list)
             {
-                var asset = pair.Key;
-                var editor = pair.Value;
-                if (list.index >= 0 && asset == _allAssets[list.index])
-                {
-                    editor.RemoveEntitiesListener();
-                    editor.AddEntitiesListener();
-                    editor.Verify();
-                    editor.RebuildList();
-                }
-                else
-                {
-                    editor.RemoveEntitiesListener();
-                }
+                editor.RemoveEntitiesListener();
+            }
+
+            if (list.index >= 0 && list.index < list.list.Count && list.list[list.index] is AudioAssetEditor selectedEditor)
+            {
+                selectedEditor.AddEntitiesListener();
+                selectedEditor.Verify();
+                selectedEditor.RebuildList();
             }
         }
         #endregion
@@ -317,19 +347,18 @@ namespace Ami.BroAudio.Editor
         private bool TryGetCurrentAssetEditor(out AudioAssetEditor editor)
         {
             editor = null;
-            if (_allAssets == null || _assetReorderableList == null)
+
+            if (_assetList == null)
             {
                 return false;
             }
 
-            if (_allAssets.Count > 0 && _assetReorderableList.index >= 0)
+            if (_assetList.index >= 0 && _assetList.index < _assetList.list.Count && _assetList.list[_assetList.index] is AudioAssetEditor selectedEditor)
             {
-                int index = Mathf.Clamp(_assetReorderableList.index, 0, _allAssets.Count - 1);
-                if (_assetEditorDict.TryGetValue(_allAssets[index], out editor))
-                {
-                    return true;
-                }
+                editor = selectedEditor;
+                return true;
             }
+
             return false;
         }
 
@@ -337,7 +366,11 @@ namespace Ami.BroAudio.Editor
         private void ShowCreateAssetAskName(Action<AudioAssetEditor> onAssetCreated = null)
         {
             // In the following case. List has better performance than IEnumerable, even with a ToList() method.
-            List<string> assetNames = _assetEditorDict.Values.Select(x => x.Asset.AssetName).ToList();
+            List<AudioAsset> assets = new List<AudioAsset>();
+            GetAudioAssets(assets);
+
+            List<string> assetNames = assets.Select(x => x.AssetName).ToList();
+
             AssetNameEditorWindow.ShowWindow(assetNames, assetName =>
             {
                 var editor = CreateAsset(assetName);
@@ -356,15 +389,12 @@ namespace Ami.BroAudio.Editor
             AssetDatabase.CreateAsset(asset, path);
             AssetDatabase.SaveAssets();
 
-            AudioAssetEditor editor = UnityEditor.Editor.CreateEditor(asset, typeof(AudioAssetEditor)) as AudioAssetEditor;
+            var editor = AddOrMoveToEnd(asset);
+
             string guid = AssetDatabase.AssetPathToGUID(path);
-            editor.Init();
             editor.SetData(guid, fileName);
 
-            _assetEditorDict.Add(asset, editor);
-            _allAssets.Add(asset);
-
-            _assetReorderableList.index = _assetReorderableList.count - 1;
+            assetList.index = assetList.count - 1;
             return editor;
         }
 
@@ -444,7 +474,7 @@ namespace Ami.BroAudio.Editor
             {
                 _assetListScrollPos = EditorGUILayout.BeginScrollView(_assetListScrollPos);
                 {
-                    _assetReorderableList.DoLayoutList();
+                    assetList.DoLayoutList();
                 }
                 EditorGUILayout.EndScrollView();
 
@@ -452,7 +482,7 @@ namespace Ami.BroAudio.Editor
                 {
                     DrawIssueMessage(editor);
                 }
-                else if (_assetReorderableList.count > 0)
+                else if (assetList.count > 0)
                 {
                     DrawLibraryManagerInstructions();
                 }
@@ -554,7 +584,7 @@ namespace Ami.BroAudio.Editor
                 {
                     editor.ClearList();
                     _isInEntitiesEditMode = false;
-                    _assetReorderableList.index = -1;
+                    assetList.index = -1;
                 }
                 GUILayout.Space(10f);
 
@@ -639,17 +669,6 @@ namespace Ami.BroAudio.Editor
         }
         #endregion
 
-        private void SelectEntity(AudioAsset asset, AudioEntity entity)
-        {
-            _isInEntitiesEditMode = true;
-            if (_assetEditorDict.TryGetValue(asset, out var editor))
-            {
-                editor.SelectEntity(entity, out float entityPos);
-                entityPos += EntitiesHeaderSize.y + ReorderableList.Defaults.padding + DefaultLayoutPadding;
-                _entitiesScrollPos = new Vector2(_entitiesScrollPos.x, entityPos);
-            }
-        }
-
         public void AddItemsToMenu(GenericMenu menu)
         {
             menu.AddSeparator(string.Empty);
@@ -664,23 +683,54 @@ namespace Ami.BroAudio.Editor
             {
                 EditorSetting.OpenLastEditAudioAsset = !EditorSetting.OpenLastEditAudioAsset;
                 EditorSetting.LastEditAudioAsset = string.Empty;
-                if(EditorSetting.OpenLastEditAudioAsset && _assetReorderableList.count > 0 &&  _assetReorderableList.index >= 0)
+                if(EditorSetting.OpenLastEditAudioAsset && TryGetCurrentAssetEditor(out var editor))
                 {
-                    EditorSetting.LastEditAudioAsset = AssetDatabase.GetAssetPath(_allAssets[_assetReorderableList.index]);
+                    EditorSetting.LastEditAudioAsset = AssetDatabase.GetAssetPath(editor.target);
                     _isInEntitiesEditMode = true;
                 }
                 EditorUtility.SetDirty(EditorSetting);
             });
         }
 
+        private AudioAssetEditor AddOrMoveToEnd(AudioAsset asset)
+        {
+            if (_assetList == null)
+            {
+                return UnityEditor.Editor.CreateEditor(asset, typeof(AudioAssetEditor)) as AudioAssetEditor;
+            }
+
+            AudioAssetEditor editor = null;
+
+            for (int i = _assetList.count - 1; i >= 0; i--)
+            {
+                if (_assetList.list[i] is AudioAssetEditor existingEditor && existingEditor.target == asset)
+                {
+                    editor = existingEditor;
+
+                    if (i < _assetList.count - 1)
+                    {
+                        // swap to end
+                        (_assetList.list[i], _assetList.list[_assetList.count - 1]) = (_assetList.list[_assetList.count - 1], _assetList.list[i]);
+                    }
+
+                    break;
+                }
+            }
+
+            if (editor == null)
+            {
+                editor = UnityEditor.Editor.CreateEditor(asset, typeof(AudioAssetEditor)) as AudioAssetEditor;
+                _assetList.list.Add(editor);
+            }
+
+            return editor;
+        }
+
         public void Refresh()
         {
-            GetAudioAssets(_allAssets);
-            InitEditorDictionary(clear: false);
-
-            if (_assetReorderableList != null)
+            if (assetList != null)
             {
-                RefreshAssetEditors(_assetReorderableList);
+                RefreshAssetEditors(assetList);
             }
         }
     }

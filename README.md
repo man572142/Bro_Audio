@@ -89,8 +89,11 @@ Get it from [Unity Asset Store](https://assetstore.unity.com/packages/tools/audi
 
 ### Via Unity Package Manager (UPM)
 * Navigate to Windows -> Package Manager
-* Use the PLUS button in the top left and choose "[Install from git URL](https://docs.unity3d.com/6000.2/Documentation/Manual/upm-ui-giturl.html)"
-* Enter `https://github.com/man572142/Bro_Audio.git?path=/Assets/BroAudio` appending `#tag_name` to tie to a specific release
+* Use the PLUS button in the top left and choose [Install from git URL](https://docs.unity3d.com/6000.2/Documentation/Manual/upm-ui-giturl.html)
+* Enter the following, appending `#tag_name` if you want to tie it to a specific release
+```
+https://github.com/man572142/Bro_Audio.git?path=/Assets/BroAudio
+```
 
 ## Creating sound libraries
 * Locate <span style="color: #FF9333;"><i>Tools/BroAudio/Library Manager</i></span> in the Unity menu bar.

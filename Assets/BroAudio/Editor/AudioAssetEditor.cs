@@ -92,10 +92,9 @@ namespace Ami.BroAudio.Editor
                 var path = AssetDatabase.GenerateUniqueAssetPath(AssetDatabase.GetAssetPath(entity));
                 newEntity.name = Path.GetFileNameWithoutExtension(path);
                 AssetDatabase.CreateAsset(newEntity, path);
-                var newEditor = CreateEditor(newEntity, typeof(AudioEntityEditor)) as AudioEntityEditor;
+                var newEditor = AddOrMoveToEnd(newEntity);
                 if (_list != null)
                 {
-                    _list.list.Add(newEditor);
                     _list.index = _list.count - 1;
                 }
                 newEditor.IsExpanded = true;
@@ -155,6 +154,29 @@ namespace Ami.BroAudio.Editor
             GetAudioEntities(entities, Asset as AudioAsset);
 
             List<AudioEntityEditor> editors = new List<AudioEntityEditor>(entities.Count);
+
+            if (_list != null) // Some logic to retain the current sorting until we've fully closed
+            {
+                foreach (var rawEditor in _list.list)
+                {
+                    if (rawEditor is AudioEntityEditor editor)
+                    {
+                        var entity = editor.target as AudioEntity;
+                        var audioEntityListIndex = entities.IndexOf(entity);
+
+                        if (audioEntityListIndex == -1)
+                        {
+                            continue; // not included in the new list
+                        }
+
+                        // remove it from our entities list
+                        entities.RemoveAt(audioEntityListIndex);
+
+                        // add it to the new list
+                        editors.Add(editor);
+                    }
+                }
+            }
 
             foreach (var entity in entities)
             {
@@ -312,11 +334,42 @@ namespace Ami.BroAudio.Editor
             var newEntity = AudioEntity.CreateNewInstance(Asset as AudioAsset, name, audioType);
 
             AssetDatabase.CreateAsset(newEntity, path);
-
-            var editor = (AudioEntityEditor)CreateEditor(newEntity, typeof(AudioEntityEditor));
-            list.list.Add(editor);
-
+            var editor = AddOrMoveToEnd(newEntity);
             return (newEntity, editor);
+        }
+
+        private AudioEntityEditor AddOrMoveToEnd(AudioEntity entity)
+        {
+            if (_list == null)
+            {
+                return CreateEditor(entity, typeof(AudioEntityEditor)) as AudioEntityEditor; // just so we don't error
+            }
+
+            AudioEntityEditor editor = null;
+
+            for (int i = _list.count - 1; i >= 0; i--)
+            {
+                if (_list.list[i] is AudioEntityEditor listEditorItem && listEditorItem.target == entity)
+                {
+                    editor = listEditorItem;
+
+                    if (i != _list.count - 1)
+                    {
+                        // swap the item with the last item
+                        (_list.list[i], _list.list[_list.count - 1]) = (_list.list[_list.count - 1], _list.list[i]);
+                    }
+
+                    break;
+                }
+            }
+
+            if (editor == null)
+            {
+                editor = CreateEditor(entity, typeof(AudioEntityEditor)) as AudioEntityEditor;
+                _list.list.Add(editor);
+            }
+
+            return editor;
         }
 
         public void SetClipList(SerializedProperty clipListProp, int index, AudioClip clip)

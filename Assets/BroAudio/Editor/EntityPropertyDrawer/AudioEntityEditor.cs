@@ -698,6 +698,12 @@ namespace Ami.BroAudio.Editor
             GenericMenu menu = new GenericMenu();
             menu.AddItem(new GUIContent($"Duplicate ^D"), false, () => OnDuplicateEntity?.Invoke(this));
             menu.AddItem(new GUIContent($"Remove _DELETE"), false, () => OnRemoveEntity?.Invoke(this));
+            menu.AddItem(new GUIContent($"Ping sound asset"), false, () =>
+            {
+                EditorUtility.FocusProjectWindow();
+                ProjectWindowUtil.ShowCreatedAsset(serializedObject.targetObject);
+                EditorGUIUtility.PingObject(serializedObject.targetObject);
+            });
 
             var audioType = GetAudioType();
             if (!BroEditorUtility.EditorSetting.TryGetAudioTypeSetting(audioType, out var typeSetting))

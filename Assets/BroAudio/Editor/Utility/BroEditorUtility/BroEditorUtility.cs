@@ -592,6 +592,7 @@ namespace Ami.BroAudio.Editor
             }
 
             audioAssets.AddRange(AudioAssetCache.AudioAssets.FindAll(a => a != null));
+            audioAssets.Sort((x, y) => EditorUtility.NaturalCompare(x.name, y.name));
         }
 
         public static void GetAudioEntities(List<AudioEntity> audioEntities, AudioAsset insideAudioAsset = null)
@@ -611,6 +612,8 @@ namespace Ami.BroAudio.Editor
             {
                 audioEntities.AddRange(AudioAssetCache.AudioEntities.FindAll(e => e != null));
             }
+
+            audioEntities.Sort((x, y) => EditorUtility.NaturalCompare(x.name, y.name));
         }
 
         internal class AudioAssetCache : AssetPostprocessor

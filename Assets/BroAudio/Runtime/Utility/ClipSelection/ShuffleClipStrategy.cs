@@ -1,10 +1,14 @@
-﻿using Ami.BroAudio.Data;
+﻿using System.Collections.Generic;
+using Ami.BroAudio.Data;
 using UnityEngine;
 
 namespace Ami.BroAudio.Runtime
 {
     public class ShuffleClipStrategy : IClipSelectionStrategy
     {
+        private BroAudioClip _lastUsed;
+        private readonly HashSet<BroAudioClip> _used = new HashSet<BroAudioClip>();
+
         public IBroAudioClip SelectClip(BroAudioClip[] clips, ClipSelectionContext context, out int index)
         {
             index = Random.Range(0, clips.Length);
@@ -16,9 +20,8 @@ namespace Ami.BroAudio.Runtime
                 for (int i = 0; i < clips.Length; i++)
                 {
                     var clip = clips[i];
-                    clip.IsLastUsed = false;
                     
-                    if (!clip.IsUsed)
+                    if (!_used.Contains(clip))
                     {
                         hasAnyAvailable = true;
                     }
@@ -26,8 +29,8 @@ namespace Ami.BroAudio.Runtime
                 
                 if(!hasAnyAvailable)
                 {
-                    ResetIsUse(clips);
-                    result.IsLastUsed = true;
+                    Reset();
+                    _lastUsed = result;
                 }
                 return result;
             }
@@ -42,7 +45,7 @@ namespace Ami.BroAudio.Runtime
 
                 if (checkRanOut) 
                 {
-                    if(!clips[index].IsUsed) // if there are any available clips, return. Otherwise, proceed to ResetInUse
+                    if(!_used.Contains(clips[index])) // if there are any available clips, return. Otherwise, proceed to ResetInUse
                     {
                         return result;
                     }
@@ -53,35 +56,32 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
-            result.IsLastUsed = true;
-            ResetIsUse(clips);
+            _lastUsed = result;
+            Reset();
             return result;
         }
 
-        private static bool Use(BroAudioClip[] clips, int index, out BroAudioClip result, bool checkLastUsed = false)
+        private bool Use(BroAudioClip[] clips, int index, out BroAudioClip result, bool checkLastUsed = false)
         {
             result = clips[index];
-            if (result.IsLastUsed && checkLastUsed)
+            if (result == _lastUsed && checkLastUsed)
             {
-                result.IsLastUsed = false;
+                _lastUsed = null;
                 return false;
             }
             
-            if (!result.IsUsed && result.GetAudioClip() != null)
+            if (result != _lastUsed && result.IsSet)
             {
-                result.IsUsed = true;
+                _used.Add(result);
                 return true;
             }
             result = null;
             return false;
         }
 
-        public static void ResetIsUse(BroAudioClip[] clips)
+        public void Reset()
         {
-            for (int i = 0; i < clips.Length; i++)
-            {
-                clips[i].IsUsed = false;
-            }
+            _used.Clear();
         }
     }
 }

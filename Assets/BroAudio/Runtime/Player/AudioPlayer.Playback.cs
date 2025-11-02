@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource))]
     public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
-        public delegate void PlaybackHandover(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
+        public delegate void PlaybackHandover(SoundID id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
 
         public PlaybackHandover OnPlaybackHandover;
         [Obsolete]
@@ -29,7 +29,7 @@ namespace Ami.BroAudio.Runtime
 
         public int PlaybackStartingTime { get; private set; }
 
-        public void SetPlaybackData(int id, PlaybackPreference pref)
+        public void SetPlaybackData(SoundID id, PlaybackPreference pref)
         {
             ID = id;
             _pref = pref;
@@ -37,7 +37,7 @@ namespace Ami.BroAudio.Runtime
 
         public void Play()
         {
-            if(IsStopping || ID <= 0 || _pref.Entity == null)
+            if(IsStopping || !ID.IsValid() || _pref.Entity == null)
             {
                 return;
             }
@@ -77,11 +77,52 @@ namespace Ami.BroAudio.Runtime
                 _audioTypeVolume.Complete(audioTypePref.Volume, false);
             }
             _clipVolume.Complete(0f, false);
-            int sampleRate = _clip.GetAudioClip().frequency;
+
+#if PACKAGE_ADDRESSABLES
+            // Wait for the addressable to finish loading if it's currently loading
+            if (_clip is Data.BroAudioClip broAudioClip && broAudioClip.IsAddressablesAvailable())
+            {
+                if (!broAudioClip.IsLoaded) 
+                {
+                    if (broAudioClip.IsLoading)
+                    {
+                        // Wait for the existing loading operation to complete
+                        yield return broAudioClip.GetCurrentOperationHandle();
+                    }
+                    else
+                    {
+                        // Start loading and wait for it no matter what the user has set
+                        yield return broAudioClip.LoadAssetAsync();
+
+                        if (SoundManager.Instance != null && !SoundManager.Instance.Setting.AutomaticallyLoadAddressableAudioClips) // but let them know if we had to
+                        {
+                            var loadedAudioClip = _clip.GetAudioClip();
+                            if (loadedAudioClip != null)
+                            {
+                                Debug.LogWarning(LogTitle + $"Lazy loaded addressable audio clip {loadedAudioClip.name} for {ID}");
+                            }
+                            else
+                            {
+                                Debug.LogWarning(LogTitle + $"Failed to load addressable audio clip for {ID}");
+                            }
+                        }
+                    }
+
+                    // Update tracking when playback starts
+                    if (SoundManager.Instance != null)
+                    {
+                        SoundManager.Instance.UpdateLoadedEntityLastPlayedTime(ID);
+                    }
+                }
+            }
+#endif
+
+            var audioClip = _clip.GetAudioClip();
+            int sampleRate = audioClip.frequency;
             bool hasScheduled = false;
             if (_stopMode == StopMode.Stop) // we only do this process when it's fresh
             {
-                AudioSource.clip = _clip.GetAudioClip();
+                AudioSource.clip = audioClip;
                 AudioSource.priority = _pref.Entity.Priority;
 
                 SetPlayPosition(sampleRate);
@@ -114,10 +155,10 @@ namespace Ami.BroAudio.Runtime
                     }
                 }
 #if !UNITY_WEBGL
-                AudioTrack = MixerPool.GetTrack(TrackType); 
+                AudioTrack = MixerPool.GetTrack(TrackType);
 #endif
             }
-            
+
             do
             {
                 if(!hasScheduled)
@@ -164,7 +205,7 @@ namespace Ami.BroAudio.Runtime
                             yield break;
                         }
                     }
-                    
+
                     TriggerPlaybackHandover();
                     _clipVolume.SetTarget(0f);
                     elapsedTime = 0f;
@@ -300,7 +341,7 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            if (ID <= 0 || !isPlaying)
+            if (!ID.IsValid() || !isPlaying)
             {
                 onFinished?.Invoke();
                 EndPlaying();

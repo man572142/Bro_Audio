@@ -62,9 +62,9 @@ namespace Ami.BroAudio.Runtime
             return true;
         }
 
-        private IAudioPlayer PlayerToPlay(int id, AudioPlayer player, PlaybackPreference pref)
+        private IAudioPlayer PlayerToPlay(SoundID id, AudioPlayer player, PlaybackPreference pref)
         {
-            BroAudioType audioType = GetAudioType(id);
+            BroAudioType audioType = id.ToAudioType();
             var wrapper = new AudioPlayerInstanceWrapper(player);
             player.SetInstanceWrapper(wrapper);
             player.SetPlaybackData(id, pref);
@@ -85,10 +85,39 @@ namespace Ami.BroAudio.Runtime
                 _playbackHandoverDelegate ??= PlaybackHandover;
                 player.OnPlaybackHandover = _playbackHandoverDelegate;
             }
+
+            // Start loading addressable clips if needed
+            StartLoadingAddressableClips(pref.Entity, id);
+
             return wrapper;
         }
 
-        private void PlaybackHandover(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType prevTrackEffect, float trackVolume, float pitch)
+        private void StartLoadingAddressableClips(IAudioEntity entity, SoundID id)
+        {
+#if PACKAGE_ADDRESSABLES
+            if (!Setting.AutomaticallyLoadAddressableAudioClips) // You better have preloaded them
+            {
+                return;
+            }
+
+            if (entity is AudioEntity audioEntity && audioEntity.UseAddressables)
+            {
+                // Start loading all addressable clips asynchronously if not already loaded/loading
+                foreach (var clip in audioEntity.Clips)
+                {
+                    if (clip.IsAddressablesAvailable() && !clip.IsLoaded && !clip.IsLoading)
+                    {
+                        clip.LoadAssetAsync();
+
+                        // Track that this entity has started loading
+                        UpdateLoadedEntityLastPlayedTime(id);
+                    }
+                }
+            }
+#endif
+        }
+
+        private void PlaybackHandover(SoundID id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType prevTrackEffect, float trackVolume, float pitch)
         {
             var newPlayer = _audioPlayerPool.Extract();
             wrapper.UpdateInstance(newPlayer);
@@ -137,22 +166,37 @@ namespace Ami.BroAudio.Runtime
             Stop(targetType,FadeData.UseClipSetting);
         }
 
-        public void Stop(int id)
+        public void Stop(SoundID id)
         {
             Stop(id, FadeData.UseClipSetting);
         }
 
-        public void Stop(int id,float fadeTime)
+        public void Stop(SoundID id,float fadeTime)
         {
-            StopPlayer<int>(fadeTime, id);
+            StopPlayer(fadeTime, id);
         }
 
         public void Stop(BroAudioType targetType,float fadeTime)
         {
-            StopPlayer<BroAudioType>(fadeTime, (int)targetType.ConvertEverythingFlag());
+            targetType = targetType.ConvertEverythingFlag();
+
+            var players = GetCurrentAudioPlayers();
+            for (int i = players.Count - 1; i >= 0; i--)
+            {
+                var player = players[i];
+                if (!player.IsActive)
+                {
+                    continue;
+                }
+
+                if (targetType.Contains(player.ID.ToAudioType()))
+                {
+                    player.Stop(fadeTime);
+                }
+            }
         }            
 
-        private void StopPlayer<T>(float fadeTime, int identity)
+        private void StopPlayer(float fadeTime, SoundID identity)
         {
             var players = GetCurrentAudioPlayers();
             for (int i = players.Count - 1; i >= 0; i--)
@@ -163,10 +207,7 @@ namespace Ami.BroAudio.Runtime
                     continue;
                 }
 
-                System.Type type = typeof(T);
-                bool isIdAndMatch = type == typeof(int) && player.ID == identity;
-                bool isAudioTypeAndMatch = type == typeof(BroAudioType) && ((BroAudioType)identity).Contains(player.ID.ToAudioType());
-                if (isIdAndMatch || isAudioTypeAndMatch)
+                if (player.ID.Equals(identity))
                 {
                     player.Stop(fadeTime);
                 }
@@ -175,18 +216,18 @@ namespace Ami.BroAudio.Runtime
         #endregion
 
         #region Pause
-        public void Pause(int id, bool isPause)
+        public void Pause(SoundID id, bool isPause)
         {
             Pause(id, FadeData.UseClipSetting, isPause);
         }
 
-        public void Pause(int id, float fadeTime, bool isPause)
+        public void Pause(SoundID id, float fadeTime, bool isPause)
         {
             var players = GetCurrentAudioPlayers();
             for (int i = players.Count - 1; i >= 0; i--)
             {
                 var player = players[i];
-                if (player.IsActive && player.ID == id)
+                if (player.IsActive && player.ID.Equals(id))
                 {
                     if (isPause)
                     {

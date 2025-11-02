@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Ami.BroAudio.Data;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
@@ -7,13 +8,11 @@ namespace Ami.BroAudio.Editor
 {
 	public class SoundIDAdvancedDropdownItem : AdvancedDropdownItem
 	{
-		public readonly int SoundID;
-		public readonly ScriptableObject SourceAsset;
+		public readonly AudioEntity Entity;
 
-		public SoundIDAdvancedDropdownItem(string name, int soundID, ScriptableObject asset) : base(name)
+		public SoundIDAdvancedDropdownItem(AudioEntity entity) : base(entity.Name)
 		{
-			SoundID = soundID;
-			SourceAsset = asset;
+            Entity = entity;
 		}
 	}
 

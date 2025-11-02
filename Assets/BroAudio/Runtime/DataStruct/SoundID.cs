@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Ami.BroAudio.Runtime;
 using System.Collections;
+using Ami.BroAudio.Data;
 
 #if PACKAGE_ADDRESSABLES
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -12,41 +13,96 @@ namespace Ami.BroAudio
 {
     [Serializable]
     public struct SoundID : IEquatable<SoundID>, IComparable<SoundID>, IEqualityComparer<SoundID>, IComparer<SoundID>
-    {
-        public int ID;
-#if UNITY_EDITOR
-        [SerializeField] private ScriptableObject _sourceAsset;
-        [field: SerializeField] public GameObject DebugObject { get; private set; }
+#if !UNITY_EDITOR
+        , ISerializationCallbackReceiver
 #endif
-        public SoundID(int id) : this()
+    {
+        [SerializeField]
+        private AudioEntity _entity;
+
+        public AudioEntity Entity
         {
-            ID = id;
+            get
+            {
+                if (_entity == null)
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    _fixLegacyId();
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
+                return _entity;
+            }
         }
 
-        public static SoundID Invalid => new SoundID(-1);
+        [System.Obsolete("Raw entities are now used", true)]
+        [SerializeField]
+        private int ID;
 
-        public override string ToString() => ID.ToString();
+        [System.Obsolete("Raw entities are now used")]
+        private void _fixLegacyId()
+        {
+            if (_entity != null)
+            {
+                //Debug.LogError($"ID {ID} is already set to {_entity.Name}");
+                //ID = 0;
+                return;
+            }
+
+            if (ID == 0 || ID == -1)
+            {
+                return;
+            }
+
+            if (!BroAudio.TryConvertIdToEntity(ID, out _entity))
+            {
+                Debug.LogError($"Could not find entity with ID {ID} to convert SoundID to entity with");
+                _entity = null;
+                return;
+            }
+
+            //ID = 0;
+        }
+
+#if !UNITY_EDITOR
+#pragma warning disable CS0618 // Type or member is obsolete
+        void ISerializationCallbackReceiver.OnBeforeSerialize () => _fixLegacyId();
+        void ISerializationCallbackReceiver.OnAfterDeserialize () => _fixLegacyId();
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
+
+#if UNITY_EDITOR
+        [field: SerializeField] public GameObject DebugObject { get; private set; }
+#endif
+
+        public SoundID(AudioEntity entity) : this()
+        {
+            _entity = entity;
+        }
+
+        public static SoundID Invalid => new SoundID();
+
+        public override string ToString() => Entity != null ? Entity.Name : "not set";
         public override bool Equals(object obj) => obj is SoundID soundID && Equals(soundID);
-        public override int GetHashCode() => ID;
-        public bool Equals(SoundID other) => other.ID == ID;
-        public bool Equals(SoundID x, SoundID y) => x.ID == y.ID;
-        public int GetHashCode(SoundID obj) => obj.ID;
-        public int CompareTo(SoundID other) => other.ID.CompareTo(ID);
-        public int Compare(SoundID x, SoundID y) => x.ID.CompareTo(y.ID);
+        public override int GetHashCode() => Entity != null ? Entity.GetHashCode() : 0;
+        public bool Equals(SoundID other) => other.Entity == Entity;
+        public bool Equals(SoundID x, SoundID y) => x.Entity == y.Entity;
+        public int GetHashCode(SoundID obj) => obj.Entity != null ? obj.Entity.GetHashCode() : 0;
+        public int CompareTo(SoundID other) => Entity != null && other.Entity != null ? StringComparer.OrdinalIgnoreCase.Compare(Entity.Name, other.Entity.Name) : 0;
+        public int Compare(SoundID x, SoundID y) => x.Entity != null && y.Entity != null ? StringComparer.OrdinalIgnoreCase.Compare(x.Entity.Name, y.Entity.Name) : 0;
 
-        public static implicit operator int(SoundID soundID) => soundID.ID;
-        public static implicit operator SoundID(int id) => new SoundID(id);
+        [System.Obsolete("legacy upgrade only", true)]
+        public static void __setLegacyId(ref SoundID soundId, int id)
+        {
+            soundId.ID = id;
+        }
 
 #if UNITY_EDITOR
         public static class NameOf
         {
-            public static string SourceAsset => nameof(_sourceAsset);
-        }
+            public const string Entity = nameof(_entity);
 
-        public static bool TryGetAsset(SoundID soundID, out Data.AudioAsset asset)
-        {
-            asset = soundID._sourceAsset as Data.AudioAsset;
-            return asset;
+            [System.Obsolete("Raw entities are now used")]
+            public const string ID = nameof(ID);
         }
 #endif
     }
@@ -58,7 +114,7 @@ namespace Ami.BroAudio
         /// </summary>
         public static BroAudioType ToAudioType(this SoundID id)
         {
-            return Utility.GetAudioType(id);
+            return id.Entity != null ? id.Entity.AudioType : BroAudioType.None;
         }
 
         /// <summary>
@@ -66,7 +122,7 @@ namespace Ami.BroAudio
         /// </summary>
         public static string ToName(this SoundID id)
         {
-            return SoundManager.Instance.GetNameByID(id);
+            return id.ToString();
         }
 
         /// <summary>
@@ -74,7 +130,7 @@ namespace Ami.BroAudio
         /// </summary>
         public static bool IsValid(this SoundID id)
         {
-            return id > 0 && SoundManager.Instance.IsIdInBank(id);
+            return id.Entity != null;
         }
 
         /// <summary>

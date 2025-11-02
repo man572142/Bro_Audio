@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using UnityEditor;
+using Ami.BroAudio.Data;
 
 namespace Ami.BroAudio.Editor
 {
@@ -12,9 +13,9 @@ namespace Ami.BroAudio.Editor
         private const int MinimumLinesCount = 10;
         private const string None = "None";
 
-        private Action<int, string, ScriptableObject> _onSelectItem = null;
+        private Action<AudioEntity> _onSelectItem = null;
 
-        public SoundIDAdvancedDropdown(AdvancedDropdownState state, Action<int, string, ScriptableObject> onSelectItem) : base(state)
+        public SoundIDAdvancedDropdown(AdvancedDropdownState state, Action<AudioEntity> onSelectItem) : base(state)
         {
             _onSelectItem = onSelectItem;
             minimumSize = new Vector2(0f, EditorGUIUtility.singleLineHeight * MinimumLinesCount);
@@ -24,27 +25,26 @@ namespace Ami.BroAudio.Editor
         {
             var root = new AdvancedDropdownItem(nameof(BroAudio));
             root.AddChild(new AdvancedDropdownItem(None));
-            if(!TryGetCoreData(out var coreData))
-            {
-                return null;
-            }
 
-            foreach (var asset in coreData.Assets)
+            List<AudioEntity> entities = new List<AudioEntity>();
+
+            GetAudioEntities(entities);
+
+            entities.Sort((e1, e2) => e1.AudioAsset != null && e2.AudioAsset != null ? StringComparer.OrdinalIgnoreCase.Compare(e1.AudioAsset.AssetName, e2.AudioAsset.AssetName) : 0);
+
+            AudioAsset lastAsset = null;
+            AdvancedDropdownItem lastAssetItem = null;
+
+            foreach (var entity in entities)
 			{
-				if (asset != null && !string.IsNullOrEmpty(asset.AssetName) && asset.EntitiesCount > 0)
-				{
-					AdvancedDropdownItem item = null;
-					foreach (var entity in asset.GetAllAudioEntities())
-					{
-						item ??= new AdvancedDropdownItem(asset.AssetName);
-                        item.AddChild(new SoundIDAdvancedDropdownItem(entity.Name, entity.ID, asset as Data.AudioAsset));
-                    }
+                if (lastAsset != entity.AudioAsset || lastAssetItem == null)
+                {
+                    lastAsset = entity.AudioAsset;
+                    lastAssetItem = new AdvancedDropdownItem(lastAsset != null ? lastAsset.AssetName : "Unknown");
+                    root.AddChild(lastAssetItem);
+                }
 
-                    if(item != null)
-                    {
-                        root.AddChild(item);
-                    }
-				}
+                lastAssetItem.AddChild(new SoundIDAdvancedDropdownItem(entity));
 			}
 			return root;
 		}
@@ -53,11 +53,11 @@ namespace Ami.BroAudio.Editor
         {
             if (item is SoundIDAdvancedDropdownItem soundIDItem)
             {
-                _onSelectItem?.Invoke(soundIDItem.SoundID, soundIDItem.name, soundIDItem.SourceAsset);
+                _onSelectItem?.Invoke(soundIDItem.Entity);
             }
-            else if(item.name == None)
+            else if (item.name == None)
             {
-                _onSelectItem?.Invoke(0, item.name, null);
+                _onSelectItem?.Invoke(null);
             }
 
             base.ItemSelected(item);

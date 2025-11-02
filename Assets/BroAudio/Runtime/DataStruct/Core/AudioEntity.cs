@@ -6,18 +6,23 @@ using Ami.Extension;
 namespace Ami.BroAudio.Data
 {
     [System.Serializable]
-    public partial class AudioEntity : IEntityIdentity, IAudioEntity, IReadOnlyAudioEntity
+    public partial class AudioEntity : ScriptableObject, IAudioEntity, IReadOnlyAudioEntity
     {
-        [field: SerializeField] public string Name { get; private set; }
-        [field: SerializeField] public int ID { get; private set; }
+        public string Name => name;
+
+        [System.Obsolete("IDs are superceded by direct references", true)]
+        [field: SerializeField] 
+        public int ID { get; private set; }
 
         [SerializeField] private MulticlipsPlayMode MulticlipsPlayMode = MulticlipsPlayMode.Single;
         [SerializeField] private PlaybackGroup _group;
 
-        private PlaybackGroup _upperGroup;
+        private PlaybackGroup _upperGroup => AudioAsset != null ? AudioAsset.PlaybackGroup : null;
 
         public BroAudioClip[] Clips;
 
+        [field: SerializeField] public AudioAsset AudioAsset { get; private set; }
+        [field: SerializeField] public BroAudioType AudioType { get; private set; }
         [field: SerializeField] public float MasterVolume { get; private set; }
         [field: SerializeField] public bool Loop { get; private set; }
         [field: SerializeField] public bool SeamlessLoop { get; private set; }
@@ -29,13 +34,40 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public float VolumeRandomRange { get; private set; }
         [field: SerializeField] public RandomFlag RandomFlags { get; private set; }
         public PlaybackGroup PlaybackGroup => _group ? _group : _upperGroup;
+
         IReadOnlyList<IBroAudioClip> IReadOnlyAudioEntity.Clips => Clips;
+        private IClipSelectionStrategy _clipSelectionStrategy = null;
 
-        public IBroAudioClip PickNewClip() => Clips.PickNewOne(MulticlipsPlayMode, ID, out _);
-        public IBroAudioClip PickNewClip(int context) => Clips.PickNewOne(MulticlipsPlayMode, ID, out _, context);
-        public IBroAudioClip PickNewClip(int context, out int index) => Clips.PickNewOne(MulticlipsPlayMode, ID, out index, context);
+        public IBroAudioClip PickNewClip() => PickNewClip(context: 0, out _);
+        public IBroAudioClip PickNewClip(ClipSelectionContext context) => PickNewClip(context, out _);
+        public IBroAudioClip PickNewClip(ClipSelectionContext context, out int index)
+        {
+            switch (MulticlipsPlayMode)
+            {
+                case MulticlipsPlayMode.Single: EnsureClipSelectionStrategy<SingleClipStrategy>(); break;
+                case MulticlipsPlayMode.Sequence: EnsureClipSelectionStrategy<SequenceClipStrategy>(); break;
+                case MulticlipsPlayMode.Random: EnsureClipSelectionStrategy<RandomClipStrategy>(); break;
+                case MulticlipsPlayMode.Shuffle: EnsureClipSelectionStrategy<ShuffleClipStrategy>(); break;
+                case MulticlipsPlayMode.Chained: EnsureClipSelectionStrategy<ChainedClipStrategy>(); break;
+                case MulticlipsPlayMode.Velocity: EnsureClipSelectionStrategy<VelocityClipStrategy>(); break;
+                default: 
+                    Debug.LogError(Utility.LogTitle + $"Invalid multiclips play mode: {MulticlipsPlayMode}");
+                    EnsureClipSelectionStrategy<SingleClipStrategy>(); 
+                    break;
+            }
 
-        public bool Validate() => Utility.Validate(Name, Clips, ID);
+            return _clipSelectionStrategy.SelectClip(Clips, context, out index);
+        }
+
+        private void EnsureClipSelectionStrategy<T>() where T : IClipSelectionStrategy, new()
+        {
+            if (_clipSelectionStrategy == null || _clipSelectionStrategy.GetType() != typeof(T))
+            {
+                _clipSelectionStrategy = new T();
+            }
+        }
+
+        public bool Validate() => Utility.Validate(Name, Clips);
         public MulticlipsPlayMode PlayMode => MulticlipsPlayMode;
 
         public float GetMasterVolume() => GetRandomValue(MasterVolume, RandomFlag.Volume);
@@ -85,20 +117,11 @@ namespace Ami.BroAudio.Data
             return loopType != LoopType.None;
         }
 
-        public void ResetShuffleInUseState()
+        public void ResetMultiClipStrategy()
         {
-            ShuffleClipStrategy.ResetIsUse(Clips);
-        }
-
-        public void LinkPlaybackGroup(PlaybackGroup upperGroup)
-        {
-            if (_group != null)
+            if (_clipSelectionStrategy != null)
             {
-                _group.SetParent(upperGroup);
-            }
-            else
-            {
-                _upperGroup = upperGroup;
+                _clipSelectionStrategy.Reset();
             }
         }
         
@@ -121,11 +144,56 @@ namespace Ami.BroAudio.Data
         [SerializeField] private SeamlessType SeamlessTransitionType = SeamlessType.ClipSetting;
         [SerializeField] private TempoTransition TransitionTempo = default;
         [SerializeField] private bool SnapToFullVolume = false;
-
-        public void ReassignID(int id)
-        {
-            ID = id;
-        }
 #endif
+
+        [System.Obsolete("Only for conversion")]
+        internal static AudioEntity ConvertLegacy(AudioEntity_LEGACY legacy, AudioAsset asset)
+        {
+            var entity = ScriptableObject.CreateInstance<AudioEntity>();
+
+            entity._group = legacy._group;
+            entity.AudioAsset = asset;
+            entity.MulticlipsPlayMode = legacy.MulticlipsPlayMode;
+
+            entity.ID = legacy.ID;
+            entity.name = legacy.Name;
+            entity.Clips = legacy.Clips;
+            entity.MasterVolume = legacy.MasterVolume;
+            entity.Loop = legacy.Loop;
+            entity.SeamlessLoop = legacy.SeamlessLoop;
+            entity.TransitionTime = legacy.TransitionTime;
+            entity.SpatialSetting = legacy.SpatialSetting;
+            entity.Priority = legacy.Priority;
+            entity.Pitch = legacy.Pitch;
+            entity.PitchRandomRange = legacy.PitchRandomRange;
+            entity.VolumeRandomRange = legacy.VolumeRandomRange;
+            entity.RandomFlags = legacy.RandomFlags;
+
+            entity.AudioType = Utility.GetAudioType(legacy.ID);
+
+#if UNITY_EDITOR
+            entity.SeamlessTransitionType = legacy.SeamlessTransitionType;
+            entity.TransitionTempo = legacy.TransitionTempo;
+            entity.SnapToFullVolume = legacy.SnapToFullVolume;
+#endif
+
+#if PACKAGE_ADDRESSABLES
+            entity.UseAddressables = legacy.UseAddressables;
+#endif
+
+            return entity;
+        }
+
+        public static AudioEntity CreateNewInstance(AudioAsset asset, string name, BroAudioType audioType)
+        {
+            var entity = ScriptableObject.CreateInstance<AudioEntity>();
+            entity.name = name;
+            entity.AudioAsset = asset;
+            entity.AudioType = audioType;
+            entity.MasterVolume = AudioConstant.FullVolume;
+            entity.Pitch = AudioConstant.DefaultPitch;
+            entity.Priority = AudioConstant.DefaultPriority;
+            return entity;
+        }
     }
 }

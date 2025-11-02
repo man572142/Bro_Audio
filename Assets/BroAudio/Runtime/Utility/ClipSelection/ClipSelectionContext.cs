@@ -1,4 +1,6 @@
-﻿namespace Ami.BroAudio.Runtime
+﻿using Ami.BroAudio.Data;
+
+namespace Ami.BroAudio.Runtime
 {
     /// <summary>
     /// Context class containing parameters required for clip selection
@@ -6,13 +8,15 @@
     public struct ClipSelectionContext
     {
         /// <summary>
-        /// The ID of the audio entity
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
         /// The velocity value used for velocity-based selection
         /// </summary>
         public int Value { get; set; }
+
+        public ClipSelectionContext(int value)
+        {
+            Value = value;
+        }
+
+        public static implicit operator ClipSelectionContext(int value) { return new ClipSelectionContext(value); }
     }
 }

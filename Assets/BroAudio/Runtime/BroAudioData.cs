@@ -10,64 +10,17 @@ namespace Ami.BroAudio.Data
 #if BroAudio_DevOnly
     [CreateAssetMenu(menuName = nameof(BroAudio) + "/BroAudioData", fileName = "BroAudioData")]
 #endif
+    [System.Obsolete("No need for this to exist anymore")]
     public class BroAudioData : ScriptableObject
     {
-        public const string CodeBaseVersion = "3.0.0";
+        [System.Obsolete("No need for this to exist anymore")]
+        [SerializeField, ReadOnly] public string _version;
 
-        [SerializeField, ReadOnly] string _version;
+        [System.Obsolete("No need for this to exist anymore", true)]
         [SerializeField] List<AudioAsset> _assets = new List<AudioAsset>();
-        
+
+        [System.Obsolete("No need for this to exist anymore")]
         public IReadOnlyList<IAudioAsset> Assets => _assets;
         // 1.15 is the last version without this version control mechanic
-        public Version Version => string.IsNullOrEmpty(_version) ? new Version(1,15) : new Version(_version);
-
-#if UNITY_EDITOR
-        public List<string> GetGUIDList()
-        {
-            List<string> list = new List<string>();
-            foreach (var asset in _assets)
-            {
-                list.Add(asset.AssetGUID);
-            }
-            return list;
-        }
-
-        public void AddAsset(AudioAsset asset)
-        {
-            if(asset)
-            {
-                _assets.Add(asset);
-            }	
-        }
-
-        public bool RemoveEmpty()
-        {
-            bool hasRemoved = false;
-            for (int i = _assets.Count - 1; i >= 0; i--)
-            {
-                if (!_assets[i])
-                {
-                    _assets.RemoveAt(i);
-                    hasRemoved = true;
-                }
-            }
-            return hasRemoved;
-        }
-
-        public void ReorderAssets(List<string> guids)
-        {
-            if (_assets.Count != guids.Count)
-            {
-                Debug.LogError(Utility.LogTitle + "Asset count is not match!");
-                return;
-            }
-            _assets = _assets.OrderBy(x => guids.IndexOf(x.AssetGUID)).ToList();
-        } 
-
-        public void UpdateVersion()
-        {
-            _version = CodeBaseVersion;
-        }
-#endif
     } 
 }

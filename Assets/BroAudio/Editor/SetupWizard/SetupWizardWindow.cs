@@ -46,6 +46,7 @@ namespace Ami.BroAudio.Editor.Setting
             ShowWindow();
             BroEditorUtility.EditorSetting.HasSetupWizardAutoLaunched = true;
             EditorUtility.SetDirty(BroEditorUtility.EditorSetting);
+            AssetDatabase.SaveAssetIfDirty(BroEditorUtility.EditorSetting);
         }
 
         private void OnEnable()

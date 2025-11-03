@@ -86,9 +86,8 @@ namespace Ami.BroAudio.Editor
                 return;
 
 #if PACKAGE_ADDRESSABLES
+            Offset -= SingleLineSpace * 0.5f; // closer to the top 
             Rect rect = GetRectAndIterateLine(position);
-            Offset -= SingleLineSpace * 0.5f;
-            Offset += 3f;
 
             var settings = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
             if (settings == null)

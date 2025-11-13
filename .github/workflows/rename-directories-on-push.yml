@@ -1,0 +1,90 @@
+name: Rename specific directories on push
+permissions:
+  contents: write
+
+on:
+  push:
+
+jobs:
+  rename:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Detect, rename directories and push
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          echo "Push range: $BEFORE -> $AFTER on $BRANCH"
+          git fetch origin "$BRANCH"
+
+          CHANGED=$(git diff --name-only "$BEFORE" "$AFTER" || true)
+          echo "Changed files in push:"
+          printf '%s\n' "$CHANGED"
+
+          # Base path for the target directories
+          BASE="Assets/BroAudio"
+
+          # Directory names under $BASE to check and rename (no base prefix here)
+          OLD_DIRS=(Resources Samples Documentation Editor/Resources)
+
+          RENAMED=0
+
+          for OLD in "${OLD_DIRS[@]}"; do
+            OLD_FULL="${BASE}/${OLD}"
+            NEW="${OLD_FULL}~"
+
+            # Only proceed if the push touched the old directory
+            if ! printf '%s\n' "$CHANGED" | grep -qE "^${OLD_FULL}(/|$)"; then
+              echo "No changes in ${OLD_FULL} for this push; skipping."
+              continue
+            fi
+
+            # Confirm the directory exists at HEAD
+            if git ls-tree -r HEAD --name-only | grep -qE "^${OLD_FULL}(/|$)"; then
+              echo "Renaming ${OLD_FULL} -> ${NEW}"
+
+              if git mv "${OLD_FULL}" "${NEW}" 2>/dev/null; then
+                echo "git mv succeeded"
+              else
+                # Workaround for case-only or other mv failures: use tmp name in same parent dir
+                PARENT_DIR="$(dirname "${OLD_FULL}")"
+                BASE_NAME="$(basename "${OLD}")"
+                TMP="${PARENT_DIR}/${BASE_NAME}_tmp_rename_$(date +%s)"
+                echo "git mv failed; using temporary name ${TMP}"
+                git mv "${OLD_FULL}" "${TMP}"
+                git mv "${TMP}" "${NEW}"
+              fi
+
+              RENAMED=1
+            else
+              echo "${OLD_FULL} not present at HEAD; nothing to rename."
+            fi
+          done
+
+          if [ "$RENAMED" -eq 1 ]; then
+            git add -A
+            git commit -m "Append ~ to asset directories under ${BASE}" || {
+              echo "Nothing to commit after rename; exiting."
+              exit 0
+            }
+
+            # Push back to the same branch
+            git push origin "HEAD:${BRANCH}"
+            echo "Pushed rename commit to ${BRANCH}."
+          else
+            echo "No directories were renamed."
+          fi

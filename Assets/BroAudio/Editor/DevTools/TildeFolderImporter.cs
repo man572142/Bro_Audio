@@ -147,8 +147,7 @@ namespace Ami.BroAudio.Tools
             string sourceFolderPath = Path.Combine(Application.dataPath, RootFolderName, folderName);
             string folderWithTildeName = folderName + Tilde;
             string folderWithTildePath = Path.Combine(Application.dataPath, RootFolderName, folderWithTildeName);
-
-            Debug.Log(sourceFolderPath);
+            
             // Check if the source folder exists and target with tilde doesn't exist
             if (Directory.Exists(sourceFolderPath) && !Directory.Exists(folderWithTildePath))
             {

@@ -6,8 +6,6 @@ using Ami.BroAudio.Data;
 using Ami.BroAudio.Runtime;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Tools.BroName;
-using Ami.BroAudio.Tools;
-using Ami.BroAudio.Editor.Setting;
 
 namespace Ami.BroAudio.Editor
 {
@@ -16,7 +14,7 @@ namespace Ami.BroAudio.Editor
     {
         private static bool _isLoading = false;
 
-        [MenuItem(BroName.MenuItem_BroAudio + "/Others/Regenerate User Data", priority = BroAudioGUISetting.DevToolsMenuIndex + 14)]
+        [MenuItem(MenuItem_BroAudio + "Others/Regenerate User Data")]
         private static void RegenerateUserData() => CheckAndGenerateUserData();
 
         public static void CheckAndGenerateUserData(Action onFinished = null)

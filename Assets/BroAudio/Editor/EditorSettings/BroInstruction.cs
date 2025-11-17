@@ -43,11 +43,5 @@ namespace Ami.BroAudio.Editor.Setting
                 _actualDict.Add(content.Key, content.Value);
             }
         }
-
-        [ContextMenu("Set Dirty")]
-        private void SetDirty()
-        {
-            EditorUtility.SetDirty(this);
-        }
     }
 }

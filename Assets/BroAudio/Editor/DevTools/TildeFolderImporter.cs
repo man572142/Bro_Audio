@@ -128,8 +128,10 @@ namespace Ami.BroAudio.Tools
                 CopyDirectory(subDir, destDir);
             }
         }
-        
+
+#if BroAudio_DevOnly
         [MenuItem(BroName.MenuItem_BroAudio + "Others/Set File Structure To UPM Mode")]
+#endif
         public static void SetFileStructureToUPMMode()
         {
             AddTildeToFolder("Samples");

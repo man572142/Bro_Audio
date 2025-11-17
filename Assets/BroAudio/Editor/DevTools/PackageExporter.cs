@@ -34,7 +34,9 @@ namespace Ami.BroAudio.Editor.DevTool
                                         x.EndsWith($"{BroName.EditorSettingName}.asset", StringComparison.OrdinalIgnoreCase) ||
                                         x.EndsWith($"{BroName.CoreDataName}.asset", StringComparison.OrdinalIgnoreCase) ||
                                         x.EndsWith($"{BroName.GlobalPlaybackGroupName}.asset", StringComparison.OrdinalIgnoreCase) ||
-                                        x.EndsWith("package.json", StringComparison.OrdinalIgnoreCase));
+                                        x.EndsWith("package.json", StringComparison.OrdinalIgnoreCase) ||
+                                        x.EndsWith("ImportDemoScene.unitypackage", StringComparison.OrdinalIgnoreCase) ||
+                                        x.EndsWith("ImportDocumentation.unitypackage", StringComparison.OrdinalIgnoreCase));
 
             if(EditorUtility.DisplayDialog("Export BroAudio Package", $"Export Version:{BroAudioData.CodeBaseVersion} ?", "Yes", "No"))
             {

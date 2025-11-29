@@ -118,17 +118,10 @@ namespace Ami.BroAudio.Editor
             static int CopyDirectoryIfNotExists(string sourceDir, string targetDir)
             {
                 int changed = 0;
-
-                // Get all files that are not .meta files
                 var files = Directory.GetFiles(sourceDir, "*.*", SearchOption.TopDirectoryOnly);
 
                 foreach (string sourceFile in files)
                 {
-                    if (sourceFile.EndsWith(".meta", StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-
                     string fileName = Path.GetFileName(sourceFile);
                     string targetFile = Path.Combine(targetDir, fileName);
                     string sourceMetaFile = sourceFile + ".meta";
@@ -259,6 +252,7 @@ namespace Ami.BroAudio.Editor
             EditorUtility.SetDirty(editorSetting);
 
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
         private static string GetAssetSavePath(string resourcesPath, string relativePath)

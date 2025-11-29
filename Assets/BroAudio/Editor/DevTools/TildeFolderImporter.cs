@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Tools
     {
         public const string Tilde = "~";
         private const string UPMPackageRootPathTitle = "\\com.";
-        private const string RootFolderName = "BroAudio";
+        public const string RootFolderName = "BroAudio";
 
         /// <summary>
         /// Renames a folder ending with ~ to remove the tilde suffix.
@@ -130,7 +130,7 @@ namespace Ami.BroAudio.Tools
         }
 
 #if BroAudio_DevOnly
-        [MenuItem(BroName.MenuItem_BroAudio + "Others/Set File Structure To UPM Mode")]
+        [MenuItem(BroName.MenuItem_BroAudio + "DEV/Set File Structure To UPM Mode")]
 #endif
         public static void SetFileStructureToUPMMode()
         {

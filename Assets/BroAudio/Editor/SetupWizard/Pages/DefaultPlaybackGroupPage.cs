@@ -1,5 +1,4 @@
-﻿using Ami.BroAudio.Data;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace Ami.BroAudio.Editor.Setting
@@ -27,6 +26,14 @@ namespace Ami.BroAudio.Editor.Setting
             }
         }
 
+        public override void OnDisable()
+        {
+            if (_editor)
+            {
+                Object.DestroyImmediate(_editor);
+            }
+        }
+
         public override void DrawContent()
         {
             EditorGUILayout.Space(5f);
@@ -34,6 +41,11 @@ namespace Ami.BroAudio.Editor.Setting
             EditorGUILayout.Space(5f);
             EditorGUILayout.HelpBox("These default rules apply when an entity doesn't have a PlaybackGroup. " +
                                     "Hover over a rule for a tooltip, or check the docs for more details.", MessageType.Info);
+        }
+
+        private void OnDestroy()
+        {
+            
         }
     }
 }

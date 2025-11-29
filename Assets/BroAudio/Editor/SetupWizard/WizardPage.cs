@@ -29,7 +29,10 @@ namespace Ami.BroAudio.Editor.Setting
         
         public virtual void OnEnable()
         {
-            
+        }
+        
+        public virtual void OnDisable()
+        {
         }
 
         public void DrawDocReferences()

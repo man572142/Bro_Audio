@@ -11,7 +11,7 @@ namespace Ami.Extension.Reflection
 {
     public static class AudioSourceProxyGenerator
     {
-        [MenuItem(BroName.MenuItem_BroAudio + "Others/Generate Audio Source Proxy")]
+        [MenuItem(BroName.MenuItem_BroAudio + "DEV/Generate Audio Source Proxy")]
         public static void GenerateAudioSourceProxy()
         {
             ProxyModifierCodeGenerator.Parameters parameters = new ProxyModifierCodeGenerator.Parameters()
@@ -44,7 +44,7 @@ namespace Ami.Extension.Reflection
             return xIsClip ? 1 : -1;
         }
         
-        [MenuItem(BroName.MenuItem_BroAudio + "Others/Generate Audio Effect Proxies")]
+        [MenuItem(BroName.MenuItem_BroAudio + "DEV/Generate Audio Effect Proxies")]
         public static void GenerateAudioEffectProxies()
         {
             ProxyModifierCodeGenerator.Parameters parameters = new ProxyModifierCodeGenerator.Parameters()

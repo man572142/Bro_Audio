@@ -62,6 +62,14 @@ namespace Ami.BroAudio.Editor.Setting
             }
         }
 
+        private void OnDisable()
+        {
+            foreach (var page in _allPages)
+            {
+                page.OnDisable();
+            }
+        }
+
         private void InitializePages()
         {
             _allPages = new WizardPage[]

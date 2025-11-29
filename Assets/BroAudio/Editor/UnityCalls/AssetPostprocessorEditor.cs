@@ -1,4 +1,6 @@
+using Ami.BroAudio.Editor.Setting;
 using UnityEditor;
+using UnityEngine;
 
 namespace Ami.BroAudio.Editor
 {
@@ -23,7 +25,15 @@ namespace Ami.BroAudio.Editor
 
         private static void OnUserDataChecked()
         {
-            Setting.SetupWizardWindow.CheckAndShowForFirstSetup();
+            var editorSetting = Resources.Load<EditorSetting>(BroEditorUtility.EditorSettingPath);
+            if (!editorSetting || editorSetting.HasSetupWizardAutoLaunched)
+            {
+                return;
+            }
+            
+            SetupWizardWindow.ShowWindow();
+            editorSetting.HasSetupWizardAutoLaunched = true;
+            EditorUtility.SetDirty(editorSetting);
         }
 
         private static void OnReimportAsset(string[] importedAssets)

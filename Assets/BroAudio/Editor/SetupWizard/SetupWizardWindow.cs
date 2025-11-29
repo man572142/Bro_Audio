@@ -36,18 +36,6 @@ namespace Ami.BroAudio.Editor.Setting
             window.Show();
         }
 
-        public static void CheckAndShowForFirstSetup()
-        {
-            if (BroEditorUtility.EditorSetting.HasSetupWizardAutoLaunched)
-            {
-                return;
-            }
-            
-            ShowWindow();
-            BroEditorUtility.EditorSetting.HasSetupWizardAutoLaunched = true;
-            EditorUtility.SetDirty(BroEditorUtility.EditorSetting);
-        }
-
         private void OnEnable()
         {
             _runtimeSettingSO = new SerializedObject(BroEditorUtility.RuntimeSetting);

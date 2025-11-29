@@ -252,7 +252,7 @@ namespace Ami.BroAudio.Editor
             EditorUtility.SetDirty(editorSetting);
 
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
         }
 
         private static string GetAssetSavePath(string resourcesPath, string relativePath)

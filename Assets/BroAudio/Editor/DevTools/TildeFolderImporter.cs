@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
@@ -18,6 +19,7 @@ namespace Ami.BroAudio.Tools
         /// <param name="folderName">The folder name without the tilde (e.g., "Samples")</param>
         /// <param name="sourceFilePath">The path of the calling file (automatically provided by CallerFilePath)</param>
         /// <returns>True if the folder was renamed successfully, false otherwise</returns>
+        [UsedImplicitly] // Used when the samples or documentations are imported via the importer unitypackage
         public static bool ImportTildeFolder(string folderName)
         {
             string folderWithTildeName = folderName + Tilde;
@@ -134,51 +136,60 @@ namespace Ami.BroAudio.Tools
 #endif
         public static void SetFileStructureToUPMMode()
         {
-            AddTildeToFolder("Samples");
-            AddTildeToFolder("Documentation");
+            UpdateAndSwitchToUPMMode("Samples");
+            UpdateAndSwitchToUPMMode("Documentation");
         }
-
-        /// <summary>
-        /// Renames a folder to add a tilde suffix.
-        /// </summary>
-        /// <param name="basePath">The base path relative to the project root (e.g., "Assets/BroAudio")</param>
-        /// <param name="folderName">The folder name without the tilde (e.g., "Samples")</param>
-        /// <returns>True if the folder was renamed successfully, false otherwise</returns>
-        private static bool AddTildeToFolder(string folderName)
+        
+        private static bool UpdateAndSwitchToUPMMode(string folderPath)
         {
-            string sourceFolderPath = Path.Combine(Application.dataPath, RootFolderName, folderName);
-            string folderWithTildeName = folderName + Tilde;
+            string sourceFolderPath = Path.Combine(Application.dataPath, RootFolderName, folderPath);
+            string folderWithTildeName = folderPath + Tilde;
             string folderWithTildePath = Path.Combine(Application.dataPath, RootFolderName, folderWithTildeName);
             
-            // Check if the source folder exists and target with tilde doesn't exist
-            if (Directory.Exists(sourceFolderPath) && !Directory.Exists(folderWithTildePath))
+            bool sourceExists = Directory.Exists(sourceFolderPath);
+            bool targetExists = Directory.Exists(folderWithTildePath);
+
+            if (!sourceExists)
             {
-                try
+                return false;
+            }
+
+            try
+            {
+                if (!targetExists)
                 {
                     // Rename the folder using System.IO to add tilde suffix
                     Directory.Move(sourceFolderPath, folderWithTildePath);
-                    Debug.Log(Utility.LogTitle + $" Successfully renamed '{folderName}' to '{folderWithTildeName}'");
-
-                    // Delete the old .meta file to prevent orphaned meta files in the project
-                    string oldMetaFilePath = sourceFolderPath + ".meta";
-                    if (File.Exists(oldMetaFilePath))
-                    {
-                        File.Delete(oldMetaFilePath);
-                    }
-                    
-                    AssetDatabase.Refresh();
-                    return true;
+                    Debug.Log(Utility.LogTitle + $" Successfully renamed '{folderPath}' to '{folderWithTildeName}'");
                 }
-                catch (System.Exception e)
+                else
                 {
-                    Debug.LogError(Utility.LogTitle + $" Failed to rename '{folderName}' to '{folderWithTildeName}': {e.Message}");
-                    return false;
+                    CopyDirectory(sourceFolderPath, folderWithTildePath);
+                    Directory.Delete(sourceFolderPath, true);
+                    Debug.Log(Utility.LogTitle + $" Successfully merged '{folderPath}' into '{folderWithTildeName}'");
                 }
+
+                // Delete the old .meta file to prevent orphaned meta files in the project
+                string oldMetaFilePath = sourceFolderPath + ".meta";
+                if (File.Exists(oldMetaFilePath))
+                {
+                    File.Delete(oldMetaFilePath);
+                }
+
+                AssetDatabase.Refresh();
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                string action = targetExists ? "merge" : "rename";
+                Debug.LogError(Utility.LogTitle + $" Failed to {action} '{folderPath}' to '{folderWithTildeName}': {e.Message}");
+                return false;
             }
 
             return false;
         }
         
+        [UsedImplicitly] // Used when the samples or documentations are imported via the importer unitypackage
         public static void DeleteCallerScript([CallerFilePath] string sourceFilePath = "")
         {
             // Convert absolute file path to Unity's relative asset path

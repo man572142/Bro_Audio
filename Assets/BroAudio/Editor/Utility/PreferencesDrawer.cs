@@ -218,7 +218,7 @@ namespace Ami.BroAudio.Editor
         {
             if (!hasOutputAssetPath)
             {
-                RichTextHelpBox(onGetRect(), instruction.GetText(Instruction.DefaultOutputPathMissing), MessageType.Error);
+                RichTextHelpBox(onGetRect(), instruction.GetText(Instruction.DefaultOutputPathMissing), MessageType.Warning);
             }
             
             Rect suffixRect = EditorGUI.PrefixLabel(onGetRect(), new GUIContent("Default"));

@@ -23,12 +23,6 @@ namespace Ami.BroAudio
 
         Data.IBroAudioClip CurrentPlayingClip { get; }
 
-        /// <summary>
-        /// Triggered when the audio player has finished playing
-        /// </summary>
-        [Obsolete("Use " + nameof(OnEnd) + " instead")]
-        event Action<SoundID> OnEndPlaying;
-
         internal IAudioPlayer SetVelocity(int velocity);
         internal IAudioPlayer SetPitch(float pitch, float fadeTime);
 

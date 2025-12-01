@@ -12,13 +12,7 @@ namespace Ami.BroAudio.Runtime
         public delegate void PlaybackHandover(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
 
         public PlaybackHandover OnPlaybackHandover;
-        [Obsolete]
-        public event Action<SoundID> OnEndPlaying
-        {
-            add => _onEnd += value;
-            remove => _onEnd -= value;
-        }
-
+        
         private PlaybackPreference _pref;
         private StopMode _stopMode = default;
         private Coroutine _playbackControlCoroutine = null;

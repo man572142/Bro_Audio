@@ -16,13 +16,6 @@ namespace Ami.BroAudio
         {
         }
 
-        [Obsolete("Use " + nameof(IAudioPlayer.OnEnd) + " instead")]
-        public event Action<SoundID> OnEndPlaying
-        {
-            add { if (IsAvailable()) Instance.OnEndPlaying += value; }
-            remove { if(IsAvailable()) Instance.OnEndPlaying -= value; }
-        }
-
         protected override void LogInstanceIsNull()
         {
             if (SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)

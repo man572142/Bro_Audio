@@ -20,12 +20,6 @@ namespace Ami.BroAudio.Runtime
             IAudioSourceProxy IAudioPlayer.AudioSource => null;
             public IBroAudioClip CurrentPlayingClip => null;
 
-            event Action<SoundID> IAudioPlayer.OnEndPlaying
-            {
-                add { }
-                remove { }
-            }
-
             IMusicPlayer IMusicDecoratable.AsBGM() => MusicPlayer;
 #if !UNITY_WEBGL
             IPlayerEffect IEffectDecoratable.AsDominator() => DominatorPlayer; 

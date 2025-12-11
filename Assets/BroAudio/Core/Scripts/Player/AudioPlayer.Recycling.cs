@@ -54,6 +54,7 @@ namespace Ami.BroAudio.Runtime
         {
             _onStart = null;
             _onUpdate = null;
+            _onPaused = null;
             _onEnd = null;
         }
 

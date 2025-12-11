@@ -49,6 +49,7 @@ namespace Ami.BroAudio
 
         IAudioPlayer IAudioPlayer.OnStart(Action<IAudioPlayer> onStart) => IsAvailable() ? Wrap(Instance.OnStart(onStart)) : Empty.AudioPlayer;
         IAudioPlayer IAudioPlayer.OnUpdate(Action<IAudioPlayer> onUpdate) => IsAvailable() ? Wrap(Instance.OnUpdate(onUpdate)) : Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.OnPause(Action<IAudioPlayer> onPause) => IsAvailable() ? Wrap(Instance.OnPause(onPause)) : Empty.AudioPlayer;
         IAudioPlayer IAudioPlayer.OnEnd(Action<SoundID> onEnd) => IsAvailable() ? Wrap(Instance.OnEnd(onEnd)) : Empty.AudioPlayer;
         
         public IAudioPlayer SetFadeInEase(Ease ease) => IsAvailable() ? Wrap(Instance.SetFadeInEase(ease)) : Empty.AudioPlayer;
@@ -126,6 +127,14 @@ namespace Ami.BroAudio
                 foreach (var onEnd in onEndDelegates)
                 {
                     newInstance.OnEnd(onEnd as Action<SoundID>);
+                }
+            }
+
+            if (Instance.TransferOnPauses(out var onPauseDelegates))
+            {
+                foreach (var onPause in onPauseDelegates)
+                {
+                    newInstance.OnPause(onPause as Action<IAudioPlayer>);
                 }
             }
 

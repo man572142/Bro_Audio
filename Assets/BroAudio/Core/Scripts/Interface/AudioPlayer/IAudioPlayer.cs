@@ -37,6 +37,11 @@ namespace Ami.BroAudio
         IAudioPlayer OnUpdate(Action<IAudioPlayer> onUpdate);
 
         /// <summary>
+        /// Triggered when the AudioPlayer is paused
+        /// </summary>
+        IAudioPlayer OnPause(Action<IAudioPlayer> onPause);
+
+        /// <summary>
         /// Triggered when the AudioPlayer stops playing
         /// </summary>
         IAudioPlayer OnEnd(Action<SoundID> onEnd);

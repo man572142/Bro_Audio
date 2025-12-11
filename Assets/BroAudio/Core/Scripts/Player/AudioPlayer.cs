@@ -340,6 +340,17 @@ namespace Ami.BroAudio.Runtime
             return onEndDelegates != null;
         }
 
+        internal bool TransferOnPauses(out Delegate[] onPauseDelegates)
+        {
+            onPauseDelegates = null;
+            if (_onPaused != null)
+            {
+                onPauseDelegates = _onPaused.GetInvocationList();
+                _onPaused = null;
+            }
+            return onPauseDelegates != null;
+        }
+
         internal bool TransferDecorators(out IReadOnlyList<AudioPlayerDecorator> decorators)
         {
             decorators = _decorators;

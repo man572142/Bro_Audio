@@ -75,11 +75,11 @@ namespace Ami.BroAudio.Runtime
             {
                 player.AsBGM().SetTransition(Setting.DefaultBGMTransition, Setting.DefaultBGMTransitionTime);
             }
-
+            
             // Whether there's any group implementing this or not, we're tracking it anyway
             _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
             _combFilteringPreventer[id] = player;
-
+            
             if (pref.IsLoop(LoopType.SeamlessLoop) || pref.Entity.PlayMode == MulticlipsPlayMode.Chained)
             {
                 _playbackHandoverDelegate ??= PlaybackHandover;
@@ -115,7 +115,7 @@ namespace Ami.BroAudio.Runtime
             {
                 throw new System.InvalidOperationException("Invalid target player");
             }
-
+            
             if(_combFilteringPreventer.TryGetValue(target.ID, out var player) && player == target)
             {
                 _combFilteringPreventer.Remove(target.ID);
@@ -188,14 +188,7 @@ namespace Ami.BroAudio.Runtime
                 var player = players[i];
                 if (player.IsActive && player.ID == id)
                 {
-                    if (isPause)
-                    {
-                        player.Pause(fadeTime);
-                    }
-                    else
-                    {
-                        player.UnPause(fadeTime);
-                    }
+                    PausePlayer(player, isPause, fadeTime);
                 }
             }
         }
@@ -214,17 +207,22 @@ namespace Ami.BroAudio.Runtime
                 var player = players[i];
                 if (player.IsActive && targetType.Contains(player.ID.ToAudioType()))
                 {
-                    if (isPause)
-                    {
-                        player.Pause(fadeTime);
-                    }
-                    else
-                    {
-                        player.UnPause(fadeTime);
-                    }
+                    PausePlayer(player, isPause, fadeTime);
                 }
             }
-        } 
+        }
+
+        private static void PausePlayer(AudioPlayer player, bool isPause, float fadeTime)
+        {
+            if (isPause)
+            {
+                player.Pause(fadeTime);
+            }
+            else
+            {
+                player.UnPause(fadeTime);
+            }
+        }
         #endregion
 
         public bool TryGetPreviousPlayerFromCombFilteringPreventer(SoundID id, out AudioPlayer previousPlayer)

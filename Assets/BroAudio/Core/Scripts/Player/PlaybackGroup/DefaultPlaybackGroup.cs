@@ -99,7 +99,7 @@ namespace Ami.BroAudio
             int time = TimeExtension.UnscaledCurrentFrameBeganTime;
             int previousPlayTime = previousPlayer.PlaybackStartingTime;
             // the previous has been added to the queue but hasn't played yet, i.e., The current and the previous will end up being played in the same frame
-            bool previousIsInQueue = Mathf.Approximately(previousPlayTime, 0f); 
+            bool previousIsInQueue = previousPlayTime == 0; 
             float difference = time - previousPlayTime;
             bool isSameFrame = previousIsInQueue || Mathf.Approximately(difference, 0f);
             if((isSameFrame && _ignoreCombFilteringIfSameFrame) || (!isSameFrame && HasPassedCombFilteringTime()))

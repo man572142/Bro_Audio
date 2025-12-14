@@ -34,7 +34,7 @@ namespace Ami.BroAudio.Runtime
         
         public void Play()
         {
-            if(IsStopping || IsOnHold)
+            if(IsStopping || IsOnHold || _pref.ScheduledStartTime > 0)
             {
                 return;
             }
@@ -44,14 +44,15 @@ namespace Ami.BroAudio.Runtime
         
         private void PlayInternal()
         {
-            if(ID <= 0 || _pref.Entity == null)
+            if(ID <= 0 || _pref.Entity == null 
+                       || !SoundManager.Instance.TryGetAudioTypePref(ID.ToAudioType(), out var audioTypePref))
             {
                 Debug.LogError(LogTitle + $"Cannot play audio. Invalid ID:{ID} or Entity is null.");
                 return;
             }
             try
             {
-                this.StartCoroutineAndReassign(PlayControl(), ref _playbackControlCoroutine);
+                this.StartCoroutineAndReassign(PlayControl(audioTypePref), ref _playbackControlCoroutine);
             }
             catch (Exception ex)
             {
@@ -61,14 +62,8 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        private IEnumerator PlayControl()
+        private IEnumerator PlayControl(IAudioPlaybackPref audioTypePref)
         {
-            if (!SoundManager.Instance.TryGetAudioTypePref(ID.ToAudioType(), out var audioTypePref))
-            {
-                Debug.LogError(LogTitle + $"The ID:{ID} is invalid");
-                yield break;
-            }
-
             if (!Mathf.Approximately(audioTypePref.Volume, DefaultTrackVolume) && !_audioTypeVolume.IsFading)
             {
                 _audioTypeVolume.Complete(audioTypePref.Volume, false);
@@ -96,8 +91,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
                 }
-
-                SetScheduleTime(out hasScheduledPlay);
+                SchedulePlayback(out hasScheduledPlay);
                 if(hasScheduledPlay)
                 {
                     yield return WaitForScheduledStartTime();
@@ -117,7 +111,7 @@ namespace Ami.BroAudio.Runtime
                 AudioTrack = MixerPool.GetTrack(TrackType); 
 #endif
             }
-
+            
             do
             {
                 if(!hasScheduledPlay)

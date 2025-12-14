@@ -78,8 +78,8 @@ namespace Ami.BroAudio.Runtime
         private bool TryGetMixerAndTrack(out AudioMixer mixer, out AudioMixerGroup track)
         {
             track = AudioSource.outputAudioMixerGroup;
-            mixer = SoundManager.Instance.AudioMixer;
-            return mixer != null && track != null;
+            mixer = track?.audioMixer;
+            return !ReferenceEquals(mixer, null) && !ReferenceEquals(track, null);
         }
 
         protected virtual void Awake()

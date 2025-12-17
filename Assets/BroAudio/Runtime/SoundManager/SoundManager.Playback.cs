@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Ami.BroAudio.Data;
@@ -10,6 +11,7 @@ namespace Ami.BroAudio.Runtime
     {
         private readonly Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
         private AudioPlayer.PlaybackHandover _playbackHandoverDelegate;
+        private Action<IAudioPlayer> _onPlayerStart;
 
         #region Play
         public IAudioPlayer Play(SoundID id, float fadeIn, IPlayableValidator customValidator = null)
@@ -75,17 +77,23 @@ namespace Ami.BroAudio.Runtime
             {
                 player.AsBGM().SetTransition(Setting.DefaultBGMTransition, Setting.DefaultBGMTransitionTime);
             }
-
+            
             // Whether there's any group implementing this or not, we're tracking it anyway
-            _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
-            _combFilteringPreventer[id] = player;
-
+            _onPlayerStart ??= AddToCombFilteringPreventer;
+            player.OnStart(_onPlayerStart);
+            
             if (pref.IsLoop(LoopType.SeamlessLoop) || pref.Entity.PlayMode == MulticlipsPlayMode.Chained)
             {
                 _playbackHandoverDelegate ??= PlaybackHandover;
                 player.OnPlaybackHandover = _playbackHandoverDelegate;
             }
             return wrapper;
+        }
+
+        private void AddToCombFilteringPreventer(IAudioPlayer player)
+        {
+            _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
+            _combFilteringPreventer[player.ID] = player as AudioPlayer;
         }
 
         private void PlaybackHandover(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType prevTrackEffect, float trackVolume, float pitch)
@@ -115,7 +123,7 @@ namespace Ami.BroAudio.Runtime
             {
                 throw new System.InvalidOperationException("Invalid target player");
             }
-
+            
             if(_combFilteringPreventer.TryGetValue(target.ID, out var player) && player == target)
             {
                 _combFilteringPreventer.Remove(target.ID);
@@ -188,14 +196,7 @@ namespace Ami.BroAudio.Runtime
                 var player = players[i];
                 if (player.IsActive && player.ID == id)
                 {
-                    if (isPause)
-                    {
-                        player.Pause(fadeTime);
-                    }
-                    else
-                    {
-                        player.UnPause(fadeTime);
-                    }
+                    PausePlayer(player, isPause, fadeTime);
                 }
             }
         }
@@ -214,17 +215,22 @@ namespace Ami.BroAudio.Runtime
                 var player = players[i];
                 if (player.IsActive && targetType.Contains(player.ID.ToAudioType()))
                 {
-                    if (isPause)
-                    {
-                        player.Pause(fadeTime);
-                    }
-                    else
-                    {
-                        player.UnPause(fadeTime);
-                    }
+                    PausePlayer(player, isPause, fadeTime);
                 }
             }
-        } 
+        }
+
+        private static void PausePlayer(AudioPlayer player, bool isPause, float fadeTime)
+        {
+            if (isPause)
+            {
+                player.Pause(fadeTime);
+            }
+            else
+            {
+                player.UnPause(fadeTime);
+            }
+        }
         #endregion
 
         public bool TryGetPreviousPlayerFromCombFilteringPreventer(SoundID id, out AudioPlayer previousPlayer)

@@ -8,7 +8,7 @@ namespace Ami.BroAudio.Editor.Setting
     {
         private const string PageCountDescription = "{0} pages to configure.";
         private const int NonConfigurablePage = 2;
-        private const string AdditionalNotes = "* All settings use recommended defaults. If you're satisfied with a default or unsure what a setting does, just click <b>Next</b> to skip it.\n" +
+        private const string AdditionalNotes = "* All settings show their current values (or recommended defaults if unmodified). If you're satisfied or unsure what a setting does, just click <b>Next</b> to skip it.\n" +
                                                "* You can modify any option anytime under <b>Tools > BroAudio > Preferences</b>.";
         private const string SetupDepthDescription = "Choose how deep you want this setup to be.";
 

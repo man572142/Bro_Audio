@@ -20,12 +20,6 @@ namespace Ami.BroAudio.Runtime
             IAudioSourceProxy IAudioPlayer.AudioSource => null;
             public IBroAudioClip CurrentPlayingClip => null;
 
-            event Action<SoundID> IAudioPlayer.OnEndPlaying
-            {
-                add { }
-                remove { }
-            }
-
             IMusicPlayer IMusicDecoratable.AsBGM() => MusicPlayer;
 #if !UNITY_WEBGL
             IPlayerEffect IEffectDecoratable.AsDominator() => DominatorPlayer; 
@@ -40,6 +34,7 @@ namespace Ami.BroAudio.Runtime
             IAudioPlayer IAudioPlayer.OnEnd(Action<SoundID> onEnd) => this;
             IAudioPlayer IAudioPlayer.OnStart(Action<IAudioPlayer> onStart) => this;
             IAudioPlayer IAudioPlayer.OnUpdate(Action<IAudioPlayer> onUpdate) => this;
+            IAudioPlayer IAudioPlayer.OnPause(Action<IAudioPlayer> onPause) => this;
             IAudioPlayer IAudioPlayer.SetFadeInEase(Ease ease) => this;
             IAudioPlayer IAudioPlayer.SetFadeOutEase(Ease ease) => this;
             void IAudioStoppable.Pause() { }

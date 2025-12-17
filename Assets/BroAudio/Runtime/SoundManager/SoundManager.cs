@@ -6,7 +6,6 @@ using Ami.BroAudio.Data;
 using Ami.Extension;
 using System;
 using static Ami.BroAudio.Utility;
-using static Ami.Extension.CoroutineExtension;
 using static Ami.BroAudio.Tools.BroName;
 
 namespace Ami.BroAudio.Runtime
@@ -22,7 +21,7 @@ namespace Ami.BroAudio.Runtime
             var prefab = Resources.Load(nameof(SoundManager)) as GameObject;
             if (prefab == null)
             {
-                Debug.LogError(LogTitle + $"Initialize failed ,please check {nameof(SoundManager)}.prefab in your Resources folder!");
+                Debug.LogError(LogTitle + $"Initialize failed, please check {nameof(SoundManager)}.prefab in your Resources folder!");
                 return;
             }
 
@@ -80,7 +79,7 @@ namespace Ami.BroAudio.Runtime
 
         private void Awake()
         {
-            string nullRefLog = LogTitle + $"Please assign {{0}} in {nameof(SoundManager)}.prefab";
+            const string nullRefLog = LogTitle + "Please assign {{0}} in " + nameof(SoundManager) + ".prefab";
             if(!_broAudioMixer)
             {
                 Debug.LogError(string.Format(nullRefLog, MixerName));

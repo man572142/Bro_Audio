@@ -64,11 +64,15 @@ namespace Ami.BroAudio.Runtime
 
         public void UpdateVolume()
         {
+            if (!HasStartedPlaying)
+            {
+                return;
+            }
 #if UNITY_WEBGL
             UpdateWebGLVolume();
 #else
             float vol = _clipVolume.Current * _trackVolume.Current * _audioTypeVolume.Current;
-            if (!TrySetMixerDecibelVolume(vol.ToDecibel()) && IsPlaying)
+            if (!TrySetMixerDecibelVolume(vol.ToDecibel()))
             {
                 AudioSource.volume = vol.ClampNormalize();
             }

@@ -78,8 +78,8 @@ namespace Ami.BroAudio.Runtime
         private bool TryGetMixerAndTrack(out AudioMixer mixer, out AudioMixerGroup track)
         {
             track = AudioSource.outputAudioMixerGroup;
-            mixer = SoundManager.Instance.AudioMixer;
-            return mixer != null && track != null;
+            mixer = track?.audioMixer;
+            return !ReferenceEquals(mixer, null) && !ReferenceEquals(track, null);
         }
 
         protected virtual void Awake()
@@ -338,6 +338,17 @@ namespace Ami.BroAudio.Runtime
                 _onEnd = null;
             }
             return onEndDelegates != null;
+        }
+
+        internal bool TransferOnPauses(out Delegate[] onPauseDelegates)
+        {
+            onPauseDelegates = null;
+            if (_onPaused != null)
+            {
+                onPauseDelegates = _onPaused.GetInvocationList();
+                _onPaused = null;
+            }
+            return onPauseDelegates != null;
         }
 
         internal bool TransferDecorators(out IReadOnlyList<AudioPlayerDecorator> decorators)

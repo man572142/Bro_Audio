@@ -34,7 +34,7 @@ namespace Ami.BroAudio.Data
 
         public void AddAsset(AudioAsset asset)
         {
-            if(asset)
+            if(asset && !_assets.Contains(asset))
             {
                 _assets.Add(asset);
             }	

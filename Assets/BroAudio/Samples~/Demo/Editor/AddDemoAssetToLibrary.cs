@@ -2,14 +2,13 @@ using System.Linq;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Editor;
 using UnityEditor;
-using UnityEngine;
 
 namespace Ami.BroAudio.Demo
 {
     public class AddDemoAssetToLibrary : AssetPostprocessor
     {
-        private const string TargetFile = "Demo.asset";
-        
+        private const string SearchFilter = "Demo t:AudioAsset";
+
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets,
             string[] movedFromAssetPaths)
         {
@@ -18,21 +17,23 @@ namespace Ami.BroAudio.Demo
                 return;
             }
             
-            var path = importedAssets.FirstOrDefault(x => x.EndsWith(TargetFile));
-            if (!string.IsNullOrEmpty(path))
+            if (BroEditorUtility.TryGetCoreData(out var coreData))
             {
+                var guid = AssetDatabase.FindAssets(SearchFilter).FirstOrDefault();
+                var path = AssetDatabase.GUIDToAssetPath(guid);
                 var demoAsset = AssetDatabase.LoadAssetAtPath<AudioAsset>(path);
-                if (demoAsset != null && BroEditorUtility.TryGetCoreData(out var coreData))
+                if (demoAsset != null)
                 {
                     coreData.AddAsset(demoAsset);
                     EditorUtility.SetDirty(coreData);
-                    Debug.Log(Utility.LogTitle + "Demo has been added to BroAudioData.asset");
+                    
+#if BroAudio_DevOnly
+                    UnityEngine.Debug.Log(Utility.LogTitle + "Demo has been added to BroAudioData.asset");
+#else
+                    Tools.TildeFolderImporter.DeleteCallerScript();
+#endif
                 }
             }
-            
-#if !BroAudio_DevOnly
-            Ami.BroAudio.Tools.TildeFolderImporter.DeleteCallerScript();
-#endif
         }
     }
 

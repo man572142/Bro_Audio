@@ -176,6 +176,7 @@ namespace Ami.BroAudio.Editor
             void OnDrawHeader(Rect rect)
             {
                 EditorGUI.LabelField(rect, "Asset List");
+                HandleDragAndDropToAssetListHeader(rect);
             }
 
             void OnAdd(ReorderableList list)
@@ -229,6 +230,39 @@ namespace Ami.BroAudio.Editor
                 {
                     ProcessDraggingClips(editor, clips);
                 }
+            }
+        }
+
+        private void HandleDragAndDropToAssetListHeader(Rect rect)
+        {
+            if (!rect.Contains(Event.current.mousePosition))
+            {
+                return;
+            }
+
+            var assets = DragAndDrop.objectReferences.OfType<AudioAsset>().ToList();
+            if (!assets.Any())
+            {
+                return;
+            }
+
+            DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
+            if (Event.current.type == EventType.DragPerform)
+            {
+                foreach (var asset in assets)
+                {
+                    string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset));
+                    if (!_allAssetGUIDs.Contains(guid))
+                    {
+                        AddNewAssetToCoreData(asset);
+                        var editor = UnityEditor.Editor.CreateEditor(asset, typeof(AudioAssetEditor)) as AudioAssetEditor;
+                        editor.Init(_idGenerator);
+                        _assetEditorDict.Add(guid, editor);
+                        _allAssetGUIDs.Add(guid);
+                    }
+                }
+                DragAndDrop.AcceptDrag();
+                Repaint();
             }
         }
 

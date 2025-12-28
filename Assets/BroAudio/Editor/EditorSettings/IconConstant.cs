@@ -17,6 +17,7 @@ namespace Ami.BroAudio.Editor
         public const string AudioGroup = "d_AudioMixerGroup Icon";
         public const string TempAssetWarning = "console.infoicon";
         public const string LoopIcon = "d_preAudioLoopOff";
+        public const string CloseButton = "d_clear";
 #if UNITY_2023_1_OR_NEWER
         public const string LibraryManagerShortcut = "winbtn_win_rest_h"; 
 #else

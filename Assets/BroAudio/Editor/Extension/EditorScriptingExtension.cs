@@ -314,7 +314,7 @@ namespace Ami.Extension
             }
             
             Rect buttonRect = new Rect(position.xMax - 16f, position.y, 16f, 16f);
-            if (GUI.Button(buttonRect, EditorGUIUtility.IconContent("winbtn_win_close_a"), GUIStyle.none))
+            if (GUI.Button(buttonRect, EditorGUIUtility.IconContent(IconConstant.CloseButton), GUIStyle.none))
             {
                 onClose.Invoke();
             }

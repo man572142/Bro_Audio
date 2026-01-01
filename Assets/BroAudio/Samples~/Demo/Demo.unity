@@ -11872,6 +11872,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1327619677}
   - component: {fileID: 1327619678}
+  - component: {fileID: 1327619679}
   m_Layer: 0
   m_Name: Environment
   m_TagString: Untagged
@@ -11941,6 +11942,19 @@ MonoBehaviour:
   _overrideGroup: {fileID: 0}
   _positionMode: 0
   _delay: 0
+--- !u!114 &1327619679
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1327619676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e92d190d2747fd4e8dcc2db13fd4de5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _frameRate: 60
 --- !u!1 &1339724367
 GameObject:
   m_ObjectHideFlags: 0

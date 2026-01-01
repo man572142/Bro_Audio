@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Ami.BroAudio.Data;
@@ -11,7 +10,6 @@ namespace Ami.BroAudio.Runtime
     {
         private readonly Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
         private AudioPlayer.PlaybackHandover _playbackHandoverDelegate;
-        private Action<IAudioPlayer> _onPlayerStart;
 
         #region Play
         public IAudioPlayer Play(SoundID id, float fadeIn, IPlayableValidator customValidator = null)
@@ -79,8 +77,8 @@ namespace Ami.BroAudio.Runtime
             }
             
             // Whether there's any group implementing this or not, we're tracking it anyway
-            _onPlayerStart ??= AddToCombFilteringPreventer;
-            player.OnStart(_onPlayerStart);
+            _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
+            _combFilteringPreventer[id] = player;
             
             if (pref.IsLoop(LoopType.SeamlessLoop) || pref.Entity.PlayMode == MulticlipsPlayMode.Chained)
             {
@@ -88,12 +86,6 @@ namespace Ami.BroAudio.Runtime
                 player.OnPlaybackHandover = _playbackHandoverDelegate;
             }
             return wrapper;
-        }
-
-        private void AddToCombFilteringPreventer(IAudioPlayer player)
-        {
-            _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
-            _combFilteringPreventer[player.ID] = player as AudioPlayer;
         }
 
         private void PlaybackHandover(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType prevTrackEffect, float trackVolume, float pitch)

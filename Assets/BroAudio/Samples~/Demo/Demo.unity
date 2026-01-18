@@ -895,6 +895,10 @@ PrefabInstance:
       propertyPath: m_Text
       value: Music
       objectReference: {fileID: 0}
+    - target: {fileID: 8521983178491486082, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: _playsAudio
+      value: 
+      objectReference: {fileID: 129135827}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
 --- !u!224 &99505731 stripped
@@ -1226,6 +1230,10 @@ PrefabInstance:
       propertyPath: m_Text
       value: Ambience
       objectReference: {fileID: 0}
+    - target: {fileID: 8521983178491486082, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: _playsAudio
+      value: 
+      objectReference: {fileID: 129135827}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
 --- !u!224 &108380281 stripped
@@ -1681,7 +1689,7 @@ MonoBehaviour:
   _sound:
     ID: 536870912
     _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
-    <DebugObject>k__BackingField: {fileID: 0}
+    <DebugObject>k__BackingField: {fileID: 129135823}
   _overrideGroup: {fileID: 0}
   _positionMode: 0
   _delay: 0
@@ -5472,6 +5480,10 @@ PrefabInstance:
       propertyPath: m_Text
       value: SFX
       objectReference: {fileID: 0}
+    - target: {fileID: 8521983178491486082, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
+      propertyPath: _playsAudio
+      value: 
+      objectReference: {fileID: 129135827}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 18395a74e8e7d7d449484d9b34681536, type: 3}
 --- !u!224 &607139097 stripped

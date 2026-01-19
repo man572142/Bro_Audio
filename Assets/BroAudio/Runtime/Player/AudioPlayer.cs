@@ -135,8 +135,9 @@ namespace Ami.BroAudio.Runtime
 
             void SetSpatialBlend()
             {
-                if (pref.HasFollowTarget(out _))
+                if (pref.HasFollowTarget(out var followTarget))
                 {
+                    transform.position = followTarget.position;
                     SetTo3D();
                 }
                 else if (pref.HasSpecifiedPosition(out var position))

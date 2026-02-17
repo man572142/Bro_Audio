@@ -26,7 +26,6 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6545655920036729496}
   - {fileID: 6391947061128511157}
@@ -63,7 +62,6 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4353568053957979347}
   m_RootOrder: 0
@@ -87,7 +85,6 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -145,7 +142,6 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4353568053957979347}
   m_RootOrder: 3
@@ -162,11 +158,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playOnStart: 1
+  _onlyPlayOnce: 0
+  _playOnEnable: 1
+  _stopOnDisable: 0
+  _overrideFadeOut: -1
   _sound:
-    ID: 1073741829
-    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    _entity: {fileID: 11400000, guid: d6efbf96ebad78e45873b0e2292d7155, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 0}
+  _overrideGroup: {fileID: 0}
   _positionMode: 2
+  _delay: 0
 --- !u!1001 &4997664176703302123
 PrefabInstance:
   m_ObjectHideFlags: 0

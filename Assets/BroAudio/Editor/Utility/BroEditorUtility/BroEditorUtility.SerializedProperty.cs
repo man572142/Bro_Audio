@@ -30,29 +30,6 @@ namespace Ami.BroAudio.Editor
 			property.FindPropertyRelative(nameof(BroAudioClip.FadeOut)).floatValue = 0f;
 		}
 
-		public static void ResetEntitySerializedProperties(SerializedProperty property)
-        {
-            //could use enumerator to improve this, but might have to deal with some property
-            property.FindBackingFieldProperty(nameof(AudioEntity.Name)).stringValue = string.Empty;
-            property.FindPropertyRelative(nameof(AudioEntity.Clips)).arraySize = 0;
-            property.FindPropertyRelative(AudioEntity.EditorPropertyName.MulticlipsPlayMode).enumValueIndex = 0;
-            property.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume)).floatValue = AudioConstant.FullVolume;
-            property.FindBackingFieldProperty(nameof(AudioEntity.Loop)).boolValue = false;
-            property.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop)).boolValue = false;
-            property.FindBackingFieldProperty(nameof(AudioEntity.Pitch)).floatValue = AudioConstant.DefaultPitch;
-            property.FindBackingFieldProperty(nameof(AudioEntity.PitchRandomRange)).floatValue = 0f;
-            property.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags)).intValue = 0;
-            property.FindBackingFieldProperty(nameof(AudioEntity.Priority)).intValue = AudioConstant.DefaultPriority;
-            property.FindPropertyRelative(AudioEntity.EditorPropertyName.PlaybackGroup).objectReferenceValue = null;
-#if PACKAGE_ADDRESSABLES
-            property.FindPropertyRelative(nameof(AudioEntity.UseAddressables)).boolValue = false; 
-#endif
-
-            SerializedProperty spatialProp = property.FindPropertyRelative(GetBackingFieldName(nameof(AudioEntity.SpatialSetting)));
-			spatialProp.objectReferenceValue = null;
-            spatialProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-		}
-
 		public static int GetSerializedEnumIndex(this BroAudioType audioType)
 		{
 			int index = 0;

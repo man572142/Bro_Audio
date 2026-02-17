@@ -8,5 +8,7 @@ namespace Ami.BroAudio.Runtime
         {
             throw new System.NotImplementedException();
         }
+
+        public void Reset() { }
     }
 }

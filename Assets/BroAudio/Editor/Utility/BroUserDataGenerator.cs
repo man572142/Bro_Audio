@@ -6,6 +6,8 @@ using Ami.BroAudio.Data;
 using Ami.BroAudio.Runtime;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 using static Ami.BroAudio.Tools.BroName;
+using Ami.BroAudio.Tools;
+using Ami.BroAudio.Editor.Setting;
 
 namespace Ami.BroAudio.Editor
 {
@@ -14,7 +16,7 @@ namespace Ami.BroAudio.Editor
     {
         private static bool _isLoading = false;
 
-        [MenuItem(MenuItem_BroAudio + "Others/Regenerate User Data")]
+        [MenuItem(BroName.MenuItem_BroAudio + "/Others/Regenerate User Data", priority = BroAudioGUISetting.DevToolsMenuIndex + 14)]
         private static void RegenerateUserData() => CheckAndGenerateUserData();
 
         public static void CheckAndGenerateUserData(Action onFinished = null)
@@ -29,8 +31,8 @@ namespace Ami.BroAudio.Editor
 
             try
             {
+                //EnsurePackage();
                 EnsureAllResources();
-                EnsureDefaultAssetOutputPath();
 
                 request = Resources.LoadAsync<SoundManager>(nameof(SoundManager));
                 request.completed += OnGetSoundManager;
@@ -48,14 +50,25 @@ namespace Ami.BroAudio.Editor
                     request.completed -= OnGetSoundManager;
                     if (request.asset is SoundManager soundManager)
                     {
-                        if (TryGetCoreData(out var currentCoreData))
+                        if (BroVersion.Version.Major >= 3)
                         {
-                            soundManager.AssignCoreData(currentCoreData);
-                            BroUpdater.Process(soundManager.AudioMixer, currentCoreData);
+                            StartGeneratingUserData(soundManager);
+                            BroUpdater.Process(soundManager.AudioMixer, null);
                         }
                         else
                         {
-                            StartGeneratingUserData(soundManager);
+#pragma warning disable CS0618 // Type or member is obsolete
+                            if (TryGetCoreData(out var currentCoreData))
+                            {
+                                soundManager.AssignCoreData(currentCoreData);
+
+                                BroUpdater.Process(soundManager.AudioMixer, currentCoreData);
+                            }
+                            else
+                            {
+                                StartGeneratingUserData(soundManager);
+                            }
+#pragma warning restore CS0618 // Type or member is obsolete
                         }
                         onFinished?.Invoke();
                     }
@@ -72,8 +85,55 @@ namespace Ami.BroAudio.Editor
             }
         }
 
+#if false // Cannot install as a local package, since Unity doesn't let you automatically add embedded packages via 
+        private static void EnsurePackage([System.Runtime.CompilerServices.CallerFilePath] string callerFilePath = "")
+        {
+            try
+            {
+                var package = UnityEditor.PackageManager.PackageInfo.FindForPackageName("com.ami.broaudio");
+
+                if (package != null) // Already installed as a package
+                {
+                    return;
+                }
+
+                // Loop upwards until we find package.json
+                string packageJsonPath = null;
+                string currentPath = Path.GetDirectoryName(callerFilePath);
+                var cwd = Directory.GetCurrentDirectory();
+
+                // Loop until we reach the project root
+                while (!string.IsNullOrEmpty(currentPath) && (currentPath.Contains(cwd) || !Path.IsPathRooted(currentPath)))
+                {
+                    var path = Path.Combine(currentPath, "package.json");
+
+                    if (File.Exists(path))
+                    {
+                        packageJsonPath = path;
+                        break;
+                    }
+
+                    currentPath = Path.GetDirectoryName(currentPath);
+                }
+
+                if (packageJsonPath == null)
+                {
+                    Debug.Log($"Could not find package.json for BroAudio");
+                    return;
+                }
+
+                UnityEditor.PackageManager.Client.Add($"file:{Path.GetDirectoryName(packageJsonPath).Replace('\\', '/')}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
+#endif
+
         private static void EnsureAllResources([System.Runtime.CompilerServices.CallerFilePath] string callerFilePath = "")
         {
+            
             // Loop upwards and find all Resources~ directories
             string currentPath = Path.GetDirectoryName(callerFilePath);
             var cwd = Directory.GetCurrentDirectory();
@@ -118,10 +178,17 @@ namespace Ami.BroAudio.Editor
             static int CopyDirectoryIfNotExists(string sourceDir, string targetDir)
             {
                 int changed = 0;
+
+                // Get all files that are not .meta files
                 var files = Directory.GetFiles(sourceDir, "*.*", SearchOption.TopDirectoryOnly);
 
                 foreach (string sourceFile in files)
                 {
+                    if (sourceFile.EndsWith(".meta", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
                     string fileName = Path.GetFileName(sourceFile);
                     string targetFile = Path.Combine(targetDir, fileName);
                     string sourceMetaFile = sourceFile + ".meta";
@@ -188,71 +255,41 @@ namespace Ami.BroAudio.Editor
                 return false;
             }
         }
-        
-        private static void EnsureDefaultAssetOutputPath()
-        {
-            // Determine target output path from EditorSetting if available, otherwise use default
-            string targetPath = DefaultAssetOutputPath;
-            if (TryLoadResources<EditorSetting>(EditorSettingPath, out var setting))
-            {
-                if (!string.IsNullOrWhiteSpace(setting.AssetOutputPath) && targetPath.StartsWith("Assets"))
-                {
-                    targetPath = setting.AssetOutputPath;
-                }
-                else
-                {
-                    // Ensure a value is written to the setting so future reads are consistent
-                    setting.AssetOutputPath = DefaultAssetOutputPath;
-                    EditorUtility.SetDirty(setting);
-                    AssetDatabase.SaveAssetIfDirty(setting);
-                }
-            }
-
-            // If folder already exists, nothing to do
-            if (AssetDatabase.IsValidFolder(targetPath))
-            {
-                return;
-            }
-
-            // Create folders recursively using AssetDatabase.CreateFolder
-            string[] segments = targetPath.Split('/');
-            if (segments.Length == 0)
-            {
-                return;
-            }
-
-            string parent = segments[0]; // should be "Assets"
-            for (int i = 1; i < segments.Length; i++)
-            {
-                string current = parent + "/" + segments[i];
-                if (!AssetDatabase.IsValidFolder(current))
-                {
-                    AssetDatabase.CreateFolder(parent, segments[i]);
-                }
-                parent = current;
-            }
-
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-        }
 
         private static void StartGeneratingUserData(SoundManager soundManager)
         {
+            GetInitialData(out string audioAssetOutputPath);
+
             string resourcePath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(soundManager));
-            string coreDataPath = GetAssetSavePath(resourcePath, BroEditorUtility.CoreDataResourcesPath);
-            var coreData = CreateCoreData(coreDataPath, out string audioAssetOutputPath);
-            soundManager.AssignCoreData(coreData);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            if (TryGetCoreData(out var coreData))
+            {
+                soundManager.AssignCoreData(coreData);
+            }
+            else 
+            {
+                soundManager.AssignCoreData(null);
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var runtimeSetting = CreateScriptableObjectIfNotExist<RuntimeSetting>(GetAssetSavePath(resourcePath, RuntimeSettingPath));
-            runtimeSetting.GlobalPlaybackGroup = CreateScriptableObjectIfNotExist<DefaultPlaybackGroup>(GetAssetSavePath(resourcePath, GlobalPlaybackGroupPath));
-            EditorUtility.SetDirty(runtimeSetting);
+            if (runtimeSetting.GlobalPlaybackGroup == null)
+            {
+                runtimeSetting.GlobalPlaybackGroup = CreateScriptableObjectIfNotExist<DefaultPlaybackGroup>(GetAssetSavePath(resourcePath, GlobalPlaybackGroupPath));
+                EditorUtility.SetDirty(runtimeSetting);
+            }
 
             string editorResourcesPath = resourcePath.Replace(ResourcesFolder, $"{EditorFolder}/{ResourcesFolder}");
             var editorSetting = CreateScriptableObjectIfNotExist<EditorSetting>(GetAssetSavePath(editorResourcesPath, EditorSettingPath));
-            editorSetting.AssetOutputPath = audioAssetOutputPath;
-            EditorUtility.SetDirty(editorSetting);
+            if (string.IsNullOrEmpty(editorSetting.AssetOutputPath))
+            {
+                editorSetting.AssetOutputPath = audioAssetOutputPath;
+                EditorUtility.SetDirty(editorSetting);
+            }
 
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            AssetDatabase.SaveAssetIfDirty(runtimeSetting);
+            AssetDatabase.SaveAssetIfDirty(editorSetting);
         }
 
         private static string GetAssetSavePath(string resourcesPath, string relativePath)
@@ -260,27 +297,11 @@ namespace Ami.BroAudio.Editor
             return Combine(resourcesPath, relativePath + ".asset");
         }
 
-        private static BroAudioData CreateCoreData(string coreDataPath, out string audioAssetOutputpath)
-        {
-            BroAudioData coreData = ScriptableObject.CreateInstance<BroAudioData>();
-            coreData.UpdateVersion();
-            GetInitialData(coreData.AddAsset, out audioAssetOutputpath);
-            AssetDatabase.CreateAsset(coreData, coreDataPath);
-            EditorUtility.SetDirty(coreData);
-            return coreData;
-        }
-
-        private static void GetInitialData(Action<AudioAsset> onGetAsset, out string audioAssetOutputPath)
+        private static void GetInitialData(out string audioAssetOutputPath)
         {
             if (TryGetOldCoreDataTextAsset(out var oldTextAsset) && TryParseCoreData(oldTextAsset, out var oldCoreData))
             {
                 audioAssetOutputPath = oldCoreData.AssetOutputPath;
-                foreach (string guid in oldCoreData.GUIDs)
-                {
-                    string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-                    var asset = AssetDatabase.LoadAssetAtPath<AudioAsset>(assetPath);
-                    onGetAsset?.Invoke(asset);
-                }
 
                 string oldCoreDataPath = AssetDatabase.GetAssetPath(oldTextAsset);
                 string fileName = Path.GetFileName(oldCoreDataPath);
@@ -294,15 +315,10 @@ namespace Ami.BroAudio.Editor
             }
             else
             {
-                audioAssetOutputPath = DefaultAssetOutputPath;
-                string broPath = DefaultAssetOutputPath.Remove(DefaultAssetOutputPath.LastIndexOf('/'));
-                string demoAssetPath = Combine(DefaultAssetOutputPath, Demo + ".asset");
-                if (Directory.Exists(Combine(broPath, Demo)))
-                {
-                    var demoAsset = AssetDatabase.LoadAssetAtPath<AudioAsset>(demoAssetPath);
-                    onGetAsset?.Invoke(demoAsset);
-                }
-                else
+                audioAssetOutputPath = Ami.BroAudio.Editor.BroEditorUtility.DefaultAssetOutputPath;
+                string broPath = Ami.BroAudio.Editor.BroEditorUtility.DefaultAssetOutputPath.Remove(Ami.BroAudio.Editor.BroEditorUtility.DefaultAssetOutputPath.LastIndexOf('/'));
+                string demoAssetPath = Ami.BroAudio.Editor.BroEditorUtility.Combine(Ami.BroAudio.Editor.BroEditorUtility.DefaultAssetOutputPath, Demo + ".asset");
+                if (!Directory.Exists(Ami.BroAudio.Editor.BroEditorUtility.Combine(broPath, Demo)))
                 {
                     AssetDatabase.DeleteAsset(demoAssetPath);
                 }

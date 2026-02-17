@@ -33,6 +33,9 @@ namespace Ami.BroAudio.Data
 
         public PlaybackGroup GlobalPlaybackGroup = null;
 
+        public bool AutomaticallyLoadAddressableAudioClips = FactorySettings.AutomaticallyLoadAddressableAudioClips;
+        public float AutomaticallyUnloadUnusedAddressableAudioClipsAfter = FactorySettings.AutomaticallyUnloadUnusedAddressableAudioClipsAfter;
+
 #if UNITY_EDITOR
         public void ResetToFactorySettings()
         {
@@ -48,6 +51,9 @@ namespace Ami.BroAudio.Data
             DefaultBGMTransitionTime = FactorySettings.DefaultBGMTransitionTime;
             DefaultChainedPlayModeLoop = FactorySettings.DefaultChainedPlayModeLoop;
             DefaultChainedPlayModeTransitionTime = FactorySettings.DefaultChainedPlayModeSeamlessTransitionTime;
+
+            AutomaticallyLoadAddressableAudioClips = FactorySettings.AutomaticallyLoadAddressableAudioClips;
+            AutomaticallyUnloadUnusedAddressableAudioClipsAfter = FactorySettings.AutomaticallyUnloadUnusedAddressableAudioClipsAfter;
         }
 #endif
         public class FactorySettings
@@ -67,6 +73,9 @@ namespace Ami.BroAudio.Data
 
             public const LoopType DefaultChainedPlayModeLoop = LoopType.SeamlessLoop;
             public const float DefaultChainedPlayModeSeamlessTransitionTime = 0.1f;
+
+            public const bool AutomaticallyLoadAddressableAudioClips = true;
+            public const float AutomaticallyUnloadUnusedAddressableAudioClipsAfter = 60f;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Ami.BroAudio.Data
     /// <summary>
     /// Read-only interface for accessing AudioEntity properties
     /// </summary>
-    public interface IReadOnlyAudioEntity : IEntityIdentity
+    public interface IReadOnlyAudioEntity
     {
         IReadOnlyList<IBroAudioClip> Clips { get; }
         float MasterVolume { get; }

@@ -4,8 +4,6 @@ namespace Ami.BroAudio.Data
 {
     public interface IAudioAsset
     {
-        IEnumerable<IEntityIdentity> GetAllAudioEntities();
-        int EntitiesCount { get; }
         PlaybackGroup PlaybackGroup { get; }
         void LinkPlaybackGroup(PlaybackGroup upperGroup);
 

@@ -47,9 +47,9 @@ namespace Ami.Extension
         {
             public float Ratio;
             public GUIContent Label;
-            public Action<Rect, SerializedProperty> OnButtonClick;
+            public Action<Rect> OnButtonClick;
 
-            public TabViewData(float ratio, GUIContent label, Action<Rect, SerializedProperty> onButtonClick = null)
+            public TabViewData(float ratio, GUIContent label, Action<Rect> onButtonClick = null)
             {
                 Ratio = ratio;
                 Label = label;
@@ -459,7 +459,7 @@ namespace Ami.Extension
             return selectedTabIndex;
         }
 
-        public static int DrawButtonTabsMixedView(Rect position, SerializedProperty property, int selectedTabIndex, float labelTabHeight, TabViewData[] datas)
+        public static int DrawButtonTabsMixedView(Rect position, int selectedTabIndex, float labelTabHeight, TabViewData[] datas)
         {
             DrawFrameBox(position);
 
@@ -490,7 +490,7 @@ namespace Ami.Extension
                 {
                     if(GUI.Button(rect, data.Label, style))
                     {
-                        data.OnButtonClick.Invoke(rect, property);
+                        data.OnButtonClick.Invoke(rect);
                     }
                 }
             }

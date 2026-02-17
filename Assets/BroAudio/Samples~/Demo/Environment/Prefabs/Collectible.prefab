@@ -159,8 +159,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InteractiveZone: {fileID: 8681852618188464858}
   _sound:
-    ID: 1073741831
-    _sourceAsset: {fileID: 11400000, guid: 6ae8d9cb032bc1c40a8f7d4bd78c9337, type: 2}
+    _entity: {fileID: 11400000, guid: f67bda9eb2b6de14cbc578b138d23a88, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 0}
 --- !u!114 &8681852618188464858
 MonoBehaviour:
   m_ObjectHideFlags: 0

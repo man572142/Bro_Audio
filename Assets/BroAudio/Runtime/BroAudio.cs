@@ -242,25 +242,13 @@ namespace Ami.BroAudio
         #endregion
 
         #region Reset MultiClips Data
-        public static void ResetSequence(SoundID id)
+        public static void ResetMultiClipStrategy(SoundID id)
         {
-            SequenceClipStrategy.Reset(id);
+            if (id.Entity != null)
+            {
+                id.Entity.ResetMultiClipStrategy();
+            }
         }
-
-        public static void ResetSequence()
-        {
-            SequenceClipStrategy.ResetAll();
-        }
-
-        public static void ResetShuffle(SoundID id)
-        {
-            SoundManager.Instance.ResetShuffleInUseState(id);
-        }
-
-        public static void ResetShuffle()
-        {
-            SoundManager.Instance.ResetShuffleInUseState();
-        } 
         #endregion
 
         /// <summary>
@@ -348,5 +336,46 @@ namespace Ami.BroAudio
         public static void ReleaseAsset(SoundID id, int clipIndex)
             => SoundManager.Instance.ReleaseAsset(id, clipIndex);
 #endif
+
+#if UNITY_EDITOR
+        private delegate bool TRYCONVERTID(int id, out AudioEntity entity);
+        private static TRYCONVERTID _tryConvertIdBroAudioEditorUtility = null;
+#endif
+
+        [System.Obsolete("Only for backwards compatibility")]
+        public static bool TryConvertIdToEntity(int id, out AudioEntity entity)
+        {
+            if (id == 0 || id == -1)
+            {
+                entity = null;
+                return false;
+            }
+
+#if !UNITY_EDITOR // Can't call from serialization threads, and since we're in editor we can just use the much more capable converter in the editor tools
+            if (SoundManager.Instance != null && SoundManager.Instance.TryConvertIdToEntity(id, out entity))
+            {
+                return true;
+            }
+#endif
+
+#if UNITY_EDITOR
+            try
+            {
+                _tryConvertIdBroAudioEditorUtility ??= (TRYCONVERTID)System.Type.GetType("Ami.BroAudio.Editor.BroEditorUtility, BroAudioEditor", true)
+                    .GetMethod("TryConvertIdToEntity", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
+                    .CreateDelegate(typeof(TRYCONVERTID), null);
+
+                return _tryConvertIdBroAudioEditorUtility(id, out entity);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+#endif
+
+            Debug.LogError($"Could not find entity with ID {id} to convert SoundID to entity with");
+            entity = null;
+            return false;
+        }
     }
 }

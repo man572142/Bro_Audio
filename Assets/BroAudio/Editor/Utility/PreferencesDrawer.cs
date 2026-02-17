@@ -1,6 +1,10 @@
 using System;
+using System.IO;
+using System.Linq;
+using Ami.BroAudio.Data;
 using Ami.BroAudio.Editor.Setting;
 using Ami.BroAudio.Runtime;
+using Ami.BroAudio.Tools;
 using Ami.Extension;
 using UnityEditor;
 using UnityEngine;
@@ -11,13 +15,12 @@ namespace Ami.BroAudio.Editor
 {
     public class PreferencesDrawer
     {
-		public const string AssetOutputPathLabel = "Asset Output Path";
-		public const string PromptForPathOnAssetCreationLabel = "Always prompt for save location on asset creation";
-
-		private readonly GUIContent _filterSlopeGUIContent, _playMusicAsBgmGUIContent, _showWarnForNoLoopChainedModeGUIContent,
+        private readonly GUIContent _filterSlopeGUIContent, _playMusicAsBgmGUIContent, _showWarnForNoLoopChainedModeGUIContent,
             _updateModeGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent, _globalGroupGUIContent;
 #if PACKAGE_ADDRESSABLES
         private readonly GUIContent _directToAddressableGUIContent, _addressableToDirectGUIContent;
+        private readonly GUIContent _automaticallyLoadAddressableAudioClipsGUIContent = new GUIContent("Automatically Load Addressable Audio Clips", "Automatically load audio clips from addressable assets");
+        private readonly GUIContent _automaticallyUnloadUnusedAddressableAudioClipsAfterGUIContent = new GUIContent("Automatically Unload Unused Addressable Audio Clips After", "Automatically unload unused audio clips from addressable assets after X seconds");
 #endif
         public readonly SerializedObject RuntimeSettingSO;
         public readonly SerializedObject EditorSettingSO;
@@ -141,8 +144,29 @@ namespace Ami.BroAudio.Editor
                 property.enumValueIndex = (int)(EditorSetting.ReferenceConversionDecision)EditorGUI.EnumPopup(popupRect, (EditorSetting.ReferenceConversionDecision)property.enumValueIndex);
             }
         }
+
+        public void DrawAddressableSettings(IEditorDrawLineCounter drawer, ref Rect rect)
+        {
+            var automaticallyLoadAddressableAudioClipsProp = RuntimeSettingSO.FindProperty(nameof(RuntimeSetting.AutomaticallyLoadAddressableAudioClips));
+            var automaticallyUnloadUnusedAddressableAudioClipsAfterProp = RuntimeSettingSO.FindProperty(nameof(RuntimeSetting.AutomaticallyUnloadUnusedAddressableAudioClipsAfter));
+
+            automaticallyLoadAddressableAudioClipsProp.boolValue = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawer, rect), 
+                _automaticallyLoadAddressableAudioClipsGUIContent, automaticallyLoadAddressableAudioClipsProp.boolValue);
+
+            if (automaticallyLoadAddressableAudioClipsProp.boolValue)
+            {
+                var unloadRect = GetRectAndIterateLine(drawer, rect);
+                var labelRect = new Rect(unloadRect) { x = unloadRect.xMin + 30f, width = EditorStyles.label.CalcSize(_automaticallyUnloadUnusedAddressableAudioClipsAfterGUIContent).x };
+                var textRect = new Rect(unloadRect) { xMin = labelRect.xMax + 5f };
+                textRect.width = Mathf.Max(30f, textRect.width);
+
+                EditorGUI.HandlePrefixLabel(unloadRect, labelRect, _automaticallyUnloadUnusedAddressableAudioClipsAfterGUIContent);
+                automaticallyUnloadUnusedAddressableAudioClipsAfterProp.floatValue = Mathf.Max(1f, EditorGUI.DelayedFloatField(textRect,
+                    automaticallyUnloadUnusedAddressableAudioClipsAfterProp.floatValue));
+            }
+        }
 #endif
-        
+
         public void DrawAudioTypeDrawedProperties(Rect rect, float lineHeight, Action onDrawEmptyLine)
         {
             DrawTwoColumnAudioType(rect, lineHeight, DrawAudioTypeDrawedPropertiesField, onDrawEmptyLine);
@@ -213,32 +237,20 @@ namespace Ami.BroAudio.Editor
             _soundIDDemoProp ??= GetSoundIDDemoSerializedProperty();
             EditorGUI.PropertyField(fieldRect, _soundIDDemoProp);
         }
-        
-        public void DrawAssetOutputPath(Func<Rect> onGetRect, bool hasOutputAssetPath, BroInstructionHelper instruction, Action onSetOutputPath)
-        {
-            if (!hasOutputAssetPath)
-            {
-                RichTextHelpBox(onGetRect(), instruction.GetText(Instruction.DefaultOutputPathMissing), MessageType.Warning);
-            }
-            
-            Rect suffixRect = EditorGUI.PrefixLabel(onGetRect(), new GUIContent("Default"));
-            suffixRect.width *= 0.9f;
-
-            BroEditorUtility.DrawAssetOutputPath(suffixRect, instruction, onSetOutputPath);
-
-            var promptForPathProp = EditorSettingSO.FindProperty(nameof(EditorSetting.PromptForPathOnAssetCreation));
-            promptForPathProp.boolValue = EditorGUI.ToggleLeft(onGetRect(), PromptForPathOnAssetCreationLabel, promptForPathProp.boolValue);
-        }
 
         private SerializedProperty GetSoundIDDemoSerializedProperty()
         {
-            int id = 0;
+            SoundID id = default;
+
+#pragma warning disable CS0618 // Type or member is obsolete
             if (BroEditorUtility.TryGetDemoData(out _, out var entity))
             {
-                id = entity.ID;
+                id = new SoundID(entity);
             }
+#pragma warning restore CS0618 // Type or member is obsolete
+
             var scriptableObject = ScriptableObject.CreateInstance<SoundIDDemonstration>();
-            scriptableObject.Demonstration = id;
+            scriptableObject.Demonstration = new SoundID(entity);
             return new SerializedObject(scriptableObject).FindProperty(nameof(SoundIDDemonstration.Demonstration));
         }
     }

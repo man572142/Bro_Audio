@@ -14,5 +14,7 @@ namespace Ami.BroAudio.Runtime
             }
             return clips[index];
         }
+
+        public void Reset() { }
     }
 }

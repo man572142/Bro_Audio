@@ -188,7 +188,7 @@ namespace Ami.BroAudio.Editor
             if (_isPlaying)
             {
                 EditorAudioPreviewer.Instance.UpdatePreview();
-                EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw(position.SetPosition(0f,0f));
+                EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw();
             }
         }
 

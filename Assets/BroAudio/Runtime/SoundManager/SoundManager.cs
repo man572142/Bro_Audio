@@ -47,10 +47,10 @@ namespace Ami.BroAudio.Runtime
             get 
             {
 #if UNITY_EDITOR
-                if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+                if (!Application.isPlaying)
                 {
                     return null;
-                } 
+                }
 #endif
                 return _instance == null ? throw new BroAudioException("Bro Audio is not initialized! Please call <b>BroAudio.Init()</b> first when using manual initialization.") : _instance;
             } 

@@ -187,7 +187,7 @@ namespace Ami.BroAudio.Data
         private void OnEnable()
         {
 #if UNITY_EDITOR
-            if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+            if (!Application.isPlaying)
             {
                 return;
             }

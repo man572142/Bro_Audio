@@ -703,7 +703,7 @@ namespace Ami.BroAudio.Editor
                 _showSettings = EditorGUILayout.BeginFoldoutHeaderGroup(_showSettings, "Settings");
                 if (_showSettings)
                 {
-                    var groupProp = serializedAsset.FindProperty(nameof(AudioAsset.Group));
+                    var groupProp = serializedAsset.FindProperty(AudioAsset.NameOf.Group);
                     EditorGUI.BeginChangeCheck();
                     groupProp.objectReferenceValue = (PlaybackGroup)EditorGUILayout.ObjectField(groupProp.objectReferenceValue, typeof(PlaybackGroup), false);
                     if(EditorGUI.EndChangeCheck())

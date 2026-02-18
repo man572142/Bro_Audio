@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Ami.BroAudio.Runtime;
+using UnityEngine.Serialization;
 
 namespace Ami.BroAudio.Data
 {
@@ -141,11 +142,23 @@ namespace Ami.BroAudio.Data
         [System.Obsolete("Here JUST in case the SoundIDs are not fully converted and need some way to be converted back")]
         private List<AudioEntity> ConvertedEntities;
 
-        public PlaybackGroup Group;
-
+        [SerializeField, FormerlySerializedAs(NameOf.Group)]
+        private PlaybackGroup _group;
         private PlaybackGroup _upperGroup;
-
-        public PlaybackGroup PlaybackGroup => Group ? Group : _upperGroup;
+        private bool _hasGroupLinked;
+        
+        public PlaybackGroup PlaybackGroup
+        {
+            get
+            {
+                if (!_hasGroupLinked)
+                {
+                    LinkPlaybackGroup(SoundManager.Instance.Setting.GlobalPlaybackGroup);
+                    _hasGroupLinked = true;
+                }
+                return _group ? _group : _upperGroup;
+            }
+        }
 
         [System.Obsolete("Entities are only here for backwards compatibility.", true)]
         private int EntitiesCount => Entities.Length;
@@ -174,28 +187,13 @@ namespace Ami.BroAudio.Data
 
         public void LinkPlaybackGroup(PlaybackGroup upperGroup)
         {
-            if (Group != null)
+            if (_group != null)
             {
-                Group.SetParent(upperGroup);         
+                _group.SetParent(upperGroup);         
             }
             else
             {
                 _upperGroup = upperGroup;
-            }
-        }
-
-        private void OnEnable()
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
-
-            if (SoundManager.Instance != null)
-            {
-                LinkPlaybackGroup(SoundManager.Instance.Setting.GlobalPlaybackGroup);
             }
         }
 
@@ -244,6 +242,11 @@ namespace Ami.BroAudio.Data
             UnityEditor.EditorUtility.SetDirty(this);
             UnityEditor.AssetDatabase.SaveAssetIfDirty(this);
 #endif
+        }
+
+        public static class NameOf
+        {
+            public const string Group = "Group";
         }
     }
 }

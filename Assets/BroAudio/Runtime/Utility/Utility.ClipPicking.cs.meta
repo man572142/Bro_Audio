@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 3504d167dd85b9348bd3089df33704e1
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 257362
+  packageName: Bro Audio
+  packageVersion: 2.2.2
+  assetPath: Assets/BroAudio/Runtime/Utility/Utility.ClipPicking.cs
+  uploadId: 841506

@@ -16,6 +16,7 @@ public class BroUpdater
 {
     private const string DemoAudioAssetGUID = "6ae8d9cb032bc1c40a8f7d4bd78c9337";
     private static Version PlaybackGroupFirstReleasedVersion => new Version(2,0,0);
+    private static Version AssetBasedSoundIDFirstReleasedVersion => new Version(3,1,0);
 
 #pragma warning disable CS0618 // Type or member is obsolete
     public static void Process(AudioMixer mixer, BroAudioData coreData)
@@ -58,7 +59,7 @@ public class BroUpdater
         MoveEditorAssets(corePath);
         RemoveDemoAssetsIfNotExist(corePath, coreData);
 
-        if (BroVersion.Version.Major < 3)
+        if (BroVersion.Version < AssetBasedSoundIDFirstReleasedVersion)
         {
             UpgradeSoundIDs();
         }

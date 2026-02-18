@@ -5,9 +5,12 @@ using UnityEngine;
 
 namespace Ami.BroAudio.Editor
 {
-    public class BroVersion
+    public static class BroVersion
     {
-        public const string CodeBaseVersion = "3.0.0";
+        public const string CodeBaseVersion = "3.1.0";
+
+        private const string BroProjectSettingsDirectory = "ProjectSettings/BroAudio";
+        private const string BroVersionDataPath = "ProjectSettings/BroAudio/version";
 
         private static Version _version = null;
         public static Version Version
@@ -22,9 +25,9 @@ namespace Ami.BroAudio.Editor
                 // first try to load from project settings
                 try
                 {
-                    if (File.Exists("ProjectSettings/BroAudio/version"))
+                    if (File.Exists(BroVersionDataPath))
                     {
-                        var versionText = File.ReadAllText("ProjectSettings/BroAudio/version");
+                        var versionText = File.ReadAllText(BroVersionDataPath);
 
                         if (System.Version.TryParse(versionText, out _version))
                         {
@@ -63,12 +66,12 @@ namespace Ami.BroAudio.Editor
 
         private static void SetVersion(System.Version version)
         {
-            if (!Directory.Exists("ProjectSettings/BroAudio"))
+            if (!Directory.Exists(BroProjectSettingsDirectory))
             {
-                Directory.CreateDirectory("ProjectSettings/BroAudio");
+                Directory.CreateDirectory(BroProjectSettingsDirectory);
             }
 
-            File.WriteAllText("ProjectSettings/BroAudio/version", version.ToString());
+            File.WriteAllText(BroVersionDataPath, version.ToString());
 
             _version = version;
         }

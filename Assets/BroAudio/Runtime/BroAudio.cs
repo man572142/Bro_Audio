@@ -263,7 +263,7 @@ namespace Ami.BroAudio
         public static bool TryGetEntityInfo(SoundID id, out IReadOnlyAudioEntity entityInfo)
         {
             entityInfo = null;
-            if (SoundManager.Instance != null && SoundManager.Instance.TryGetEntity(id, out var entity, false))
+            if (SoundManager.Instance.TryGetEntity(id, out var entity, false))
             {
                 entityInfo = entity as IReadOnlyAudioEntity;
                 return entityInfo != null;

@@ -47,14 +47,16 @@ namespace Ami.BroAudio.Runtime
             get 
             {
 #if UNITY_EDITOR
-                if (!Application.isPlaying)
+                if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
                 {
                     return null;
                 }
 #endif
-                return _instance == null ? throw new BroAudioException("Bro Audio is not initialized! Please call <b>BroAudio.Init()</b> first when using manual initialization.") : _instance;
+                return !HasInstance ? throw new BroAudioException("Bro Audio is not initialized! Please call <b>BroAudio.Init()</b> first when using manual initialization.") : _instance;
             } 
         }
+        
+        public static bool HasInstance => _instance != null;
 
         [SerializeField] AudioPlayer _audioPlayerPrefab = null;
         private AudioPlayerObjectPool _audioPlayerPool = null;

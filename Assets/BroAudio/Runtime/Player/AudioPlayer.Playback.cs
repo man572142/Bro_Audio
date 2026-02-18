@@ -91,7 +91,7 @@ namespace Ami.BroAudio.Runtime
                             // Start loading and wait for it no matter what the user has set
                             yield return broAudioClip.LoadAssetAsync();
 
-                            if (SoundManager.Instance != null && !SoundManager.Instance.Setting.AutomaticallyLoadAddressableAudioClips) // but let them know if we had to
+                            if (!SoundManager.Instance.Setting.AutomaticallyLoadAddressableAudioClips) // but let them know if we had to
                             {
                                 var loadedAudioClip = _clip.GetAudioClip();
                                 if (loadedAudioClip != null)
@@ -106,10 +106,7 @@ namespace Ami.BroAudio.Runtime
                         }
 
                         // Update tracking when playback starts
-                        if (SoundManager.Instance != null)
-                        {
-                            SoundManager.Instance.UpdateLoadedEntityLastPlayedTime(ID);
-                        }
+                        SoundManager.Instance.UpdateLoadedEntityLastPlayedTime(ID);
                     }
                 }
 #endif

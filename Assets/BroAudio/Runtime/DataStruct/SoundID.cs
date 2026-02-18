@@ -13,9 +13,6 @@ namespace Ami.BroAudio
 {
     [Serializable]
     public struct SoundID : IEquatable<SoundID>, IComparable<SoundID>, IEqualityComparer<SoundID>, IComparer<SoundID>
-#if !UNITY_EDITOR
-        , ISerializationCallbackReceiver
-#endif
     {
         [SerializeField]
         private AudioEntity _entity;
@@ -53,7 +50,7 @@ namespace Ami.BroAudio
                 return;
             }
 
-            if (!BroAudio.TryConvertIdToEntity(ID, out _entity))
+            if (!SoundIDExtension.TryConvertIdToEntity(ID, out _entity))
             {
                 Debug.LogError($"Could not find entity with ID {ID} to convert SoundID to entity with");
                 _entity = null;
@@ -62,13 +59,6 @@ namespace Ami.BroAudio
 
             //ID = 0;
         }
-
-#if !UNITY_EDITOR
-#pragma warning disable CS0618 // Type or member is obsolete
-        void ISerializationCallbackReceiver.OnBeforeSerialize () => _fixLegacyId();
-        void ISerializationCallbackReceiver.OnAfterDeserialize () => _fixLegacyId();
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 
 #if UNITY_EDITOR
         [field: SerializeField] public GameObject DebugObject { get; private set; }
@@ -218,5 +208,44 @@ namespace Ami.BroAudio
         public static object GetAddressablesKey(this SoundID id, int index)
             => SoundManager.Instance.GetAddressableKey(id, index);
 #endif
+        
+#if UNITY_EDITOR
+        private delegate bool TRYCONVERTID(int id, out AudioEntity entity);
+        private static TRYCONVERTID _tryConvertIdBroAudioEditorUtility = null;
+#endif
+
+        [System.Obsolete("Only for backwards compatibility")]
+        public static bool TryConvertIdToEntity(int id, out AudioEntity entity)
+        {
+            if (id == 0 || id == -1)
+            {
+                entity = null;
+                return false;
+            }
+            
+#if UNITY_EDITOR
+            try
+            {
+                _tryConvertIdBroAudioEditorUtility ??= (TRYCONVERTID)System.Type.GetType("Ami.BroAudio.Editor.BroEditorUtility, BroAudioEditor", true)
+                    .GetMethod("TryConvertIdToEntity", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
+                    .CreateDelegate(typeof(TRYCONVERTID), null);
+
+                return _tryConvertIdBroAudioEditorUtility(id, out entity);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+#else       
+            if (SoundManager.HasInstance && SoundManager.Instance.TryConvertIdToEntity(id, out entity))
+            {
+                return true;
+            }
+#endif
+            
+            Debug.LogError($"Could not find entity with ID {id} to convert SoundID to entity with");
+            entity = null;
+            return false;
+        }
     }
 }

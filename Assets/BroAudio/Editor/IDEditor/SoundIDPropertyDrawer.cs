@@ -41,7 +41,7 @@ namespace Ami.BroAudio.Editor
             }
 
             // can we convert it?
-            if (!BroAudio.TryConvertIdToEntity(idProp.intValue, out var entity))
+            if (!BroEditorUtility.TryConvertIdToEntity(idProp.intValue, out var entity))
             {
                 return null;
             }

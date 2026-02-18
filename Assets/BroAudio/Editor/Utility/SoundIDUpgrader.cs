@@ -217,7 +217,7 @@ namespace Ami.BroAudio.Editor
                         {
                             if (entityProperty.objectReferenceValue == null && idProperty.intValue != 0 && idProperty.intValue != -1)
                             {
-                                if (BroAudio.TryConvertIdToEntity(idProperty.intValue, out var entity))
+                                if (BroEditorUtility.TryConvertIdToEntity(idProperty.intValue, out var entity))
                                 {
                                     entityProperty.objectReferenceValue = entity;
                                 }
@@ -297,7 +297,7 @@ namespace Ami.BroAudio.Editor
 
                             if (id != 0 && id != -1)
                             {
-                                if (BroAudio.TryConvertIdToEntity(id, out var entity))
+                                if (BroEditorUtility.TryConvertIdToEntity(id, out var entity))
                                 {
                                     var newSoundId = new SoundID(entity);
                                     SoundID.__setLegacyId(ref newSoundId, id);

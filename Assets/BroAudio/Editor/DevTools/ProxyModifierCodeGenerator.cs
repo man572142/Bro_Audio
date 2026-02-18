@@ -117,7 +117,7 @@ namespace Ami.Extension.Reflection
             {
                 foreach (var member in members)
                 {
-                    if (member is not PropertyInfo property)
+                    if (!(member is PropertyInfo property))
                     {
                         continue;
                     }
@@ -212,7 +212,7 @@ namespace Ami.Extension.Reflection
 
             static void WriteGetterSetterBody(CodeWriter file, string indent, MemberInfo member, string defaultValue = "default")
             {
-                if (member is not PropertyInfo property)
+                if (!(member is PropertyInfo property))
                 {
                     return;
                 }
@@ -250,7 +250,7 @@ namespace Ami.Extension.Reflection
                 {
                     foreach (var member in members)
                     {
-                        if (member is not PropertyInfo property)
+                        if (!(member is PropertyInfo property))
                         {
                             continue;
                         }
@@ -284,7 +284,7 @@ namespace Ami.Extension.Reflection
 
                     foreach (var member in members)
                     {
-                        if (member is not PropertyInfo property)
+                        if (!(member is PropertyInfo property))
                         {
                             continue;
                         }
@@ -309,7 +309,7 @@ namespace Ami.Extension.Reflection
             {
                 foreach (var member in filteredMembers)
                 {
-                    if (member is not PropertyInfo property)
+                    if (!(member is PropertyInfo property))
                     {
                         continue;
                     }

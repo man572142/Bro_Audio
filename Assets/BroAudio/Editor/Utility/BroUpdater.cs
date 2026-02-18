@@ -12,7 +12,7 @@ using Ami.BroAudio.Tools;
 using Ami.BroAudio.Editor.Setting;
 using UnityEngine;
 
-public class BroUpdater
+public static class BroUpdater
 {
     private const string DemoAudioAssetGUID = "6ae8d9cb032bc1c40a8f7d4bd78c9337";
     private static Version PlaybackGroupFirstReleasedVersion => new Version(2,0,0);

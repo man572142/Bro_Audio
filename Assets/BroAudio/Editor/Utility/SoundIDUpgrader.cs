@@ -13,7 +13,7 @@ namespace Ami.BroAudio.Editor
     [System.Obsolete("legacy conversion only")]
     internal class SoundIDUpgrader
     {
-        [MenuItem(BroName.MenuItem_BroAudio + "/Others/Upgrade Sound IDs (v2 -> v3+ upgrade)")]
+        [MenuItem(BroName.MenuItem_BroAudio + "/Others/Upgrade Sound IDs")]
         private static void UpgradeSoundIDs()
         {
             if (!EditorUtility.DisplayDialog("Upgrade all Sound IDs?", 

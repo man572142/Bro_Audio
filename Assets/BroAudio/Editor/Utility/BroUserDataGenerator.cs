@@ -48,7 +48,8 @@ namespace Ami.BroAudio.Editor
                     request.completed -= OnGetSoundManager;
                     if (request.asset is SoundManager soundManager)
                     {
-                        if (BroVersion.Version.Major >= 3)
+                        if (BroVersion.Version.Major >= 3 && 
+                            (!TryLoadResources<RuntimeSetting>(RuntimeSettingPath, out _) || !TryLoadResources<EditorSetting>(EditorSettingPath, out _)))
                         {
                             StartGeneratingUserData(soundManager);
                             BroUpdater.Process(soundManager.AudioMixer, null);

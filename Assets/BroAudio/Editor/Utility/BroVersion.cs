@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,8 +10,8 @@ namespace Ami.BroAudio.Editor
     {
         public const string CodeBaseVersion = "3.1.0";
 
-        private const string BroProjectSettingsDirectory = "ProjectSettings/BroAudio";
-        private const string BroVersionDataPath = "ProjectSettings/BroAudio/version";
+        private const string VersionResourceName = "BroAudioVersion";
+        public const string VersionFileName = VersionResourceName + ".txt";
 
         private static Version _version = null;
         public static Version Version
@@ -22,22 +23,16 @@ namespace Ami.BroAudio.Editor
                     return _version;
                 }
 
-                // first try to load from project settings
-                try
+                // first try to load from Editor/Resources
+                var versionAsset = Resources.Load<TextAsset>(VersionResourceName);
+                if (versionAsset != null)
                 {
-                    if (File.Exists(BroVersionDataPath))
+                    if (System.Version.TryParse(versionAsset.text, out _version))
                     {
-                        var versionText = File.ReadAllText(BroVersionDataPath);
-
-                        if (System.Version.TryParse(versionText, out _version))
-                        {
-                            return _version;
-                        }
+                        Resources.UnloadAsset(versionAsset);
+                        return _version;
                     }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogException(ex);
+                    Resources.UnloadAsset(versionAsset);
                 }
 
                 // then try from old legacy broaudio data
@@ -64,14 +59,28 @@ namespace Ami.BroAudio.Editor
             }
         }
 
+        private static string GetEditorResourcesPath([CallerFilePath] string callerFilePath = "")
+        {
+            // Navigate from Editor/Utility/BroVersion.cs up to Editor/, then into Resources/
+            string utilityDir = Path.GetDirectoryName(callerFilePath);
+            string editorDir = Path.GetDirectoryName(utilityDir);
+            return Path.Combine(editorDir, "Resources");
+        }
+
         private static void SetVersion(System.Version version)
         {
-            if (!Directory.Exists(BroProjectSettingsDirectory))
+            string resourcesDir = GetEditorResourcesPath();
+
+            if (!Directory.Exists(resourcesDir))
             {
-                Directory.CreateDirectory(BroProjectSettingsDirectory);
+                Directory.CreateDirectory(resourcesDir);
             }
 
-            File.WriteAllText(BroVersionDataPath, version.ToString());
+            string filePath = Path.Combine(resourcesDir, VersionFileName);
+            File.WriteAllText(filePath, version.ToString());
+
+            string assetPath = "Assets" + filePath.Substring(Application.dataPath.Length).Replace('\\', '/');
+            AssetDatabase.ImportAsset(assetPath);
 
             _version = version;
         }
@@ -80,5 +89,6 @@ namespace Ami.BroAudio.Editor
         {
             SetVersion(Version.Parse(CodeBaseVersion));
         }
+
     }
 }

@@ -635,9 +635,15 @@ namespace Ami.BroAudio.Editor
                     return;
                 }
 
+                if (!_editorSetting)
+                {
+                    _editorSetting = Resources.Load<EditorSetting>(EditorSettingPath);
+                }
+                var assetOutputPath = _editorSetting ? _editorSetting.AssetOutputPath : DefaultAssetOutputPath;
+                
                 foreach (var importedAsset in importedAssets)
                 {
-                    if (importedAsset.Contains(AssetOutputPath))
+                    if (importedAsset.Contains(assetOutputPath))
                     {
                         RefreshCache();
                         return;

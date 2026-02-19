@@ -35,7 +35,7 @@ namespace Ami.BroAudio.Editor
                 AssetDatabase.StartAssetEditing();
 
                 var upgrader = new SoundIDUpgrader();
-                upgrader.Upgrade();
+                Upgrade();
             }
             finally
             {
@@ -44,7 +44,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private void Upgrade()
+        private static void Upgrade()
         {
             // find all scenes, prefabs, and scriptable objects
             var assetPaths = AssetDatabase.FindAssets("t:Object", new string[] { "Assets", "Packages" })
@@ -101,14 +101,14 @@ namespace Ami.BroAudio.Editor
             EditorUtility.UnloadUnusedAssetsImmediate();
         }
 
-        private void CheckScene(string assetPath)
+        private static void CheckScene(string assetPath)
         {
             bool changed = false;
             var scene = EditorSceneManager.OpenScene(assetPath, OpenSceneMode.Single);
 
             foreach (var rootGameObject in scene.GetRootGameObjects())
             {
-                changed |= Upgrade(rootGameObject);
+                changed |= UpgradeGameObject(rootGameObject);
             }
 
             if (changed)
@@ -117,14 +117,18 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private void CheckObject(string assetPath)
+        private static void CheckObject(string assetPath)
         {
-            List<UnityEngine.Object> objects = new List<UnityEngine.Object>
-            {
-                AssetDatabase.LoadMainAssetAtPath(assetPath)
-            };
+            var obj = AssetDatabase.LoadMainAssetAtPath(assetPath);
 
-            foreach (var obj in objects)
+            if (obj is GameObject gameObject)
+            {
+                if (UpgradeGameObject(gameObject))
+                {
+                    AssetDatabase.SaveAssetIfDirty(gameObject);
+                }
+            }
+            else if (obj != null)
             {
                 if (Upgrade(obj))
                 {
@@ -133,39 +137,37 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private bool Upgrade(UnityEngine.Object obj)
+        private static bool UpgradeGameObject(GameObject gameObject)
         {
             bool changed = false;
 
-            if (obj == null)
+            foreach (MonoBehaviour component in gameObject.GetComponents<MonoBehaviour>())
             {
-                return changed;
+                changed |= Upgrade(component);
             }
 
-            using (var so = new SerializedObject(obj))
+            foreach (Transform child in gameObject.transform)
             {
-                changed |= Upgrade(so);
-            }
-
-            if (obj is GameObject gameObject)
-            {
-                // and all components
-                foreach (Component component in gameObject.GetComponents<Component>())
-                {
-                    changed |= Upgrade(component);
-                }
-
-                // and all children
-                foreach (Transform child in gameObject.transform)
-                {
-                    changed |= Upgrade(child.gameObject);
-                }
+                changed |= UpgradeGameObject(child.gameObject);
             }
 
             return changed;
         }
 
-        private bool Upgrade(SerializedObject so)
+        private static bool Upgrade(UnityEngine.Object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            using (var so = new SerializedObject(obj))
+            {
+                return Upgrade(so);
+            }
+        }
+
+        private static bool Upgrade(SerializedObject so)
         {
             bool changed = false;
 
@@ -185,64 +187,80 @@ namespace Ami.BroAudio.Editor
             return changed;
         }
 
-        private bool Upgrade(SerializedProperty property)
+        private static bool Upgrade(SerializedProperty property)
         {
             if (property.isInstantiatedPrefab && !property.prefabOverride)
             {
-                return false;
+                // If the containing component was itself added as an override (doesn't exist in the
+                // original prefab), its fields won't individually be marked as prefabOverride even
+                // though they are effectively overrides. We still need to upgrade them.
+                var targetObj = property.serializedObject?.targetObject;
+                if (!(targetObj is Component comp && PrefabUtility.IsAddedComponentOverride(comp)))
+                {
+                    return false;
+                }
             }
-
-            HashSet<object> traversed = null;
+            
             bool changed = false;
-
-            if (property.propertyType == SerializedPropertyType.Generic)
+            switch (property.propertyType)
             {
-                if (property.isArray)
-                {
-                    for (int i = 0; i < property.arraySize; i++)
-                    {
-                        changed |= Upgrade(property.GetArrayElementAtIndex(i));
-                    }
-                }
-                else
-                {
-                    if (property.type.Contains("SoundID"))
-                    {
-                        var entityProperty = property.FindPropertyRelative(SoundID.NameOf.Entity);
-                        var idProperty = property.FindPropertyRelative(SoundID.NameOf.ID);
-
-                        if (idProperty != null && entityProperty != null &&
-                            idProperty.propertyType == SerializedPropertyType.Integer &&
-                            entityProperty.propertyType == SerializedPropertyType.ObjectReference)
-                        {
-                            if (entityProperty.objectReferenceValue == null && idProperty.intValue != 0 && idProperty.intValue != -1)
-                            {
-                                if (BroEditorUtility.TryConvertIdToEntity(idProperty.intValue, out var entity))
-                                {
-                                    entityProperty.objectReferenceValue = entity;
-                                }
-
-                                //idProperty.intValue = 0;
-                                changed = true;
-                            }
-                        }
-                    }
-                }
-            }
-            else if (property.propertyType == SerializedPropertyType.ManagedReference)
-            {
-#if UNITY_2022_1_OR_NEWER
-                var obj = property.managedReferenceValue;
-                if (UpgradeObject(obj))
-                {
-                    property.managedReferenceValue = obj;
-                    changed = true;
-                }
-#endif
+                case SerializedPropertyType.Generic:
+                    UpgradeGenericSerializedProperty(property, ref changed);
+                    break;
+                case SerializedPropertyType.ManagedReference:
+                    UpgradeManageReference(property, ref changed);
+                    break;
             }
 
             return changed;
+        }
 
+        private static void UpgradeGenericSerializedProperty(SerializedProperty property, ref bool changed)
+        {
+            if (property.isArray)
+            {
+                for (int i = 0; i < property.arraySize; i++)
+                {
+                    changed |= Upgrade(property.GetArrayElementAtIndex(i));
+                }
+            }
+            else if (property.type.Contains(nameof(SoundID)))
+            {
+                var entityProperty = property.FindPropertyRelative(SoundID.NameOf.Entity);
+                var idProperty = property.FindPropertyRelative(SoundID.NameOf.ID);
+
+                if (idProperty != null && entityProperty != null &&
+                    idProperty.propertyType == SerializedPropertyType.Integer &&
+                    entityProperty.propertyType == SerializedPropertyType.ObjectReference &&
+                    entityProperty.objectReferenceValue == null && 
+                    idProperty.intValue != 0 && idProperty.intValue != -1)
+                {
+                    if (BroEditorUtility.TryConvertIdToEntity(idProperty.intValue, out var entity))
+                    {
+                        entityProperty.objectReferenceValue = entity;
+                    }
+                    else
+                    {
+                        Debug.LogError($"Failed to convert SoundID:{idProperty.intValue} on {idProperty.serializedObject?.targetObject?.name}");
+                    }
+
+                    //idProperty.intValue = 0;
+                    changed = true;
+                }
+            }
+        }
+
+        private static void UpgradeManageReference(SerializedProperty property, ref bool changed)
+        {
+#if UNITY_2022_1_OR_NEWER
+            HashSet<object> traversed = null;
+            var obj = property.managedReferenceValue;
+            if (UpgradeObject(obj))
+            {
+                property.managedReferenceValue = obj;
+                changed = true;
+            }
+            
             bool UpgradeObject(object obj)
             {
                 traversed ??= new HashSet<object>();
@@ -251,14 +269,14 @@ namespace Ami.BroAudio.Editor
 
                 if (obj == null || !traversed.Add(obj))
                 {
-                    return changed;
+                    return false;
                 }
 
                 var type = obj.GetType();
 
                 if (type.IsValueType || type.IsPrimitive)
                 {
-                    return changed;
+                    return false;
                 }
 
                 try
@@ -322,6 +340,7 @@ namespace Ami.BroAudio.Editor
 
                 return changed;
             }
+#endif
         }
     }
 }

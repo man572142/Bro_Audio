@@ -142,7 +142,7 @@ namespace Ami.BroAudio.Data
         [System.Obsolete("Here JUST in case the SoundIDs are not fully converted and need some way to be converted back")]
         private List<AudioEntity> ConvertedEntities;
 
-        [SerializeField, FormerlySerializedAs(NameOf.Group)]
+        [SerializeField, FormerlySerializedAs("Group")]
         private PlaybackGroup _group;
         private PlaybackGroup _upperGroup;
         private bool _hasGroupLinked;
@@ -246,7 +246,7 @@ namespace Ami.BroAudio.Data
 
         public static class NameOf
         {
-            public const string Group = "Group";
+            public const string Group = nameof(_group);
         }
     }
 }

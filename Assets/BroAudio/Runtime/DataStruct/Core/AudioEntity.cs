@@ -144,6 +144,11 @@ namespace Ami.BroAudio.Data
         [SerializeField] private SeamlessType SeamlessTransitionType = SeamlessType.ClipSetting;
         [SerializeField] private TempoTransition TransitionTempo = default;
         [SerializeField] private bool SnapToFullVolume = false;
+
+        public void SetAudioAsset(AudioAsset asset)
+        {
+            AudioAsset = asset;
+        }
 #endif
 
         [System.Obsolete("Only for conversion")]

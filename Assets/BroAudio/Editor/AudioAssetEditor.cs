@@ -315,6 +315,17 @@ namespace Ami.BroAudio.Editor
             serializedObject.ApplyModifiedProperties();
         }
 
+        public void AssignExistingEntity(AudioEntity entity)
+        {
+            entity.SetAudioAsset(Asset as AudioAsset);
+            EditorUtility.SetDirty(entity);
+            AddOrMoveToEnd(entity);
+            if (_entityList != null)
+            {
+                _entityList.index = _entityList.count - 1;
+            }
+        }
+
         public (AudioEntity entity, AudioEntityEditor editor) CreateNewEntity(string name, BroAudioType audioType = BroAudioType.None)
         {
             var path = Path.Combine(GetAudioAssetDirectoryPath(), name + ".asset").Replace('\\', '/');

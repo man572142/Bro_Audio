@@ -330,13 +330,58 @@ namespace Ami.BroAudio.Editor
 
         private void HandleDragAndDropToAsset(Rect rect, AudioAssetEditor editor)
         {
-            if(Event.current.type == EventType.DragPerform && rect.Contains(Event.current.mousePosition))
+            if (!rect.Contains(Event.current.mousePosition))
             {
+                return;
+            }
+
+            if (Event.current.type == EventType.DragPerform)
+            {
+                var entities = DragAndDrop.objectReferences.OfType<AudioEntity>()
+                    .Where(e => e.AudioAsset != editor.Asset)
+                    .ToList();
+                if (entities.Any())
+                {
+                    foreach (var entity in entities)
+                    {
+                        editor.AssignExistingEntity(entity);
+                    }
+                    DragAndDrop.AcceptDrag();
+                    AssetDatabase.SaveAssets();
+                    SelectAsset(editor.Asset as AudioAsset);
+                    _isInEntitiesEditMode = true;
+                    return;
+                }
+
                 var clips = GetAudioClipsFromDragAndDrop();
-                if(clips.Any())
+                if (clips.Any())
                 {
                     ProcessDraggingClips(editor, clips);
                 }
+            }
+        }
+
+        private void HandleDragAndDropEntitiesToEntityList(AudioAssetEditor editor)
+        {
+            var entities = DragAndDrop.objectReferences.OfType<AudioEntity>()
+                .Where(e => e.AudioAsset != editor.Asset)
+                .ToList();
+
+            if (!entities.Any())
+            {
+                return;
+            }
+
+            DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
+
+            if (Event.current.type == EventType.DragPerform)
+            {
+                foreach (var entity in entities)
+                {
+                    editor.AssignExistingEntity(entity);
+                }
+                DragAndDrop.AcceptDrag();
+                AssetDatabase.SaveAssets();
             }
         }
 
@@ -651,6 +696,8 @@ namespace Ami.BroAudio.Editor
                             GUILayout.Space(compensateHeight);
                         }
                     }
+
+                    HandleDragAndDropEntitiesToEntityList(editor);
                 }
                 EditorGUILayout.EndScrollView();
                 //EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw(rect.Scoping(position, new Vector2(offsetX, offsetY)), -_entitiesScrollPos);

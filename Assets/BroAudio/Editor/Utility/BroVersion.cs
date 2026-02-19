@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 
@@ -59,28 +58,42 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private static string GetEditorResourcesPath([CallerFilePath] string callerFilePath = "")
+        // Returns the asset-relative path to the Editor/Resources directory
+        // where the version file should be written (always under Assets/, never Packages/)
+        private static string GetEditorResourcesPath()
         {
-            // Navigate from Editor/Utility/BroVersion.cs up to Editor/, then into Resources/
-            string utilityDir = Path.GetDirectoryName(callerFilePath);
-            string editorDir = Path.GetDirectoryName(utilityDir);
-            return Path.Combine(editorDir, "Resources");
+            // If EditorSetting exists, co-locate the version file in the same directory
+            var editorSetting = Resources.Load<EditorSetting>(BroEditorUtility.EditorSettingPath);
+            if (editorSetting != null)
+            {
+                string settingAssetPath = AssetDatabase.GetAssetPath(editorSetting);
+                Resources.UnloadAsset(editorSetting);
+                if (!string.IsNullOrEmpty(settingAssetPath))
+                {
+                    return Path.GetDirectoryName(settingAssetPath).Replace('\\', '/');
+                }
+            }
+
+            // Fall back to default: Assets/BroAudio/Editor/Resources
+            return $"{Tools.BroName.MainAssetPath}/{Tools.BroName.EditorFolder}/{Tools.BroName.ResourcesFolder}";
         }
 
         private static void SetVersion(System.Version version)
         {
-            string resourcesDir = GetEditorResourcesPath();
+            string resourcesAssetDir = GetEditorResourcesPath();
 
-            if (!Directory.Exists(resourcesDir))
+            // Convert Unity asset path to an absolute file system path
+            string resourcesAbsDir = Path.Combine(Application.dataPath, resourcesAssetDir.Substring("Assets/".Length));
+
+            if (!Directory.Exists(resourcesAbsDir))
             {
-                Directory.CreateDirectory(resourcesDir);
+                Directory.CreateDirectory(resourcesAbsDir);
             }
 
-            string filePath = Path.Combine(resourcesDir, VersionFileName);
-            File.WriteAllText(filePath, version.ToString());
+            string absFilePath = Path.Combine(resourcesAbsDir, VersionFileName);
+            File.WriteAllText(absFilePath, version.ToString());
 
-            string assetPath = "Assets" + filePath.Substring(Application.dataPath.Length).Replace('\\', '/');
-            AssetDatabase.ImportAsset(assetPath);
+            AssetDatabase.ImportAsset(resourcesAssetDir + "/" + VersionFileName);
 
             _version = version;
         }

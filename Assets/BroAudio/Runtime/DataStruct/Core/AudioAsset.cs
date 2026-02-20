@@ -115,6 +115,17 @@ namespace Ami.BroAudio.Data
         }
 
         [System.Obsolete("ignore obsolete warnings")]
+        public bool ForceConvertLegacyEntities()
+        {
+            if (Entities == null || Entities.Length == 0)
+            {
+                return false;
+            }
+            upgradeEntities();
+            return true;
+        }
+
+        [System.Obsolete("ignore obsolete warnings")]
         private void upgradeEntities_setup()
         {
             if (Entities == null || Entities.Length == 0)

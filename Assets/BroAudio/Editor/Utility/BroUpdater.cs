@@ -61,6 +61,7 @@ public static class BroUpdater
 
         if (BroVersion.Version < AssetBasedSoundIDFirstReleasedVersion)
         {
+            EnsureLegacyEntitiesConverted();
             UpgradeSoundIDs();
         }
 
@@ -73,6 +74,25 @@ public static class BroUpdater
         }
 
         UnityEngine.Debug.Log(Utility.LogTitle + $"BroAudio has been successfully upgraded from {currentVersion} to {targetVersion}!");
+    }
+
+    private static void EnsureLegacyEntitiesConverted()
+    {
+        var audioAssets = new List<AudioAsset>();
+        GetAudioAssets(audioAssets);
+
+        bool anyConverted = false;
+#pragma warning disable CS0618
+        foreach (var asset in audioAssets)
+        {
+            anyConverted |= asset.ForceConvertLegacyEntities();
+        }
+#pragma warning restore CS0618
+
+        if (anyConverted)
+        {
+            AudioAssetCache.RefreshCache();
+        }
     }
 
     private static void UpgradeSoundIDs()

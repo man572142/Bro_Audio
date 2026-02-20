@@ -47,7 +47,7 @@ namespace Ami.BroAudio.Runtime
             get 
             {
 #if UNITY_EDITOR
-                if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+                if (!Application.isPlaying)
                 {
                     return null;
                 }

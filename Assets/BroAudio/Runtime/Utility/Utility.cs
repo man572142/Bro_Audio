@@ -203,5 +203,29 @@ namespace Ami.BroAudio
         {
             return float.IsNegativeInfinity(v.x) && float.IsNegativeInfinity(v.y) && float.IsNegativeInfinity(v.z);
         }
+
+        public static void Log(string message, LogType type)
+        {
+            switch (type)
+            {
+                case LogType.Error:
+                    Debug.LogError(message);
+                    break;
+                case LogType.Assert:
+                    Debug.Assert(false, message);
+                    break;
+                case LogType.Warning:
+                    Debug.LogWarning(message);
+                    break;
+                case LogType.Log:
+                    Debug.Log(message);
+                    break;
+                case LogType.Exception:
+                    throw new BroAudioException(message);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
     }
 }

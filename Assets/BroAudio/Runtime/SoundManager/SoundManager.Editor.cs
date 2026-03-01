@@ -8,8 +8,7 @@ namespace Ami.BroAudio.Runtime
 {
     public partial class SoundManager : MonoBehaviour
     {
-        public Version Version => _data.Version;
-
+        [System.Obsolete("Only for backwards compatibility")]
         public void AssignCoreData(BroAudioData coreData)
         {
             if(_data != coreData)

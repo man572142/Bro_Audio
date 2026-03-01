@@ -10,11 +10,11 @@ namespace Ami.BroAudio.Data
         bool HasLoop(out LoopType loopType, out float transitionTime);
 		int Priority { get; }
         IBroAudioClip PickNewClip();
-        IBroAudioClip PickNewClip(int context);
+        IBroAudioClip PickNewClip(ClipSelectionContext context);
         float GetMasterVolume();
 		float GetPitch();
 		float GetRandomValue(float baseValue, RandomFlag flags);
-        void ResetShuffleInUseState();
+        void ResetMultiClipStrategy();
         MulticlipsPlayMode PlayMode { get; }
     } 
 }

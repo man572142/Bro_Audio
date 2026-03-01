@@ -15,5 +15,10 @@ namespace Ami.BroAudio.Runtime
         /// <param name="index">Output index of the selected clip</param>
         /// <returns>The selected clip</returns>
         IBroAudioClip SelectClip(BroAudioClip[] clips, ClipSelectionContext context, out int index);
+
+        /// <summary>
+        /// Resets the state of the strategy
+        /// </summary>
+        void Reset();
     }
 }

@@ -42,12 +42,10 @@ namespace Ami.BroAudio.Editor
 		private const float SliderLabelWidth = 25;
 		private const float ObjectPickerRatio = 0.6f;
         
-        private static Dictionary<int, int> _selectedClipIndexCache = new Dictionary<int, int>();
-        
         public Action<string> OnClipChanged;
         
 		private ReorderableList _reorderableList;
-		private SerializedProperty _entityProp;
+		private SerializedObject _entity;
 		private SerializedProperty _playModeProp;
         private SerializedProperty _useAddressablesProp;
 		private int _currSelectedClipIndex = -1;
@@ -101,14 +99,16 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-		public ReorderableClips(SerializedProperty entityProperty, RequestClipPreview onRequestClipPreview)
+        public bool HasClips => _reorderableList != null && _reorderableList.count > 0;
+
+		public ReorderableClips(SerializedObject serializedObject, RequestClipPreview onRequestClipPreview)
 		{
-			_entityProp = entityProperty;
-			_playModeProp = entityProperty.FindPropertyRelative(AudioEntity.EditorPropertyName.MulticlipsPlayMode);
+			_entity = serializedObject;
+			_playModeProp = serializedObject.FindProperty(AudioEntity.EditorPropertyName.MulticlipsPlayMode);
 #if PACKAGE_ADDRESSABLES
-            _useAddressablesProp = entityProperty.FindPropertyRelative(nameof(AudioEntity.UseAddressables)); 
+            _useAddressablesProp = serializedObject.FindProperty(nameof(AudioEntity.UseAddressables)); 
 #endif
-            _reorderableList = CreateReorderableList(entityProperty);
+            _reorderableList = CreateReorderableList(serializedObject);
             _onRequestClipPreview = onRequestClipPreview;
 			UpdatePlayModeAndRequiredClipCount();
 
@@ -142,7 +142,7 @@ namespace Ami.BroAudio.Editor
 		public void SetPlayingClip(string clipPath)
 		{
             _currentPlayingClipPath = clipPath;
-            CurrentPlayingClip = clipPath != null ? _entityProp.serializedObject.FindProperty(clipPath) : null;
+            CurrentPlayingClip = clipPath != null ? _entity.FindProperty(clipPath) : null;
         }
 
         public bool TryGetSelectedAudioClip(out AudioClip audioClip)
@@ -154,7 +154,7 @@ namespace Ami.BroAudio.Editor
             }
 
 #if PACKAGE_ADDRESSABLES
-            bool useAddressable = _entityProp.FindPropertyRelative(nameof(AudioEntity.UseAddressables)).boolValue;
+            bool useAddressable = _entity.FindProperty(nameof(AudioEntity.UseAddressables)).boolValue;
             int index = _reorderableList.index;
             if (useAddressable && index >= 0 && index < _assetReferenceCachedClips.Count)
             {
@@ -257,7 +257,6 @@ namespace Ami.BroAudio.Editor
 			int count = _reorderableList.count;
 			if(count == _reorderableList.index || count == _currSelectedClipIndex)
 			{
-				_currSelectedClipIndex = count - 1;
 				_reorderableList.index = count - 1;
 				_currSelectedClip = null;
 			}
@@ -279,9 +278,9 @@ namespace Ami.BroAudio.Editor
             }
 		}
 
-        private ReorderableList CreateReorderableList(SerializedProperty entityProperty)
+        private ReorderableList CreateReorderableList(SerializedObject serializedObject)
 		{
-			SerializedProperty clipsProp = entityProperty.FindPropertyRelative(nameof(AudioEntity.Clips));
+			SerializedProperty clipsProp = serializedObject.FindProperty(nameof(AudioEntity.Clips));
 			var list = new ReorderableList(clipsProp.serializedObject, clipsProp) 
             {
                 drawHeaderCallback = OnDrawHeader,
@@ -289,11 +288,9 @@ namespace Ami.BroAudio.Editor
                 drawFooterCallback = OnDrawFooter,
                 onAddCallback = OnAdd,
                 onRemoveCallback = OnRemove,
-                onSelectCallback = OnSelect,
             };
             
-            var id = entityProperty.FindBackingFieldProperty(nameof(AudioEntity.ID)).intValue;
-            list.index = _selectedClipIndexCache.TryGetValue(id, out int index) ? index : 0;
+            list.index = _currSelectedClipIndex;
 			return list;
 		}
 
@@ -378,20 +375,20 @@ namespace Ami.BroAudio.Editor
 
         private void DrawMasterVolume(Rect masterVolRect)
         {
-			int id = _entityProp.FindBackingFieldProperty(nameof(AudioEntity.ID)).intValue;
+			var audioType = (BroAudioType)_entity.FindBackingFieldProperty(nameof(AudioEntity.AudioType)).intValue;
 			var editorSetting = BroEditorUtility.EditorSetting;
             if (!editorSetting.ShowMasterVolumeOnClipListHeader 
-				|| !editorSetting.TryGetAudioTypeSetting(Utility.GetAudioType(id), out var typeSetting) 
+				|| !editorSetting.TryGetAudioTypeSetting(audioType, out var typeSetting) 
 				|| !typeSetting.CanDraw(DrawedProperty.MasterVolume))
 			{
 				return;
 			}
 
-            var masterProp = _entityProp.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume));
-            var masterRandProp = _entityProp.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
+            var masterProp = _entity.FindBackingFieldProperty(nameof(AudioEntity.MasterVolume));
+            var masterRandProp = _entity.FindBackingFieldProperty(nameof(AudioEntity.VolumeRandomRange));
             float masterVol = masterProp.floatValue;
             float masterVolRand = masterRandProp.floatValue;
-            RandomFlag flags = (RandomFlag)_entityProp.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags)).intValue;
+            RandomFlag flags = (RandomFlag)_entity.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags)).intValue;
             GetMixerMinMaxVolume(out float minVol, out float maxVol);
             Rect masterVolLabelRect = new Rect(masterVolRect) { width = SliderLabelWidth };
             Rect masterVolSldierRect = new Rect(masterVolRect) { width = masterVolRect.width - SliderLabelWidth, x = masterVolLabelRect.xMax };
@@ -524,8 +521,8 @@ namespace Ami.BroAudio.Editor
                 {
                     var transport = new SerializedTransport(clipProp, audioClip.length);
                     req = currentEvent.CreatePreviewRequest(audioClip, volProp.floatValue, transport);
-                    GetBaseAndRandomValue(RandomFlag.Volume, _entityProp, out req.BaseMasterVolume, out req.MasterVolume);
-                    GetBaseAndRandomValue(RandomFlag.Pitch, _entityProp, out req.BasePitch, out req.Pitch);
+                    GetBaseAndRandomValue(RandomFlag.Volume, _entity, out req.BaseMasterVolume, out req.MasterVolume);
+                    GetBaseAndRandomValue(RandomFlag.Pitch, _entity, out req.BasePitch, out req.Pitch);
                 }
                 else
                 {
@@ -596,12 +593,6 @@ namespace Ami.BroAudio.Editor
             UpdatePlayModeAndRequiredClipCount();
         }
 
-        private void OnSelect(ReorderableList list)
-        {
-            var id = _entityProp.FindBackingFieldProperty(nameof(AudioEntity.ID)).intValue;
-            _selectedClipIndexCache[id] = list.index;
-        }
-
         private void SetHasAny(bool state, ReferenceType type)
         {
             switch (type)
@@ -646,7 +637,7 @@ namespace Ami.BroAudio.Editor
             }
             return false;
 
-            bool IsLoopBy(string propPath) => _entityProp.FindBackingFieldProperty(propPath).boolValue;
+            bool IsLoopBy(string propPath) => _entity.FindBackingFieldProperty(propPath).boolValue;
         }
 
         private void SetDefaultChainedPlayModeLoopSettings()
@@ -655,17 +646,17 @@ namespace Ami.BroAudio.Editor
             switch (setting.DefaultChainedPlayModeLoop)
             {
                 case LoopType.Loop:
-                    _entityProp.FindBackingFieldProperty(nameof(AudioEntity.Loop)).boolValue = true;
+                    _entity.FindBackingFieldProperty(nameof(AudioEntity.Loop)).boolValue = true;
                     break;
                 case LoopType.SeamlessLoop:
-                    _entityProp.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop)).boolValue = true;
-                    _entityProp.FindBackingFieldProperty(nameof(AudioEntity.TransitionTime)).floatValue =
+                    _entity.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop)).boolValue = true;
+                    _entity.FindBackingFieldProperty(nameof(AudioEntity.TransitionTime)).floatValue =
                         setting.DefaultChainedPlayModeTransitionTime;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            _entityProp.serializedObject.ApplyModifiedProperties();
+            _entity.ApplyModifiedProperties();
         }
 
         private static HeaderInfo GetHeaderInfo(NoLoopChainedPlayModeInfo info) => new HeaderInfo()

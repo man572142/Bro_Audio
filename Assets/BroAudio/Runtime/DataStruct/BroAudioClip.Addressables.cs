@@ -9,14 +9,26 @@ namespace Ami.BroAudio.Data
 	public partial class BroAudioClip : IBroAudioClip
 	{
         [SerializeField] private AssetReferenceT<AudioClip> AudioClipAssetReference;
-        private AudioClip _loadedAsset = null;
 
         public IKeyEvaluator AddressableKey => AudioClipAssetReference;
-        public bool IsLoaded => _loadedAsset != null || AudioClip != null || AudioClipAssetReference.Asset != null;
+        public bool IsLoaded => AudioClip != null || AudioClipAssetReference.Asset != null;
+
+        public bool IsLoading => AudioClipAssetReference.OperationHandle.IsValid() &&
+                                 !AudioClipAssetReference.OperationHandle.IsDone;
 
         public AsyncOperationHandle<AudioClip> LoadAssetAsync()
         {
+            // Don't start loading if already loading or loaded
+            if (IsLoading || IsLoaded)
+            {
+                return AudioClipAssetReference.OperationHandle.Convert<AudioClip>();
+            }
             return AudioClipAssetReference.LoadAssetAsync();
+        }
+
+        public AsyncOperationHandle GetCurrentOperationHandle()
+        {
+            return AudioClipAssetReference.OperationHandle;
         }
 
         public void ReleaseAsset()
@@ -27,9 +39,9 @@ namespace Ami.BroAudio.Data
             }
         }
 
+        [System.Obsolete("You cannot set the loaded asset for an addressable clip.")]
         public void SetLoadedAsset(AudioClip clip)
         {
-            _loadedAsset = clip;
         }
 
         public AudioClip GetAudioClip()
@@ -37,10 +49,6 @@ namespace Ami.BroAudio.Data
             if (AudioClip != null)
             {
                 return AudioClip;
-            }
-            if(_loadedAsset != null)
-            {
-                return _loadedAsset;
             }
 
             string assetIdentity = null;
@@ -59,7 +67,18 @@ namespace Ami.BroAudio.Data
                 {
                     return clip;
                 }
-                throw new BroAudioException($"AudioClip [<b>{assetIdentity}</b>] is marked as Addressables, but it hasn't been loaded");
+
+                // Synchronously load the addressable if it's not loaded
+                var handle = AudioClipAssetReference.LoadAssetAsync();
+                handle.WaitForCompletion();
+                if (handle.Status == AsyncOperationStatus.Succeeded)
+                {
+                    return handle.Result;
+                }
+                else
+                {
+                    throw new BroAudioException($"Failed to synchronously load AudioClip [<b>{assetIdentity}</b>]");
+                }
             }
             return AudioClip;
         }

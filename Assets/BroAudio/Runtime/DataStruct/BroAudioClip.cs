@@ -1,5 +1,8 @@
 using Ami.Extension;
 using UnityEngine;
+#if PACKAGE_ADDRESSABLES
+using UnityEngine.ResourceManagement.AsyncOperations;
+#endif
 
 namespace Ami.BroAudio.Data
 {
@@ -18,12 +21,6 @@ namespace Ami.BroAudio.Data
         // For random, velocity
         public int Weight;
 
-        // For shuffle (runtime-only)
-        [System.NonSerialized]
-        internal bool IsUsed;
-        [System.NonSerialized]
-        internal bool IsLastUsed;
-
         float IBroAudioClip.Volume => Volume;
         float IBroAudioClip.Delay => Delay;
         float IBroAudioClip.StartPosition => StartPosition;
@@ -39,6 +36,18 @@ namespace Ami.BroAudio.Data
                 return true;
             }
             return IsAddressablesAvailable();
+        }
+
+        public bool IsSet
+        {
+            get
+            {
+                if(AudioClip != null)
+                {
+                    return true;
+                }
+                return IsAddressablesAvailable();
+            }
         }
 
 #if !PACKAGE_ADDRESSABLES
@@ -57,6 +66,7 @@ namespace Ami.BroAudio.Data
     {
         AudioClip GetAudioClip();
         bool IsValid();
+        bool IsSet { get; }
 
         float Volume { get; }
         float Delay { get; }

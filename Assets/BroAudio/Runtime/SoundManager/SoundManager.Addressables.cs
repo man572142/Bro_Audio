@@ -42,8 +42,11 @@ namespace Ami.BroAudio.Runtime
         {
             if (TryGetAddressableEntity(id, out var entity))
             {
-                return entity.LoadAssetsAsync();
+                var result = entity.LoadAssetsAsync();
+                UpdateLoadedEntityLastPlayedTime(id);
+                return result;
             }
+
             return default;
         }
 
@@ -52,7 +55,9 @@ namespace Ami.BroAudio.Runtime
             if (TryGetAddressableEntity(id, out var entity) && clipIndex >= 0 && clipIndex < entity.Clips.Length)
             {
                 var clip = entity.Clips[clipIndex];
-                return clip.LoadAssetAsync();
+                var result = clip.LoadAssetAsync();
+                UpdateLoadedEntityLastPlayedTime(id);
+                return result;
             }
             return default;
         }
@@ -81,7 +86,7 @@ namespace Ami.BroAudio.Runtime
                 entity = e as AudioEntity;
                 if(!entity.UseAddressables)
                 {
-                    Debug.LogError($"The entity {id.ToName().ToBold()} isn’t marked as addressable. Please check its settings.");
+                    Debug.LogError($"The entity {id.ToString().ToBold()} isn’t marked as addressable. Please check its settings.");
                 }
                 return entity.UseAddressables;
             }

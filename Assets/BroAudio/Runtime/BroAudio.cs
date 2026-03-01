@@ -242,25 +242,13 @@ namespace Ami.BroAudio
         #endregion
 
         #region Reset MultiClips Data
-        public static void ResetSequence(SoundID id)
+        public static void ResetMultiClipStrategy(SoundID id)
         {
-            SequenceClipStrategy.Reset(id);
+            if (id.Entity != null)
+            {
+                id.Entity.ResetMultiClipStrategy();
+            }
         }
-
-        public static void ResetSequence()
-        {
-            SequenceClipStrategy.ResetAll();
-        }
-
-        public static void ResetShuffle(SoundID id)
-        {
-            SoundManager.Instance.ResetShuffleInUseState(id);
-        }
-
-        public static void ResetShuffle()
-        {
-            SoundManager.Instance.ResetShuffleInUseState();
-        } 
         #endregion
 
         /// <summary>
@@ -275,7 +263,7 @@ namespace Ami.BroAudio
         public static bool TryGetEntityInfo(SoundID id, out IReadOnlyAudioEntity entityInfo)
         {
             entityInfo = null;
-            if (SoundManager.Instance != null && SoundManager.Instance.TryGetEntity(id, out var entity, false))
+            if (SoundManager.Instance.TryGetEntity(id, out var entity, false))
             {
                 entityInfo = entity as IReadOnlyAudioEntity;
                 return entityInfo != null;

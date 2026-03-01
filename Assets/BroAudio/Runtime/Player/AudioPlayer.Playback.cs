@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Ami.BroAudio.Data;
 using UnityEngine;
 using Ami.Extension;
 using static Ami.BroAudio.Utility;
@@ -9,10 +10,10 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource))]
     public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
-        public delegate void PlaybackHandover(int id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
+        public delegate void PlaybackHandover(SoundID id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
 
         public PlaybackHandover OnPlaybackHandover;
-        
+
         private PlaybackPreference _pref;
         private StopMode _stopMode;
         private Coroutine _playbackControlCoroutine = null;
@@ -26,12 +27,12 @@ namespace Ami.BroAudio.Runtime
         public bool HasStartedPlaying => PlaybackStartingTime > 0;
         private bool IsOnHold => _stopMode == StopMode.Pause && !HasStartedPlaying;
 
-        public void SetPlaybackData(int id, PlaybackPreference pref)
+        public void SetPlaybackData(SoundID id, PlaybackPreference pref)
         {
             ID = id;
             _pref = pref;
         }
-        
+
         public void Play()
         {
             if(IsStopping || IsOnHold || _pref.ScheduledStartTime > 0)
@@ -41,10 +42,10 @@ namespace Ami.BroAudio.Runtime
 
             PlayInternal();
         }
-        
+
         private void PlayInternal()
         {
-            if(ID <= 0 || _pref.Entity == null 
+            if(!ID.IsValid() || _pref.Entity == null
                        || !SoundManager.Instance.TryGetAudioTypePref(ID.ToAudioType(), out var audioTypePref))
             {
                 Debug.LogError(LogTitle + $"Cannot play audio. Invalid ID:{ID} or Entity is null.");
@@ -74,6 +75,18 @@ namespace Ami.BroAudio.Runtime
             if (!HasStartedPlaying) // we only do the following process when it's fresh
             {
                 _clip = _pref.PickNewClip();
+
+#if PACKAGE_ADDRESSABLES
+                if (_clip is BroAudioClip broAudioClip && broAudioClip.IsAddressablesAvailable() && !broAudioClip.IsLoaded)
+                {
+                    if (!SoundManager.Instance.Setting.AutomaticallyLoadAddressableAudioClips)
+                    {
+                        LogNotPreloadedMessage(broAudioClip);
+                    }
+                    yield return WaitForAddressablesToLoad(broAudioClip);
+                }
+#endif
+
                 var audioClip = _clip.GetAudioClip();
                 sampleRate = audioClip.frequency;
                 AudioSource.clip = audioClip;
@@ -91,6 +104,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
                 }
+
                 SchedulePlayback(out hasScheduledPlay);
                 if(hasScheduledPlay)
                 {
@@ -108,17 +122,17 @@ namespace Ami.BroAudio.Runtime
                     }
                 }
 #if !UNITY_WEBGL
-                AudioTrack = MixerPool.GetTrack(TrackType); 
+                AudioTrack = MixerPool.GetTrack(TrackType);
 #endif
             }
-            
+
             do
             {
                 if(!hasScheduledPlay)
                 {
                     StartPlaying(sampleRate);
                 }
-                
+
                 if(!HasStartedPlaying)
                 {
                     PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
@@ -168,7 +182,7 @@ namespace Ami.BroAudio.Runtime
                             yield break;
                         }
                     }
-                    
+
                     TriggerPlaybackHandover();
                     _clipVolume.SetTarget(0f);
                     elapsedTime = 0f;
@@ -277,7 +291,7 @@ namespace Ami.BroAudio.Runtime
         {
             if (_stopMode != StopMode.Pause)
             {
-                Debug.LogWarning(LogTitle + $"Cannot UnPause: The player is not paused. Sound:{ID.ToName()}", this);
+                Debug.LogWarning(LogTitle + $"Cannot UnPause: The player is not paused. Sound:{ID}", this);
                 return;
             }
             _pref.SetNextFadeIn(fadeIn);
@@ -311,7 +325,7 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            if (ID <= 0 || !isPlaying)
+            if (!ID.IsValid() || !isPlaying)
             {
                 onFinished?.Invoke();
                 EndPlaying();
@@ -453,5 +467,42 @@ namespace Ami.BroAudio.Runtime
             _pref.SetFadeOutEase(ease);
             return this;
         }
+
+#if PACKAGE_ADDRESSABLES
+        private void LogNotPreloadedMessage(BroAudioClip broAudioClip)
+        {
+            var logMessage = broAudioClip.IsLoading
+                ? LogTitle +
+                  $"Entity: '{ID}' is still loading. You should wait for it to finish before playback, or it <b>may have caused a playback delay</b>."
+                : LogTitle +
+                  $"Entity: '{ID}' is marked as Addressables but was not preloaded — it will be loaded on demand and <b>may have caused a playback delay</b>.\n" +
+                  $"Call BroAudio.{nameof(BroAudio.LoadAssetAsync)}() before playback, or enable <b>Automatically Load Addressable Audio Clips</b> in Preferences to suppress this error.";
+
+            Log(logMessage, SoundManager.Instance.Setting.AddressablesNonPreloadedLogLevel);
+        }
+
+        private IEnumerator WaitForAddressablesToLoad(BroAudioClip broAudioClip)
+        {
+            if (broAudioClip.IsLoading)
+            {
+                // Wait for the existing loading operation to complete
+                yield return broAudioClip.GetCurrentOperationHandle();
+            }
+            else
+            {
+                // Start loading and wait for it no matter what the user has set
+                yield return broAudioClip.LoadAssetAsync();
+
+                var loadedAudioClip = _clip.GetAudioClip();
+                if (loadedAudioClip == null)
+                {
+                    Debug.LogError(LogTitle + $"Failed to load addressable audio clip for {ID}");
+                }
+            }
+
+            // Update tracking when playback starts
+            SoundManager.Instance.UpdateLoadedEntityLastPlayedTime(ID);
+        }
+#endif
     }
 }

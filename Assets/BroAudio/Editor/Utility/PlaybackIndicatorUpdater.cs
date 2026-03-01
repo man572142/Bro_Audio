@@ -22,19 +22,21 @@ namespace Ami.Extension
 
 		protected override float UpdateInterval => 0.02f;  // 50 FPS
         
-        public void Draw(Rect scope, Vector2 positionOffset = default)
+        public void Draw()
         {
             if (!_isPlaying || !_isVisible)
             {
                 return;
             }
 
-            GUI.BeginClip(scope);
+            Rect indicatorRect = GetIndicatorPosition();
+            EditorGUI.DrawRect(indicatorRect, Color);
+
+            // repaint everything please so that we get painting in the inspector
+            if (Event.current.type == EventType.Repaint)
             {
-                Rect indicatorRect = GetIndicatorPosition();
-                EditorGUI.DrawRect(new Rect(indicatorRect.position + positionOffset, indicatorRect.size), Color);
+                UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
             }
-            GUI.EndClip();
         }
 
 		public void SetClipInfo(Rect waveformRect, PreviewRequest req) 

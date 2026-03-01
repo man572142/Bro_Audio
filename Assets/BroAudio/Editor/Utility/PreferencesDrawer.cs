@@ -1,10 +1,7 @@
 using System;
-using System.IO;
-using System.Linq;
 using Ami.BroAudio.Data;
 using Ami.BroAudio.Editor.Setting;
 using Ami.BroAudio.Runtime;
-using Ami.BroAudio.Tools;
 using Ami.Extension;
 using UnityEditor;
 using UnityEngine;
@@ -21,9 +18,8 @@ namespace Ami.BroAudio.Editor
         private readonly GUIContent _filterSlopeGUIContent, _playMusicAsBgmGUIContent, _showWarnForNoLoopChainedModeGUIContent,
             _updateModeGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent, _globalGroupGUIContent;
 #if PACKAGE_ADDRESSABLES
-        private readonly GUIContent _directToAddressableGUIContent, _addressableToDirectGUIContent;
-        private readonly GUIContent _automaticallyLoadAddressableAudioClipsGUIContent = new GUIContent("Automatically Load Addressable Audio Clips", "Automatically load audio clips from addressable assets");
-        private readonly GUIContent _automaticallyUnloadUnusedAddressableAudioClipsAfterGUIContent = new GUIContent("Automatically Unload Unused Addressable Audio Clips After", "Automatically unload unused audio clips from addressable assets after X seconds");
+        private readonly GUIContent _directToAddressableGUIContent, _addressableToDirectGUIContent, _automaticallyLoadAddressableAudioClipsGUIContent, 
+            _automaticallyUnloadUnusedAddressableAudioClipsAfterGUIContent, _addressablesNonPreloadedLogLevelGUIContent;
 #endif
         public readonly SerializedObject RuntimeSettingSO;
         public readonly SerializedObject EditorSettingSO;
@@ -44,6 +40,13 @@ namespace Ami.BroAudio.Editor
             string aaTooltip = instruction.GetText(Instruction.LibraryManager_AddressableConversionTooltip);
             _directToAddressableGUIContent = new GUIContent("Direct → Addressables", aaTooltip);
             _addressableToDirectGUIContent = new GUIContent("Addressables → Direct", aaTooltip); 
+            _automaticallyLoadAddressableAudioClipsGUIContent = new GUIContent("Automatically Load Addressable Audio Clips", 
+                "Automatically loads Addressable audio clips if not already loaded.\n" +
+                $"NOTE: On-demand loading may cause latency. Preload with BroAudio.{nameof(BroAudio.LoadAssetAsync)}() if precise timing is required."); 
+            _automaticallyUnloadUnusedAddressableAudioClipsAfterGUIContent = new GUIContent("Automatically Unload Unused Addressable Audio Clips After", 
+                "Automatically unload unused audio clips from addressable assets after X seconds"); 
+            _addressablesNonPreloadedLogLevelGUIContent = new GUIContent("Non-Preloaded Log Level", 
+                "Log level used when an Addressable AudioClip is played without being preloaded.");
 #endif
         }
         
@@ -142,7 +145,7 @@ namespace Ami.BroAudio.Editor
             
             void DrawOption(Rect rect, GUIContent label, SerializedProperty property)
             {
-                SplitRectHorizontal(rect, 0.4f, 10f, out Rect labelRect, out Rect popupRect);
+                SplitRectHorizontal(rect, 0.45f, 5f, out Rect labelRect, out Rect popupRect);
                 EditorGUI.LabelField(labelRect, label);
                 property.enumValueIndex = (int)(EditorSetting.ReferenceConversionDecision)EditorGUI.EnumPopup(popupRect, (EditorSetting.ReferenceConversionDecision)property.enumValueIndex);
             }
@@ -152,6 +155,7 @@ namespace Ami.BroAudio.Editor
         {
             var automaticallyLoadAddressableAudioClipsProp = RuntimeSettingSO.FindProperty(nameof(RuntimeSetting.AutomaticallyLoadAddressableAudioClips));
             var automaticallyUnloadUnusedAddressableAudioClipsAfterProp = RuntimeSettingSO.FindProperty(nameof(RuntimeSetting.AutomaticallyUnloadUnusedAddressableAudioClipsAfter));
+            var addressableNonPreloadedLogLevelProp = RuntimeSettingSO.FindProperty(nameof(RuntimeSetting.AddressablesNonPreloadedLogLevel));
 
             automaticallyLoadAddressableAudioClipsProp.boolValue = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawer, rect), 
                 _automaticallyLoadAddressableAudioClipsGUIContent, automaticallyLoadAddressableAudioClipsProp.boolValue);
@@ -167,6 +171,13 @@ namespace Ami.BroAudio.Editor
                 automaticallyUnloadUnusedAddressableAudioClipsAfterProp.floatValue = Mathf.Max(1f, EditorGUI.DelayedFloatField(textRect,
                     automaticallyUnloadUnusedAddressableAudioClipsAfterProp.floatValue));
             }
+            
+            var nonPreloadRect = GetRectAndIterateLine(drawer, rect);
+            SplitRectHorizontal(nonPreloadRect, 0.45f, 5f, out Rect nonPreloadLabelRect, out Rect popupRect);
+            EditorGUI.LabelField(nonPreloadLabelRect, _addressablesNonPreloadedLogLevelGUIContent);
+
+            addressableNonPreloadedLogLevelProp.enumValueIndex = (int)(LogType)EditorGUI.EnumPopup(
+                popupRect, (LogType)addressableNonPreloadedLogLevelProp.enumValueIndex);
         }
 #endif
 

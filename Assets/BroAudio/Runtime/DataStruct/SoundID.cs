@@ -108,14 +108,6 @@ namespace Ami.BroAudio
         }
 
         /// <summary>
-        /// Gets the name of the entity
-        /// </summary>
-        public static string ToName(this SoundID id)
-        {
-            return id.ToString();
-        }
-
-        /// <summary>
         /// Checks if this ID is available in the SoundManager at runtime
         /// </summary>
         public static bool IsValid(this SoundID id)

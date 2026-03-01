@@ -35,6 +35,7 @@ namespace Ami.BroAudio.Data
 
         public bool AutomaticallyLoadAddressableAudioClips = FactorySettings.AutomaticallyLoadAddressableAudioClips;
         public float AutomaticallyUnloadUnusedAddressableAudioClipsAfter = FactorySettings.AutomaticallyUnloadUnusedAddressableAudioClipsAfter;
+        public LogType AddressablesNonPreloadedLogLevel = FactorySettings.AddressablesNonPreloadedLogLevel;
 
 #if UNITY_EDITOR
         public void ResetToFactorySettings()
@@ -74,8 +75,9 @@ namespace Ami.BroAudio.Data
             public const LoopType DefaultChainedPlayModeLoop = LoopType.SeamlessLoop;
             public const float DefaultChainedPlayModeSeamlessTransitionTime = 0.1f;
 
-            public const bool AutomaticallyLoadAddressableAudioClips = true;
+            public const bool AutomaticallyLoadAddressableAudioClips = false;
             public const float AutomaticallyUnloadUnusedAddressableAudioClipsAfter = 60f;
+            public const LogType AddressablesNonPreloadedLogLevel = LogType.Error;
         }
     }
 }

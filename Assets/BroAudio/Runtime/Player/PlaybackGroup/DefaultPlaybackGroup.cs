@@ -87,7 +87,7 @@ namespace Ami.BroAudio
             {
                 if (_logCombFilteringWarning)
                 {
-                    Debug.LogWarning(Utility.LogTitle + $"One of the plays of Audio:{id.ToName().ToWhiteBold()} was rejected by the [Comb Filtering Time] rule.");
+                    Debug.LogWarning(Utility.LogTitle + $"One of the plays of Audio:{id.ToString().ToWhiteBold()} was rejected by the [Comb Filtering Time] rule.");
                 }
                 return false;
             }

@@ -26,6 +26,12 @@
 # Visual Studio cache directory
 .vs/
 
+# Visual Studio Code settings
+.vscode/
+
+# Visual Studio config
+.vsconfig
+
 # Rider cache directory
 .idea/
 

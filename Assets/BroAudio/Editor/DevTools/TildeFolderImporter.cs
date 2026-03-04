@@ -185,8 +185,6 @@ namespace Ami.BroAudio.Tools
                 Debug.LogError(Utility.LogTitle + $" Failed to {action} '{folderPath}' to '{folderWithTildeName}': {e.Message}");
                 return false;
             }
-
-            return false;
         }
         
         [UsedImplicitly] // Used when the samples or documentations are imported via the importer unitypackage

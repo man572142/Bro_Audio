@@ -338,7 +338,7 @@ namespace Ami.BroAudio.Editor
             if (Event.current.type == EventType.DragPerform)
             {
                 var entities = DragAndDrop.objectReferences.OfType<AudioEntity>()
-                    .Where(e => e.AudioAsset != editor.Asset)
+                    .Where(e => e.AudioAsset != (AudioAsset)editor.Asset)
                     .ToList();
                 if (entities.Any())
                 {
@@ -364,7 +364,7 @@ namespace Ami.BroAudio.Editor
         private void HandleDragAndDropEntitiesToEntityList(AudioAssetEditor editor)
         {
             var entities = DragAndDrop.objectReferences.OfType<AudioEntity>()
-                .Where(e => e.AudioAsset != editor.Asset)
+                .Where(e => e.AudioAsset != (AudioAsset)editor.Asset)
                 .ToList();
 
             if (!entities.Any())
@@ -678,8 +678,6 @@ namespace Ami.BroAudio.Editor
             Rect rect = new Rect(position);
             rect.width -= _verticalGapDrawer.GetTotalSpace();
             rect.height -= DefaultLayoutPadding * 2;
-            float offsetX = _verticalGapDrawer.GetTotalSpace() + DefaultLayoutPadding;
-            float offsetY = ReorderableList.Defaults.padding + DefaultLayoutPadding - 1f;
 
             EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(rect.width), GUILayout.Height(rect.height));
             {

@@ -4,6 +4,9 @@ using Ami.BroAudio.Data;
 using Ami.Extension;
 using UnityEngine;
 using Ami.BroAudio.Runtime;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace Ami.BroAudio.Demo
 {
@@ -66,7 +69,11 @@ namespace Ami.BroAudio.Demo
                 return;
             }
 
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current.spaceKey.isPressed)
+#else
             if (Input.GetKey(KeyCode.Space))
+#endif
             {
                 _charagingTime += Time.deltaTime;
                 if (_force < MaxForce)
@@ -77,7 +84,11 @@ namespace Ami.BroAudio.Demo
 
                 Charging();
             }
+#if ENABLE_INPUT_SYSTEM
+            else if (Keyboard.current.spaceKey.wasReleasedThisFrame)
+#else
             else if (Input.GetKeyUp(KeyCode.Space))
+#endif
             {
                 Fire();
                 _chargingSoundPlayer?.Stop(0.5f);

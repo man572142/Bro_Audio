@@ -5234,7 +5234,7 @@ PrefabInstance:
     - target: {fileID: 6519512562683208777, guid: c6be7ba18328f3b43aa9606c8877513b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 694cc0a0d2857c0438d12cbf0b5fc32a, type: 2}
+      objectReference: {fileID: 2100000, guid: 13caaf6aec7c57d4aae3b200d104f718, type: 2}
     - target: {fileID: 6942765082297010831, guid: c6be7ba18328f3b43aa9606c8877513b, type: 3}
       propertyPath: m_LightProbeUsage
       value: 0
@@ -12785,6 +12785,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1327619677}
   - component: {fileID: 1327619678}
+  - component: {fileID: 1327619679}
   m_Layer: 0
   m_Name: Environment
   m_TagString: Untagged
@@ -12854,6 +12855,19 @@ MonoBehaviour:
   _overrideGroup: {fileID: 0}
   _positionMode: 0
   _delay: 0
+--- !u!114 &1327619679
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1327619676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e92d190d2747fd4e8dcc2db13fd4de5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BroDemo::FrameRateLimiter
+  _frameRate: 60
 --- !u!1 &1339724367
 GameObject:
   m_ObjectHideFlags: 0
@@ -21369,6 +21383,7 @@ GameObject:
   - component: {fileID: 2094223334}
   - component: {fileID: 2094223333}
   - component: {fileID: 2094223332}
+  - component: {fileID: 2094223335}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -21426,6 +21441,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2094223335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2094223331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bfba3fd8167d4f44b627cb6ec19806b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BroDemo::Ami.BroAudio.Demo.EventSystemAutoAdapter
 --- !u!1 &2113620056
 GameObject:
   m_ObjectHideFlags: 0

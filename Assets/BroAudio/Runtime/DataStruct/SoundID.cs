@@ -17,7 +17,7 @@ namespace Ami.BroAudio
         [SerializeField]
         private AudioEntity _entity;
 
-        public AudioEntity Entity
+        internal AudioEntity Entity
         {
             get
             {

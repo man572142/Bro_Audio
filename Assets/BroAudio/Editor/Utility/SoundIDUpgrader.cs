@@ -306,7 +306,7 @@ namespace Ami.BroAudio.Editor
 
                     if (fieldType.IsValueType && fieldType == typeof(SoundID) && value is SoundID soundId)
                     {
-                        if (soundId.Entity == null)
+                        if (!soundId.IsValid())
                         {
                             var idField = fieldType.GetField(SoundID.NameOf.ID, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                             var id = (int)idField.GetValue(soundId);

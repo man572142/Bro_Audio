@@ -27,6 +27,11 @@ namespace Ami.BroAudio
         internal IAudioPlayer SetPitch(float pitch, float fadeTime);
 
         /// <summary>
+        /// Sets the sequence identifier for this playback, allowing multiple independent sequence instances per entity.
+        /// </summary>
+        internal IAudioPlayer SetSequenceId(string sequenceId);
+
+        /// <summary>
         /// Triggered when the AudioPlayer starts to play
         /// </summary>
         IAudioPlayer OnStart(Action<IAudioPlayer> onStart);

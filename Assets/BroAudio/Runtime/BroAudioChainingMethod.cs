@@ -85,7 +85,15 @@ namespace Ami.BroAudio
         /// Set the velocity and use it to determine which audio clip to play
         /// </summary>
         public static IAudioPlayer SetVelocity(this IAudioPlayer player, int velocity)
-            => player?.SetVelocity(velocity); 
+            => player?.SetVelocity(velocity);
+        #endregion
+
+        #region Sequence
+        /// <summary>
+        /// Set the sequence identifier for this playback, allowing multiple independent sequence instances per entity.
+        /// </summary>
+        public static IAudioPlayer SetSequenceId(this IAudioPlayer player, string sequenceId)
+            => player?.SetSequenceId(sequenceId);
         #endregion
 
         #region As Background Music

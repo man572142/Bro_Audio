@@ -249,6 +249,17 @@ namespace Ami.BroAudio
                 id.Entity.ResetMultiClipStrategy();
             }
         }
+
+        /// <summary>
+        /// Resets the sequence state for a specific named sequence instance
+        /// </summary>
+        public static void ResetMultiClipStrategy(SoundID id, string sequenceId)
+        {
+            if (id.Entity != null)
+            {
+                id.Entity.ResetMultiClipStrategy(sequenceId);
+            }
+        }
         #endregion
 
         /// <summary>

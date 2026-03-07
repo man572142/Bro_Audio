@@ -187,6 +187,12 @@ namespace Ami.BroAudio.Runtime
             return this;
         }
 
+        IAudioPlayer IAudioPlayer.SetSequenceId(string sequenceId)
+        {
+            _pref.SequenceId = sequenceId;
+            return this;
+        }
+
         public void SetTrackEffect(EffectType effect, SetEffectMode mode)
         {
             if(!ID.IsValid() || (effect == EffectType.None && mode != SetEffectMode.Override) 

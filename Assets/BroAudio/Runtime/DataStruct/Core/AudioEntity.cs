@@ -124,7 +124,15 @@ namespace Ami.BroAudio.Data
                 _clipSelectionStrategy.Reset();
             }
         }
-        
+
+        public void ResetMultiClipStrategy(string sequenceId)
+        {
+            if (_clipSelectionStrategy is SequenceClipStrategy sequenceStrategy)
+            {
+                sequenceStrategy.Reset(sequenceId);
+            }
+        }
+
         public override string ToString()
         {
             return Name;

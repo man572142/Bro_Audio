@@ -13,6 +13,7 @@ namespace Ami.BroAudio.Runtime
         private FadeData _fadeInData;
         private FadeData _fadeOutData;
         private int _contextValue;
+        public string SequenceId { get; set; }
         public double ScheduledStartTime { get; set; }
         public double ScheduledEndTime { get; set; }
 
@@ -49,6 +50,7 @@ namespace Ami.BroAudio.Runtime
             Entity = entity;
             _fadeInData = new FadeData(entity.GetFadeInEase(), SoundManager.FadeInEase);
             _fadeOutData = new FadeData(entity.GetFadeOutEase(), SoundManager.FadeOutEase);
+            SequenceId = null;
             ScheduledStartTime = 0;
             ScheduledEndTime = 0;
             _position = Utility.GloballyPlayedPosition;
@@ -90,7 +92,8 @@ namespace Ami.BroAudio.Runtime
 
         public IBroAudioClip PickNewClip()
         {
-            return Entity.PickNewClip(_contextValue);
+            var context = new ClipSelectionContext(_contextValue) { SequenceId = SequenceId };
+            return Entity.PickNewClip(context);
         }
 
         public void ApplySeamlessFade()

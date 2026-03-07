@@ -37,6 +37,7 @@ namespace Ami.BroAudio
         IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => IsAvailable() ? Wrap(Instance.SetVolume(vol, fadeTime)) : Empty.AudioPlayer;
         IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime) => IsAvailable() ? Wrap(Instance.SetPitch(pitch, fadeTime)) : Empty.AudioPlayer;
         IAudioPlayer IAudioPlayer.SetVelocity(int velocity) => IsAvailable() ? Wrap(Instance.SetVelocity(velocity)) : Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.SetSequenceId(string sequenceId) => IsAvailable() ? Wrap(Instance.SetSequenceId(sequenceId)) : Empty.AudioPlayer;
 
         void IAudioStoppable.Stop() => Instance?.Stop();
         void IAudioStoppable.Stop(Action onFinished) => Instance?.Stop(onFinished);

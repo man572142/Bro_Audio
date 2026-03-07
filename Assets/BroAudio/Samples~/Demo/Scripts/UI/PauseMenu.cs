@@ -1,5 +1,8 @@
 using UnityEditor;
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace Ami.BroAudio.Demo
 {
@@ -36,14 +39,22 @@ namespace Ami.BroAudio.Demo
 		// Update is called once per frame
 		void Update()
 		{
+#if ENABLE_INPUT_SYSTEM
+			if(Keyboard.current.backspaceKey.wasPressedThisFrame)
+#else
 			if(Input.GetKeyDown(KeyCode.Backspace))
+#endif
 			{
 				IsOpen = !IsOpen;
 				ChangeOpenState();
 			}
 
 #if UNITY_EDITOR
+#if ENABLE_INPUT_SYSTEM
+			if(IsOpen && Keyboard.current.tabKey.wasPressedThisFrame)
+#else
 			if(IsOpen && Input.GetKeyDown(KeyCode.Tab))
+#endif
 			{
 				Selection.activeObject = _hierarchyLocateTarget;
 				EditorGUIUtility.PingObject(_hierarchyLocateTarget);

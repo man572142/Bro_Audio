@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Ami.Extension;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace Ami.BroAudio.Demo
 {
@@ -99,8 +102,14 @@ namespace Ami.BroAudio.Demo
 
         private void CameraRotation()
         {
+#if ENABLE_INPUT_SYSTEM
+            Vector2 mouseDelta = Mouse.current.delta.ReadValue() * Time.deltaTime;
+            float mouseX = mouseDelta.x * _yawRotationSensitivity;
+            float mouseY = mouseDelta.y * _pitchRotationSensitivity;
+#else
             float mouseX = Input.GetAxis("Mouse X") * _yawRotationSensitivity;
             float mouseY = Input.GetAxis("Mouse Y") * _pitchRotationSensitivity;
+#endif
 
             _rotationX = ClampAngle(_rotationX - mouseY, _minPitchAngle, _maxPitchAngle);
             _rotationY = ClampAngle(_rotationY + mouseX, float.MinValue, float.MaxValue);
@@ -118,10 +127,19 @@ namespace Ami.BroAudio.Demo
 
         private void Moving()
         {
+#if ENABLE_INPUT_SYSTEM
+            float moveForward = (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed ? 1f : 0f)
+                              - (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed ? 1f : 0f);
+            float moveX = (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed ? 1f : 0f)
+                        - (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed ? 1f : 0f);
+            float currMotionSpeed = Mathf.Clamp01(Mathf.Abs(moveForward) + Mathf.Abs(moveX));
+            float currMovingSpeed = Keyboard.current.leftShiftKey.isPressed ? _runSpeed : _walkSpeed;
+#else
             float moveForward = Input.GetAxis("Vertical");
             float moveX = Input.GetAxis("Horizontal");
             float currMotionSpeed = Mathf.Clamp01(Mathf.Abs(moveForward) + Mathf.Abs(moveX));
             float currMovingSpeed = Input.GetKey(KeyCode.LeftShift) ? _runSpeed : _walkSpeed;
+#endif
             _animator.SetFloat(MotionSpeedPara, currMotionSpeed);
             _animator.SetFloat(MovingSpeedPara, currMotionSpeed * currMovingSpeed);
             Vector3 direction = transform.TransformDirection(new Vector3(moveX, 0f, moveForward));

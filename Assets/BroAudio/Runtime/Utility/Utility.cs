@@ -118,7 +118,7 @@ namespace Ami.BroAudio
             
             IAudioEffectModifier LogAndReturnNull()
             {
-                Debug.LogWarning(Utility.LogTitle + $"No proxy implementation found for {typeof(T).Name}");
+                Debug.LogWarning(LogTitle + $"No proxy implementation found for {typeof(T).Name}");
                 return null;
             }
         }
@@ -138,7 +138,7 @@ namespace Ami.BroAudio
 
             Type LogAndReturnNull()
             {
-                Debug.LogWarning(Utility.LogTitle + $"No filter type mapping found for {proxy?.GetType().Name}");
+                Debug.LogWarning(LogTitle + $"No filter type mapping found for {proxy?.GetType().Name}");
                 return null;
             }
         }
@@ -222,7 +222,6 @@ namespace Ami.BroAudio
                     break;
                 case LogType.Exception:
                     throw new BroAudioException(message);
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

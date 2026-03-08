@@ -29,10 +29,11 @@ namespace Ami.BroAudio.Runtime
         public bool HasStartedPlaying => PlaybackStartingTime > 0;
         private bool IsPausedBeforeStart => _stopMode == StopMode.Pause && !HasStartedPlaying;
 
-        public void SetPlaybackData(SoundID id, PlaybackPreference pref, IBroAudioClip clip = null)
+        public void SetPlaybackData(SoundID id, PlaybackPreference pref, IAudioMixerPool mixerPool, IBroAudioClip clip = null)
         {
             ID = id;
             _pref = pref;
+            MixerPool = mixerPool;
             _clip = clip;
         }
 

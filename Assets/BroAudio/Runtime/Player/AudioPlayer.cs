@@ -12,16 +12,15 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource)), AddComponentMenu("")]
     public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
-        [SerializeField] private AudioSource AudioSource = null;
+        [SerializeField] private AudioSource AudioSource;
 
         private IBroAudioClip _clip;
-        private List<AudioPlayerDecorator> _decorators = null;
-        private string _sendParaName = null;
-        private string _currTrackName = null;
-        //private string _pitchParaName = string.Empty;
+        private List<AudioPlayerDecorator> _decorators;
+        private string _sendParaName;
+        private string _currTrackName;
 
-        private IDisposable _proxy = null;
-        private AudioFilterReader _audioFilterReader = null;
+        private IDisposable _proxy;
+        private AudioFilterReader _audioFilterReader;
         
         private struct AddedEffect
         {
@@ -36,6 +35,7 @@ namespace Ami.BroAudio.Runtime
         public bool IsPlaying => AudioSource.isPlaying;
         public Vector3 PlayingPosition => _pref.Position;
         public bool IsStopping { get; private set; }
+        public IAudioMixerPool MixerPool { get; internal set; }
         public EffectType CurrentActiveTrackEffects { get; private set; } = EffectType.None;
         public bool IsUsingTrackEffect => CurrentActiveTrackEffects != EffectType.None;
         public bool IsDominator => HasDecoratorOf<DominatorPlayer>();
@@ -71,8 +71,6 @@ namespace Ami.BroAudio.Runtime
         }
 
         private string VolumeParaName => IsUsingTrackEffect ? GetSendParaName() : GetCurrentTrackName();
-
-        IAudioMixerPool Mixer => SoundManager.Instance;
 
         private bool TryGetMixerAndTrack(out AudioMixer mixer, out AudioMixerGroup track)
         {

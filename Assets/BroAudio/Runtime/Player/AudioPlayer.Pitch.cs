@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using Ami.BroAudio.Data;
 using Ami.Extension;
 using UnityEngine;
@@ -18,21 +17,14 @@ namespace Ami.BroAudio.Runtime
         IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime)
         {
             StaticPitch = pitch;
-            switch (SoundManager.PitchSetting)
+            pitch = Mathf.Clamp(pitch, AudioConstant.MinAudioSourcePitch, AudioConstant.MaxAudioSourcePitch);
+            if (fadeTime > 0f)
             {
-                case PitchShiftingSetting.AudioMixer:
-                    break;
-                case PitchShiftingSetting.AudioSource:
-                    pitch = Mathf.Clamp(pitch, AudioConstant.MinAudioSourcePitch, AudioConstant.MaxAudioSourcePitch);
-                    if (fadeTime > 0f)
-                    {
-                        this.StartCoroutineAndReassign(PitchControl(pitch, fadeTime), ref _pitchCoroutine);
-                    }
-                    else
-                    {
-                        AudioSource.pitch = pitch;
-                    }
-                    break;
+                this.StartCoroutineAndReassign(PitchControl(pitch, fadeTime), ref _pitchCoroutine);
+            }
+            else
+            {
+                AudioSource.pitch = pitch;
             }
             return this;
         }

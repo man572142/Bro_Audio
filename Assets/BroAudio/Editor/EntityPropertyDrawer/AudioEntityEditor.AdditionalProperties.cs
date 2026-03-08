@@ -2,8 +2,6 @@ using UnityEngine;
 using UnityEditor;
 using Ami.BroAudio.Data;
 using Ami.Extension;
-using Ami.BroAudio.Runtime;
-using System;
 using Ami.BroAudio.Tools;
 using static Ami.Extension.EditorScriptingExtension;
 using static Ami.BroAudio.Editor.EditorSetting;
@@ -238,11 +236,8 @@ namespace Ami.BroAudio.Editor
             Rect pitchRect = GetRectAndIterateLine(position);
             pitchRect.width *= DefaultFieldRatio;
 
-            bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
-            var pitchSetting = isWebGL? PitchShiftingSetting.AudioSource : BroEditorUtility.RuntimeSetting.PitchSetting;
             float minPitch = AudioConstant.MinPlayablePitch;
-            float maxPitch = pitchSetting == PitchShiftingSetting.AudioMixer ? AudioConstant.MaxMixerPitch : AudioConstant.MaxAudioSourcePitch;
-            _pitchLabel.tooltip = $"According to the current preference setting, the Pitch will be set on [{pitchSetting}] ";
+            float maxPitch = AudioConstant.MaxAudioSourcePitch;
 
             Rect randButtonRect = new Rect(pitchRect.xMax + 5f, pitchRect.y, RandomToolBarWidth, pitchRect.height);
             SerializedProperty randFlagsProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.RandomFlags));
@@ -251,40 +246,13 @@ namespace Ami.BroAudio.Editor
             float pitch = Mathf.Clamp(pitchProp.floatValue, minPitch, maxPitch);
             float pitchRange = pitchRandProp.floatValue;
 
-            switch (pitchSetting)
+            if (hasRandom)
             {
-                case PitchShiftingSetting.AudioMixer:
-                    pitch = (float)Math.Round(pitch * Percentage, MidpointRounding.AwayFromZero);
-                    pitchRange = (float)Math.Round(pitchRange * Percentage, MidpointRounding.AwayFromZero);
-                    minPitch *= Percentage;
-                    maxPitch *= Percentage;
-                    if (hasRandom)
-                    {
-                        DrawRandomRangeSlider(pitchRect,_pitchLabel, ref pitch, ref pitchRange, minPitch, maxPitch, SliderType.Linear);
-                        Rect minFieldRect = new Rect(pitchRect) { x = pitchRect.x + EditorGUIUtility.labelWidth + 5f, width = MinMaxSliderFieldWidth };
-                        Rect maxFieldRect = new Rect(minFieldRect) { x = pitchRect.xMax - MinMaxSliderFieldWidth };
-                        DrawPercentageLabel(minFieldRect);
-                        DrawPercentageLabel(maxFieldRect);
-                    }
-                    else
-                    {
-                        pitch = EditorGUI.Slider(pitchRect, _pitchLabel, pitch, minPitch, maxPitch);
-                        DrawPercentageLabel(pitchRect);
-                    }
-                    pitch /= Percentage;
-                    pitchRange /= Percentage;
-                    break;
-
-                case PitchShiftingSetting.AudioSource:
-                    if (hasRandom)
-                    {
-                        DrawRandomRangeSlider(pitchRect, _pitchLabel,ref pitch, ref pitchRange, minPitch, maxPitch, SliderType.Linear);
-                    }
-                    else
-                    {
-                        pitch = EditorGUI.Slider(pitchRect, _pitchLabel, pitch, minPitch, maxPitch);
-                    }
-                    break;
+                DrawRandomRangeSlider(pitchRect, _pitchLabel, ref pitch, ref pitchRange, minPitch, maxPitch, SliderType.Linear);
+            }
+            else
+            {
+                pitch = EditorGUI.Slider(pitchRect, _pitchLabel, pitch, minPitch, maxPitch);
             }
 
             pitchProp.floatValue = pitch;

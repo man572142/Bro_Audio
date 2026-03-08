@@ -57,7 +57,6 @@ namespace Ami.Extension
         public const float MinAudioSourcePitch = -3f;
         public const float MaxAudioSourcePitch = 3f;
         public const float MinPlayablePitch = 0.01f;
-        public const float MaxMixerPitch = 10f;
         public const int DefaultPriority = 128;
         public const int HighestPriority = 0;
         public const float LowestPriority = 256;

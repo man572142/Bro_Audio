@@ -67,7 +67,7 @@ namespace Ami.BroAudio.Runtime
             var audioType = id.ToAudioType();
             var wrapper = new AudioPlayerInstanceWrapper(player);
             player.SetInstanceWrapper(wrapper);
-            player.SetPlaybackData(id, pref);
+            player.SetPlaybackData(id, pref, this);
 
             _playbackQueue.Enqueue(player);
 

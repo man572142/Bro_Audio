@@ -21,7 +21,6 @@ namespace Ami.BroAudio.Runtime
             switch (SoundManager.PitchSetting)
             {
                 case PitchShiftingSetting.AudioMixer:
-                    //_audioMixer.SafeSetFloat(_pitchParaName, pitch); // Don't * 100f, the value in percentage is displayed in Editor only.  
                     break;
                 case PitchShiftingSetting.AudioSource:
                     pitch = Mathf.Clamp(pitch, AudioConstant.MinAudioSourcePitch, AudioConstant.MaxAudioSourcePitch);

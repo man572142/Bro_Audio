@@ -18,7 +18,6 @@ namespace Ami.BroAudio.Runtime
         private List<AudioPlayerDecorator> _decorators = null;
         private string _sendParaName = null;
         private string _currTrackName = null;
-        //private string _pitchParaName = string.Empty;
 
         private IDisposable _proxy = null;
         private AudioFilterReader _audioFilterReader = null;
@@ -106,7 +105,7 @@ namespace Ami.BroAudio.Runtime
         private void SetSpatial(PlaybackPreference pref)
         {
             SpatialSetting setting = pref.Entity.SpatialSetting;
-            SetSpatialBlend();
+            ApplySpatialBlend(pref, setting);
 
             if (setting == null)
             {
@@ -127,43 +126,38 @@ namespace Ami.BroAudio.Runtime
                 AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, setting.CustomRolloff);
             }
 
-            if (setting.HasLowPassFilter && setting.LowpassLevelCustomCurve != null && 
-                _addedEffects == null) // addedEffect might be transferred from the previous player, so we don't need to set it here.'
+            if (setting.HasLowPassFilter && setting.LowpassLevelCustomCurve != null &&
+                _addedEffects == null) // addedEffect might be transferred from the previous player, so we don't need to set it here.
             {
                 this.AddLowPassEffect(x => x.customCutoffCurve = setting.LowpassLevelCustomCurve);
             }
+        }
 
-            void SetSpatialBlend()
+        private void ApplySpatialBlend(PlaybackPreference pref, SpatialSetting setting)
+        {
+            if (pref.HasFollowTarget(out var followTarget))
             {
-                if (pref.HasFollowTarget(out var followTarget))
-                {
-                    transform.position = followTarget.position;
-                    SetTo3D();
-                }
-                else if (pref.HasSpecifiedPosition(out var position))
-                {
-                    transform.position = position;
-                    SetTo3D();
-                }
-                // The log is unnecessary and may cause misunderstandings, as the Play method already provides clear summaries.
-                //else if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D) && pref.Entity is IEntityIdentity entity)
-                //{
-                //	Debug.LogWarning(Utility.LogTitle + $"You've set a non-2D SpatialBlend for :{entity.Name}, but didn't specify a position or a follow target when playing it");
-                //}
+                transform.position = followTarget.position;
+                ForceSpatialBlend3D(setting);
             }
-
-            void SetTo3D()
+            else if (pref.HasSpecifiedPosition(out var position))
             {
-                if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D))
-                {
-                    // Don't use SetCustomCurveOrResetDefault, it will set to 2D if isDefaultCurve.
-                    AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, setting.SpatialBlend);
-                }
-                else
-                {
-                    // force to 3D if it's played with a position or a follow target, even if it has no custom curve. 
-                    AudioSource.spatialBlend = AudioConstant.SpatialBlend_3D;
-                }
+                transform.position = position;
+                ForceSpatialBlend3D(setting);
+            }
+        }
+
+        private void ForceSpatialBlend3D(SpatialSetting setting)
+        {
+            if (setting != null && !setting.SpatialBlend.IsDefaultCurve(AudioConstant.SpatialBlend_2D))
+            {
+                // Don't use SetCustomCurveOrResetDefault, it will set to 2D if isDefaultCurve.
+                AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, setting.SpatialBlend);
+            }
+            else
+            {
+                // Force to 3D if played with a position or follow target, even without a custom curve.
+                AudioSource.spatialBlend = AudioConstant.SpatialBlend_3D;
             }
         }
 
@@ -211,9 +205,9 @@ namespace Ami.BroAudio.Runtime
             bool newUsingEffectState = IsUsingTrackEffect;
             if (oldUsingEffectState != newUsingEffectState)
             {
-                string from = IsUsingTrackEffect ? GetCurrentTrackName() : GetSendParaName();
-                string to = IsUsingTrackEffect ? GetSendParaName() : GetCurrentTrackName();
-                mixer.ChangeChannel(from, to, mixerDecibelVolume);
+                string previousChannel = IsUsingTrackEffect ? GetCurrentTrackName() : GetSendParaName();
+                string nextChannel = IsUsingTrackEffect ? GetSendParaName() : GetCurrentTrackName();
+                mixer.ChangeChannel(previousChannel, nextChannel, mixerDecibelVolume);
             }
         }
 

@@ -87,23 +87,8 @@ namespace Ami.BroAudio.Runtime
                 }
 #endif
 
-                var audioClip = _clip.GetAudioClip();
-                sampleRate = audioClip.frequency;
-                AudioSource.clip = audioClip;
-                AudioSource.priority = _pref.Entity.Priority;
-
-                SetPlayPosition(sampleRate);
-                SetInitialPitch(_pref.Entity, audioTypePref);
-                SetSpatial(_pref);
-
-                if (IsDominator)
-                {
-                    TrackType = AudioTrackType.Dominator;
-                }
-                else
-                {
-                    SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
-                }
+                sampleRate = ConfigureAudioSourceForClip(audioTypePref);
+                AssignAudioTrack(audioTypePref);
 
                 SchedulePlayback(out hasScheduledPlay);
                 if(hasScheduledPlay)
@@ -113,9 +98,7 @@ namespace Ami.BroAudio.Runtime
 
                 if (_decorators.TryGetDecorator<MusicPlayer>(out var musicPlayer))
                 {
-                    AudioSource.reverbZoneMix = 0f;
-                    AudioSource.priority = AudioConstant.HighestPriority;
-                    musicPlayer.DoTransition(ref _pref);
+                    PrepareMusicPlayerTransition(musicPlayer);
                     while (musicPlayer.IsWaitingForTransition)
                     {
                         yield return null;
@@ -214,6 +197,36 @@ namespace Ami.BroAudio.Runtime
             } while (_pref.IsLoop(LoopType.Loop) && CanLoopIfIsChainedMode());
 
             EndPlaying();
+        }
+
+        private int ConfigureAudioSourceForClip(IAudioPlaybackPref audioTypePref)
+        {
+            var audioClip = _clip.GetAudioClip();
+            AudioSource.clip = audioClip;
+            AudioSource.priority = _pref.Entity.Priority;
+            SetPlayPosition(audioClip.frequency);
+            SetInitialPitch(_pref.Entity, audioTypePref);
+            SetSpatial(_pref);
+            return audioClip.frequency;
+        }
+
+        private void AssignAudioTrack(IAudioPlaybackPref audioTypePref)
+        {
+            if (IsDominator)
+            {
+                TrackType = AudioTrackType.Dominator;
+            }
+            else
+            {
+                SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
+            }
+        }
+
+        private void PrepareMusicPlayerTransition(MusicPlayer musicPlayer)
+        {
+            AudioSource.reverbZoneMix = 0f;
+            AudioSource.priority = AudioConstant.HighestPriority;
+            musicPlayer.DoTransition(ref _pref);
         }
 
         private void StartPlaying(int sampleRate)

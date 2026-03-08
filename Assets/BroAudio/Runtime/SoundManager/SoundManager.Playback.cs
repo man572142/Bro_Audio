@@ -67,7 +67,7 @@ namespace Ami.BroAudio.Runtime
             BroAudioType audioType = id.ToAudioType();
             var wrapper = new AudioPlayerInstanceWrapper(player);
             player.SetInstanceWrapper(wrapper);
-            player.SetPlaybackData(id, pref);
+            player.SetPlaybackData(id, pref, this);
 
             _playbackQueue.Enqueue(player);
 
@@ -122,10 +122,9 @@ namespace Ami.BroAudio.Runtime
             var newPlayer = _audioPlayerPool.Extract();
             wrapper.UpdateInstance(newPlayer);
             newPlayer.SetInstanceWrapper(wrapper);
-
             newPlayer.SetVolume(trackVolume);
             newPlayer.SetPitch(pitch);
-            newPlayer.SetPlaybackData(id, pref);
+            newPlayer.SetPlaybackData(id, pref, this);
             newPlayer.Play();
             if (pref.ScheduledEndTime > 0d)
             {

@@ -35,6 +35,13 @@ namespace Ami.BroAudio.Editor
         private const string MainAsmdefGUID = "111d4e39aeddad44898002abada9c174";
         private const string LegacyCorePath = "/Core/Scripts/";
 
+        // .asmref files that are removed after a successful migration.
+        private static readonly string[] AsmrefPathsToRemove =
+        {
+            MainAssetPath + "/Runtime/BroAudioReference.asmref",
+            MainAssetPath + "/Editor/BroAudioEditorReference.asmref",
+        };
+
         // Sub-paths inside the old root  →  sub-paths inside the new root
         private static readonly (string OldSub, string NewSub)[] SubPathMappings =
         {
@@ -57,6 +64,9 @@ namespace Ami.BroAudio.Editor
         {
             if (!TryFindLegacyRoot(out string legacyRoot))
             {
+#if !BroAudio_DevOnly
+                RemoveAsmrefFiles();
+#endif
                 return false;
             }
 
@@ -81,6 +91,7 @@ namespace Ami.BroAudio.Editor
                 anyChanged |= MigrateDirectory(sourcePath, targetPath);
             }
 
+            RemoveAsmrefFiles();
             // Remove the old Core tree if it is now empty.
             TryDeleteFolderRecursiveIfEmpty(oldCorePath);
 
@@ -211,6 +222,21 @@ namespace Ami.BroAudio.Editor
 
             EnsureFolderExists(parent);
             AssetDatabase.CreateFolder(parent, folderName);
+        }
+
+        /// <summary>
+        /// Deletes the transitional <c>.asmref</c> files that are no longer needed
+        /// once the legacy assembly definitions are in their canonical locations.
+        /// </summary>
+        private static void RemoveAsmrefFiles()
+        {
+            foreach (string path in AsmrefPathsToRemove)
+            {
+                if (FileExistsInProject(path))
+                {
+                    AssetDatabase.DeleteAsset(path);
+                }
+            }
         }
 
         /// <summary>

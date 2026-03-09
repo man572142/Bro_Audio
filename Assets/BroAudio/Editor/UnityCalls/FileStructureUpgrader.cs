@@ -214,8 +214,10 @@ namespace Ami.BroAudio.Editor
         }
 
         /// <summary>
-        /// Deletes <paramref name="folderPath"/> (and its .meta file) if it contains
-        /// no non-folder assets.
+        /// Recursively deletes <paramref name="folderPath"/> and any empty sub-folders
+        /// within it.  A folder is deleted only when it contains no non-folder assets.
+        /// Children are processed depth-first so that a parent becomes empty once all
+        /// of its empty children have been removed.
         /// </summary>
         private static void TryDeleteFolderRecursiveIfEmpty(string folderPath)
         {
@@ -224,6 +226,19 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
+            // Process sub-folders depth-first.
+            string[] childGuids = AssetDatabase.FindAssets("", new[] { folderPath });
+            foreach (string guid in childGuids)
+            {
+                string childPath = AssetDatabase.GUIDToAssetPath(guid);
+                if (AssetDatabase.IsValidFolder(childPath) &&
+                    Path.GetDirectoryName(childPath).Replace('\\', '/') == folderPath)
+                {
+                    TryDeleteFolderRecursiveIfEmpty(childPath);
+                }
+            }
+
+            // Now check whether this folder itself is empty.
             string[] remaining = AssetDatabase.FindAssets("", new[] { folderPath });
             bool hasFiles = false;
 

@@ -32,14 +32,14 @@ namespace Ami.BroAudio.Editor
     {
         // Marker: in the legacy layout the editor asmdef lives at
         // <broAudioRoot>/Core/Scripts/Editor/BroAudioEditor.asmdef
-        private const string LegacyEditorAsmdef   = "BroAudioEditor";
-        private const string LegacyCoreMarker      = "/Core/Scripts/Editor/";
+        private const string MainAsmdefGUID = "111d4e39aeddad44898002abada9c174";
+        private const string LegacyCorePath = "/Core/Scripts/";
 
         // Sub-paths inside the old root  →  sub-paths inside the new root
         private static readonly (string OldSub, string NewSub)[] SubPathMappings =
         {
             ("Core/Scripts/Editor",   "Editor"),
-            ("Core/Scripts/Runtime",  "Runtime"),
+            ("Core/Scripts",  "Runtime"),
             ("Core/Resources",        "Resources"),
             ("Core/Editor/Resources", "Editor/Resources"),
         };
@@ -111,23 +111,15 @@ namespace Ami.BroAudio.Editor
         private static bool TryFindLegacyRoot(out string legacyRoot)
         {
             legacyRoot = null;
+            var path = AssetDatabase.GUIDToAssetPath(MainAsmdefGUID);
+            int markerIndex = path.IndexOf(LegacyCorePath, StringComparison.Ordinal);
 
-            // AssetDatabase.FindAssets matches on the file name (without extension).
-            string[] guids = AssetDatabase.FindAssets(LegacyEditorAsmdef);
-
-            foreach (string guid in guids)
+            if (markerIndex >= 0)
             {
-                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-                int markerIndex  = assetPath.IndexOf(LegacyCoreMarker, StringComparison.Ordinal);
-
-                if (markerIndex >= 0)
-                {
-                    // Everything before "/Core/Scripts/Editor/" is the BroAudio root.
-                    legacyRoot = assetPath.Substring(0, markerIndex);
-                    return true;
-                }
+                // Everything before "/Core/Scripts/Editor/" is the BroAudio root.
+                legacyRoot = path.Substring(0, markerIndex);
+                return true;
             }
-
             return false;
         }
 

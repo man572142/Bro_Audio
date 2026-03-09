@@ -149,7 +149,6 @@ namespace Ami.BroAudio.Data
         {
             AudioAsset = asset;
         }
-#endif
 
         [System.Obsolete("Only for conversion")]
         internal static AudioEntity ConvertLegacy(AudioEntity_LEGACY legacy, AudioAsset asset)
@@ -176,11 +175,9 @@ namespace Ami.BroAudio.Data
 
             entity.AudioType = Utility.GetAudioType(legacy.ID);
 
-#if UNITY_EDITOR
             entity.SeamlessTransitionType = legacy.SeamlessTransitionType;
             entity.TransitionTempo = legacy.TransitionTempo;
             entity.SnapToFullVolume = legacy.SnapToFullVolume;
-#endif
 
 #if PACKAGE_ADDRESSABLES
             entity.UseAddressables = legacy.UseAddressables;
@@ -188,6 +185,7 @@ namespace Ami.BroAudio.Data
 
             return entity;
         }
+#endif
 
         public static AudioEntity CreateNewInstance(AudioAsset asset, string name, BroAudioType audioType)
         {

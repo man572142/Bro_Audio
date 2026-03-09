@@ -143,11 +143,11 @@ namespace Ami.BroAudio.Data
                 UnityEditor.EditorApplication.delayCall += upgradeEntities;
             }
         }
-#endif
 
         [SerializeField]
         [System.Obsolete("Entities are only here for backwards compatibility.", true)]
         private AudioEntity_LEGACY[] Entities;
+#endif
 
         [SerializeField]
         [System.Obsolete("Here JUST in case the SoundIDs are not fully converted and need some way to be converted back")]
@@ -171,8 +171,10 @@ namespace Ami.BroAudio.Data
             }
         }
 
+#if UNITY_EDITOR
         [System.Obsolete("Entities are only here for backwards compatibility.", true)]
         private int EntitiesCount => Entities.Length;
+#endif
 
 #if UNITY_EDITOR
         [field: SerializeField] public string AssetName { get; set; }
@@ -236,10 +238,11 @@ namespace Ami.BroAudio.Data
             return false;
         }
 
+#if UNITY_EDITOR
         [System.Obsolete("Clearing down after ID upgrades are all done", true)]
         public void ClearStoredEntities()
         {
-            if (Entities != null) 
+            if (Entities != null)
             {
                 Entities = new AudioEntity_LEGACY[0];
             }
@@ -249,11 +252,10 @@ namespace Ami.BroAudio.Data
                 ConvertedEntities.Clear();
             }
 
-#if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(this);
             UnityEditor.AssetDatabase.SaveAssetIfDirty(this);
-#endif
         }
+#endif
 
         public static class NameOf
         {

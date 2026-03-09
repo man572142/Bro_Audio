@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -9,29 +10,33 @@ namespace Ami.BroAudio.Editor
     /// Migrates files from the legacy BroAudio folder layout to the current layout.
     ///
     /// Legacy layout (pre-UPM, shipped as a plain .unitypackage):
-    ///   Assets/BroAudio/Core/Scripts/Editor/   → BroAudioEditor assembly
-    ///   Assets/BroAudio/Core/Scripts/Runtime/  → BroAudio assembly
-    ///   Assets/BroAudio/Core/Resources/        → runtime Resources
-    ///   Assets/BroAudio/Core/Editor/Resources/ → editor Resources
+    ///   &lt;root&gt;/Core/Scripts/Editor/   → BroAudioEditor assembly
+    ///   &lt;root&gt;/Core/Scripts/Runtime/  → BroAudio assembly
+    ///   &lt;root&gt;/Core/Resources/        → runtime Resources
+    ///   &lt;root&gt;/Core/Editor/Resources/ → editor Resources
     ///
-    /// Current layout:
-    ///   Assets/BroAudio/Editor/
-    ///   Assets/BroAudio/Runtime/
-    ///   Assets/BroAudio/Resources/        (generated, not in package)
-    ///   Assets/BroAudio/Editor/Resources/ (generated, not in package)
+    /// Current layout (relative to <see cref="MainAssetPath"/>):
+    ///   Editor/
+    ///   Runtime/
+    ///   Resources/        (generated, not in package)
+    ///   Editor/Resources/ (generated, not in package)
     ///
-    /// The upgrader is called once per import session from <see cref="AssetPostprocessorEditor"/>.
-    /// It moves every file from the legacy tree to the corresponding new path, skipping files
-    /// that were already placed there by the new package, and deletes the old Core folder once
-    /// it is empty.
+    /// The old root is discovered dynamically by locating the legacy
+    /// BroAudioEditor.asmdef wherever it happens to be in the project, so this
+    /// works even if the user moved BroAudio to a non-standard folder.
+    ///
+    /// The upgrader is called once per import session from <see cref="AssetPostprocessorEditor"/>
+    /// before <c>BroUserDataGenerator</c> runs.
     /// </summary>
     public static class FileStructureUpgrader
     {
-        private const string OldCoreFolder = "Core";
-        private static string OldCoreAssetPath => MainAssetPath + "/" + OldCoreFolder;
+        // Marker: in the legacy layout the editor asmdef lives at
+        // <broAudioRoot>/Core/Scripts/Editor/BroAudioEditor.asmdef
+        private const string LegacyEditorAsmdef   = "BroAudioEditor";
+        private const string LegacyCoreMarker      = "/Core/Scripts/Editor/";
 
-        // Each entry: (old path relative to MainAssetPath, new path relative to MainAssetPath)
-        private static readonly (string Source, string Target)[] DirectoryMappings =
+        // Sub-paths inside the old root  →  sub-paths inside the new root
+        private static readonly (string OldSub, string NewSub)[] SubPathMappings =
         {
             ("Core/Scripts/Editor",   "Editor"),
             ("Core/Scripts/Runtime",  "Runtime"),
@@ -39,25 +44,34 @@ namespace Ami.BroAudio.Editor
             ("Core/Editor/Resources", "Editor/Resources"),
         };
 
+        // ────────────────────────────────────────────────────────────
+        //  Public entry point
+        // ────────────────────────────────────────────────────────────
+
         /// <summary>
-        /// Checks for a legacy file structure and migrates it to the current layout.
+        /// Searches the project for a legacy BroAudio Core tree and migrates it
+        /// to the current layout under <see cref="MainAssetPath"/>.
         /// </summary>
-        /// <returns>True if any files were moved or deleted.</returns>
+        /// <returns>True if any files were moved or removed.</returns>
         public static bool TryUpgradeFileStructure()
         {
-            if (!AssetDatabase.IsValidFolder(OldCoreAssetPath))
+            if (!TryFindLegacyRoot(out string legacyRoot))
             {
                 return false;
             }
 
-            Debug.Log(Utility.LogTitle + "Legacy folder structure detected. Upgrading…");
+            string oldCorePath = legacyRoot + "/Core";
+            string newRoot     = MainAssetPath; // canonical location of the new package
+
+            Debug.Log(Utility.LogTitle +
+                $"Legacy folder structure detected at '{legacyRoot}'. Migrating to '{newRoot}'…");
 
             bool anyChanged = false;
 
-            foreach (var (source, target) in DirectoryMappings)
+            foreach (var (oldSub, newSub) in SubPathMappings)
             {
-                string sourcePath = MainAssetPath + "/" + source;
-                string targetPath = MainAssetPath + "/" + target;
+                string sourcePath = legacyRoot + "/" + oldSub;
+                string targetPath = newRoot     + "/" + newSub;
 
                 if (!AssetDatabase.IsValidFolder(sourcePath))
                 {
@@ -68,7 +82,7 @@ namespace Ami.BroAudio.Editor
             }
 
             // Remove the old Core tree if it is now empty.
-            TryDeleteFolderRecursiveIfEmpty(OldCoreAssetPath);
+            TryDeleteFolderRecursiveIfEmpty(oldCorePath);
 
             if (anyChanged)
             {
@@ -77,8 +91,8 @@ namespace Ami.BroAudio.Editor
             }
             else
             {
-                // The Core folder exists but was already empty – clean it up anyway.
-                AssetDatabase.DeleteAsset(OldCoreAssetPath);
+                // Core existed but contained nothing migratable – clean it up anyway.
+                AssetDatabase.DeleteAsset(oldCorePath);
                 AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
             }
 
@@ -86,7 +100,39 @@ namespace Ami.BroAudio.Editor
         }
 
         // ────────────────────────────────────────────────────────────
-        //  Private helpers
+        //  Discovery
+        // ────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Finds the root folder of a legacy BroAudio installation by searching
+        /// for the old <c>BroAudioEditor.asmdef</c> inside a <c>Core/Scripts/Editor/</c>
+        /// sub-path.  Works regardless of where BroAudio was placed in the project.
+        /// </summary>
+        private static bool TryFindLegacyRoot(out string legacyRoot)
+        {
+            legacyRoot = null;
+
+            // AssetDatabase.FindAssets matches on the file name (without extension).
+            string[] guids = AssetDatabase.FindAssets(LegacyEditorAsmdef);
+
+            foreach (string guid in guids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                int markerIndex  = assetPath.IndexOf(LegacyCoreMarker, StringComparison.Ordinal);
+
+                if (markerIndex >= 0)
+                {
+                    // Everything before "/Core/Scripts/Editor/" is the BroAudio root.
+                    legacyRoot = assetPath.Substring(0, markerIndex);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // ────────────────────────────────────────────────────────────
+        //  Migration helpers
         // ────────────────────────────────────────────────────────────
 
         /// <summary>
@@ -112,9 +158,9 @@ namespace Ami.BroAudio.Editor
                     continue;
                 }
 
-                // Preserve the sub-path inside the source directory.
-                string relative = assetPath.Substring(sourceDir.Length).TrimStart('/');
-                string newPath  = targetDir + "/" + relative;
+                // Preserve the relative sub-path inside the source directory.
+                string relative  = assetPath.Substring(sourceDir.Length).TrimStart('/');
+                string newPath   = targetDir + "/" + relative;
 
                 // Make sure the destination folder exists before moving.
                 string destFolder = Path.GetDirectoryName(newPath).Replace('\\', '/');
@@ -146,13 +192,13 @@ namespace Ami.BroAudio.Editor
         }
 
         /// <summary>
-        /// Returns true when a file already exists on disk at the given asset-relative path
-        /// (e.g. "Assets/BroAudio/Editor/BroAudioEditor.asmdef").
+        /// Returns true when a file already exists on disk at the given asset-relative
+        /// path (e.g. "Assets/BroAudio/Editor/BroAudioEditor.asmdef").
         /// </summary>
         private static bool FileExistsInProject(string assetPath)
         {
-            // Application.dataPath ends with "/Assets", so we strip that prefix and
-            // re-attach the full assetPath to get an absolute file-system path.
+            // Application.dataPath ends with "/Assets"; strip that and append the
+            // full asset path to get an absolute file-system path.
             string fullPath = Application.dataPath + assetPath.Substring("Assets".Length);
             return File.Exists(fullPath);
         }
@@ -176,7 +222,7 @@ namespace Ami.BroAudio.Editor
         }
 
         /// <summary>
-        /// Deletes <paramref name="folderPath"/> (and its meta file) if it contains
+        /// Deletes <paramref name="folderPath"/> (and its .meta file) if it contains
         /// no non-folder assets.
         /// </summary>
         private static void TryDeleteFolderRecursiveIfEmpty(string folderPath)

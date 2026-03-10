@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 using static Ami.BroAudio.Tools.BroName;
@@ -34,6 +35,7 @@ namespace Ami.BroAudio.Editor
         // <broAudioRoot>/Core/Scripts/Editor/BroAudioEditor.asmdef
         private const string MainAsmdefGUID = "111d4e39aeddad44898002abada9c174";
         private const string LegacyCorePath = "/Core/Scripts/";
+        private const string UPMPath = "/Library/PackageCache/";
 
         // .asmref file used to prevent compilation errors before migration
         private const string TransitionalAsmrefFileName = "BroAssemblyReference";
@@ -56,12 +58,15 @@ namespace Ami.BroAudio.Editor
         /// to the current layout under <see cref="MainAssetPath"/>.
         /// </summary>
         /// <returns>True if any files were moved or removed.</returns>
-        public static bool TryUpgradeFileStructure()
+        public static bool TryUpgradeFileStructure([CallerFilePath] string callerPath = null)
         {
             if (!TryFindLegacyRoot(out string legacyRoot))
             {
 #if !BroAudio_DevOnly
-                RemoveAsmrefFiles();
+                if (!callerPath.Contains(UPMPath))
+                {
+                    RemoveAsmrefFiles();
+                }
 #endif
                 return false;
             }

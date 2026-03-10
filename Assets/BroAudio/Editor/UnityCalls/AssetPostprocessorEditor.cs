@@ -16,6 +16,8 @@ namespace Ami.BroAudio.Editor
                     importedAssets[0].Contains("Bro_Audio") ||
                     importedAssets[0].Contains("com.ami.broaudio"))
                 {
+                    // Migrate legacy Core/Scripts layout before any data generation.
+                    FileStructureUpgrader.TryUpgradeFileStructure();
                     BroUserDataGenerator.CheckAndGenerateUserData(OnUserDataChecked);
                 }
             }

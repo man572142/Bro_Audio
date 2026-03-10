@@ -7,7 +7,7 @@ namespace Ami.BroAudio.Editor
 {
     public static class BroVersion
     {
-        public const string CodeBaseVersion = "3.1.0";
+        public const string CodeBaseVersion = "3.1.1";
 
         private const string VersionResourceName = "BroAudioVersion";
         public const string VersionFileName = VersionResourceName + ".txt";

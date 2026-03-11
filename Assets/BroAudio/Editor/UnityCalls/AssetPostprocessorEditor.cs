@@ -16,8 +16,6 @@ namespace Ami.BroAudio.Editor
                     importedAssets[0].Contains("Bro_Audio") ||
                     importedAssets[0].Contains("com.ami.broaudio"))
                 {
-                    // Migrate legacy Core/Scripts layout before any data generation.
-                    FileStructureUpgrader.TryUpgradeFileStructure();
                     BroUserDataGenerator.CheckAndGenerateUserData(OnUserDataChecked);
                 }
             }
@@ -25,6 +23,9 @@ namespace Ami.BroAudio.Editor
 
         private static void OnUserDataChecked()
         {
+            // Migrate legacy Core/Scripts layout before any data generation.
+            FileStructureUpgrader.TryUpgradeFileStructure();
+            
             var editorSetting = Resources.Load<EditorSetting>(BroEditorUtility.EditorSettingPath);
             if (!editorSetting || editorSetting.HasSetupWizardAutoLaunched)
             {

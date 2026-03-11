@@ -47,7 +47,11 @@ namespace Ami.BroAudio.Editor
         private static void Upgrade()
         {
             // find all scenes, prefabs, and scriptable objects
-            var assetPaths = AssetDatabase.FindAssets("t:Object", new string[] { "Assets", "Packages" })
+            var searchFolders = new string[] { "Assets", "Packages" };
+            var assetPaths = AssetDatabase.FindAssets("t:SceneAsset", searchFolders)
+                .Concat(AssetDatabase.FindAssets("t:GameObject", searchFolders))
+                .Concat(AssetDatabase.FindAssets("t:ScriptableObject", searchFolders))
+                .Distinct()
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .ToList();
 
@@ -128,7 +132,7 @@ namespace Ami.BroAudio.Editor
                     AssetDatabase.SaveAssetIfDirty(gameObject);
                 }
             }
-            else if (obj != null)
+            else if (obj is ScriptableObject)
             {
                 if (Upgrade(obj))
                 {

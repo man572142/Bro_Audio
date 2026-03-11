@@ -36,7 +36,7 @@ namespace Ami.BroAudio.Editor
         private const string MainAsmdefGUID = "111d4e39aeddad44898002abada9c174";
         private const string LegacyCorePath = "/Core/Scripts/";
         private const string UPMPath = "/Library/PackageCache/";
-
+        
         // .asmref file used to prevent compilation errors before migration
         private const string TransitionalAsmrefFileName = "BroAssemblyReference";
 
@@ -47,6 +47,7 @@ namespace Ami.BroAudio.Editor
             ("Core/Scripts",  "Runtime"),
             ("Core/Resources",        "Resources"),
             ("Core/Editor/Resources", "Editor/Resources"),
+            ("Demo", "Samples/Demo"),
         };
 
         // ────────────────────────────────────────────────────────────
@@ -70,8 +71,7 @@ namespace Ami.BroAudio.Editor
 #endif
                 return false;
             }
-
-            string oldCorePath = legacyRoot + "/Core";
+            
             string newRoot     = MainAssetPath; // canonical location of the new package
 
             Debug.Log(Utility.LogTitle +
@@ -93,19 +93,14 @@ namespace Ami.BroAudio.Editor
             }
 
             RemoveAsmrefFiles();
-            // Remove the old Core tree if it is now empty.
-            TryDeleteFolderRecursiveIfEmpty(oldCorePath);
+            // Remove the old tree if it is now empty.
+            TryDeleteFolderRecursiveIfEmpty(legacyRoot + "/Core");
+            TryDeleteFolderRecursiveIfEmpty(legacyRoot + "/Demo");
 
             if (anyChanged)
             {
                 AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
                 Debug.Log(Utility.LogTitle + "File structure migration complete.");
-            }
-            else
-            {
-                // Core existed but contained nothing migratable – clean it up anyway.
-                AssetDatabase.DeleteAsset(oldCorePath);
-                AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
             }
 
             return anyChanged;

@@ -86,25 +86,47 @@ namespace Ami.BroAudio.Editor
 
             bool anyChanged = false;
 
-            foreach (var (oldSub, newSub) in SubPathMappings)
-            {
-                string sourcePath = legacyRoot + "/" + oldSub;
-                string targetPath = newRoot     + "/" + newSub;
+            // +1 for the optional relocation step after the mapping loop.
+            int totalSteps = SubPathMappings.Length + 1;
+            int step = 0;
 
-                if (!AssetDatabase.IsValidFolder(sourcePath))
+            try
+            {
+                foreach (var (oldSub, newSub) in SubPathMappings)
                 {
-                    continue;
+                    EditorUtility.DisplayProgressBar(
+                        "BroAudio Migration",
+                        $"Migrating {oldSub} → {newSub}",
+                        (float)step / totalSteps);
+                    step++;
+
+                    string sourcePath = legacyRoot + "/" + oldSub;
+                    string targetPath = newRoot     + "/" + newSub;
+
+                    if (!AssetDatabase.IsValidFolder(sourcePath))
+                    {
+                        continue;
+                    }
+
+                    anyChanged |= MigrateDirectory(sourcePath, targetPath);
                 }
 
-                anyChanged |= MigrateDirectory(sourcePath, targetPath);
-            }
+                // Relocate newly imported package files from MainAssetPath to the
+                // user's original path (no-op when they are the same).
+                EditorUtility.DisplayProgressBar(
+                    "BroAudio Migration",
+                    "Relocating package files…",
+                    (float)step / totalSteps);
 
-            // Relocate newly imported package files from MainAssetPath to the
-            // user's original path (no-op when they are the same).
-            if (MainAssetPath != newRoot && AssetDatabase.IsValidFolder(MainAssetPath))
+                if (MainAssetPath != newRoot && AssetDatabase.IsValidFolder(MainAssetPath))
+                {
+                    anyChanged |= MigrateDirectory(MainAssetPath, newRoot);
+                    TryDeleteFolderRecursiveIfEmpty(MainAssetPath);
+                }
+            }
+            finally
             {
-                anyChanged |= MigrateDirectory(MainAssetPath, newRoot);
-                TryDeleteFolderRecursiveIfEmpty(MainAssetPath);
+                EditorUtility.ClearProgressBar();
             }
 
             RemoveAsmrefFiles(newRoot);

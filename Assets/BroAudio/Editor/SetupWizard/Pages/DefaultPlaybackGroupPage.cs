@@ -28,10 +28,7 @@ namespace Ami.BroAudio.Editor.Setting
 
         public override void OnDisable()
         {
-            if (_editor)
-            {
-                Object.DestroyImmediate(_editor);
-            }
+            DestroyEditor();
         }
 
         public override void DrawContent()
@@ -45,7 +42,15 @@ namespace Ami.BroAudio.Editor.Setting
 
         private void OnDestroy()
         {
-            
+            DestroyEditor();
+        }
+        
+        private void DestroyEditor()
+        {
+            if (_editor)
+            {
+                Object.DestroyImmediate(_editor);
+            }
         }
     }
 }

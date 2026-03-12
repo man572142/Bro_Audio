@@ -35,6 +35,7 @@ namespace Ami.BroAudio.Editor
         // <broAudioRoot>/Core/Scripts/Editor/BroAudioEditor.asmdef
         private const string MainAsmdefGUID = "111d4e39aeddad44898002abada9c174";
         private const string LegacyCorePath = "/Core/Scripts/";
+        private const string NewAsmdefPath = "/Runtime";
         private const string UPMPath = "/Library/PackageCache/";
         
         // .asmref file used to prevent compilation errors before migration
@@ -65,24 +66,25 @@ namespace Ami.BroAudio.Editor
         /// <returns>True if any files were moved or removed.</returns>
         public static bool TryUpgradeFileStructure([CallerFilePath] string callerPath = null)
         {
-            if (!TryFindLegacyRoot(out string legacyRoot))
+            var root = FindRoot(out bool isLegacyRoot);
+            if (!isLegacyRoot)
             {
 #if !BroAudio_DevOnly
                 if (!callerPath.Contains(UPMPath))
                 {
-                    RemoveAsmrefFiles(MainAssetPath);
+                    if (MainAssetPath != root && AssetDatabase.IsValidFolder(MainAssetPath))
+                    {
+                        MigrateDirectory(MainAssetPath, root);
+                    }
+                    RemoveAsmrefFiles(root);
+                    TryDeleteFolderRecursiveIfEmpty(MainAssetPath);
                 }
 #endif
                 return false;
             }
 
-            // Preserve the user's original installation path.
-            // The .unitypackage always imports to MainAssetPath, but the user may
-            // have had BroAudio in a custom location (e.g. Assets/ThirdParty/BroAudio).
-            string newRoot = legacyRoot;
-
             Debug.Log(Utility.LogTitle +
-                $"Legacy folder structure detected at '{legacyRoot}'. Migrating to '{newRoot}'…");
+                $"Legacy folder structure detected at '{root}'. Start migrating…");
 
             bool anyChanged = false;
 
@@ -100,8 +102,8 @@ namespace Ami.BroAudio.Editor
                         (float)step / totalSteps);
                     step++;
 
-                    string sourcePath = legacyRoot + "/" + oldSub;
-                    string targetPath = newRoot     + "/" + newSub;
+                    string sourcePath = root + "/" + oldSub;
+                    string targetPath = root + "/" + newSub;
 
                     if (!AssetDatabase.IsValidFolder(sourcePath))
                     {
@@ -118,9 +120,9 @@ namespace Ami.BroAudio.Editor
                     "Relocating package files…",
                     (float)step / totalSteps);
 
-                if (MainAssetPath != newRoot && AssetDatabase.IsValidFolder(MainAssetPath))
+                if (MainAssetPath != root && AssetDatabase.IsValidFolder(MainAssetPath))
                 {
-                    anyChanged |= MigrateDirectory(MainAssetPath, newRoot);
+                    anyChanged |= MigrateDirectory(MainAssetPath, root);
                     TryDeleteFolderRecursiveIfEmpty(MainAssetPath);
                 }
             }
@@ -129,10 +131,10 @@ namespace Ami.BroAudio.Editor
                 EditorUtility.ClearProgressBar();
             }
 
-            RemoveAsmrefFiles(newRoot);
+            RemoveAsmrefFiles(MainAssetPath);
             // Remove the old tree if it is now empty.
-            TryDeleteFolderRecursiveIfEmpty(legacyRoot + "/Core");
-            TryDeleteFolderRecursiveIfEmpty(legacyRoot + "/Demo");
+            TryDeleteFolderRecursiveIfEmpty(root + "/Core");
+            TryDeleteFolderRecursiveIfEmpty(root + "/Demo");
 
             if (anyChanged)
             {
@@ -148,23 +150,16 @@ namespace Ami.BroAudio.Editor
         // ────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Finds the root folder of a legacy BroAudio installation by searching
-        /// for the old <c>BroAudioEditor.asmdef</c> inside a <c>Core/Scripts/Editor/</c>
-        /// sub-path.  Works regardless of where BroAudio was placed in the project.
+        /// Finds the root folder of BroAudio installation by searching
         /// </summary>
-        private static bool TryFindLegacyRoot(out string legacyRoot)
+        private static string FindRoot(out bool isLegacyRoot)
         {
-            legacyRoot = null;
             var path = AssetDatabase.GUIDToAssetPath(MainAsmdefGUID);
-            int markerIndex = path.IndexOf(LegacyCorePath, StringComparison.Ordinal);
-
-            if (markerIndex >= 0)
-            {
-                // Everything before "/Core/Scripts/Editor/" is the BroAudio root.
-                legacyRoot = path.Substring(0, markerIndex);
-                return true;
-            }
-            return false;
+            var newPathIndex = path.IndexOf(NewAsmdefPath, StringComparison.Ordinal);
+            int legacyPathIndex = path.IndexOf(LegacyCorePath, StringComparison.Ordinal);
+            isLegacyRoot = legacyPathIndex >= 0;
+            
+            return path.Substring(0, isLegacyRoot ? legacyPathIndex : newPathIndex);
         }
 
         // ────────────────────────────────────────────────────────────

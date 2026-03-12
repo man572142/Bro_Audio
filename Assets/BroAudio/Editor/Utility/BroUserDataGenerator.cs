@@ -30,7 +30,6 @@ namespace Ami.BroAudio.Editor
             try
             {
                 EnsureAllResources();
-                EnsureDefaultAssetOutputPath();
 
                 request = Resources.LoadAsync<SoundManager>(nameof(SoundManager));
                 request.completed += OnGetSoundManager;
@@ -200,52 +199,6 @@ namespace Ami.BroAudio.Editor
 
                 return false;
             }
-        }
-
-        private static void EnsureDefaultAssetOutputPath()
-        {
-            // Determine target output path from EditorSetting if available, otherwise use default
-            string targetPath = DefaultAssetOutputPath;
-            if (TryLoadResources<EditorSetting>(EditorSettingPath, out var setting))
-            {
-                if (!string.IsNullOrWhiteSpace(setting.AssetOutputPath) && targetPath.StartsWith("Assets"))
-                {
-                    targetPath = setting.AssetOutputPath;
-                }
-                else
-                {
-                    // Ensure a value is written to the setting so future reads are consistent
-                    setting.AssetOutputPath = DefaultAssetOutputPath;
-                    EditorUtility.SetDirty(setting);
-                    AssetDatabase.SaveAssetIfDirty(setting);
-                }
-            }
-
-            // If folder already exists, nothing to do
-            if (AssetDatabase.IsValidFolder(targetPath))
-            {
-                return;
-            }
-
-            // Create folders recursively using AssetDatabase.CreateFolder
-            string[] segments = targetPath.Split('/');
-            if (segments.Length == 0)
-            {
-                return;
-            }
-
-            string parent = segments[0]; // should be "Assets"
-            for (int i = 1; i < segments.Length; i++)
-            {
-                string current = parent + "/" + segments[i];
-                if (!AssetDatabase.IsValidFolder(current))
-                {
-                    AssetDatabase.CreateFolder(parent, segments[i]);
-                }
-                parent = current;
-            }
-
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
         }
 
         private static void StartGeneratingUserData(SoundManager soundManager)

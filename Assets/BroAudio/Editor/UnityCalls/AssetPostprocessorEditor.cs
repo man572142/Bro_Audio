@@ -23,6 +23,9 @@ namespace Ami.BroAudio.Editor
 
         private static void OnUserDataChecked()
         {
+            // Migrate legacy Core/Scripts layout before any data generation.
+            FileStructureUpgrader.TryUpgradeFileStructure();
+            
             var editorSetting = Resources.Load<EditorSetting>(BroEditorUtility.EditorSettingPath);
             if (!editorSetting || editorSetting.HasSetupWizardAutoLaunched)
             {

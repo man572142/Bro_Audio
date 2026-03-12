@@ -27,5 +27,11 @@ namespace Ami.BroAudio.Demo
 			_director.stopped -= OnCutSceneStopped;
 			BroAudio.SetVolume(_backgroundMusic,1f,2f);
 		}
-	}
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            _director.stopped -= OnCutSceneStopped;
+        }
+    }
 }

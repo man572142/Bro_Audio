@@ -47,6 +47,7 @@ namespace Ami.BroAudio.Editor
             ("Core/Scripts",  "Runtime"),
             ("Core/Resources",        "Resources"),
             ("Core/Editor/Resources", "Editor/Resources"),
+            ("Core", "Resources"),
             ("Demo", "Samples/Demo"),
         };
 
@@ -56,7 +57,10 @@ namespace Ami.BroAudio.Editor
 
         /// <summary>
         /// Searches the project for a legacy BroAudio Core tree and migrates it
-        /// to the current layout under <see cref="MainAssetPath"/>.
+        /// to the current layout, preserving the user's original installation path.
+        /// If the legacy root differs from <see cref="MainAssetPath"/>, newly imported
+        /// package files are relocated from <see cref="MainAssetPath"/> to the user's
+        /// original location.
         /// </summary>
         /// <returns>True if any files were moved or removed.</returns>
         public static bool TryUpgradeFileStructure([CallerFilePath] string callerPath = null)
@@ -66,13 +70,16 @@ namespace Ami.BroAudio.Editor
 #if !BroAudio_DevOnly
                 if (!callerPath.Contains(UPMPath))
                 {
-                    RemoveAsmrefFiles();
+                    RemoveAsmrefFiles(MainAssetPath);
                 }
 #endif
                 return false;
             }
-            
-            string newRoot     = MainAssetPath; // canonical location of the new package
+
+            // Preserve the user's original installation path.
+            // The .unitypackage always imports to MainAssetPath, but the user may
+            // have had BroAudio in a custom location (e.g. Assets/ThirdParty/BroAudio).
+            string newRoot = legacyRoot;
 
             Debug.Log(Utility.LogTitle +
                 $"Legacy folder structure detected at '{legacyRoot}'. Migrating to '{newRoot}'…");
@@ -92,7 +99,15 @@ namespace Ami.BroAudio.Editor
                 anyChanged |= MigrateDirectory(sourcePath, targetPath);
             }
 
-            RemoveAsmrefFiles();
+            // Relocate newly imported package files from MainAssetPath to the
+            // user's original path (no-op when they are the same).
+            if (MainAssetPath != newRoot && AssetDatabase.IsValidFolder(MainAssetPath))
+            {
+                anyChanged |= MigrateDirectory(MainAssetPath, newRoot);
+                TryDeleteFolderRecursiveIfEmpty(MainAssetPath);
+            }
+
+            RemoveAsmrefFiles(newRoot);
             // Remove the old tree if it is now empty.
             TryDeleteFolderRecursiveIfEmpty(legacyRoot + "/Core");
             TryDeleteFolderRecursiveIfEmpty(legacyRoot + "/Demo");
@@ -224,9 +239,9 @@ namespace Ami.BroAudio.Editor
         /// Deletes the transitional <c>.asmref</c> files that are no longer needed
         /// once the migration is complete.
         /// </summary>
-        private static void RemoveAsmrefFiles()
+        private static void RemoveAsmrefFiles(string searchRoot)
         {
-            var guids = AssetDatabase.FindAssets(TransitionalAsmrefFileName, new[] { MainAssetPath });
+            var guids = AssetDatabase.FindAssets(TransitionalAsmrefFileName, new[] { searchRoot });
             foreach (string guid in guids)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);

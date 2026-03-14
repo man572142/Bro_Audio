@@ -17,7 +17,7 @@ using UnityEditor.AddressableAssets.Settings;
 
 namespace Ami.BroAudio.Editor
 {
-	public class ReorderableClips
+	public partial class ReorderableClips
 	{
         private struct NoLoopChainedPlayModeInfo
         {
@@ -122,12 +122,18 @@ namespace Ami.BroAudio.Editor
             };
 
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
+#if PACKAGE_LOCALIZATION
+            InitLocalization(serializedObject);
+#endif
 		}
 
         public void Dispose()
 		{
 			Undo.undoRedoPerformed -= OnUndoRedoPerformed;
 			_currentPlayingClipPath = null;
+#if PACKAGE_LOCALIZATION
+            DisposeLocalization();
+#endif
         }
 
 		public void SelectAndSetPlayingElement(int index)
@@ -296,6 +302,12 @@ namespace Ami.BroAudio.Editor
 
 		private void UpdatePlayModeAndRequiredClipCount()
 		{
+#if PACKAGE_LOCALIZATION
+            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
+            {
+                return;
+            }
+#endif
 			if (!IsMulticlips)
 			{
 				_playModeProp.enumValueIndex = 0;
@@ -330,6 +342,13 @@ namespace Ami.BroAudio.Editor
 		#region ReorderableList Callback
 		private void OnDrawHeader(Rect rect)
 		{
+#if PACKAGE_LOCALIZATION
+            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
+            {
+                DrawLocalizationHeader(rect);
+                return;
+            }
+#endif
 			HandleClipsDragAndDrop(rect);
 
 			Rect labelRect = new Rect(rect) { width = HeaderLabelWidth };
@@ -409,6 +428,13 @@ namespace Ami.BroAudio.Editor
 
         private void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
 		{
+#if PACKAGE_LOCALIZATION
+            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
+            {
+                DrawLocalizationElement(rect, index, isActive, isFocused);
+                return;
+            }
+#endif
 			SerializedProperty clipProp = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
 			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(BroAudioClip.NameOf.AudioClip);
             SerializedProperty assetReferenceProp = null;
@@ -589,6 +615,13 @@ namespace Ami.BroAudio.Editor
 
 		private void OnAdd(ReorderableList list)
         {
+#if PACKAGE_LOCALIZATION
+            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
+            {
+                DrawLocalizationAddLocaleMenu();
+                return;
+            }
+#endif
 			AddClip(list);
             UpdatePlayModeAndRequiredClipCount();
         }

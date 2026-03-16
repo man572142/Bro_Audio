@@ -202,6 +202,15 @@ namespace Ami.BroAudio.Editor
 #if PACKAGE_ADDRESSABLES
                         Offset -= SingleLineSpace * 0.5f;
                         DrawUseAddressablesToggle(position, data.Clips);
+#elif PACKAGE_LOCALIZATION
+                        {
+                            var locPlayModeProp = serializedObject.FindProperty(AudioEntity.EditorPropertyName.MulticlipsPlayMode);
+                            if ((MulticlipsPlayMode)locPlayModeProp.enumValueIndex == MulticlipsPlayMode.Localization)
+                            {
+                                Offset -= SingleLineSpace * 0.5f;
+                                data.Clips.DrawLocalizationTableDropdowns(GetRectAndIterateLine(position));
+                            }
+                        }
 #endif
                         DrawReorderableClipsList(position, data.Clips, OnClipChanged);
                         SerializedProperty currSelectClip = data.Clips.CurrentSelectedClip;
@@ -303,15 +312,22 @@ namespace Ami.BroAudio.Editor
         {
             SerializedProperty useAddressablesProp = serializedObject.FindProperty(nameof(AudioEntity.UseAddressables));
             Rect rect = GetRectAndIterateLine(position);
-            rect.width = 100f;
-            rect.x = position.xMax - rect.width;
+            Rect toggleRect = new Rect(rect) { width = 100f, x = position.xMax - 100f };
             EditorGUI.BeginChangeCheck();
-            useAddressablesProp.boolValue = EditorGUI.ToggleLeft(rect, "Addressables", useAddressablesProp.boolValue);
+            useAddressablesProp.boolValue = EditorGUI.ToggleLeft(toggleRect, "Addressables", useAddressablesProp.boolValue);
             if (EditorGUI.EndChangeCheck())
             {
                 EditorAudioPreviewer.Instance.StopAllClips();
                 SwitchAddressable(useAddressablesProp, clips);
             }
+#if PACKAGE_LOCALIZATION
+            var playModeProp = serializedObject.FindProperty(AudioEntity.EditorPropertyName.MulticlipsPlayMode);
+            if ((MulticlipsPlayMode)playModeProp.enumValueIndex == MulticlipsPlayMode.Localization)
+            {
+                Rect dropdownsRect = new Rect(rect) { width = rect.width - 110f };
+                clips.DrawLocalizationTableDropdowns(dropdownsRect);
+            }
+#endif
         }
 
         private void SwitchAddressable(SerializedProperty property, ReorderableClips clips)

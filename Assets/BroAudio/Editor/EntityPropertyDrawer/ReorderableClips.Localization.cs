@@ -38,20 +38,127 @@ namespace Ami.BroAudio.Editor
 
         private void DrawLocalizationHeader(Rect rect)
         {
+            HandleClipsDragAndDrop(rect);
+
             Rect labelRect = new Rect(rect) { width = HeaderLabelWidth };
-            float remainWidth = rect.width - HeaderLabelWidth - Gap;
-            Rect tableRect = new Rect(rect) { x = labelRect.xMax + Gap, width = remainWidth * 0.5f - Gap };
-            Rect entryRect = new Rect(rect) { x = tableRect.xMax + Gap, width = remainWidth * 0.5f };
+            Rect valueRect = new Rect(rect) { width = MulticlipsValueLabelWidth, x = rect.xMax - MulticlipsValueLabelWidth };
+            Rect remainRect = new Rect(rect) { width = rect.width - HeaderLabelWidth - MulticlipsValueLabelWidth, x = labelRect.xMax };
+            EditorScriptingExtension.SplitRectHorizontal(remainRect, 0.5f, 10f, out var multiclipOptionRect, out var masterVolRect);
 
             EditorGUI.LabelField(labelRect, "Clips");
 
+            var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+            playMode = (MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, playMode);
+            _playModeProp.enumValueIndex = (int)playMode;
+
+            DrawMasterVolume(masterVolRect);
+
+            EditorGUI.LabelField(valueRect, "Locale", GUIStyleHelper.MiddleCenterText);
+            EditorGUI.LabelField(multiclipOptionRect.DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
+        }
+
+        public void DrawLocalizationTableDropdowns(Rect rect)
+        {
+            float halfWidth = (rect.width - Gap) * 0.5f;
+            Rect tableRect = new Rect(rect) { width = halfWidth };
+            Rect entryRect = new Rect(rect) { x = tableRect.xMax + Gap, width = halfWidth };
+
             if (_localizationTableProp != null)
-            {
-                EditorGUI.PropertyField(tableRect, _localizationTableProp, GUIContent.none);
-            }
+                DrawAssetTableDropdown(tableRect);
             if (_localizationEntryProp != null)
+                DrawTableEntryDropdown(entryRect);
+        }
+
+        private void DrawAssetTableDropdown(Rect rect)
+        {
+            var tableNameProp = _localizationTableProp.FindPropertyRelative("m_TableCollectionName");
+            if (tableNameProp == null)
+                return;
+
+            var collections = LocalizationEditorSettings.GetAssetTableCollections();
+            string currentName = tableNameProp.stringValue;
+
+            int selectedIndex = 0;
+            var labels = new GUIContent[collections.Count + 1];
+            labels[0] = new GUIContent("None");
+            for (int i = 0; i < collections.Count; i++)
             {
-                EditorGUI.PropertyField(entryRect, _localizationEntryProp, GUIContent.none);
+                string name = collections[i].TableCollectionName;
+                labels[i + 1] = new GUIContent(name);
+                if (name == currentName)
+                    selectedIndex = i + 1;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            int newIndex = EditorGUI.Popup(rect, selectedIndex, labels);
+            if (EditorGUI.EndChangeCheck())
+            {
+                tableNameProp.stringValue = newIndex == 0 ? string.Empty : collections[newIndex - 1].TableCollectionName;
+                // Clear entry when table changes
+                var entryKeyProp = _localizationEntryProp?.FindPropertyRelative("m_Key");
+                if (entryKeyProp != null)
+                    entryKeyProp.stringValue = string.Empty;
+                var entryKeyIdProp = _localizationEntryProp?.FindPropertyRelative("m_KeyId");
+                if (entryKeyIdProp != null)
+                    entryKeyIdProp.longValue = 0;
+                _localizationTableProp.serializedObject.ApplyModifiedProperties();
+            }
+        }
+
+        private void DrawTableEntryDropdown(Rect rect)
+        {
+            var entryKeyProp = _localizationEntryProp.FindPropertyRelative("m_Key");
+            if (entryKeyProp == null)
+                return;
+
+            var tableNameProp = _localizationTableProp?.FindPropertyRelative("m_TableCollectionName");
+            string tableName = tableNameProp?.stringValue;
+            if (string.IsNullOrEmpty(tableName))
+            {
+                EditorGUI.Popup(rect, 0, new GUIContent[] { new GUIContent("None") });
+                return;
+            }
+
+            var tableCollection = LocalizationEditorSettings.GetAssetTableCollection(tableName);
+            if (tableCollection == null || tableCollection.SharedData == null)
+            {
+                EditorGUI.Popup(rect, 0, new GUIContent[] { new GUIContent("None") });
+                return;
+            }
+
+            var entries = tableCollection.SharedData.Entries;
+            string currentKey = entryKeyProp.stringValue;
+
+            int selectedIndex = 0;
+            var labels = new GUIContent[entries.Count + 1];
+            labels[0] = new GUIContent("None");
+            for (int i = 0; i < entries.Count; i++)
+            {
+                labels[i + 1] = new GUIContent(entries[i].Key);
+                if (entries[i].Key == currentKey)
+                    selectedIndex = i + 1;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            int newIndex = EditorGUI.Popup(rect, selectedIndex, labels);
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (newIndex == 0)
+                {
+                    entryKeyProp.stringValue = string.Empty;
+                    var entryKeyIdProp = _localizationEntryProp.FindPropertyRelative("m_KeyId");
+                    if (entryKeyIdProp != null)
+                        entryKeyIdProp.longValue = 0;
+                }
+                else
+                {
+                    var entry = entries[newIndex - 1];
+                    entryKeyProp.stringValue = entry.Key;
+                    var entryKeyIdProp = _localizationEntryProp.FindPropertyRelative("m_KeyId");
+                    if (entryKeyIdProp != null)
+                        entryKeyIdProp.longValue = entry.Id;
+                }
+                _localizationEntryProp.serializedObject.ApplyModifiedProperties();
             }
         }
 

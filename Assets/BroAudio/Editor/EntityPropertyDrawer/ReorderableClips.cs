@@ -357,39 +357,37 @@ namespace Ami.BroAudio.Editor
 			EditorScriptingExtension.SplitRectHorizontal(remainRect, 0.5f, 10f, out var multiclipOptionRect, out var masterVolRect);
 
             EditorGUI.LabelField(labelRect, "Clips");
-            if (IsMulticlips)
+
+            var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+            playMode = (MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, playMode);
+            _playModeProp.enumValueIndex = (int)playMode;
+
+            DrawMasterVolume(masterVolRect);
+
+            GUIContent guiContent = new GUIContent(string.Empty);
+            switch (playMode)
             {
-                var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
-                playMode = (MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, playMode);
-                _playModeProp.enumValueIndex = (int)playMode;
-
-                DrawMasterVolume(masterVolRect);
-
-                GUIContent guiContent = new GUIContent(string.Empty);
-                switch (playMode)
-                {
-                    case MulticlipsPlayMode.Single:
-                        guiContent.tooltip = "Always play the first clip";
-                        break;
-                    case MulticlipsPlayMode.Sequence:
-                        EditorGUI.LabelField(valueRect, "Index", GUIStyleHelper.MiddleCenterText);
-                        guiContent.tooltip = "Plays the next clip each time";
-                        break;
-                    case MulticlipsPlayMode.Random:
-                        EditorGUI.LabelField(valueRect, _weightGUIContent, GUIStyleHelper.MiddleCenterText);
-                        guiContent.tooltip = "Plays a clip randomly";
-                        break;
-                    case MulticlipsPlayMode.Shuffle:
-                        guiContent.tooltip = "Plays a clip randomly without repeating the previous one.";
-                        break;
-                    case MulticlipsPlayMode.Velocity:
-                        EditorGUI.LabelField(valueRect, "Velocity", GUIStyleHelper.MiddleCenterText);
-                        guiContent.tooltip = "Plays a clip by a given velocity";
-                        break;
-                }
-                EditorGUI.LabelField(multiclipOptionRect.DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
-                EditorGUI.LabelField(multiclipOptionRect, guiContent);
+                case MulticlipsPlayMode.Single:
+                    guiContent.tooltip = "Always play the first clip";
+                    break;
+                case MulticlipsPlayMode.Sequence:
+                    EditorGUI.LabelField(valueRect, "Index", GUIStyleHelper.MiddleCenterText);
+                    guiContent.tooltip = "Plays the next clip each time";
+                    break;
+                case MulticlipsPlayMode.Random:
+                    EditorGUI.LabelField(valueRect, _weightGUIContent, GUIStyleHelper.MiddleCenterText);
+                    guiContent.tooltip = "Plays a clip randomly";
+                    break;
+                case MulticlipsPlayMode.Shuffle:
+                    guiContent.tooltip = "Plays a clip randomly without repeating the previous one.";
+                    break;
+                case MulticlipsPlayMode.Velocity:
+                    EditorGUI.LabelField(valueRect, "Velocity", GUIStyleHelper.MiddleCenterText);
+                    guiContent.tooltip = "Plays a clip by a given velocity";
+                    break;
             }
+            EditorGUI.LabelField(multiclipOptionRect.DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
+            EditorGUI.LabelField(multiclipOptionRect, guiContent);
         }
 
         private void DrawMasterVolume(Rect masterVolRect)

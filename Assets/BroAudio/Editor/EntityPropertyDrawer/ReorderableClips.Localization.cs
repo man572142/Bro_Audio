@@ -7,6 +7,7 @@ using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Tables;
 using UnityEditor.Localization;
 using Ami.BroAudio.Data;
+using Ami.Extension;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 
 namespace Ami.BroAudio.Editor

@@ -44,6 +44,11 @@ namespace Ami.BroAudio.Editor
             return base.GetAudioClipForScheduling();
         }
 
+        public override double GetTransitionTime()
+        {
+            return _entity.SeamlessLoop ? _entity.TransitionTime : 0;
+        }
+
         public override void Start()
         {
             _masterVolume = _entity.GetMasterVolume();

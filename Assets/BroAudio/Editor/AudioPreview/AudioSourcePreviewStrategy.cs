@@ -104,8 +104,8 @@ namespace Ami.BroAudio.Editor
             audioSource.SetScheduledEndTime(startDspTime + req.Duration);
             await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
             _previewDspTime +=  AudioConstant.MixerWarmUpTime;
-            _nextPreviewDspTime = _previewDspTime + req.Duration;
-            
+            _nextPreviewDspTime = _previewDspTime + req.Duration - (replayRequest?.GetTransitionTime() ?? 0);
+
             if (replayRequest != null)
             {
                 ScheduleNextPlayback(replayRequest, req);
@@ -145,7 +145,7 @@ namespace Ami.BroAudio.Editor
             // The previous scheduled audioSource has started at this point, we can just renew the process and prepare the next one 
             replayReq.Start();
             req.SetReplay(replayReq);
-            _nextPreviewDspTime = _previewDspTime + req.Duration;
+            _nextPreviewDspTime = _previewDspTime + req.Duration - (replayReq.CanReplay() ? replayReq.GetTransitionTime() : 0);
             currentSource = GetNextAudioSource(out _currentAudioSourceIndex);
             currentSource.Source.pitch = replayReq.Pitch;
             currentSource.Source.SetScheduledEndTime(_nextPreviewDspTime);

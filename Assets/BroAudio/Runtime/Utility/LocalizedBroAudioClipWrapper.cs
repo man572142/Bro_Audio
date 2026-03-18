@@ -1,6 +1,7 @@
 #if PACKAGE_LOCALIZATION
 using UnityEngine;
 using Ami.BroAudio.Data;
+using Ami.Extension;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -20,16 +21,22 @@ namespace Ami.BroAudio.Runtime
             _resolvedClip = resolvedClip;
         }
 
+        public LocalizedBroAudioClipWrapper(AudioClip resolvedClip)
+        {
+            _broAudioClip = null;
+            _resolvedClip = resolvedClip;
+        }
+
         public AudioClip GetAudioClip() => _resolvedClip;
         public bool IsValid() => _resolvedClip != null;
         public bool IsSet => _resolvedClip != null;
 
-        public float Volume => _broAudioClip.Volume;
-        public float Delay => _broAudioClip.Delay;
-        public float StartPosition => _broAudioClip.StartPosition;
-        public float EndPosition => _broAudioClip.EndPosition;
-        public float FadeIn => _broAudioClip.FadeIn;
-        public float FadeOut => _broAudioClip.FadeOut;
+        public float Volume       => _broAudioClip?.Volume       ?? AudioConstant.FullVolume;
+        public float Delay        => _broAudioClip?.Delay        ?? 0f;
+        public float StartPosition=> _broAudioClip?.StartPosition?? 0f;
+        public float EndPosition  => _broAudioClip?.EndPosition  ?? 0f;
+        public float FadeIn       => _broAudioClip?.FadeIn       ?? 0f;
+        public float FadeOut      => _broAudioClip?.FadeOut      ?? 0f;
     }
 }
 #endif

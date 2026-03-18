@@ -28,15 +28,8 @@ namespace Ami.BroAudio.Data
                 return null;
             }
 
-            EnsureClipSelectionStrategy<LocalizationClipStrategy>();
-            var broAudioClip = _clipSelectionStrategy.SelectClip(Clips, context, out index) as BroAudioClip;
-            if (broAudioClip == null)
-            {
-                var locale = LocalizationSettings.SelectedLocale;
-                string localeName = locale != null ? locale.Identifier.ToString() : "unknown";
-                Debug.LogWarning(Utility.LogTitle + $"No BroAudioClip configured for locale '{localeName}' on entity '{Name}'.");
-                return null;
-            }
+            // Clips is intentionally empty in Localization mode; resolve clip directly from the asset table.
+            index = 0;
 
             var handle = LocalizationSettings.AssetDatabase
                 .GetLocalizedAssetAsync<AudioClip>(_localizationTable, _localizationEntry);
@@ -50,7 +43,7 @@ namespace Ami.BroAudio.Data
                 return null;
             }
 
-            return new LocalizedBroAudioClipWrapper(broAudioClip, resolvedClip);
+            return new LocalizedBroAudioClipWrapper(resolvedClip);
         }
 
 #if UNITY_EDITOR

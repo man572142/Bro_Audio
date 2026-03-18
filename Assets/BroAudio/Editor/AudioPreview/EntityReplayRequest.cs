@@ -10,19 +10,22 @@ namespace Ami.BroAudio.Editor
     {
         private readonly AudioEntity _entity;
         private readonly Action<int> _onReplay;
-        
+        private readonly bool _loopMode;
+
         private int _clipIndex;
         private int _context;
+        private bool _proceedToEnd;
         private float _masterVolume = AudioConstant.FullVolume;
         private float _pitch = AudioConstant.DefaultPitch;
-        
+
         public override float MasterVolume => _masterVolume;
         public override float Pitch => _pitch;
 
-        public EntityReplayRequest(AudioEntity entity, Action<int> onReplay) : base(null)
+        public EntityReplayRequest(AudioEntity entity, Action<int> onReplay, bool loopMode = false) : base(null)
         {
             _entity = entity;
             _onReplay = onReplay;
+            _loopMode = loopMode;
             if (entity.PlayMode == MulticlipsPlayMode.Chained)
             {
                 _context = (int)PlaybackStage.Loop;
@@ -33,9 +36,19 @@ namespace Ami.BroAudio.Editor
         {
             if (_entity.PlayMode == MulticlipsPlayMode.Chained)
             {
-                return _entity.Clips.Length > _context - 1;
+                return _context <= (int)PlaybackStage.End && _entity.Clips.Length > _context - 1;
             }
             return base.CanReplay();
+        }
+
+        public override bool TryProceedToEnd()
+        {
+            if (_entity.PlayMode == MulticlipsPlayMode.Chained && _loopMode && !_proceedToEnd)
+            {
+                _proceedToEnd = true;
+                return true;
+            }
+            return false;
         }
         
         public override AudioClip GetAudioClipForScheduling()
@@ -57,8 +70,18 @@ namespace Ami.BroAudio.Editor
 
             if (_entity.PlayMode == MulticlipsPlayMode.Chained)
             {
-                var nextStage = _context == (int)PlaybackStage.End ? (int)PlaybackStage.Start : _context + 1;
-                _context = nextStage;
+                if (_loopMode)
+                {
+                    if (_proceedToEnd)
+                    {
+                        _context++;
+                    }
+                    // else: stay at Loop (no-op)
+                }
+                else
+                {
+                    _context++;
+                }
             }
         }
     }

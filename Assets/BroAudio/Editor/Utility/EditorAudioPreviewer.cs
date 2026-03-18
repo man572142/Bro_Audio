@@ -50,6 +50,11 @@ namespace Ami.BroAudio.Editor
             _currentStrategy.Play(req, replayRequest);
         }
 
+        public bool TryProceedToEnd()
+        {
+            return _currentStrategy?.TryProceedToEnd() ?? false;
+        }
+
         public void StopAllClips()
         {
             StopAndDestroyStrategy();

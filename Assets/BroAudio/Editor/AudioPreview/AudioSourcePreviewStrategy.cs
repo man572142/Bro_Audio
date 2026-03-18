@@ -23,6 +23,7 @@ namespace Ami.BroAudio.Editor
         private readonly AudioSourceContent[] _audioSources = new AudioSourceContent[AudioSourceCount];
         private int _currentAudioSourceIndex = -1;
         private PreviewRequest _currentRequest;
+        private ReplayRequest _currentReplayRequest;
         private AudioMixer _mixer;
         private MuteState _previousMuteState = MuteState.None;
         private TaskCompletionSource<bool> _playbackCompletionSource;
@@ -91,6 +92,7 @@ namespace Ami.BroAudio.Editor
             _mixer.SetAutoSuspend(false);
             
             _currentRequest = req;
+            _currentReplayRequest = replayRequest;
             var audioSourceData = GetNextAudioSource(out _currentAudioSourceIndex);
             var audioSource = audioSourceData.Source;
             audioSource.SetPreviewRequest(req);
@@ -186,8 +188,14 @@ namespace Ami.BroAudio.Editor
             return new AudioSourceContent() { Source = audioSource, VolumeTransporter = volumeTransporter };
         }
 
+        public override bool TryProceedToEnd()
+        {
+            return _currentReplayRequest?.TryProceedToEnd() ?? false;
+        }
+
         private void DestroyPreviewAudioSourceAndCancelTask()
         {
+            _currentReplayRequest = null;
             _mixer.SetAutoSuspend(true);
             if (_currentAudioSourceIndex >= 0 || _currentRequest != null)
             {

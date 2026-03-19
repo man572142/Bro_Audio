@@ -80,7 +80,11 @@ namespace Ami.BroAudio.Editor
 		{
 			get
 			{
-				if(_reorderableList.count > 0)
+#if PACKAGE_LOCALIZATION
+                if (CurrentPlayMode == MulticlipsPlayMode.Localization)
+                    return GetLocalizationCurrentSelectedClip();
+#endif
+                if(_reorderableList.count > 0)
 				{
 					if(_reorderableList.index < 0)
 					{
@@ -165,6 +169,10 @@ namespace Ami.BroAudio.Editor
         public bool TryGetSelectedAudioClip(out AudioClip audioClip)
         {
             audioClip = null;
+#if PACKAGE_LOCALIZATION
+            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
+                return TryGetLocalizationSelectedClip(out audioClip);
+#endif
             if (CurrentSelectedClip == null)
             {
                 return false;

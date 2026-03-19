@@ -56,6 +56,7 @@ namespace Ami.BroAudio.Editor
 
         private void OnLocaleChanged(Locale locale)
         {
+            SyncClipsWithLocales();
             _entity.Update();
         }
 
@@ -66,6 +67,69 @@ namespace Ami.BroAudio.Editor
                 _localizationListData.Add(0);
             while (_localizationListData.Count > targetCount)
                 _localizationListData.RemoveAt(_localizationListData.Count - 1);
+            SyncClipsWithLocales();
+        }
+
+        private bool IsClipsSyncedWithLocales()
+        {
+            var availableLocales = LocalizationSettings.AvailableLocales?.Locales;
+            if (availableLocales == null)
+                return true;
+
+            var clipsProp = _reorderableList.serializedProperty;
+            if (clipsProp.arraySize != availableLocales.Count)
+                return false;
+
+            for (int i = 0; i < availableLocales.Count; i++)
+            {
+                var clipProp = clipsProp.GetArrayElementAtIndex(i);
+                string code = clipProp.FindPropertyRelative("Locale")?.FindPropertyRelative("m_Code")?.stringValue;
+                if (code != availableLocales[i].Identifier.Code)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private void SyncClipsWithLocales()
+        {
+            var availableLocales = LocalizationSettings.AvailableLocales?.Locales;
+            if (availableLocales == null)
+                return;
+
+            if (IsClipsSyncedWithLocales())
+                return;
+
+            var clipsProp = _reorderableList.serializedProperty;
+
+            // Preserve existing Volume values by locale code before resizing.
+            var savedVolumes = new Dictionary<string, float>();
+            for (int i = 0; i < clipsProp.arraySize; i++)
+            {
+                var existing = clipsProp.GetArrayElementAtIndex(i);
+                string code = existing.FindPropertyRelative("Locale")?.FindPropertyRelative("m_Code")?.stringValue ?? string.Empty;
+                var volProp = existing.FindPropertyRelative(nameof(BroAudioClip.Volume));
+                if (!string.IsNullOrEmpty(code) && volProp != null)
+                    savedVolumes[code] = volProp.floatValue;
+            }
+
+            clipsProp.arraySize = availableLocales.Count;
+
+            for (int i = 0; i < availableLocales.Count; i++)
+            {
+                string code = availableLocales[i].Identifier.Code;
+                var clipProp = clipsProp.GetArrayElementAtIndex(i);
+
+                var codeProp = clipProp.FindPropertyRelative("Locale")?.FindPropertyRelative("m_Code");
+                if (codeProp != null)
+                    codeProp.stringValue = code;
+
+                var volProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
+                if (volProp != null)
+                    volProp.floatValue = savedVolumes.TryGetValue(code, out float savedVol) ? savedVol : AudioConstant.FullVolume;
+            }
+
+            _entity.ApplyModifiedProperties();
         }
 
         private void DrawLocalizationHeader(Rect rect)
@@ -107,6 +171,8 @@ namespace Ami.BroAudio.Editor
                 DrawTableEntryDropdown(entryRect);
         }
 
+        private const float VolumeFieldWidth = 100f;
+
         private void DrawLocalizationTableClipElement(Rect rect, int localeIndex)
         {
             var availableLocales = LocalizationSettings.AvailableLocales?.Locales;
@@ -124,7 +190,9 @@ namespace Ami.BroAudio.Editor
             Rect localeRect = new Rect(rect) { x = buttonRect.xMax + Gap, width = LocaleLabelWidth };
 
             float usedWidth = buttonRect.width + Gap + LocaleLabelWidth + Gap;
-            Rect clipRect = new Rect(rect) { x = localeRect.xMax + Gap, width = rect.width - usedWidth };
+            float clipWidth = rect.width - usedWidth - Gap - VolumeFieldWidth;
+            Rect clipRect = new Rect(rect) { x = localeRect.xMax + Gap, width = clipWidth };
+            Rect volumeRect = new Rect(rect) { x = clipRect.xMax + Gap, width = VolumeFieldWidth };
 
             EditorGUI.LabelField(localeRect, string.IsNullOrEmpty(localeCode) ? "(no locale)" : localeCode);
 
@@ -148,11 +216,59 @@ namespace Ami.BroAudio.Editor
             {
                 TrySetClipInTable(localeCode, newClip);
             }
+
+            var clipsProp = _reorderableList.serializedProperty;
+            if (localeIndex < clipsProp.arraySize)
+            {
+                var clipProp = clipsProp.GetArrayElementAtIndex(localeIndex);
+                var volumeProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
+                if (volumeProp != null)
+                {
+                    EditorGUI.BeginChangeCheck();
+                    float newVol = EditorGUI.Slider(volumeRect, volumeProp.floatValue, 0f, AudioConstant.FullVolume);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        volumeProp.floatValue = newVol;
+                        _entity.ApplyModifiedProperties();
+                    }
+                }
+            }
         }
 
         private float GetLocalizationElementHeight(int index)
         {
             return EditorGUIUtility.singleLineHeight + 4f;
+        }
+
+        private SerializedProperty GetLocalizationCurrentSelectedClip()
+        {
+            int locIndex = _localizationList?.index ?? -1;
+            int clipIndex = locIndex - 1; // row 0 is table/entry dropdowns
+            if (clipIndex >= 0 && clipIndex < _reorderableList.serializedProperty.arraySize)
+            {
+                if (_currSelectedClipIndex != clipIndex || _currSelectedClip == null)
+                {
+                    _currSelectedClip = _reorderableList.serializedProperty.GetArrayElementAtIndex(clipIndex);
+                    _currSelectedClipIndex = clipIndex;
+                }
+                return _currSelectedClip;
+            }
+            _currSelectedClip = null;
+            return null;
+        }
+
+        private bool TryGetLocalizationSelectedClip(out AudioClip audioClip)
+        {
+            audioClip = null;
+            int locIndex = _localizationList?.index ?? -1;
+            int clipIndex = locIndex - 1;
+            var availableLocales = LocalizationSettings.AvailableLocales?.Locales;
+            if (clipIndex >= 0 && availableLocales != null && clipIndex < availableLocales.Count)
+            {
+                string localeCode = availableLocales[clipIndex].Identifier.Code;
+                audioClip = TryGetClipFromTable(localeCode);
+            }
+            return audioClip != null;
         }
 
         private void PreviewLocalizationClip(AudioClip audioClip, string previewPath)

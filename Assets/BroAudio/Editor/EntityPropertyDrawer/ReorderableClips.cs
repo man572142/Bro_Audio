@@ -61,7 +61,13 @@ namespace Ami.BroAudio.Editor
 
         private Vector2 PlayButtonSize => new Vector2(30f, 20f);
         public bool IsMulticlips => _reorderableList.count > 1;
-		public float Height => _reorderableList.GetHeight() + (HasHeaderMessage(out _) ? HeaderMessageHeight : 0f);
+		public float Height =>
+#if PACKAGE_LOCALIZATION
+        CurrentPlayMode == MulticlipsPlayMode.Localization
+            ? _localizationList.GetHeight()
+            :
+#endif
+        _reorderableList.GetHeight() + (HasHeaderMessage(out _) ? HeaderMessageHeight : 0f);
 		public bool IsPlaying => _currentPlayingClipPath != null;
         public bool HasAnyAudioClip { get; private set; }
         public bool HasAnyAddressableClip { get; private set; }
@@ -99,7 +105,12 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-        public bool HasClips => _reorderableList != null && _reorderableList.count > 0;
+        public bool HasClips =>
+            (_reorderableList != null && _reorderableList.count > 0)
+#if PACKAGE_LOCALIZATION
+            || (CurrentPlayMode == MulticlipsPlayMode.Localization && HasLocalizationTableClip)
+#endif
+            ;
 
 		public ReorderableClips(SerializedObject serializedObject, RequestClipPreview onRequestClipPreview)
 		{
@@ -270,6 +281,14 @@ namespace Ami.BroAudio.Editor
 
 		public void DrawReorderableList(Rect position)
 		{
+#if PACKAGE_LOCALIZATION
+            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
+            {
+                UpdateLocalizationListCount();
+                _localizationList.DoList(position);
+                return;
+            }
+#endif
             if (HasHeaderMessage(out var headerInfo))
             {
                 var helpBoxRect = new Rect(position) { height = HeaderMessageHeight };
@@ -426,13 +445,6 @@ namespace Ami.BroAudio.Editor
 
         private void OnDrawElement(Rect rect, int index, bool isActive, bool isFocused)
 		{
-#if PACKAGE_LOCALIZATION
-            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
-            {
-                DrawLocalizationElement(rect, index, isActive, isFocused);
-                return;
-            }
-#endif
 			SerializedProperty clipProp = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
 			SerializedProperty audioClipProp = clipProp.FindPropertyRelative(BroAudioClip.NameOf.AudioClip);
             SerializedProperty assetReferenceProp = null;
@@ -613,13 +625,6 @@ namespace Ami.BroAudio.Editor
 
 		private void OnAdd(ReorderableList list)
         {
-#if PACKAGE_LOCALIZATION
-            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
-            {
-                DrawLocalizationAddLocaleMenu();
-                return;
-            }
-#endif
 			AddClip(list);
             UpdatePlayModeAndRequiredClipCount();
         }

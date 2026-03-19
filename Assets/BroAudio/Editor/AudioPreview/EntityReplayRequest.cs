@@ -59,7 +59,27 @@ namespace Ami.BroAudio.Editor
 
         public override double GetTransitionTime()
         {
-            return _entity.SeamlessLoop ? _entity.TransitionTime : 0;
+            return IsSeamlessLoop(out float t) ? t : 0;
+        }
+
+        private bool IsSeamlessLoop(out float transitionTime)
+        {
+            transitionTime = 0f;
+            if (_entity.SeamlessLoop)
+            {
+                transitionTime = _entity.TransitionTime;
+                return true;
+            }
+            if (_entity.PlayMode == MulticlipsPlayMode.Chained)
+            {
+                var setting = BroEditorUtility.RuntimeSetting;
+                if (setting != null && setting.DefaultChainedPlayModeLoop == LoopType.SeamlessLoop)
+                {
+                    transitionTime = setting.DefaultChainedPlayModeTransitionTime;
+                    return true;
+                }
+            }
+            return false;
         }
 
         public override void Start()

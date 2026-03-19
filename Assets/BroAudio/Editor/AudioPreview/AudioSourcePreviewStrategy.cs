@@ -106,18 +106,30 @@ namespace Ami.BroAudio.Editor
             audioSource.SetScheduledEndTime(startDspTime + req.Duration);
             await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
             _previewDspTime +=  AudioConstant.MixerWarmUpTime;
-            _nextPreviewDspTime = _previewDspTime + req.Duration - (replayRequest?.GetTransitionTime() ?? 0);
+            double transitionTime = replayRequest?.GetTransitionTime() ?? 0;
+            _nextPreviewDspTime = _previewDspTime + req.Duration - transitionTime;
+            if (transitionTime > 0)
+            {
+                req.FadeOut = (float)transitionTime;
+            }
 
             if (replayRequest != null)
             {
-                ScheduleNextPlayback(replayRequest, req);
+                ScheduleNextPlayback(replayRequest, req, transitionTime);
             }
 
             StartPlaybackIndicator(replayRequest != null);
             volumeTransporter.Start();
-            
+
             await WaitForPlaybackCompletion();
-            volumeTransporter.End();
+            if (transitionTime > 0)
+            {
+                volumeTransporter.BeginCrossFadeOut((float)transitionTime, BroEditorUtility.RuntimeSetting.SeamlessFadeOutEase);
+            }
+            else
+            {
+                volumeTransporter.End();
+            }
             _previewDspTime = _nextPreviewDspTime;
 
             while (replayRequest != null && replayRequest.CanReplay())
@@ -141,36 +153,60 @@ namespace Ami.BroAudio.Editor
         private async Task AudioSourceReplay(PreviewRequest req, ReplayRequest replayReq)
         {
             EndPlaybackIndicator();
-            var currentSource = _audioSources[_currentAudioSourceIndex];
-            currentSource.VolumeTransporter.End();
-            
-            // The previous scheduled audioSource has started at this point, we can just renew the process and prepare the next one 
+            var previousSource = _audioSources[_currentAudioSourceIndex];
+            double transitionTime = replayReq.GetTransitionTime();
+
+            // The previous scheduled audioSource has started at this point, we can just renew the process and prepare the next one
+            if (transitionTime > 0)
+            {
+                previousSource.VolumeTransporter.BeginCrossFadeOut((float)transitionTime, BroEditorUtility.RuntimeSetting.SeamlessFadeOutEase);
+            }
+            else
+            {
+                previousSource.VolumeTransporter.End();
+            }
+
             replayReq.Start();
             req.SetReplay(replayReq);
-            _nextPreviewDspTime = _previewDspTime + req.Duration - (replayReq.CanReplay() ? replayReq.GetTransitionTime() : 0);
-            currentSource = GetNextAudioSource(out _currentAudioSourceIndex);
+            if (transitionTime > 0)
+            {
+                req.ApplySeamlessFade((float)transitionTime);
+            }
+            _nextPreviewDspTime = _previewDspTime + req.Duration - (replayReq.CanReplay() ? transitionTime : 0);
+            var currentSource = GetNextAudioSource(out _currentAudioSourceIndex);
             currentSource.Source.pitch = replayReq.Pitch;
             currentSource.Source.SetScheduledEndTime(_nextPreviewDspTime);
+            if (transitionTime > 0)
+            {
+                currentSource.VolumeTransporter.UseSeamlessEasing();
+            }
             currentSource.VolumeTransporter.Init(req);
             currentSource.VolumeTransporter.Start();
             StartPlaybackIndicator();
             if (replayReq.CanReplay())
             {
-                ScheduleNextPlayback(replayReq, req);
+                ScheduleNextPlayback(replayReq, req, transitionTime);
             }
-            
+
             await WaitForPlaybackCompletion();
             _previewDspTime = _nextPreviewDspTime;
         }
         
-        private void ScheduleNextPlayback(ReplayRequest replayRequest, PreviewRequest req)
+        private void ScheduleNextPlayback(ReplayRequest replayRequest, PreviewRequest req, double transitionTime = 0)
         {
             var source = GetNextAudioSource(out _);
-            source.VolumeTransporter.SetStartVolume(req);
             var audioSource = source.Source;
             audioSource.ScheduleReplay(replayRequest);
             audioSource.PlayScheduled(_nextPreviewDspTime);
             audioSource.SetScheduledEndTime(_nextPreviewDspTime + replayRequest.GetDuration());
+            if (transitionTime > 0)
+            {
+                source.VolumeTransporter.BeginCrossFadeIn((float)transitionTime, BroEditorUtility.RuntimeSetting.SeamlessFadeInEase);
+            }
+            else
+            {
+                source.VolumeTransporter.SetStartVolume(req);
+            }
         }
         
         private AudioSourceContent InstantiateAudioSource(int index)

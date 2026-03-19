@@ -369,13 +369,6 @@ namespace Ami.BroAudio.Editor
 		#region ReorderableList Callback
 		private void OnDrawHeader(Rect rect)
 		{
-#if PACKAGE_LOCALIZATION
-            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
-            {
-                DrawLocalizationHeader(rect);
-                return;
-            }
-#endif
 			HandleClipsDragAndDrop(rect);
 
 			Rect labelRect = new Rect(rect) { width = HeaderLabelWidth };
@@ -411,6 +404,10 @@ namespace Ami.BroAudio.Editor
                 case MulticlipsPlayMode.Velocity:
                     EditorGUI.LabelField(valueRect, "Velocity", GUIStyleHelper.MiddleCenterText);
                     guiContent.tooltip = "Plays a clip by a given velocity";
+                    break;
+                case MulticlipsPlayMode.Localization:
+                    EditorGUI.LabelField(valueRect, "Locale", GUIStyleHelper.MiddleCenterText);
+                    guiContent.tooltip = "Plays a clip based on the current locale";
                     break;
             }
             EditorGUI.LabelField(multiclipOptionRect.DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);

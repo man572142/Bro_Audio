@@ -42,7 +42,7 @@ namespace Ami.BroAudio.Editor
             _localizationListData = new List<int>();
             _localizationList = new ReorderableList(_localizationListData, typeof(int),
                 draggable: false, displayHeader: true, displayAddButton: false, displayRemoveButton: false);
-            _localizationList.drawHeaderCallback = DrawLocalizationHeader;
+            _localizationList.drawHeaderCallback = OnDrawHeader;
             _localizationList.drawElementCallback = OnDrawLocalizationListElement;
             _localizationList.elementHeightCallback = GetLocalizationElementHeight;
 
@@ -130,25 +130,6 @@ namespace Ami.BroAudio.Editor
             }
 
             _entity.ApplyModifiedProperties();
-        }
-
-        private void DrawLocalizationHeader(Rect rect)
-        {
-            HandleClipsDragAndDrop(rect);
-
-            Rect labelRect = new Rect(rect) { width = HeaderLabelWidth };
-            Rect remainRect = new Rect(rect) { width = rect.width - HeaderLabelWidth, x = labelRect.xMax };
-            EditorScriptingExtension.SplitRectHorizontal(remainRect, 0.5f, 10f, out var multiclipOptionRect, out var masterVolRect);
-
-            EditorGUI.LabelField(labelRect, "Clips");
-
-            var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
-            playMode = (MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, playMode);
-            _playModeProp.enumValueIndex = (int)playMode;
-
-            DrawMasterVolume(masterVolRect);
-
-            EditorGUI.LabelField(multiclipOptionRect.DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
         }
 
         private void OnDrawLocalizationListElement(Rect rect, int index, bool isActive, bool isFocused)

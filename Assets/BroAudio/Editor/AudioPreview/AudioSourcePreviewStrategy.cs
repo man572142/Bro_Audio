@@ -160,7 +160,7 @@ namespace Ami.BroAudio.Editor
             _nextPreviewDspTime = _previewDspTime + req.Duration - (replayReq.CanReplay() ? transitionTime : 0);
             var currentSource = GetNextAudioSource(out _currentAudioSourceIndex);
             currentSource.Source.pitch = replayReq.Pitch;
-            currentSource.Source.SetScheduledEndTime(_nextPreviewDspTime);
+            currentSource.Source.SetScheduledEndTime(_previewDspTime + req.Duration);
             if (transitionTime > 0)
             {
                 currentSource.VolumeTransporter.UseSeamlessEasing();
@@ -173,7 +173,7 @@ namespace Ami.BroAudio.Editor
                 ScheduleNextPlayback(replayReq, req, transitionTime);
                 if (transitionTime > 0)
                 {
-                    double fadeOutDelay = _nextPreviewDspTime - transitionTime - AudioSettings.dspTime;
+                    double fadeOutDelay = _nextPreviewDspTime - AudioSettings.dspTime;
                     _ = DelayedCrossFade(fadeOutDelay,
                         () => currentSource.VolumeTransporter.BeginCrossFadeOut((float)transitionTime, BroEditorUtility.RuntimeSetting.SeamlessFadeOutEase));
                 }

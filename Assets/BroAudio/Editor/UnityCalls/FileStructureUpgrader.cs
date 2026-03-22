@@ -131,7 +131,9 @@ namespace Ami.BroAudio.Editor
                 EditorUtility.ClearProgressBar();
             }
 
+#if BroAudio_DevOnly
             RemoveAsmrefFiles(MainAssetPath);
+#endif
             // Remove the old tree if it is now empty.
             TryDeleteFolderRecursiveIfEmpty(root + "/Core");
             TryDeleteFolderRecursiveIfEmpty(root + "/Demo");

@@ -281,7 +281,8 @@ namespace Ami.BroAudio.Editor
             clipIndex = 0;
 
             var locales = LocalizationSettings.AvailableLocales?.Locales;
-            var selectedLocale = LocalizationSettings.SelectedLocale;
+            var selectedLocale = LocalizationSettings.SelectedLocale
+                ?? LocalizationSettings.ProjectLocale;
             if (selectedLocale == null && locales != null && locales.Count > 0)
                 selectedLocale = locales[0];
             if (selectedLocale == null)

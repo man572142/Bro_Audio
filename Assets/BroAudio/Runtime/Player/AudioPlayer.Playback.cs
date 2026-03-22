@@ -271,7 +271,7 @@ namespace Ami.BroAudio.Runtime
             var newPref = _pref;
             if (newPref.IsChainedMode())
             {
-                newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
+                newPref.ChainedModeStage = isEnd ? ChainedPlaybackHelper.AdvanceToEnd() : ChainedPlaybackHelper.AdvanceToLoop();
             }
 
             ClearScheduleEndEvents(); // it should be rescheduled in the new player
@@ -425,7 +425,7 @@ namespace Ami.BroAudio.Runtime
         
         private bool CanLoopIfIsChainedMode()
         {
-            return !_pref.IsChainedMode() || (_pref.IsChainedMode() && _pref.ChainedModeStage == PlaybackStage.Loop);
+            return !_pref.IsChainedMode() || ChainedPlaybackHelper.CanContinueLooping(_pref.ChainedModeStage);
         }
 
         public IAudioPlayer OnEnd(Action<SoundID> onEnd)

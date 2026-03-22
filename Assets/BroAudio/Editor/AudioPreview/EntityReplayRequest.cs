@@ -13,7 +13,7 @@ namespace Ami.BroAudio.Editor
         private readonly bool _loopMode;
 
         private int _clipIndex;
-        private int _context;
+        private PlaybackStage _stage;
         private bool _proceedToEnd;
         private float _masterVolume = AudioConstant.FullVolume;
         private float _pitch = AudioConstant.DefaultPitch;
@@ -28,7 +28,7 @@ namespace Ami.BroAudio.Editor
             _loopMode = loopMode;
             if (entity.PlayMode == MulticlipsPlayMode.Chained)
             {
-                _context = (int)PlaybackStage.Loop;
+                _stage = PlaybackStage.Loop; // Start clip is played externally by PreviewRequest
             }
         }
 
@@ -36,7 +36,7 @@ namespace Ami.BroAudio.Editor
         {
             if (_entity.PlayMode == MulticlipsPlayMode.Chained)
             {
-                return _context <= (int)PlaybackStage.End && _entity.Clips.Length > _context - 1;
+                return ChainedPlaybackHelper.CanReplay(_stage, _entity.Clips.Length);
             }
             return base.CanReplay();
         }
@@ -45,18 +45,21 @@ namespace Ami.BroAudio.Editor
         {
             if (_entity.PlayMode == MulticlipsPlayMode.Chained && _loopMode && !_proceedToEnd)
             {
-                _proceedToEnd = true;
-                _context++;
-                GetAudioClipForScheduling();
-                _onReplay?.Invoke(_clipIndex);
-                return true;
+                if (ChainedPlaybackHelper.CanHandoverToEnd(_stage, _entity.Clips.Length))
+                {
+                    _proceedToEnd = true;
+                    _stage = ChainedPlaybackHelper.AdvanceToEnd();
+                    GetAudioClipForScheduling();
+                    _onReplay?.Invoke(_clipIndex);
+                    return true;
+                }
             }
             return false;
         }
         
         public override AudioClip GetAudioClipForScheduling()
         {
-            Clip = _entity.PickNewClip(_context, out _clipIndex);
+            Clip = _entity.PickNewClip((int)_stage, out _clipIndex);
             return base.GetAudioClipForScheduling();
         }
 
@@ -97,13 +100,13 @@ namespace Ami.BroAudio.Editor
                 {
                     if (_proceedToEnd)
                     {
-                        _context++;
+                        _stage = (PlaybackStage)((int)_stage + 1);
                     }
                     // else: stay at Loop (no-op)
                 }
                 else
                 {
-                    _context++;
+                    _stage = (PlaybackStage)((int)_stage + 1);
                 }
             }
         }

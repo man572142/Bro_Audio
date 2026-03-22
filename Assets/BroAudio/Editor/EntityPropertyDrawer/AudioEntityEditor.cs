@@ -657,10 +657,33 @@ namespace Ami.BroAudio.Editor
             }
 
             _currentPreviewingEntity = entity;
-            var context = entity.PlayMode == MulticlipsPlayMode.Chained ? (int)PlaybackStage.Start : 0;
-            var clip = entity.PickNewClip(context, out int index);
+
+            IBroAudioClip clip;
+            int index;
+#if PACKAGE_LOCALIZATION
+            if (entity.PlayMode == MulticlipsPlayMode.Localization)
+            {
+                if (!data.Clips.TryGetLocalizationEntityPreviewClip(out AudioClip locAudioClip, out int locIndex))
+                {
+                    return;
+                }
+                clip = WrapLocalizationClip(locAudioClip, locIndex);
+                index = locIndex;
+            }
+            else
+            {
+#endif
+                var context = entity.PlayMode == MulticlipsPlayMode.Chained ? (int)PlaybackStage.Start : 0;
+                clip = entity.PickNewClip(context, out index);
+                if (clip == null)
+                {
+                    return;
+                }
+#if PACKAGE_LOCALIZATION
+            }
+#endif
             data.Clips.SelectAndSetPlayingElement(index);
-            
+
             var req = new PreviewRequest(clip)
             {
                 MasterVolume = entity.GetMasterVolume(),
@@ -668,12 +691,32 @@ namespace Ami.BroAudio.Editor
                 Pitch = entity.GetPitch(),
                 BasePitch = entity.Pitch,
             };
-            var replayReq = data.IsReplay ? new EntityReplayRequest(entity, data.Clips.SelectAndSetPlayingElement) : null;
+            Func<(IBroAudioClip, int)> replayClipPicker = null;
+#if PACKAGE_LOCALIZATION
+            if (data.IsReplay && entity.PlayMode == MulticlipsPlayMode.Localization)
+            {
+                replayClipPicker = () =>
+                {
+                    if (!data.Clips.TryGetLocalizationEntityPreviewClip(out AudioClip ac, out int li))
+                        return (null, 0);
+                    return (WrapLocalizationClip(ac, li), li);
+                };
+            }
+#endif
+            var replayReq = data.IsReplay ? new EntityReplayRequest(entity, data.Clips.SelectAndSetPlayingElement, replayClipPicker) : null;
             EditorAudioPreviewer.Instance.Play(req, replayReq);
-            _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip.propertyPath, req);
+            _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip?.propertyPath ?? string.Empty, req);
             var previewRect = canDisplayIndicator ? data.Clips.PreviewRect : default;
             EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(previewRect, req);
             EditorAudioPreviewer.Instance.OnFinished = ResetPreview;
+
+#if PACKAGE_LOCALIZATION
+            IBroAudioClip WrapLocalizationClip(AudioClip audioClip, int clipIndex)
+            {
+                var broClip = entity.Clips != null && clipIndex >= 0 && clipIndex < entity.Clips.Length ? entity.Clips[clipIndex] : null;
+                return new LocalizedBroAudioClipWrapper(broClip, audioClip);
+            }
+#endif
         }
 
         private void ResetPreview()

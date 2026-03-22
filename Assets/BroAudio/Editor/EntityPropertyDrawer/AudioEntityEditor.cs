@@ -292,7 +292,11 @@ namespace Ami.BroAudio.Editor
             var req = _currentPreviewRequest.Value;
             req.UpdateRandomizedPreviewValue(RandomFlag.Volume, masterVolProp.floatValue);
             req.UpdateRandomizedPreviewValue(RandomFlag.Pitch, pitchProp.floatValue);
-            req.ClipVolume = data.Clips.CurrentPlayingClip.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
+            var playingClipProp = data.Clips.CurrentPlayingClip;
+            if (playingClipProp != null)
+            {
+                req.ClipVolume = playingClipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
+            }
             EditorAudioPreviewer.Instance.UpdatePreview();
 
             EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw();
@@ -421,7 +425,10 @@ namespace Ami.BroAudio.Editor
             GetBaseAndRandomValue(RandomFlag.Volume, entityData.Entity, out req.BaseMasterVolume, out req.MasterVolume);
             GetBaseAndRandomValue(RandomFlag.Pitch, entityData.Entity, out req.BasePitch, out req.Pitch);
             var clipProp = entityData.Entity.FindProperty(clipPath);
-            req.ClipVolume = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
+            if (clipProp != null)
+            {
+                req.ClipVolume = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
+            }
             
             EditorAudioPreviewer.Instance.Play(req);
             entityData.Clips.SetPlayingClip(clipPath);

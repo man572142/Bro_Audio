@@ -46,6 +46,9 @@ namespace Ami.BroAudio.Editor
             if (_entity.PlayMode == MulticlipsPlayMode.Chained && _loopMode && !_proceedToEnd)
             {
                 _proceedToEnd = true;
+                _context++;
+                GetAudioClipForScheduling();
+                _onReplay?.Invoke(_clipIndex);
                 return true;
             }
             return false;

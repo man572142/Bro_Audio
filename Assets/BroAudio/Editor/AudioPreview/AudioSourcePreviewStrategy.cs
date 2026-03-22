@@ -29,6 +29,7 @@ namespace Ami.BroAudio.Editor
         private TaskCompletionSource<bool> _playbackCompletionSource;
         private double _previewDspTime;
         private double _nextPreviewDspTime;
+        private bool _immediateReplay;
         
         private AudioSource CurrentEditorAudioSource => _currentAudioSourceIndex >= 0 ? _audioSources[_currentAudioSourceIndex].Source : null;
 
@@ -157,9 +158,22 @@ namespace Ami.BroAudio.Editor
             {
                 req.ApplySeamlessFade((float)transitionTime);
             }
-            _nextPreviewDspTime = _previewDspTime + req.Duration - (replayReq.CanReplay() ? transitionTime : 0);
             var currentSource = GetNextAudioSource(out _currentAudioSourceIndex);
-            currentSource.Source.pitch = replayReq.Pitch;
+            if (_immediateReplay)
+            {
+                double immediateDspTime = AudioSettings.dspTime + AudioConstant.MixerWarmUpTime;
+                _previewDspTime = immediateDspTime;
+                _nextPreviewDspTime = immediateDspTime + req.Duration;
+                currentSource.Source.Stop();
+                currentSource.Source.SetPreviewRequest(req);
+                currentSource.Source.PlayScheduled(immediateDspTime);
+                _immediateReplay = false;
+            }
+            else
+            {
+                _nextPreviewDspTime = _previewDspTime + req.Duration - (replayReq.CanReplay() ? transitionTime : 0);
+                currentSource.Source.pitch = replayReq.Pitch;
+            }
             currentSource.Source.SetScheduledEndTime(_previewDspTime + req.Duration);
             if (transitionTime > 0)
             {
@@ -233,7 +247,16 @@ namespace Ami.BroAudio.Editor
 
         public override bool TryProceedToEnd()
         {
-            return _currentReplayRequest?.TryProceedToEnd() ?? false;
+            if (_currentReplayRequest?.TryProceedToEnd() ?? false)
+            {
+                _immediateReplay = true;
+                _nextPreviewDspTime = AudioSettings.dspTime;
+                GetNextAudioSource(out _).Source.Stop();
+                CurrentEditorAudioSource?.Stop();
+                _playbackCompletionSource?.TrySetResult(true);
+                return true;
+            }
+            return false;
         }
 
         private void DestroyPreviewAudioSourceAndCancelTask()

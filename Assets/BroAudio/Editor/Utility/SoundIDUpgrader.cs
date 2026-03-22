@@ -13,6 +13,9 @@ namespace Ami.BroAudio.Editor
     [System.Obsolete("legacy conversion only")]
     internal class SoundIDUpgrader
     {
+        private const int MaxPropertyDepth = 10;
+        private const int MaxIterations = 10000;
+
         [MenuItem(BroName.MenuItem_BroAudio + "/Others/Upgrade Sound IDs")]
         private static void UpgradeSoundIDs()
         {
@@ -177,8 +180,18 @@ namespace Ami.BroAudio.Editor
 
             using (var property = so.GetIterator())
             {
-                while (property.Next(true))
+                bool enterChildren = true;
+                int iterations = 0;
+                while (property.Next(enterChildren))
                 {
+                    enterChildren = property.depth < MaxPropertyDepth;
+
+                    if (++iterations > MaxIterations)
+                    {
+                        Debug.LogWarning($"[BroAudio] Skipped \"{so.targetObject?.name}\": property iteration exceeded {MaxIterations}, possible circular reference.");
+                        break;
+                    }
+
                     changed |= Upgrade(property);
                 }
             }

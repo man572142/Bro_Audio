@@ -1,9 +1,6 @@
 #if PACKAGE_LOCALIZATION
 using UnityEngine;
-using UnityEngine.Localization;
-using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Tables;
-using Ami.BroAudio.Runtime;
 
 namespace Ami.BroAudio.Data
 {
@@ -11,40 +8,6 @@ namespace Ami.BroAudio.Data
     {
         [SerializeField] private TableReference _localizationTable;
         [SerializeField] private TableEntryReference _localizationEntry;
-
-        internal IBroAudioClip PickLocalizationClip(ClipSelectionContext context, out int index)
-        {
-            if (_localizationTable.ReferenceType == TableReference.Type.Empty)
-            {
-                Debug.LogError(Utility.LogTitle + $"LocalizationTable is not set on entity '{Name}'.");
-                index = -1;
-                return null;
-            }
-
-            if (_localizationEntry.ReferenceType == TableEntryReference.Type.Empty)
-            {
-                Debug.LogError(Utility.LogTitle + $"LocalizationEntry is not set on entity '{Name}'.");
-                index = -1;
-                return null;
-            }
-
-            // Clips is intentionally empty in Localization mode; resolve clip directly from the asset table.
-            index = 0;
-
-            var handle = LocalizationSettings.AssetDatabase
-                .GetLocalizedAssetAsync<AudioClip>(_localizationTable, _localizationEntry);
-            var resolvedClip = handle.WaitForCompletion();
-
-            if (resolvedClip == null)
-            {
-                var locale = LocalizationSettings.SelectedLocale;
-                string localeName = locale != null ? locale.Identifier.ToString() : "unknown";
-                Debug.LogWarning(Utility.LogTitle + $"No AudioClip set in table for locale '{localeName}' on entity '{Name}'.");
-                return null;
-            }
-
-            return new LocalizedBroAudioClipWrapper(resolvedClip);
-        }
 
 #if UNITY_EDITOR
         public static class LocalizationEditorPropertyName

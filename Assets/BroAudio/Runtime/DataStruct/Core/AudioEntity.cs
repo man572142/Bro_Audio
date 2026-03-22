@@ -51,7 +51,10 @@ namespace Ami.BroAudio.Data
                 case MulticlipsPlayMode.Chained: EnsureClipSelectionStrategy<ChainedClipStrategy>(); break;
                 case MulticlipsPlayMode.Velocity: EnsureClipSelectionStrategy<VelocityClipStrategy>(); break;
 #if PACKAGE_LOCALIZATION
-                case MulticlipsPlayMode.Localization: return PickLocalizationClip(context, out index);
+                case MulticlipsPlayMode.Localization:
+                    EnsureClipSelectionStrategy<LocalizationClipStrategy>();
+                    ((LocalizationClipStrategy)_clipSelectionStrategy).Inject(_localizationTable, _localizationEntry, Name);
+                    break;
 #endif
                 default:
                     Debug.LogError(Utility.LogTitle + $"Invalid multiclips play mode: {MulticlipsPlayMode}");

@@ -111,6 +111,11 @@ namespace Ami.BroAudio.Editor
             Start();
         }
 
+        public void PrepareCrossFadeIn()
+        {
+            SetVolume(0f, true);
+        }
+
         public void BeginCrossFadeIn(float duration, Ease ease)
         {
             _isCrossFadingIn = true;
@@ -170,6 +175,7 @@ namespace Ami.BroAudio.Editor
                     }
                     SetVolume(targetVol);
                     _isCrossFadingIn = false;
+                    _crossFadeInHandled = false;
                     _playbackPos = _crossFadeInDuration;
                     base.Update();
                     return;

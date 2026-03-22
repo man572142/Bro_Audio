@@ -122,14 +122,7 @@ namespace Ami.BroAudio.Editor
             volumeTransporter.Start();
 
             await WaitForPlaybackCompletion();
-            if (transitionTime > 0)
-            {
-                volumeTransporter.BeginCrossFadeOut((float)transitionTime, BroEditorUtility.RuntimeSetting.SeamlessFadeOutEase);
-            }
-            else
-            {
-                volumeTransporter.End();
-            }
+            volumeTransporter.End();
             _previewDspTime = _nextPreviewDspTime;
 
             while (replayRequest != null && replayRequest.CanReplay())
@@ -156,15 +149,7 @@ namespace Ami.BroAudio.Editor
             var previousSource = _audioSources[_currentAudioSourceIndex];
             double transitionTime = replayReq.GetTransitionTime();
 
-            // The previous scheduled audioSource has started at this point, we can just renew the process and prepare the next one
-            if (transitionTime > 0)
-            {
-                previousSource.VolumeTransporter.BeginCrossFadeOut((float)transitionTime, BroEditorUtility.RuntimeSetting.SeamlessFadeOutEase);
-            }
-            else
-            {
-                previousSource.VolumeTransporter.End();
-            }
+            previousSource.VolumeTransporter.End();
 
             replayReq.Start();
             req.SetReplay(replayReq);
@@ -186,12 +171,31 @@ namespace Ami.BroAudio.Editor
             if (replayReq.CanReplay())
             {
                 ScheduleNextPlayback(replayReq, req, transitionTime);
+                if (transitionTime > 0)
+                {
+                    double fadeOutDelay = _nextPreviewDspTime - transitionTime - AudioSettings.dspTime;
+                    _ = DelayedCrossFade(fadeOutDelay,
+                        () => currentSource.VolumeTransporter.BeginCrossFadeOut((float)transitionTime, BroEditorUtility.RuntimeSetting.SeamlessFadeOutEase));
+                }
             }
 
             await WaitForPlaybackCompletion();
             _previewDspTime = _nextPreviewDspTime;
         }
         
+        private async Task DelayedCrossFade(double delay, Action crossFadeAction)
+        {
+            try
+            {
+                if (delay > 0)
+                {
+                    await Task.Delay(SecToMs(delay), CancellationSource.Token);
+                }
+                crossFadeAction();
+            }
+            catch (OperationCanceledException) { }
+        }
+
         private void ScheduleNextPlayback(ReplayRequest replayRequest, PreviewRequest req, double transitionTime = 0)
         {
             var source = GetNextAudioSource(out _);
@@ -201,7 +205,10 @@ namespace Ami.BroAudio.Editor
             audioSource.SetScheduledEndTime(_nextPreviewDspTime + replayRequest.GetDuration());
             if (transitionTime > 0)
             {
-                source.VolumeTransporter.BeginCrossFadeIn((float)transitionTime, BroEditorUtility.RuntimeSetting.SeamlessFadeInEase);
+                source.VolumeTransporter.PrepareCrossFadeIn();
+                double crossFadeInDelay = _nextPreviewDspTime - AudioSettings.dspTime;
+                _ = DelayedCrossFade(crossFadeInDelay,
+                    () => source.VolumeTransporter.BeginCrossFadeIn((float)transitionTime, BroEditorUtility.RuntimeSetting.SeamlessFadeInEase));
             }
             else
             {

@@ -10,19 +10,21 @@ namespace Ami.BroAudio.Editor
     {
         private readonly AudioEntity _entity;
         private readonly Action<int> _onReplay;
-        
+        private readonly Func<(IBroAudioClip clip, int index)> _clipPickerOverride;
+
         private int _clipIndex;
         private int _context;
         private float _masterVolume = AudioConstant.FullVolume;
         private float _pitch = AudioConstant.DefaultPitch;
-        
+
         public override float MasterVolume => _masterVolume;
         public override float Pitch => _pitch;
 
-        public EntityReplayRequest(AudioEntity entity, Action<int> onReplay) : base(null)
+        public EntityReplayRequest(AudioEntity entity, Action<int> onReplay, Func<(IBroAudioClip, int)> clipPickerOverride = null) : base(null)
         {
             _entity = entity;
             _onReplay = onReplay;
+            _clipPickerOverride = clipPickerOverride;
             if (entity.PlayMode == MulticlipsPlayMode.Chained)
             {
                 _context = (int)PlaybackStage.Loop;
@@ -40,7 +42,14 @@ namespace Ami.BroAudio.Editor
         
         public override AudioClip GetAudioClipForScheduling()
         {
-            Clip = _entity.PickNewClip(_context, out _clipIndex);
+            if (_clipPickerOverride != null)
+            {
+                (Clip, _clipIndex) = _clipPickerOverride();
+            }
+            else
+            {
+                Clip = _entity.PickNewClip(_context, out _clipIndex);
+            }
             return base.GetAudioClipForScheduling();
         }
 

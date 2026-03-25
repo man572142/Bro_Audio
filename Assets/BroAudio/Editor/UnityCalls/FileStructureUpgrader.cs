@@ -70,7 +70,7 @@ namespace Ami.BroAudio.Editor
             if (!isLegacyRoot)
             {
 #if !BroAudio_DevOnly
-                if (!callerPath.Contains(UPMPath))
+                if (!callerPath.Replace('\\', '/').Contains(UPMPath))
                 {
                     if (MainAssetPath != root && AssetDatabase.IsValidFolder(MainAssetPath))
                     {

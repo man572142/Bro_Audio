@@ -60,6 +60,12 @@ namespace Ami.BroAudio.Editor
         public double AbsoluteEndPosition => PreciseAudioClipLength - EndPosition;
         public float Volume => ClipVolume * MasterVolume;
 
+        public void ApplySeamlessFade(float transitionTime)
+        {
+            FadeIn = transitionTime;
+            FadeOut = transitionTime;
+        }
+
         public void SetReplay(ReplayRequest newReplay)
         {
             SetClip(newReplay.Clip);

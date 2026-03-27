@@ -558,7 +558,10 @@ namespace Ami.BroAudio.Editor
             {
                 if (data.IsPlaying)
                 {
-                    EditorAudioPreviewer.Instance.StopAllClips();
+                    if (!EditorAudioPreviewer.Instance.TryProceedToEnd())
+                    {
+                        EditorAudioPreviewer.Instance.StopAllClips();
+                    }
                 }
                 else
                 {
@@ -662,7 +665,9 @@ namespace Ami.BroAudio.Editor
                 Pitch = entity.GetPitch(),
                 BasePitch = entity.Pitch,
             };
-            var replayReq = data.IsReplay ? new EntityReplayRequest(entity, data.Clips.SelectAndSetPlayingElement) : null;
+            var replayReq = entity.PlayMode == MulticlipsPlayMode.Chained
+                ? new EntityReplayRequest(entity, data.Clips.SelectAndSetPlayingElement, loopMode: data.IsReplay)
+                : data.IsReplay ? new EntityReplayRequest(entity, data.Clips.SelectAndSetPlayingElement) : null;
             EditorAudioPreviewer.Instance.Play(req, replayReq);
             _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip.propertyPath, req);
             var previewRect = canDisplayIndicator ? data.Clips.PreviewRect : default;

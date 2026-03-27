@@ -13,15 +13,27 @@ namespace Ami.BroAudio.Editor
         private const string DefaultSnapshotName = "Snapshot";
 
         private readonly AudioMixerGroup _mixerGroup;
-        private readonly Ease _fadeInEase;
-        private readonly Ease _fadeOutEase;
+        private Ease _fadeInEase;
+        private Ease _fadeOutEase;
         private readonly object[] _parameters;
         private readonly bool _isInitSuccessfully;
         private readonly MethodInfo _method;
         private PreviewRequest _currentReq;
         private float _playbackPos;
         private float _dbVolume;
-        
+        private float _currentLinearVolume;
+        private bool _isCrossFadingOut;
+        private float _crossFadeOutDuration;
+        private float _crossFadeOutStartVolume;
+        private float _crossFadeOutPos;
+        private Ease _crossFadeOutEase;
+        private bool _isCrossFadingIn;
+        private bool _crossFadeInHandled;
+        private float _crossFadeInDuration;
+        private float _crossFadeInPos;
+        private float _crossFadeInTargetVolume;
+        private Ease _crossFadeInEase;
+
         public EditorVolumeTransporter(AudioMixer mixer, string trackName)
         {
             AudioMixerSnapshot snapshot = mixer.FindSnapshot(DefaultSnapshotName);
@@ -51,7 +63,15 @@ namespace Ami.BroAudio.Editor
         public void Init(PreviewRequest req)
         {
             _currentReq = req;
-            SetStartVolume(req);
+            if (_crossFadeInHandled)
+            {
+                // Cross-fade-in is in progress or just completed; update target volume with the correct value
+                _crossFadeInTargetVolume = req.Volume;
+            }
+            else
+            {
+                SetStartVolume(req);
+            }
         }
 
         public void SetStartVolume(PreviewRequest req)
@@ -62,19 +82,111 @@ namespace Ami.BroAudio.Editor
 
         public override void Start()
         {
+            if (_crossFadeInHandled)
+            {
+                // Cross-fade-in is already running; don't reset _playbackPos or re-subscribe
+                _crossFadeInHandled = false;
+                return;
+            }
             _playbackPos = 0f;
             base.Start();
         }
 
         public override void Dispose()
         {
+            _isCrossFadingOut = false;
+            _isCrossFadingIn = false;
+            _crossFadeInHandled = false;
             SetVolume(1f);
             base.Dispose();
+        }
+
+        public void BeginCrossFadeOut(float duration, Ease ease)
+        {
+            _isCrossFadingOut = true;
+            _crossFadeOutDuration = duration;
+            _crossFadeOutStartVolume = _currentLinearVolume;
+            _crossFadeOutPos = 0f;
+            _crossFadeOutEase = ease;
+            Start();
+        }
+
+        public void PrepareCrossFadeIn()
+        {
+            SetVolume(0f, true);
+        }
+
+        public void BeginCrossFadeIn(float duration, Ease ease)
+        {
+            _isCrossFadingIn = true;
+            _crossFadeInHandled = true;
+            _crossFadeInDuration = duration;
+            _crossFadeInPos = 0f;
+            _crossFadeInTargetVolume = AudioConstant.FullVolume;
+            _crossFadeInEase = ease;
+            _playbackPos = 0f;
+            SetVolume(0f, true);
+            base.Start();
+        }
+
+        public void UseSeamlessEasing()
+        {
+            var setting = BroEditorUtility.RuntimeSetting;
+            _fadeInEase = setting.SeamlessFadeInEase;
+            _fadeOutEase = setting.SeamlessFadeOutEase;
         }
 
         protected override void Update()
         {
             if (!_isInitSuccessfully)
+            {
+                return;
+            }
+
+            if (_isCrossFadingOut)
+            {
+                _crossFadeOutPos += DeltaTime;
+                if (_crossFadeOutPos >= _crossFadeOutDuration)
+                {
+                    SetVolume(0f);
+                    _isCrossFadingOut = false;
+                    base.Update();
+                    Dispose();
+                    return;
+                }
+                float t = (_crossFadeOutPos / _crossFadeOutDuration).SetEase(_crossFadeOutEase);
+                SetVolume(Mathf.Lerp(_crossFadeOutStartVolume, 0f, t));
+                base.Update();
+                return;
+            }
+
+            if (_isCrossFadingIn)
+            {
+                _crossFadeInPos += DeltaTime;
+                float targetVol = _crossFadeInTargetVolume;
+                if (_crossFadeInPos >= _crossFadeInDuration)
+                {
+                    if (_currentReq == null)
+                    {
+                        // Hold at target until Init provides _currentReq
+                        SetVolume(targetVol);
+                        base.Update();
+                        return;
+                    }
+                    SetVolume(targetVol);
+                    _isCrossFadingIn = false;
+                    _crossFadeInHandled = false;
+                    _playbackPos = _crossFadeInDuration;
+                    base.Update();
+                    return;
+                }
+                float fadeT = (_crossFadeInPos / _crossFadeInDuration).SetEase(_crossFadeInEase);
+                SetVolume(Mathf.Lerp(0f, targetVol, fadeT));
+                base.Update();
+                return;
+            }
+
+            if (_currentReq == null)
             {
                 return;
             }
@@ -113,6 +225,7 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
+            _currentLinearVolume = vol;
             _dbVolume = db;
             _parameters[2] = db;
             _method?.Invoke(_mixerGroup, _parameters);

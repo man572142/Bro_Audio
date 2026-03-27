@@ -30,6 +30,16 @@ namespace Ami.BroAudio.Editor
         {
         }
 
+        public virtual bool TryProceedToEnd()
+        {
+            return false;
+        }
+
+        public virtual double GetTransitionTime()
+        {
+            return 0;
+        }
+
         public double GetDuration()
         {
             if (Clip == null)

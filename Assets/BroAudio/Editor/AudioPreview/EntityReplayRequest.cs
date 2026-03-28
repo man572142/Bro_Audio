@@ -13,7 +13,7 @@ namespace Ami.BroAudio.Editor
         private readonly Func<bool> _isReplayEnabled;
 
         private int _clipIndex;
-        private int _context;
+        private PlaybackStage _context;
         private float _masterVolume = AudioConstant.FullVolume;
         private float _pitch = AudioConstant.DefaultPitch;
 
@@ -27,7 +27,7 @@ namespace Ami.BroAudio.Editor
             _isReplayEnabled = isReplayEnabled;
             if (entity.PlayMode == MulticlipsPlayMode.Chained)
             {
-                _context = (int)PlaybackStage.Loop;
+                _context = PlaybackStage.Loop;
             }
         }
 
@@ -35,11 +35,11 @@ namespace Ami.BroAudio.Editor
         {
             if (_entity.PlayMode == MulticlipsPlayMode.Chained)
             {
-                if (_context == (int)PlaybackStage.None)
+                if (_context == PlaybackStage.None)
                 {
                     return false;
                 }
-                if (_context == (int)PlaybackStage.End && _entity.Clips.Length < (int)PlaybackStage.End)
+                if (_context == PlaybackStage.End && _entity.Clips.Length < (int)PlaybackStage.End)
                 {
                     return false;
                 }
@@ -50,7 +50,7 @@ namespace Ami.BroAudio.Editor
 
         public override AudioClip GetAudioClipForScheduling()
         {
-            Clip = _entity.PickNewClip(_context, out _clipIndex);
+            Clip = _entity.PickNewClip((int)_context, out _clipIndex);
             return base.GetAudioClipForScheduling();
         }
 
@@ -66,17 +66,17 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private int GetNextChainedContext()
+        private PlaybackStage GetNextChainedContext()
         {
-            if (_context == (int)PlaybackStage.End)
+            if (_context == PlaybackStage.End)
             {
-                return (int)PlaybackStage.None;
+                return PlaybackStage.None;
             }
-            if (_context == (int)PlaybackStage.Loop && (_isReplayEnabled?.Invoke() ?? false))
+            if (_context == PlaybackStage.Loop && (_isReplayEnabled?.Invoke() ?? false))
             {
-                return (int)PlaybackStage.Loop;
+                return PlaybackStage.Loop;
             }
-            return _context + 1;
+            return PlaybackStage.End;
         }
     }
 }

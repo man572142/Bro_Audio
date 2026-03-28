@@ -663,16 +663,13 @@ namespace Ami.BroAudio.Editor
                 BasePitch = entity.Pitch,
             };
             EntityReplayRequest replayReq = null;
-            if (entity.PlayMode == MulticlipsPlayMode.Chained)
+            if (entity.PlayMode == MulticlipsPlayMode.Chained && entity.Clips.Length >= (int)PlaybackStage.Loop)
             {
-                if (entity.Clips.Length >= (int)PlaybackStage.Loop)
-                {
-                    replayReq = new EntityReplayRequest(entity, data.Clips.SelectAndSetPlayingElement, () => data.IsReplay);
-                }
+                replayReq = new EntityReplayRequest(entity, data.Clips.SelectAndSetPlayingElement, () => data.IsReplay);
             }
-            else
+            else if (entity.PlayMode != MulticlipsPlayMode.Chained && data.IsReplay)
             {
-                replayReq = data.IsReplay ? new EntityReplayRequest(entity, data.Clips.SelectAndSetPlayingElement) : null;
+                replayReq = new EntityReplayRequest(entity, data.Clips.SelectAndSetPlayingElement);
             }
             EditorAudioPreviewer.Instance.Play(req, replayReq);
             _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip.propertyPath, req);

@@ -98,6 +98,13 @@ namespace Ami.BroAudio.Data
         
         public bool HasLoop(out LoopType loopType, out float transitionTime)
         {
+            return HasLoop(out loopType, out transitionTime,
+                SoundManager.Instance.Setting.DefaultChainedPlayModeLoop,
+                SoundManager.Instance.Setting.DefaultChainedPlayModeTransitionTime);
+        }
+
+        public bool HasLoop(out LoopType loopType, out float transitionTime, LoopType chainedDefaultLoop, float chainedDefaultTransitionTime)
+        {
             loopType = LoopType.None;
             transitionTime = 0f;
             if (Loop)
@@ -111,8 +118,8 @@ namespace Ami.BroAudio.Data
             }
             else if (MulticlipsPlayMode == MulticlipsPlayMode.Chained)
             {
-                loopType = SoundManager.Instance.Setting.DefaultChainedPlayModeLoop;
-                transitionTime = SoundManager.Instance.Setting.DefaultChainedPlayModeTransitionTime;
+                loopType = chainedDefaultLoop;
+                transitionTime = chainedDefaultTransitionTime;
             }
             return loopType != LoopType.None;
         }

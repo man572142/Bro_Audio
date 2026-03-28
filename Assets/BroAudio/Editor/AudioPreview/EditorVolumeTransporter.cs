@@ -13,8 +13,8 @@ namespace Ami.BroAudio.Editor
         private const string DefaultSnapshotName = "Snapshot";
 
         private readonly AudioMixerGroup _mixerGroup;
-        private readonly Ease _fadeInEase;
-        private readonly Ease _fadeOutEase;
+        private Ease _fadeInEase;
+        private Ease _fadeOutEase;
         private readonly object[] _parameters;
         private readonly bool _isInitSuccessfully;
         private readonly MethodInfo _method;
@@ -58,6 +58,18 @@ namespace Ami.BroAudio.Editor
         {
             float startVol = req.FadeIn > 0f ? 0f : req.Volume;
             SetVolume(startVol, true);
+        }
+
+        public void SetFadeEases(Ease fadeInEase, Ease fadeOutEase)
+        {
+            _fadeInEase = fadeInEase;
+            _fadeOutEase = fadeOutEase;
+        }
+
+        public void UpdateOngoingPlayback(PreviewRequest req, float elapsedPlaybackTime)
+        {
+            _currentReq = req;
+            _playbackPos = elapsedPlaybackTime;
         }
 
         public override void Start()

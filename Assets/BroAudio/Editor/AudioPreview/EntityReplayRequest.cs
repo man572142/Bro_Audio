@@ -16,9 +16,11 @@ namespace Ami.BroAudio.Editor
         private PlaybackStage _context;
         private float _masterVolume = AudioConstant.FullVolume;
         private float _pitch = AudioConstant.DefaultPitch;
+        private readonly float _crossfadeTime;
 
         public override float MasterVolume => _masterVolume;
         public override float Pitch => _pitch;
+        public override float CrossfadeTime => _crossfadeTime;
 
         public EntityReplayRequest(AudioEntity entity, Action<int> onReplay, Func<bool> isReplayEnabled = null) : base(null)
         {
@@ -28,6 +30,14 @@ namespace Ami.BroAudio.Editor
             if (entity.PlayMode == MulticlipsPlayMode.Chained)
             {
                 _context = PlaybackStage.Loop;
+            }
+
+            var runtimeSetting = BroEditorUtility.RuntimeSetting;
+            if (entity.HasLoop(out var loopType, out var transitionTime,
+                runtimeSetting.DefaultChainedPlayModeLoop, runtimeSetting.DefaultChainedPlayModeTransitionTime)
+                && loopType == LoopType.SeamlessLoop)
+            {
+                _crossfadeTime = transitionTime;
             }
         }
 

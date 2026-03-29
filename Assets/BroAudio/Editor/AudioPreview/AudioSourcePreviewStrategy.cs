@@ -328,18 +328,12 @@ namespace Ami.BroAudio.Editor
                 var audioSourceContent = _audioSources[0];
                 audioSourceContent.Source.SetPreviewRequest(req);
                 audioSourceContent.VolumeTransporter.Init(req);
-
-                _previewDspTime = AudioSettings.dspTime;
-                double startDspTime = _previewDspTime + AudioConstant.MixerWarmUpTime;
-                audioSourceContent.Source.PlayScheduled(startDspTime);
-                audioSourceContent.Source.SetScheduledEndTime(startDspTime + req.Duration);
-                await Task.Delay(SecToMs(AudioConstant.MixerWarmUpTime), CancellationSource.Token);
-                _previewDspTime += AudioConstant.MixerWarmUpTime;
-                _nextPreviewDspTime = _previewDspTime + req.Duration;
+                
+                audioSourceContent.Source.Play();
 
                 EndPlaybackIndicator();
                 SetPlaybackIndicatorRequest(req);
-                StartPlaybackIndicator(false);
+                StartPlaybackIndicator();
                 audioSourceContent.VolumeTransporter.Start();
 
                 await WaitForPlaybackCompletion();

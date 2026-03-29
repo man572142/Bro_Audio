@@ -52,6 +52,10 @@ namespace Ami.BroAudio.Editor
 
         public void StopAllClips()
         {
+            if (_currentStrategy != null && _currentStrategy.TryTransitionToEnd())
+            {
+                return;
+            }
             StopAndDestroyStrategy();
         }
         

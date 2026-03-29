@@ -76,6 +76,24 @@ namespace Ami.BroAudio.Editor
             }
         }
 
+        public PreviewRequest TryGetEndClipRequest()
+        {
+            if (_entity.PlayMode != MulticlipsPlayMode.Chained)
+                return null;
+            if (_context == PlaybackStage.None)
+                return null;
+            if (_entity.Clips.Length < (int)PlaybackStage.End)
+                return null;
+
+            var clip = _entity.PickNewClip((int)PlaybackStage.End, out int index);
+            _onReplay?.Invoke(index);
+            return new PreviewRequest(clip)
+            {
+                MasterVolume = _entity.GetMasterVolume(),
+                Pitch = _entity.GetPitch(),
+            };
+        }
+
         private PlaybackStage GetNextChainedContext()
         {
             if (_context == PlaybackStage.End)

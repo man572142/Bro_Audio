@@ -179,7 +179,7 @@ namespace Ami.BroAudio.Editor
                 currentSource.VolumeTransporter.Start();
             }
 
-            StartPlaybackIndicator();
+            StartPlaybackIndicator(activeCrossfadeTime);
             if (replayReq.CanReplay())
             {
                 ScheduleNextPlayback(replayReq, req);
@@ -338,6 +338,7 @@ namespace Ami.BroAudio.Editor
                 _nextPreviewDspTime = _previewDspTime + req.Duration;
 
                 EndPlaybackIndicator();
+                SetPlaybackIndicatorRequest(req);
                 StartPlaybackIndicator(false);
                 audioSourceContent.VolumeTransporter.Start();
 

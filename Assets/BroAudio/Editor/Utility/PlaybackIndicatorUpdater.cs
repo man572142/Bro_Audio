@@ -39,9 +39,14 @@ namespace Ami.Extension
             }
         }
 
-		public void SetClipInfo(Rect waveformRect, PreviewRequest req) 
+		public void SetClipInfo(Rect waveformRect, PreviewRequest req)
 		{
 			_waveformRect = waveformRect;
+			_request = req;
+		}
+
+		public void SetRequest(PreviewRequest req)
+		{
 			_request = req;
 		}
 
@@ -88,6 +93,13 @@ namespace Ami.Extension
 		{
 			Start();
 			_isLoop = loop;
+		}
+
+		public void Start(float startOffset, bool loop = false)
+		{
+			Start();
+			_isLoop = loop;
+			_playbackPosition = startOffset;
 		}
 
 		public override void End()

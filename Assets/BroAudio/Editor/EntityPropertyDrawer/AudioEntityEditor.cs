@@ -558,7 +558,10 @@ namespace Ami.BroAudio.Editor
             {
                 if (data.IsPlaying)
                 {
-                    EditorAudioPreviewer.Instance.StopAllClips();
+                    if (!EditorAudioPreviewer.Instance.TryTransitionToEnd())
+                    {
+                        EditorAudioPreviewer.Instance.StopAllClips();
+                    }
                 }
                 else
                 {

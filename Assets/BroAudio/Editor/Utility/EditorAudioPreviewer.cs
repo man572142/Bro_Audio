@@ -52,11 +52,16 @@ namespace Ami.BroAudio.Editor
 
         public void StopAllClips()
         {
-            if (_currentStrategy != null && _currentStrategy.TryTransitionToEnd())
-            {
-                return;
-            }
             StopAndDestroyStrategy();
+        }
+
+        public bool TryTransitionToEnd()
+        {
+            if (_currentStrategy is AudioSourcePreviewStrategy audioSourceStrategy)
+            {
+                return audioSourceStrategy.TryTransitionToEnd();
+            }
+            return false;
         }
         
         public void UpdatePreview()

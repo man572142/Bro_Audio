@@ -9,6 +9,7 @@ namespace Ami.BroAudio.Editor
         public IBroAudioClip Clip { get; protected set; }
         public virtual float MasterVolume =>AudioConstant.FullVolume;
         public virtual float Pitch => AudioConstant.DefaultPitch;
+        public virtual float CrossfadeTime => 0f;
         public int StartSample => Clip.GetAudioClip().GetTimeSample(Clip.StartPosition);
 
         public ReplayRequest(IBroAudioClip clip)

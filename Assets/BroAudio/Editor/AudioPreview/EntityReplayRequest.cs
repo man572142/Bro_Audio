@@ -10,22 +10,34 @@ namespace Ami.BroAudio.Editor
     {
         private readonly AudioEntity _entity;
         private readonly Action<int> _onReplay;
-        
+        private readonly Func<bool> _isReplayEnabled;
+
         private int _clipIndex;
-        private int _context;
+        private PlaybackStage _context;
         private float _masterVolume = AudioConstant.FullVolume;
         private float _pitch = AudioConstant.DefaultPitch;
-        
+        private readonly float _crossfadeTime;
+
         public override float MasterVolume => _masterVolume;
         public override float Pitch => _pitch;
+        public override float CrossfadeTime => _crossfadeTime;
 
-        public EntityReplayRequest(AudioEntity entity, Action<int> onReplay) : base(null)
+        public EntityReplayRequest(AudioEntity entity, Action<int> onReplay, Func<bool> isReplayEnabled = null) : base(null)
         {
             _entity = entity;
             _onReplay = onReplay;
+            _isReplayEnabled = isReplayEnabled;
             if (entity.PlayMode == MulticlipsPlayMode.Chained)
             {
-                _context = (int)PlaybackStage.Loop;
+                _context = PlaybackStage.Loop;
+            }
+
+            var runtimeSetting = BroEditorUtility.RuntimeSetting;
+            if (entity.HasLoop(out var loopType, out var transitionTime,
+                runtimeSetting.DefaultChainedPlayModeLoop, runtimeSetting.DefaultChainedPlayModeTransitionTime)
+                && loopType == LoopType.SeamlessLoop)
+            {
+                _crossfadeTime = transitionTime;
             }
         }
 
@@ -33,14 +45,22 @@ namespace Ami.BroAudio.Editor
         {
             if (_entity.PlayMode == MulticlipsPlayMode.Chained)
             {
-                return _entity.Clips.Length > _context - 1;
+                if (_context == PlaybackStage.None)
+                {
+                    return false;
+                }
+                if (_context == PlaybackStage.End && _entity.Clips.Length < (int)PlaybackStage.End)
+                {
+                    return false;
+                }
+                return true;
             }
             return base.CanReplay();
         }
-        
+
         public override AudioClip GetAudioClipForScheduling()
         {
-            Clip = _entity.PickNewClip(_context, out _clipIndex);
+            Clip = _entity.PickNewClip((int)_context, out _clipIndex);
             return base.GetAudioClipForScheduling();
         }
 
@@ -52,9 +72,37 @@ namespace Ami.BroAudio.Editor
 
             if (_entity.PlayMode == MulticlipsPlayMode.Chained)
             {
-                var nextStage = _context == (int)PlaybackStage.End ? (int)PlaybackStage.Start : _context + 1;
-                _context = nextStage;
+                _context = GetNextChainedContext();
             }
+        }
+
+        public PreviewRequest TryGetEndClipRequest()
+        {
+            if (_entity.PlayMode != MulticlipsPlayMode.Chained || _context == PlaybackStage.None || _entity.Clips.Length < (int)PlaybackStage.End)
+            {
+                return null;
+            }
+
+            var clip = _entity.PickNewClip((int)PlaybackStage.End, out int index);
+            _onReplay?.Invoke(index);
+            return new PreviewRequest(clip)
+            {
+                MasterVolume = _entity.GetMasterVolume(),
+                Pitch = _entity.GetPitch(),
+            };
+        }
+
+        private PlaybackStage GetNextChainedContext()
+        {
+            if (_context == PlaybackStage.End)
+            {
+                return PlaybackStage.None;
+            }
+            if (_context == PlaybackStage.Loop && (_isReplayEnabled?.Invoke() ?? false))
+            {
+                return PlaybackStage.Loop;
+            }
+            return PlaybackStage.End;
         }
     }
 }

@@ -1,6 +1,7 @@
 using Ami.Extension;
 using System;
 using System.Threading;
+using UnityEngine;
 
 namespace Ami.BroAudio.Editor
 {
@@ -68,6 +69,16 @@ namespace Ami.BroAudio.Editor
         protected void StartPlaybackIndicator(bool loop = false)
         {
             _playbackIndicator?.Start(loop);
+        }
+
+        protected void StartPlaybackIndicator(float startOffset, bool loop = false)
+        {
+            _playbackIndicator?.Start(startOffset, loop);
+        }
+
+        protected void SetPlaybackIndicatorRequest(PreviewRequest req)
+        {
+            _playbackIndicator?.SetRequest(req);
         }
 
         protected void EndPlaybackIndicator()

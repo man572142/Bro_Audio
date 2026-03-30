@@ -3,6 +3,7 @@ using UnityEditor;
 using System;
 using System.Threading.Tasks;
 using Ami.BroAudio.Tools;
+using Ami.BroAudio.Data;
 using UnityEngine.Audio;
 using Ami.Extension;
 using static Ami.Extension.TimeExtension;
@@ -28,7 +29,9 @@ namespace Ami.BroAudio.Editor
         private TaskCompletionSource<bool> _playbackCompletionSource;
         private double _previewDspTime;
         private double _nextPreviewDspTime;
-        
+        private float _crossfadeTime;
+        private ReplayRequest _currentReplayRequest;
+
         private AudioSource CurrentEditorAudioSource => _currentAudioSourceIndex >= 0 ? _audioSources[_currentAudioSourceIndex].Source : null;
 
         public AudioSourcePreviewStrategy()
@@ -63,13 +66,17 @@ namespace Ami.BroAudio.Editor
                 var nextAudioSource = GetNextAudioSource(out _).Source;
                 if (nextAudioSource.clip != null)
                 {
-                    nextAudioSource.SetScheduledStartTime(_nextPreviewDspTime);
+                    double nextStartTime = _crossfadeTime > 0
+                        ? _nextPreviewDspTime - _crossfadeTime / _currentRequest.Pitch
+                        : _nextPreviewDspTime;
+                    nextAudioSource.SetScheduledStartTime(nextStartTime);
                 }
             }
         }
 
         public override async void Play(PreviewRequest req, ReplayRequest replayRequest = null)
         {
+            _currentReplayRequest = replayRequest;
             try
             {
                 await PlayClipByAudioSourceAsync(req, replayRequest);
@@ -139,24 +146,45 @@ namespace Ami.BroAudio.Editor
         private async Task AudioSourceReplay(PreviewRequest req, ReplayRequest replayReq)
         {
             EndPlaybackIndicator();
-            var currentSource = _audioSources[_currentAudioSourceIndex];
-            currentSource.VolumeTransporter.End();
-            
-            // The previous scheduled audioSource has started at this point, we can just renew the process and prepare the next one 
+            var previousSource = _audioSources[_currentAudioSourceIndex];
+            previousSource.VolumeTransporter.End();
+
+            float activeCrossfadeTime = _crossfadeTime;
+            bool hadCrossfade = activeCrossfadeTime > 0;
+
+            // The previous scheduled audioSource has started at this point, we can just renew the process and prepare the next one
             replayReq.Start();
             req.SetReplay(replayReq);
-            _nextPreviewDspTime = _previewDspTime + req.Duration;
-            currentSource = GetNextAudioSource(out _currentAudioSourceIndex);
+
+            if (hadCrossfade)
+            {
+                _nextPreviewDspTime = _previewDspTime + req.Duration - activeCrossfadeTime / req.Pitch;
+            }
+            else
+            {
+                _nextPreviewDspTime = _previewDspTime + req.Duration;
+            }
+
+            var currentSource = GetNextAudioSource(out _currentAudioSourceIndex);
             currentSource.Source.pitch = replayReq.Pitch;
             currentSource.Source.SetScheduledEndTime(_nextPreviewDspTime);
-            currentSource.VolumeTransporter.Init(req);
-            currentSource.VolumeTransporter.Start();
-            StartPlaybackIndicator();
+
+            if (hadCrossfade)
+            {
+                currentSource.VolumeTransporter.UpdateOngoingPlayback(req, activeCrossfadeTime);
+            }
+            else
+            {
+                currentSource.VolumeTransporter.Init(req);
+                currentSource.VolumeTransporter.Start();
+            }
+
+            StartPlaybackIndicator(activeCrossfadeTime);
             if (replayReq.CanReplay())
             {
                 ScheduleNextPlayback(replayReq, req);
             }
-            
+
             await WaitForPlaybackCompletion();
             _previewDspTime = _nextPreviewDspTime;
         }
@@ -164,11 +192,58 @@ namespace Ami.BroAudio.Editor
         private void ScheduleNextPlayback(ReplayRequest replayRequest, PreviewRequest req)
         {
             var source = GetNextAudioSource(out _);
+            float crossfadeTime = replayRequest.CrossfadeTime;
+            bool hasCrossfade = crossfadeTime > 0;
+            _crossfadeTime = crossfadeTime;
+
             source.VolumeTransporter.SetStartVolume(req);
             var audioSource = source.Source;
             audioSource.ScheduleReplay(replayRequest);
-            audioSource.PlayScheduled(_nextPreviewDspTime);
-            audioSource.SetScheduledEndTime(_nextPreviewDspTime + replayRequest.GetDuration());
+
+            if (hasCrossfade)
+            {
+                _currentRequest.FadeOut = crossfadeTime;
+                var runtimeSetting = BroEditorUtility.RuntimeSetting;
+                _audioSources[_currentAudioSourceIndex].VolumeTransporter
+                    .SetFadeEases(runtimeSetting.SeamlessFadeInEase, runtimeSetting.SeamlessFadeOutEase);
+
+                double crossfadeDspOffset = crossfadeTime / replayRequest.Pitch;
+                double scheduledStart = _nextPreviewDspTime - crossfadeDspOffset;
+                audioSource.PlayScheduled(scheduledStart);
+                audioSource.SetScheduledEndTime(scheduledStart + replayRequest.GetDuration());
+                StartCrossfadeVolumeTransitionAsync(source, replayRequest, crossfadeTime);
+            }
+            else
+            {
+                audioSource.PlayScheduled(_nextPreviewDspTime);
+                audioSource.SetScheduledEndTime(_nextPreviewDspTime + replayRequest.GetDuration());
+            }
+        }
+
+        private async void StartCrossfadeVolumeTransitionAsync(AudioSourceContent nextSource, ReplayRequest replayReq, float crossfadeTime)
+        {
+            try
+            {
+                var crossfadeReq = new PreviewRequest(replayReq.Clip)
+                {
+                    MasterVolume = replayReq.MasterVolume,
+                    Pitch = replayReq.Pitch,
+                    FadeIn = crossfadeTime,
+                };
+                var runtimeSetting = BroEditorUtility.RuntimeSetting;
+                nextSource.VolumeTransporter.SetFadeEases(runtimeSetting.SeamlessFadeInEase, runtimeSetting.SeamlessFadeOutEase);
+                nextSource.VolumeTransporter.Init(crossfadeReq);
+
+                double crossfadeStartDspTime = _nextPreviewDspTime - crossfadeTime / _currentRequest.Pitch;
+                double delaySeconds = crossfadeStartDspTime - AudioSettings.dspTime;
+                if (delaySeconds > 0)
+                {
+                    await Task.Delay(SecToMs(delaySeconds), CancellationSource.Token);
+                }
+
+                nextSource.VolumeTransporter.Start();
+            }
+            catch (OperationCanceledException) { }
         }
         
         private AudioSourceContent InstantiateAudioSource(int index)
@@ -207,10 +282,66 @@ namespace Ami.BroAudio.Editor
                     _audioSources[i] = default;
                 }
                 _currentAudioSourceIndex = -1;
-                
+                _crossfadeTime = 0f;
+
                 EndPlaybackIndicator();
                 TriggerOnFinished();
             }
+        }
+
+        public bool TryTransitionToEnd()
+        {
+            if (_currentAudioSourceIndex < 0)
+                return false;
+            if (_currentReplayRequest is EntityReplayRequest entityReplay)
+            {
+                var endClipReq = entityReplay.TryGetEndClipRequest();
+                if (endClipReq != null)
+                {
+                    _currentReplayRequest = null;
+                    TransitionToEndClipAsync(endClipReq);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private async void TransitionToEndClipAsync(PreviewRequest req)
+        {
+            try
+            {
+                CancelTask();
+
+                for (int i = 0; i < AudioSourceCount; i++)
+                {
+                    var data = _audioSources[i];
+                    if (data.Source)
+                    {
+                        data.Source.Stop();
+                    }
+                    data.VolumeTransporter?.End();
+                }
+                _crossfadeTime = 0f;
+
+                _currentRequest = req;
+                _currentAudioSourceIndex = 0;
+                var audioSourceContent = _audioSources[0];
+                audioSourceContent.Source.SetPreviewRequest(req);
+                audioSourceContent.VolumeTransporter.Init(req);
+                
+                audioSourceContent.Source.Play();
+
+                EndPlaybackIndicator();
+                SetPlaybackIndicatorRequest(req);
+                StartPlaybackIndicator();
+                audioSourceContent.VolumeTransporter.Start();
+
+                await WaitForPlaybackCompletion();
+                audioSourceContent.VolumeTransporter.End();
+
+                Stop();
+            }
+            catch (OperationCanceledException) { }
         }
 
         public override void Stop()
@@ -228,6 +359,7 @@ namespace Ami.BroAudio.Editor
         {
             base.Dispose();
             _currentRequest = null;
+            _currentReplayRequest = null;
             DestroyPreviewAudioSourceAndCancelTask();
             _mixer.SetAutoSuspend(true);
             _mixer = null;

@@ -289,7 +289,7 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        public override bool TryTransitionToEnd()
+        public bool TryTransitionToEnd()
         {
             if (_currentAudioSourceIndex < 0)
                 return false;

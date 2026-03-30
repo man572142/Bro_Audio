@@ -17,7 +17,6 @@ namespace Ami.BroAudio.Editor
 
         public abstract void Play(PreviewRequest request, ReplayRequest replayRequest = null);
         public abstract void Stop();
-        public virtual bool TryTransitionToEnd() => false;
 
         public virtual void UpdatePreview()
         {

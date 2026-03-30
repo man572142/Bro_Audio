@@ -78,12 +78,10 @@ namespace Ami.BroAudio.Editor
 
         public PreviewRequest TryGetEndClipRequest()
         {
-            if (_entity.PlayMode != MulticlipsPlayMode.Chained)
+            if (_entity.PlayMode != MulticlipsPlayMode.Chained || _context == PlaybackStage.None || _entity.Clips.Length < (int)PlaybackStage.End)
+            {
                 return null;
-            if (_context == PlaybackStage.None)
-                return null;
-            if (_entity.Clips.Length < (int)PlaybackStage.End)
-                return null;
+            }
 
             var clip = _entity.PickNewClip((int)PlaybackStage.End, out int index);
             _onReplay?.Invoke(index);

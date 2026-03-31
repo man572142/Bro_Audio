@@ -292,7 +292,11 @@ namespace Ami.BroAudio.Editor
             var req = _currentPreviewRequest.Value;
             req.UpdateRandomizedPreviewValue(RandomFlag.Volume, masterVolProp.floatValue);
             req.UpdateRandomizedPreviewValue(RandomFlag.Pitch, pitchProp.floatValue);
-            req.ClipVolume = data.Clips.CurrentPlayingClip.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
+            var playingClipProp = data.Clips.CurrentPlayingClip;
+            if (playingClipProp != null)
+            {
+                req.ClipVolume = playingClipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
+            }
             EditorAudioPreviewer.Instance.UpdatePreview();
 
             EditorAudioPreviewer.Instance.PlaybackIndicator?.Draw();
@@ -303,10 +307,9 @@ namespace Ami.BroAudio.Editor
         {
             SerializedProperty useAddressablesProp = serializedObject.FindProperty(nameof(AudioEntity.UseAddressables));
             Rect rect = GetRectAndIterateLine(position);
-            rect.width = 100f;
-            rect.x = position.xMax - rect.width;
+            Rect toggleRect = new Rect(rect) { width = 100f, x = position.xMax - 100f };
             EditorGUI.BeginChangeCheck();
-            useAddressablesProp.boolValue = EditorGUI.ToggleLeft(rect, "Addressables", useAddressablesProp.boolValue);
+            useAddressablesProp.boolValue = EditorGUI.ToggleLeft(toggleRect, "Addressables", useAddressablesProp.boolValue);
             if (EditorGUI.EndChangeCheck())
             {
                 EditorAudioPreviewer.Instance.StopAllClips();
@@ -422,7 +425,10 @@ namespace Ami.BroAudio.Editor
             GetBaseAndRandomValue(RandomFlag.Volume, entityData.Entity, out req.BaseMasterVolume, out req.MasterVolume);
             GetBaseAndRandomValue(RandomFlag.Pitch, entityData.Entity, out req.BasePitch, out req.Pitch);
             var clipProp = entityData.Entity.FindProperty(clipPath);
-            req.ClipVolume = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
+            if (clipProp != null)
+            {
+                req.ClipVolume = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume)).floatValue;
+            }
             
             EditorAudioPreviewer.Instance.Play(req);
             entityData.Clips.SetPlayingClip(clipPath);
@@ -651,10 +657,33 @@ namespace Ami.BroAudio.Editor
             }
 
             _currentPreviewingEntity = entity;
-            var context = entity.PlayMode == MulticlipsPlayMode.Chained ? (int)PlaybackStage.Start : 0;
-            var clip = entity.PickNewClip(context, out int index);
+
+            IBroAudioClip clip;
+            int index;
+#if PACKAGE_LOCALIZATION
+            if (entity.PlayMode == MulticlipsPlayMode.Localization)
+            {
+                if (!data.Clips.TryGetLocalizationEntityPreviewClip(out AudioClip locAudioClip, out int locIndex))
+                {
+                    return;
+                }
+                clip = WrapLocalizationClip(locAudioClip, locIndex);
+                index = locIndex;
+            }
+            else
+            {
+#endif
+                var context = entity.PlayMode == MulticlipsPlayMode.Chained ? (int)PlaybackStage.Start : 0;
+                clip = entity.PickNewClip(context, out index);
+                if (clip == null)
+                {
+                    return;
+                }
+#if PACKAGE_LOCALIZATION
+            }
+#endif
             data.Clips.SelectAndSetPlayingElement(index);
-            
+
             var req = new PreviewRequest(clip)
             {
                 MasterVolume = entity.GetMasterVolume(),
@@ -662,12 +691,32 @@ namespace Ami.BroAudio.Editor
                 Pitch = entity.GetPitch(),
                 BasePitch = entity.Pitch,
             };
-            var replayReq = data.IsReplay ? new EntityReplayRequest(entity, data.Clips.SelectAndSetPlayingElement) : null;
+            Func<(IBroAudioClip, int)> replayClipPicker = null;
+#if PACKAGE_LOCALIZATION
+            if (data.IsReplay && entity.PlayMode == MulticlipsPlayMode.Localization)
+            {
+                replayClipPicker = () =>
+                {
+                    if (!data.Clips.TryGetLocalizationEntityPreviewClip(out AudioClip ac, out int li))
+                        return (null, 0);
+                    return (WrapLocalizationClip(ac, li), li);
+                };
+            }
+#endif
+            var replayReq = data.IsReplay ? new EntityReplayRequest(entity, data.Clips.SelectAndSetPlayingElement, replayClipPicker) : null;
             EditorAudioPreviewer.Instance.Play(req, replayReq);
-            _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip.propertyPath, req);
+            _currentPreviewRequest = new KeyValuePair<string, PreviewRequest>(data.Clips.CurrentSelectedClip?.propertyPath ?? string.Empty, req);
             var previewRect = canDisplayIndicator ? data.Clips.PreviewRect : default;
             EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(previewRect, req);
             EditorAudioPreviewer.Instance.OnFinished = ResetPreview;
+
+#if PACKAGE_LOCALIZATION
+            IBroAudioClip WrapLocalizationClip(AudioClip audioClip, int clipIndex)
+            {
+                var broClip = entity.Clips != null && clipIndex >= 0 && clipIndex < entity.Clips.Length ? entity.Clips[clipIndex] : null;
+                return new LocalizedBroAudioClipWrapper(broClip, audioClip);
+            }
+#endif
         }
 
         private void ResetPreview()

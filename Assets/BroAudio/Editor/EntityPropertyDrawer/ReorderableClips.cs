@@ -17,7 +17,7 @@ using UnityEditor.AddressableAssets.Settings;
 
 namespace Ami.BroAudio.Editor
 {
-	public partial class ReorderableClips
+	public class ReorderableClips
 	{
         private struct NoLoopChainedPlayModeInfo
         {
@@ -61,13 +61,7 @@ namespace Ami.BroAudio.Editor
 
         private Vector2 PlayButtonSize => new Vector2(30f, 20f);
         public bool IsMulticlips => _reorderableList.count > 1;
-		public float Height =>
-#if PACKAGE_LOCALIZATION
-        CurrentPlayMode == MulticlipsPlayMode.Localization
-            ? _localizationList.GetHeight()
-            :
-#endif
-        _reorderableList.GetHeight() + (HasHeaderMessage(out _) ? HeaderMessageHeight : 0f);
+		public float Height => _reorderableList.GetHeight() + (HasHeaderMessage(out _) ? HeaderMessageHeight : 0f);
 		public bool IsPlaying => _currentPlayingClipPath != null;
         public bool HasAnyAudioClip { get; private set; }
         public bool HasAnyAddressableClip { get; private set; }
@@ -80,11 +74,7 @@ namespace Ami.BroAudio.Editor
 		{
 			get
 			{
-#if PACKAGE_LOCALIZATION
-                if (CurrentPlayMode == MulticlipsPlayMode.Localization)
-                    return GetLocalizationCurrentSelectedClip();
-#endif
-                if(_reorderableList.count > 0)
+				if(_reorderableList.count > 0)
 				{
 					if(_reorderableList.index < 0)
 					{
@@ -109,12 +99,7 @@ namespace Ami.BroAudio.Editor
 			}
 		}
 
-        public bool HasClips =>
-            (_reorderableList != null && _reorderableList.count > 0)
-#if PACKAGE_LOCALIZATION
-            || (CurrentPlayMode == MulticlipsPlayMode.Localization && HasLocalizationTableClip)
-#endif
-            ;
+        public bool HasClips => _reorderableList != null && _reorderableList.count > 0;
 
 		public ReorderableClips(SerializedObject serializedObject, RequestClipPreview onRequestClipPreview)
 		{
@@ -137,18 +122,12 @@ namespace Ami.BroAudio.Editor
             };
 
 			Undo.undoRedoPerformed += OnUndoRedoPerformed;
-#if PACKAGE_LOCALIZATION
-            InitLocalization(serializedObject);
-#endif
 		}
 
         public void Dispose()
 		{
 			Undo.undoRedoPerformed -= OnUndoRedoPerformed;
 			_currentPlayingClipPath = null;
-#if PACKAGE_LOCALIZATION
-            DisposeLocalization();
-#endif
         }
 
 		public void SelectAndSetPlayingElement(int index)
@@ -169,10 +148,6 @@ namespace Ami.BroAudio.Editor
         public bool TryGetSelectedAudioClip(out AudioClip audioClip)
         {
             audioClip = null;
-#if PACKAGE_LOCALIZATION
-            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
-                return TryGetLocalizationSelectedClip(out audioClip);
-#endif
             if (CurrentSelectedClip == null)
             {
                 return false;
@@ -289,14 +264,6 @@ namespace Ami.BroAudio.Editor
 
 		public void DrawReorderableList(Rect position)
 		{
-#if PACKAGE_LOCALIZATION
-            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
-            {
-                UpdateLocalizationListCount();
-                _localizationList.DoList(position);
-                return;
-            }
-#endif
             if (HasHeaderMessage(out var headerInfo))
             {
                 var helpBoxRect = new Rect(position) { height = HeaderMessageHeight };
@@ -329,12 +296,6 @@ namespace Ami.BroAudio.Editor
 
 		private void UpdatePlayModeAndRequiredClipCount()
 		{
-#if PACKAGE_LOCALIZATION
-            if (CurrentPlayMode == MulticlipsPlayMode.Localization)
-            {
-                return;
-            }
-#endif
 			if (!IsMulticlips)
 			{
 				_playModeProp.enumValueIndex = 0;
@@ -377,41 +338,39 @@ namespace Ami.BroAudio.Editor
 			EditorScriptingExtension.SplitRectHorizontal(remainRect, 0.5f, 10f, out var multiclipOptionRect, out var masterVolRect);
 
             EditorGUI.LabelField(labelRect, "Clips");
-
-            var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
-            playMode = (MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, playMode);
-            _playModeProp.enumValueIndex = (int)playMode;
-
-            DrawMasterVolume(masterVolRect);
-
-            GUIContent guiContent = new GUIContent(string.Empty);
-            switch (playMode)
+            if (IsMulticlips)
             {
-                case MulticlipsPlayMode.Single:
-                    guiContent.tooltip = "Always play the first clip";
-                    break;
-                case MulticlipsPlayMode.Sequence:
-                    EditorGUI.LabelField(valueRect, "Index", GUIStyleHelper.MiddleCenterText);
-                    guiContent.tooltip = "Plays the next clip each time";
-                    break;
-                case MulticlipsPlayMode.Random:
-                    EditorGUI.LabelField(valueRect, _weightGUIContent, GUIStyleHelper.MiddleCenterText);
-                    guiContent.tooltip = "Plays a clip randomly";
-                    break;
-                case MulticlipsPlayMode.Shuffle:
-                    guiContent.tooltip = "Plays a clip randomly without repeating the previous one.";
-                    break;
-                case MulticlipsPlayMode.Velocity:
-                    EditorGUI.LabelField(valueRect, "Velocity", GUIStyleHelper.MiddleCenterText);
-                    guiContent.tooltip = "Plays a clip by a given velocity";
-                    break;
-                case MulticlipsPlayMode.Localization:
-                    EditorGUI.LabelField(valueRect, "Locale", GUIStyleHelper.MiddleCenterText);
-                    guiContent.tooltip = "Plays a clip based on the current locale";
-                    break;
+                var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+                playMode = (MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, playMode);
+                _playModeProp.enumValueIndex = (int)playMode;
+
+                DrawMasterVolume(masterVolRect);
+
+                GUIContent guiContent = new GUIContent(string.Empty);
+                switch (playMode)
+                {
+                    case MulticlipsPlayMode.Single:
+                        guiContent.tooltip = "Always play the first clip";
+                        break;
+                    case MulticlipsPlayMode.Sequence:
+                        EditorGUI.LabelField(valueRect, "Index", GUIStyleHelper.MiddleCenterText);
+                        guiContent.tooltip = "Plays the next clip each time";
+                        break;
+                    case MulticlipsPlayMode.Random:
+                        EditorGUI.LabelField(valueRect, _weightGUIContent, GUIStyleHelper.MiddleCenterText);
+                        guiContent.tooltip = "Plays a clip randomly";
+                        break;
+                    case MulticlipsPlayMode.Shuffle:
+                        guiContent.tooltip = "Plays a clip randomly without repeating the previous one.";
+                        break;
+                    case MulticlipsPlayMode.Velocity:
+                        EditorGUI.LabelField(valueRect, "Velocity", GUIStyleHelper.MiddleCenterText);
+                        guiContent.tooltip = "Plays a clip by a given velocity";
+                        break;
+                }
+                EditorGUI.LabelField(multiclipOptionRect.DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
+                EditorGUI.LabelField(multiclipOptionRect, guiContent);
             }
-            EditorGUI.LabelField(multiclipOptionRect.DissolveHorizontal(0.5f), "(PlayMode)".SetColor(Color.gray), GUIStyleHelper.MiddleCenterRichText);
-            EditorGUI.LabelField(multiclipOptionRect, guiContent);
         }
 
         private void DrawMasterVolume(Rect masterVolRect)

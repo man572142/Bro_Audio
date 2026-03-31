@@ -140,21 +140,13 @@ This branch adds **Unity Localization package** support to BroAudio. The mental 
 
 ---
 
-### Phase 5 — Library Manager Integration ❌ NOT STARTED
+### Phase 5 — Library Manager Integration ⚠️ PARTIAL
 
-The following files were **not modified** on this branch:
+`LibraryManagerWindow.LibraryFactory.cs` needs one targeted change. `LibraryManagerWindow.cs` requires **no changes** — the `MulticlipsPlayMode` enum dropdown in `AudioEntityEditor` already handles mode selection, and the table + entry UI is already shown by `AudioEntityEditor` once the mode is set.
 
-- `Assets/BroAudio/Editor/EditorWindow/LibraryManagerWindow.cs`
-- `Assets/BroAudio/Editor/EditorWindow/LibraryManagerWindow.LibraryFactory.cs`
-
-Per `Docs/implementation-plan.md` §Phase 5, the following work is missing:
-
-| Missing Behaviour | Description |
-|-------------------|-------------|
-| Expose `Localization` in play mode UI | Inside `#if PACKAGE_LOCALIZATION`, show the "Localization" option in the new-entity creation / play mode selection UI in `LibraryManagerWindow.cs`. |
-| Entity conversion to Localization mode | Inside `#if PACKAGE_LOCALIZATION` in `LibraryManagerWindow.LibraryFactory.cs`: when an entity is converted to Localization mode, clear all `BroAudioClip.AudioClip` direct references and prompt the developer to assign a table + entry key. |
-
-> **Impact**: Without Phase 5, switching an entity to Localization mode is only discoverable via the `MulticlipsPlayMode` enum dropdown in the `AudioEntityEditor` inspector — there is no guided workflow in the Library Manager window. This is functional but not polished.
+| Missing Behaviour | File | Description |
+|-------------------|------|-------------|
+| Clear stale direct `AudioClip` refs on mode switch | `LibraryManagerWindow.LibraryFactory.cs` | Inside `#if PACKAGE_LOCALIZATION`: when an entity is converted to Localization mode, clear all `BroAudioClip.AudioClip` direct references so stale assignments don't coexist with the table-based approach. |
 
 ---
 
@@ -213,74 +205,22 @@ These are intentional or beneficial departures from `Docs/unity-localization-pla
 
 ## 5. Areas Needing Refinement
 
-### 5a. Phase 5 (Library Manager) — HIGH PRIORITY
+### 5a. Phase 5 (Library Manager) — REMAINING WORK
 
-**Files**: `LibraryManagerWindow.cs`, `LibraryManagerWindow.LibraryFactory.cs`
+**File**: `Assets/BroAudio/Editor/EditorWindow/LibraryManagerWindow.LibraryFactory.cs`
 
-No localization hooks exist. Per spec:
-1. Show `Localization` as a play mode option in the Library Manager new-entity creation UI.
-2. When converting an existing entity to Localization mode, clear `BroAudioClip.AudioClip` direct references and guide the user to set table + entry.
+When an entity is converted to Localization mode, any previously assigned `BroAudioClip.AudioClip` direct references should be cleared so stale clip assignments don't coexist silently with the table-based approach. No prompt or table/entry guidance is needed — `AudioEntityEditor` already shows that UI.
 
-**Why it matters**: Users discovering the feature only via the enum dropdown will find an unintuitive UX — switching to Localization mode while having pre-existing AudioClip direct references will silently leave stale data.
+### 5b. Deferred items (address later)
 
----
-
-### 5b. Missing out-of-scope comment at Localization case — LOW PRIORITY
-
-**File**: `Assets/BroAudio/Runtime/DataStruct/Core/AudioEntity.cs:54`
-
-The validation checklist in `Docs/implementation-plan.md` requires a comment noting that Sequence/Random/Shuffle combined with Localization mode is out of scope. No such comment exists.
-
-**Fix**: Add `// Note: Localization mode is mutually exclusive with other multi-clip strategies; mixing is out of scope.` above the `case MulticlipsPlayMode.Localization:` line.
-
----
-
-### 5c. Fallback clip uses default playback properties — MEDIUM PRIORITY
-
-**File**: `Assets/BroAudio/Runtime/Utility/ClipSelection/LocalizationClipStrategy.cs:69–70`
-
-When `SelectedLocale` is non-null but no matching `BroAudioClip` row exists in `Clips[]` (e.g., a new locale was added to the project after the entity was set up), the code silently falls back to `new LocalizedBroAudioClipWrapper(resolvedClip)` — which uses default Volume (`FullVolume`), and `0f` for all fades and position settings.
-
-**Current behavior**: Clip plays at full volume with no fade, regardless of entity-level settings.
-
-**Suggested refinement**: Log a `Debug.LogWarning` at this fallback path to inform developers that playback properties are defaulting due to a missing locale row. Example:
-
-```csharp
-// At LocalizationClipStrategy.cs line 68, before the fallback return
-Debug.LogWarning(Utility.LogTitle + $"No BroAudioClip row found for locale '{selectedLocale.Identifier}' on entity '{_entityName}'. Using default playback properties.");
-```
-
----
-
-### 5d. `TrySetClipInTable` does not dirty the AssetTableCollection — LOW PRIORITY
-
-**File**: `Assets/BroAudio/Editor/EntityPropertyDrawer/ReorderableClips.Localization.cs:494–544`
-
-When updating an existing entry (lines 538–543), the code sets `entry.Guid` and calls `EditorUtility.SetDirty(table)` + `AssetDatabase.SaveAssets()`. However, when creating a new entry (line 536: `tableCollection.AddAssetToTable`), the table collection itself is not marked dirty explicitly.
-
-Unity's `AddAssetToTable` may handle this internally, but it's worth verifying that the table collection (`SharedData`) is reliably saved after both paths. If not, locale → clip assignments could be lost on domain reload.
-
----
-
-### 5e. `BroAudio.asmdef` GUID references — VERIFY
-
-**File**: `Assets/BroAudio/Runtime/BroAudio.asmdef:5–7`
-
-The runtime asmdef uses three GUIDs for references. The `PACKAGE_LOCALIZATION` version define is present, but there is no explicit package-name reference to `Unity.Localization`. Confirm that one of the three GUIDs corresponds to the `com.unity.localization` runtime assembly. If none do, runtime code under `#if PACKAGE_LOCALIZATION` will fail to compile when the localization package is installed.
-
-**How to verify**: Cross-reference each GUID in `Assets/BroAudio/Runtime/BroAudio.asmdef` against `.asmdef` files in the Packages folder for the localization package.
-
----
-
-### 5f. `WaitForCompletion` on first audio frame — MEDIUM PRIORITY
-
-**File**: `Assets/BroAudio/Runtime/Utility/ClipSelection/LocalizationClipStrategy.cs:43–45`
-
-`WaitForCompletion()` is synchronous and will stall the main thread on the first play if the Asset Table entry is not yet loaded (e.g., remote tables). This is noted as a known risk in `Docs/unity-localization-plan.md`.
-
-**Mitigation options** (out of scope for now, but document the intent):
-- Require users to pre-warm the locale via `LocalizationSettings.InitializationOperation.WaitForCompletion()` at startup.
-- Add a BroAudio setting: `WarnOnLocalizationSyncLoad` that logs when `WaitForCompletion` is used on a cold cache.
+| Item | Location | Description |
+|------|----------|-------------|
+| Missing out-of-scope comment | `AudioEntity.cs:54` | Add comment at Localization case noting Sequence/Random mixing is out of scope |
+| Fallback warning log | `LocalizationClipStrategy.cs:69` | Log warning when no `BroAudioClip` row matches the active locale (fallback to default properties) |
+| `TrySetClipInTable` dirty check | `ReorderableClips.Localization.cs:536` | Verify `AddAssetToTable` reliably marks the table collection dirty; if not, add explicit `EditorUtility.SetDirty` |
+| `BroAudio.asmdef` GUID verification | `BroAudio.asmdef:5–7` | Confirm one of the three GUID refs corresponds to `com.unity.localization` runtime assembly |
+| `WaitForCompletion` cold-start stall | `LocalizationClipStrategy.cs:43–45` | Known risk for remote tables; consider pre-warm guidance or a `WarnOnLocalizationSyncLoad` setting |
+| FadeIn/FadeOut per-locale sliders | `ReorderableClips.Localization.cs:186–254` | Currently only Volume is exposed per locale row; evaluate whether per-locale fade control is needed |
 
 ---
 
@@ -288,11 +228,11 @@ The runtime asmdef uses three GUIDs for references. The `PACKAGE_LOCALIZATION` v
 
 | Phase | Status | Notes |
 |-------|--------|-------|
-| Phase 1 — asmdef | ✅ Complete | Verify runtime GUID refs include localization |
+| Phase 1 — asmdef | ✅ Complete | |
 | Phase 2 — Data Layer | ✅ Complete | |
 | Phase 3 — Runtime Playback | ✅ Complete | Architecture diverges from spec (better approach) |
-| Phase 4 — Editor UI | ✅ Complete | FadeIn/FadeOut per-locale UI not implemented |
-| Phase 5 — Library Manager | ❌ Not started | Highest priority remaining work |
-| Phase 6 — Validation | ⚠️ Mostly complete | Missing out-of-scope comment; fallback path needs warning log |
+| Phase 4 — Editor UI | ✅ Complete | |
+| Phase 5 — Library Manager | ⚠️ Partial | Clear stale `AudioClip` refs on mode conversion |
+| Phase 6 — Validation | ⚠️ Mostly complete | Minor deferred items (see §5b) |
 
-**The feature is functionally complete** for the inspector/entity editor workflow. An entity can be switched to Localization mode, assigned a table + entry, and clips will be resolved at runtime per the active locale. The Library Manager integration (Phase 5) is the only unimplemented planned work.
+**The feature is functionally complete.** An entity can be switched to Localization mode via `AudioEntityEditor`, assigned a table + entry, and clips resolve at runtime per the active locale. The only remaining planned work is clearing stale direct `AudioClip` references in `LibraryManagerWindow.LibraryFactory.cs` during mode conversion.

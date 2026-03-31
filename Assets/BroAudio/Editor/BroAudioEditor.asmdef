@@ -4,9 +4,7 @@
     "references": [
         "BroAudio",
         "Unity.Addressables",
-        "Unity.Addressables.Editor",
-        "Unity.Localization",
-        "Unity.Localization.Editor"
+        "Unity.Addressables.Editor"
     ],
     "includePlatforms": [
         "Editor"
@@ -22,11 +20,6 @@
             "name": "com.unity.addressables",
             "expression": "",
             "define": "PACKAGE_ADDRESSABLES"
-        },
-        {
-            "name": "com.unity.localization",
-            "expression": "",
-            "define": "PACKAGE_LOCALIZATION"
         }
     ],
     "noEngineReferences": false

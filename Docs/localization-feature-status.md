@@ -163,7 +163,6 @@ Cross-referencing `Docs/implementation-plan.md` §Phase 6 against the actual cod
 | Editor locale refresh | ✅ Subscribe at `ReorderableClips.Localization.cs:49`, unsubscribe at line 54 |
 | `ResetMultiClipStrategy()` | ✅ `LocalizationClipStrategy.Reset()` is a no-op (stateless) |
 | `#if PACKAGE_LOCALIZATION` coverage | ✅ All new types and Localization API calls are guarded |
-| Sequence/Random + Localization out-of-scope comment | ❌ **Missing**: no comment at the `Localization` case in `AudioEntity.cs:54–57` noting this |
 
 ---
 
@@ -215,7 +214,6 @@ When an entity is converted to Localization mode, any previously assigned `BroAu
 
 | Item | Location | Description |
 |------|----------|-------------|
-| Missing out-of-scope comment | `AudioEntity.cs:54` | Add comment at Localization case noting Sequence/Random mixing is out of scope |
 | Fallback warning log | `LocalizationClipStrategy.cs:69` | Log warning when no `BroAudioClip` row matches the active locale (fallback to default properties) |
 | `TrySetClipInTable` dirty check | `ReorderableClips.Localization.cs:536` | Verify `AddAssetToTable` reliably marks the table collection dirty; if not, add explicit `EditorUtility.SetDirty` |
 | `BroAudio.asmdef` GUID verification | `BroAudio.asmdef:5–7` | Confirm one of the three GUID refs corresponds to `com.unity.localization` runtime assembly |

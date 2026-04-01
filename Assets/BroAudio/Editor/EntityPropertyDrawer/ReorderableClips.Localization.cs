@@ -17,19 +17,32 @@ namespace Ami.BroAudio.Editor
     {
         private const string LocalizationPreviewPathPrefix = "localization_preview_";
 
+        // Unity Localization serialized property field names
+        private const string TableCollectionNameField = "m_TableCollectionName";
+        private const string EntryKeyField = "m_Key";
+        private const string EntryKeyIdField = "m_KeyId";
+        private const string LocaleCodeField = "m_Code";
+
         private SerializedProperty _localizationTableProp;
         private SerializedProperty _localizationEntryProp;
 
         private List<int> _localizationListData;
         private ReorderableList _localizationList;
-        
+
+        // Cached dropdown labels to avoid per-frame allocations
+        private GUIContent[] _cachedTableLabels;
+        private string _cachedTableSelection;
+        private GUIContent[] _cachedEntryLabels;
+        private string _cachedEntryTableName;
+        private string _cachedEntrySelection;
+
         private float LocaleLabelWidth => MulticlipsValueFieldWidth + 10f;
         private bool HasLocalizationTableClip
         {
             get
             {
-                string tableName = _localizationTableProp?.FindPropertyRelative("m_TableCollectionName")?.stringValue;
-                string entryKey = _localizationEntryProp?.FindPropertyRelative("m_Key")?.stringValue;
+                string tableName = _localizationTableProp?.FindPropertyRelative(TableCollectionNameField)?.stringValue;
+                string entryKey = _localizationEntryProp?.FindPropertyRelative(EntryKeyField)?.stringValue;
                 return !string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(entryKey);
             }
         }
@@ -56,6 +69,8 @@ namespace Ami.BroAudio.Editor
 
         private void OnLocaleChanged(Locale locale)
         {
+            _cachedTableLabels = null;
+            _cachedEntryLabels = null;
             SyncClipsWithLocales();
             _entity.Update();
         }
@@ -93,7 +108,7 @@ namespace Ami.BroAudio.Editor
             for (int i = 0; i < availableLocales.Count; i++)
             {
                 var clipProp = clipsProp.GetArrayElementAtIndex(i);
-                string code = clipProp.FindPropertyRelative("Locale")?.FindPropertyRelative("m_Code")?.stringValue;
+                string code = clipProp.FindPropertyRelative(nameof(BroAudioClip.Locale))?.FindPropertyRelative(LocaleCodeField)?.stringValue;
                 if (code != availableLocales[i].Identifier.Code)
                 {
                     return false;
@@ -123,7 +138,7 @@ namespace Ami.BroAudio.Editor
             for (int i = 0; i < clipsProp.arraySize; i++)
             {
                 var existing = clipsProp.GetArrayElementAtIndex(i);
-                string code = existing.FindPropertyRelative("Locale")?.FindPropertyRelative("m_Code")?.stringValue ?? string.Empty;
+                string code = existing.FindPropertyRelative(nameof(BroAudioClip.Locale))?.FindPropertyRelative(LocaleCodeField)?.stringValue ?? string.Empty;
                 var volProp = existing.FindPropertyRelative(nameof(BroAudioClip.Volume));
                 if (!string.IsNullOrEmpty(code) && volProp != null)
                 {
@@ -138,7 +153,7 @@ namespace Ami.BroAudio.Editor
                 string code = availableLocales[i].Identifier.Code;
                 var clipProp = clipsProp.GetArrayElementAtIndex(i);
 
-                var codeProp = clipProp.FindPropertyRelative("Locale")?.FindPropertyRelative("m_Code");
+                var codeProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Locale))?.FindPropertyRelative(LocaleCodeField);
                 if (codeProp != null)
                 {
                     codeProp.stringValue = code;
@@ -306,7 +321,7 @@ namespace Ami.BroAudio.Editor
             for (int i = 0; i < clipsProp.arraySize; i++)
             {
                 var clipProp = clipsProp.GetArrayElementAtIndex(i);
-                string code = clipProp.FindPropertyRelative("Locale")?.FindPropertyRelative("m_Code")?.stringValue;
+                string code = clipProp.FindPropertyRelative(nameof(BroAudioClip.Locale))?.FindPropertyRelative(LocaleCodeField)?.stringValue;
                 if (code == localeCode)
                     return i;
             }
@@ -339,9 +354,11 @@ namespace Ami.BroAudio.Editor
             EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(PreviewRect, req);
         }
 
+        private static readonly GUIContent[] NoneOnlyLabels = { new GUIContent("None") };
+
         private void DrawAssetTableDropdown(Rect rect)
         {
-            var tableNameProp = _localizationTableProp.FindPropertyRelative("m_TableCollectionName");
+            var tableNameProp = _localizationTableProp.FindPropertyRelative(TableCollectionNameField);
             if (tableNameProp == null)
             {
                 return;
@@ -350,86 +367,106 @@ namespace Ami.BroAudio.Editor
             var collections = LocalizationEditorSettings.GetAssetTableCollections();
             string currentName = tableNameProp.stringValue;
 
+            if (_cachedTableLabels == null || _cachedTableSelection != currentName || _cachedTableLabels.Length != collections.Count + 1)
+            {
+                _cachedTableSelection = currentName;
+                _cachedTableLabels = new GUIContent[collections.Count + 1];
+                _cachedTableLabels[0] = new GUIContent("None");
+                for (int i = 0; i < collections.Count; i++)
+                {
+                    _cachedTableLabels[i + 1] = new GUIContent(collections[i].TableCollectionName);
+                }
+            }
+
             int selectedIndex = 0;
-            var labels = new GUIContent[collections.Count + 1];
-            labels[0] = new GUIContent("None");
             for (int i = 0; i < collections.Count; i++)
             {
-                string name = collections[i].TableCollectionName;
-                labels[i + 1] = new GUIContent(name);
-                if (name == currentName)
+                if (collections[i].TableCollectionName == currentName)
                 {
                     selectedIndex = i + 1;
+                    break;
                 }
             }
 
             EditorGUI.BeginChangeCheck();
-            int newIndex = EditorGUI.Popup(rect, selectedIndex, labels);
+            int newIndex = EditorGUI.Popup(rect, selectedIndex, _cachedTableLabels);
             if (EditorGUI.EndChangeCheck())
             {
                 tableNameProp.stringValue = newIndex == 0 ? string.Empty : collections[newIndex - 1].TableCollectionName;
-                var entryKeyProp = _localizationEntryProp?.FindPropertyRelative("m_Key");
+                var entryKeyProp = _localizationEntryProp?.FindPropertyRelative(EntryKeyField);
                 if (entryKeyProp != null)
                 {
                     entryKeyProp.stringValue = string.Empty;
                 }
 
-                var entryKeyIdProp = _localizationEntryProp?.FindPropertyRelative("m_KeyId");
+                var entryKeyIdProp = _localizationEntryProp?.FindPropertyRelative(EntryKeyIdField);
                 if (entryKeyIdProp != null)
                 {
                     entryKeyIdProp.longValue = 0;
                 }
 
+                _cachedTableLabels = null;
+                _cachedEntryLabels = null;
                 _localizationTableProp.serializedObject.ApplyModifiedProperties();
             }
         }
 
         private void DrawTableEntryDropdown(Rect rect)
         {
-            var entryKeyProp = _localizationEntryProp.FindPropertyRelative("m_Key");
+            var entryKeyProp = _localizationEntryProp.FindPropertyRelative(EntryKeyField);
             if (entryKeyProp == null)
             {
                 return;
             }
 
-            var tableNameProp = _localizationTableProp?.FindPropertyRelative("m_TableCollectionName");
+            var tableNameProp = _localizationTableProp?.FindPropertyRelative(TableCollectionNameField);
             string tableName = tableNameProp?.stringValue;
             if (string.IsNullOrEmpty(tableName))
             {
-                EditorGUI.Popup(rect, 0, new GUIContent[] { new GUIContent("None") });
+                EditorGUI.Popup(rect, 0, NoneOnlyLabels);
                 return;
             }
 
             var tableCollection = LocalizationEditorSettings.GetAssetTableCollection(tableName);
             if (tableCollection == null || tableCollection.SharedData == null)
             {
-                EditorGUI.Popup(rect, 0, new GUIContent[] { new GUIContent("None") });
+                EditorGUI.Popup(rect, 0, NoneOnlyLabels);
                 return;
             }
 
             var entries = tableCollection.SharedData.Entries;
             string currentKey = entryKeyProp.stringValue;
 
+            if (_cachedEntryLabels == null || _cachedEntryTableName != tableName || _cachedEntrySelection != currentKey || _cachedEntryLabels.Length != entries.Count + 1)
+            {
+                _cachedEntryTableName = tableName;
+                _cachedEntrySelection = currentKey;
+                _cachedEntryLabels = new GUIContent[entries.Count + 1];
+                _cachedEntryLabels[0] = new GUIContent("None");
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    _cachedEntryLabels[i + 1] = new GUIContent(entries[i].Key);
+                }
+            }
+
             int selectedIndex = 0;
-            var labels = new GUIContent[entries.Count + 1];
-            labels[0] = new GUIContent("None");
             for (int i = 0; i < entries.Count; i++)
             {
-                labels[i + 1] = new GUIContent(entries[i].Key);
                 if (entries[i].Key == currentKey)
                 {
                     selectedIndex = i + 1;
+                    break;
                 }
             }
 
             EditorGUI.BeginChangeCheck();
-            int newIndex = EditorGUI.Popup(rect, selectedIndex, labels);
+            int newIndex = EditorGUI.Popup(rect, selectedIndex, _cachedEntryLabels);
             if (EditorGUI.EndChangeCheck())
             {
                 if (newIndex == 0)
                 {
                     entryKeyProp.stringValue = string.Empty;
-                    var entryKeyIdProp = _localizationEntryProp.FindPropertyRelative("m_KeyId");
+                    var entryKeyIdProp = _localizationEntryProp.FindPropertyRelative(EntryKeyIdField);
                     if (entryKeyIdProp != null)
                     {
                         entryKeyIdProp.longValue = 0;
@@ -439,50 +476,65 @@ namespace Ami.BroAudio.Editor
                 {
                     var entry = entries[newIndex - 1];
                     entryKeyProp.stringValue = entry.Key;
-                    var entryKeyIdProp = _localizationEntryProp.FindPropertyRelative("m_KeyId");
+                    var entryKeyIdProp = _localizationEntryProp.FindPropertyRelative(EntryKeyIdField);
                     if (entryKeyIdProp != null)
                     {
                         entryKeyIdProp.longValue = entry.Id;
                     }
                 }
+                _cachedEntryLabels = null;
                 _localizationEntryProp.serializedObject.ApplyModifiedProperties();
             }
         }
 
-        private AudioClip TryGetClipFromTable(string localeCode)
+        private bool TryGetAssetTableAndEntry(string localeCode, out AssetTableCollection tableCollection, out AssetTable table, out string entryKey)
         {
+            tableCollection = null;
+            table = null;
+            entryKey = null;
+
             if (_localizationTableProp == null || _localizationEntryProp == null
                 || string.IsNullOrEmpty(localeCode))
             {
-                return null;
+                return false;
             }
 
-            string tableName = _localizationTableProp.FindPropertyRelative("m_TableCollectionName")?.stringValue;
+            string tableName = _localizationTableProp.FindPropertyRelative(TableCollectionNameField)?.stringValue;
             if (string.IsNullOrEmpty(tableName))
             {
-                return null;
+                return false;
             }
 
-            string entryKey = _localizationEntryProp.FindPropertyRelative("m_Key")?.stringValue;
+            entryKey = _localizationEntryProp.FindPropertyRelative(EntryKeyField)?.stringValue;
             if (string.IsNullOrEmpty(entryKey))
             {
-                return null;
+                return false;
             }
 
-            var tableCollection = LocalizationEditorSettings.GetAssetTableCollection(tableName);
+            tableCollection = LocalizationEditorSettings.GetAssetTableCollection(tableName);
             if (tableCollection == null)
             {
-                return null;
+                return false;
             }
 
             var locale = LocalizationSettings.AvailableLocales?.GetLocale(new LocaleIdentifier(localeCode));
             if (locale == null)
             {
+                return false;
+            }
+
+            table = tableCollection.GetTable(locale.Identifier) as AssetTable;
+            return table != null;
+        }
+
+        private AudioClip TryGetClipFromTable(string localeCode)
+        {
+            if (!TryGetAssetTableAndEntry(localeCode, out _, out var table, out string entryKey))
+            {
                 return null;
             }
 
-            var table = tableCollection.GetTable(locale.Identifier) as AssetTable;
-            var entry = table?.GetEntry(entryKey);
+            var entry = table.GetEntry(entryKey);
             if (entry == null || string.IsNullOrEmpty(entry.Guid))
             {
                 return null;
@@ -493,38 +545,7 @@ namespace Ami.BroAudio.Editor
 
         private void TrySetClipInTable(string localeCode, AudioClip clip)
         {
-            if (_localizationTableProp == null || _localizationEntryProp == null
-                || string.IsNullOrEmpty(localeCode))
-            {
-                return;
-            }
-
-            string tableName = _localizationTableProp.FindPropertyRelative("m_TableCollectionName")?.stringValue;
-            if (string.IsNullOrEmpty(tableName))
-            {
-                return;
-            }
-
-            string entryKey = _localizationEntryProp.FindPropertyRelative("m_Key")?.stringValue;
-            if (string.IsNullOrEmpty(entryKey))
-            {
-                return;
-            }
-
-            var tableCollection = LocalizationEditorSettings.GetAssetTableCollection(tableName);
-            if (tableCollection == null)
-            {
-                return;
-            }
-
-            var locale = LocalizationSettings.AvailableLocales?.GetLocale(new LocaleIdentifier(localeCode));
-            if (locale == null)
-            {
-                return;
-            }
-
-            var table = tableCollection.GetTable(locale.Identifier) as AssetTable;
-            if (table == null)
+            if (!TryGetAssetTableAndEntry(localeCode, out var tableCollection, out var table, out string entryKey))
             {
                 return;
             }

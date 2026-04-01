@@ -124,16 +124,16 @@ Phases 4 and 5 can run in parallel after Phase 3 completes.
 ## Phase 5 — Library Manager Integration
 
 **Subagent:** `general-purpose`
-**Isolation rationale:** Touches only `LibraryManagerWindow` and its factory companion. Small, self-contained editor-window change. Runs in parallel with Phase 4.
+**Isolation rationale:** Touches only `LibraryManagerWindow.LibraryFactory.cs`. Small, self-contained change. Runs in parallel with Phase 4.
+
+> **Scope clarification**: Exposing "Localization" as a play mode option in the Library Manager UI is **not needed** — the `MulticlipsPlayMode` enum dropdown in `AudioEntityEditor` already handles mode selection. Similarly, prompting the developer to assign a table + entry key after conversion is **not needed** — `AudioEntityEditor` already displays the table and entry UI once the mode is set.
 
 ### Files to modify
 | File | Change |
 |------|---------|
-| `Assets/BroAudio/Editor/EditorWindow/LibraryManagerWindow.cs` | Inside `#if PACKAGE_LOCALIZATION`: expose "Localization" as a play mode option in the new-entity creation UI. |
-| `Assets/BroAudio/Editor/EditorWindow/LibraryManagerWindow.LibraryFactory.cs` | Inside `#if PACKAGE_LOCALIZATION`: when converting an existing entity to Localization mode, clear all `BroAudioClip.AudioClip` references and display a prompt instructing the developer to assign the table and entry key. |
+| `Assets/BroAudio/Editor/EditorWindow/LibraryManagerWindow.LibraryFactory.cs` | Inside `#if PACKAGE_LOCALIZATION`: when an existing entity is converted to Localization mode, clear all `BroAudioClip.AudioClip` direct references so stale audio clip assignments don't linger alongside the table-based approach. |
 
 ### Context files to read
-- `Assets/BroAudio/Editor/EditorWindow/LibraryManagerWindow.cs`
 - `Assets/BroAudio/Editor/EditorWindow/LibraryManagerWindow.LibraryFactory.cs`
 - Phase 3 output: `MulticlipsPlayMode.cs` (Localization enum value)
 

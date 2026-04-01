@@ -689,10 +689,7 @@ namespace Ami.BroAudio.Editor
                     {
                         editor.DrawEntitiesList(out float listHeight);
                         float compensateHeight = GetScrollPosCompensateHeight(listHeight);
-                        if (compensateHeight > 0f)
-                        {
-                            GUILayout.Space(compensateHeight);
-                        }
+                        GUILayout.Space(Mathf.Max(0f, compensateHeight));
                     }
 
                     HandleDragAndDropEntitiesToEntityList(editor);

@@ -43,17 +43,16 @@ namespace Ami.BroAudio.Runtime
             var handle = LocalizationSettings.AssetDatabase
                 .GetLocalizedAssetAsync<AudioClip>(_table, _entry);
             var resolvedClip = handle.WaitForCompletion();
+            var selectedLocale = LocalizationSettings.SelectedLocale;
 
             if (resolvedClip == null)
             {
-                var locale = LocalizationSettings.SelectedLocale;
-                string localeName = locale != null ? locale.Identifier.ToString() : "unknown";
+                string localeName = selectedLocale != null ? selectedLocale.Identifier.ToString() : "unknown";
                 Debug.LogWarning(Utility.LogTitle + $"No AudioClip set in table for locale '{localeName}' on entity '{_entityName}'.");
                 index = -1;
                 return null;
             }
 
-            var selectedLocale = LocalizationSettings.SelectedLocale;
             if (selectedLocale != null && clips != null)
             {
                 for (int i = 0; i < clips.Length; i++)
@@ -66,8 +65,7 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
-            var activeLocale = LocalizationSettings.SelectedLocale;
-            string activeCode = activeLocale != null ? activeLocale.Identifier.ToString() : "unknown";
+            string activeCode = selectedLocale != null ? selectedLocale.Identifier.ToString() : "unknown";
             Debug.LogWarning(Utility.LogTitle + $"No BroAudioClip row found for locale '{activeCode}' on entity '{_entityName}'. Playback properties will use defaults.");
             index = 0;
             return new LocalizedBroAudioClipWrapper(resolvedClip);

@@ -93,15 +93,11 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            // Snapshot keys, release all stale handles, then re-fetch for the new locale
             List<SoundID> ids = new(_preloadedLocalizationHandles.Keys);
-            foreach (SoundID id in ids)
+            foreach (AsyncOperationHandle<AudioClip> handle in _preloadedLocalizationHandles.Values)
             {
-                if (_preloadedLocalizationHandles.TryGetValue(id, out AsyncOperationHandle<AudioClip> oldHandle) &&
-                    oldHandle.IsValid())
-                {
-                    Addressables.Release(oldHandle);
-                }
+                if (handle.IsValid())
+                    Addressables.Release(handle);
             }
 
             _preloadedLocalizationHandles.Clear();

@@ -581,9 +581,10 @@ namespace Ami.BroAudio.Editor
             else
             {
                 entry.Guid = guid;
-                EditorUtility.SetDirty(table);
-                AssetDatabase.SaveAssets();
             }
+
+            EditorUtility.SetDirty(table);
+            AssetDatabase.SaveAssets();
         }
     }
 }

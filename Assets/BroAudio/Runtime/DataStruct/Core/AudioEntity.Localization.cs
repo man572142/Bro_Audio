@@ -9,6 +9,9 @@ namespace Ami.BroAudio.Data
         [SerializeField] private TableReference _localizationTable;
         [SerializeField] private TableEntryReference _localizationEntry;
 
+        public TableReference LocalizationTable => _localizationTable;
+        public TableEntryReference LocalizationEntry => _localizationEntry;
+
 #if UNITY_EDITOR
         public static class LocalizationEditorPropertyName
         {

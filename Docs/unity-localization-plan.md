@@ -76,30 +76,28 @@ Append `Localization` as the last value in the enum.
 
 ### `LocalizationClipStrategy.cs` — New Strategy (`#if PACKAGE_LOCALIZATION`)
 
-Implements `IClipSelectionStrategy`. Given `BroAudioClip[] clips` (one per locale), finds the one whose `Locale` matches `LocalizationSettings.SelectedLocale`. If no match is found, returns null and logs a warning:
+Implements `IClipSelectionStrategy`. Accepts table and entry references via `Inject(TableReference, TableEntryReference, string)`. `SelectClip()`:
 
-> `"[BroAudio] No BroAudioClip configured for locale '{locale}' on entity '{name}'."`
+1. Validates that `LocalizationTable` and `LocalizationEntry` are set — fails fast with a descriptive error if not.
+2. Resolves the `AudioClip` from the Asset Table via `LocalizationSettings.AssetDatabase.GetLocalizedAssetAsync<AudioClip>(...).WaitForCompletion()`.
+3. Finds the `BroAudioClip` in `clips[]` whose `Locale` matches `LocalizationSettings.SelectedLocale` — may be `null` if no row is configured for the active locale.
+4. Returns a `LocalizedBroAudioClipWrapper(broAudioClip, resolvedClip)`. If no `BroAudioClip` row was found, the wrapper is constructed with `null` and playback properties fall back to defaults (`FullVolume`, `0f` fades).
+5. If the resolved `AudioClip` is null, logs a warning and returns `null`.
 
-The strategy does **not** resolve the `AudioClip` itself — that responsibility stays in the entity.
+`Reset()` is a no-op (stateless).
+
+> **Future note:** `WaitForCompletion()` can cause a hitch on first play if the asset is not preloaded. A `BroAudio.PreloadLocalizationAssets()` API should be considered when revisiting this.
 
 ### `AudioEntity.Localization.cs` — `PickNewClip()` Case
 
 ```
 case Localization:
   1. EnsureClipSelectionStrategy<LocalizationClipStrategy>()
-  2. strategy.SelectClip(Clips, ...) → finds BroAudioClip matching current locale
-  3. If null → warning already logged by strategy, return null (AudioPlayer skips playback)
-  4. Resolve AudioClip:
-         LocalizationSettings.AssetDatabase
-             .GetLocalizedAssetAsync<AudioClip>(LocalizationTable, LocalizationEntry)
-             .WaitForCompletion()
-  5. If resolved clip is null →
-         log warning: "[BroAudio] No AudioClip set in table for locale '{locale}' on entity '{name}'."
-         return null
-  6. Return new LocalizedBroAudioClipWrapper(broAudioClip, resolvedAudioClip)
+  2. strategy.Inject(_localizationTable, _localizationEntry, Name)
+  3. return strategy.SelectClip(Clips, context, out _)
+     → strategy handles table validation, AudioClip resolution, and locale row matching
+     → returns LocalizedBroAudioClipWrapper, or null on failure
 ```
-
-> **Future note:** Step 4 uses `WaitForCompletion()` for synchronicity, consistent with the Addressables pattern. This can cause a hitch on first play if the asset is not preloaded. A `BroAudio.PreloadLocalizationAssets()` API should be considered when revisiting this.
 
 ### Null Handling in `AudioPlayer`
 
@@ -119,7 +117,9 @@ Replace the standard clips header with:
 - **Asset Table picker** — `TableReference` field writing to `AudioEntity.LocalizationTable`.
 - **Entry Key picker** — `TableEntryReference` field, populated as a dropdown from the selected table's keys, writing to `AudioEntity.LocalizationEntry`.
 
-#### Each List Row (one row per configured locale)
+#### Each List Row (one row per available locale)
+
+Rows are **auto-generated** by `SyncClipsWithLocales()` to match `LocalizationSettings.AvailableLocales`. There are no Add/Remove buttons — the list always mirrors the locales defined in the project's Localization Settings. Volume values are preserved across re-syncs via a dictionary keyed on locale code.
 
 | Column | Content |
 |--------|---------|
@@ -127,15 +127,6 @@ Replace the standard clips header with:
 | AudioClip field | Editable `ObjectField`. Shows the clip currently in the Asset Table for this locale + entry. Assignment writes through to the Asset Table via the Localization editor API — **not** to `BroAudioClip.AudioClip`. |
 | Play preview button | Resolves clip from the table at editor time and previews it. |
 | Volume slider | Stored in `BroAudioClip.Volume`. |
-| Fade sliders | Stored in `BroAudioClip.FadeIn` / `FadeOut`. |
-
-#### Add Row (`+` Button)
-
-Opens a locale picker populated from **all locales defined in the project's Localization Settings** (not just those with clips in the table). Selecting a locale appends a new `BroAudioClip` with that `Locale` set. Does **not** automatically add anything to the Asset Table.
-
-#### Remove Row (`-` Button)
-
-Removes the `BroAudioClip` row from the entity. Does **not** remove anything from the Asset Table (non-destructive by design).
 
 #### Editor Locale Refresh
 
@@ -177,9 +168,44 @@ Assets/BroAudio/Editor/
 
 | Item | Detail |
 |------|--------|
-| **Async loading hitch** | `WaitForCompletion()` can stall on first play if the asset bundle is not preloaded. A `BroAudio.PreloadLocalizationAssets()` API is deferred but should be designed before a production release. |
+| **Async loading hitch** | `WaitForCompletion()` can stall on first play if the asset bundle is not preloaded. See §7 for the deferred preload API design. |
 | **Locale row vs table mismatch** | If a locale exists in `Clips[]` but has no clip in the table, step 5 of `PickNewClip()` catches it. If a locale is in the table but not in `Clips[]`, playback is skipped with a warning. Both paths are handled. |
 | **Table/Entry not set** | If `LocalizationTable` or `LocalizationEntry` is unset, `PickNewClip()` should fail fast with a descriptive error rather than throwing an unhandled exception. |
 | **Editor locale change refresh** | The clip list must subscribe to locale-change events; otherwise the displayed clips become stale when the developer switches preview locale. |
 | **`ResetMultiClipStrategy()`** | Verify whether `LocalizationClipStrategy` needs special reset logic (e.g., if locale changes between consecutive plays). |
 | **Sequence / Random + Localization** | Out of scope (single-entry only). If ever requested, entry-level selection and locale-level resolution would need to be composed. Worth a code comment at the Localization case in `PickNewClip()`. |
+
+---
+
+## 7. Deferred Preload API Design
+
+### Clarified Loading Behavior
+
+`GetTableAsync()` only loads the **table metadata** (key → entry mapping). The actual `AudioClip` assets are separate Addressable assets and are **not** loaded when the table loads. Each clip must be fetched individually via `GetLocalizedAssetAsync<AudioClip>()`.
+
+Unity Localization asset tables are organized per locale — each locale is its own Addressable table. Loading is always scoped to:
+- The **currently active locale** only.
+- The **specific entries** explicitly requested.
+
+There is no automatic "load all clips for all locales" behavior.
+
+### Proposed API
+
+```csharp
+// Preloads the AudioClip for a given entity's current locale into the Addressables cache.
+// After this call, WaitForCompletion() during playback will return instantly.
+public static AsyncOperationHandle BroAudio.PreloadLocalizationAssets(SoundID id)
+```
+
+### Implementation Notes
+
+- The implementation calls `GetLocalizedAssetAsync<AudioClip>(tableRef, entryRef)` for the current locale and **holds the returned handle open** (not released). This puts the clip in the Addressables cache.
+- The handle must be released when the entity is no longer needed (e.g., scene unload) to avoid memory leaks.
+- Subscribe to `LocalizationSettings.SelectedLocaleChanged`: when the locale changes, release the stale handle and re-fetch for the new locale so the cache stays warm.
+- If the locale changes and preload has not been re-run, `WaitForCompletion()` will hitch again on the next play — this is acceptable and should be documented.
+
+### v1 Ship Rationale
+
+- An async play path (non-blocking `PlayAsync`) would require rethinking the synchronous `IAudioPlayer` fluent API contract and touches `SoundManager.Playback`, decorators, and the fluent chain — deferred to a future design pass.
+- The preload pattern is well-understood and follows how `PACKAGE_ADDRESSABLES` handles asset warming.
+- The hitch is a **one-time cost per locale per entry** — after first access the result is cached.

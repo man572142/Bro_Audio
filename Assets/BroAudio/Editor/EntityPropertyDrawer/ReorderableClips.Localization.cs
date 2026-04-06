@@ -140,10 +140,21 @@ namespace Ami.BroAudio.Editor
             return true;
         }
 
+        private struct SavedClipProperties
+        {
+            public float Volume;
+            public float FadeIn;
+            public float FadeOut;
+            public float StartPosition;
+            public float EndPosition;
+            public float Delay;
+            public int Weight;
+        }
+
         private void SyncClipsWithLocales()
         {
             var availableLocales = LocalizationSettings.AvailableLocales?.Locales;
-            if (availableLocales == null)
+            if (availableLocales == null || availableLocales.Count == 0)
             {
                 return;
             }
@@ -155,17 +166,27 @@ namespace Ami.BroAudio.Editor
 
             var clipsProp = _reorderableList.serializedProperty;
 
-            // Preserve existing Volume values by locale code before resizing.
-            var savedVolumes = new Dictionary<string, float>();
+            // Preserve all per-clip properties by locale code before resizing.
+            var savedProps = new Dictionary<string, SavedClipProperties>();
             for (int i = 0; i < clipsProp.arraySize; i++)
             {
                 var existing = clipsProp.GetArrayElementAtIndex(i);
                 string code = existing.FindPropertyRelative(nameof(BroAudioClip.Locale))?.FindPropertyRelative(LocaleCodeField)?.stringValue ?? string.Empty;
-                var volProp = existing.FindPropertyRelative(nameof(BroAudioClip.Volume));
-                if (!string.IsNullOrEmpty(code) && volProp != null)
+                if (string.IsNullOrEmpty(code))
                 {
-                    savedVolumes[code] = volProp.floatValue;
+                    continue;
                 }
+
+                savedProps[code] = new SavedClipProperties
+                {
+                    Volume = existing.FindPropertyRelative(nameof(BroAudioClip.Volume))?.floatValue ?? AudioConstant.FullVolume,
+                    FadeIn = existing.FindPropertyRelative(nameof(BroAudioClip.FadeIn))?.floatValue ?? 0f,
+                    FadeOut = existing.FindPropertyRelative(nameof(BroAudioClip.FadeOut))?.floatValue ?? 0f,
+                    StartPosition = existing.FindPropertyRelative(nameof(BroAudioClip.StartPosition))?.floatValue ?? 0f,
+                    EndPosition = existing.FindPropertyRelative(nameof(BroAudioClip.EndPosition))?.floatValue ?? 0f,
+                    Delay = existing.FindPropertyRelative(nameof(BroAudioClip.Delay))?.floatValue ?? 0f,
+                    Weight = existing.FindPropertyRelative(nameof(BroAudioClip.Weight))?.intValue ?? 0,
+                };
             }
 
             clipsProp.arraySize = availableLocales.Count;
@@ -181,14 +202,29 @@ namespace Ami.BroAudio.Editor
                     codeProp.stringValue = code;
                 }
 
-                var volProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
-                if (volProp != null)
-                {
-                    volProp.floatValue = savedVolumes.TryGetValue(code, out float savedVol) ? savedVol : AudioConstant.FullVolume;
-                }
+                bool hasSaved = savedProps.TryGetValue(code, out var saved);
+                SetFloatProp(clipProp, nameof(BroAudioClip.Volume), hasSaved ? saved.Volume : AudioConstant.FullVolume);
+                SetFloatProp(clipProp, nameof(BroAudioClip.FadeIn), hasSaved ? saved.FadeIn : 0f);
+                SetFloatProp(clipProp, nameof(BroAudioClip.FadeOut), hasSaved ? saved.FadeOut : 0f);
+                SetFloatProp(clipProp, nameof(BroAudioClip.StartPosition), hasSaved ? saved.StartPosition : 0f);
+                SetFloatProp(clipProp, nameof(BroAudioClip.EndPosition), hasSaved ? saved.EndPosition : 0f);
+                SetFloatProp(clipProp, nameof(BroAudioClip.Delay), hasSaved ? saved.Delay : 0f);
+                SetIntProp(clipProp, nameof(BroAudioClip.Weight), hasSaved ? saved.Weight : 0);
             }
 
             _entity.ApplyModifiedProperties();
+
+            static void SetFloatProp(SerializedProperty parent, string name, float value)
+            {
+                var prop = parent.FindPropertyRelative(name);
+                if (prop != null) prop.floatValue = value;
+            }
+
+            static void SetIntProp(SerializedProperty parent, string name, int value)
+            {
+                var prop = parent.FindPropertyRelative(name);
+                if (prop != null) prop.intValue = value;
+            }
         }
 
         private void OnDrawLocalizationListElement(Rect rect, int index, bool isActive, bool isFocused)

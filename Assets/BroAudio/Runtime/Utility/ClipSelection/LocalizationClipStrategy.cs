@@ -66,6 +66,9 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
+            var activeLocale = LocalizationSettings.SelectedLocale;
+            string activeCode = activeLocale != null ? activeLocale.Identifier.ToString() : "unknown";
+            Debug.LogWarning(Utility.LogTitle + $"No BroAudioClip row found for locale '{activeCode}' on entity '{_entityName}'. Playback properties will use defaults.");
             index = 0;
             return new LocalizedBroAudioClipWrapper(resolvedClip);
         }

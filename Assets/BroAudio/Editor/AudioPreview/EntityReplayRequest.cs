@@ -68,7 +68,7 @@ namespace Ami.BroAudio.Editor
             }
             else
             {
-                Clip = _entity.PickNewClip(_context, out _clipIndex);
+                Clip = _entity.PickNewClip((int)_context, out _clipIndex);
             }
             return base.GetAudioClipForScheduling();
         }

@@ -100,15 +100,14 @@ namespace Ami.BroAudio.Editor
         private void UpdateLocalizationListCount()
         {
             int targetCount = 1 + (LocalizationSettings.AvailableLocales?.Locales?.Count ?? 0);
-            while (_localizationListData.Count < targetCount)
-            {
-                _localizationListData.Add(0);
-            }
+            if (_localizationListData.Count == targetCount)
+                return;
 
-            while (_localizationListData.Count > targetCount)
-            {
-                _localizationListData.RemoveAt(_localizationListData.Count - 1);
-            }
+            while (_localizationListData.Count < targetCount)
+                _localizationListData.Add(0);
+
+            if (_localizationListData.Count > targetCount)
+                _localizationListData.RemoveRange(targetCount, _localizationListData.Count - targetCount);
 
             SyncClipsWithLocales();
         }

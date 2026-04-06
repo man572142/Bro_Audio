@@ -47,6 +47,28 @@ namespace Ami.BroAudio.Editor
             }
         }
 
+        private MulticlipsPlayMode ConfirmSwitchToLocalizationMode(MulticlipsPlayMode previousMode)
+        {
+            bool confirmed = EditorUtility.DisplayDialog(
+                "Switch to Localization Mode",
+                "Switching to Localization mode will clear all AudioClip references and clip properties on this entity. Continue?",
+                "Yes",
+                "No");
+
+            if (!confirmed)
+            {
+                return previousMode;
+            }
+
+            var clipsProp = _reorderableList.serializedProperty;
+            for (int i = 0; i < clipsProp.arraySize; i++)
+            {
+                ResetBroAudioClipSerializedProperties(clipsProp.GetArrayElementAtIndex(i));
+            }
+            clipsProp.serializedObject.ApplyModifiedProperties();
+            return MulticlipsPlayMode.Localization;
+        }
+
         private void InitLocalization(SerializedObject serializedObject)
         {
             _localizationTableProp = serializedObject.FindProperty(AudioEntity.LocalizationEditorPropertyName.LocalizationTable);

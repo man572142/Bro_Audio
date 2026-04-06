@@ -140,13 +140,19 @@ This branch adds **Unity Localization package** support to BroAudio. The mental 
 
 ---
 
-### Phase 5 — Library Manager Integration ⚠️ PARTIAL
+### Phase 5 — Library Manager Integration ✅ COMPLETE
 
-`LibraryManagerWindow.LibraryFactory.cs` needs one targeted change. `LibraryManagerWindow.cs` requires **no changes** — the `MulticlipsPlayMode` enum dropdown in `AudioEntityEditor` already handles mode selection, and the table + entry UI is already shown by `AudioEntityEditor` once the mode is set.
+The clear-on-conversion behaviour is implemented in `ReorderableClips.Localization.cs` rather than `LibraryManagerWindow.LibraryFactory.cs`. The play mode dropdown lives in `ReorderableClips.OnDrawHeader`, so intercepting the switch there is architecturally cleaner than hooking it in the Library Manager.
 
-| Missing Behaviour | File | Description |
-|-------------------|------|-------------|
-| Clear stale direct `AudioClip` refs on mode switch | `LibraryManagerWindow.LibraryFactory.cs` | Inside `#if PACKAGE_LOCALIZATION`: when an entity is converted to Localization mode, clear all `BroAudioClip.AudioClip` direct references so stale assignments don't coexist with the table-based approach. |
+**`Assets/BroAudio/Editor/EntityPropertyDrawer/ReorderableClips.cs`** (`OnDrawHeader`)
+- Captures the previous play mode before the `EnumPopup` call.
+- Inside `#if PACKAGE_LOCALIZATION`: if the new selection is `Localization` and the previous mode was not, delegates to `ConfirmSwitchToLocalizationMode` before writing `_playModeProp.enumValueIndex`. ✅
+
+**`Assets/BroAudio/Editor/EntityPropertyDrawer/ReorderableClips.Localization.cs`** (`ConfirmSwitchToLocalizationMode`)
+- Shows `EditorUtility.DisplayDialog` titled **"Switch to Localization Mode"** with **Yes** / **No** buttons.
+- **No** → returns `previousMode`; the enum value is not written, mode stays unchanged. ✅
+- **Yes** → iterates all rows in `_reorderableList.serializedProperty`, calls `ResetBroAudioClipSerializedProperties` on each (clears `AudioClip` ref, resets Volume/FadeIn/FadeOut/StartPosition/EndPosition to defaults, Weight to 0), applies, and returns `MulticlipsPlayMode.Localization`. ✅
+- Guarded by `#if PACKAGE_LOCALIZATION` (method lives in the localization partial). ✅
 
 ---
 
@@ -204,13 +210,7 @@ These are intentional or beneficial departures from `Docs/unity-localization-pla
 
 ## 5. Areas Needing Refinement
 
-### 5a. Phase 5 (Library Manager) — REMAINING WORK
-
-**File**: `Assets/BroAudio/Editor/EditorWindow/LibraryManagerWindow.LibraryFactory.cs`
-
-When an entity is converted to Localization mode, any previously assigned `BroAudioClip.AudioClip` direct references should be cleared so stale clip assignments don't coexist silently with the table-based approach. No prompt or table/entry guidance is needed — `AudioEntityEditor` already shows that UI.
-
-### 5b. Deferred items (address later)
+### 5a. Deferred items (address later)
 
 | Item | Location | Description |
 |------|----------|-------------|
@@ -230,7 +230,7 @@ When an entity is converted to Localization mode, any previously assigned `BroAu
 | Phase 2 — Data Layer | ✅ Complete | |
 | Phase 3 — Runtime Playback | ✅ Complete | Architecture diverges from spec (better approach) |
 | Phase 4 — Editor UI | ✅ Complete | |
-| Phase 5 — Library Manager | ⚠️ Partial | Clear stale `AudioClip` refs on mode conversion |
-| Phase 6 — Validation | ⚠️ Mostly complete | Minor deferred items (see §5b) |
+| Phase 5 — Library Manager | ✅ Complete | Confirmation dialog clears clips on mode conversion |
+| Phase 6 — Validation | ⚠️ Mostly complete | Minor deferred items (see §5a) |
 
-**The feature is functionally complete.** An entity can be switched to Localization mode via `AudioEntityEditor`, assigned a table + entry, and clips resolve at runtime per the active locale. The only remaining planned work is clearing stale direct `AudioClip` references in `LibraryManagerWindow.LibraryFactory.cs` during mode conversion.
+**The feature is functionally complete.** An entity can be switched to Localization mode via `AudioEntityEditor`, assigned a table + entry, and clips resolve at runtime per the active locale. Minor deferred items remain (see §5a) but none block shipping.

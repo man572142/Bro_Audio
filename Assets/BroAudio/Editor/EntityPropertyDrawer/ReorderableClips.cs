@@ -379,7 +379,14 @@ namespace Ami.BroAudio.Editor
             EditorGUI.LabelField(labelRect, "Clips");
 
             var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
-            playMode = (MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, playMode);
+            var newPlayMode = (MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, playMode);
+#if PACKAGE_LOCALIZATION
+            if (newPlayMode == MulticlipsPlayMode.Localization && playMode != MulticlipsPlayMode.Localization)
+            {
+                newPlayMode = ConfirmSwitchToLocalizationMode(playMode);
+            }
+#endif
+            playMode = newPlayMode;
             _playModeProp.enumValueIndex = (int)playMode;
 
             DrawMasterVolume(masterVolRect);

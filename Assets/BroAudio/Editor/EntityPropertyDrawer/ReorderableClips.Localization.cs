@@ -47,7 +47,22 @@ namespace Ami.BroAudio.Editor
             }
         }
 
-        private MulticlipsPlayMode ConfirmSwitchToLocalizationMode(MulticlipsPlayMode previousMode)
+        private void CheckLocalizationMode(MulticlipsPlayMode previousMode, ref MulticlipsPlayMode newMode)
+        {
+            if (newMode != MulticlipsPlayMode.Localization)
+            {
+                return;
+            }
+
+            bool hasChanged = previousMode != newMode;
+            bool hasAnyClip = HasAnyAudioClip || HasAnyAddressableClip;
+            if (hasChanged && hasAnyClip && !ConfirmSwitchToLocalizationMode())
+            {
+                newMode = previousMode;
+            }
+        }
+        
+        private bool ConfirmSwitchToLocalizationMode()
         {
             bool confirmed = EditorUtility.DisplayDialog(
                 "Switch to Localization Mode",
@@ -55,18 +70,16 @@ namespace Ami.BroAudio.Editor
                 "Yes",
                 "No");
 
-            if (!confirmed)
+            if (confirmed)
             {
-                return previousMode;
+                var clipsProp = _reorderableList.serializedProperty;
+                for (int i = 0; i < clipsProp.arraySize; i++)
+                {
+                    ResetBroAudioClipSerializedProperties(clipsProp.GetArrayElementAtIndex(i));
+                }
+                clipsProp.serializedObject.ApplyModifiedProperties();
             }
-
-            var clipsProp = _reorderableList.serializedProperty;
-            for (int i = 0; i < clipsProp.arraySize; i++)
-            {
-                ResetBroAudioClipSerializedProperties(clipsProp.GetArrayElementAtIndex(i));
-            }
-            clipsProp.serializedObject.ApplyModifiedProperties();
-            return MulticlipsPlayMode.Localization;
+            return confirmed;
         }
 
         private void InitLocalization(SerializedObject serializedObject)

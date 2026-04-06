@@ -378,21 +378,18 @@ namespace Ami.BroAudio.Editor
 
             EditorGUI.LabelField(labelRect, "Clips");
 
-            var playMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
-            var newPlayMode = (MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, playMode);
+            var currentMode = (MulticlipsPlayMode)_playModeProp.enumValueIndex;
+            var newMode = (MulticlipsPlayMode)EditorGUI.EnumPopup(multiclipOptionRect, currentMode);
 #if PACKAGE_LOCALIZATION
-            if (newPlayMode == MulticlipsPlayMode.Localization && playMode != MulticlipsPlayMode.Localization)
-            {
-                newPlayMode = ConfirmSwitchToLocalizationMode(playMode);
-            }
+            CheckLocalizationMode(currentMode, ref newMode);
 #endif
-            playMode = newPlayMode;
-            _playModeProp.enumValueIndex = (int)playMode;
+            currentMode = newMode;
+            _playModeProp.enumValueIndex = (int)currentMode;
 
             DrawMasterVolume(masterVolRect);
 
             GUIContent guiContent = new GUIContent(string.Empty);
-            switch (playMode)
+            switch (currentMode)
             {
                 case MulticlipsPlayMode.Single:
                     guiContent.tooltip = "Always play the first clip";

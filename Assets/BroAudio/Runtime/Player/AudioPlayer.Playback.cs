@@ -75,6 +75,11 @@ namespace Ami.BroAudio.Runtime
             if (!HasStartedPlaying) // we only do the following process when it's fresh
             {
                 _clip = _pref.PickNewClip();
+                if (_clip == null)
+                {
+                    EndPlaying();
+                    yield break;
+                }
 
 #if PACKAGE_ADDRESSABLES
                 if (_clip is BroAudioClip broAudioClip && broAudioClip.IsAddressablesAvailable() && !broAudioClip.IsLoaded)

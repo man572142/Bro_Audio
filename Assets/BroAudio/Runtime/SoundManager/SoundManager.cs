@@ -130,6 +130,10 @@ namespace Ami.BroAudio.Runtime
                 _addressableCleanupCoroutine = null;
             }
 #endif
+
+#if PACKAGE_LOCALIZATION
+            ReleaseAllLocalizationPreloads();
+#endif
         }
 
         #region InitBank

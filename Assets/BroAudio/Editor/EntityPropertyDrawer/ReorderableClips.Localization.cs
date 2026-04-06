@@ -244,6 +244,11 @@ namespace Ami.BroAudio.Editor
             Rect volIconRect = new Rect(rect) { x = clipRect.xMax + Gap, width = SliderLabelWidth };
             Rect volumeRect = new Rect(rect) { x = volIconRect.xMax, width = (remainWidth * (1 - ObjectPickerRatio)) - Gap - SliderLabelWidth };
 
+            var clipsProp = _reorderableList.serializedProperty;
+            SerializedProperty localeClipProp = localeIndex < clipsProp.arraySize
+                ? clipsProp.GetArrayElementAtIndex(localeIndex)
+                : null;
+
             if (currentClip != null)
             {
                 bool isPlaying = string.Equals(_currentPlayingClipPath, previewPath);
@@ -257,7 +262,7 @@ namespace Ami.BroAudio.Editor
                     }
                     else
                     {
-                        PreviewLocalizationClip(currentClip, previewPath);
+                        PreviewLocalizationClip(currentClip, previewPath, localeClipProp);
                     }
                 }
             }
@@ -269,21 +274,16 @@ namespace Ami.BroAudio.Editor
                 TrySetClipInTable(localeCode, newClip);
             }
 
-            var clipsProp = _reorderableList.serializedProperty;
-            if (localeIndex < clipsProp.arraySize)
+            var volumeProp = localeClipProp?.FindPropertyRelative(nameof(BroAudioClip.Volume));
+            if (volumeProp != null)
             {
-                var clipProp = clipsProp.GetArrayElementAtIndex(localeIndex);
-                var volumeProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
-                if (volumeProp != null)
+                EditorGUI.LabelField(volIconRect, EditorGUIUtility.IconContent(IconConstant.AudioSpeakerOn));
+                EditorGUI.BeginChangeCheck();
+                float newVol = BroEditorUtility.DrawVolumeSlider(volumeRect, volumeProp.floatValue, out bool hasChanged, out _);
+                if (hasChanged)
                 {
-                    EditorGUI.LabelField(volIconRect, EditorGUIUtility.IconContent(IconConstant.AudioSpeakerOn));
-                    EditorGUI.BeginChangeCheck();
-                    float newVol = BroEditorUtility.DrawVolumeSlider(volumeRect, volumeProp.floatValue, out bool hasChanged, out _);
-                    if (hasChanged)
-                    {
-                        volumeProp.floatValue = newVol;
-                        _entity.ApplyModifiedProperties();
-                    }
+                    volumeProp.floatValue = newVol;
+                    _entity.ApplyModifiedProperties();
                 }
             }
 
@@ -364,10 +364,20 @@ namespace Ami.BroAudio.Editor
             return audioClip != null;
         }
 
-        private void PreviewLocalizationClip(AudioClip audioClip, string previewPath)
+        private void PreviewLocalizationClip(AudioClip audioClip, string previewPath, SerializedProperty clipProp)
         {
             var currentEvent = Event.current;
-            var req = currentEvent.CreatePreviewRequest(audioClip);
+            PreviewRequest req;
+            if (currentEvent.button == 0 && clipProp != null) // Left Click
+            {
+                var volProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
+                var transport = new SerializedTransport(clipProp, audioClip.length);
+                req = currentEvent.CreatePreviewRequest(audioClip, volProp?.floatValue ?? AudioConstant.FullVolume, transport);
+            }
+            else
+            {
+                req = currentEvent.CreatePreviewRequest(audioClip);
+            }
             GetBaseAndRandomValue(RandomFlag.Volume, _entity, out req.BaseMasterVolume, out req.MasterVolume);
             GetBaseAndRandomValue(RandomFlag.Pitch, _entity, out req.BasePitch, out req.Pitch);
 

@@ -15,7 +15,6 @@ namespace Ami.BroAudio.Editor
 {
     public partial class ReorderableClips
     {
-        private const string LocalizationPreviewPathPrefix = "localization_preview_";
 
         // Unity Localization serialized property field names
         private const string TableCollectionNameField = "m_TableCollectionName";
@@ -298,7 +297,6 @@ namespace Ami.BroAudio.Editor
             var locale = availableLocales[localeIndex];
             string localeCode = locale.Identifier.Code;
             AudioClip currentClip = TryGetClipFromTable(localeCode);
-            string previewPath = LocalizationPreviewPathPrefix + localeCode;
 
             Rect localeRect = new Rect(rect) { width = LocaleLabelWidth, x = rect.xMax - LocaleLabelWidth };
 
@@ -318,7 +316,8 @@ namespace Ami.BroAudio.Editor
 
             if (currentClip != null)
             {
-                bool isPlaying = string.Equals(_currentPlayingClipPath, previewPath);
+                string clipPath = localeClipProp?.propertyPath;
+                bool isPlaying = clipPath != null && string.Equals(_currentPlayingClipPath, clipPath);
                 var image = GetPlaybackButtonIcon(isPlaying).image;
                 var buttonContent = new GUIContent(image, EditorAudioPreviewer.IgnoreSettingTooltip);
                 if (GUI.Button(buttonRect, buttonContent))
@@ -329,7 +328,8 @@ namespace Ami.BroAudio.Editor
                     }
                     else
                     {
-                        PreviewLocalizationClip(currentClip, previewPath, localeClipProp);
+                        _localizationList.index = localeIndex + 1; // row 0 is table/entry dropdowns
+                        PreviewLocalizationClip(currentClip, clipPath, localeClipProp);
                     }
                 }
             }
@@ -460,7 +460,6 @@ namespace Ami.BroAudio.Editor
             GetBaseAndRandomValue(RandomFlag.Pitch, _entity, out req.BasePitch, out req.Pitch);
 
             _onRequestClipPreview?.Invoke(previewPath, req);
-            _currentPlayingClipPath = previewPath;
             EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(PreviewRect, req);
         }
 

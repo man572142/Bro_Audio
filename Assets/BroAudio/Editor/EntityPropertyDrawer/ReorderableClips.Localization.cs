@@ -328,7 +328,6 @@ namespace Ami.BroAudio.Editor
                     }
                     else
                     {
-                        _localizationList.index = localeIndex + 1; // row 0 is table/entry dropdowns
                         PreviewLocalizationClip(currentClip, clipPath, localeClipProp);
                     }
                 }
@@ -451,13 +450,13 @@ namespace Ami.BroAudio.Editor
                 var volProp = clipProp.FindPropertyRelative(nameof(BroAudioClip.Volume));
                 var transport = new SerializedTransport(clipProp, audioClip.length);
                 req = currentEvent.CreatePreviewRequest(audioClip, volProp?.floatValue ?? AudioConstant.FullVolume, transport);
+                GetBaseAndRandomValue(RandomFlag.Volume, _entity, out req.BaseMasterVolume, out req.MasterVolume);
+                GetBaseAndRandomValue(RandomFlag.Pitch, _entity, out req.BasePitch, out req.Pitch);
             }
             else
             {
                 req = currentEvent.CreatePreviewRequest(audioClip);
             }
-            GetBaseAndRandomValue(RandomFlag.Volume, _entity, out req.BaseMasterVolume, out req.MasterVolume);
-            GetBaseAndRandomValue(RandomFlag.Pitch, _entity, out req.BasePitch, out req.Pitch);
 
             _onRequestClipPreview?.Invoke(previewPath, req);
             EditorAudioPreviewer.Instance.PlaybackIndicator.SetClipInfo(PreviewRect, req);

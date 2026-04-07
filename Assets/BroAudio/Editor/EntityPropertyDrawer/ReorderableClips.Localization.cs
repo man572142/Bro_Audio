@@ -1,14 +1,14 @@
 #if PACKAGE_LOCALIZATION
 using System.Collections.Generic;
+using Ami.BroAudio.Data;
+using Ami.Extension;
 using UnityEditor;
+using UnityEditor.Localization;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Tables;
-using UnityEditor.Localization;
-using Ami.BroAudio.Data;
-using Ami.Extension;
 using static Ami.BroAudio.Editor.BroEditorUtility;
 
 namespace Ami.BroAudio.Editor
@@ -22,6 +22,13 @@ namespace Ami.BroAudio.Editor
         private const string EntryKeyField = "m_Key";
         private const string EntryKeyIdField = "m_KeyId";
         private const string LocaleCodeField = "m_Code";
+
+        /// <summary>
+        /// Uses the editor API to get locales synchronously from the Addressable settings.
+        /// The runtime API (LocalizationSettings.AvailableLocales.Locales) uses a non-serialized list
+        /// that is only populated via async loading in play mode, so it is empty after domain reload.
+        /// </summary>
+        private static IList<Locale> EditorAvailableLocales => LocalizationEditorSettings.GetLocales();
 
         private SerializedProperty _localizationTableProp;
         private SerializedProperty _localizationEntryProp;
@@ -61,7 +68,7 @@ namespace Ami.BroAudio.Editor
                 newMode = previousMode;
             }
         }
-        
+
         private bool ConfirmSwitchToLocalizationMode()
         {
             bool confirmed = EditorUtility.DisplayDialog(
@@ -112,22 +119,28 @@ namespace Ami.BroAudio.Editor
 
         private void UpdateLocalizationListCount()
         {
-            int targetCount = 1 + (LocalizationSettings.AvailableLocales?.Locales?.Count ?? 0);
+            int targetCount = 1 + (EditorAvailableLocales?.Count ?? 0);
             if (_localizationListData.Count == targetCount)
+            {
                 return;
+            }
 
             while (_localizationListData.Count < targetCount)
+            {
                 _localizationListData.Add(0);
+            }
 
             if (_localizationListData.Count > targetCount)
+            {
                 _localizationListData.RemoveRange(targetCount, _localizationListData.Count - targetCount);
+            }
 
             SyncClipsWithLocales();
         }
 
         private bool IsClipsSyncedWithLocales()
         {
-            var availableLocales = LocalizationSettings.AvailableLocales?.Locales;
+            var availableLocales = EditorAvailableLocales;
             if (availableLocales == null)
             {
                 return true;
@@ -165,7 +178,7 @@ namespace Ami.BroAudio.Editor
 
         private void SyncClipsWithLocales()
         {
-            var availableLocales = LocalizationSettings.AvailableLocales?.Locales;
+            var availableLocales = EditorAvailableLocales;
             if (availableLocales == null || availableLocales.Count == 0)
             {
                 return;
@@ -229,13 +242,19 @@ namespace Ami.BroAudio.Editor
             static void SetFloatProp(SerializedProperty parent, string name, float value)
             {
                 var prop = parent.FindPropertyRelative(name);
-                if (prop != null) prop.floatValue = value;
+                if (prop != null)
+                {
+                    prop.floatValue = value;
+                }
             }
 
             static void SetIntProp(SerializedProperty parent, string name, int value)
             {
                 var prop = parent.FindPropertyRelative(name);
-                if (prop != null) prop.intValue = value;
+                if (prop != null)
+                {
+                    prop.intValue = value;
+                }
             }
         }
 
@@ -270,7 +289,7 @@ namespace Ami.BroAudio.Editor
 
         private void DrawLocalizationTableClipElement(Rect rect, int localeIndex)
         {
-            var availableLocales = LocalizationSettings.AvailableLocales?.Locales;
+            var availableLocales = EditorAvailableLocales;
             if (availableLocales == null || localeIndex >= availableLocales.Count)
             {
                 return;
@@ -365,22 +384,31 @@ namespace Ami.BroAudio.Editor
             audioClip = null;
             clipIndex = 0;
 
-            var locales = LocalizationSettings.AvailableLocales?.Locales;
+            var locales = EditorAvailableLocales;
             var selectedLocale = LocalizationSettings.SelectedLocale
                 ?? LocalizationSettings.ProjectLocale;
             if (selectedLocale == null && locales != null && locales.Count > 0)
+            {
                 selectedLocale = locales[0];
+            }
+
             if (selectedLocale == null)
+            {
                 return false;
+            }
 
             string localeCode = selectedLocale.Identifier.Code;
             audioClip = TryGetClipFromTable(localeCode);
             if (audioClip == null)
+            {
                 return false;
+            }
 
             int found = FindClipIndexByLocaleCode(localeCode);
             if (found >= 0)
+            {
                 clipIndex = found;
+            }
 
             return true;
         }
@@ -393,7 +421,9 @@ namespace Ami.BroAudio.Editor
                 var clipProp = clipsProp.GetArrayElementAtIndex(i);
                 string code = clipProp.FindPropertyRelative(nameof(BroAudioClip.Locale))?.FindPropertyRelative(LocaleCodeField)?.stringValue;
                 if (code == localeCode)
+                {
                     return i;
+                }
             }
             return -1;
         }
@@ -403,7 +433,7 @@ namespace Ami.BroAudio.Editor
             audioClip = null;
             int locIndex = _localizationList?.index ?? -1;
             int clipIndex = locIndex - 1;
-            var availableLocales = LocalizationSettings.AvailableLocales?.Locales;
+            var availableLocales = EditorAvailableLocales;
             if (clipIndex >= 0 && availableLocales != null && clipIndex < availableLocales.Count)
             {
                 string localeCode = availableLocales[clipIndex].Identifier.Code;
@@ -597,7 +627,7 @@ namespace Ami.BroAudio.Editor
                 return false;
             }
 
-            var locale = LocalizationSettings.AvailableLocales?.GetLocale(new LocaleIdentifier(localeCode));
+            var locale = LocalizationEditorSettings.GetLocale(new LocaleIdentifier(localeCode));
             if (locale == null)
             {
                 return false;

@@ -575,7 +575,7 @@ namespace Ami.BroAudio.Editor
                 if (currentEvent.button == 0) // Left Click
                 {
                     var transport = new SerializedTransport(clipProp, audioClip.length);
-                    req = currentEvent.CreatePreviewRequest(audioClip, volProp.floatValue, transport);
+                    req = currentEvent.CreatePreviewRequest(audioClip, volProp?.floatValue ?? AudioConstant.FullVolume, transport);
                     GetBaseAndRandomValue(RandomFlag.Volume, _entity, out req.BaseMasterVolume, out req.MasterVolume);
                     GetBaseAndRandomValue(RandomFlag.Pitch, _entity, out req.BasePitch, out req.Pitch);
                 }

@@ -5,8 +5,8 @@ using System.Collections;
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
-	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
-	{
+    public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
+    {
         private float _timeBeforeStartSchedule = 0f;
 
         private void SchedulePlayback(out bool hasScheduledPlay)
@@ -14,15 +14,9 @@ namespace Ami.BroAudio.Runtime
             hasScheduledPlay = false;
             if (_pref.ScheduledStartTime > 0d) // Scheduled has higher priority than clip.delay
             {
-                AudioSource.PlayScheduled(_pref.ScheduledStartTime);
+                var dspTime = AudioSettings.dspTime;
+                AudioSource.PlayScheduled(System.Math.Max(_pref.ScheduledStartTime, dspTime));
                 _timeBeforeStartSchedule = (float)(_pref.ScheduledStartTime - AudioSettings.dspTime);
-                hasScheduledPlay = true;
-            }
-            else if (_clip.Delay > 0f)
-            {
-                // PlayDelayed() can also be rescheduled
-                AudioSource.PlayDelayed(_clip.Delay);
-                _timeBeforeStartSchedule = _clip.Delay;
                 hasScheduledPlay = true;
             }
 
@@ -34,7 +28,7 @@ namespace Ami.BroAudio.Runtime
 
         IAudioPlayer ISchedulable.SetScheduledStartTime(double dspTime)
         {
-            if(_pref.ScheduledStartTime > 0d)
+            if (_pref.ScheduledStartTime > 0d)
             {
                 // Recalculate the time when WaitForScheduledStartTime() is already running
                 _timeBeforeStartSchedule += (float)(dspTime - _pref.ScheduledStartTime);
@@ -83,6 +77,13 @@ namespace Ami.BroAudio.Runtime
             return this.SetScheduledStartTime(AudioSettings.dspTime + delay);
         }
 
+        private void SetClipDelayIfNotScheduled()
+        {
+            if (_pref.ScheduledStartTime <= 0 && _clip != null && _clip.Delay > 0)
+            {
+                _pref.ScheduledStartTime = AudioSettings.dspTime + _clip.Delay;
+            }
+        }
 
         private IEnumerator WaitForScheduledStartTime()
         {

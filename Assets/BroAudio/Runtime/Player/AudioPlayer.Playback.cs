@@ -80,7 +80,8 @@ namespace Ami.BroAudio.Runtime
                     EndPlaying();
                     yield break;
                 }
-
+                
+                SetClipDelayIfNotScheduled();
 #if PACKAGE_ADDRESSABLES
                 if (_clip is BroAudioClip broAudioClip && broAudioClip.IsAddressablesAvailable() && !broAudioClip.IsLoaded)
                 {
@@ -100,6 +101,9 @@ namespace Ami.BroAudio.Runtime
                 SetPlayPosition(sampleRate);
                 SetInitialPitch(_pref.Entity, audioTypePref);
                 SetSpatial(_pref);
+#if !UNITY_WEBGL
+                AudioTrack = MixerPool.GetTrack(TrackType);
+#endif
 
                 if (IsDominator)
                 {
@@ -126,9 +130,6 @@ namespace Ami.BroAudio.Runtime
                         yield return null;
                     }
                 }
-#if !UNITY_WEBGL
-                AudioTrack = MixerPool.GetTrack(TrackType);
-#endif
             }
 
             do

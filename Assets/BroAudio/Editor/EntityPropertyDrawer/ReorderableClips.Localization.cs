@@ -21,6 +21,7 @@ namespace Ami.BroAudio.Editor
         private const string EntryKeyField = "m_Key";
         private const string EntryKeyIdField = "m_KeyId";
         private const string LocaleCodeField = "m_Code";
+        private const float DropdownLabelWidth = 70f;
 
         /// <summary>
         /// Uses the editor API to get locales synchronously from the Addressable settings.
@@ -271,8 +272,17 @@ namespace Ami.BroAudio.Editor
 
         private void DrawLocalizationTableRow(Rect rect)
         {
-            float halfWidth = (rect.width - Gap) * 0.5f;
-            Rect tableRect = new Rect(rect) { width = halfWidth };
+            Rect openWindowButtonRect = new Rect(rect) { size = PlayButtonSize};
+            openWindowButtonRect.y += (rect.height - PlayButtonSize.y) * 0.5f - 3f;
+
+            if (GUI.Button(openWindowButtonRect, new GUIContent(LocalizationTablesWindowIcon, "Open Localization Tables")))
+            {
+                EditorApplication.ExecuteMenuItem("Window/Asset Management/Localization Tables");
+            }
+
+            float remaining = rect.width - PlayButtonSize.x - Gap;
+            float halfWidth = (remaining - Gap) * 0.5f;
+            Rect tableRect = new Rect(rect) { x = openWindowButtonRect.xMax + Gap, width = halfWidth };
             Rect entryRect = new Rect(rect) { x = tableRect.xMax + Gap, width = halfWidth };
 
             if (_localizationTableProp != null)
@@ -464,6 +474,20 @@ namespace Ami.BroAudio.Editor
 
         private static readonly GUIContent[] NoneOnlyLabels = { new GUIContent("None") };
 
+        private static Texture2D _localizationTablesWindowIcon;
+        private static Texture2D LocalizationTablesWindowIcon
+        {
+            get
+            {
+                if (_localizationTablesWindowIcon == null)
+                {
+                    _localizationTablesWindowIcon = EditorGUIUtility.Load(
+                        "Packages/com.unity.localization/Editor/Icons/Localization Tables Window/LocalizationTablesWindow On.png") as Texture2D;
+                }
+                return _localizationTablesWindowIcon;
+            }
+        }
+
         private void DrawAssetTableDropdown(Rect rect)
         {
             var tableNameProp = _localizationTableProp.FindPropertyRelative(TableCollectionNameField);
@@ -496,9 +520,13 @@ namespace Ami.BroAudio.Editor
                 }
             }
 
-            EditorGUI.BeginChangeCheck();
-            int newIndex = EditorGUI.Popup(rect, selectedIndex, _cachedTableLabels);
-            if (EditorGUI.EndChangeCheck())
+            int newIndex = 0;
+            using (new EditorScriptingExtension.LabelWidthScope(DropdownLabelWidth))
+            {
+                newIndex = EditorGUI.Popup(rect, new GUIContent("Asset Table"), selectedIndex, _cachedTableLabels);
+            }
+
+            if (newIndex != selectedIndex)
             {
                 tableNameProp.stringValue = newIndex == 0 ? string.Empty : collections[newIndex - 1].TableCollectionName;
                 var entryKeyProp = _localizationEntryProp?.FindPropertyRelative(EntryKeyField);
@@ -531,14 +559,14 @@ namespace Ami.BroAudio.Editor
             string tableName = tableNameProp?.stringValue;
             if (string.IsNullOrEmpty(tableName))
             {
-                EditorGUI.Popup(rect, 0, NoneOnlyLabels);
+                DrawPopup(rect, 0, NoneOnlyLabels);
                 return;
             }
 
             var tableCollection = LocalizationEditorSettings.GetAssetTableCollection(tableName);
             if (tableCollection == null || tableCollection.SharedData == null)
             {
-                EditorGUI.Popup(rect, 0, NoneOnlyLabels);
+                DrawPopup(rect, 0, NoneOnlyLabels);
                 return;
             }
 
@@ -567,9 +595,8 @@ namespace Ami.BroAudio.Editor
                 }
             }
 
-            EditorGUI.BeginChangeCheck();
-            int newIndex = EditorGUI.Popup(rect, selectedIndex, _cachedEntryLabels);
-            if (EditorGUI.EndChangeCheck())
+            int newIndex = DrawPopup(rect, selectedIndex, _cachedEntryLabels);
+            if (newIndex != selectedIndex)
             {
                 if (newIndex == 0)
                 {
@@ -592,6 +619,16 @@ namespace Ami.BroAudio.Editor
                 }
                 _cachedEntryLabels = null;
                 _localizationEntryProp.serializedObject.ApplyModifiedProperties();
+            }
+
+            int DrawPopup(Rect rect, int index, GUIContent[] labels)
+            {
+                int newIndex;
+                using (new EditorScriptingExtension.LabelWidthScope(DropdownLabelWidth))
+                {
+                    newIndex = EditorGUI.Popup(rect, new GUIContent("Table Entry"), index, labels);
+                }
+                return newIndex;
             }
         }
 

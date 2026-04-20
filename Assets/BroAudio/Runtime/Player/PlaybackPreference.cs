@@ -142,8 +142,8 @@ namespace Ami.BroAudio.Runtime
             {
                 return false;
             }
-            return IsLoop(LoopType.SeamlessLoop) || 
-                   (IsChainedMode() && ChainedModeStage == PlaybackStage.Start); // normal loop uses the same audio player to loop
+            return IsLoop(LoopType.Loop) || IsLoop(LoopType.SeamlessLoop) ||
+                   (IsChainedMode() && ChainedModeStage == PlaybackStage.Start);
         }
 
         public bool CanHandoverToEnd()

@@ -1,6 +1,6 @@
-using UnityEngine;
-using Ami.Extension;
 using System.Collections;
+using Ami.Extension;
+using UnityEngine;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -33,7 +33,7 @@ namespace Ami.BroAudio.Runtime
         /// </summary>
         private bool TryGetMixerDecibelVolume(out float vol)
         {
-            if (_mixerDecibelVolume == UnSetMixerDecibelVolume && TryGetMixerAndTrack(out var mixer, out _) 
+            if (_mixerDecibelVolume == UnSetMixerDecibelVolume && TryGetMixerAndTrack(out var mixer, out _)
                 && mixer.SafeGetFloat(VolumeParaName, out float currentVol))
             {
                 _mixerDecibelVolume = currentVol;
@@ -47,9 +47,9 @@ namespace Ami.BroAudio.Runtime
         /// </summary>
         private bool TrySetMixerDecibelVolume(float vol)
         {
-            if(TryGetMixerAndTrack(out var mixer, out _))
+            if (TryGetMixerAndTrack(out var mixer, out _))
             {
-                _mixerDecibelVolume = vol.ClampDecibel(true);  
+                _mixerDecibelVolume = vol.ClampDecibel(true);
                 return mixer.SafeSetFloat(VolumeParaName, _mixerDecibelVolume);
             }
             return false;
@@ -85,6 +85,11 @@ namespace Ami.BroAudio.Runtime
             return this;
         }
 
+        float IAudioPlayer.GetVolume()
+        {
+            return _clipVolume.Current * _trackVolume.Current * _audioTypeVolume.Current;
+        }
+
         public void SetAudioTypeVolume(float vol, float fadeTime)
         {
             SetVolumeInternal(_audioTypeVolume, vol, fadeTime);
@@ -94,7 +99,7 @@ namespace Ami.BroAudio.Runtime
         {
             module.SetTarget(vol);
             if (fadeTime > 0f)
-            {   
+            {
                 Ease ease = module.Current < vol ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
                 module.StartCoroutineAndReassign(Fade(module, fadeTime, ease));
             }

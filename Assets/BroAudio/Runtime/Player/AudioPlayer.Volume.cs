@@ -79,6 +79,22 @@ namespace Ami.BroAudio.Runtime
 #endif
         }
 
+        // Force-pushes the current fader state to the AudioSource / mixer, bypassing the HasStartedPlaying guard.
+        // Safe to call only after AudioTrack and AudioSource.clip are wired. Used right before PlayScheduled()
+        // so Unity's audio engine renders the first buffer at the intended volume instead of a stale value.
+        private void PrimeAudioSourceVolume()
+        {
+#if UNITY_WEBGL
+            UpdateWebGLVolume();
+#else
+            float vol = _clipVolume.Current * _trackVolume.Current * _audioTypeVolume.Current;
+            if (!TrySetMixerDecibelVolume(vol.ToDecibel()))
+            {
+                AudioSource.volume = vol.ClampNormalize();
+            }
+#endif
+        }
+
         IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime)
         {
             SetVolumeInternal(_trackVolume, vol, fadeTime);

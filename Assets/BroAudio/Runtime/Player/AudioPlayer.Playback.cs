@@ -77,6 +77,11 @@ namespace Ami.BroAudio.Runtime
             _clipVolume.Complete(0f, false);
             int sampleRate = _clip != null ? _clip.GetAudioClip().frequency : 0;
             bool hasScheduledPlay = false;
+            float targetClipVolume = 0f;
+            bool hasFadeIn = false;
+            float fadeIn = 0f;
+            Ease fadeInEase = default;
+            bool fadeInResolved = false;
             if (!HasStartedPlaying) // we only do the following process when it's fresh
             {
                 _clip = _pref.PickNewClip();
@@ -118,6 +123,22 @@ namespace Ami.BroAudio.Runtime
                 {
                     SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
                 }
+
+                // Looping playback must go through PlayScheduled so SetScheduledEndTime is reliable.
+                if (_pref.ScheduledStartTime <= 0d &&
+                    CanLoopIfIsChainedMode() &&
+                    (_pref.IsLoop(LoopType.Loop) || _pref.IsLoop(LoopType.SeamlessLoop)))
+                {
+                    _pref.ScheduledStartTime = AudioSettings.dspTime;
+                }
+
+                // Resolve fade-in and seed clip volume BEFORE PlayScheduled so the first audio
+                // buffer renders at the intended level instead of a stale AudioSource.volume value.
+                targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
+                hasFadeIn = _pref.HasFadeIn(_clip.FadeIn, out fadeIn, out fadeInEase);
+                fadeInResolved = true;
+                _clipVolume.Complete(hasFadeIn ? 0f : targetClipVolume, updateBus: false);
+                PrimeAudioSourceVolume();
 
                 SchedulePlayback(out hasScheduledPlay);
                 if (hasScheduledPlay)
@@ -175,31 +196,17 @@ namespace Ami.BroAudio.Runtime
             bool useScheduledLoop = trimSamples > 0 && CanLoopIfIsChainedMode() &&
                                     (_pref.IsLoop(LoopType.Loop) || _pref.IsLoop(LoopType.SeamlessLoop));
 
-            float targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
-            float elapsedTime = 0f;
-
-            #region FadeIn
-            if (_pref.HasFadeIn(_clip.FadeIn, out var fadeIn, out var fadeInEase))
+            // Resume-from-pause (and any other re-entry) skips the fresh-play block above,
+            // so resolve fade-in here instead. HasFadeIn consumes any Next override, so call it exactly once.
+            if (!fadeInResolved)
             {
-                _clipVolume.SetTarget(targetClipVolume);
-                while (_clipVolume.Update(ref elapsedTime, fadeIn, fadeInEase))
-                {
-                    yield return null;
-                    if (!OnUpdate())
-                    {
-                        yield break;
-                    }
-                }
+                targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
+                hasFadeIn = _pref.HasFadeIn(_clip.FadeIn, out fadeIn, out fadeInEase);
+                fadeInResolved = true;
             }
-            else
-            {
-                _clipVolume.Complete(targetClipVolume);
-            }
-            #endregion
 
-            bool hasFadeOut = _pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase);
-            double fadeOutStartDsp = loopEndDsp - (hasFadeOut ? fadeOut : 0d);
-
+            // Trigger handover before FadeIn so the successor has up to a full loop of lead time
+            // to finish its setup and call PlayScheduled() before this player's scheduled end.
             if (useScheduledLoop)
             {
                 if (_pref.IsLoop(LoopType.SeamlessLoop))
@@ -220,6 +227,30 @@ namespace Ami.BroAudio.Runtime
             {
                 _pref.ScheduledStartTime = 0d;
             }
+
+            float elapsedTime = 0f;
+
+            #region FadeIn
+            if (hasFadeIn)
+            {
+                _clipVolume.SetTarget(targetClipVolume);
+                while (_clipVolume.Update(ref elapsedTime, fadeIn, fadeInEase))
+                {
+                    yield return null;
+                    if (!OnUpdate())
+                    {
+                        yield break;
+                    }
+                }
+            }
+            else
+            {
+                _clipVolume.Complete(targetClipVolume);
+            }
+            #endregion
+
+            bool hasFadeOut = _pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase);
+            double fadeOutStartDsp = loopEndDsp - (hasFadeOut ? fadeOut : 0d);
 
             #region FadeOut
             if (hasFadeOut)

@@ -81,7 +81,7 @@ namespace Ami.BroAudio.Runtime
             bool hasFadeIn = false;
             float fadeIn = 0f;
             Ease fadeInEase = default;
-            bool fadeInResolved = false;
+            bool isResumingFromPause = _stopMode == StopMode.Pause && HasStartedPlaying;
             if (!HasStartedPlaying) // we only do the following process when it's fresh
             {
                 _clip = _pref.PickNewClip();
@@ -132,11 +132,9 @@ namespace Ami.BroAudio.Runtime
                     _pref.ScheduledStartTime = AudioSettings.dspTime;
                 }
 
-                // Resolve fade-in and seed clip volume BEFORE PlayScheduled so the first audio
-                // buffer renders at the intended level instead of a stale AudioSource.volume value.
+                // Resolve before PlayScheduled so the first buffer renders at the correct volume.
                 targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
                 hasFadeIn = _pref.HasFadeIn(_clip.FadeIn, out fadeIn, out fadeInEase);
-                fadeInResolved = true;
                 _clipVolume.Complete(hasFadeIn ? 0f : targetClipVolume, updateBus: false);
                 PrimeAudioSourceVolume();
 
@@ -158,7 +156,6 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
-            bool isResumingFromPause = _stopMode == StopMode.Pause && HasStartedPlaying;
             double scheduledIterationStart = _pref.ScheduledStartTime;
 
             if (!hasScheduledPlay)
@@ -196,17 +193,14 @@ namespace Ami.BroAudio.Runtime
             bool useScheduledLoop = trimSamples > 0 && CanLoopIfIsChainedMode() &&
                                     (_pref.IsLoop(LoopType.Loop) || _pref.IsLoop(LoopType.SeamlessLoop));
 
-            // Resume-from-pause (and any other re-entry) skips the fresh-play block above,
-            // so resolve fade-in here instead. HasFadeIn consumes any Next override, so call it exactly once.
-            if (!fadeInResolved)
+            // HasFadeIn consumes any Next override — for resume-from-pause it was not called in the fresh block.
+            if (isResumingFromPause)
             {
                 targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
                 hasFadeIn = _pref.HasFadeIn(_clip.FadeIn, out fadeIn, out fadeInEase);
-                fadeInResolved = true;
             }
 
-            // Trigger handover before FadeIn so the successor has up to a full loop of lead time
-            // to finish its setup and call PlayScheduled() before this player's scheduled end.
+            // Handover before FadeIn gives the successor a full loop of lead time to call PlayScheduled().
             if (useScheduledLoop)
             {
                 if (_pref.IsLoop(LoopType.SeamlessLoop))

@@ -68,21 +68,13 @@ namespace Ami.BroAudio.Runtime
             {
                 return;
             }
-#if UNITY_WEBGL
-            UpdateWebGLVolume();
-#else
-            float vol = _clipVolume.Current * _trackVolume.Current * _audioTypeVolume.Current;
-            if (!TrySetMixerDecibelVolume(vol.ToDecibel()))
-            {
-                AudioSource.volume = vol.ClampNormalize();
-            }
-#endif
+            ApplyVolume();
         }
 
-        // Force-pushes the current fader state to the AudioSource / mixer, bypassing the HasStartedPlaying guard.
-        // Safe to call only after AudioTrack and AudioSource.clip are wired. Used right before PlayScheduled()
-        // so Unity's audio engine renders the first buffer at the intended volume instead of a stale value.
-        private void PrimeAudioSourceVolume()
+        // Bypasses the HasStartedPlaying guard; safe only after AudioTrack and AudioSource.clip are wired.
+        private void PrimeAudioSourceVolume() => ApplyVolume();
+
+        private void ApplyVolume()
         {
 #if UNITY_WEBGL
             UpdateWebGLVolume();

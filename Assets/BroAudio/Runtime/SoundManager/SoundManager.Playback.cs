@@ -123,7 +123,9 @@ namespace Ami.BroAudio.Runtime
             wrapper.UpdateInstance(newPlayer);
             newPlayer.SetInstanceWrapper(wrapper);
 
-            newPlayer.SetVolume(trackVolume);
+            // Seed the successor's faders from the predecessor's in-flight state so active
+            // volume/pitch fades don't snap at the loop boundary.
+            newPlayer.InheritVolumeState(pref.HandoverTrackVolumeCurrent, trackVolume, pref.HandoverAudioTypeVolumeCurrent);
             newPlayer.SetPitch(pitch);
             newPlayer.SetPlaybackData(id, pref);
             newPlayer.Play();

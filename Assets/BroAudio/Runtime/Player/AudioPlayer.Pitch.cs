@@ -41,7 +41,12 @@ namespace Ami.BroAudio.Runtime
         private void SetInitialPitch(IAudioEntity entity, IAudioPlaybackPref audioTypePlaybackPref)
         {
             float pitch;
-            if(!Mathf.Approximately(StaticPitch, AudioConstant.DefaultPitch))
+            if (_pref.HandoverCurrentPitch != 0f)
+            {
+                // Preserve the predecessor's mid-fade pitch so glides don't snap at the loop boundary.
+                pitch = _pref.HandoverCurrentPitch;
+            }
+            else if(!Mathf.Approximately(StaticPitch, AudioConstant.DefaultPitch))
             {
                 pitch = entity.GetRandomValue(StaticPitch, RandomFlag.Pitch);
             }

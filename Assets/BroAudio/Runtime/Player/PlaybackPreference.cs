@@ -16,6 +16,15 @@ namespace Ami.BroAudio.Runtime
         public double ScheduledStartTime { get; set; }
         public double ScheduledEndTime { get; set; }
 
+        // Populated during loop handover to carry the already-selected clip across iterations.
+        // When set, PlayControl reuses it instead of calling PickNewClip() again.
+        public IBroAudioClip PinnedClip { get; set; }
+
+        // Populated during loop handover to transport in-flight fader state to the successor.
+        public float HandoverTrackVolumeCurrent { get; set; }
+        public float HandoverAudioTypeVolumeCurrent { get; set; }
+        public float HandoverCurrentPitch { get; set; }
+
         public PlaybackStage ChainedModeStage
         {
             get => (PlaybackStage)_contextValue;

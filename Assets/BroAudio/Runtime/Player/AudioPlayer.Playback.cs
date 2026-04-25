@@ -84,7 +84,7 @@ namespace Ami.BroAudio.Runtime
             bool isResumingFromPause = _stopMode == StopMode.Pause && HasStartedPlaying;
             if (!isResumingFromPause)
             {
-                _clip = _pref.PickNewClip();
+                _clip = _pref.PinnedClip ?? _pref.PickNewClip();
                 if (_clip == null)
                 {
                     EndPlaying();
@@ -159,6 +159,10 @@ namespace Ami.BroAudio.Runtime
             if (!hasScheduledPlay)
             {
                 StartPlaying(sampleRate);
+                if (isResumingFromPause && _pref.ScheduledEndTime > 0d)
+                {
+                    AudioSource.SetScheduledEndTime(_pref.ScheduledEndTime);
+                }
             }
 
             if (!HasStartedPlaying)
@@ -317,6 +321,19 @@ namespace Ami.BroAudio.Runtime
             {
                 newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
             }
+
+            // For LoopType.Loop, carry the already-selected clip so the successor
+            // reuses it instead of re-running clip selection (which would re-randomise).
+            if (!isEnd && newPref.IsLoop(LoopType.Loop))
+            {
+                newPref.PinnedClip = _clip;
+            }
+
+            // Transport in-flight fader state so the successor can start from where this
+            // player currently is rather than snapping to target values.
+            newPref.HandoverTrackVolumeCurrent = _trackVolume.Current;
+            newPref.HandoverAudioTypeVolumeCurrent = _audioTypeVolume.Current;
+            newPref.HandoverCurrentPitch = AudioSource.pitch;
 
             ClearScheduleEndEvents(); // it should be rescheduled in the new player
             OnPlaybackHandover?.Invoke(ID, _instanceWrapper, newPref, CurrentActiveTrackEffects, _trackVolume.Target, StaticPitch);

@@ -121,6 +121,15 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
+        // Called by SoundManager during loop handover to seed this player's faders from the
+        // predecessor's in-flight state so volume/audio-type fades continue without a snap.
+        internal void InheritVolumeState(float trackVolumeCurrent, float trackVolumeTarget, float audioTypeVolumeCurrent)
+        {
+            _trackVolume.Complete(trackVolumeCurrent, updateBus: false);
+            _trackVolume.SetTarget(trackVolumeTarget);
+            _audioTypeVolume.Complete(audioTypeVolumeCurrent, updateBus: false);
+        }
+
         private void ResetVolume()
         {
             _clipVolume.Complete(DefaultClipVolume, false);

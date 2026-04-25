@@ -63,6 +63,10 @@ namespace Ami.BroAudio.Runtime
             _position = Utility.GloballyPlayedPosition;
             _followTarget = null;
             _contextValue = GetContextValue(entity);
+            PinnedClip = null;
+            HandoverTrackVolumeCurrent = 0;
+            HandoverAudioTypeVolumeCurrent = 0;
+            HandoverCurrentPitch = 0;
         }
 
         public void SetFadeInEase(Ease ease)

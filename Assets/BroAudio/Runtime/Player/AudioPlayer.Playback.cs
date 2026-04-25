@@ -115,6 +115,7 @@ namespace Ami.BroAudio.Runtime
                 AudioTrack = MixerPool.GetTrack(TrackType);
 #endif
 
+                
                 if (IsDominator)
                 {
                     TrackType = AudioTrackType.Dominator;

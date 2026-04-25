@@ -45,6 +45,7 @@ namespace Ami.BroAudio.Runtime
             _instanceWrapper = null;
 
             OnPlaybackHandover = null;
+            _playbackControlCoroutine = null;
             AudioTrack = null;
 
             ID = SoundID.Invalid;

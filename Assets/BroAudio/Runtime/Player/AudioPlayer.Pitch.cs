@@ -27,7 +27,7 @@ namespace Ami.BroAudio.Runtime
                     pitch = Mathf.Clamp(pitch, AudioConstant.MinAudioSourcePitch, AudioConstant.MaxAudioSourcePitch);
                     if (fadeTime > 0f)
                     {
-                        this.StartCoroutineAndReassign(PitchControl(pitch, fadeTime), ref _pitchCoroutine);
+                        this.RestartCoroutine(PitchControl(pitch, fadeTime), ref _pitchCoroutine);
                     }
                     else
                     {

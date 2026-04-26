@@ -22,8 +22,8 @@ namespace Ami.Extension
 		public void StopCoroutine(Coroutine routine) => _mono.CheckNull()?.StopCoroutine(routine);
 		public void StopCoroutine(string methodName) => _mono.CheckNull()?.StopCoroutine(methodName);
 
-		public void StartCoroutineAndReassign(IEnumerator enumerator, ref Coroutine coroutine)
-			=> _mono.CheckNull()?.StartCoroutineAndReassign(enumerator, ref coroutine);
+		public void RestartCoroutine(IEnumerator enumerator, ref Coroutine coroutine)
+			=> _mono.CheckNull()?.RestartCoroutine(enumerator, ref coroutine);
 
 		public void SafeStopCoroutine(Coroutine coroutine) => _mono.CheckNull()?.SafeStopCoroutine(coroutine);
 

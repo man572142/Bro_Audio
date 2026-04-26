@@ -71,9 +71,9 @@ namespace Ami.BroAudio.Runtime
             _coroutineExecutor.SafeStopCoroutine(_coroutine);
         }
 
-        public void StartCoroutineAndReassign(IEnumerator enumerator)
+        public void RestartCoroutine(IEnumerator enumerator)
         {
-            _coroutineExecutor.StartCoroutineAndReassign(enumerator, ref _coroutine);
+            _coroutineExecutor.RestartCoroutine(enumerator, ref _coroutine);
         }
     }
 }

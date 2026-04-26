@@ -51,9 +51,10 @@ namespace Ami.BroAudio.Runtime
                 Debug.LogError(LogTitle + $"Cannot play audio. Invalid ID:{ID} or Entity is null.");
                 return;
             }
+
             try
             {
-                this.StartCoroutineAndReassign(PlayControl(audioTypePref), ref _playbackControlCoroutine);
+                this.RestartCoroutine(PlayControl(audioTypePref), ref _playbackControlCoroutine);
             }
             catch (Exception ex)
             {
@@ -338,7 +339,7 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            this.StartCoroutineAndReassign(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);
+            this.RestartCoroutine(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);
         }
 
         private IEnumerator StopControl(float overrideFade, StopMode stopMode, Action onFinished)

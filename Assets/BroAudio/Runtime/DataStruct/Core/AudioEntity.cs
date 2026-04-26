@@ -57,7 +57,7 @@ namespace Ami.BroAudio.Data
                     break;
 #endif
                 default:
-                    Debug.LogError(Utility.LogTitle + $"Invalid multiclips play mode: {MulticlipsPlayMode}");
+                    Debug.LogError(Utility.LogTitle + $"Invalid play mode: {MulticlipsPlayMode}");
                     EnsureClipSelectionStrategy<SingleClipStrategy>(); 
                     break;
             }

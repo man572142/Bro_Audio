@@ -409,7 +409,8 @@ namespace Ami.BroAudio.Runtime
             return _audioPlayerPool.GetCurrentAudioPlayers();
         }
         #endregion
-
+        
+#if PACKAGE_ADDRESSABLES
         #region Addressable Cleanup
         private WaitForSecondsRealtime _addressableCleanupInterval = null;
         private readonly List<SoundID> _addressableCleanupEntitiesList = new List<SoundID>();
@@ -463,12 +464,10 @@ namespace Ami.BroAudio.Runtime
 
         private void UnloadAddressableEntity(SoundID id)
         {
-#if PACKAGE_ADDRESSABLES
             if (TryGetEntity(id, out var entity) && entity is AudioEntity audioEntity && audioEntity.UseAddressables)
             {
                 audioEntity.ReleaseAllAssets();
             }
-#endif
         }
 
         public void UpdateLoadedEntityLastPlayedTime(SoundID id)
@@ -484,7 +483,7 @@ namespace Ami.BroAudio.Runtime
             }
         }
         #endregion
-
+#endif
 
         [System.Obsolete("Only for backwards compatibility")]
         public bool TryConvertIdToEntity(int id, out AudioEntity entity)

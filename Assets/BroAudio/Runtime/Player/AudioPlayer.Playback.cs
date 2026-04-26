@@ -155,20 +155,12 @@ namespace Ami.BroAudio.Runtime
                 }
 
                 float targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
-                float elapsedTime = 0f;
 
                 #region FadeIn
                 if (_pref.HasFadeIn(_clip.FadeIn, out var fadeIn, out var fadeInEase))
                 {
                     _clipVolume.SetTarget(targetClipVolume);
-                    while (_clipVolume.Update(ref elapsedTime, fadeIn, fadeInEase))
-                    {
-                        yield return null;
-                        if (!OnUpdate())
-                        {
-                            yield break;
-                        }
-                    }
+                yield return Fade(_clipVolume, fadeIn, fadeInEase, _onUpdate);
                 }
                 else
                 {
@@ -184,30 +176,18 @@ namespace Ami.BroAudio.Runtime
 
                 #region FadeOut
                 int endSample = AudioSource.clip.samples - GetSample(sampleRate, _clip.EndPosition);
+            
                 if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
                 {
                     while (endSample - AudioSource.timeSamples > fadeOut * sampleRate)
                     {
                         yield return null;
-                        if (!OnUpdate())
-                        {
-                            yield break;
-                        }
+                    _onUpdate?.Invoke(this);
                     }
 
                     TriggerPlaybackHandover();
                     _clipVolume.SetTarget(0f);
-                    elapsedTime = 0f;
-                    IsFadingOut = true;
-                    while (_clipVolume.Update(ref elapsedTime, fadeOut, fadeOutEase))
-                    {
-                        yield return null;
-                        if (!OnUpdate())
-                        {
-                            yield break;
-                        }
-                    }
-                    IsFadingOut = false;
+                yield return Fade(_clipVolume, fadeOut, fadeOutEase, _onUpdate);
                 }
                 else
                 {
@@ -215,10 +195,7 @@ namespace Ami.BroAudio.Runtime
                     while (!HasEndPlaying(ref hasPlayed, endSample, sampleRate))
                     {
                         yield return null;
-                        if (!OnUpdate())
-                        {
-                            yield break;
-                        }
+                    _onUpdate?.Invoke(this);
                     }
                     TriggerPlaybackHandover();
                 }
@@ -366,10 +343,10 @@ namespace Ami.BroAudio.Runtime
             #region FadeOut
             if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
             {
-                if (IsFadingOut)
+                if (_clipVolume.IsFadingOut)
                 {
                     // if it's fading out. then don't stop. just wait for it
-                    AudioClip clip = AudioSource.clip;
+                    var clip = AudioSource.clip;
                     float endSample = clip.samples - (_clip.EndPosition * clip.frequency);
                     while (AudioSource.timeSamples < endSample)
                     {
@@ -382,16 +359,8 @@ namespace Ami.BroAudio.Runtime
                 }
                 else
                 {
-                    float elapsedTime = 0f;
                     _clipVolume.SetTarget(0f);
-                    while (_clipVolume.Update(ref elapsedTime, fadeOut, fadeOutEase))
-                    {
-                        yield return null;
-                        if (!OnUpdate())
-                        {
-                            yield break;
-                        }
-                    }
+                    yield return Fade(_clipVolume, fadeOut, fadeOutEase, _onUpdate);
                 }
             }
             #endregion
@@ -423,7 +392,6 @@ namespace Ami.BroAudio.Runtime
             PlaybackStartingTime = 0;
             _stopMode = default;
             _pref = default;
-            IsFadingOut = false;
             IsStopping = false;
             ResetVolume();
             ResetPitch();

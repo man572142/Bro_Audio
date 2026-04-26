@@ -16,7 +16,9 @@ namespace Ami.BroAudio.Runtime
 
         public float Current { get; private set; }
         public float Target { get; private set; }
-        public bool IsFading => !Mathf.Approximately(Current,Target);
+        public bool IsFading => IsFadingIn || IsFadingOut;
+        public bool IsFadingIn => Current < Target && _coroutine != null;
+        public bool IsFadingOut => Current > Target && _coroutine != null;
 
         private MonoBehaviour _coroutineExecutor => SoundManager.Instance;
 
@@ -47,7 +49,7 @@ namespace Ami.BroAudio.Runtime
 
         public bool Update(ref float elapsedTime, float fadeTime, Ease ease)
         {
-            if(fadeTime <= 0f || _origin == Target)
+            if(fadeTime <= 0f || Mathf.Approximately(_origin, Target))
             {
                 Current = Target;
                 return false;

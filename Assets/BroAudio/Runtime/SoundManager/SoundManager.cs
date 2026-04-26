@@ -219,7 +219,7 @@ namespace Ami.BroAudio.Runtime
 
                 if(fadeTime != 0f)
                 {
-                    this.StartCoroutineAndReassign(SetMasterVolume(currentVol, targetVol, fadeTime), ref _masterVolumeCoroutine);
+                    this.RestartCoroutine(SetMasterVolume(currentVol, targetVol, fadeTime), ref _masterVolumeCoroutine);
                 }
                 else
                 {

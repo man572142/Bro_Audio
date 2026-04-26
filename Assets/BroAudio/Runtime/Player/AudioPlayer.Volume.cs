@@ -101,7 +101,7 @@ namespace Ami.BroAudio.Runtime
             if (fadeTime > 0f)
             {
                 Ease ease = module.Current < vol ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
-                module.StartCoroutineAndReassign(Fade(module, fadeTime, ease));
+                module.RestartCoroutine(Fade(module, fadeTime, ease));
             }
             else
             {

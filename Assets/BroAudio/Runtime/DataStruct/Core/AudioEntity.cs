@@ -50,8 +50,14 @@ namespace Ami.BroAudio.Data
                 case MulticlipsPlayMode.Shuffle: EnsureClipSelectionStrategy<ShuffleClipStrategy>(); break;
                 case MulticlipsPlayMode.Chained: EnsureClipSelectionStrategy<ChainedClipStrategy>(); break;
                 case MulticlipsPlayMode.Velocity: EnsureClipSelectionStrategy<VelocityClipStrategy>(); break;
-                default: 
-                    Debug.LogError(Utility.LogTitle + $"Invalid multiclips play mode: {MulticlipsPlayMode}");
+#if PACKAGE_LOCALIZATION
+                case MulticlipsPlayMode.Localization:
+                    EnsureClipSelectionStrategy<LocalizationClipStrategy>();
+                    ((LocalizationClipStrategy)_clipSelectionStrategy).Inject(_localizationTable, _localizationEntry, Name);
+                    break;
+#endif
+                default:
+                    Debug.LogError(Utility.LogTitle + $"Invalid play mode: {MulticlipsPlayMode}");
                     EnsureClipSelectionStrategy<SingleClipStrategy>(); 
                     break;
             }

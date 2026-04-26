@@ -45,10 +45,11 @@ namespace Ami.BroAudio.Runtime
 
         private void PlayInternal()
         {
-            if (!ID.IsValid() || _pref.Entity == null
-                       || !SoundManager.Instance.TryGetAudioTypePref(ID.ToAudioType(), out var audioTypePref))
+            if (!ValidatePlayback(ID.IsValid() && _pref.Entity != null, $"Cannot play audio. Invalid ID:{ID} or Entity is null.") ||
+                !ValidatePlayback(SoundManager.Instance.TryGetAudioTypePref(ID.ToAudioType(), out var audioTypePref), $"Cannot play audio. Failed to get audio type preference for {ID.ToAudioType()}.") ||
+                !ValidatePlayback(!HasStartedPlaying, "Audio Player wasn't cleaned up correctly"))
             {
-                Debug.LogError(LogTitle + $"Cannot play audio. Invalid ID:{ID} or Entity is null.");
+                EndPlaying();
                 return;
             }
 
@@ -58,7 +59,6 @@ namespace Ami.BroAudio.Runtime
             }
             catch (Exception ex)
             {
-                ClearEvents();
                 EndPlaying();
                 Debug.LogException(ex);
             }
@@ -96,6 +96,11 @@ namespace Ami.BroAudio.Runtime
 
                 var audioClip = _clip.GetAudioClip();
                 sampleRate = audioClip.frequency;
+            if (!ValidatePlayback(audioClip != null, $"Audio Clip is not assigned in {ID}"))
+            {
+                EndPlaying();
+                yield break;
+            }
                 AudioSource.clip = audioClip;
                 AudioSource.priority = _pref.Entity.Priority;
 
@@ -285,6 +290,15 @@ namespace Ami.BroAudio.Runtime
             OnPlaybackHandover?.Invoke(ID, _instanceWrapper, newPref, CurrentActiveTrackEffects, _trackVolume.Target, StaticPitch);
             OnPlaybackHandover = null;
             _instanceWrapper = null; // the instance has been transferred to the new player
+        }
+
+        private static bool ValidatePlayback(bool condition, string message, UnityEngine.Object context = null)
+        {
+            if (!condition)
+            {
+                Debug.LogError(LogTitle + message, context);
+            }
+            return condition;
         }
 
         #region Stop Overloads

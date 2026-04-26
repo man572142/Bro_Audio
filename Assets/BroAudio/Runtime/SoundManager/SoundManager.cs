@@ -67,9 +67,8 @@ namespace Ami.BroAudio.Runtime
 
         [System.Obsolete("Only for backwards compatibility")]
         [SerializeField] BroAudioData _data = null;
-
-        //private Dictionary<int, IAudioEntity> _audioBank = new Dictionary<int, IAudioEntity>();
-        private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
+        
+        private Dictionary<BroAudioType, AudioTypePlaybackPreference> _audioTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
         private EffectAutomationHelper _dominatorAutomationHelper = null;
         private Dictionary<SoundID, AudioPlayer> _combFilteringPreventer = null;
@@ -139,7 +138,7 @@ namespace Ami.BroAudio.Runtime
         #region InitBank
         private void InitBank()
         {
-            ForeachConcreteAudioType(new PlaybackPrefInitializer() { AudioTypePref = _auidoTypePref });
+            ForeachConcreteAudioType(new PlaybackPrefInitializer() { AudioTypePref = _audioTypePref });
         }
         #endregion
 
@@ -345,7 +344,7 @@ namespace Ami.BroAudio.Runtime
         public bool TryGetAudioTypePref(BroAudioType audioType, out IAudioPlaybackPref result)
         {
             result = null;
-            if (_auidoTypePref.TryGetValue(audioType, out var typePref))
+            if (_audioTypePref.TryGetValue(audioType, out var typePref))
             {
                 result = typePref;
             }
@@ -390,7 +389,7 @@ namespace Ami.BroAudio.Runtime
             var setter = new PlaybackPrefSetter<TParameter>()
             {
                 TargetType = targetType,
-                AudioTypePref = _auidoTypePref,
+                AudioTypePref = _audioTypePref,
                 OnModifyPref = onModifyPref,
                 Parameter = parameter,
             };

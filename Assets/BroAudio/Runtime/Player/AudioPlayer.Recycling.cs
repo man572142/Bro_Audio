@@ -24,6 +24,7 @@ namespace Ami.BroAudio.Runtime
             DestroyAudioFilterReader();
             DestroyAddedEffectComponents();
             ClearEvents();
+            this.SafeStopCoroutine(_playbackControlCoroutine);
 
             if (TryGetMixerAndTrack(out _, out var track))
             {

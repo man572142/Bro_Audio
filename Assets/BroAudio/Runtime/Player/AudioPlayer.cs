@@ -36,7 +36,6 @@ namespace Ami.BroAudio.Runtime
         public bool IsPlaying => AudioSource.isPlaying;
         public Vector3 PlayingPosition => _pref.Position;
         public bool IsStopping { get; private set; }
-        public bool IsFadingOut { get; private set; }
         public EffectType CurrentActiveTrackEffects { get; private set; } = EffectType.None;
         public bool IsUsingTrackEffect => CurrentActiveTrackEffects != EffectType.None;
         public bool IsDominator => HasDecoratorOf<DominatorPlayer>();

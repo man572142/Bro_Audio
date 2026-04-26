@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Ami.Extension;
 using UnityEngine;
@@ -33,7 +34,7 @@ namespace Ami.BroAudio.Runtime
         /// </summary>
         private bool TryGetMixerDecibelVolume(out float vol)
         {
-            if (_mixerDecibelVolume == UnSetMixerDecibelVolume && TryGetMixerAndTrack(out var mixer, out _)
+            if (Mathf.Approximately(_mixerDecibelVolume, UnSetMixerDecibelVolume) && TryGetMixerAndTrack(out var mixer, out _)
                 && mixer.SafeGetFloat(VolumeParaName, out float currentVol))
             {
                 _mixerDecibelVolume = currentVol;
@@ -109,12 +110,13 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        private IEnumerator Fade(Fader volume, float fadeTime, Ease ease)
+        private IEnumerator Fade(Fader volume, float fadeTime, Ease ease, Action<IAudioPlayer> onUpdate = null)
         {
             float elapsedTime = 0f;
             while (volume.Update(ref elapsedTime, fadeTime, ease))
             {
                 yield return null;
+                onUpdate?.Invoke(this);
             }
         }
 

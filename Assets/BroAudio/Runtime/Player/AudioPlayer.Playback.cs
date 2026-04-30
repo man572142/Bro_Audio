@@ -29,10 +29,11 @@ namespace Ami.BroAudio.Runtime
         public bool HasStartedPlaying => PlaybackStartingTime > 0;
         private bool IsOnHold => _stopMode == StopMode.Pause && !HasStartedPlaying;
 
-        public void SetPlaybackData(SoundID id, PlaybackPreference pref)
+        public void SetPlaybackData(SoundID id, PlaybackPreference pref, IBroAudioClip clip = null)
         {
             ID = id;
             _pref = pref;
+            _clip = clip;
         }
 
         public void Play()
@@ -73,13 +74,14 @@ namespace Ami.BroAudio.Runtime
                 _audioTypeVolume.Complete(audioTypePref.Volume, false);
             }
             _clipVolume.Complete(0f, false);
-            _clip ??= _pref.PickNewClip();
+            _clip ??= _pref.PickNewClip(); // TODO: Add change clip for each loop option
             if (_clip == null)
             {
                 EndPlaying();
                 yield break;
             }
 
+            // TODO: don't do this every loop?
             SetClipDelayIfNotScheduled();
 #if PACKAGE_ADDRESSABLES
             if (_clip is BroAudioClip broAudioClip && broAudioClip.IsAddressablesAvailable() && !broAudioClip.IsLoaded)
@@ -121,7 +123,9 @@ namespace Ami.BroAudio.Runtime
 
             bool hasLoop = _pref.Entity.HasLoop(out _, out _);
             double dspTime = AudioSettings.dspTime;
-            double endDspTime = _pref.ScheduledEndTime <= 0 ? dspTime + _clip.GetDuration() : _pref.ScheduledEndTime;
+            float pitch = AudioSource.pitch;
+            double pitchAdjustedDuration = Mathf.Approximately(pitch, 0f) ? _clip.GetDuration() : _clip.GetDuration() / pitch;
+            double endDspTime = _pref.ScheduledEndTime <= 0 ? dspTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
             if (hasLoop && _pref.ScheduledStartTime <= 0)
             {
                 // TODO: might need a warmup time?
@@ -244,7 +248,9 @@ namespace Ami.BroAudio.Runtime
                 newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
             }
             newPref.ScheduledStartTime = endDspTime;
-            newPref.ScheduledEndTime = endDspTime + _clip.GetDuration();
+            float nextPitch = AudioSource.pitch;
+            double nextPitchAdjustedDuration = Mathf.Approximately(nextPitch, 0f) ? _clip.GetDuration() : _clip.GetDuration() / nextPitch;
+            newPref.ScheduledEndTime = endDspTime + nextPitchAdjustedDuration;
             // TODO: calculate the real warmup time
             while (AudioSettings.dspTime < endDspTime - 0.1)
             {
@@ -254,6 +260,7 @@ namespace Ami.BroAudio.Runtime
             {
                 ID = ID,
                 Pref = newPref,
+                Clip = newPref.IsChainedMode() ? null : _clip,
                 PreviousTrackEffect = CurrentActiveTrackEffects,
                 TrackVolume = _trackVolume.Target,
                 Pitch = StaticPitch,
@@ -280,7 +287,7 @@ namespace Ami.BroAudio.Runtime
 
         internal void ReceiveHandover(PlaybackHandoverData data)
         {
-            SetPlaybackData(data.ID, data.Pref);
+            SetPlaybackData(data.ID, data.Pref, data.Clip);
             SetVolumeInternal(_trackVolume, data.TrackVolume, 0f);
             this.SetPitch(data.Pitch);
             PlayInternal();

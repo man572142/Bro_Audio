@@ -51,6 +51,12 @@ namespace Ami.BroAudio
             return (int)(sampleRate * seconds);
         }
 
+        public static float GetDuration(this IBroAudioClip clip)
+        {
+            var audioClip = clip.GetAudioClip();
+            return audioClip != null ?  audioClip.length - clip.StartPosition - clip.EndPosition : 0f;
+        }
+
         public static bool IsDefaultCurve(this AnimationCurve curve , float defaultValue)
         {
             if(curve == null || curve.length == 0)

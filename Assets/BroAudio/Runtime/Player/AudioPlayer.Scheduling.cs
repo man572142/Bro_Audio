@@ -7,17 +7,15 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource))]
     public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
-        private float _timeBeforeStartSchedule = 0f;
+        private double _timeBeforeStartSchedule;
 
-        private void SchedulePlayback(out bool hasScheduledPlay)
+        private void SchedulePlayback()
         {
-            hasScheduledPlay = false;
             if (_pref.ScheduledStartTime > 0d) // Scheduled has higher priority than clip.delay
             {
                 var dspTime = AudioSettings.dspTime;
                 AudioSource.PlayScheduled(System.Math.Max(_pref.ScheduledStartTime, dspTime));
-                _timeBeforeStartSchedule = (float)(_pref.ScheduledStartTime - AudioSettings.dspTime);
-                hasScheduledPlay = true;
+                _timeBeforeStartSchedule = _pref.ScheduledStartTime - dspTime;
             }
 
             if (_pref.ScheduledEndTime > 0d)
@@ -31,7 +29,7 @@ namespace Ami.BroAudio.Runtime
             if (_pref.ScheduledStartTime > 0d)
             {
                 // Recalculate the time when WaitForScheduledStartTime() is already running
-                _timeBeforeStartSchedule += (float)(dspTime - _pref.ScheduledStartTime);
+                _timeBeforeStartSchedule += dspTime - _pref.ScheduledStartTime;
             }
             _pref.ScheduledStartTime = dspTime;
 

@@ -25,6 +25,9 @@ namespace Ami.BroAudio.Runtime
             DestroyAddedEffectComponents();
             ClearEvents();
             this.SafeStopCoroutine(_playbackControlCoroutine);
+            this.SafeStopCoroutine(_nextPlaybackSchedulingCoroutine);
+            _playbackControlCoroutine = null;
+            _nextPlaybackSchedulingCoroutine = null;
 
             if (TryGetMixerAndTrack(out _, out var track))
             {
@@ -45,7 +48,7 @@ namespace Ami.BroAudio.Runtime
             _instanceWrapper?.Recycle();
             _instanceWrapper = null;
 
-            OnPlaybackHandover = null;
+            OnScheduleNextPlayback = null;
             AudioTrack = null;
 
             ID = SoundID.Invalid;

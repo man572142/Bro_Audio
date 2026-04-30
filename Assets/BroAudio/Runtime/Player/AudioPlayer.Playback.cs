@@ -29,11 +29,10 @@ namespace Ami.BroAudio.Runtime
         public bool HasStartedPlaying => PlaybackStartingTime > 0;
         private bool IsOnHold => _stopMode == StopMode.Pause && !HasStartedPlaying;
 
-        public void SetPlaybackData(SoundID id, PlaybackPreference pref, IBroAudioClip clip = null)
+        public void SetPlaybackData(SoundID id, PlaybackPreference pref)
         {
             ID = id;
             _pref = pref;
-            _clip = clip;
         }
 
         public void Play()
@@ -74,33 +73,32 @@ namespace Ami.BroAudio.Runtime
                 _audioTypeVolume.Complete(audioTypePref.Volume, false);
             }
             _clipVolume.Complete(0f, false);
-            _clip ??= _pref.PickNewClip(); // TODO: Add change clip for each loop option
+            _clip ??= _pref.PickNewClip();
             if (_clip == null)
             {
                 EndPlaying();
                 yield break;
             }
 
-            // TODO: don't do this every loop?
             SetClipDelayIfNotScheduled();
 #if PACKAGE_ADDRESSABLES
-                if (_clip is BroAudioClip broAudioClip && broAudioClip.IsAddressablesAvailable() && !broAudioClip.IsLoaded)
+            if (_clip is BroAudioClip broAudioClip && broAudioClip.IsAddressablesAvailable() && !broAudioClip.IsLoaded)
+            {
+                if (!SoundManager.Instance.Setting.AutomaticallyLoadAddressableAudioClips)
                 {
-                    if (!SoundManager.Instance.Setting.AutomaticallyLoadAddressableAudioClips)
-                    {
-                        LogNotPreloadedMessage(broAudioClip);
-                    }
-                    yield return WaitForAddressablesToLoad(broAudioClip);
+                    LogNotPreloadedMessage(broAudioClip);
                 }
+                yield return WaitForAddressablesToLoad(broAudioClip);
+            }
 #endif
-            
+
             var audioClip = _clip.GetAudioClip();
             if (!ValidatePlayback(audioClip != null, $"Audio Clip is not assigned in {ID}"))
             {
                 EndPlaying();
                 yield break;
             }
-            
+
             int sampleRate = audioClip.frequency;
             AudioSource.clip = audioClip;
             AudioSource.priority = _pref.Entity.Priority;
@@ -120,12 +118,13 @@ namespace Ami.BroAudio.Runtime
             {
                 SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
             }
-            
+
+            bool hasLoop = _pref.Entity.HasLoop(out _, out _);
             double dspTime = AudioSettings.dspTime;
             double endDspTime = _pref.ScheduledEndTime <= 0 ? dspTime + _clip.GetDuration() : _pref.ScheduledEndTime;
-            if (_pref.Entity.HasLoop(out _, out _) && _pref.ScheduledStartTime <= 0)
+            if (hasLoop && _pref.ScheduledStartTime <= 0)
             {
-                // TODO: might need a warmup time? 
+                // TODO: might need a warmup time?
                 _pref.ScheduledStartTime = dspTime;
                 _pref.ScheduledEndTime = endDspTime;
             }
@@ -171,17 +170,16 @@ namespace Ami.BroAudio.Runtime
                 _clipVolume.Complete(targetClipVolume);
             }
 
-            if (_pref.Entity.HasLoop(out _, out _) || CanLoopIfIsChainedMode())
+            if (hasLoop || CanLoopIfIsChainedMode())
             {
                 if (_pref.IsLoop(LoopType.SeamlessLoop))
                 {
-                    _pref.ScheduledStartTime = 0d; // TODO: why
+                    _pref.ScheduledStartTime = 0d;
                     _pref.ApplySeamlessFade();
                 }
                 this.RestartCoroutine(ScheduleNextPlayback(endDspTime), ref _nextPlaybackSchedulingCoroutine);
             }
-            
-            // TODO: wtf is this?
+
             if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
             {
                 double fadeOutDSPTime = endDspTime - fadeOut;
@@ -205,8 +203,6 @@ namespace Ami.BroAudio.Runtime
                 TriggerPlaybackHandover();
             }
             EndPlaying();
-            
-            int GetSample(float time) => Utility.GetSample(sampleRate, time);
         }
 
         private void StartPlaying()
@@ -237,7 +233,7 @@ namespace Ami.BroAudio.Runtime
         
         private IEnumerator ScheduleNextPlayback(double endDspTime, bool isEnd = false)
         {
-            if ((isEnd && !_pref.CanHandoverToEnd()) || (!isEnd && !_pref.CanHandoverToLoop()))
+            if (!CanHandover(isEnd))
             {
                 yield break;
             }
@@ -258,9 +254,8 @@ namespace Ami.BroAudio.Runtime
             {
                 ID = ID,
                 Pref = newPref,
-                Clip = _clip, 
                 PreviousTrackEffect = CurrentActiveTrackEffects,
-                TrackVolume = _trackVolume.Target, 
+                TrackVolume = _trackVolume.Target,
                 Pitch = StaticPitch,
             };
             _nextPlayer = OnScheduleNextPlayback?.Invoke(data);
@@ -269,24 +264,21 @@ namespace Ami.BroAudio.Runtime
 
         private void TriggerPlaybackHandover(bool isEnd = false)
         {
-            if ((isEnd && !_pref.CanHandoverToEnd()) || (!isEnd && !_pref.CanHandoverToLoop()))
+            if (!CanHandover(isEnd))
             {
                 return;
             }
 
-            var newPref = _pref;
-            if (newPref.IsChainedMode())
-            {
-                newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
-            }
-
-            ClearScheduleEndEvents(); // it should be rescheduled in the new player
+            ClearScheduleEndEvents();
             _instanceWrapper.UpdateInstance(_nextPlayer);
             _nextPlayer.SetInstanceWrapper(_instanceWrapper);
-            _instanceWrapper = null; // the instance has been transferred to the new player
+            _instanceWrapper = null;
         }
 
-        public void ReceiveHandover(PlaybackHandoverData data)
+        private bool CanHandover(bool isEnd) =>
+            isEnd ? _pref.CanHandoverToEnd() : _pref.CanHandoverToLoop();
+
+        internal void ReceiveHandover(PlaybackHandoverData data)
         {
             SetPlaybackData(data.ID, data.Pref);
             SetVolumeInternal(_trackVolume, data.TrackVolume, 0f);
@@ -441,7 +433,7 @@ namespace Ami.BroAudio.Runtime
 
         private bool CanLoopIfIsChainedMode()
         {
-            return !_pref.IsChainedMode() || (_pref.IsChainedMode() && _pref.ChainedModeStage == PlaybackStage.Loop);
+            return !_pref.IsChainedMode() || _pref.ChainedModeStage == PlaybackStage.Loop;
         }
 
         public IAudioPlayer OnEnd(Action<SoundID> onEnd)

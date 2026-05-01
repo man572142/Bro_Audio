@@ -81,7 +81,6 @@ namespace Ami.BroAudio.Runtime
                 yield break;
             }
 
-            // TODO: don't do this every loop?
             SetClipDelayIfNotScheduled();
 #if PACKAGE_ADDRESSABLES
             if (_clip is BroAudioClip broAudioClip && broAudioClip.IsAddressablesAvailable() && !broAudioClip.IsLoaded)

@@ -246,10 +246,19 @@ namespace Ami.BroAudio.Runtime
             {
                 newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
             }
-            newPref.ScheduledStartTime = endDspTime;
             float pitch = AudioSource.pitch;
             double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), pitch);
-            newPref.ScheduledEndTime = endDspTime + pitchAdjustedDuration;
+            if (_pref.IsLoop(LoopType.SeamlessLoop) && newPref.HasFadeOut(_clip.FadeOut, out float fadeOut, out _))
+            {
+                double fadeOutDspTime = endDspTime - fadeOut;
+                newPref.ScheduledStartTime = fadeOutDspTime;
+                newPref.ScheduledEndTime = fadeOutDspTime + pitchAdjustedDuration;
+            }
+            else
+            {
+                newPref.ScheduledStartTime = endDspTime;
+                newPref.ScheduledEndTime = endDspTime + pitchAdjustedDuration;
+            }
             // TODO: calculate the real warmup time
             while (AudioSettings.dspTime < endDspTime - 0.1)
             {
@@ -259,7 +268,7 @@ namespace Ami.BroAudio.Runtime
             {
                 ID = ID,
                 Pref = newPref,
-                Clip = newPref.IsChainedMode() ? null : _clip,
+                Clip = (newPref.IsChainedMode() && newPref.ChainedModeStage != PlaybackStage.Loop) ? null : _clip,
                 TrackEffect = CurrentActiveTrackEffects,
                 TrackVolume = _trackVolume.Target,
                 Pitch = StaticPitch,

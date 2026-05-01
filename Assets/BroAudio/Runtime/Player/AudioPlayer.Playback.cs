@@ -10,14 +10,14 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource))]
     public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
-        public delegate AudioPlayer NextPlaybackSchedule(PlaybackHandoverData data);
+        public delegate AudioPlayer HandoverPlayerFactory(PlaybackHandoverData handover);
 
-        public NextPlaybackSchedule OnScheduleNextPlayback;
+        public HandoverPlayerFactory RequestNextPlayer;
 
         private PlaybackPreference _pref;
         private StopMode _stopMode;
         private Coroutine _playbackControlCoroutine = null;
-        private Coroutine _nextPlaybackSchedulingCoroutine = null;
+        private Coroutine _handoverScheduleCoroutine = null;
         private AudioPlayer _nextPlayer;
 
         private event Action<SoundID> _onEnd = null;
@@ -124,7 +124,7 @@ namespace Ami.BroAudio.Runtime
             bool hasLoop = _pref.Entity.HasLoop(out _, out _);
             double dspTime = AudioSettings.dspTime;
             float pitch = AudioSource.pitch;
-            double pitchAdjustedDuration = Mathf.Approximately(pitch, 0f) ? _clip.GetDuration() : _clip.GetDuration() / pitch;
+            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), pitch);
             double endDspTime = _pref.ScheduledEndTime <= 0 ? dspTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
             if (hasLoop && _pref.ScheduledStartTime <= 0)
             {
@@ -134,7 +134,7 @@ namespace Ami.BroAudio.Runtime
             }
 
             SchedulePlayback();
-            if (_timeBeforeStartSchedule > 0)
+            if (_secondsUntilScheduledStart > 0)
             {
                 yield return WaitForScheduledStartTime();
             }
@@ -181,19 +181,19 @@ namespace Ami.BroAudio.Runtime
                     _pref.ScheduledStartTime = 0d;
                     _pref.ApplySeamlessFade();
                 }
-                this.RestartCoroutine(ScheduleNextPlayback(endDspTime), ref _nextPlaybackSchedulingCoroutine);
+                this.RestartCoroutine(ScheduleNextPlayback(endDspTime), ref _handoverScheduleCoroutine);
             }
 
             if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
             {
-                double fadeOutDSPTime = endDspTime - fadeOut;
-                while (AudioSettings.dspTime < fadeOutDSPTime)
+                double fadeOutDspTime = endDspTime - fadeOut;
+                while (AudioSettings.dspTime < fadeOutDspTime)
                 {
                     yield return null;
                     _onUpdate?.Invoke(this);
                 }
 
-                TriggerPlaybackHandover();
+                BeginHandover();
                 _clipVolume.SetTarget(0f);
                 yield return Fade(_clipVolume, fadeOut, fadeOutEase, _onUpdate);
             }
@@ -204,7 +204,7 @@ namespace Ami.BroAudio.Runtime
                     yield return null;
                     _onUpdate?.Invoke(this);
                 }
-                TriggerPlaybackHandover();
+                BeginHandover();
             }
             EndPlaying();
         }
@@ -248,28 +248,28 @@ namespace Ami.BroAudio.Runtime
                 newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
             }
             newPref.ScheduledStartTime = endDspTime;
-            float nextPitch = AudioSource.pitch;
-            double nextPitchAdjustedDuration = Mathf.Approximately(nextPitch, 0f) ? _clip.GetDuration() : _clip.GetDuration() / nextPitch;
-            newPref.ScheduledEndTime = endDspTime + nextPitchAdjustedDuration;
+            float pitch = AudioSource.pitch;
+            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), pitch);
+            newPref.ScheduledEndTime = endDspTime + pitchAdjustedDuration;
             // TODO: calculate the real warmup time
             while (AudioSettings.dspTime < endDspTime - 0.1)
             {
                 yield return null;
             }
-            var data = new PlaybackHandoverData()
+            var handover = new PlaybackHandoverData()
             {
                 ID = ID,
                 Pref = newPref,
                 Clip = newPref.IsChainedMode() ? null : _clip,
-                PreviousTrackEffect = CurrentActiveTrackEffects,
+                TrackEffect = CurrentActiveTrackEffects,
                 TrackVolume = _trackVolume.Target,
                 Pitch = StaticPitch,
             };
-            _nextPlayer = OnScheduleNextPlayback?.Invoke(data);
-            OnScheduleNextPlayback = null;
+            _nextPlayer = RequestNextPlayer?.Invoke(handover);
+            RequestNextPlayer = null;
         }
 
-        private void TriggerPlaybackHandover(bool isEnd = false)
+        private void BeginHandover(bool isEnd = false)
         {
             if (!CanHandover(isEnd))
             {
@@ -285,14 +285,17 @@ namespace Ami.BroAudio.Runtime
         private bool CanHandover(bool isEnd) =>
             isEnd ? _pref.CanHandoverToEnd() : _pref.CanHandoverToLoop();
 
-        internal void ReceiveHandover(PlaybackHandoverData data)
+        private static double PitchAdjusted(double duration, float pitch) =>
+            Mathf.Approximately(pitch, 0f) ? duration : duration / pitch;
+
+        internal void ReceiveHandover(PlaybackHandoverData handover)
         {
-            SetPlaybackData(data.ID, data.Pref, data.Clip);
-            SetVolumeInternal(_trackVolume, data.TrackVolume, 0f);
-            this.SetPitch(data.Pitch);
+            SetPlaybackData(handover.ID, handover.Pref, handover.Clip);
+            SetVolumeInternal(_trackVolume, handover.TrackVolume, 0f);
+            this.SetPitch(handover.Pitch);
             PlayInternal();
 #if !UNITY_WEBGL
-            SetTrackEffect(data.PreviousTrackEffect, SetEffectMode.Override);
+            SetTrackEffect(handover.TrackEffect, SetEffectMode.Override);
 #endif
         }
 
@@ -366,7 +369,7 @@ namespace Ami.BroAudio.Runtime
             IsStopping = true;
             _pref.SetNextFadeOut(overrideFade);
 
-            TriggerPlaybackHandover(isEnd: true);
+            BeginHandover(isEnd: true);
             #region FadeOut
             if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
             {

@@ -51,7 +51,7 @@ namespace Ami.BroAudio
             return (int)(sampleRate * seconds);
         }
 
-        public static double GetDuration(this IBroAudioClip clip)
+        public static double GetPlayableDuration(this IBroAudioClip clip)
         {
             var audioClip = clip.GetAudioClip();
             return audioClip != null ? audioClip.GetPreciseLength() - clip.StartPosition - clip.EndPosition : 0d;

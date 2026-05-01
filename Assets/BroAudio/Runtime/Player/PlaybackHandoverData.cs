@@ -7,7 +7,7 @@ namespace Ami.BroAudio.Runtime
         public SoundID ID;
         public PlaybackPreference Pref;
         public IBroAudioClip Clip;
-        public EffectType PreviousTrackEffect;
+        public EffectType TrackEffect;
         public float TrackVolume;
         public float Pitch;
     }

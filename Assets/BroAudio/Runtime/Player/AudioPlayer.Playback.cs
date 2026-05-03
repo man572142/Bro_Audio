@@ -119,13 +119,12 @@ namespace Ami.BroAudio.Runtime
             {
                 SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
             }
-
-            bool hasLoop = _pref.Entity.HasLoop(out _, out _);
+            
             double dspTime = AudioSettings.dspTime;
             float pitch = AudioSource.pitch;
             double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), pitch);
             double endDspTime = _pref.ScheduledEndTime <= 0 ? dspTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
-            if (hasLoop && _pref.ScheduledStartTime <= 0)
+            if (_pref.HasLoop() && _pref.ScheduledStartTime <= 0)
             {
                 // TODO: might need a warmup time?
                 _pref.ScheduledStartTime = dspTime;
@@ -173,13 +172,13 @@ namespace Ami.BroAudio.Runtime
                 _clipVolume.Complete(targetClipVolume);
             }
 
-            if (hasLoop || CanLoopIfIsChainedMode())
+            if (_pref.CanHandoverToLoop())
             {
                 if (_pref.IsLoop(LoopType.SeamlessLoop))
                 {
-                    _pref.ScheduledStartTime = 0d;
                     _pref.ApplySeamlessFade();
                 }
+
                 this.RestartCoroutine(ScheduleNextPlayback(endDspTime), ref _handoverScheduleCoroutine);
             }
 
@@ -236,18 +235,13 @@ namespace Ami.BroAudio.Runtime
         
         private IEnumerator ScheduleNextPlayback(double endDspTime, bool isEnd = false)
         {
-            if (!CanHandover(isEnd))
-            {
-                yield break;
-            }
-
             var newPref = _pref;
             if (newPref.IsChainedMode())
             {
                 newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
             }
-            float pitch = AudioSource.pitch;
-            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), pitch);
+            
+            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
             if (_pref.IsLoop(LoopType.SeamlessLoop) && newPref.HasFadeOut(_clip.FadeOut, out float fadeOut, out _))
             {
                 double fadeOutDspTime = endDspTime - fadeOut;
@@ -260,7 +254,7 @@ namespace Ami.BroAudio.Runtime
                 newPref.ScheduledEndTime = endDspTime + pitchAdjustedDuration;
             }
             // TODO: calculate the real warmup time
-            while (AudioSettings.dspTime < endDspTime - 0.1)
+            while (AudioSettings.dspTime < newPref.ScheduledStartTime - 0.1)
             {
                 yield return null;
             }
@@ -290,7 +284,7 @@ namespace Ami.BroAudio.Runtime
             _instanceWrapper = null;
         }
 
-        private bool CanHandover(bool isEnd) =>
+        private bool CanHandover(bool isEnd = false) =>
             isEnd ? _pref.CanHandoverToEnd() : _pref.CanHandoverToLoop();
 
         private static double PitchAdjusted(double duration, float pitch) =>

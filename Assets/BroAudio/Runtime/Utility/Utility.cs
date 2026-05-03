@@ -63,7 +63,7 @@ namespace Ami.BroAudio
             {
                 return true;
             }
-            else if(curve.length == 1 && curve[0].value == defaultValue)
+            else if(curve.length == 1 && Mathf.Approximately(curve[0].value, defaultValue))
             {
                 return true;
             }

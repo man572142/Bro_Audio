@@ -123,11 +123,16 @@ namespace Ami.BroAudio.Runtime
             double dspTime = AudioSettings.dspTime;
             float pitch = AudioSource.pitch;
             double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), pitch);
-            double endDspTime = _pref.ScheduledEndTime <= 0 ? dspTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
+            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : dspTime;
+            double endDspTime = _pref.ScheduledEndTime <= 0 ? startBaseTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
             if (_pref.HasLoop() && _pref.ScheduledStartTime <= 0)
             {
                 // TODO: might need a warmup time?
                 _pref.ScheduledStartTime = dspTime;
+                _pref.ScheduledEndTime = endDspTime;
+            }
+            else if (_pref.ScheduledStartTime > 0 && _pref.ScheduledEndTime <= 0)
+            {
                 _pref.ScheduledEndTime = endDspTime;
             }
 
@@ -241,18 +246,25 @@ namespace Ami.BroAudio.Runtime
                 newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
             }
             
-            // TODO: it should be set in the new player, as it might pick a new clip!
-            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
+            bool needNewClip = _pref.IsChainedMode() && (isEnd || _pref.ChainedModeStage == PlaybackStage.Start);
+            // Reset so the new player can recalculate against its picked clip's duration.
+            newPref.ScheduledEndTime = 0;
             if (!isEnd && _pref.IsLoop(LoopType.SeamlessLoop) && newPref.HasFadeOut(_clip.FadeOut, out float fadeOut, out _))
             {
                 double fadeOutDspTime = endDspTime - fadeOut;
                 newPref.ScheduledStartTime = fadeOutDspTime;
-                newPref.ScheduledEndTime = fadeOutDspTime + pitchAdjustedDuration;
+                if (!needNewClip)
+                {
+                    newPref.ScheduledEndTime = fadeOutDspTime + PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
+                }
             }
             else
             {
                 newPref.ScheduledStartTime = endDspTime;
-                newPref.ScheduledEndTime = endDspTime + pitchAdjustedDuration;
+                if (!needNewClip)
+                {
+                    newPref.ScheduledEndTime = endDspTime + PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
+                }
             }
             // TODO: calculate the real warmup time
             var warmUpTime = isEnd ? 0 : 0.1;
@@ -261,7 +273,6 @@ namespace Ami.BroAudio.Runtime
                 yield return null;
             }
 
-            bool needNewClip = _pref.IsChainedMode() && (isEnd || _pref.ChainedModeStage == PlaybackStage.Start);
             var handover = new PlaybackHandoverData()
             {
                 ID = ID,

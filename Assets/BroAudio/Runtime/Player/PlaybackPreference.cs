@@ -160,6 +160,11 @@ namespace Ami.BroAudio.Runtime
         {
             return Entity.PlayMode == MulticlipsPlayMode.Chained;
         }
+
+        public bool HasLoop()
+        {
+            return Entity.HasLoop(out _, out _);
+        }
         
         public bool IsLoop(LoopType targetType)
         {

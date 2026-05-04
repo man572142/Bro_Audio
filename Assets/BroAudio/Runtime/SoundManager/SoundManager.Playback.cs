@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Runtime
     public partial class SoundManager : MonoBehaviour
     {
         private readonly Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
-        private AudioPlayer.NextPlaybackSchedule _nextPlaybackScheduleDelegate;
+        private AudioPlayer.HandoverPlayerFactory _scheduleHandover;
 
         #region Play
         public IAudioPlayer Play(SoundID id, float fadeIn, IPlayableValidator customValidator = null)
@@ -82,8 +82,8 @@ namespace Ami.BroAudio.Runtime
             
             if (pref.Entity.HasLoop(out _, out _) || pref.Entity.PlayMode == MulticlipsPlayMode.Chained)
             {
-                _nextPlaybackScheduleDelegate ??= ScheduleNextPlayback;
-                player.OnScheduleNextPlayback = _nextPlaybackScheduleDelegate;
+                _scheduleHandover ??= ScheduleNextPlayback;
+                player.RequestNextPlayer = _scheduleHandover;
             }
 
             // Start loading addressable clips if needed
@@ -117,11 +117,11 @@ namespace Ami.BroAudio.Runtime
 #endif
         }
 
-        private AudioPlayer ScheduleNextPlayback(PlaybackHandoverData data)
+        private AudioPlayer ScheduleNextPlayback(PlaybackHandoverData handover)
         {
             var newPlayer = _audioPlayerPool.Extract();
-            newPlayer.ReceiveHandover(data);
-            newPlayer.OnScheduleNextPlayback = _nextPlaybackScheduleDelegate;
+            newPlayer.ReceiveHandover(handover);
+            newPlayer.RequestNextPlayer = _scheduleHandover;
             return newPlayer;
         }
 

@@ -51,10 +51,10 @@ namespace Ami.BroAudio
             return (int)(sampleRate * seconds);
         }
 
-        public static float GetDuration(this IBroAudioClip clip)
+        public static double GetPlayableDuration(this IBroAudioClip clip)
         {
             var audioClip = clip.GetAudioClip();
-            return audioClip != null ?  audioClip.length - clip.StartPosition - clip.EndPosition : 0f;
+            return audioClip != null ? audioClip.GetPreciseLength() - clip.StartPosition - clip.EndPosition : 0d;
         }
 
         public static bool IsDefaultCurve(this AnimationCurve curve , float defaultValue)
@@ -63,7 +63,7 @@ namespace Ami.BroAudio
             {
                 return true;
             }
-            else if(curve.length == 1 && curve[0].value == defaultValue)
+            else if(curve.length == 1 && Mathf.Approximately(curve[0].value, defaultValue))
             {
                 return true;
             }

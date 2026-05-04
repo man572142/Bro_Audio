@@ -7,7 +7,7 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource))]
     public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
-        private double _timeBeforeStartSchedule;
+        private double _secondsUntilScheduledStart;
 
         private void SchedulePlayback()
         {
@@ -15,7 +15,7 @@ namespace Ami.BroAudio.Runtime
             {
                 var dspTime = AudioSettings.dspTime;
                 AudioSource.PlayScheduled(System.Math.Max(_pref.ScheduledStartTime, dspTime));
-                _timeBeforeStartSchedule = _pref.ScheduledStartTime - dspTime;
+                _secondsUntilScheduledStart = _pref.ScheduledStartTime - dspTime;
             }
 
             if (_pref.ScheduledEndTime > 0d)
@@ -29,7 +29,7 @@ namespace Ami.BroAudio.Runtime
             if (_pref.ScheduledStartTime > 0d)
             {
                 // Recalculate the time when WaitForScheduledStartTime() is already running
-                _timeBeforeStartSchedule += dspTime - _pref.ScheduledStartTime;
+                _secondsUntilScheduledStart += dspTime - _pref.ScheduledStartTime;
             }
             _pref.ScheduledStartTime = dspTime;
 
@@ -85,10 +85,10 @@ namespace Ami.BroAudio.Runtime
 
         private IEnumerator WaitForScheduledStartTime()
         {
-            while (_timeBeforeStartSchedule > 0)
+            while (_secondsUntilScheduledStart > 0)
             {
                 yield return null;
-                _timeBeforeStartSchedule -= Utility.GetDeltaTime();
+                _secondsUntilScheduledStart -= Utility.GetDeltaTime();
             }
         }
 

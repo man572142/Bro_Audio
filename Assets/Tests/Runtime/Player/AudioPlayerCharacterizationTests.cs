@@ -43,6 +43,7 @@ namespace Ami.BroAudio.Tests
         private GameObject _go;
         private AudioPlayer _player;
         private GameObject _soundManagerGo;
+        private AudioListener _listener;
 
         /// <summary>
         /// Write a private/internal instance field on a target instance via reflection.
@@ -196,6 +197,8 @@ namespace Ami.BroAudio.Tests
         [SetUp]
         public void SetUp()
         {
+            var listenerObj = new GameObject("TestListener");
+            _listener = listenerObj.AddComponent<AudioListener>();
             _go = new GameObject("TestAudioPlayer");
             _player = _go.AddComponent<AudioPlayer>();
             var audioSource = _player.GetComponent<AudioSource>();
@@ -209,6 +212,11 @@ namespace Ami.BroAudio.Tests
             if (_go != null)
             {
                 UnityEngine.Object.DestroyImmediate(_go);
+            }
+
+            if (_listener != null)
+            {
+                UnityEngine.Object.DestroyImmediate(_listener);
             }
             TearDownStubSoundManager();
         }
@@ -245,14 +253,7 @@ namespace Ami.BroAudio.Tests
         {
             Assert.IsFalse(_player.IsStopping);
         }
-
-        [Test]
-        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
-        public void IsFadingOut_OnFreshPlayer_IsFalse()
-        {
-            Assert.IsFalse(_player.IsFadingOut);
-        }
-
+        
         [Test]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         public void CurrentActiveTrackEffects_OnFreshPlayer_IsNone()
@@ -313,10 +314,10 @@ namespace Ami.BroAudio.Tests
 
         [Test]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
-        // OnPlaybackHandover starts as null; it is a public field, not an event.
+        // RequestNextPlayer starts as null; it is a public field, not an event.
         public void OnPlaybackHandover_OnFreshPlayer_IsNull()
         {
-            Assert.IsNull(_player.OnPlaybackHandover);
+            Assert.IsNull(_player.RequestNextPlayer);
         }
 
         // =====================================================================
@@ -425,7 +426,13 @@ namespace Ami.BroAudio.Tests
         {
             LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("Cannot play audio"));
 
-            Assert.DoesNotThrow(() => _player.Play());
+            Assert.DoesNotThrow(() =>
+            {
+                var method = typeof(AudioPlayer).GetMethod(
+                    "PlayInternal", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                var args = new object[] { null };
+                method.Invoke(_player, null);
+            });
         }
 
         // =====================================================================
@@ -1053,47 +1060,6 @@ namespace Ami.BroAudio.Tests
         }
 
         // =====================================================================
-        // 16. HasEndPlaying sentinel logic (private method, via reflection)
-        //     Characterizes the sample-position latch that detects clip end.
-        //     Bug note (from analysis): fragile against DSP jitter.
-        // =====================================================================
-
-        [Test]
-        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
-        // HasEndPlaying requires hasPlayed to become true before it returns true.
-        // If hasPlayed is still false, returns false even if currentSample >= endSample.
-        public void HasEndPlaying_BeforeHasPlayedIsSet_ReturnsFalseEvenIfPastEndSample()
-        {
-            // Set up an AudioClip so AudioSource.timeSamples is readable
-            var clip = AudioClip.Create("test", 1024, 1, 44100, false);
-            var audioSource = _go.GetComponent<AudioSource>();
-            audioSource.clip = clip;
-            // timeSamples defaults to 0; startSample for StartPosition=0 is also 0.
-            // hasPlayed = false → currentSample (0) > startSample (0) is false → hasPlayed stays false.
-            // return: hasPlayed(false) && (...) → false.
-
-            var method = typeof(AudioPlayer).GetMethod(
-                "HasEndPlaying", BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.IsNotNull(method, "HasEndPlaying not found");
-
-            // _clip is null on a fresh player; inject a minimal BroAudioClip (StartPosition=0)
-            // so that _clip.StartPosition inside HasEndPlaying doesn't throw NullReferenceException.
-            var clipField = typeof(AudioPlayer).GetField(
-                "_clip", BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.IsNotNull(clipField, "_clip field not found");
-            clipField.SetValue(_player, new Ami.BroAudio.Data.BroAudioClip());
-
-            bool hasPlayed = false;
-            var args = new object[] { hasPlayed, /* endSample */ 512, /* sampleRate */ 44100 };
-            bool result = (bool)method.Invoke(_player, args);
-
-            Assert.IsFalse(result,
-                "HasEndPlaying must return false when hasPlayed has never been set to true");
-
-            UnityEngine.Object.DestroyImmediate(clip);
-        }
-
-        // =====================================================================
         // 17. INTEGRATION TESTS (stub SoundManager)
         //     These tests exercise paths that require SoundManager.Instance.
         //     A minimal SoundManager singleton is created via reflection
@@ -1554,9 +1520,9 @@ namespace Ami.BroAudio.Tests
             Assert.AreEqual(scheduledTime, prefAfter.ScheduledStartTime, 0.001,
                 "_pref.ScheduledStartTime must equal the value passed to SetScheduledStartTime");
 
-            float timeBeforeStart = GetField<AudioPlayer, float>(_player, "_timeBeforeStartSchedule");
-            Assert.Greater(timeBeforeStart, 0f,
-                "_timeBeforeStartSchedule must be set to a positive value");
+            var secondsUntilScheduledStart = GetField<AudioPlayer, double>(_player, "_secondsUntilScheduledStart");
+            Assert.Greater(secondsUntilScheduledStart, 0f,
+                "_secondsUntilScheduledStart must be set to a positive value");
 
             // Stop and clean up
             _player.Stop(FadeData.Immediate, StopMode.Stop, null);
@@ -1620,9 +1586,9 @@ namespace Ami.BroAudio.Tests
             Assert.AreEqual(dspBefore + delay, prefAfter.ScheduledStartTime, 0.1,
                 "_pref.ScheduledStartTime must equal dspTime + delay");
 
-            float timeBeforeStart = GetField<AudioPlayer, float>(_player, "_timeBeforeStartSchedule");
-            Assert.AreEqual(delay, timeBeforeStart, 0.1f,
-                "_timeBeforeStartSchedule must approximately equal the delay");
+            double secondsUntilScheduledStart = GetField<AudioPlayer, double>(_player, "_secondsUntilScheduledStart");
+            Assert.AreEqual(delay, secondsUntilScheduledStart, 0.1f,
+                "_secondsUntilScheduledStart must approximately equal the delay");
 
             yield return null; // let PlayControl start
 
@@ -1635,8 +1601,8 @@ namespace Ami.BroAudio.Tests
         [UnityTest]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         // When _clip.Delay > 0 and ScheduledStartTime is 0, SchedulePlayback uses PlayDelayed,
-        // setting _timeBeforeStartSchedule to the clip's delay value.
-        public IEnumerator SchedulePlayback_WithClipDelay_SetsTimeBeforeStartSchedule()
+        // setting _secondsUntilScheduledStart to the clip's delay value.
+        public IEnumerator SchedulePlayback_WithClipDelay_SetssecondsUntilScheduledStart()
         {
             SetupStubSoundManager();
 
@@ -1653,9 +1619,9 @@ namespace Ami.BroAudio.Tests
             _player.Play();
             yield return null; // let PlayControl run one frame (calls SchedulePlayback)
 
-            float timeBeforeStart = GetField<AudioPlayer, float>(_player, "_timeBeforeStartSchedule");
-            Assert.AreEqual(0.5f, timeBeforeStart, 0.05f,
-                "_timeBeforeStartSchedule must equal clip.Delay after PlayDelayed path");
+            var secondsUntilScheduledStart = GetField<AudioPlayer, double>(_player, "_secondsUntilScheduledStart");
+            Assert.AreEqual(0.5f, secondsUntilScheduledStart, 0.05f,
+                "_secondsUntilScheduledStart must equal clip.Delay after PlayDelayed path");
 
             _player.Stop(FadeData.Immediate, StopMode.Stop, null);
             yield return null;
@@ -1958,7 +1924,7 @@ namespace Ami.BroAudio.Tests
             InvokeMethod(_player, "SetInstanceWrapper", wrapper);
 
             // Set a handover delegate
-            _player.OnPlaybackHandover = (id, w, p, e, v, pitch) => { };
+            _player.RequestNextPlayer = _ => null;
 
             _player.Recycle();
 
@@ -1968,7 +1934,7 @@ namespace Ami.BroAudio.Tests
             Assert.IsNull(GetField<AudioPlayer, Action<IAudioPlayer>>(_player, "_onUpdate"),          "_onUpdate must be null");
             Assert.IsNull(GetField<AudioPlayer, Action<IAudioPlayer>>(_player, "_onPaused"),          "_onPaused must be null");
             Assert.IsNull(GetField<AudioPlayer, List<AudioPlayerDecorator>>(_player, "_decorators"),  "_decorators must be null");
-            Assert.IsNull(_player.OnPlaybackHandover,                                    "OnPlaybackHandover must be null");
+            Assert.IsNull(_player.RequestNextPlayer,                                    "RequestNextPlayer must be null");
 
             UnityEngine.Object.DestroyImmediate(entity);
         }

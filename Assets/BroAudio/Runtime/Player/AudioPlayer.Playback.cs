@@ -381,9 +381,9 @@ namespace Ami.BroAudio.Runtime
         private static double PitchAdjusted(double duration, float pitch) =>
             Mathf.Approximately(pitch, 0f) ? duration : duration / pitch;
 
-        internal void ReceiveHandover(PlaybackHandoverData handover)
+        internal void ReceiveHandover(PlaybackHandoverData handover, IAudioMixerPool mixerPool)
         {
-            SetPlaybackData(handover.ID, handover.Pref, handover.Clip);
+            SetPlaybackData(handover.ID, handover.Pref, mixerPool, handover.Clip);
             // Handover end times always come from a clip-duration computation (or 0 when a new clip is needed).
             _isEndTimeDerivedFromClip = true;
             if (handover.TrackVolumeRemaining > 0f)

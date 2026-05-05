@@ -120,7 +120,7 @@ namespace Ami.BroAudio.Runtime
         private AudioPlayer ScheduleNextPlayback(PlaybackHandoverData handover)
         {
             var newPlayer = _audioPlayerPool.Extract();
-            newPlayer.ReceiveHandover(handover);
+            newPlayer.ReceiveHandover(handover, this);
             newPlayer.RequestNextPlayer = _scheduleHandover;
             return newPlayer;
         }

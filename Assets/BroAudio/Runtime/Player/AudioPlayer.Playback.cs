@@ -295,7 +295,7 @@ namespace Ami.BroAudio.Runtime
 
         private void BeginHandover(bool isEnd = false)
         {
-            if (!CanHandover(isEnd))
+            if (!CanHandover(isEnd) || _instanceWrapper == null || _nextPlayer == null)
             {
                 return;
             }
@@ -394,7 +394,7 @@ namespace Ami.BroAudio.Runtime
             IsStopping = true;
             _pref.SetNextFadeOut(overrideFade);
 
-            if (_pref.CanHandoverToEnd())
+            if (_instanceWrapper != null && _pref.CanHandoverToEnd())
             {
                 this.RestartCoroutine(ScheduleNextPlayback(AudioSettings.dspTime, isEnd: true), ref _handoverScheduleCoroutine);  // Start the next playback immediately
                 BeginHandover(isEnd: true);

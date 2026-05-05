@@ -314,9 +314,9 @@ namespace Ami.BroAudio.Runtime
         private static double PitchAdjusted(double duration, float pitch) =>
             Mathf.Approximately(pitch, 0f) ? duration : duration / pitch;
 
-        internal void ReceiveHandover(PlaybackHandoverData handover)
+        internal void ReceiveHandover(PlaybackHandoverData handover, IAudioMixerPool mixerPool)
         {
-            SetPlaybackData(handover.ID, handover.Pref, handover.Clip);
+            SetPlaybackData(handover.ID, handover.Pref, mixerPool,handover.Clip);
             SetVolumeInternal(_trackVolume, handover.TrackVolume, 0f);
             this.SetPitch(handover.Pitch);
             PlayInternal();

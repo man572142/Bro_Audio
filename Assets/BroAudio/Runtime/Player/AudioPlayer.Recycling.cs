@@ -32,10 +32,10 @@ namespace Ami.BroAudio.Runtime
 
             if (TryGetMixerAndTrack(out _, out var track))
             {
-                MixerPool.ReturnTrack(TrackType, track);
+                MixerPool?.ReturnTrack(TrackType, track);
                 TrackType = AudioTrackType.Generic;
             }
-            MixerPool.ReturnPlayer(this);
+            MixerPool?.ReturnPlayer(this);
 
             if (_decorators != null)
             {

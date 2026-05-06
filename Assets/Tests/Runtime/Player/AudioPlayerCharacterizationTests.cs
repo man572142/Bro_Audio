@@ -315,7 +315,7 @@ namespace Ami.BroAudio.Tests
         [Test]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         // RequestNextPlayer starts as null; it is a public field, not an event.
-        public void OnPlaybackHandover_OnFreshPlayer_IsNull()
+        public void RequestNextPlayer_OnFreshPlayer_IsNull()
         {
             Assert.IsNull(_player.RequestNextPlayer);
         }
@@ -850,12 +850,13 @@ namespace Ami.BroAudio.Tests
 
         [Test]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
-        // Second access after the first creates/reuses the same proxy (lazy init via ??=).
-        // Both calls return the same Empty.AudioSource when inactive.
+        // When the player is inactive (not playing), the AudioSource getter logs an error
+        // and returns Empty.AudioSource directly — it never touches _proxy.
+        // Both calls therefore return the shared Empty.AudioSource singleton.
         public void AudioSourceProperty_AccessedTwiceWhileInactive_ReturnsSameEmptyInstance()
         {
-            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex(".*"));
-            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex(".*"));
+            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("The audio player is not playing"));
+            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("The audio player is not playing"));
 
             IAudioPlayer player = _player;
             var first = player.AudioSource;
@@ -1110,9 +1111,10 @@ namespace Ami.BroAudio.Tests
 
         [UnityTest]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
-        // Stop(0f, Stop, cb) with isPlaying=true starts StopControl coroutine,
-        // sets IsStopping=true, fades clip volume to 0, calls EndPlaying, fires callback.
-        public IEnumerator Stop_StopModeWhilePlaying_FadesAndCallsEndPlaying()
+        // Stop(0f, Stop, cb) with isPlaying=true and fadeTime=0 ends playing immediately
+        // (no actual fade is exercised): StopControl runs synchronously, calls EndPlaying,
+        // fires callback, and resets player state.
+        public IEnumerator Stop_WithImmediateFade_EndsPlaying()
         {
             SetupStubSoundManager();
 
@@ -1255,6 +1257,10 @@ namespace Ami.BroAudio.Tests
             var track3 = System.Array.Find(groups, g => g.name == "Track3");
             Assert.IsNotNull(track3, "AudioMixerGroup 'Track3' must exist in BroAudioMixer");
 
+            // Capture original mixer parameter values so we can restore them unconditionally.
+            mixer.GetFloat("Track3", out float originalTrack3);
+            mixer.GetFloat("Track3_Effect", out float originalTrack3Effect);
+
             // Seed the exposed parameter so TryGetMixerDecibelVolume succeeds
             const float initialDecibel = AudioConstant.FullDecibelVolume; // 0f
             mixer.SetFloat("Track3", initialDecibel);
@@ -1264,31 +1270,37 @@ namespace Ami.BroAudio.Tests
             var entity = MakeEntity();
             _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
 
-            Assert.IsFalse(_player.IsUsingTrackEffect, "Precondition: no effect active yet");
+            try
+            {
+                Assert.IsFalse(_player.IsUsingTrackEffect, "Precondition: no effect active yet");
 
-            // Act
-            _player.SetTrackEffect(EffectType.Volume, SetEffectMode.Add);
+                // Act
+                _player.SetTrackEffect(EffectType.Volume, SetEffectMode.Add);
 
-            // Bitmask: Volume flag must be set
-            Assert.IsTrue((_player.CurrentActiveTrackEffects & EffectType.Volume) != 0,
-                "EffectType.Volume must be ORed into CurrentActiveTrackEffects");
-            Assert.IsTrue(_player.IsUsingTrackEffect,
-                "IsUsingTrackEffect must be true after adding Volume effect");
+                // Bitmask: Volume flag must be set
+                Assert.IsTrue((_player.CurrentActiveTrackEffects & EffectType.Volume) != 0,
+                    "EffectType.Volume must be ORed into CurrentActiveTrackEffects");
+                Assert.IsTrue(_player.IsUsingTrackEffect,
+                    "IsUsingTrackEffect must be true after adding Volume effect");
 
-            // Mixer channel switch verification
-            mixer.GetFloat("Track3", out float fromVol);
-            Assert.AreEqual(AudioConstant.MinDecibelVolume, fromVol, 0.001f,
-                "Track3 parameter must be muted (MinDecibelVolume) after switching to effect channel");
+                // Mixer channel switch verification
+                mixer.GetFloat("Track3", out float fromVol);
+                Assert.AreEqual(AudioConstant.MinDecibelVolume, fromVol, 0.001f,
+                    "Track3 parameter must be muted (MinDecibelVolume) after switching to effect channel");
 
-            mixer.GetFloat("Track3_Effect", out float toVol);
-            Assert.AreEqual(initialDecibel, toVol, 0.001f,
-                "Track3_Effect parameter must be set to the original volume after channel switch");
+                mixer.GetFloat("Track3_Effect", out float toVol);
+                Assert.AreEqual(initialDecibel, toVol, 0.001f,
+                    "Track3_Effect parameter must be set to the original volume after channel switch");
+            }
+            finally
+            {
+                // Restore mixer state even if an assertion above fails, so subsequent
+                // tests in the same play-mode session see a clean mixer.
+                mixer.SetFloat("Track3", originalTrack3);
+                mixer.SetFloat("Track3_Effect", originalTrack3Effect);
 
-            // Restore mixer state for subsequent tests in the same play-mode session
-            mixer.SetFloat("Track3", initialDecibel);
-            mixer.SetFloat("Track3_Effect", AudioConstant.MinDecibelVolume);
-
-            UnityEngine.Object.DestroyImmediate(entity);
+                UnityEngine.Object.DestroyImmediate(entity);
+            }
         }
 
         // =====================================================================
@@ -1602,7 +1614,7 @@ namespace Ami.BroAudio.Tests
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         // When _clip.Delay > 0 and ScheduledStartTime is 0, SchedulePlayback uses PlayDelayed,
         // setting _secondsUntilScheduledStart to the clip's delay value.
-        public IEnumerator SchedulePlayback_WithClipDelay_SetssecondsUntilScheduledStart()
+        public IEnumerator SchedulePlayback_WithClipDelay_SetsSecondsUntilScheduledStart()
         {
             SetupStubSoundManager();
 
@@ -1749,25 +1761,28 @@ namespace Ami.BroAudio.Tests
             UnityEngine.Object.DestroyImmediate(entity);
         }
 
-        [Test]
+        [UnityTest]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
-        // Full add→remove round trip: _addedEffects count goes 1 → 0.
-        public void AddThenRemove_RoundTrip_CleansUpList()
+        // Full add→remove round trip: after one frame the AudioLowPassFilter Component
+        // is no longer attached to the player's GameObject (Unity's deferred Destroy
+        // has processed) and is therefore not reachable via GetComponent.
+        public IEnumerator AddThenRemove_RoundTrip_DestroysComponentOnGameObject()
         {
             var entity = MakeEntity();
             _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
             IAudioPlayer player = _player;
 
-            var effectsField = typeof(AudioPlayer)
-                .GetField("_addedEffects", BindingFlags.Instance | BindingFlags.NonPublic);
-
             player.AddLowPassEffect();
-            Assert.AreEqual(1, ((System.Collections.ICollection)effectsField.GetValue(_player)).Count,
-                "After add: count must be 1");
+            Assert.IsNotNull(_go.GetComponent<AudioLowPassFilter>(),
+                "AudioLowPassFilter must be present on the GameObject after add");
 
             player.RemoveLowPassEffect();
-            Assert.AreEqual(0, ((System.Collections.ICollection)effectsField.GetValue(_player)).Count,
-                "After remove: count must be 0");
+
+            // Destroy is deferred; yield one frame so Unity processes the destroy.
+            yield return null;
+
+            Assert.IsNull(_go.GetComponent<AudioLowPassFilter>(),
+                "AudioLowPassFilter must be absent from the GameObject after remove + one frame");
 
             UnityEngine.Object.DestroyImmediate(entity);
         }

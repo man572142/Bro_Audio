@@ -2069,6 +2069,709 @@ namespace Ami.BroAudio.Tests
         }
 
         // =====================================================================
+        // 27. Loop handover / chained mode (Plan §1.1)
+        //     PlayControl, ScheduleNextPlayback, BeginHandover, ReceiveHandover,
+        //     and CanHandover form the loop/chained-mode pipeline. All uncovered
+        //     before this section.
+        // =====================================================================
+
+        /// <summary>
+        /// Create an AudioEntity with a real AudioClip and Loop = true, so that
+        /// PlaybackPreference.HasLoop() returns true.  Caller must call
+        /// DestroyEntityWithClip to clean up.
+        /// </summary>
+        private static AudioEntity MakeLoopEntityWithClip(int sampleLength = 44100,
+            float masterVolume = 1f, BroAudioType audioType = BroAudioType.SFX)
+        {
+            var entity = MakeEntityWithClip(audioType, sampleLength, masterVolume);
+            // Set the Loop backing field via the auto-property pattern used by MakeEntityWithClip.
+            SetAutoProperty(entity, "Loop", true);
+            return entity;
+        }
+
+        /// <summary>
+        /// Create an AudioEntity with SeamlessLoop=true and a non-zero TransitionTime.
+        /// The transition time becomes the fade-in and fade-out duration in SeamlessLoop.
+        /// Caller must call DestroyEntityWithClip to clean up.
+        /// </summary>
+        private static AudioEntity MakeSeamlessLoopEntityWithClip(float transitionTime,
+            int sampleLength = 44100 * 5, BroAudioType audioType = BroAudioType.SFX)
+        {
+            var entity = MakeEntityWithClip(audioType, sampleLength);
+            SetAutoProperty(entity, "SeamlessLoop", true);
+            SetAutoProperty(entity, "TransitionTime", transitionTime);
+            return entity;
+        }
+
+        [UnityTest]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // With LoopType.Loop set on the entity, PlayControl calls ScheduleNextPlayback which
+        // eventually calls RequestNextPlayer with a PlaybackHandoverData whose Pref carries
+        // ChainedModeStage=Loop (PlaybackStage.None for regular loop), non-zero
+        // ScheduledStartTime and ScheduledEndTime, and copies TrackVolume + Pitch from
+        // the originating player.
+        public IEnumerator Loop_OnEndReached_RequestNextPlayerInvokedWithExpectedPref()
+        {
+            SetupStubSoundManager();
+
+            // Short 1-second clip so the handover coroutine fires quickly.
+            const int sampleRate = 44100;
+            var entity = MakeLoopEntityWithClip(sampleLength: sampleRate, masterVolume: 1f);
+            var id = new SoundID(entity);
+            var pref = new PlaybackPreference(entity);
+            _player.SetPlaybackData(id, pref, new NullMixerPool());
+
+            // Set a distinctive track-volume and pitch so we can verify they're copied.
+            ((IAudioPlayer)_player).SetVolume(0.7f, 0f);
+            IAudioPlayer iap = _player;
+            iap.SetPitch(1.5f, 0f);
+
+            PlaybackHandoverData capturedHandover = default;
+            bool requestFired = false;
+            _player.RequestNextPlayer = handover =>
+            {
+                capturedHandover = handover;
+                requestFired = true;
+                return null; // no second player needed for this assertion
+            };
+
+            _player.Play();
+
+            // Wait up to 3 seconds for ScheduleNextPlayback to fire RequestNextPlayer.
+            float elapsed = 0f;
+            while (!requestFired && elapsed < 3f)
+            {
+                yield return null;
+                elapsed += Time.unscaledDeltaTime;
+            }
+
+            Assert.IsTrue(requestFired,
+                "RequestNextPlayer must be invoked by ScheduleNextPlayback within clip duration");
+
+            // ScheduledStartTime and ScheduledEndTime must be positive (set by PlayControl
+            // for looping entities when ScheduledStartTime starts at 0).
+            Assert.Greater(capturedHandover.Pref.ScheduledStartTime, 0.0,
+                "Handover Pref.ScheduledStartTime must be > 0 (set to endDspTime of current clip)");
+            Assert.Greater(capturedHandover.Pref.ScheduledEndTime, 0.0,
+                "Handover Pref.ScheduledEndTime must be > 0");
+            Assert.Greater(capturedHandover.Pref.ScheduledEndTime,
+                           capturedHandover.Pref.ScheduledStartTime,
+                "ScheduledEndTime must be after ScheduledStartTime");
+
+            // For a plain Loop (not chained mode), ChainedModeStage stays at None/0 because
+            // IsChainedMode() is false — the stage assignment in ScheduleNextPlayback is
+            // inside an if (newPref.IsChainedMode()) block.
+            Assert.AreEqual(PlaybackStage.None, capturedHandover.Pref.ChainedModeStage,
+                "For a non-chained Loop entity, ChainedModeStage must remain None");
+
+            // TrackVolume and Pitch must be snapshotted from the originating player.
+            var trackVolumeField = GetField<AudioPlayer, Fader>(_player, "_trackVolume");
+            Assert.AreEqual(trackVolumeField.Target, capturedHandover.TrackVolume, 0.001f,
+                "Handover TrackVolume must equal the originating player's _trackVolume.Target");
+            Assert.AreEqual(_player.StaticPitch, capturedHandover.Pitch, 0.001f,
+                "Handover Pitch must equal the originating player's StaticPitch");
+
+            // Clean up (the player may already have self-recycled; guard the Stop call).
+            if (_player.IsActive)
+            {
+                _player.Stop(FadeData.Immediate, StopMode.Stop, null);
+                yield return null;
+            }
+            DestroyEntityWithClip(entity);
+        }
+
+        [UnityTest]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // For LoopType.SeamlessLoop, BeginHandover() is triggered BEFORE the fade-out
+        // completes (lines 200-203 of Playback.cs).  The instance wrapper must be swapped
+        // while the fade-out is still in progress so the outgoing and incoming players
+        // overlap during the transition window.
+        public IEnumerator SeamlessLoop_HandoverHappensBeforeFadeOut()
+        {
+            SetupStubSoundManager();
+
+            // 2-second clip, 0.3 s seamless transition (fade-out = 0.3 s overlap).
+            const float transitionTime = 0.3f;
+            const int sampleRate = 44100;
+            var entity = MakeSeamlessLoopEntityWithClip(transitionTime, sampleLength: sampleRate * 2);
+            var id = new SoundID(entity);
+            var pref = new PlaybackPreference(entity);
+            _player.SetPlaybackData(id, pref, new NullMixerPool());
+
+            // Prepare a second AudioPlayer that acts as the incoming (next) player.
+            var nextGo = new GameObject("NextPlayer");
+            var nextPlayer = nextGo.AddComponent<AudioPlayer>();
+
+            // Give the original player a wrapper so BeginHandover can swap it.
+            var wrapper = new AudioPlayerInstanceWrapper(_player);
+            InvokeMethod(_player, "SetInstanceWrapper", wrapper);
+
+            // Hook RequestNextPlayer to inject our prepared next player.
+            _player.RequestNextPlayer = _ =>
+            {
+                nextPlayer.SetPlaybackData(id, pref, new NullMixerPool());
+                return nextPlayer;
+            };
+
+            _player.Play();
+
+            // Wait until _nextPlayer is populated (ScheduleNextPlayback ran and
+            // RequestNextPlayer returned our nextPlayer).
+            float elapsed = 0f;
+            AudioPlayer injectedNext = null;
+            while (elapsed < 4f)
+            {
+                yield return null;
+                elapsed += Time.unscaledDeltaTime;
+                injectedNext = GetField<AudioPlayer, AudioPlayer>(_player, "_nextPlayer");
+                if (injectedNext != null) break;
+            }
+
+            Assert.IsNotNull(injectedNext,
+                "Precondition: _nextPlayer must be set before BeginHandover can be observed");
+
+            // Now wait for BeginHandover to fire (triggered at fade-out start for SeamlessLoop).
+            // After BeginHandover the original player's _instanceWrapper is set to null.
+            elapsed = 0f;
+            bool handoverOccurred = false;
+            while (elapsed < 1.5f)
+            {
+                yield return null;
+                elapsed += Time.unscaledDeltaTime;
+                var iw = GetField<AudioPlayer, InstanceWrapper<AudioPlayer>>(_player, "_instanceWrapper");
+                if (iw == null)
+                {
+                    handoverOccurred = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(handoverOccurred,
+                "BeginHandover must fire (clearing _instanceWrapper) before fade-out completes");
+
+            // Verify: at the point BeginHandover fired, the wrapper now points to nextPlayer.
+            // wrapper.Instance is private; check via IsAvailable + cast behaviour.
+            // The wrapper's UpdateInstance swapped the internal reference to nextPlayer.
+            // The simplest observable: nextPlayer now holds the wrapper.
+            var nextPlayerWrapper = (IAudioPlayer)InvokeMethod(nextPlayer, "GetInstanceWrapper");
+            Assert.IsNotNull(nextPlayerWrapper,
+                "After handover, the incoming player must hold the transferred wrapper");
+            Assert.AreSame(wrapper, nextPlayerWrapper,
+                "The same wrapper instance must be transferred to the incoming player");
+
+            // Clean up
+            if (_player.IsActive)
+            {
+                _player.Stop(FadeData.Immediate, StopMode.Stop, null);
+                yield return null;
+            }
+            if (nextPlayer != null && nextPlayer.IsActive)
+            {
+                nextPlayer.Stop(FadeData.Immediate, StopMode.Stop, null);
+                yield return null;
+            }
+            UnityEngine.Object.DestroyImmediate(nextGo);
+            DestroyEntityWithClip(entity);
+        }
+
+        [UnityTest]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // ScheduleNextPlayback subtracts the fade-out duration from ScheduledStartTime
+        // and ScheduledEndTime ONLY for SeamlessLoop and ONLY when !isEnd (lines 263-267
+        // of Playback.cs).  A plain Loop entity must NOT receive this adjustment.
+        public IEnumerator Loop_ScheduleNextPlayback_AppliesFadeOffsetForSeamlessLoop()
+        {
+            SetupStubSoundManager();
+
+            // ── SeamlessLoop entity: ScheduledStartTime should be shifted back by fadeOut ──
+            const float transitionTime = 0.3f;
+            const int sampleRate = 44100;
+            var seamlessEntity = MakeSeamlessLoopEntityWithClip(transitionTime, sampleLength: sampleRate * 2);
+            var seamlessId = new SoundID(seamlessEntity);
+            var seamlessPref = new PlaybackPreference(seamlessEntity);
+            _player.SetPlaybackData(seamlessId, seamlessPref, new NullMixerPool());
+
+            PlaybackHandoverData capturedSeamless = default;
+            bool seamlessFired = false;
+            _player.RequestNextPlayer = handover =>
+            {
+                capturedSeamless = handover;
+                seamlessFired = true;
+                return null;
+            };
+            _player.Play();
+
+            float elapsed = 0f;
+            while (!seamlessFired && elapsed < 5f)
+            {
+                yield return null;
+                elapsed += Time.unscaledDeltaTime;
+            }
+
+            Assert.IsTrue(seamlessFired, "SeamlessLoop: RequestNextPlayer must fire");
+
+            // The scheduled start time of the next clip must be EARLIER than endDspTime
+            // by exactly fadeOut (transitionTime), so the clips overlap.
+            // endDspTime is ScheduledEndTime of the *outgoing* player — read it before
+            // ScheduleNextPlayback runs; we can reconstruct it as:
+            //   capturedSeamless.Pref.ScheduledStartTime + pitchAdjustedDuration == original ScheduledStartTime (not shifted)
+            // Simpler check: ScheduledEndTime should equal ScheduledStartTime + pitchAdjustedDuration
+            // because fadeOut is subtracted from both by the same amount, and their difference
+            // (the clip duration) stays the same regardless of shift.
+            Assert.Greater(capturedSeamless.Pref.ScheduledEndTime,
+                           capturedSeamless.Pref.ScheduledStartTime,
+                "SeamlessLoop: ScheduledEndTime must be after ScheduledStartTime (offsets cancel out)");
+
+            // The gap between ScheduledEndTime and ScheduledStartTime should equal the
+            // pitch-adjusted clip duration — unaffected by the fade offset.
+            double seamlessDuration = capturedSeamless.Pref.ScheduledEndTime - capturedSeamless.Pref.ScheduledStartTime;
+            double expectedDuration = (double)sampleRate * 2 / sampleRate; // 2 seconds
+            Assert.AreEqual(expectedDuration, seamlessDuration, 0.1,
+                "SeamlessLoop: ScheduledEndTime - ScheduledStartTime must equal the clip duration");
+
+            if (_player.IsActive)
+            {
+                _player.Stop(FadeData.Immediate, StopMode.Stop, null);
+                yield return null;
+            }
+            DestroyEntityWithClip(seamlessEntity);
+
+            // ── Plain Loop entity: NO fade offset should be applied ──
+            var loopGo = new GameObject("LoopPlayer");
+            var loopPlayer = loopGo.AddComponent<AudioPlayer>();
+            var loopSource = loopPlayer.GetComponent<AudioSource>();
+            loopSource.playOnAwake = false;
+            loopSource.Stop();
+
+            var loopEntity = MakeLoopEntityWithClip(sampleLength: sampleRate * 2);
+            var loopId = new SoundID(loopEntity);
+            var loopPref = new PlaybackPreference(loopEntity);
+            loopPlayer.SetPlaybackData(loopId, loopPref, new NullMixerPool());
+
+            PlaybackHandoverData capturedLoop = default;
+            bool loopFired = false;
+            loopPlayer.RequestNextPlayer = handover =>
+            {
+                capturedLoop = handover;
+                loopFired = true;
+                return null;
+            };
+            loopPlayer.Play();
+
+            elapsed = 0f;
+            while (!loopFired && elapsed < 5f)
+            {
+                yield return null;
+                elapsed += Time.unscaledDeltaTime;
+            }
+
+            Assert.IsTrue(loopFired, "Loop: RequestNextPlayer must fire");
+
+            // For a plain Loop, the clip's FadeOut is 0 by default (no SeamlessLoop fade applied),
+            // so ScheduledStartTime should equal endDspTime (no backward shift).
+            // We verify there is no negative gap (start before previous start), meaning the
+            // offset was NOT subtracted.
+            Assert.Greater(capturedLoop.Pref.ScheduledStartTime, 0.0,
+                "Loop: ScheduledStartTime must be > 0 (set to endDspTime)");
+            double loopDuration = capturedLoop.Pref.ScheduledEndTime - capturedLoop.Pref.ScheduledStartTime;
+            Assert.AreEqual(expectedDuration, loopDuration, 0.1,
+                "Loop: ScheduledEndTime - ScheduledStartTime must equal the clip duration (no fade offset)");
+
+            if (loopPlayer.IsActive)
+            {
+                loopPlayer.Stop(FadeData.Immediate, StopMode.Stop, null);
+                yield return null;
+            }
+            UnityEngine.Object.DestroyImmediate(loopGo);
+            DestroyEntityWithClip(loopEntity);
+        }
+
+        [UnityTest]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // When the entity's PlayMode is Chained and the current stage is Start,
+        // ScheduleNextPlayback sets needNewClip=true (lines 269-274 of Playback.cs),
+        // meaning handover.Clip is null (the next player must pick its own clip)
+        // and handover.Pref.ScheduledEndTime is reset to 0 so the new player can
+        // recalculate based on its own clip's duration.
+        public IEnumerator ChainedMode_AtPlaybackStageStart_RequestsNewClip()
+        {
+            SetupStubSoundManager();
+
+            // Build a Chained entity with two clips (Start + Loop stages).
+            const int sampleRate = 44100;
+            var testClip1 = AudioClip.Create("StartClip", sampleRate, 1, sampleRate, false);
+            var testClip2 = AudioClip.Create("LoopClip",  sampleRate, 1, sampleRate, false);
+
+            var entity = ScriptableObject.CreateInstance<AudioEntity>();
+            entity.name = "ChainedTestEntity";
+            SetAutoProperty(entity, "AudioType", BroAudioType.SFX);
+            SetAutoProperty(entity, "MasterVolume", 1f);
+            SetAutoProperty(entity, "Pitch", AudioConstant.DefaultPitch);
+            SetField(entity, "MulticlipsPlayMode", MulticlipsPlayMode.Chained);
+
+            var broClip1 = new BroAudioClip();
+            typeof(BroAudioClip).GetField("AudioClip", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(broClip1, testClip1);
+            broClip1.Volume = AudioConstant.FullVolume;
+
+            var broClip2 = new BroAudioClip();
+            typeof(BroAudioClip).GetField("AudioClip", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(broClip2, testClip2);
+            broClip2.Volume = AudioConstant.FullVolume;
+
+            entity.Clips = new[] { broClip1, broClip2 };
+
+            var id = new SoundID(entity);
+            // Use default SoundManager chained loop settings (Loop is the default).
+            // We need CanHandoverToLoop() == true, so ChainedModeStage must be Start (=1),
+            // which is set automatically by PlaybackPreference ctor for Chained entities.
+            var pref = new PlaybackPreference(entity);
+
+            // Verify precondition: stage is Start.
+            Assert.AreEqual(PlaybackStage.Start, pref.ChainedModeStage,
+                "Precondition: Chained PlaybackPreference must start at Stage.Start");
+
+            _player.SetPlaybackData(id, pref, new NullMixerPool());
+
+            PlaybackHandoverData capturedHandover = default;
+            bool requestFired = false;
+            _player.RequestNextPlayer = handover =>
+            {
+                capturedHandover = handover;
+                requestFired = true;
+                return null;
+            };
+
+            _player.Play();
+
+            float elapsed = 0f;
+            while (!requestFired && elapsed < 3f)
+            {
+                yield return null;
+                elapsed += Time.unscaledDeltaTime;
+            }
+
+            Assert.IsTrue(requestFired,
+                "RequestNextPlayer must be invoked by ScheduleNextPlayback for Chained/Start stage");
+
+            // needNewClip was true (stage == Start): Clip must be null.
+            Assert.IsNull(capturedHandover.Clip,
+                "Handover.Clip must be null when needNewClip=true (Chained + Start stage)");
+
+            // ScheduledEndTime must have been reset to 0 so the new player recalculates.
+            Assert.AreEqual(0.0, capturedHandover.Pref.ScheduledEndTime, 0.001,
+                "Handover Pref.ScheduledEndTime must be reset to 0 when needNewClip=true");
+
+            // Stage in the new pref must be Loop (not Start) since isEnd=false.
+            Assert.AreEqual(PlaybackStage.Loop, capturedHandover.Pref.ChainedModeStage,
+                "Handover Pref.ChainedModeStage must advance to Loop for a non-end handover");
+
+            if (_player.IsActive)
+            {
+                _player.Stop(FadeData.Immediate, StopMode.Stop, null);
+                yield return null;
+            }
+
+            UnityEngine.Object.DestroyImmediate(testClip1);
+            UnityEngine.Object.DestroyImmediate(testClip2);
+            UnityEngine.Object.DestroyImmediate(entity);
+        }
+
+        [UnityTest]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // StopControl starts a ScheduleNextPlayback coroutine with isEnd=true when the player
+        // is in chained mode (CanHandoverToEnd() is true) and an _instanceWrapper is set.
+        // This test verifies that Stop() during chained-mode playback schedules an end-stage
+        // handover by observing that RequestNextPlayer is called with isEnd=true data.
+        public IEnumerator ChainedMode_AtPlaybackStageEnd_PassesIsEndTrue()
+        {
+            SetupStubSoundManager();
+
+            const int sampleRate = 44100;
+            var testClip1 = AudioClip.Create("StartClip2",  sampleRate, 1, sampleRate, false);
+            var testClip2 = AudioClip.Create("LoopClip2",   sampleRate, 1, sampleRate, false);
+            var testClip3 = AudioClip.Create("EndClip2",    sampleRate, 1, sampleRate, false);
+
+            var entity = ScriptableObject.CreateInstance<AudioEntity>();
+            entity.name = "ChainedEndTestEntity";
+            SetAutoProperty(entity, "AudioType", BroAudioType.SFX);
+            SetAutoProperty(entity, "MasterVolume", 1f);
+            SetAutoProperty(entity, "Pitch", AudioConstant.DefaultPitch);
+            SetField(entity, "MulticlipsPlayMode", MulticlipsPlayMode.Chained);
+
+            void SetBroClip(ref BroAudioClip bc, AudioClip ac)
+            {
+                bc = new BroAudioClip();
+                typeof(BroAudioClip).GetField("AudioClip", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(bc, ac);
+                bc.Volume = AudioConstant.FullVolume;
+            }
+            BroAudioClip bc1 = default, bc2 = default, bc3 = default;
+            SetBroClip(ref bc1, testClip1);
+            SetBroClip(ref bc2, testClip2);
+            SetBroClip(ref bc3, testClip3);
+            entity.Clips = new[] { bc1, bc2, bc3 };
+
+            var id = new SoundID(entity);
+            // Force ChainedModeStage = Loop so CanHandoverToEnd() returns true.
+            var pref = new PlaybackPreference(entity);
+            pref.ChainedModeStage = PlaybackStage.Loop;
+            _player.SetPlaybackData(id, pref, new NullMixerPool());
+
+            // Give the player an instance wrapper so StopControl enters the handover branch.
+            var wrapper = new AudioPlayerInstanceWrapper(_player);
+            InvokeMethod(_player, "SetInstanceWrapper", wrapper);
+
+            PlaybackHandoverData capturedEnd = default;
+            bool endRequestFired = false;
+            _player.RequestNextPlayer = handover =>
+            {
+                capturedEnd = handover;
+                endRequestFired = true;
+                return null;
+            };
+
+            _player.Play();
+            yield return null; // let PlayControl start AudioSource.Play()
+
+            Assert.IsTrue(_player.IsPlaying, "Precondition: AudioSource must be playing");
+
+            // Trigger Stop → StopControl → ScheduleNextPlayback(isEnd=true).
+            _player.Stop(FadeData.Immediate, StopMode.Stop, null);
+
+            // With isEnd=true, warmUpTime = 0, so ScheduleNextPlayback fires immediately.
+            // Allow a couple of frames for the coroutine to run.
+            float elapsed = 0f;
+            while (!endRequestFired && elapsed < 1f)
+            {
+                yield return null;
+                elapsed += Time.unscaledDeltaTime;
+            }
+
+            Assert.IsTrue(endRequestFired,
+                "RequestNextPlayer must be invoked from the end-stage handover path in StopControl");
+
+            // For isEnd=true, ChainedModeStage must be End in the new pref.
+            Assert.AreEqual(PlaybackStage.End, capturedEnd.Pref.ChainedModeStage,
+                "End-stage handover must set ChainedModeStage = End");
+
+            // needNewClip is also true for isEnd=true (lines 269-274), so Clip must be null.
+            Assert.IsNull(capturedEnd.Clip,
+                "Handover.Clip must be null for end-stage handover (needNewClip=true)");
+
+            UnityEngine.Object.DestroyImmediate(testClip1);
+            UnityEngine.Object.DestroyImmediate(testClip2);
+            UnityEngine.Object.DestroyImmediate(testClip3);
+            UnityEngine.Object.DestroyImmediate(entity);
+        }
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // ReceiveHandover() restores _trackVolume.Target, StaticPitch, and
+        // CurrentActiveTrackEffects from the incoming PlaybackHandoverData, then calls
+        // PlayInternal() so playback starts on the receiving player.
+        // This test calls ReceiveHandover directly via reflection to verify the state
+        // transfers without needing a full two-player coroutine setup.
+        public void ReceiveHandover_RestoresTrackVolumePitchAndEffect()
+        {
+            SetupStubSoundManager();
+
+            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var id = new SoundID(entity);
+
+            // Build a handover that carries non-default values.
+            const float handoverTrackVolume = 0.6f;
+            const float handoverPitch = 1.8f;
+
+            var handover = new PlaybackHandoverData
+            {
+                ID = id,
+                Pref = new PlaybackPreference(entity),
+                Clip = entity.Clips[0],
+                TrackVolume = handoverTrackVolume,
+                Pitch = handoverPitch,
+                // TrackEffect: leave at None (no mixer assigned, SetTrackEffect would no-op).
+                TrackEffect = EffectType.None,
+            };
+
+            // Call ReceiveHandover via reflection (it's internal).
+            var receiveMethod = typeof(AudioPlayer).GetMethod(
+                "ReceiveHandover",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            Assert.IsNotNull(receiveMethod, "ReceiveHandover method not found — has it been renamed?");
+            receiveMethod.Invoke(_player, new object[] { handover, new NullMixerPool() });
+
+            // _trackVolume.Target must reflect the handover value.
+            var trackVol = GetField<AudioPlayer, Fader>(_player, "_trackVolume");
+            Assert.AreEqual(handoverTrackVolume, trackVol.Target, 0.001f,
+                "_trackVolume.Target must be set from handover.TrackVolume");
+
+            // StaticPitch must reflect the handover pitch.
+            Assert.AreEqual(handoverPitch, _player.StaticPitch, 0.001f,
+                "StaticPitch must be set from handover.Pitch");
+
+            // With no mixer, TrackEffect override is a no-op (SetTrackEffect guard fires).
+            // CurrentActiveTrackEffects must remain None.
+            Assert.AreEqual(EffectType.None, _player.CurrentActiveTrackEffects,
+                "CurrentActiveTrackEffects must remain None when no mixer is available");
+
+            // Clean up.
+            _player.Stop(FadeData.Immediate, StopMode.Stop, null);
+            DestroyEntityWithClip(entity);
+        }
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // BeginHandover() swaps the AudioPlayerInstanceWrapper from the originating player
+        // to the incoming player (_nextPlayer), then clears both _instanceWrapper and
+        // _nextPlayer on the originating player (lines 305-308 of Playback.cs).
+        public void BeginHandover_SwapsInstanceWrapperAndClearsNextPlayer()
+        {
+            SetupStubSoundManager();
+
+            // Prepare the "incoming" player: needs a valid ID so it can become active.
+            var nextGo = new GameObject("BeginHandoverNextPlayer");
+            var nextPlayer = nextGo.AddComponent<AudioPlayer>();
+            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100);
+            var id = new SoundID(entity);
+            nextPlayer.SetPlaybackData(id, new PlaybackPreference(entity), new NullMixerPool());
+
+            // Give the originating player a valid pref so CanHandover passes.
+            // CanHandoverToLoop() requires HasLoop() → set Loop=true on entity.
+            SetAutoProperty(entity, "Loop", true);
+            var loopPref = new PlaybackPreference(entity);
+            _player.SetPlaybackData(id, loopPref, new NullMixerPool());
+
+            // Attach the wrapper and next player via reflection (internal fields).
+            var wrapper = new AudioPlayerInstanceWrapper(_player);
+            InvokeMethod(_player, "SetInstanceWrapper", wrapper);
+            SetField(_player, "_nextPlayer", nextPlayer);
+
+            // Verify preconditions.
+            Assert.IsNotNull(GetField<AudioPlayer, InstanceWrapper<AudioPlayer>>(_player, "_instanceWrapper"),
+                "Precondition: _instanceWrapper must be set before BeginHandover");
+            Assert.IsNotNull(GetField<AudioPlayer, AudioPlayer>(_player, "_nextPlayer"),
+                "Precondition: _nextPlayer must be set before BeginHandover");
+
+            // Call BeginHandover via reflection.
+            var beginHandoverMethod = typeof(AudioPlayer).GetMethod(
+                "BeginHandover",
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                new System.Type[] { typeof(bool) },
+                null);
+            Assert.IsNotNull(beginHandoverMethod, "BeginHandover(bool) not found — has it been renamed?");
+            beginHandoverMethod.Invoke(_player, new object[] { false });
+
+            // After BeginHandover: _instanceWrapper must be null on the originating player.
+            Assert.IsNull(GetField<AudioPlayer, InstanceWrapper<AudioPlayer>>(_player, "_instanceWrapper"),
+                "_instanceWrapper must be null on the originating player after BeginHandover");
+
+            // _nextPlayer must be null on the originating player.
+            Assert.IsNull(GetField<AudioPlayer, AudioPlayer>(_player, "_nextPlayer"),
+                "_nextPlayer must be null on the originating player after BeginHandover");
+
+            // The incoming player must now hold the wrapper.
+            var nextPlayerWrapper = (IAudioPlayer)InvokeMethod(nextPlayer, "GetInstanceWrapper");
+            Assert.IsNotNull(nextPlayerWrapper,
+                "nextPlayer must hold the transferred wrapper after BeginHandover");
+            Assert.AreSame(wrapper, nextPlayerWrapper,
+                "The same wrapper instance must now point to the incoming player");
+
+            UnityEngine.Object.DestroyImmediate(nextGo);
+            DestroyEntityWithClip(entity);
+        }
+
+        [UnityTest]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // When a second call to ScheduleNextPlayback is triggered while _nextPlayer is
+        // already set (e.g. by an overlapping Stop), line 293 stops the old _nextPlayer
+        // before replacing it.  We inject a pre-populated _nextPlayer and then invoke
+        // ScheduleNextPlayback via reflection to observe the stop call.
+        public IEnumerator Stop_DuringScheduledHandover_StopsNextPlayer()
+        {
+            SetupStubSoundManager();
+
+            // Prepare the main player with a loop entity.
+            const int sampleRate = 44100;
+            var entity = MakeLoopEntityWithClip(sampleLength: sampleRate * 5);
+            var id = new SoundID(entity);
+            var pref = new PlaybackPreference(entity);
+            _player.SetPlaybackData(id, pref, new NullMixerPool());
+
+            // Start the main player.
+            _player.Play();
+            yield return null;
+            Assert.IsTrue(_player.IsPlaying, "Precondition: player must be playing");
+
+            // Prepare a "previous next player" that is already playing,
+            // so we can detect that Stop was called on it.
+            var prevNextGo = new GameObject("PrevNextPlayer");
+            var prevNextPlayer = prevNextGo.AddComponent<AudioPlayer>();
+            var prevSource = prevNextPlayer.GetComponent<AudioSource>();
+            prevSource.playOnAwake = false;
+            prevNextPlayer.SetPlaybackData(id, new PlaybackPreference(entity), new NullMixerPool());
+
+            // Make the prevNextPlayer appear to be playing by calling Play on it.
+            prevNextPlayer.Play();
+            yield return null;
+            Assert.IsTrue(prevNextPlayer.IsPlaying, "Precondition: prevNextPlayer must be playing");
+
+            // Inject the prevNextPlayer as _nextPlayer on the main player.
+            SetField(_player, "_nextPlayer", prevNextPlayer);
+
+            // Now trigger ScheduleNextPlayback again by calling it directly via reflection.
+            // With isEnd=false, warmUpTime = 0.1s — but the player's pref has ScheduledEndTime set
+            // by PlayControl, so endDspTime is in the near future.  We pass AudioSettings.dspTime
+            // as endDspTime so warmUpTime check fires immediately.
+            var scheduleMethod = typeof(AudioPlayer).GetMethod(
+                "ScheduleNextPlayback",
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                new System.Type[] { typeof(double), typeof(bool) },
+                null);
+            Assert.IsNotNull(scheduleMethod, "ScheduleNextPlayback(double, bool) not found");
+
+            // Use dspTime - 1 so (dspTime < scheduledStartTime - warmup) is immediately false,
+            // meaning the coroutine body runs past the while-loop in the first frame.
+            double pastEndDspTime = AudioSettings.dspTime - 1.0;
+
+            // Start the coroutine by invoking the method (it returns IEnumerator).
+            var handoverCoroutineRef = typeof(AudioPlayer).GetField(
+                "_handoverScheduleCoroutine",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(handoverCoroutineRef, "_handoverScheduleCoroutine field not found");
+
+            var enumerator = scheduleMethod.Invoke(_player, new object[] { pastEndDspTime, false }) as IEnumerator;
+            Assert.IsNotNull(enumerator, "ScheduleNextPlayback must return an IEnumerator");
+
+            // Drive the coroutine to its first suspension point (the while condition).
+            // The while condition is false immediately (dspTime >= pastEndDspTime - 0.1),
+            // so MoveNext() should run all the way to the _nextPlayer?.Stop() call and then
+            // to the RequestNextPlayer?.Invoke() call in one step.
+            bool movedOnce = enumerator.MoveNext();
+            // If movedOnce is false the coroutine ran to completion without yielding.
+            // Either way, the Stop line must have executed.
+
+            // Give it one additional frame in case there is a yield.
+            yield return null;
+
+            // Assert: the previously-injected prevNextPlayer was stopped by the Stop() call
+            // on line 293.  After Stop(Immediate, Stop), it should no longer be active.
+            Assert.IsFalse(prevNextPlayer.IsActive,
+                "_nextPlayer?.Stop(Immediate) must have been called, recycling the previous next-player");
+
+            // Clean up
+            if (_player.IsActive)
+            {
+                _player.Stop(FadeData.Immediate, StopMode.Stop, null);
+                yield return null;
+            }
+            if (prevNextGo != null)
+            {
+                UnityEngine.Object.DestroyImmediate(prevNextGo);
+            }
+            
         // 30. Stop during natural fade-out must cancel the loop handover
         //     Regression for: LoopType.Loop with fadeOut. While PlayControl is
         //     in its natural fade-out (endDspTime - fadeOut .. endDspTime),

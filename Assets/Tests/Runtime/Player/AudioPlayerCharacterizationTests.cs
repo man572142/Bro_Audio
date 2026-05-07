@@ -4825,6 +4825,125 @@ namespace Ami.BroAudio.Tests
                 "AudioSource.pitch must equal DefaultPitch after ResetPitch()");
         }
 
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // SetInitialPitch priority chain — FIRST branch:
+        //   When StaticPitch != DefaultPitch, AudioSource.pitch is set from
+        //   entity.GetRandomValue(StaticPitch, RandomFlag.Pitch), which equals
+        //   StaticPitch exactly when the entity has no RandomFlag.Pitch in its
+        //   RandomFlags. The audioTypePlaybackPref.Pitch branch and the
+        //   entity.GetPitch() fallback are NOT reached.
+        public void SetInitialPitch_UsesStaticPitchWhenNonDefault()
+        {
+            SetupStubSoundManager();
+            _player.MixerPool = new NullMixerPool();
+
+            const float nonDefaultPitch = 1.5f;
+
+            // Set StaticPitch via the public API (also writes AudioSource.pitch as a side effect).
+            ((IAudioPlayer)_player).SetPitch(nonDefaultPitch, 0f);
+            Assert.AreEqual(nonDefaultPitch, _player.StaticPitch, 0.001f,
+                "Precondition: StaticPitch must be non-default before invoking SetInitialPitch");
+
+            // Reset AudioSource.pitch to a sentinel so we can prove SetInitialPitch wrote it,
+            // not the earlier SetPitch call.
+            _go.GetComponent<AudioSource>().pitch = AudioConstant.DefaultPitch;
+
+            // Build entity — bare MakeEntity() has empty RandomFlags, so
+            // GetRandomValue(baseValue, RandomFlag.Pitch) returns baseValue unchanged.
+            // Set entity.Pitch to DefaultPitch for hygiene (ensures the fallback branches
+            // would produce a different value if accidentally reached).
+            var entity = MakeEntity();
+            SetAutoProperty(entity, "Pitch", AudioConstant.DefaultPitch);
+
+            // audioTypePlaybackPref.Pitch is DefaultPitch — second branch must NOT fire.
+            var audioTypePref = new AudioTypePlaybackPreference();
+
+            InvokeMethod(_player, "SetInitialPitch", entity, audioTypePref);
+
+            Assert.AreEqual(nonDefaultPitch, _go.GetComponent<AudioSource>().pitch, 0.001f,
+                "AudioSource.pitch must equal StaticPitch when StaticPitch is non-default");
+
+            UnityEngine.Object.DestroyImmediate(entity);
+        }
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // Pins the SECOND branch of the SetInitialPitch priority chain:
+        //   1. StaticPitch != DefaultPitch  → use StaticPitch  (NOT this branch)
+        //   2. audioTypePlaybackPref.Pitch != DefaultPitch → use audioTypePlaybackPref.Pitch  ← THIS BRANCH
+        //   3. fallback → entity.GetPitch()
+        //
+        // When StaticPitch == DefaultPitch AND audioTypePlaybackPref.Pitch != DefaultPitch,
+        // SetInitialPitch must write audioTypePlaybackPref.Pitch to AudioSource.pitch —
+        // NOT the entity's own pitch.
+        public void SetInitialPitch_UsesAudioTypePitchWhenStaticIsDefault()
+        {
+            // Arrange — entity whose own pitch returns DefaultPitch so that if the wrong
+            // (third) branch were taken, AudioSource.pitch would be 1.0f, not 1.7f.
+            var entity = MakeEntity();
+            SetAutoProperty(entity, "Pitch", AudioConstant.DefaultPitch);
+
+            // audioTypePlaybackPref.Pitch = 1.7f → triggers the second branch.
+            var pref = new AudioTypePlaybackPreference();
+            AudioTypePlaybackPreference.OnSetpitch(pref, 1.7f);
+
+            // Set AudioSource.pitch to a sentinel value so the assertion proves
+            // SetInitialPitch actually wrote to it.
+            _go.GetComponent<AudioSource>().pitch = 1.0f;
+
+            // StaticPitch on a fresh _player is already AudioConstant.DefaultPitch —
+            // no need to set it explicitly.
+            Assert.AreEqual(AudioConstant.DefaultPitch, _player.StaticPitch, 0.001f,
+                "Precondition: StaticPitch must be DefaultPitch so the first branch is skipped");
+
+            InvokeMethod(_player, "SetInitialPitch", entity, (IAudioPlaybackPref)pref);
+
+            Assert.AreEqual(1.7f, _go.GetComponent<AudioSource>().pitch, 0.001f,
+                "AudioSource.pitch must equal audioTypePlaybackPref.Pitch (1.7f) when StaticPitch == DefaultPitch");
+
+            UnityEngine.Object.DestroyImmediate(entity);
+        }
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // Pins the THIRD (fallback) branch of the SetInitialPitch priority chain:
+        //
+        //   1st branch: StaticPitch != DefaultPitch  → use StaticPitch (skipped here)
+        //   2nd branch: audioTypePlaybackPref.Pitch != DefaultPitch → use pref.Pitch (skipped here)
+        //   3rd branch (fallback): both are DefaultPitch → delegate to entity.GetPitch()
+        //
+        // A fresh AudioPlayer always has StaticPitch == DefaultPitch (1.0), and a fresh
+        // AudioTypePlaybackPreference also has Pitch == DefaultPitch (1.0), so neither
+        // override fires and the method must fall through to entity.GetPitch(), which
+        // returns entity.Pitch directly (RandomFlags is empty on a fresh ScriptableObject).
+        public void SetInitialPitch_FallsBackToEntityGetPitch()
+        {
+            const float sentinelPitch = 0.75f;
+
+            var entity = MakeEntity("FallbackPitchEntity");
+            SetAutoProperty(entity, "Pitch", sentinelPitch);
+
+            // Confirm both override conditions are inactive.
+            Assert.AreEqual(AudioConstant.DefaultPitch, _player.StaticPitch, 0.001f,
+                "Precondition: StaticPitch must equal DefaultPitch so the first branch is skipped");
+
+            var pref = new AudioTypePlaybackPreference();
+            Assert.AreEqual(AudioConstant.DefaultPitch, pref.Pitch, 0.001f,
+                "Precondition: audioTypePlaybackPref.Pitch must equal DefaultPitch so the second branch is skipped");
+
+            // Seed AudioSource.pitch with a value distinct from the sentinel so a no-op would be caught.
+            _go.GetComponent<AudioSource>().pitch = AudioConstant.DefaultPitch; // 1.0f != 0.75f
+
+            InvokeMethod(_player, "SetInitialPitch", entity, pref);
+
+            Assert.AreEqual(sentinelPitch, _go.GetComponent<AudioSource>().pitch, 0.001f,
+                "AudioSource.pitch must equal entity.GetPitch() (i.e. entity.Pitch) when both StaticPitch " +
+                "and audioTypePlaybackPref.Pitch equal DefaultPitch");
+
+            UnityEngine.Object.DestroyImmediate(entity);
+        }
+
         // =====================================================================
         // 38. Dominator / Track-type wiring (Plan §1.11)
         // =====================================================================

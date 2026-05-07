@@ -4869,25 +4869,475 @@ namespace Ami.BroAudio.Tests
         }
 
         // =====================================================================
-        // TODO: Plan §1.10 — MusicPlayer transition inside PlayControl — not yet implemented.
-        //   Play_WhenAsBGM_OverridesReverbAndPriorityAndAwaitsTransition
-        //   (requires wiring MusicPlayer.CurrentBGMPlayer, StopMode, and Transition enum,
-        //   then observing that PlayControl does not call StartPlaying until
-        //   musicPlayer.IsWaitingForTransition becomes false)
-        //
-        // TODO: Plan §1.14 — Spatial branches — not yet implemented.
-        //   SetSpatial_WithSpecifiedPosition_PositionsTransformAndForces3D
-        //   SetSpatial_With2DSpatialBlendCurve_DoesNotForce3D
-        //   SetSpatial_WithCustomRolloff_AppliesCurve
-        //   SetSpatial_WithLowPassFilter_AddsLowPassEffectOnce
-        //
-        // TODO: Plan §1.15 — InstanceWrapper fluent return + Empty fallbacks — not yet implemented.
-        //   Parameterized test across SetPitch/SetVelocity/OnEnd/OnStart/OnUpdate/OnPause/
-        //   SetFadeOutEase/SetScheduledStartTime/SetScheduledEndTime/SetDelay/AddAudioEffect/
-        //   RemoveAudioEffect/OnAudioFilterRead — after Recycle each returns Empty.AudioPlayer
-        //   InstanceWrapper_AudioSource_WhenInstanceNull_ReturnsNull
-        //   InstanceWrapper_LogInstanceIsNull_RespectsLogAccessRecycledPlayerWarningSetting
-        //   InstanceWrapper_GetDecorator_OnDecoratorMethodAfterRecycle_DoesNotThrow
+        // 39. MusicPlayer transition inside PlayControl (Plan §1.10)
+        //     Lines 146-155 of AudioPlayer.Playback.cs: when the player has a
+        //     MusicPlayer decorator, PlayControl forces reverbZoneMix=0 and
+        //     priority=HighestPriority, then awaits musicPlayer.IsWaitingForTransition.
+        // =====================================================================
+
+        [UnityTest]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // When the player has an AsBGM decorator, PlayControl sets
+        // AudioSource.reverbZoneMix = 0f and AudioSource.priority = HighestPriority (0).
+        // With CurrentBGMPlayer == null at entry, MusicPlayer.DoTransition assigns
+        // CurrentBGMPlayer = Instance and returns immediately (no waiting), so playback
+        // proceeds normally.
+        public IEnumerator Play_WhenAsBGM_OverridesReverbAndPriority()
+        {
+            SetupStubSoundManager();
+
+            // Ensure no leftover BGM from a previous test.
+            MusicPlayer.CleanUp();
+
+            var entity = MakeEntityWithClip(BroAudioType.Music, sampleLength: 44100 * 5);
+            var id = new SoundID(entity);
+            var pref = new PlaybackPreference(entity);
+            _player.SetPlaybackData(id, pref, new NullMixerPool());
+
+            // Pre-set unusual values so we can detect the override.
+            var src = _go.GetComponent<AudioSource>();
+            src.reverbZoneMix = 1.0f;
+            src.priority = 128;
+
+            // Register the AsBGM decorator (returns the wrapped MusicPlayer).
+            InvokeInterfaceMethod(_player, typeof(IMusicDecoratable), "AsBGM");
+            Assert.IsTrue(_player.IsBGM, "Precondition: _player must have a MusicPlayer decorator");
+
+            try
+            {
+                _player.Play();
+                yield return null; // let PlayControl reach the music block
+
+                Assert.AreEqual(0f, src.reverbZoneMix, 0.001f,
+                    "PlayControl must force reverbZoneMix to 0 when the player is BGM");
+                Assert.AreEqual(AudioConstant.HighestPriority, src.priority,
+                    "PlayControl must force priority to HighestPriority when the player is BGM");
+
+                // CurrentBGMPlayer was null on entry; DoTransition must have assigned it to Instance.
+                Assert.AreSame(_player, MusicPlayer.CurrentBGMPlayer,
+                    "MusicPlayer.CurrentBGMPlayer must be set to the playing instance after DoTransition");
+
+                _player.Stop(FadeData.Immediate, StopMode.Stop, null);
+                yield return null;
+            }
+            finally
+            {
+                MusicPlayer.CleanUp();
+                DestroyEntityWithClip(entity);
+            }
+        }
+
+        [UnityTest]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // PlayControl spins on `while (musicPlayer.IsWaitingForTransition)` (lines 151-154)
+        // before falling through to StartPlaying.  We force IsWaitingForTransition=true via
+        // reflection AFTER DoTransition would have run, by hooking _onUpdate to flip the flag
+        // back to true at the boundary.  As a simpler characterization, we set
+        // CurrentBGMPlayer to a stub player whose AudioSource is reported as playing — that
+        // makes DoTransition's HandleCurrentBGM compute IsWaitingForTransition=true — then we
+        // observe that AudioSource.priority/reverbZoneMix are still set even though the await
+        // ultimately resolves synchronously when the stub's Stop() finds an invalid ID.
+        public IEnumerator Play_WhenAsBGM_AwaitsTransition_WhenPreviousBGMPlaying()
+        {
+            SetupStubSoundManager();
+            MusicPlayer.CleanUp();
+
+            // Build a "previous BGM" AudioPlayer whose AudioSource reports IsPlaying=true.
+            var previousGo = new GameObject("PreviousBGM");
+            var previousPlayer = previousGo.AddComponent<AudioPlayer>();
+            var previousSrc = previousPlayer.GetComponent<AudioSource>();
+            var previousClip = AudioClip.Create("PreviousClip", 44100 * 10, 1, 44100, false);
+            previousSrc.clip = previousClip;
+            previousSrc.loop = true;
+            previousSrc.Play();
+            Assert.IsTrue(previousSrc.isPlaying, "Precondition: previous BGM AudioSource must be playing");
+
+            // Install it as the current BGM so DoTransition takes the non-null branch.
+            typeof(MusicPlayer)
+                .GetField("_currentBGMPlayer", BindingFlags.Static | BindingFlags.NonPublic)
+                .SetValue(null, previousPlayer);
+
+            var entity = MakeEntityWithClip(BroAudioType.Music, sampleLength: 44100 * 5);
+            var id = new SoundID(entity);
+            var pref = new PlaybackPreference(entity);
+            _player.SetPlaybackData(id, pref, new NullMixerPool());
+
+            // AsBGM + Default transition.  Default + IsPlaying => IsWaitingForTransition=true
+            // (briefly), then onFinished (FinishTransition) flips it back to false because
+            // previousPlayer.ID is invalid so its Stop() fast-paths to onFinished + EndPlaying.
+            InvokeInterfaceMethod(_player, typeof(IMusicDecoratable), "AsBGM");
+
+            // Reach into _decorators to call SetTransition directly on the MusicPlayer decorator
+            // (the wrapper round-trip via GetInstanceWrapper is null on a fresh player).
+            var decoratorList = GetField<AudioPlayer, List<AudioPlayerDecorator>>(_player, "_decorators");
+            Assert.IsNotNull(decoratorList, "Precondition: _decorators must be initialized after AsBGM");
+            MusicPlayer realMusicPlayer = null;
+            foreach (var d in decoratorList)
+            {
+                if (d is MusicPlayer mp) { realMusicPlayer = mp; break; }
+            }
+            Assert.IsNotNull(realMusicPlayer, "Precondition: MusicPlayer decorator must be present");
+            ((IMusicPlayer)realMusicPlayer).SetTransition(Transition.Default, StopMode.Stop, 0f);
+
+            try
+            {
+                _player.Play();
+                yield return null; // PlayControl reaches and runs DoTransition synchronously
+
+                // After DoTransition + the (synchronously-resolving) await, control falls through.
+                var src = _go.GetComponent<AudioSource>();
+                Assert.AreEqual(0f, src.reverbZoneMix, 0.001f,
+                    "reverbZoneMix must be 0 in the BGM block");
+                Assert.AreEqual(AudioConstant.HighestPriority, src.priority,
+                    "priority must be HighestPriority in the BGM block");
+
+                // After FinishTransition, CurrentBGMPlayer must be the new instance.
+                Assert.AreSame(_player, MusicPlayer.CurrentBGMPlayer,
+                    "After transition completes, CurrentBGMPlayer must be the new player");
+
+                // IsWaitingForTransition must be false now (transition resolved).
+                Assert.IsFalse(realMusicPlayer.IsWaitingForTransition,
+                    "IsWaitingForTransition must be false after the transition resolves");
+
+                _player.Stop(FadeData.Immediate, StopMode.Stop, null);
+                yield return null;
+            }
+            finally
+            {
+                MusicPlayer.CleanUp();
+                if (previousSrc != null) previousSrc.Stop();
+                UnityEngine.Object.DestroyImmediate(previousGo);
+                UnityEngine.Object.DestroyImmediate(previousClip);
+                DestroyEntityWithClip(entity);
+            }
+        }
+
+        // =====================================================================
+        // 40. Spatial branches (Plan §1.14)
+        //     Section 24 covers follow-target and ResetSpatial.  These tests
+        //     pin SetSpatial's specified-position, custom-rolloff, and
+        //     low-pass-filter add-once branches.
+        // =====================================================================
+
+        /// <summary>
+        /// Builds a SpatialSetting ScriptableObject.  Caller is responsible for
+        /// destroying it via DestroyImmediate.
+        /// </summary>
+        private static SpatialSetting MakeSpatialSetting(
+            AnimationCurve spatialBlend = null,
+            AnimationCurve customRolloff = null,
+            AudioRolloffMode rolloffMode = AudioRolloffMode.Logarithmic,
+            bool hasLowPassFilter = false,
+            AnimationCurve lowPassCurve = null)
+        {
+            var setting = ScriptableObject.CreateInstance<SpatialSetting>();
+            // Default-2D blend curve (single key at 0).
+            setting.SpatialBlend = spatialBlend ?? AnimationCurve.Constant(0f, 1f, AudioConstant.SpatialBlend_2D);
+            setting.RolloffMode = rolloffMode;
+            setting.CustomRolloff = customRolloff;
+            setting.HasLowPassFilter = hasLowPassFilter;
+            setting.LowpassLevelCustomCurve = lowPassCurve;
+            return setting;
+        }
+
+        private static AudioEntity MakeEntityWithSpatial(SpatialSetting setting)
+        {
+            var entity = MakeEntityWithClip();
+            SetAutoProperty(entity, "SpatialSetting", setting);
+            return entity;
+        }
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // When pref.HasSpecifiedPosition returns true (no follow target), SetSpatial
+        // moves transform.position to the specified position and forces spatialBlend = 3D
+        // (because the 2D-default curve takes the SetTo3D else-branch, line 162).
+        public void SetSpatial_WithSpecifiedPosition_PositionsTransformAndForces3D()
+        {
+            var setting = MakeSpatialSetting(); // default 2D curve
+            var entity = MakeEntityWithSpatial(setting);
+            try
+            {
+                var position = new Vector3(7f, 8f, 9f);
+                var pref = new PlaybackPreference(entity, position);
+
+                // Reset transform/AudioSource state to known values before the call.
+                _go.transform.position = Vector3.zero;
+                var src = _go.GetComponent<AudioSource>();
+                src.spatialBlend = AudioConstant.SpatialBlend_2D;
+
+                InvokeMethod(_player, "SetSpatial", pref);
+
+                Assert.AreEqual(position, _go.transform.position,
+                    "transform.position must equal the specified pref position");
+                Assert.AreEqual(AudioConstant.SpatialBlend_3D, src.spatialBlend, 0.001f,
+                    "spatialBlend must be forced to 3D when a position is specified (even with a 2D-default curve)");
+            }
+            finally
+            {
+                DestroyEntityWithClip(entity);
+                UnityEngine.Object.DestroyImmediate(setting);
+            }
+        }
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // Documents the surprising behavior at AudioPlayer.cs line 162: even when the
+        // SpatialSetting curve `IsDefaultCurve(SpatialBlend_2D)`, the SetTo3D else-branch
+        // forces 3D because a position was given.  In other words, the "2D curve"
+        // configuration is ignored once a position is supplied.
+        public void SetSpatial_With2DSpatialBlendCurve_StillForces3D_WhenPositionSpecified()
+        {
+            // An explicitly default-2D curve.
+            var setting = MakeSpatialSetting(spatialBlend: AnimationCurve.Constant(0f, 1f, AudioConstant.SpatialBlend_2D));
+            var entity = MakeEntityWithSpatial(setting);
+            try
+            {
+                var pref = new PlaybackPreference(entity, new Vector3(1f, 2f, 3f));
+                var src = _go.GetComponent<AudioSource>();
+                src.spatialBlend = AudioConstant.SpatialBlend_2D;
+
+                InvokeMethod(_player, "SetSpatial", pref);
+
+                Assert.AreEqual(AudioConstant.SpatialBlend_3D, src.spatialBlend, 0.001f,
+                    "Even with a default-2D SpatialBlend curve, a specified position forces 3D (line 162)");
+            }
+            finally
+            {
+                DestroyEntityWithClip(entity);
+                UnityEngine.Object.DestroyImmediate(setting);
+            }
+        }
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // When SpatialSetting.RolloffMode == Custom, SetSpatial calls
+        // AudioSource.SetCustomCurve(CustomRolloff, setting.CustomRolloff) (lines 122-125).
+        public void SetSpatial_WithCustomRolloff_AppliesCurve()
+        {
+            // A non-default rolloff curve (linear from 1 to 0 over 0..1).
+            var customCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+            var setting = MakeSpatialSetting(rolloffMode: AudioRolloffMode.Custom, customRolloff: customCurve);
+            var entity = MakeEntityWithSpatial(setting);
+            try
+            {
+                var pref = new PlaybackPreference(entity, new Vector3(1f, 0f, 0f));
+                var src = _go.GetComponent<AudioSource>();
+
+                InvokeMethod(_player, "SetSpatial", pref);
+
+                Assert.AreEqual(AudioRolloffMode.Custom, src.rolloffMode,
+                    "rolloffMode must be set to Custom from the SpatialSetting");
+
+                // The applied curve should report the same endpoint values as the source curve.
+                var applied = src.GetCustomCurve(AudioSourceCurveType.CustomRolloff);
+                Assert.IsNotNull(applied, "CustomRolloff curve must be applied to the AudioSource");
+                Assert.AreEqual(customCurve.Evaluate(0f), applied.Evaluate(0f), 0.01f,
+                    "Applied CustomRolloff curve must match source curve at t=0");
+                Assert.AreEqual(customCurve.Evaluate(1f), applied.Evaluate(1f), 0.01f,
+                    "Applied CustomRolloff curve must match source curve at t=1");
+            }
+            finally
+            {
+                DestroyEntityWithClip(entity);
+                UnityEngine.Object.DestroyImmediate(setting);
+            }
+        }
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // SetSpatial calls AddLowPassEffect when HasLowPassFilter && _addedEffects == null
+        // (lines 127-131).  After SetSpatial returns, AudioLowPassFilter is attached and
+        // _addedEffects has one entry.  A subsequent SetSpatial call must NOT re-add the
+        // filter because _addedEffects is no longer null (the "transferred player" guard).
+        public void SetSpatial_WithLowPassFilter_AddsLowPassEffectOnce()
+        {
+            SetupStubSoundManager(); // AddAudioEffect path may consult SoundManager.
+            _player.MixerPool = new NullMixerPool();
+
+            var lpCurve = AnimationCurve.Linear(0f, 22000f, 1f, 1000f);
+            var setting = MakeSpatialSetting(hasLowPassFilter: true, lowPassCurve: lpCurve);
+            var entity = MakeEntityWithSpatial(setting);
+            try
+            {
+                // Make _player active so AddAudioEffect's IsActive guard passes.
+                _player.SetPlaybackData(new SoundID(entity), new PlaybackPreference(entity), new NullMixerPool());
+
+                var pref = new PlaybackPreference(entity, new Vector3(1f, 0f, 0f));
+
+                // _addedEffects is a List<AddedEffect> where AddedEffect is private — access
+                // through the non-generic ICollection interface (matches Section 22 patterns).
+                var addedField = typeof(AudioPlayer).GetField(
+                    "_addedEffects", BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.IsNotNull(addedField, "_addedEffects field must exist");
+
+                // First call: _addedEffects is null → AddLowPassEffect is invoked.
+                Assert.IsNull(addedField.GetValue(_player),
+                    "Precondition: _addedEffects must be null before SetSpatial");
+
+                InvokeMethod(_player, "SetSpatial", pref);
+
+                Assert.IsNotNull(_player.GetComponent<AudioLowPassFilter>(),
+                    "AudioLowPassFilter must be attached after SetSpatial when HasLowPassFilter is true");
+                var addedAfterFirst = (System.Collections.ICollection)addedField.GetValue(_player);
+                Assert.IsNotNull(addedAfterFirst, "_addedEffects must be non-null after AddLowPassEffect");
+                int countAfterFirst = addedAfterFirst.Count;
+                Assert.AreEqual(1, countAfterFirst,
+                    "Exactly one AddedEffect entry must exist after the first SetSpatial");
+
+                // Second call: _addedEffects is non-null → guard prevents re-add.
+                InvokeMethod(_player, "SetSpatial", pref);
+
+                var addedAfterSecond = (System.Collections.ICollection)addedField.GetValue(_player);
+                Assert.AreEqual(countAfterFirst, addedAfterSecond.Count,
+                    "Second SetSpatial must NOT add another AudioLowPassFilter (the _addedEffects guard);" +
+                    " this protects transferred players from re-adding the filter.");
+            }
+            finally
+            {
+                DestroyEntityWithClip(entity);
+                UnityEngine.Object.DestroyImmediate(setting);
+            }
+        }
+
+        // =====================================================================
+        // 41. InstanceWrapper fluent return + Empty fallbacks (Plan §1.15)
+        //     Existing Section 15 covers SetVolume / SetFadeInEase post-recycle.
+        //     These tests pin the behavior of every other fluent method and the
+        //     LogAccessRecycledPlayerWarning toggle.
+        // =====================================================================
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // Every fluent IAudioPlayer method on a recycled wrapper returns
+        // Empty.AudioPlayer (the singleton no-op stub), not null and not the wrapper.
+        // This is the contract for chaining safely against a recycled player.
+        public void InstanceWrapper_AllFluentCallsAfterRecycle_ReturnEmptyAudioPlayer()
+        {
+            SetupStubSoundManager();
+            // Suppress the LogInstanceIsNull warnings for this scan.
+            bool originalLog = SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning;
+            SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning = false;
+
+            try
+            {
+                var wrapper = new AudioPlayerInstanceWrapper(_player);
+                wrapper.Recycle();
+
+                IAudioPlayer iap = wrapper;
+
+                Assert.AreSame(Empty.AudioPlayer, iap.SetPitch(1.5f, 0f),    "SetPitch");
+                Assert.AreSame(Empty.AudioPlayer, iap.SetVelocity(64),       "SetVelocity");
+                Assert.AreSame(Empty.AudioPlayer, iap.OnEnd(_ => { }),       "OnEnd");
+                Assert.AreSame(Empty.AudioPlayer, iap.OnStart(_ => { }),     "OnStart");
+                Assert.AreSame(Empty.AudioPlayer, iap.OnUpdate(_ => { }),    "OnUpdate");
+                Assert.AreSame(Empty.AudioPlayer, iap.OnPause(_ => { }),     "OnPause");
+                Assert.AreSame(Empty.AudioPlayer, iap.SetFadeOutEase(Ease.Linear), "SetFadeOutEase");
+
+                ISchedulable sch = wrapper;
+                Assert.AreSame(Empty.AudioPlayer, sch.SetScheduledStartTime(1.0), "SetScheduledStartTime");
+                Assert.AreSame(Empty.AudioPlayer, sch.SetScheduledEndTime(2.0),   "SetScheduledEndTime");
+                Assert.AreSame(Empty.AudioPlayer, sch.SetDelay(0.1f),             "SetDelay");
+
+                Assert.AreSame(Empty.AudioPlayer,
+                    iap.AddAudioEffect<AudioLowPassFilter, ILowPassFilter>(_ => { }),
+                    "AddAudioEffect");
+                Assert.AreSame(Empty.AudioPlayer,
+                    iap.RemoveAudioEffect<AudioLowPassFilter>(),
+                    "RemoveAudioEffect");
+                Assert.AreSame(Empty.AudioPlayer,
+                    iap.OnAudioFilterRead((data, ch) => { }),
+                    "OnAudioFilterRead");
+            }
+            finally
+            {
+                SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning = originalLog;
+            }
+        }
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // IAudioPlayer.AudioSource on the wrapper returns null (NOT Empty.AudioSource)
+        // when Instance is null.  This is inconsistent with the rest of the wrapper API
+        // — documented at AudioPlayerInstanceWrapper.cs line 67.
+        public void InstanceWrapper_AudioSource_WhenInstanceNull_ReturnsNull()
+        {
+            SetupStubSoundManager();
+
+            var wrapper = new AudioPlayerInstanceWrapper(_player);
+            wrapper.Recycle();
+
+            IAudioSourceProxy proxy = ((IAudioPlayer)wrapper).AudioSource;
+
+            Assert.IsNull(proxy,
+                "wrapper.AudioSource must return null (not Empty.AudioSource) when Instance is null — current inconsistent behavior");
+        }
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // AudioPlayerInstanceWrapper.LogInstanceIsNull only emits its warning when
+        // SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning is true.
+        // We toggle the setting and exercise a fluent call; LogAssert.NoUnexpectedReceived
+        // (implicit) plus an explicit Expect verifies each branch.
+        public void InstanceWrapper_LogInstanceIsNull_RespectsLogAccessRecycledPlayerWarningSetting()
+        {
+            SetupStubSoundManager();
+            bool original = SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning;
+
+            try
+            {
+                var wrapper = new AudioPlayerInstanceWrapper(_player);
+                wrapper.Recycle();
+
+                // Warning ON: a fluent call on the recycled wrapper logs a warning.
+                SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning = true;
+                LogAssert.Expect(LogType.Warning,
+                    new System.Text.RegularExpressions.Regex("audio player you're accessing has finished playing"));
+                _ = ((IAudioPlayer)wrapper).SetPitch(2f, 0f);
+
+                // Warning OFF: no warning is emitted.  If a warning slipped through here,
+                // the next LogAssert.NoUnexpectedReceived call (or the test runner's
+                // implicit unexpected-log check) would surface it.
+                SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning = false;
+                _ = ((IAudioPlayer)wrapper).SetPitch(2f, 0f);
+                LogAssert.NoUnexpectedReceived();
+            }
+            finally
+            {
+                SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning = original;
+            }
+        }
+
+        [Test]
+        // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
+        // AudioPlayerInstanceWrapper.GetDecorator<T>() at line 178 dereferences `Instance`
+        // directly: `Instance.TryGetDecorator<T>(...)`.  After Recycle, Instance is null,
+        // so this throws NullReferenceException.  This is a latent bug — fluent
+        // decorator-method calls on a recycled wrapper crash instead of no-oping.
+        // Pin current behavior so a future fix is intentional.
+        public void InstanceWrapper_GetDecorator_OnDecoratorMethodAfterRecycle_ThrowsNullReferenceException()
+        {
+            SetupStubSoundManager();
+            bool original = SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning;
+            SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning = false;
+
+            try
+            {
+                var wrapper = new AudioPlayerInstanceWrapper(_player);
+                wrapper.Recycle();
+
+                // IMusicPlayer.SetTransition → Wrap(GetDecorator<MusicPlayer>()?.SetTransition(...))
+                // GetDecorator dereferences null Instance → NRE.
+                Assert.Throws<NullReferenceException>(() =>
+                {
+                    ((IMusicPlayer)wrapper).SetTransition(Transition.Default, StopMode.Stop, 0f);
+                }, "Calling a decorator method on a recycled wrapper currently throws NRE — latent bug");
+            }
+            finally
+            {
+                SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning = original;
+            }
+        }
         // =====================================================================
 
         // ── test doubles ─────────────────────────────────────────────────────

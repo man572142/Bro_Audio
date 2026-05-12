@@ -71,6 +71,8 @@ namespace Ami.BroAudio.Runtime
             return HasFading(clipFade, SoundManager.FadeInEase, ref _fadeInData, out fadeIn, out ease);
         }
 
+        public bool HasFadeOutOverride => _fadeOutData.HasPendingOverride;
+
         public bool HasFadeOut(float clipFade, out float fadeOut, out Ease ease)
         {
             return HasFading(clipFade, SoundManager.FadeOutEase, ref _fadeOutData, out fadeOut, out ease);

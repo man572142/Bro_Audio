@@ -25,6 +25,11 @@ namespace Ami.BroAudio
         {
             return ((int)flags & (int)targetFlag) != 0;
         }
+
+        public static bool Contains(this AudioEntityFlag flags, AudioEntityFlag targetFlag)
+        {
+            return ((int)flags & (int)targetFlag) != 0;
+        }
         #endregion
 
         public static BroAudioType ConvertEverythingFlag(this BroAudioType audioType)

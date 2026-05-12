@@ -397,10 +397,13 @@ namespace Ami.BroAudio.Runtime
             IsStopping = true;
             _pref.SetNextFadeOut(overrideFade);
 
+            bool didHandoverToEnd = false;
             if (_instanceWrapper != null && _pref.CanHandoverToEnd())
             {
                 this.RestartCoroutine(ScheduleNextPlayback(AudioSettings.dspTime, isEnd: true), ref _handoverScheduleCoroutine);  // Start the next playback immediately
                 BeginHandover(isEnd: true);
+                // BeginHandover only nulls _instanceWrapper on success; the next player now owns onUpdate dispatch.
+                didHandoverToEnd = _instanceWrapper == null;
             }
 
             #region FadeOut
@@ -414,8 +417,11 @@ namespace Ami.BroAudio.Runtime
                     while (AudioSource.timeSamples < endSample)
                     {
                         yield return null;
-                        // TODO: if it has handover, we should not trigger onUpdate from here
-                        if (!OnUpdate())
+                        if (!didHandoverToEnd)
+                        {
+                            _onUpdate?.Invoke(this);
+                        }
+                        if (!IsActive)
                         {
                             yield break;
                         }
@@ -424,7 +430,7 @@ namespace Ami.BroAudio.Runtime
                 else
                 {
                     _clipVolume.SetTarget(0f);
-                    yield return Fade(_clipVolume, fadeOut, fadeOutEase, _onUpdate);
+                    yield return Fade(_clipVolume, fadeOut, fadeOutEase, didHandoverToEnd ? null : _onUpdate);
                 }
             }
             #endregion
@@ -443,12 +449,6 @@ namespace Ami.BroAudio.Runtime
             }
             IsStopping = false;
             onFinished?.Invoke();
-        }
-
-        private bool OnUpdate()
-        {
-            _onUpdate?.Invoke(this);
-            return IsActive;
         }
 
         private void EndPlaying()

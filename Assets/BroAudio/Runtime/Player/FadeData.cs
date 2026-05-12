@@ -26,6 +26,8 @@ namespace Ami.BroAudio.Runtime
             _baseEase = ease;
         }
 
+        public bool HasPendingOverride => Next >= Immediate;
+
         public bool TryGetOrConsumeOverride(out float fade, out Ease ease)
         {
             if (Next >= Immediate)

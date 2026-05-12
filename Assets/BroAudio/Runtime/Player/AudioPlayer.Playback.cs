@@ -407,11 +407,12 @@ namespace Ami.BroAudio.Runtime
             }
 
             #region FadeOut
+            bool hasExplicitOverride = _pref.HasFadeOutOverride;
             if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
             {
-                if (_clipVolume.IsFadingOut) //TODO: but overrideFade ?
+                if (_clipVolume.IsFadingOut && !hasExplicitOverride)
                 {
-                    // if it's fading out. then don't stop. just wait for it
+                    // Natural fade-out already in progress and no override — ride it out
                     var clip = AudioSource.clip;
                     float endSample = clip.samples - (_clip.EndPosition * clip.frequency);
                     while (AudioSource.timeSamples < endSample)

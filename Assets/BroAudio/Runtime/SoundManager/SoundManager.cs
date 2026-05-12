@@ -84,6 +84,7 @@ namespace Ami.BroAudio.Runtime
         public float WebGLMasterVolume { get; private set; } = AudioConstant.FullVolume;
 #endif
 
+        internal double ScheduledPlaybackWarmUpTime { get; private set; } = AudioConstant.MixerWarmUpTime;
         public AudioMixer AudioMixer => _broAudioMixer;
 
         private void Awake()
@@ -100,6 +101,7 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
+            CacheScheduledPlaybackWarmUpTime();
             _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab, transform, Setting.DefaultAudioPlayerPoolSize);
             AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups(GenericTrackName);
             AudioMixerGroup[] dominatorGroups = _broAudioMixer.FindMatchingGroups(DominatorTrackName);
@@ -115,6 +117,21 @@ namespace Ami.BroAudio.Runtime
             // Start the coroutine to cleanup unused loaded addressable entities
             _addressableCleanupCoroutine = StartCoroutine(AddressableCleanupRoutine());
 #endif
+        }
+
+        private void CacheScheduledPlaybackWarmUpTime()
+        {
+            AudioSettings.GetDSPBufferSize(out int bufferLength, out int numBuffers);
+            int outputSampleRate = AudioSettings.outputSampleRate;
+            if (bufferLength <= 0 || numBuffers <= 0 || outputSampleRate <= 0)
+            {
+                ScheduledPlaybackWarmUpTime = AudioConstant.MixerWarmUpTime;
+                return;
+            }
+
+            double outputLatency = (double)bufferLength * numBuffers / outputSampleRate;
+            // This handover path wakes on frames rather than DSP ticks, so keep the historical fallback as a floor.
+            ScheduledPlaybackWarmUpTime = Math.Max(outputLatency, AudioConstant.MixerWarmUpTime);
         }
 
         private void OnDestroy()

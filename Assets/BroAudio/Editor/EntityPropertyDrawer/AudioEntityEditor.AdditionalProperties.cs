@@ -45,7 +45,8 @@ namespace Ami.BroAudio.Editor
             {
                 lineCount++;
             }
-            if (loopProp.boolValue || seamlessProp.boolValue)
+            var clipsProp = serializedObject.FindProperty(nameof(AudioEntity.Clips));
+            if ((loopProp.boolValue || seamlessProp.boolValue) && clipsProp.arraySize > 1)
             {
                 lineCount++;
             }
@@ -345,7 +346,18 @@ namespace Ami.BroAudio.Editor
             _loopingRects[1] = new Rect(loopRect) { width = 200f, x = _loopingRects[0].xMax };
             DrawToggleGroup(loopRect, _loopingLabel, _loopingToggles, _loopingRects);
 
-            if (loopProp.boolValue || seamlessProp.boolValue)
+            Rect totalRect = loopRect;
+            var data = GetLoopData(loopProp.boolValue, seamlessProp.boolValue);
+            if (seamlessProp.boolValue)
+            {
+                DrawSeamlessSetting(position, ref data);
+                totalRect.height += EditorGUIUtility.singleLineHeight;
+            }
+
+            PropertyClipboard.HandleClipboardContextMenu(totalRect, serializedObject, data, OnPasteLoopSettingValues);
+
+            var clipsProp = serializedObject.FindProperty(nameof(AudioEntity.Clips));
+            if ((loopProp.boolValue || seamlessProp.boolValue) && clipsProp.arraySize > 1)
             {
                 SerializedProperty entityFlagsProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.Flags));
                 int entityFlags = entityFlagsProp.intValue;
@@ -364,16 +376,6 @@ namespace Ami.BroAudio.Editor
                     serializedObject.ApplyModifiedProperties();
                 }
             }
-
-            Rect totalRect = loopRect;
-            var data = GetLoopData(loopProp.boolValue, seamlessProp.boolValue);
-            if (seamlessProp.boolValue)
-            {
-                DrawSeamlessSetting(position, ref data);
-                totalRect.height += EditorGUIUtility.singleLineHeight;
-            }
-                
-            PropertyClipboard.HandleClipboardContextMenu(totalRect, serializedObject, data, OnPasteLoopSettingValues);
             
             static void OnPasteLoopSettingValues(SerializedObject serializedObject, LoopData value)
             {

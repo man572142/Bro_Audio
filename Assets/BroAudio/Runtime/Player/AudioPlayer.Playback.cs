@@ -74,7 +74,7 @@ namespace Ami.BroAudio.Runtime
                 _audioTypeVolume.Complete(audioTypePref.Volume, false);
             }
             _clipVolume.Complete(0f, false);
-            _clip ??= _pref.PickNewClip(); // TODO: Add change clip for each loop option
+            _clip ??= _pref.PickNewClip();
             if (_clip == null)
             {
                 EndPlaying();
@@ -265,7 +265,9 @@ namespace Ami.BroAudio.Runtime
                 newPref.ScheduledEndTime -= fadeOut;
             }
 
-            bool needNewClip = _pref.IsChainedMode() && (isEnd || _pref.ChainedModeStage == PlaybackStage.Start);
+            bool changePerLoop = _pref.Entity.Flags.Contains(AudioEntityFlag.ChangeClipPerLoop);
+            bool needNewClip = changePerLoop
+                            || (_pref.IsChainedMode() && (isEnd || _pref.ChainedModeStage == PlaybackStage.Start));
             if (needNewClip)
             {
                 // Reset so the new player can recalculate against its picked clip's duration.

@@ -21,6 +21,7 @@ namespace Ami.BroAudio.Editor
         
         private readonly GUIContent _masterVolLabel = new GUIContent("Master Volume","Represent the master volume of all clips");
         private readonly GUIContent _loopingLabel = new GUIContent("Looping");
+        private readonly GUIContent _changeClipPerLoopLabel = new GUIContent("Change Clip Per Loop", "Pick a new clip on every loop iteration");
         private readonly GUIContent _seamlessLabel = new GUIContent("Seamless Setting");
         private readonly GUIContent _pitchLabel = new GUIContent(nameof(AudioEntity.Pitch));
         private readonly GUIContent _spatialLabel = new GUIContent("Spatial & Mix Settings", "Configures 3D sound settings, Stereo Pan, Reverb Zone Mix, and other audio properties");
@@ -38,8 +39,13 @@ namespace Ami.BroAudio.Editor
             ConvertUnityEverythingFlagsToAll(ref drawFlags);
             int intBits = 32;
             int lineCount = GetDrawingLineCount(drawFlags, OverallDrawedPropStartIndex, intBits, IsDefaultValue);
+            var loopProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.Loop));
             var seamlessProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop));
             if (seamlessProp.boolValue)
+            {
+                lineCount++;
+            }
+            if (loopProp.boolValue || seamlessProp.boolValue)
             {
                 lineCount++;
             }
@@ -338,6 +344,26 @@ namespace Ami.BroAudio.Editor
             _loopingRects[0] = new Rect(loopRect) { width = 100f, x = loopRect.x + EditorGUIUtility.labelWidth };
             _loopingRects[1] = new Rect(loopRect) { width = 200f, x = _loopingRects[0].xMax };
             DrawToggleGroup(loopRect, _loopingLabel, _loopingToggles, _loopingRects);
+
+            if (loopProp.boolValue || seamlessProp.boolValue)
+            {
+                SerializedProperty entityFlagsProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.Flags));
+                int entityFlags = entityFlagsProp.intValue;
+                bool changeClipPerLoop = ((AudioEntityFlag)entityFlags).Contains(AudioEntityFlag.ChangeClipPerLoop);
+                Rect changeClipRect = GetRectAndIterateLine(position);
+                changeClipRect.xMin += EditorGUIUtility.labelWidth;
+                EditorGUI.BeginChangeCheck();
+                changeClipPerLoop = EditorGUI.ToggleLeft(changeClipRect, _changeClipPerLoopLabel, changeClipPerLoop);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (changeClipPerLoop)
+                        AddFlag(ref entityFlags, (int)AudioEntityFlag.ChangeClipPerLoop);
+                    else
+                        RemoveFlag(ref entityFlags, (int)AudioEntityFlag.ChangeClipPerLoop);
+                    entityFlagsProp.intValue = entityFlags;
+                    serializedObject.ApplyModifiedProperties();
+                }
+            }
 
             Rect totalRect = loopRect;
             var data = GetLoopData(loopProp.boolValue, seamlessProp.boolValue);

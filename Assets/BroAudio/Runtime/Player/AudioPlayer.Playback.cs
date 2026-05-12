@@ -123,12 +123,14 @@ namespace Ami.BroAudio.Runtime
             double dspTime = AudioSettings.dspTime;
             float pitch = AudioSource.pitch;
             double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), pitch);
-            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : dspTime;
+            double warmUpTime = _pref.HasLoop() && _pref.ScheduledStartTime <= 0
+                ? SoundManager.Instance.ScheduledPlaybackWarmUpTime
+                : 0d;
+            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : dspTime + warmUpTime;
             double endDspTime = _pref.ScheduledEndTime <= 0 ? startBaseTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
             if (_pref.HasLoop() && _pref.ScheduledStartTime <= 0)
             {
-                // TODO: might need a warmup time?
-                _pref.ScheduledStartTime = dspTime;
+                _pref.ScheduledStartTime = startBaseTime;
                 _pref.ScheduledEndTime = endDspTime;
             }
             else if (_pref.ScheduledStartTime > 0 && _pref.ScheduledEndTime <= 0)
@@ -272,8 +274,7 @@ namespace Ami.BroAudio.Runtime
                 newPref.ScheduledEndTime = 0;
             }
             
-            // TODO: calculate the real warmup time
-            var warmUpTime = isEnd ? 0 : 0.1;
+            var warmUpTime = isEnd ? 0d : SoundManager.Instance.ScheduledPlaybackWarmUpTime;
             while (AudioSettings.dspTime < newPref.ScheduledStartTime - warmUpTime)
             {
                 yield return null;

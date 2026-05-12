@@ -21,6 +21,7 @@ namespace Ami.BroAudio.Editor
         
         private readonly GUIContent _masterVolLabel = new GUIContent("Master Volume","Represent the master volume of all clips");
         private readonly GUIContent _loopingLabel = new GUIContent("Looping");
+        private readonly GUIContent _changeClipPerLoopLabel = new GUIContent("Change Clip Per Loop", "Pick a new clip on every loop iteration");
         private readonly GUIContent _seamlessLabel = new GUIContent("Seamless Setting");
         private readonly GUIContent _pitchLabel = new GUIContent(nameof(AudioEntity.Pitch));
         private readonly GUIContent _spatialLabel = new GUIContent("Spatial & Mix Settings", "Configures 3D sound settings, Stereo Pan, Reverb Zone Mix, and other audio properties");
@@ -38,8 +39,14 @@ namespace Ami.BroAudio.Editor
             ConvertUnityEverythingFlagsToAll(ref drawFlags);
             int intBits = 32;
             int lineCount = GetDrawingLineCount(drawFlags, OverallDrawedPropStartIndex, intBits, IsDefaultValue);
+            var loopProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.Loop));
             var seamlessProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.SeamlessLoop));
             if (seamlessProp.boolValue)
+            {
+                lineCount++;
+            }
+            var clipsProp = serializedObject.FindProperty(nameof(AudioEntity.Clips));
+            if ((loopProp.boolValue || seamlessProp.boolValue) && clipsProp.arraySize > 1)
             {
                 lineCount++;
             }
@@ -346,8 +353,29 @@ namespace Ami.BroAudio.Editor
                 DrawSeamlessSetting(position, ref data);
                 totalRect.height += EditorGUIUtility.singleLineHeight;
             }
-                
+
             PropertyClipboard.HandleClipboardContextMenu(totalRect, serializedObject, data, OnPasteLoopSettingValues);
+
+            var clipsProp = serializedObject.FindProperty(nameof(AudioEntity.Clips));
+            if ((loopProp.boolValue || seamlessProp.boolValue) && clipsProp.arraySize > 1)
+            {
+                SerializedProperty entityFlagsProp = serializedObject.FindBackingFieldProperty(nameof(AudioEntity.Flags));
+                int entityFlags = entityFlagsProp.intValue;
+                bool changeClipPerLoop = ((AudioEntityFlag)entityFlags).Contains(AudioEntityFlag.ChangeClipPerLoop);
+                Rect changeClipRect = GetRectAndIterateLine(position);
+                changeClipRect.xMin += EditorGUIUtility.labelWidth;
+                EditorGUI.BeginChangeCheck();
+                changeClipPerLoop = EditorGUI.ToggleLeft(changeClipRect, _changeClipPerLoopLabel, changeClipPerLoop);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (changeClipPerLoop)
+                        AddFlag(ref entityFlags, (int)AudioEntityFlag.ChangeClipPerLoop);
+                    else
+                        RemoveFlag(ref entityFlags, (int)AudioEntityFlag.ChangeClipPerLoop);
+                    entityFlagsProp.intValue = entityFlags;
+                    serializedObject.ApplyModifiedProperties();
+                }
+            }
             
             static void OnPasteLoopSettingValues(SerializedObject serializedObject, LoopData value)
             {

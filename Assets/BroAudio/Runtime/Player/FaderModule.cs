@@ -17,8 +17,8 @@ namespace Ami.BroAudio.Runtime
         public float Current { get; private set; }
         public float Target { get; private set; }
         public bool IsFading => IsFadingIn || IsFadingOut;
-        public bool IsFadingIn => Current < Target;
-        public bool IsFadingOut => Current > Target;
+        public bool IsFadingIn => _coroutine != null && Current < Target;
+        public bool IsFadingOut => _coroutine != null && Current > Target;
 
         private MonoBehaviour _coroutineExecutor => SoundManager.Instance;
 
@@ -71,6 +71,7 @@ namespace Ami.BroAudio.Runtime
         public void StopCoroutine()
         {
             _coroutineExecutor.SafeStopCoroutine(_coroutine);
+            _coroutine = null;
         }
 
         public void RestartCoroutine(IEnumerator enumerator)

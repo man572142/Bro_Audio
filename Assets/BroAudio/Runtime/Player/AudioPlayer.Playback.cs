@@ -172,7 +172,11 @@ namespace Ami.BroAudio.Runtime
             if (_pref.HasFadeIn(_clip.FadeIn, out var fadeIn, out var fadeInEase))
             {
                 _clipVolume.SetTarget(targetClipVolume);
-                yield return Fade(_clipVolume, fadeIn, fadeInEase, _onUpdate);
+                _clipVolume.RestartCoroutine(Fade(_clipVolume, fadeIn, fadeInEase, _onUpdate));
+                while (_clipVolume.IsFading)
+                {
+                    yield return null;
+                }
             }
             else
             {
@@ -202,10 +206,14 @@ namespace Ami.BroAudio.Runtime
                 {
                     BeginHandover();
                 }
-                
+
                 _clipVolume.SetTarget(0f);
-                yield return Fade(_clipVolume, fadeOut, fadeOutEase, _onUpdate);
-                
+                _clipVolume.RestartCoroutine(Fade(_clipVolume, fadeOut, fadeOutEase, _onUpdate));
+                while (_clipVolume.IsFading)
+                {
+                    yield return null;
+                }
+
                 if (_pref.IsLoop(LoopType.Loop))
                 {
                     BeginHandover();
@@ -410,18 +418,13 @@ namespace Ami.BroAudio.Runtime
             bool hasExplicitOverride = _pref.HasFadeOutOverride;
             if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
             {
-                if (_clipVolume.IsFadingOut && !hasExplicitOverride)
+                // After end-handover, the in-flight Fade captured the old player's _onUpdate before
+                // BeginHandover ran. Restart it with a null callback to keep the ce15a806 invariant.
+                if (_clipVolume.IsFadingOut && !hasExplicitOverride && !didHandoverToEnd)
                 {
-                    // Natural fade-out already in progress and no override — ride it out
-                    var clip = AudioSource.clip;
-                    float endSample = clip.samples - (_clip.EndPosition * clip.frequency);
-                    while (AudioSource.timeSamples < endSample)
+                    while (_clipVolume.IsFading)
                     {
                         yield return null;
-                        if (!didHandoverToEnd)
-                        {
-                            _onUpdate?.Invoke(this);
-                        }
                         if (!IsActive)
                         {
                             yield break;
@@ -431,7 +434,11 @@ namespace Ami.BroAudio.Runtime
                 else
                 {
                     _clipVolume.SetTarget(0f);
-                    yield return Fade(_clipVolume, fadeOut, fadeOutEase, didHandoverToEnd ? null : _onUpdate);
+                    _clipVolume.RestartCoroutine(Fade(_clipVolume, fadeOut, fadeOutEase, didHandoverToEnd ? null : _onUpdate));
+                    while (_clipVolume.IsFading)
+                    {
+                        yield return null;
+                    }
                 }
             }
             #endregion

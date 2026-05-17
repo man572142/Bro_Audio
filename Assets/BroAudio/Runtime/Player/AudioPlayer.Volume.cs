@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using Ami.Extension;
 using UnityEngine;
 
@@ -102,21 +101,11 @@ namespace Ami.BroAudio.Runtime
             if (fadeTime > 0f)
             {
                 Ease ease = module.Current < vol ? SoundManager.FadeInEase : SoundManager.FadeOutEase;
-                module.RestartCoroutine(Fade(module, fadeTime, ease));
+                module.Fade(fadeTime, ease);
             }
             else
             {
                 module.Complete(vol);
-            }
-        }
-
-        private IEnumerator Fade(Fader volume, float fadeTime, Ease ease, Action<IAudioPlayer> onUpdate = null)
-        {
-            float elapsedTime = 0f;
-            while (volume.Update(ref elapsedTime, fadeTime, ease))
-            {
-                yield return null;
-                onUpdate?.Invoke(this);
             }
         }
 

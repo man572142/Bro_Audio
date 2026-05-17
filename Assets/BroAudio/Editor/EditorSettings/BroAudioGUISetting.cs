@@ -11,19 +11,25 @@ namespace Ami.BroAudio.Editor.Setting
 
 		public const int LibraryManagerMenuIndex = 0;
 		public const string LibraryManagerMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_LibraryManager;
+		public const string LibraryManagerMenuPath_Window = BroName.MenuItem_BroAudio_Window + BroName.MenuItem_LibraryManager;
 
         public const int PreferencesMenuIndex = 11;
 		public const string PreferencesMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_Preferences;
+		public const string PreferencesMenuPath_Window = BroName.MenuItem_BroAudio_Window + BroName.MenuItem_Preferences;
         public const int SetupWizardMenuIndex = 12;
         public const string SetupWizardMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_SetupWizard;
+		public const string SetupWizardMenuPath_Window = BroName.MenuItem_BroAudio_Window + BroName.MenuItem_SetupWizard;
 		public const int InfoWindowMenuIndex = 13;
 		public const string InfoWindowMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_Info;
+		public const string InfoWindowMenuPath_Window = BroName.MenuItem_BroAudio_Window + BroName.MenuItem_Info;
 
 		public const int ClipEditorMenuIndex = 24;
 		public const string ClipEditorMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_ClipEditor;
+		public const string ClipEditorMenuPath_Window = BroName.MenuItem_BroAudio_Window + BroName.MenuItem_ClipEditor;
 
 		public const int AudioEffectEditorMenuIndex = 25;
 		public const string AudioEffectMenuPath = BroName.MenuItem_BroAudio + BroName.MenuItem_EffectEditor;
+		public const string AudioEffectMenuPath_Window = BroName.MenuItem_BroAudio_Window + BroName.MenuItem_EffectEditor;
 
 		public const int DevToolsMenuIndex = 36;
 

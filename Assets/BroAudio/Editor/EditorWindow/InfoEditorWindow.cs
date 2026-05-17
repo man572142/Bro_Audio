@@ -36,6 +36,7 @@ namespace Ami.BroAudio.Editor
 
 
         [MenuItem(InfoWindowMenuPath, false, InfoWindowMenuIndex)]
+        [MenuItem(InfoWindowMenuPath_Window, false, InfoWindowMenuIndex)]
         public static void ShowWindow()
         {
             EditorWindow window = GetWindow(typeof(InfoEditorWindow));

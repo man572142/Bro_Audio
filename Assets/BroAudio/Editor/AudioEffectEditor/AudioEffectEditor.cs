@@ -20,6 +20,7 @@ namespace Ami.BroAudio.Editor
 		private EditorSetting Setting => BroEditorUtility.EditorSetting;
 
 		[MenuItem(AudioEffectMenuPath, false, AudioEffectEditorMenuIndex)]
+		[MenuItem(AudioEffectMenuPath_Window, false, AudioEffectEditorMenuIndex)]
 		public static void ShowWindow()
 		{
 			EditorWindow window = GetWindow<AudioEffectEditor>();

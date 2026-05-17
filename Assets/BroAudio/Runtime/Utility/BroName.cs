@@ -21,6 +21,7 @@ namespace Ami.BroAudio.Tools
 
         #region MenuItem
         public const string MenuItem_BroAudio = "Tools/BroAudio/";
+		public const string MenuItem_BroAudio_Window = "Window/Audio/BroAudio/";
 		public const string MenuItem_LibraryManager = "Library Manager";
 		public const string MenuItem_ClipEditor = "Audio Clip Editor";
 		public const string MenuItem_EffectEditor = "Audio Effect Editor";

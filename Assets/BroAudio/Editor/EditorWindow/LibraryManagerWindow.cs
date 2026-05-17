@@ -62,6 +62,7 @@ namespace Ami.BroAudio.Editor
         private EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
 
         [MenuItem(LibraryManagerMenuPath, false, LibraryManagerMenuIndex)]
+        [MenuItem(LibraryManagerMenuPath_Window, false, LibraryManagerMenuIndex)]
         public static LibraryManagerWindow ShowWindow()
         {
             EditorWindow window = GetWindow(typeof(LibraryManagerWindow));

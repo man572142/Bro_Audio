@@ -98,6 +98,7 @@ namespace Ami.BroAudio.Editor.Setting
         }
 
         [MenuItem(PreferencesMenuPath,false,PreferencesMenuIndex)]
+        [MenuItem(PreferencesMenuPath_Window,false,PreferencesMenuIndex)]
         public static PreferencesEditorWindow ShowWindow()
         {
             EditorWindow window = GetWindow(typeof(PreferencesEditorWindow));

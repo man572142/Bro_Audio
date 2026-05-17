@@ -67,6 +67,7 @@ namespace Ami.BroAudio.Editor
 		}
 
 		[MenuItem(ClipEditorMenuPath,false,ClipEditorMenuIndex)]
+		[MenuItem(ClipEditorMenuPath_Window,false,ClipEditorMenuIndex)]
 		public static void ShowWindow()
 		{
 			EditorWindow window = GetWindow(typeof(ClipEditorWindow));

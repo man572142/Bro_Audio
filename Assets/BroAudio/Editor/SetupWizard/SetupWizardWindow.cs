@@ -23,6 +23,7 @@ namespace Ami.BroAudio.Editor.Setting
         private Vector2 _scrollPosition;
 
         [MenuItem(BroAudioGUISetting.SetupWizardMenuPath, false, BroAudioGUISetting.SetupWizardMenuIndex)]
+        [MenuItem(BroAudioGUISetting.SetupWizardMenuPath_Window, false, BroAudioGUISetting.SetupWizardMenuIndex)]
         public static void ShowWindow()
         {
             var window = GetWindow<SetupWizardWindow>();

@@ -105,6 +105,14 @@ namespace Ami.BroAudio
             => player?.SetVelocity(velocity);
         #endregion
 
+        #region Sequence
+        /// <summary>
+        /// Set the sequence identifier for this playback, allowing multiple independent sequence instances per entity.
+        /// </summary>
+        public static IAudioPlayer SetSequenceId(this IAudioPlayer player, string sequenceId)
+            => player?.SetSequenceId(sequenceId);
+        #endregion
+
         #region As Background Music
         /// <summary>
         /// As a background music, which will transition automatically if another BGM is played after it.

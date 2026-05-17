@@ -2053,6 +2053,70 @@ namespace Ami.BroAudio.Tests
             UnityEngine.Object.DestroyImmediate(entity);
         }
 
+        // =====================================================================
+        // 30. Stop during natural fade-out must cancel the loop handover
+        //     Regression for: LoopType.Loop with fadeOut. While PlayControl is
+        //     in its natural fade-out (endDspTime - fadeOut .. endDspTime),
+        //     _handoverScheduleCoroutine is alive and will invoke
+        //     RequestNextPlayer near endDspTime. If the user calls Stop() in
+        //     that window the fade is honored, but the next loop iteration
+        //     must NOT be spawned. The schedule must be cancelled.
+        // =====================================================================
+
+        [UnityTest]
+        // BEHAVIOR TEST — Stop() during natural fade-out must not spawn the next loop iteration.
+        public IEnumerator Stop_DuringNaturalFadeOut_DoesNotSpawnNextLoopIteration()
+        {
+            SetupStubSoundManager();
+
+            // 2 sec clip with 0.5 sec fade-out, looped. Timing chosen so the fade-out's
+            // ride-out outlasts the loop-handover schedule firing (warmUpTime >= 0.1s),
+            // i.e. without the fix the schedule fires BEFORE EndPlaying/Recycle can stop it.
+            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 2);
+            SetAutoProperty(entity, "Loop", true);
+            Assert.Greater(entity.Clips.Length, 0, "Precondition: entity must have a clip");
+            entity.Clips[0].FadeOut = 0.5f;
+
+            var pref = new PlaybackPreference(entity);
+            _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
+
+            int requestNextPlayerCount = 0;
+            _player.RequestNextPlayer = _ => { requestNextPlayerCount++; return null; };
+
+            _player.Play();
+
+            // PlayControl yields in WaitForScheduledStartTime for ~warmUpTime (>=0.1s) before
+            // reaching the line that starts _handoverScheduleCoroutine. Wait long enough to
+            // be past warmup but still well before the natural fade-out window starts.
+            yield return new WaitForSeconds(0.3f);
+            Assert.IsNotNull(GetField<AudioPlayer, Coroutine>(_player, "_handoverScheduleCoroutine"),
+                "Precondition: PlayControl must have started _handoverScheduleCoroutine for the loop");
+
+            // Advance into the natural fade-out window. endDspTime is ~(warmUpTime + 2.0);
+            // fade-out window is [endDspTime - 0.5, endDspTime]. Total wait so far ~1.7s puts
+            // us well inside that window even with warmUpTime up to ~0.2s.
+            yield return new WaitForSeconds(1.4f);
+            var clipVolume = GetField<AudioPlayer, Fader>(_player, "_clipVolume");
+            Assert.IsTrue(clipVolume.IsFadingOut,
+                "Precondition: natural fade-out must be in progress when Stop() is called");
+            Assert.AreEqual(0, requestNextPlayerCount,
+                "Precondition: schedule must not have fired yet — Stop is called before endDspTime");
+
+            // User calls Stop with the clip-default fade. Per current design the natural fade-out
+            // is honored. The bug: the loop-handover schedule keeps ticking and fires at
+            // endDspTime - warmUpTime, spawning the next iteration the user did not want.
+            _player.Stop(FadeData.UseClipSetting, StopMode.Stop, null);
+
+            // Wait past endDspTime AND past fade-out completion so a still-live schedule
+            // would have fired and EndPlaying/Recycle would have run.
+            yield return new WaitForSeconds(0.8f);
+
+            Assert.AreEqual(0, requestNextPlayerCount,
+                "RequestNextPlayer must NOT be invoked after Stop() during natural fade-out");
+
+            DestroyEntityWithClip(entity);
+        }
+
         // ── test doubles ─────────────────────────────────────────────────────
 
         private class NullMixerPool : IAudioMixerPool

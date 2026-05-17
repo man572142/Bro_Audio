@@ -407,7 +407,6 @@ namespace Ami.BroAudio.Editor
                 if(EditorSetting.OpenLastEditAudioAsset && list.list[list.index] is AudioAssetEditor editor)
                 {
                     EditorSetting.LastEditAudioAsset = AssetDatabase.GetAssetPath(editor.target);
-                    EditorUtility.SetDirty(EditorSetting);
                 }
             }
         }

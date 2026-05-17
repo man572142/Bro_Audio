@@ -25,6 +25,11 @@ namespace Ami.BroAudio
         {
             return ((int)flags & (int)targetFlag) != 0;
         }
+
+        public static bool Contains(this AudioEntityFlag flags, AudioEntityFlag targetFlag)
+        {
+            return ((int)flags & (int)targetFlag) != 0;
+        }
         #endregion
 
         public static BroAudioType ConvertEverythingFlag(this BroAudioType audioType)
@@ -51,13 +56,19 @@ namespace Ami.BroAudio
             return (int)(sampleRate * seconds);
         }
 
+        public static double GetPlayableDuration(this IBroAudioClip clip)
+        {
+            var audioClip = clip.GetAudioClip();
+            return audioClip != null ? audioClip.GetPreciseLength() - clip.StartPosition - clip.EndPosition : 0d;
+        }
+
         public static bool IsDefaultCurve(this AnimationCurve curve , float defaultValue)
         {
             if(curve == null || curve.length == 0)
             {
                 return true;
             }
-            else if(curve.length == 1 && curve[0].value == defaultValue)
+            else if(curve.length == 1 && Mathf.Approximately(curve[0].value, defaultValue))
             {
                 return true;
             }

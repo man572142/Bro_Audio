@@ -73,8 +73,8 @@ namespace Ami.Extension
         public const float MinFrequencyLogValue = 1; // Log10(MinFrequency) => Log10(10) 
         public const float MaxFrequencyLogValue = 4.34242268f; // Log10(MinFrequency) => Log10(22000) 
         
-        // Not 100% sure but highly suspect the delay comes from the dsp time
-        // The worst case might be 4096 sample in 44.1KHz, which is ~0.09 sec per chunk
+        // Fallback lead time for scheduled playback when runtime DSP buffer data is unavailable
+        // or resolves to a value that is too optimistic for frame-driven handover code.
         public const double MixerWarmUpTime = 0.1;
 
         public static float DecibelVolumeFullScale => MaxDecibelVolume - MinDecibelVolume;

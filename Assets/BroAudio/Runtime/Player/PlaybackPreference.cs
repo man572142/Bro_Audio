@@ -71,6 +71,8 @@ namespace Ami.BroAudio.Runtime
             return HasFading(clipFade, SoundManager.FadeInEase, ref _fadeInData, out fadeIn, out ease);
         }
 
+        public bool HasFadeOutOverride => _fadeOutData.HasPendingOverride;
+
         public bool HasFadeOut(float clipFade, out float fadeOut, out Ease ease)
         {
             return HasFading(clipFade, SoundManager.FadeOutEase, ref _fadeOutData, out fadeOut, out ease);
@@ -142,8 +144,7 @@ namespace Ami.BroAudio.Runtime
             {
                 return false;
             }
-            return IsLoop(LoopType.SeamlessLoop) || 
-                   (IsChainedMode() && ChainedModeStage == PlaybackStage.Start); // normal loop uses the same audio player to loop
+            return Entity.HasLoop(out _, out _);
         }
 
         public bool CanHandoverToEnd()
@@ -160,6 +161,11 @@ namespace Ami.BroAudio.Runtime
         public bool IsChainedMode()
         {
             return Entity.PlayMode == MulticlipsPlayMode.Chained;
+        }
+
+        public bool HasLoop()
+        {
+            return Entity.HasLoop(out _, out _);
         }
         
         public bool IsLoop(LoopType targetType)

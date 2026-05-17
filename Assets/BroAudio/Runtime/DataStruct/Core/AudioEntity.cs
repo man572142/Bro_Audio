@@ -33,6 +33,7 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public float PitchRandomRange { get; private set; }
         [field: SerializeField] public float VolumeRandomRange { get; private set; }
         [field: SerializeField] public RandomFlag RandomFlags { get; private set; }
+        [field: SerializeField] public AudioEntityFlag Flags { get; private set; }
         public PlaybackGroup PlaybackGroup => _group ? _group : _upperGroup;
 
         IReadOnlyList<IBroAudioClip> IReadOnlyAudioEntity.Clips => Clips;

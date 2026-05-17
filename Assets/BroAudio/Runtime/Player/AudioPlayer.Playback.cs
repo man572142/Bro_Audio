@@ -167,7 +167,7 @@ namespace Ami.BroAudio.Runtime
             if (_pref.HasFadeIn(_clip.FadeIn, out var fadeIn, out var fadeInEase))
             {
                 _clipVolume.SetTarget(targetClipVolume);
-                _clipVolume.RestartCoroutine(Fade(_clipVolume, fadeIn, fadeInEase, _onUpdate));
+                _clipVolume.Fade(fadeIn, fadeInEase, _onUpdate, (IAudioPlayer)this);
                 while (_clipVolume.IsFading)
                 {
                     yield return null;
@@ -203,7 +203,7 @@ namespace Ami.BroAudio.Runtime
                 }
 
                 _clipVolume.SetTarget(0f);
-                _clipVolume.RestartCoroutine(Fade(_clipVolume, fadeOut, fadeOutEase, _onUpdate));
+                _clipVolume.Fade(fadeOut, fadeOutEase, _onUpdate, (IAudioPlayer)this);
                 while (_clipVolume.IsFading)
                 {
                     yield return null;
@@ -294,6 +294,13 @@ namespace Ami.BroAudio.Runtime
                 TrackVolume = _trackVolume.Target,
                 Pitch = StaticPitch,
             };
+
+            if (_trackVolume.IsFading)
+            {
+                handover.TrackVolumeCurrent = _trackVolume.Current;
+                handover.TrackVolumeRemaining = _trackVolume.RemainingTime;
+                handover.TrackVolumeEase = _trackVolume.Ease;
+            }
             
             _nextPlayer?.Stop(FadeData.Immediate, StopMode.Stop, null);
             _nextPlayer = RequestNextPlayer?.Invoke(handover);
@@ -322,7 +329,15 @@ namespace Ami.BroAudio.Runtime
         internal void ReceiveHandover(PlaybackHandoverData handover)
         {
             SetPlaybackData(handover.ID, handover.Pref, handover.Clip);
-            SetVolumeInternal(_trackVolume, handover.TrackVolume, 0f);
+            if (handover.TrackVolumeRemaining > 0f)
+            {
+                _trackVolume.Resume(handover.TrackVolumeCurrent, handover.TrackVolume);
+                _trackVolume.Fade(handover.TrackVolumeRemaining, handover.TrackVolumeEase);
+            }
+            else
+            {
+                _trackVolume.Complete(handover.TrackVolume);
+            }
             this.SetPitch(handover.Pitch);
             PlayInternal();
 #if !UNITY_WEBGL
@@ -441,7 +456,7 @@ namespace Ami.BroAudio.Runtime
                 else
                 {
                     _clipVolume.SetTarget(0f);
-                    _clipVolume.RestartCoroutine(Fade(_clipVolume, fadeOut, fadeOutEase, didHandoverToEnd ? null : _onUpdate));
+                    _clipVolume.Fade(fadeOut, fadeOutEase, didHandoverToEnd ? null : _onUpdate, (IAudioPlayer)this);
                     while (_clipVolume.IsFading)
                     {
                         yield return null;

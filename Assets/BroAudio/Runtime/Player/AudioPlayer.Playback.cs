@@ -120,13 +120,8 @@ namespace Ami.BroAudio.Runtime
                 SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
             }
             
-            double dspTime = AudioSettings.dspTime;
-            float pitch = AudioSource.pitch;
-            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), pitch);
-            double warmUpTime = _pref.HasLoop() && _pref.ScheduledStartTime <= 0
-                ? SoundManager.Instance.ScheduledPlaybackWarmUpTime
-                : 0d;
-            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : dspTime + warmUpTime;
+            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
+            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : AudioSettings.dspTime;
             double endDspTime = _pref.ScheduledEndTime <= 0 ? startBaseTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
             if (_pref.HasLoop() && _pref.ScheduledStartTime <= 0)
             {

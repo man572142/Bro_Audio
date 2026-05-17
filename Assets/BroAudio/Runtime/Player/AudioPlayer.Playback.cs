@@ -413,6 +413,18 @@ namespace Ami.BroAudio.Runtime
                 // BeginHandover only nulls _instanceWrapper on success; the next player now owns onUpdate dispatch.
                 didHandoverToEnd = _instanceWrapper == null;
             }
+            else
+            {
+                // Stop pre-empts any scheduled loop handover; cancel the schedule and
+                // discard a pre-spawned next player so no unwanted iteration starts.
+                this.SafeStopCoroutine(_handoverScheduleCoroutine);
+                _handoverScheduleCoroutine = null;
+                if(_nextPlayer != null)
+                {
+                    _nextPlayer.Stop(FadeData.Immediate, StopMode.Stop, null);
+                    _nextPlayer = null;
+                }
+            }
 
             #region FadeOut
             bool hasExplicitOverride = _pref.HasFadeOutOverride;

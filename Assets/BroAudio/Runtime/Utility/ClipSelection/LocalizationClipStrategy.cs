@@ -42,6 +42,13 @@ namespace Ami.BroAudio.Runtime
 
             var handle = LocalizationSettings.AssetDatabase
                 .GetLocalizedAssetAsync<AudioClip>(_table, _entry);
+            if (!handle.IsDone)
+            {
+                Debug.LogWarning(Utility.LogTitle +
+                    $"Localized AudioClip for entity '{_entityName}' was not preloaded; " +
+                    $"resolving synchronously will block the main thread. " +
+                    $"Call {nameof(SoundManager)}.{nameof(SoundManager.PreloadLocalizationAssets)}(SoundID) before playback to avoid hitches.");
+            }
             var resolvedClip = handle.WaitForCompletion();
             var selectedLocale = LocalizationSettings.SelectedLocale;
 

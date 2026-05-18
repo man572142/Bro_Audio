@@ -496,9 +496,6 @@ namespace Ami.BroAudio.Runtime
             ResetSpatial();
             ResetEffect();
             
-            _trackVolume.StopCoroutine();
-            _audioTypeVolume.StopCoroutine();
-
             _onEnd?.Invoke(ID);
             _onEnd = null;
 

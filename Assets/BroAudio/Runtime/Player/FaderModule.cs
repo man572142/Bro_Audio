@@ -121,13 +121,13 @@ namespace Ami.BroAudio.Runtime
             return false;
         }
 
-        public void StopCoroutine()
+        private void StopCoroutine()
         {
             _coroutineExecutor.SafeStopCoroutine(_coroutine);
             _coroutine = null;
         }
 
-        public void RestartCoroutine(IEnumerator enumerator)
+        private void RestartCoroutine(IEnumerator enumerator)
         {
             _coroutineExecutor.RestartCoroutine(enumerator, ref _coroutine);
         }

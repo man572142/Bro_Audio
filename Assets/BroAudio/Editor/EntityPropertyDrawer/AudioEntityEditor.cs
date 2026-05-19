@@ -308,6 +308,26 @@ namespace Ami.BroAudio.Editor
             SerializedProperty useAddressablesProp = serializedObject.FindProperty(nameof(AudioEntity.UseAddressables));
             Rect rect = GetRectAndIterateLine(position);
             Rect toggleRect = new Rect(rect) { width = 100f, x = position.xMax - 100f };
+
+#if PACKAGE_LOCALIZATION
+            var playModeProp = serializedObject.FindProperty(AudioEntity.EditorPropertyName.MulticlipsPlayMode);
+            if (playModeProp != null && (MulticlipsPlayMode)playModeProp.enumValueIndex == MulticlipsPlayMode.Localization)
+            {
+                if (!useAddressablesProp.boolValue)
+                {
+                    useAddressablesProp.boolValue = true;
+                }
+
+                var lockedContent = new GUIContent("Addressables",
+                    "Locked on while in Localization mode — Unity Localization requires Addressables.");
+                using (new EditorGUI.DisabledScope(true))
+                {
+                    EditorGUI.ToggleLeft(toggleRect, lockedContent, true);
+                }
+                return;
+            }
+#endif
+
             EditorGUI.BeginChangeCheck();
             useAddressablesProp.boolValue = EditorGUI.ToggleLeft(toggleRect, "Addressables", useAddressablesProp.boolValue);
             if (EditorGUI.EndChangeCheck())

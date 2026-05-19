@@ -73,7 +73,7 @@ namespace Ami.BroAudio.Editor
         {
             bool confirmed = EditorUtility.DisplayDialog(
                 "Switch to Localization Mode",
-                "Switching to Localization mode will clear all AudioClip references and clip properties on this entity. Continue?",
+                "Switching to Localization mode will clear all AudioClip references and clip properties on this entity, and force-enable Addressables for this entity. Continue?",
                 "Yes",
                 "No");
 
@@ -84,6 +84,13 @@ namespace Ami.BroAudio.Editor
                 {
                     ResetBroAudioClipSerializedProperties(clipsProp.GetArrayElementAtIndex(i));
                 }
+
+                var useAddressablesProp = clipsProp.serializedObject.FindProperty(nameof(AudioEntity.UseAddressables));
+                if (useAddressablesProp != null)
+                {
+                    useAddressablesProp.boolValue = true;
+                }
+
                 clipsProp.serializedObject.ApplyModifiedProperties();
             }
             return confirmed;
@@ -343,6 +350,8 @@ namespace Ami.BroAudio.Editor
                 }
             }
 
+            HandleLocalizationClipDragAndDrop(clipRect, localeCode);
+
             EditorGUI.BeginChangeCheck();
             var newClip = EditorGUI.ObjectField(clipRect, currentClip, typeof(AudioClip), false) as AudioClip;
             if (EditorGUI.EndChangeCheck())
@@ -369,6 +378,43 @@ namespace Ami.BroAudio.Editor
         private float GetLocalizationElementHeight(int index)
         {
             return EditorGUIUtility.singleLineHeight + 4f;
+        }
+
+        private void HandleLocalizationClipDragAndDrop(Rect dropRect, string localeCode)
+        {
+            var evt = Event.current;
+            if (evt.type != EventType.DragUpdated && evt.type != EventType.DragPerform)
+            {
+                return;
+            }
+
+            if (!dropRect.Contains(evt.mousePosition))
+            {
+                return;
+            }
+
+            AudioClip dragged = null;
+            foreach (var obj in DragAndDrop.objectReferences)
+            {
+                if (obj is AudioClip clip)
+                {
+                    dragged = clip;
+                    break;
+                }
+            }
+
+            if (dragged == null)
+            {
+                return;
+            }
+
+            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+            if (evt.type == EventType.DragPerform)
+            {
+                DragAndDrop.AcceptDrag();
+                TrySetClipInTable(localeCode, dragged);
+                evt.Use();
+            }
         }
 
         private SerializedProperty GetLocalizationCurrentSelectedClip()
@@ -695,18 +741,24 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
-            string guid = clip != null ? AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(clip)) : string.Empty;
+            Undo.RecordObject(table, "Set Localized Audio Clip");
+
             var entry = table.GetEntry(entryKey);
-            if (entry == null)
+            if (entry != null && !string.IsNullOrEmpty(entry.Guid))
             {
-                tableCollection.AddAssetToTable(table, entryKey, clip);
+                tableCollection.RemoveAssetFromTable(table, entryKey, createUndo: true);
             }
-            else
+
+            if (clip != null)
             {
-                entry.Guid = guid;
+                tableCollection.AddAssetToTable(table, entryKey, clip, createUndo: true);
             }
 
             EditorUtility.SetDirty(table);
+            if (tableCollection.SharedData != null)
+            {
+                EditorUtility.SetDirty(tableCollection.SharedData);
+            }
             AssetDatabase.SaveAssets();
         }
     }

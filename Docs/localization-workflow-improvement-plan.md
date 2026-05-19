@@ -1,8 +1,6 @@
 # BroAudio Localization Workflow Improvement — Implementation Plan
 
-> **Branch**: `claude/improve-localization-workflow-J9mRe`
 > **Baseline**: existing Localization feature on this branch (see `Docs/localization-feature-status.md`)
-> **Generated**: 2026-05-19
 
 ---
 

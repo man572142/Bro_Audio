@@ -354,5 +354,26 @@ namespace Ami.BroAudio
         public static void ReleaseAsset(SoundID id, int clipIndex)
             => SoundManager.Instance.ReleaseAsset(id, clipIndex);
 #endif
+
+#if PACKAGE_LOCALIZATION
+        /// <summary>
+        /// Subscribes <paramref name="handler"/> to clip-change notifications for the Localization-mode
+        /// entity identified by <paramref name="id"/>. The handler fires once with the current clip on
+        /// subscribe (after the initial Addressables load resolves) and again on every locale-driven
+        /// asset change, mirroring the semantics of
+        /// <see cref="UnityEngine.Localization.LocalizedAsset{TObject}.AssetChanged"/>.
+        /// Handler lifetime is owned by the caller — pair each Subscribe with an Unsubscribe.
+        /// Subscribing the same <c>(id, handler)</c> twice is a no-op. Logs a warning and registers
+        /// nothing when the entity is not in Localization mode.
+        /// </summary>
+        public static void SubscribeAssetChanged(SoundID id, Action<AudioClip> handler)
+            => SoundManager.Instance.SubscribeAssetChanged(id, handler);
+
+        /// <summary>
+        /// Removes a handler previously registered via <see cref="SubscribeAssetChanged"/>.
+        /// </summary>
+        public static void UnsubscribeAssetChanged(SoundID id, Action<AudioClip> handler)
+            => Manager?.UnsubscribeAssetChanged(id, handler);
+#endif
     }
 }

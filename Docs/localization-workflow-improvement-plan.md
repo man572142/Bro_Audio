@@ -5,7 +5,7 @@
 | # | Phase | Depends on | Layer |
 |---|-------|------------|-------|
 | 1 | Unify `LoadAssetAsync` for Localization entities | — | Runtime |
-| 2 | Expose `AssetChanged` subscription per `SoundID` | — (shares helper with 1) | Runtime |
+| 2 | Expose unified locale-clip subscription per `SoundID` | — (shares helper with 1) | Runtime |
 | 3 | Force `UseAddressables = true` when `PlayMode == Localization` | — | Editor |
 | 4 | Route per-locale clip assignment through `AssetTableCollection.Add/RemoveAssetFromTable` | 3 (visual lock; not a hard dep) | Editor |
 
@@ -64,36 +64,38 @@ All paths assume `PACKAGE_LOCALIZATION` is defined for code under `#if PACKAGE_L
 
 ---
 
-## 4. Phase 2 — `AssetChanged` Subscription
+## 4. Phase 2 — Localized Clip Change Subscription
 
 **Touches:** `Runtime/BroAudio.cs`, `Runtime/SoundManager/SoundManager.Localization.cs`
 
-**Intent:** Let game code subscribe to per-`SoundID` clip-change events that mirror `LocalizedAsset<TObject>.AssetChanged` semantics: fire on first subscribe with the current value, fire again on every locale/entry-driven change. Use Unity's `LocalizedAsset<AudioClip>` per `SoundID` and forward its event — do not roll a `SelectedLocaleChanged` listener in BroAudio.
+**Intent:** Unify three concerns under a single subscription per `SoundID`: (a) implicit load on first subscribe — `LocalizedAsset<T>.AssetChanged`'s first attach internally triggers `LoadAssetAsync` via `ForceUpdate` → `HandleLocaleChange`, so callers do **not** need to pair this with `BroAudio.LoadAssetAsync`; (b) fire when the asset is ready, or immediately with the cached value if the load is already `IsDone`; (c) fire again on every locale-driven change — `LocalizedAsset<T>` already subscribes to `LocalizationSettings.SelectedLocaleChanged` internally and re-invokes all handlers, so BroAudio does not roll its own `SelectedLocaleChanged` listener. Payload is `SoundID`, **not** `AudioClip`, to match BroAudio's playback contract (there is no `Play(AudioClip)` overload — playback is `SoundID`-driven) and to mirror the existing `IAudioPlayer.OnEnd(Action<SoundID>)` precedent. Semantically equivalent to `LocalizedAsset<TObject>.AssetChanged` but stays inside BroAudio's `SoundID` vocabulary.
 
 **Public surface (under `#if PACKAGE_LOCALIZATION`):**
 
 ```csharp
-public static void SubscribeAssetChanged(SoundID id, Action<AudioClip> handler);
-public static void UnsubscribeAssetChanged(SoundID id, Action<AudioClip> handler);
+public static void SubscribeLocalizedClipChanged(SoundID id, Action<SoundID> handler);
+public static void UnsubscribeLocalizedClipChanged(SoundID id, Action<SoundID> handler);
 ```
 
 **Changes:**
 
 1. In `SoundManager.Localization.cs`, add `Dictionary<SoundID, LocalizedAsset<AudioClip>>` storage. Lazy-init.
-2. **Decision (committed):** maintain a `Dictionary<(SoundID, Action<AudioClip>), LocalizedAsset<AudioClip>.ChangeHandler>` so `-=` of the caller's `Action<AudioClip>` removes the matching lambda. Subscribing the same `(id, handler)` twice is a no-op. This is required — wrapping in a lambda without this map breaks unsubscribe.
+2. **Decision (committed):** maintain a `Dictionary<(SoundID, Action<SoundID>), LocalizedAsset<AudioClip>.ChangeHandler>` so `-=` of the caller's `Action<SoundID>` removes the matching lambda. The wrapper lambda reads `clip => handler(id)` — it discards the resolved `AudioClip` and forwards the `SoundID` instead. Subscribing the same `(id, handler)` twice is a no-op. This map is required — wrapping in a lambda without it breaks unsubscribe.
 3. Validate the entity is in Localization mode on `Subscribe`; warn + bail otherwise.
-4. On `ReleaseAllLocalizationPreloads` / `SoundManager.OnDestroy`, detach all handlers and clear the dictionary. `LocalizedAsset<T>` releases its Addressables handle when the last subscriber detaches.
-5. Document in XML on `BroAudio.SubscribeAssetChanged` that the handler lifetime is owned by the caller — same contract as `LocalizedAsset<T>.AssetChanged`.
+4. **Handle release is delegated to Unity.** `LocalizedAsset<T>` releases its underlying Addressables handle automatically when the last `ChangeHandler` is removed (`ClearLoadingOperation` → `AddressablesInterface.Release`, `LocalizedAsset.cs:200-208`). Our wrapper's only cleanup responsibility on `Unsubscribe` is: (i) remove the `(id, handler)` entry from the lambda map, and (ii) when the last handler for an `id` detaches, remove the `LocalizedAsset<AudioClip>` from the storage dictionary so it can be GC'd. Do **not** call `Addressables.Release` on the underlying handle from BroAudio. On `ReleaseAllLocalizationPreloads` / `SoundManager.OnDestroy`, detach all handlers and clear the dictionary; Unity will release the handles as the last detach happens for each id.
+5. XML docs on `BroAudio.SubscribeLocalizedClipChanged` must spell out the full lifecycle so callers know they don't need to pair it with `LoadAssetAsync` or `SelectedLocaleChanged`: implicit load on first subscribe, callback when ready (or synchronously if cached), callback on every locale change, automatic handle release when the last subscriber for the id detaches.
 
-**Cross-feature:** when preload is active, `LocalizedAsset<AudioClip>` sees the warm cache and resolves synchronously. No extra wiring needed.
+**Cross-feature:** when `PreloadLocalizationAssets` has warmed the cache, `LocalizedAsset<AudioClip>` resolves synchronously and the handler fires immediately on subscribe. No extra wiring needed.
 
 **Out of scope:** auto-unsubscribe on scene unload; `IDisposable` wrapper types.
 
 **Done when:**
 
-- Subscribe before locale switch → handler fires once with the current clip.
-- Switch `LocalizationSettings.SelectedLocale` → handler fires with the new clip.
+- Subscribe before any load → handler fires once with the `SoundID` after the asset resolves.
+- Subscribe after a previous load on the same `SoundID` → handler fires synchronously with the `SoundID`.
+- Switch `LocalizationSettings.SelectedLocale` → handler fires again with the `SoundID`.
 - Unsubscribe → no further invocations (verify the lambda-map dispatch).
+- Unsubscribing the last handler for a `SoundID` releases the underlying Addressables handle (Unity's `LocalizedAsset<T>` does this internally; our test verifies the storage-dictionary entry is gone).
 - Second subscriber on the same `SoundID` fires immediately with the cached value.
 - Subscribe on a non-Localization entity → warning logged, no subscription registered.
 
@@ -166,7 +168,7 @@ public static void UnsubscribeAssetChanged(SoundID id, Action<AudioClip> handler
 
 | Risk | Mitigation |
 |------|------------|
-| `LocalizedAsset<T>.AssetChanged` lambda-wrapping breaks unsubscribe | Phase 2 commits to the `(id, handler) → ChangeHandler` map. Do not skip it. |
+| `LocalizedAsset<T>.AssetChanged` lambda-wrapping breaks unsubscribe | Phase 2 commits to the `(SoundID, Action<SoundID>) → ChangeHandler` map. Do not skip it. |
 | `AddAssetToTable` requires the dragged asset to be on disk | All drag sources in the Inspector are AssetDatabase objects. If a non-asset path is ever introduced, gate with `AssetDatabase.GetAssetPath != ""`. |
 | Forcing `UseAddressables = true` surprises code-driven entity setup | Toggle's locked tooltip explains it; the entity won't play correctly if Addressables is off and Localization is on, so silent failure is not introduced. |
 

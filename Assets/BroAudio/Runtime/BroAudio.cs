@@ -303,24 +303,6 @@ namespace Ami.BroAudio
         #endregion
 #endif
 
-#if PACKAGE_LOCALIZATION
-        /// <summary>
-        /// Preloads the AudioClip for the given entity's current locale into the Addressables cache.
-        /// After this call, playback via <c>WaitForCompletion()</c> will return instantly.
-        /// Subscribe to <c>LocalizationSettings.SelectedLocaleChanged</c> is handled automatically;
-        /// when the locale changes the cache is refreshed. Call <see cref="ReleaseLocalizationPreload"/>
-        /// when the entity is no longer needed to avoid memory leaks.
-        /// </summary>
-        public static AsyncOperationHandle<AudioClip> PreloadLocalizationAssets(SoundID id)
-            => SoundManager.Instance.PreloadLocalizationAssets(id);
-
-        /// <summary>
-        /// Releases the preloaded Addressables handle for the given entity.
-        /// </summary>
-        public static void ReleaseLocalizationPreload(SoundID id)
-            => SoundManager.Instance.ReleaseLocalizationPreload(id);
-#endif
-
 #if PACKAGE_ADDRESSABLES || PACKAGE_LOCALIZATION
         public static bool IsLoaded(SoundID id)
             => SoundManager.Instance.IsLoaded(id);

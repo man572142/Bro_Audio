@@ -35,29 +35,19 @@ namespace Ami.BroAudio.Runtime
                 return default;
             }
 
-            AsyncOperationHandle<AudioClip> handle = LoadLocalizedAssetAsync(id, audioEntity);
-            if (!handle.IsValid())
-            {
-                return default;
-            }
-
-            _preloadedLocalizationHandles ??= new Dictionary<SoundID, AsyncOperationHandle<AudioClip>>();
-
-            // Release any existing handle for this id before storing the new one
-            ReleaseLocalizationHandleInternal(id);
-
             if (!_isSubscribedToLocaleChanged)
             {
                 LocalizationSettings.SelectedLocaleChanged += OnSelectedLocaleChanged;
                 _isSubscribedToLocaleChanged = true;
             }
 
-            _preloadedLocalizationHandles[id] = handle;
-            return handle;
+            return LoadLocalizedAssetAsync(id, audioEntity);
         }
 
         /// <summary>
-        ///     Resolves the locale-correct AudioClip for the given Localization-mode entity.
+        ///     Resolves the locale-correct AudioClip for the given Localization-mode entity, caching the
+        ///     handle by SoundID so subsequent calls return the same handle and a paired
+        ///     <see cref="SoundManager.ReleaseAsset(SoundID,int)"/> can release it.
         ///     Returns <c>default</c> and logs a warning if the table or entry reference is empty.
         /// </summary>
         private AsyncOperationHandle<AudioClip> LoadLocalizedAssetAsync(SoundID id, AudioEntity audioEntity)
@@ -70,8 +60,17 @@ namespace Ami.BroAudio.Runtime
                 return default;
             }
 
-            return LocalizationSettings.AssetDatabase
+            _preloadedLocalizationHandles ??= new Dictionary<SoundID, AsyncOperationHandle<AudioClip>>();
+
+            if (_preloadedLocalizationHandles.TryGetValue(id, out AsyncOperationHandle<AudioClip> cached) && cached.IsValid())
+            {
+                return cached;
+            }
+
+            AsyncOperationHandle<AudioClip> handle = LocalizationSettings.AssetDatabase
                 .GetLocalizedAssetAsync<AudioClip>(audioEntity.LocalizationTable, audioEntity.LocalizationEntry);
+            _preloadedLocalizationHandles[id] = handle;
+            return handle;
         }
 
         /// <summary>

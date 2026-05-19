@@ -78,6 +78,14 @@ namespace Ami.BroAudio.Runtime
 
         public void ReleaseAllAssets(SoundID id)
         {
+#if PACKAGE_LOCALIZATION
+            if (TryGetEntity(id, out var anyEntity) && anyEntity is AudioEntity localizationEntity
+                && localizationEntity.PlayMode == MulticlipsPlayMode.Localization)
+            {
+                ReleaseLocalizationHandleInternal(id);
+                return;
+            }
+#endif
             if (TryGetAddressableEntity(id, out var entity))
             {
                 entity.ReleaseAllAssets();
@@ -86,6 +94,14 @@ namespace Ami.BroAudio.Runtime
 
         public void ReleaseAsset(SoundID id, int clipIndex)
         {
+#if PACKAGE_LOCALIZATION
+            if (TryGetEntity(id, out var anyEntity) && anyEntity is AudioEntity localizationEntity
+                && localizationEntity.PlayMode == MulticlipsPlayMode.Localization)
+            {
+                ReleaseLocalizationHandleInternal(id);
+                return;
+            }
+#endif
             if (TryGetAddressableEntity(id, out var entity) && clipIndex >= 0 && clipIndex < entity.Clips.Length)
             {
                 entity.Clips[clipIndex].ReleaseAsset();

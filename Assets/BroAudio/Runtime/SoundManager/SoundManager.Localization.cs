@@ -1,5 +1,4 @@
 #if PACKAGE_LOCALIZATION
-using System;
 using System.Collections.Generic;
 using Ami.BroAudio.Data;
 using UnityEngine;
@@ -15,8 +14,7 @@ namespace Ami.BroAudio.Runtime
     {
         private bool _isSubscribedToLocaleChanged;
         private Dictionary<SoundID, AsyncOperationHandle<AudioClip>> _preloadedLocalizationHandles;
-        private Dictionary<SoundID, LocalizedAsset<AudioClip>> _localizedAssetSubscriptions;
-        private Dictionary<(SoundID id, Action<AudioClip> handler), LocalizedAsset<AudioClip>.ChangeHandler> _localizedAssetHandlerMap;
+        private Dictionary<SoundID, LocalizedAudioClip> _localizedClips;
 
         /// <summary>
         ///     Resolves the locale-correct AudioClip for the given Localization-mode entity, caching the
@@ -120,12 +118,12 @@ namespace Ami.BroAudio.Runtime
 
         /// <summary>
         ///     Registers <paramref name="handler"/> to receive clip-change notifications for the
-        ///     Localization-mode entity identified by <paramref name="id"/>. Wraps the caller's
-        ///     <see cref="Action{AudioClip}"/> in a <see cref="LocalizedAsset{T}.ChangeHandler"/> and
-        ///     stores the pair so the matching unsubscribe can remove it. No-ops when the same
-        ///     <c>(id, handler)</c> is subscribed twice, or when the entity is not in Localization mode.
+        ///     Localization-mode entity identified by <paramref name="id"/>. Forwards directly to
+        ///     <see cref="LocalizedAsset{T}.AssetChanged"/> on a reused <see cref="LocalizedAudioClip"/>
+        ///     per <see cref="SoundID"/>. Logs a warning and registers nothing when the entity is not
+        ///     in Localization mode or its table/entry reference is empty.
         /// </summary>
-        public void SubscribeAssetChanged(SoundID id, Action<AudioClip> handler)
+        public void SubscribeAssetChanged(SoundID id, LocalizedAsset<AudioClip>.ChangeHandler handler)
         {
             if (handler == null)
             {
@@ -148,53 +146,32 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            _localizedAssetSubscriptions ??= new Dictionary<SoundID, LocalizedAsset<AudioClip>>();
-            _localizedAssetHandlerMap ??=
-                new Dictionary<(SoundID, Action<AudioClip>), LocalizedAsset<AudioClip>.ChangeHandler>();
-
-            var key = (id, handler);
-            if (_localizedAssetHandlerMap.ContainsKey(key))
+            _localizedClips ??= new Dictionary<SoundID, LocalizedAudioClip>();
+            if (!_localizedClips.TryGetValue(id, out LocalizedAudioClip clip))
             {
-                return;
+                clip = new LocalizedAudioClip();
+                clip.SetReference(audioEntity.LocalizationTable, audioEntity.LocalizationEntry);
+                _localizedClips[id] = clip;
             }
 
-            if (!_localizedAssetSubscriptions.TryGetValue(id, out LocalizedAsset<AudioClip> localizedAsset))
-            {
-                var localizedAudioClip = new LocalizedAudioClip();
-                localizedAudioClip.SetReference(audioEntity.LocalizationTable, audioEntity.LocalizationEntry);
-                localizedAsset = localizedAudioClip;
-                _localizedAssetSubscriptions[id] = localizedAsset;
-            }
-
-            LocalizedAsset<AudioClip>.ChangeHandler wrapped = clip => handler(clip);
-            _localizedAssetHandlerMap[key] = wrapped;
-            localizedAsset.AssetChanged += wrapped;
+            clip.AssetChanged += handler;
         }
 
         /// <summary>
         ///     Removes a handler previously registered via <see cref="SubscribeAssetChanged"/>.
         ///     Silently no-ops if the pair was never registered.
         /// </summary>
-        public void UnsubscribeAssetChanged(SoundID id, Action<AudioClip> handler)
+        public void UnsubscribeAssetChanged(SoundID id, LocalizedAsset<AudioClip>.ChangeHandler handler)
         {
-            if (handler == null || _localizedAssetHandlerMap == null)
+            if (handler == null || _localizedClips == null)
             {
                 return;
             }
 
-            var key = (id, handler);
-            if (!_localizedAssetHandlerMap.TryGetValue(key, out LocalizedAsset<AudioClip>.ChangeHandler wrapped))
+            if (_localizedClips.TryGetValue(id, out LocalizedAudioClip clip))
             {
-                return;
+                clip.AssetChanged -= handler;
             }
-
-            if (_localizedAssetSubscriptions != null
-                && _localizedAssetSubscriptions.TryGetValue(id, out LocalizedAsset<AudioClip> localizedAsset))
-            {
-                localizedAsset.AssetChanged -= wrapped;
-            }
-
-            _localizedAssetHandlerMap.Remove(key);
         }
 
         private void ReleaseAllLocalizationPreloads()
@@ -212,19 +189,15 @@ namespace Ami.BroAudio.Runtime
                 _preloadedLocalizationHandles.Clear();
             }
 
-            if (_localizedAssetHandlerMap != null && _localizedAssetSubscriptions != null)
+            if (_localizedClips != null)
             {
-                foreach (var kvp in _localizedAssetHandlerMap)
+                foreach (LocalizedAudioClip clip in _localizedClips.Values)
                 {
-                    if (_localizedAssetSubscriptions.TryGetValue(kvp.Key.id, out LocalizedAsset<AudioClip> localizedAsset))
-                    {
-                        localizedAsset.AssetChanged -= kvp.Value;
-                    }
+                    clip.ClearChangeHandler();
                 }
-            }
 
-            _localizedAssetHandlerMap?.Clear();
-            _localizedAssetSubscriptions?.Clear();
+                _localizedClips.Clear();
+            }
 
             if (_isSubscribedToLocaleChanged)
             {

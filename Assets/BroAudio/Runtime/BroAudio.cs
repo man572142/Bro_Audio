@@ -8,6 +8,10 @@ using System.Collections.Generic;
 using UnityEngine.ResourceManagement.AsyncOperations;
 #endif
 
+#if PACKAGE_LOCALIZATION
+using UnityEngine.Localization;
+#endif
+
 namespace Ami.BroAudio
 {
     public static class BroAudio
@@ -361,18 +365,17 @@ namespace Ami.BroAudio
         /// entity identified by <paramref name="id"/>. The handler fires once with the current clip on
         /// subscribe (after the initial Addressables load resolves) and again on every locale-driven
         /// asset change, mirroring the semantics of
-        /// <see cref="UnityEngine.Localization.LocalizedAsset{TObject}.AssetChanged"/>.
+        /// <see cref="LocalizedAsset{TObject}.AssetChanged"/>.
         /// Handler lifetime is owned by the caller — pair each Subscribe with an Unsubscribe.
-        /// Subscribing the same <c>(id, handler)</c> twice is a no-op. Logs a warning and registers
-        /// nothing when the entity is not in Localization mode.
+        /// Logs a warning and registers nothing when the entity is not in Localization mode.
         /// </summary>
-        public static void SubscribeAssetChanged(SoundID id, Action<AudioClip> handler)
+        public static void SubscribeAssetChanged(SoundID id, LocalizedAsset<AudioClip>.ChangeHandler handler)
             => SoundManager.Instance.SubscribeAssetChanged(id, handler);
 
         /// <summary>
         /// Removes a handler previously registered via <see cref="SubscribeAssetChanged"/>.
         /// </summary>
-        public static void UnsubscribeAssetChanged(SoundID id, Action<AudioClip> handler)
+        public static void UnsubscribeAssetChanged(SoundID id, LocalizedAsset<AudioClip>.ChangeHandler handler)
             => Manager?.UnsubscribeAssetChanged(id, handler);
 #endif
     }

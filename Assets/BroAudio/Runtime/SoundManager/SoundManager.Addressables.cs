@@ -41,8 +41,7 @@ namespace Ami.BroAudio.Runtime
         public AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(SoundID id)
         {
 #if PACKAGE_LOCALIZATION
-            if (TryGetEntity(id, out var anyEntity) && anyEntity is AudioEntity localizationEntity
-                && localizationEntity.PlayMode == MulticlipsPlayMode.Localization)
+            if (TryGetLocalizationEntity(id, out var localizationEntity))
             {
                 return LoadAllLocalizedAssetsAsync(id, localizationEntity);
             }
@@ -60,8 +59,7 @@ namespace Ami.BroAudio.Runtime
         public AsyncOperationHandle<AudioClip> LoadAssetAsync(SoundID id, int clipIndex)
         {
 #if PACKAGE_LOCALIZATION
-            if (TryGetEntity(id, out var anyEntity) && anyEntity is AudioEntity localizationEntity
-                && localizationEntity.PlayMode == MulticlipsPlayMode.Localization)
+            if (TryGetLocalizationEntity(id, out var localizationEntity))
             {
                 return LoadLocalizedAssetAsync(id, localizationEntity);
             }
@@ -79,8 +77,7 @@ namespace Ami.BroAudio.Runtime
         public void ReleaseAllAssets(SoundID id)
         {
 #if PACKAGE_LOCALIZATION
-            if (TryGetEntity(id, out var anyEntity) && anyEntity is AudioEntity localizationEntity
-                && localizationEntity.PlayMode == MulticlipsPlayMode.Localization)
+            if (TryGetLocalizationEntity(id, out _))
             {
                 ReleaseLocalizationHandleInternal(id);
                 return;
@@ -95,8 +92,7 @@ namespace Ami.BroAudio.Runtime
         public void ReleaseAsset(SoundID id, int clipIndex)
         {
 #if PACKAGE_LOCALIZATION
-            if (TryGetEntity(id, out var anyEntity) && anyEntity is AudioEntity localizationEntity
-                && localizationEntity.PlayMode == MulticlipsPlayMode.Localization)
+            if (TryGetLocalizationEntity(id, out _))
             {
                 ReleaseLocalizationHandleInternal(id);
                 return;

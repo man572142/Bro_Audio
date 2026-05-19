@@ -16,38 +16,11 @@ namespace Ami.BroAudio.Runtime
         private Dictionary<SoundID, AsyncOperationHandle<AudioClip>> _preloadedLocalizationHandles;
 
         /// <summary>
-        ///     Preloads the AudioClip for the given entity's current locale into the Addressables cache.
-        ///     After this call, <c>WaitForCompletion()</c> during playback will return instantly.
-        ///     Call <see cref="ReleaseLocalizationPreload" /> when the entity is no longer needed.
-        /// </summary>
-        public AsyncOperationHandle<AudioClip> PreloadLocalizationAssets(SoundID id)
-        {
-            if (!TryGetEntity(id, out IAudioEntity entity))
-            {
-                return default;
-            }
-
-            var audioEntity = entity as AudioEntity;
-            if (audioEntity.PlayMode != MulticlipsPlayMode.Localization)
-            {
-                Debug.LogWarning(Utility.LogTitle +
-                                 $"[{nameof(PreloadLocalizationAssets)}] Entity '{audioEntity.Name}' is not in Localization mode.");
-                return default;
-            }
-
-            if (!_isSubscribedToLocaleChanged)
-            {
-                LocalizationSettings.SelectedLocaleChanged += OnSelectedLocaleChanged;
-                _isSubscribedToLocaleChanged = true;
-            }
-
-            return LoadLocalizedAssetAsync(id, audioEntity);
-        }
-
-        /// <summary>
         ///     Resolves the locale-correct AudioClip for the given Localization-mode entity, caching the
         ///     handle by SoundID so subsequent calls return the same handle and a paired
         ///     <see cref="SoundManager.ReleaseAsset(SoundID,int)"/> can release it.
+        ///     Subscribes to <see cref="LocalizationSettings.SelectedLocaleChanged"/> on first cache add so
+        ///     the cache stays in sync with the active locale.
         ///     Returns <c>default</c> and logs a warning if the table or entry reference is empty.
         /// </summary>
         private AsyncOperationHandle<AudioClip> LoadLocalizedAssetAsync(SoundID id, AudioEntity audioEntity)
@@ -65,6 +38,12 @@ namespace Ami.BroAudio.Runtime
             if (_preloadedLocalizationHandles.TryGetValue(id, out AsyncOperationHandle<AudioClip> cached) && cached.IsValid())
             {
                 return cached;
+            }
+
+            if (!_isSubscribedToLocaleChanged)
+            {
+                LocalizationSettings.SelectedLocaleChanged += OnSelectedLocaleChanged;
+                _isSubscribedToLocaleChanged = true;
             }
 
             AsyncOperationHandle<AudioClip> handle = LocalizationSettings.AssetDatabase
@@ -90,14 +69,6 @@ namespace Ami.BroAudio.Runtime
                 IList<AudioClip> result = new List<AudioClip> { op.Result };
                 return Addressables.ResourceManager.CreateCompletedOperation(result, string.Empty);
             });
-        }
-
-        /// <summary>
-        ///     Releases the preloaded Addressables handle for the given entity, freeing the cached AudioClip.
-        /// </summary>
-        public void ReleaseLocalizationPreload(SoundID id)
-        {
-            ReleaseLocalizationHandleInternal(id);
         }
 
         private void ReleaseLocalizationHandleInternal(SoundID id)
@@ -136,7 +107,11 @@ namespace Ami.BroAudio.Runtime
 
             foreach (SoundID id in ids)
             {
-                PreloadLocalizationAssets(id);
+                if (TryGetEntity(id, out IAudioEntity entity) && entity is AudioEntity audioEntity
+                    && audioEntity.PlayMode == MulticlipsPlayMode.Localization)
+                {
+                    LoadLocalizedAssetAsync(id, audioEntity);
+                }
             }
         }
 

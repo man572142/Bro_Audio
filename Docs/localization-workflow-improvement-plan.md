@@ -85,7 +85,7 @@ public static void UnsubscribeLocalizedClipChanged(SoundID id, Action<SoundID> h
 4. **Handle release is delegated to Unity.** `LocalizedAsset<T>` releases its underlying Addressables handle automatically when the last `ChangeHandler` is removed (`ClearLoadingOperation` → `AddressablesInterface.Release`, `LocalizedAsset.cs:200-208`). Our wrapper's only cleanup responsibility on `Unsubscribe` is: (i) remove the `(id, handler)` entry from the lambda map, and (ii) when the last handler for an `id` detaches, remove the `LocalizedAsset<AudioClip>` from the storage dictionary so it can be GC'd. Do **not** call `Addressables.Release` on the underlying handle from BroAudio. On `ReleaseAllLocalizationPreloads` / `SoundManager.OnDestroy`, detach all handlers and clear the dictionary; Unity will release the handles as the last detach happens for each id.
 5. XML docs on `BroAudio.SubscribeLocalizedClipChanged` must spell out the full lifecycle so callers know they don't need to pair it with `LoadAssetAsync` or `SelectedLocaleChanged`: implicit load on first subscribe, callback when ready (or synchronously if cached), callback on every locale change, automatic handle release when the last subscriber for the id detaches.
 
-**Cross-feature:** when `PreloadLocalizationAssets` has warmed the cache, `LocalizedAsset<AudioClip>` resolves synchronously and the handler fires immediately on subscribe. No extra wiring needed.
+**Cross-feature:** when `LoadAssetAsync` has already been called for the same `SoundID`, `LocalizedAsset<AudioClip>` resolves synchronously and the handler fires immediately on subscribe. No extra wiring needed.
 
 **Out of scope:** auto-unsubscribe on scene unload; `IDisposable` wrapper types.
 

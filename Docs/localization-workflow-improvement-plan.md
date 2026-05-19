@@ -1,9 +1,5 @@
 # BroAudio Localization Workflow Improvement — Implementation Plan
 
-> **Baseline**: existing Localization feature on this branch (see `Docs/localization-feature-status.md`)
-
----
-
 ## 1. Phases at a glance
 
 | # | Phase | Depends on | Layer |

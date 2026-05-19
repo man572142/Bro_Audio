@@ -321,7 +321,7 @@ namespace Ami.BroAudio
             => SoundManager.Instance.ReleaseLocalizationPreload(id);
 #endif
 
-#if PACKAGE_ADDRESSABLES
+#if PACKAGE_ADDRESSABLES || PACKAGE_LOCALIZATION
         public static bool IsLoaded(SoundID id)
             => SoundManager.Instance.IsLoaded(id);
 
@@ -333,7 +333,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(SoundID id) 
+        public static AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(SoundID id)
             => SoundManager.Instance.LoadAllAssetsAsync(id);
 
         /// <summary>
@@ -343,7 +343,9 @@ namespace Ami.BroAudio
             => LoadAssetAsync(id, 0);
 
         /// <summary>
-        /// Loads the audio clip in the entity's clip list by index
+        /// Loads the audio clip in the entity's clip list by index.
+        /// For Localization-mode entities, <paramref name="clipIndex"/> is ignored;
+        /// one entry resolves to one clip per active locale.
         /// </summary>
         public static AsyncOperationHandle<AudioClip> LoadAssetAsync(SoundID id, int clipIndex)
             => SoundManager.Instance.LoadAssetAsync(id, clipIndex);
@@ -352,7 +354,7 @@ namespace Ami.BroAudio
         /// Releases all the audio clips in the entity
         /// </summary>
         /// <param name="id"></param>
-        public static void ReleaseAllAssets(SoundID id) 
+        public static void ReleaseAllAssets(SoundID id)
             => SoundManager.Instance.ReleaseAllAssets(id);
 
         /// <summary>

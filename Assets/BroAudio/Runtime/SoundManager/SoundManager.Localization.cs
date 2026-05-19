@@ -35,17 +35,15 @@ namespace Ami.BroAudio.Runtime
                 return default;
             }
 
-            if (audioEntity.LocalizationTable.ReferenceType == TableReference.Type.Empty ||
-                audioEntity.LocalizationEntry.ReferenceType == TableEntryReference.Type.Empty)
+            AsyncOperationHandle<AudioClip> handle = LoadLocalizedAssetAsync(id, audioEntity);
+            if (!handle.IsValid())
             {
-                Debug.LogWarning(Utility.LogTitle +
-                                 $"[{nameof(PreloadLocalizationAssets)}] LocalizationTable or LocalizationEntry is not set on entity '{audioEntity.Name}'.");
                 return default;
             }
 
             _preloadedLocalizationHandles ??= new Dictionary<SoundID, AsyncOperationHandle<AudioClip>>();
 
-            // Release any existing handle for this id before fetching a new one
+            // Release any existing handle for this id before storing the new one
             ReleaseLocalizationHandleInternal(id);
 
             if (!_isSubscribedToLocaleChanged)
@@ -54,10 +52,45 @@ namespace Ami.BroAudio.Runtime
                 _isSubscribedToLocaleChanged = true;
             }
 
-            AsyncOperationHandle<AudioClip> handle = LocalizationSettings.AssetDatabase
-                .GetLocalizedAssetAsync<AudioClip>(audioEntity.LocalizationTable, audioEntity.LocalizationEntry);
             _preloadedLocalizationHandles[id] = handle;
             return handle;
+        }
+
+        /// <summary>
+        ///     Resolves the locale-correct AudioClip for the given Localization-mode entity.
+        ///     Returns <c>default</c> and logs a warning if the table or entry reference is empty.
+        /// </summary>
+        private AsyncOperationHandle<AudioClip> LoadLocalizedAssetAsync(SoundID id, AudioEntity audioEntity)
+        {
+            if (audioEntity.LocalizationTable.ReferenceType == TableReference.Type.Empty ||
+                audioEntity.LocalizationEntry.ReferenceType == TableEntryReference.Type.Empty)
+            {
+                Debug.LogWarning(Utility.LogTitle +
+                                 $"LocalizationTable or LocalizationEntry is not set on entity '{audioEntity.Name}'.");
+                return default;
+            }
+
+            return LocalizationSettings.AssetDatabase
+                .GetLocalizedAssetAsync<AudioClip>(audioEntity.LocalizationTable, audioEntity.LocalizationEntry);
+        }
+
+        /// <summary>
+        ///     Wraps the single resolved localized clip into an <see cref="IList{AudioClip}"/> handle so the
+        ///     return type matches the Addressables path of <see cref="LoadAllAssetsAsync"/>.
+        /// </summary>
+        private AsyncOperationHandle<IList<AudioClip>> LoadAllLocalizedAssetsAsync(SoundID id, AudioEntity audioEntity)
+        {
+            AsyncOperationHandle<AudioClip> clipHandle = LoadLocalizedAssetAsync(id, audioEntity);
+            if (!clipHandle.IsValid())
+            {
+                return default;
+            }
+
+            return Addressables.ResourceManager.CreateChainOperation<IList<AudioClip>, AudioClip>(clipHandle, op =>
+            {
+                IList<AudioClip> result = new List<AudioClip> { op.Result };
+                return Addressables.ResourceManager.CreateCompletedOperation(result, string.Empty);
+            });
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-#if PACKAGE_ADDRESSABLES
+#if PACKAGE_ADDRESSABLES || PACKAGE_LOCALIZATION
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -40,6 +40,13 @@ namespace Ami.BroAudio.Runtime
 
         public AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(SoundID id)
         {
+#if PACKAGE_LOCALIZATION
+            if (TryGetEntity(id, out var anyEntity) && anyEntity is AudioEntity localizationEntity
+                && localizationEntity.PlayMode == MulticlipsPlayMode.Localization)
+            {
+                return LoadAllLocalizedAssetsAsync(id, localizationEntity);
+            }
+#endif
             if (TryGetAddressableEntity(id, out var entity))
             {
                 var result = entity.LoadAssetsAsync();
@@ -52,6 +59,13 @@ namespace Ami.BroAudio.Runtime
 
         public AsyncOperationHandle<AudioClip> LoadAssetAsync(SoundID id, int clipIndex)
         {
+#if PACKAGE_LOCALIZATION
+            if (TryGetEntity(id, out var anyEntity) && anyEntity is AudioEntity localizationEntity
+                && localizationEntity.PlayMode == MulticlipsPlayMode.Localization)
+            {
+                return LoadLocalizedAssetAsync(id, localizationEntity);
+            }
+#endif
             if (TryGetAddressableEntity(id, out var entity) && clipIndex >= 0 && clipIndex < entity.Clips.Length)
             {
                 var clip = entity.Clips[clipIndex];

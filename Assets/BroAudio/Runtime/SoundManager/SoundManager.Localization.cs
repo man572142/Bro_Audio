@@ -104,7 +104,6 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            List<SoundID> ids = new(_preloadedLocalizationHandles.Keys);
             foreach (var handle in _preloadedLocalizationHandles.Values)
             {
                 if (handle.IsValid())
@@ -112,17 +111,6 @@ namespace Ami.BroAudio.Runtime
             }
 
             _preloadedLocalizationHandles.Clear();
-
-            foreach (var id in ids)
-            {
-                if (TryGetLocalizationEntity(id, out var audioEntity))
-                {
-                    LoadLocalizedAssetAsync(id, audioEntity);
-                }
-            }
-
-            // Subscribers registered through SubscribeLocalizedClipChanged are driven by
-            // LocalizedAsset<T>.AssetChanged, which fires automatically on locale change — no manual reload here.
         }
 
         private void ReleaseAllLocalizationPreloads()

@@ -28,7 +28,7 @@ namespace Ami.BroAudio
         // Release verbs (Stop/Pause/SetVolume/SetPitch) may be called from OnDestroy/OnApplicationQuit,
         // when SoundManager can already be torn down due to non-deterministic destruction order. Treat
         // "nothing to release" as a silent no-op rather than throwing.
-        private static SoundManager Manager => SoundManager.HasInstance ? SoundManager.Instance : null;
+        internal static SoundManager Manager => SoundManager.HasInstance ? SoundManager.Instance : null;
 
         #region Play
         /// <summary>
@@ -361,7 +361,7 @@ namespace Ami.BroAudio
         /// Uses <c>LocalizedAsset&lt;T&gt;.AssetChanged</c> under the hood, so behavior matches Unity Localization's standard asset-change notification.
         /// </summary>
         public static void SubscribeLocalizedClipChanged(SoundID id, Action<SoundID> handler)
-            => Manager?.SubscribeLocalizedClipChanged(id, handler);
+            => Manager?.SubscribeLocalizedAudioChanged(id, handler);
 
         /// <summary>
         /// Removes a handler previously registered with <see cref="SubscribeLocalizedClipChanged"/>.
@@ -369,7 +369,7 @@ namespace Ami.BroAudio
         /// underlying Addressables handle automatically.
         /// </summary>
         public static void UnsubscribeLocalizedClipChanged(SoundID id, Action<SoundID> handler)
-            => Manager?.UnsubscribeLocalizedClipChanged(id, handler);
+            => Manager?.UnsubscribeLocalizedAudioChanged(id, handler);
 #endif
     }
 }

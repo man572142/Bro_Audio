@@ -71,6 +71,14 @@ namespace Ami.BroAudio.Runtime
             });
         }
 
+        private bool IsLocalizationHandleLoaded(SoundID id)
+        {
+            return _preloadedLocalizationHandles != null
+                && _preloadedLocalizationHandles.TryGetValue(id, out var handle)
+                && handle.IsValid()
+                && handle.IsDone;
+        }
+
         private void ReleaseLocalizationHandleInternal(SoundID id)
         {
             if (_preloadedLocalizationHandles == null)

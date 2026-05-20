@@ -336,14 +336,14 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="id"></param>
         public static void ReleaseAllAssets(SoundID id)
-            => SoundManager.Instance.ReleaseAllAssets(id);
+            => Manager?.ReleaseAllAssets(id);
 
         /// <summary>
         /// Releases the first audio clip in the entity, or the active locale's clip in Localization mode.
         /// </summary>
         /// <param name="id"></param>
         public static void ReleaseAsset(SoundID id)
-            => SoundManager.Instance.ReleaseAsset(id, 0);
+            => Manager?.ReleaseAsset(id, 0);
 
         /// <summary>
         /// Releases the audio clip in the entity's clip list by index.
@@ -352,26 +352,14 @@ namespace Ami.BroAudio
         /// <param name="id"></param>
         /// <param name="clipIndex"></param>
         public static void ReleaseAsset(SoundID id, int clipIndex)
-            => SoundManager.Instance.ReleaseAsset(id, clipIndex);
+            => Manager?.ReleaseAsset(id, clipIndex);
 #endif
 
 #if PACKAGE_LOCALIZATION
         /// <summary>
         /// Subscribes to localized clip changes for a Localization-mode entity, identified by <see cref="SoundID"/>.
+        /// Uses <c>LocalizedAsset&lt;T&gt;.AssetChanged</c> under the hood, so behavior matches Unity Localization's standard asset-change notification.
         /// </summary>
-        /// <remarks>
-        /// Lifecycle (all handled internally — callers do not need to pair this with
-        /// <see cref="LoadAssetAsync(SoundID)"/> or <c>LocalizationSettings.SelectedLocaleChanged</c>):
-        /// <list type="bullet">
-        ///   <item><description>First subscribe for a <paramref name="id"/> implicitly triggers an async load of the active locale's clip.</description></item>
-        ///   <item><description><paramref name="handler"/> is invoked with <paramref name="id"/> once the clip is ready.</description></item>
-        ///   <item><description>If the clip is already cached (e.g. another subscriber loaded it, or <see cref="LoadAssetAsync(SoundID)"/> ran earlier), <paramref name="handler"/> is invoked synchronously on subscribe.</description></item>
-        ///   <item><description><paramref name="handler"/> is invoked again with <paramref name="id"/> on every <see cref="UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocaleChanged"/> event for as long as it remains subscribed.</description></item>
-        ///   <item><description>When the last subscriber for <paramref name="id"/> detaches via <see cref="UnsubscribeLocalizedClipChanged"/>, the underlying Addressables handle is released automatically by Unity Localization.</description></item>
-        /// </list>
-        /// Subscribing the same <c>(id, handler)</c> pair twice is a no-op. Subscribing on an entity that is not in
-        /// <see cref="MulticlipsPlayMode.Localization"/> logs a warning and registers nothing.
-        /// </remarks>
         public static void SubscribeLocalizedClipChanged(SoundID id, Action<SoundID> handler)
             => Manager?.SubscribeLocalizedClipChanged(id, handler);
 

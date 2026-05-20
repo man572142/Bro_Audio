@@ -85,6 +85,19 @@ namespace Ami.BroAudio
         {
             soundId.ID = id;
         }
+        
+#if PACKAGE_LOCALIZATION
+
+        /// <summary>
+        /// Raised when the localized clip for this <see cref="SoundID"/> changes.
+        /// Uses <c>LocalizedAsset&lt;T&gt;.AssetChanged</c> under the hood, so behavior matches Unity Localization's standard asset-change notification.
+        /// </summary>
+        public event Action<SoundID> LocalizedAudioChanged
+        {
+            add => BroAudio.Manager?.SubscribeLocalizedAudioChanged(this, value);
+            remove => BroAudio.Manager?.UnsubscribeLocalizedAudioChanged(this, value);
+        }
+#endif
 
 #if UNITY_EDITOR
         public static class NameOf

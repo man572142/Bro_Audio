@@ -149,7 +149,7 @@ namespace Ami.BroAudio.Runtime
             }
         }
 
-        public void SubscribeLocalizedClipChanged(SoundID id, Action<SoundID> handler)
+        public void SubscribeLocalizedAudioChanged(SoundID id, Action<SoundID> handler)
         {
             if (handler == null)
             {
@@ -192,7 +192,7 @@ namespace Ami.BroAudio.Runtime
             localizedAsset.AssetChanged += wrapper;
         }
 
-        public void UnsubscribeLocalizedClipChanged(SoundID id, Action<SoundID> handler)
+        public void UnsubscribeLocalizedAudioChanged(SoundID id, Action<SoundID> handler)
         {
             if (handler == null || _localizedClipHandlers == null)
             {

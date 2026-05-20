@@ -30,11 +30,23 @@ namespace Ami.BroAudio.Runtime
 
         public bool IsLoaded(SoundID id)
         {
+#if PACKAGE_LOCALIZATION
+            if (TryGetLocalizationEntity(id, out _))
+            {
+                return IsLocalizationHandleLoaded(id);
+            }
+#endif
             return TryGetAddressableEntity(id, out var entity) && entity.IsLoaded();
         }
 
         public bool IsLoaded(SoundID id, int clipIndex)
         {
+#if PACKAGE_LOCALIZATION
+            if (TryGetLocalizationEntity(id, out _))
+            {
+                return IsLocalizationHandleLoaded(id);
+            }
+#endif
             return TryGetAddressableEntity(id, out var entity) && entity.IsLoaded(clipIndex);
         }
 

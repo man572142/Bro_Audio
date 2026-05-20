@@ -741,8 +741,6 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
-            Undo.RecordObject(table, "Set Localized Audio Clip");
-
             var entry = table.GetEntry(entryKey);
             if (entry != null && !string.IsNullOrEmpty(entry.Guid))
             {
@@ -759,7 +757,6 @@ namespace Ami.BroAudio.Editor
             {
                 EditorUtility.SetDirty(tableCollection.SharedData);
             }
-            AssetDatabase.SaveAssets();
         }
     }
 }

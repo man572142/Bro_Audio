@@ -1,4 +1,5 @@
 #if PACKAGE_ADDRESSABLES || PACKAGE_LOCALIZATION
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -68,6 +69,9 @@ namespace Ami.BroAudio.Runtime
             return default;
         }
 
+        public AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(SoundID id, Action<SoundID> onLoaded)
+            => AttachLoadedCallback(LoadAllAssetsAsync(id), id, onLoaded);
+
         public AsyncOperationHandle<AudioClip> LoadAssetAsync(SoundID id, int clipIndex)
         {
 #if PACKAGE_LOCALIZATION
@@ -85,6 +89,9 @@ namespace Ami.BroAudio.Runtime
             }
             return default;
         }
+
+        public AsyncOperationHandle<AudioClip> LoadAssetAsync(SoundID id, int clipIndex, Action<SoundID> onLoaded)
+            => AttachLoadedCallback(LoadAssetAsync(id, clipIndex), id, onLoaded);
 
         public void ReleaseAllAssets(SoundID id)
         {
@@ -130,6 +137,24 @@ namespace Ami.BroAudio.Runtime
             }
             return false;
         }
+
+        private static AsyncOperationHandle<T> AttachLoadedCallback<T>(
+            AsyncOperationHandle<T> handle, SoundID id, Action<SoundID> onLoaded)
+        {
+            if (onLoaded == null || !handle.IsValid())
+            {
+                return handle;
+            }
+
+            handle.Completed += op =>
+            {
+                if (op.Status == AsyncOperationStatus.Succeeded)
+                {
+                    onLoaded(id);
+                }
+            };
+            return handle;
+        }
     }
-} 
+}
 #endif

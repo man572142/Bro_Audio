@@ -5,7 +5,7 @@ using Ami.BroAudio.Runtime;
 using System.Collections;
 using Ami.BroAudio.Data;
 
-#if PACKAGE_ADDRESSABLES
+#if PACKAGE_ADDRESSABLES || PACKAGE_LOCALIZATION
 using UnityEngine.ResourceManagement.AsyncOperations;
 #endif
 
@@ -179,7 +179,7 @@ namespace Ami.BroAudio
         public static IAudioPlayer Play(this SoundID id, Transform followTarget, float fadeIn, IPlayableValidator playableValidator = null) 
             => BroAudio.Play(id, followTarget, fadeIn, playableValidator);
 
-#if PACKAGE_ADDRESSABLES
+#if PACKAGE_ADDRESSABLES || PACKAGE_LOCALIZATION
         ///<inheritdoc cref="BroAudio.LoadAllAssetsAsync(SoundID)"/>
         public static AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(this SoundID id)
             => SoundManager.Instance.LoadAllAssetsAsync(id);
@@ -191,6 +191,18 @@ namespace Ami.BroAudio
         ///<inheritdoc cref="BroAudio.LoadAssetAsync(SoundID,int)"/>
         public static AsyncOperationHandle<AudioClip> LoadAssetAsync(this SoundID id, int clipIndex)
             => SoundManager.Instance.LoadAssetAsync(id, clipIndex);
+
+        ///<inheritdoc cref="BroAudio.LoadAssetAsync(SoundID, Action{SoundID})"/>
+        public static AsyncOperationHandle<AudioClip> LoadAssetAsync(this SoundID id, Action<SoundID> onLoaded)
+            => BroAudio.LoadAssetAsync(id, onLoaded);
+
+        ///<inheritdoc cref="BroAudio.LoadAssetAsync(SoundID, int, Action{SoundID})"/>
+        public static AsyncOperationHandle<AudioClip> LoadAssetAsync(this SoundID id, int clipIndex, Action<SoundID> onLoaded)
+            => BroAudio.LoadAssetAsync(id, clipIndex, onLoaded);
+
+        ///<inheritdoc cref="BroAudio.LoadAllAssetsAsync(SoundID, Action{SoundID})"/>
+        public static AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(this SoundID id, Action<SoundID> onLoaded)
+            => BroAudio.LoadAllAssetsAsync(id, onLoaded);
 
         ///<inheritdoc cref="BroAudio.ReleaseAllAssets(SoundID)"/>
         public static void ReleaseAllAssets(this SoundID id)

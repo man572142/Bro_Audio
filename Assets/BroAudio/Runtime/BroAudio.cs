@@ -332,6 +332,36 @@ namespace Ami.BroAudio
             => SoundManager.Instance.LoadAssetAsync(id, clipIndex);
 
         /// <summary>
+        /// Loads the first audio clip in the entity and invokes <paramref name="onLoaded"/> with the <see cref="SoundID"/> once the load completes successfully.
+        /// In Localization mode, the active locale's clip is loaded.
+        /// The callback is invoked on the main thread on a later frame, never re-entrantly inside <c>LoadAssetAsync</c>.
+        /// If the load fails or the entity is invalid, the callback is not invoked.
+        /// The returned <see cref="AsyncOperationHandle{T}"/> can be awaited or have additional <c>Completed</c> handlers attached for failure handling.
+        /// </summary>
+        public static AsyncOperationHandle<AudioClip> LoadAssetAsync(SoundID id, Action<SoundID> onLoaded)
+            => LoadAssetAsync(id, 0, onLoaded);
+
+        /// <summary>
+        /// Loads the audio clip in the entity's clip list by index and invokes <paramref name="onLoaded"/> with the <see cref="SoundID"/> once the load completes successfully.
+        /// In Localization mode, <paramref name="clipIndex"/> is ignored and the active locale's clip is loaded.
+        /// The callback is invoked on the main thread on a later frame, never re-entrantly inside <c>LoadAssetAsync</c>.
+        /// If the load fails or the entity is invalid, the callback is not invoked.
+        /// The returned <see cref="AsyncOperationHandle{T}"/> can be awaited or have additional <c>Completed</c> handlers attached for failure handling.
+        /// </summary>
+        public static AsyncOperationHandle<AudioClip> LoadAssetAsync(SoundID id, int clipIndex, Action<SoundID> onLoaded)
+            => SoundManager.Instance.LoadAssetAsync(id, clipIndex, onLoaded);
+
+        /// <summary>
+        /// Loads all audio clips in the entity and invokes <paramref name="onLoaded"/> with the <see cref="SoundID"/> once all clips have loaded successfully.
+        /// In Localization mode, loads the single active locale clip.
+        /// The callback is invoked on the main thread on a later frame, never re-entrantly inside <c>LoadAllAssetsAsync</c>.
+        /// If the load fails or the entity is invalid, the callback is not invoked.
+        /// The returned <see cref="AsyncOperationHandle{T}"/> can be awaited or have additional <c>Completed</c> handlers attached for failure handling.
+        /// </summary>
+        public static AsyncOperationHandle<IList<AudioClip>> LoadAllAssetsAsync(SoundID id, Action<SoundID> onLoaded)
+            => SoundManager.Instance.LoadAllAssetsAsync(id, onLoaded);
+
+        /// <summary>
         /// Releases all the audio clips in the entity
         /// </summary>
         /// <param name="id"></param>

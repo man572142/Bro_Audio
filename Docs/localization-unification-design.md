@@ -15,7 +15,7 @@ This has two structural problems:
 1. **Three sources of truth.** `IsLoaded`, `AssetChanged`, and `SelectClip` don't share state. Preloading a `SoundID` does not let `SelectClip` skip its synchronous `GetLocalizedAssetAsync` call on the next play, so the "was not preloaded" warning fires even after a successful preload.
 2. **Cached `AsyncOperationHandle<AudioClip>` is unreliable.** Unity Localization pools internal `LoadAssetOperation` instances and recycles them after `Completed`. The saved handle struct reports `IsValid() == false` shortly after, breaking `IsLoaded` and the original `Addressables.Release` path. The current code in `SoundManager.Localization.cs` already works around this by caching the `AudioClip` plus `(TableReference, TableEntryReference)` instead of the handle (per `localization-clip-cache-plan.md`).
 
-This document supersedes `localization-clip-cache-plan.md`. The chosen fix is to route all three paths through a single `LocalizedAudioClip` field on the entity itself, so the entity owns the (table, entry) pair and the SoundManager-side runtime cache only tracks per-session lifecycle state.
+The chosen fix is to route all three paths through a single `LocalizedAudioClip` field on the entity itself, so the entity owns the (table, entry) pair and the SoundManager-side runtime cache only tracks per-session lifecycle state.
 
 ## Goals
 
@@ -29,7 +29,7 @@ This document supersedes `localization-clip-cache-plan.md`. The chosen fix is to
 
 ## Non-goals
 
-- Adopting Localization's **Preload Tables** workflow. Separate, larger change covered in `unity-localization-plan.md`.
+- Adopting Localization's **Preload Tables** workflow. Separate, larger workflow change deferred.
 - Backwards-compatibility for entities serialized with the old `_localizationTable` / `_localizationEntry` fields. This is a hard break on the `DEV_Unity6` branch; existing assets must re-pick their table/entry.
 
 ## Design

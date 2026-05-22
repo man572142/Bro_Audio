@@ -101,6 +101,17 @@ namespace Ami.BroAudio.Runtime
             foreach (var entry in _localizedRuntime.Values)
             {
                 entry.CurrentClip = null;
+                if (entry.IsPreloaded)
+                {
+                    // The Localization handle is invalidated by the locale switch; calling Release
+                    // is a no-op when already invalid, but covers the rare in-flight case.
+                    if (entry.PreloadHandle.IsValid())
+                    {
+                        Addressables.Release(entry.PreloadHandle);
+                    }
+                    entry.IsPreloaded = false;
+                    entry.PreloadHandle = default;
+                }
             }
             // Unity reloads each entry's asset for the new locale and fires AssetChanged on its
             // subscribers — the Tracker on each entry repopulates CurrentClip.

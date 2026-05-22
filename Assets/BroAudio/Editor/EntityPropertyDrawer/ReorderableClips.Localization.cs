@@ -98,8 +98,8 @@ namespace Ami.BroAudio.Editor
 
         private void InitLocalization(SerializedObject serializedObject)
         {
-            _localizationTableProp = serializedObject.FindProperty(AudioEntity.LocalizationEditorPropertyName.LocalizationTable);
-            _localizationEntryProp = serializedObject.FindProperty(AudioEntity.LocalizationEditorPropertyName.LocalizationEntry);
+            _localizationTableProp = serializedObject.FindProperty(AudioEntity.LocalizationEditorPropertyName.Table);
+            _localizationEntryProp = serializedObject.FindProperty(AudioEntity.LocalizationEditorPropertyName.Entry);
 
             _localizationListData = new List<int>();
             _localizationList = new ReorderableList(_localizationListData, typeof(int),

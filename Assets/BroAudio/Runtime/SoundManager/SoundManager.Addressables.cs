@@ -33,7 +33,7 @@ namespace Ami.BroAudio.Runtime
 #if PACKAGE_LOCALIZATION
             if (TryGetLocalizationEntity(id, out _))
             {
-                return IsLocalizationHandleLoaded(id);
+                return IsLocalizationClipLoaded(id);
             }
 #endif
             return TryGetAddressableEntity(id, out var entity) && entity.IsLoaded();
@@ -44,7 +44,7 @@ namespace Ami.BroAudio.Runtime
 #if PACKAGE_LOCALIZATION
             if (TryGetLocalizationEntity(id, out _))
             {
-                return IsLocalizationHandleLoaded(id);
+                return IsLocalizationClipLoaded(id);
             }
 #endif
             return TryGetAddressableEntity(id, out var entity) && entity.IsLoaded(clipIndex);
@@ -91,7 +91,7 @@ namespace Ami.BroAudio.Runtime
 #if PACKAGE_LOCALIZATION
             if (TryGetLocalizationEntity(id, out _))
             {
-                ReleaseLocalizationHandleInternal(id);
+                ReleaseLocalizationClipInternal(id);
                 return;
             }
 #endif
@@ -106,7 +106,7 @@ namespace Ami.BroAudio.Runtime
 #if PACKAGE_LOCALIZATION
             if (TryGetLocalizationEntity(id, out _))
             {
-                ReleaseLocalizationHandleInternal(id);
+                ReleaseLocalizationClipInternal(id);
                 return;
             }
 #endif

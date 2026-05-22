@@ -353,6 +353,11 @@ namespace Ami.BroAudio
         /// <param name="clipIndex"></param>
         public static void ReleaseAsset(SoundID id, int clipIndex)
             => Manager?.ReleaseAsset(id, clipIndex);
+        
+        public static void PlayOnAudioLoaded(SoundID id)
+        {
+            Play(id, FadeData.UseClipSetting);
+        }
 #endif
 
 #if PACKAGE_LOCALIZATION

@@ -1,6 +1,7 @@
 #if PACKAGE_LOCALIZATION
 using Ami.BroAudio.Data;
 using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Tables;
 
@@ -9,47 +10,56 @@ namespace Ami.BroAudio.Runtime
     /// <summary>
     /// Selects the <see cref="BroAudioClip"/> whose <c>Locale</c> matches
     /// <see cref="LocalizationSettings.SelectedLocale"/> and resolves the audio clip
-    /// from the Unity Asset Table. Call <see cref="Inject"/> before each use.
+    /// from the entity's <see cref="LocalizedAudioClip"/>. Call <see cref="Inject"/> before each use.
     /// </summary>
     public class LocalizationClipStrategy : IClipSelectionStrategy
     {
-        private TableReference _table;
-        private TableEntryReference _entry;
+        private SoundID _id;
+        private LocalizedAudioClip _localizedAudio;
         private string _entityName;
 
-        public void Inject(TableReference table, TableEntryReference entry, string entityName)
+        public void Inject(SoundID id, LocalizedAudioClip localizedAudio, string entityName)
         {
-            _table = table;
-            _entry = entry;
+            _id = id;
+            _localizedAudio = localizedAudio;
             _entityName = entityName;
         }
 
         public IBroAudioClip SelectClip(BroAudioClip[] clips, ClipSelectionContext context, out int index)
         {
-            if (_table.ReferenceType == TableReference.Type.Empty)
+            if (_localizedAudio == null
+                || _localizedAudio.TableReference.ReferenceType == TableReference.Type.Empty)
             {
-                Debug.LogError(Utility.LogTitle + $"LocalizationTable is not set on entity '{_entityName}'.");
+                Debug.LogError(Utility.LogTitle + $"LocalizedAudio table is not set on entity '{_entityName}'.");
                 index = -1;
                 return null;
             }
 
-            if (_entry.ReferenceType == TableEntryReference.Type.Empty)
+            if (_localizedAudio.TableEntryReference.ReferenceType == TableEntryReference.Type.Empty)
             {
-                Debug.LogError(Utility.LogTitle + $"LocalizationEntry is not set on entity '{_entityName}'.");
+                Debug.LogError(Utility.LogTitle + $"LocalizedAudio entry is not set on entity '{_entityName}'.");
                 index = -1;
                 return null;
             }
 
-            var handle = LocalizationSettings.AssetDatabase
-                .GetLocalizedAssetAsync<AudioClip>(_table, _entry);
-            if (!handle.IsDone)
+            AudioClip resolvedClip;
+            if (SoundManager.HasInstance && SoundManager.Instance.TryGetCachedLocalizedClip(_id, out var cached))
             {
-                Debug.LogWarning(Utility.LogTitle +
-                    $"Localized AudioClip for entity '{_entityName}' was not preloaded; " +
-                    $"resolving synchronously will block the main thread. " +
-                    $"Call {nameof(BroAudio)}.{nameof(BroAudio.LoadAssetAsync)}(SoundID) before playback to avoid hitches.");
+                resolvedClip = cached;
             }
-            var resolvedClip = handle.WaitForCompletion();
+            else
+            {
+                var handle = _localizedAudio.LoadAssetAsync();
+                if (!handle.IsDone)
+                {
+                    Debug.LogWarning(Utility.LogTitle +
+                        $"Localized AudioClip for entity '{_entityName}' was not preloaded; " +
+                        $"resolving synchronously will block the main thread. " +
+                        $"Call {nameof(BroAudio)}.{nameof(BroAudio.LoadAssetAsync)}(SoundID) before playback to avoid hitches.");
+                }
+                resolvedClip = handle.WaitForCompletion();
+            }
+
             var selectedLocale = LocalizationSettings.SelectedLocale;
 
             if (resolvedClip == null)

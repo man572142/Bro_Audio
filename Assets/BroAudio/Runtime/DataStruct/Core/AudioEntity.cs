@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Ami.BroAudio.Runtime;
+using Ami.BroAudio;
 using UnityEngine;
 using Ami.Extension;
 
@@ -54,7 +55,7 @@ namespace Ami.BroAudio.Data
 #if PACKAGE_LOCALIZATION
                 case MulticlipsPlayMode.Localization:
                     EnsureClipSelectionStrategy<LocalizationClipStrategy>();
-                    ((LocalizationClipStrategy)_clipSelectionStrategy).Inject(_localizationTable, _localizationEntry, Name);
+                    ((LocalizationClipStrategy)_clipSelectionStrategy).Inject(new SoundID(this), _localizedAudio, Name);
                     break;
 #endif
                 default:

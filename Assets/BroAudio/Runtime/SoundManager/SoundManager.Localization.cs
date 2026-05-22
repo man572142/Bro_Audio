@@ -14,47 +14,48 @@ namespace Ami.BroAudio.Runtime
     public partial class SoundManager : MonoBehaviour
     {
         private bool _isSubscribedToLocaleChanged;
-        private Dictionary<SoundID, AsyncOperationHandle<AudioClip>> _preloadedLocalizationHandles;
-        private Dictionary<SoundID, LocalizedAsset<AudioClip>> _localizedAssets;
-        private Dictionary<(SoundID id, Action<SoundID> handler), LocalizedAsset<AudioClip>.ChangeHandler> _localizedClipHandlers;
+        private Dictionary<SoundID, LocalizedRuntimeEntry> _localizedRuntime;
+
+        private sealed class LocalizedRuntimeEntry
+        {
+            public AudioEntity Entity;
+            public AudioClip CurrentClip;
+            public AsyncOperationHandle<AudioClip> PreloadHandle;
+            public bool IsPreloaded;
+            public LocalizedAsset<AudioClip>.ChangeHandler Tracker;
+            public Dictionary<Action<SoundID>, LocalizedAsset<AudioClip>.ChangeHandler> UserHandlers;
+        }
 
         /// <summary>
-        ///     Resolves the locale-correct AudioClip for the given Localization-mode entity, caching the
-        ///     handle by SoundID so subsequent calls return the same handle and a paired
-        ///     <see cref="SoundManager.ReleaseAsset(SoundID,int)"/> can release it.
-        ///     Subscribes to <see cref="LocalizationSettings.SelectedLocaleChanged"/> on first cache add so
-        ///     the cache stays in sync with the active locale.
-        ///     Returns <c>default</c> and logs a warning if the table or entry reference is empty.
+        /// Resolves the locale-correct AudioClip for the given Localization-mode entity. Returns a handle
+        /// whose <c>Completed</c> fires once the asset is loaded. The cache holds the clip via either the
+        /// preload handle or an AssetChanged subscription; <see cref="ReleaseLocalizationClipInternal"/>
+        /// releases the preload contribution.
         /// </summary>
         private AsyncOperationHandle<AudioClip> LoadLocalizedAssetAsync(SoundID id, AudioEntity audioEntity)
         {
-            if (!HasValidLocalizationReferences(audioEntity))
+            if (!HasValidLocalizationReferences(audioEntity.LocalizedAudio, audioEntity.Name))
             {
                 return default;
             }
 
-            _preloadedLocalizationHandles ??= new Dictionary<SoundID, AsyncOperationHandle<AudioClip>>();
+            var entry = GetOrCreateEntry(id, audioEntity);
 
-            if (_preloadedLocalizationHandles.TryGetValue(id, out var cached) && cached.IsValid())
+            if (entry.IsPreloaded)
             {
-                return cached;
+                return entry.CurrentClip != null
+                    ? Addressables.ResourceManager.CreateCompletedOperation(entry.CurrentClip, string.Empty)
+                    : entry.PreloadHandle;
             }
 
-            if (!_isSubscribedToLocaleChanged)
-            {
-                LocalizationSettings.SelectedLocaleChanged += OnSelectedLocaleChanged;
-                _isSubscribedToLocaleChanged = true;
-            }
-
-            var handle = LocalizationSettings.AssetDatabase
-                .GetLocalizedAssetAsync<AudioClip>(audioEntity.LocalizationTable, audioEntity.LocalizationEntry);
-            _preloadedLocalizationHandles[id] = handle;
-            return handle;
+            entry.PreloadHandle = audioEntity.LocalizedAudio.LoadAssetAsync();
+            entry.IsPreloaded = true;
+            return entry.PreloadHandle;
         }
 
         /// <summary>
-        ///     Wraps the single resolved localized clip into an <see cref="IList{AudioClip}"/> handle so the
-        ///     return type matches the Addressables path of <see cref="LoadAllAssetsAsync"/>.
+        /// Wraps the single resolved localized clip into an <see cref="IList{AudioClip}"/> handle so the
+        /// return type matches the Addressables path of <see cref="LoadAllAssetsAsync"/>.
         /// </summary>
         private AsyncOperationHandle<IList<AudioClip>> LoadAllLocalizedAssetsAsync(SoundID id, AudioEntity audioEntity)
         {
@@ -71,76 +72,60 @@ namespace Ami.BroAudio.Runtime
             });
         }
 
-        private bool IsLocalizationHandleLoaded(SoundID id)
+        private bool IsLocalizationClipLoaded(SoundID id)
         {
-            return _preloadedLocalizationHandles != null
-                && _preloadedLocalizationHandles.TryGetValue(id, out var handle)
-                && handle.IsValid()
-                && handle.IsDone;
+            return _localizedRuntime != null
+                && _localizedRuntime.TryGetValue(id, out var entry)
+                && entry.IsPreloaded
+                && entry.CurrentClip != null;
         }
 
-        private void ReleaseLocalizationHandleInternal(SoundID id)
+        private void ReleaseLocalizationClipInternal(SoundID id)
         {
-            if (_preloadedLocalizationHandles == null)
+            if (_localizedRuntime == null || !_localizedRuntime.TryGetValue(id, out var entry) || !entry.IsPreloaded)
             {
                 return;
             }
 
-            if (_preloadedLocalizationHandles.TryGetValue(id, out var handle))
-            {
-                if (handle.IsValid())
-                {
-                    Addressables.Release(handle);
-                }
+            ReleaseUnderlyingAsset(entry.Entity.LocalizedAudio);
 
-                _preloadedLocalizationHandles.Remove(id);
-            }
+            entry.IsPreloaded = false;
+            entry.PreloadHandle = default;
+            MaybeTearDownEntry(id, entry);
         }
 
         private void OnSelectedLocaleChanged(Locale newLocale)
         {
-            if (_preloadedLocalizationHandles == null || _preloadedLocalizationHandles.Count == 0)
-            {
-                return;
-            }
+            if (_localizedRuntime == null) return;
 
-            foreach (var handle in _preloadedLocalizationHandles.Values)
+            foreach (var entry in _localizedRuntime.Values)
             {
-                if (handle.IsValid())
-                    Addressables.Release(handle);
+                entry.CurrentClip = null;
             }
-
-            _preloadedLocalizationHandles.Clear();
+            // Unity reloads each entry's asset for the new locale and fires AssetChanged on its
+            // subscribers — the Tracker on each entry repopulates CurrentClip.
         }
 
         private void ReleaseAllLocalizationPreloads()
         {
-            if (_preloadedLocalizationHandles != null)
+            if (_localizedRuntime != null)
             {
-                foreach (var handle in _preloadedLocalizationHandles.Values)
+                foreach (var entry in _localizedRuntime.Values)
                 {
-                    if (handle.IsValid())
+                    if (entry.IsPreloaded)
                     {
-                        Addressables.Release(handle);
+                        ReleaseUnderlyingAsset(entry.Entity.LocalizedAudio);
                     }
-                }
 
-                _preloadedLocalizationHandles.Clear();
-            }
-
-            if (_localizedClipHandlers != null && _localizedAssets != null)
-            {
-                foreach (var kv in _localizedClipHandlers)
-                {
-                    if (_localizedAssets.TryGetValue(kv.Key.id, out var asset))
+                    foreach (var kv in entry.UserHandlers)
                     {
-                        asset.AssetChanged -= kv.Value;
+                        entry.Entity.LocalizedAudio.AssetChanged -= kv.Value;
                     }
-                }
-            }
 
-            _localizedClipHandlers?.Clear();
-            _localizedAssets?.Clear();
+                    entry.Entity.LocalizedAudio.AssetChanged -= entry.Tracker;
+                }
+                _localizedRuntime.Clear();
+            }
 
             if (_isSubscribedToLocaleChanged)
             {
@@ -151,81 +136,93 @@ namespace Ami.BroAudio.Runtime
 
         public void SubscribeLocalizedAudioChanged(SoundID id, Action<SoundID> handler)
         {
-            if (handler == null)
-            {
-                return;
-            }
+            if (handler == null) return;
 
             if (!TryGetLocalizationEntity(id, out var entity))
             {
                 Debug.LogWarning(Utility.LogTitle +
-                                 $"SubscribeLocalizedClipChanged: entity for SoundID '{id}' is not in Localization mode.");
+                    $"SubscribeLocalizedClipChanged: entity for SoundID '{id}' is not in Localization mode.");
                 return;
             }
 
-            if (!HasValidLocalizationReferences(entity))
+            if (!HasValidLocalizationReferences(entity.LocalizedAudio, entity.Name))
             {
                 return;
             }
 
-            _localizedAssets ??= new Dictionary<SoundID, LocalizedAsset<AudioClip>>();
-            _localizedClipHandlers ??= new Dictionary<(SoundID, Action<SoundID>), LocalizedAsset<AudioClip>.ChangeHandler>();
-
-            var key = (id, handler);
-            if (_localizedClipHandlers.ContainsKey(key))
+            var entry = GetOrCreateEntry(id, entity);
+            if (entry.UserHandlers.ContainsKey(handler))
             {
                 return;
-            }
-
-            if (!_localizedAssets.TryGetValue(id, out var localizedAsset))
-            {
-                localizedAsset = new LocalizedAsset<AudioClip>
-                {
-                    TableReference = entity.LocalizationTable,
-                    TableEntryReference = entity.LocalizationEntry,
-                };
-                _localizedAssets[id] = localizedAsset;
             }
 
             LocalizedAsset<AudioClip>.ChangeHandler wrapper = _ => handler(id);
-            _localizedClipHandlers[key] = wrapper;
-            localizedAsset.AssetChanged += wrapper;
+            entity.LocalizedAudio.AssetChanged += wrapper;
+            entry.UserHandlers[handler] = wrapper;
         }
 
         public void UnsubscribeLocalizedAudioChanged(SoundID id, Action<SoundID> handler)
         {
-            if (handler == null || _localizedClipHandlers == null)
+            if (handler == null || _localizedRuntime == null) return;
+
+            if (!_localizedRuntime.TryGetValue(id, out var entry)) return;
+            if (!entry.UserHandlers.TryGetValue(handler, out var wrapper)) return;
+
+            entry.Entity.LocalizedAudio.AssetChanged -= wrapper;
+            entry.UserHandlers.Remove(handler);
+            MaybeTearDownEntry(id, entry);
+        }
+
+        internal bool TryGetCachedLocalizedClip(SoundID id, out AudioClip clip)
+        {
+            clip = null;
+            if (_localizedRuntime != null
+                && _localizedRuntime.TryGetValue(id, out var entry)
+                && entry.CurrentClip != null)
+            {
+                clip = entry.CurrentClip;
+                return true;
+            }
+            return false;
+        }
+
+        private LocalizedRuntimeEntry GetOrCreateEntry(SoundID id, AudioEntity entity)
+        {
+            _localizedRuntime ??= new Dictionary<SoundID, LocalizedRuntimeEntry>();
+            if (_localizedRuntime.TryGetValue(id, out var entry))
+            {
+                return entry;
+            }
+
+            EnsureLocaleChangedSubscribed();
+
+            entry = new LocalizedRuntimeEntry
+            {
+                Entity = entity,
+                UserHandlers = new Dictionary<Action<SoundID>, LocalizedAsset<AudioClip>.ChangeHandler>(),
+            };
+            entry.Tracker = clip => entry.CurrentClip = clip;
+            entity.LocalizedAudio.AssetChanged += entry.Tracker;
+            _localizedRuntime[id] = entry;
+            return entry;
+        }
+
+        private void MaybeTearDownEntry(SoundID id, LocalizedRuntimeEntry entry)
+        {
+            if (entry.IsPreloaded || entry.UserHandlers.Count > 0)
             {
                 return;
             }
 
-            var key = (id, handler);
-            if (!_localizedClipHandlers.TryGetValue(key, out var wrapper))
-            {
-                return;
-            }
+            entry.Entity.LocalizedAudio.AssetChanged -= entry.Tracker;
+            _localizedRuntime.Remove(id);
+        }
 
-            if (_localizedAssets != null && _localizedAssets.TryGetValue(id, out var localizedAsset))
-            {
-                localizedAsset.AssetChanged -= wrapper;
-            }
-
-            _localizedClipHandlers.Remove(key);
-
-            bool anyRemainingForId = false;
-            foreach (var k in _localizedClipHandlers.Keys)
-            {
-                if (k.id.Equals(id))
-                {
-                    anyRemainingForId = true;
-                    break;
-                }
-            }
-
-            if (!anyRemainingForId)
-            {
-                _localizedAssets?.Remove(id);
-            }
+        private void EnsureLocaleChangedSubscribed()
+        {
+            if (_isSubscribedToLocaleChanged) return;
+            LocalizationSettings.SelectedLocaleChanged += OnSelectedLocaleChanged;
+            _isSubscribedToLocaleChanged = true;
         }
 
         private bool TryGetLocalizationEntity(SoundID id, out AudioEntity entity)
@@ -240,16 +237,26 @@ namespace Ami.BroAudio.Runtime
             return false;
         }
 
-        private static bool HasValidLocalizationReferences(AudioEntity audioEntity)
+        private static bool HasValidLocalizationReferences(LocalizedAudioClip localizedAudio, string entityName)
         {
-            if (audioEntity.LocalizationTable.ReferenceType == TableReference.Type.Empty ||
-                audioEntity.LocalizationEntry.ReferenceType == TableEntryReference.Type.Empty)
+            if (localizedAudio == null
+                || localizedAudio.TableReference.ReferenceType == TableReference.Type.Empty
+                || localizedAudio.TableEntryReference.ReferenceType == TableEntryReference.Type.Empty)
             {
                 Debug.LogWarning(Utility.LogTitle +
-                                 $"LocalizationTable or LocalizationEntry is not set on entity '{audioEntity.Name}'.");
+                    $"LocalizedAudio table or entry is not set on entity '{entityName}'.");
                 return false;
             }
             return true;
+        }
+
+        private static void ReleaseUnderlyingAsset(LocalizedAudioClip localizedAudio)
+        {
+            var table = LocalizationSettings.AssetDatabase.GetTable(localizedAudio.TableReference);
+            if (table != null)
+            {
+                table.ReleaseAsset(localizedAudio.TableEntryReference);
+            }
         }
     }
 }

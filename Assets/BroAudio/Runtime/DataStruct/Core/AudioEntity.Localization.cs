@@ -1,22 +1,21 @@
 #if PACKAGE_LOCALIZATION
 using UnityEngine;
-using UnityEngine.Localization.Tables;
+using UnityEngine.Localization;
 
 namespace Ami.BroAudio.Data
 {
     public partial class AudioEntity
     {
-        [SerializeField] private TableReference _localizationTable;
-        [SerializeField] private TableEntryReference _localizationEntry;
+        [SerializeField] private LocalizedAudioClip _localizedAudio;
 
-        public TableReference LocalizationTable => _localizationTable;
-        public TableEntryReference LocalizationEntry => _localizationEntry;
+        public LocalizedAudioClip LocalizedAudio => _localizedAudio;
 
 #if UNITY_EDITOR
         public static class LocalizationEditorPropertyName
         {
-            public const string LocalizationTable = "_localizationTable";
-            public const string LocalizationEntry = "_localizationEntry";
+            public const string LocalizedAudio = "_localizedAudio";
+            public const string Table          = "_localizedAudio.m_TableReference";
+            public const string Entry          = "_localizedAudio.m_TableEntryReference";
         }
 #endif
     }

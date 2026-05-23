@@ -14,26 +14,26 @@ namespace Ami.BroAudio
             StayHere,
         }
 
-        [SerializeField] bool _onlyPlayOnce = false;
-        [SerializeField, FormerlySerializedAs("_playOnStart")] bool _playOnEnable = true;
-        [SerializeField] bool _stopOnDisable = false;
-        [SerializeField] float _overrideFadeOut = -1f;
+        [SerializeField] protected bool _onlyPlayOnce = false;
+        [SerializeField, FormerlySerializedAs("_playOnStart")] protected bool _playOnEnable = false;
+        [SerializeField] protected bool _stopOnDisable = false;
+        [SerializeField] protected float _overrideFadeOut = -1f;
         [Space]
-        [SerializeField] SoundID _sound = default;
-        [SerializeField] PlaybackGroup _overrideGroup = null;
-        [SerializeField] PositionMode _positionMode = default;
-        [SerializeField] float _delay = 0f;
+        [SerializeField] protected SoundID _sound = default;
+        [SerializeField] protected PlaybackGroup _overrideGroup = null;
+        [SerializeField] protected PositionMode _positionMode = default;
+        [SerializeField] protected float _delay = 0f;
 
-        public IAudioPlayer CurrentPlayer { get; private set; }
+        public virtual IAudioPlayer CurrentPlayer { get; private set; }
 
         ///<inheritdoc cref="IAudioPlayer.IsPlaying()"/>
-        public bool IsPlaying => CurrentPlayer != null && CurrentPlayer.IsPlaying;
+        public virtual bool IsPlaying => CurrentPlayer != null && CurrentPlayer.IsPlaying;
 
         ///<inheritdoc cref="IAudioPlayer.IsActive()"/>
-        public bool IsActive => CurrentPlayer != null && CurrentPlayer.IsActive;
+        public virtual bool IsActive => CurrentPlayer != null && CurrentPlayer.IsActive;
 
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             if (!_playOnEnable)
             {
@@ -52,7 +52,7 @@ namespace Ami.BroAudio
             }
         }
 
-        private void OnDisable()
+        protected virtual void OnDisable()
         {
             if(_stopOnDisable && CurrentPlayer != null && CurrentPlayer.IsPlaying)
             {

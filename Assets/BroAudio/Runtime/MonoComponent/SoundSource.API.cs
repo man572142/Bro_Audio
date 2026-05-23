@@ -9,7 +9,7 @@ namespace Ami.BroAudio
         /// <summary>
         /// Plays the audio base on the current PositionMode 
         /// </summary>
-        public void Play()
+        public virtual void Play()
         {
             switch (_positionMode)
             {
@@ -26,21 +26,21 @@ namespace Ami.BroAudio
         }
 
         ///<inheritdoc cref="BroAudio.Play(SoundID)"/>
-        public void PlayGlobally()
+        public virtual void PlayGlobally()
         {
             Stop();
             CurrentPlayer = BroAudio.Play(_sound, _overrideGroup);
         }
 
         ///<inheritdoc cref="BroAudio.Play(SoundID, Transform)"/>
-        public void Play(Transform followTarget)
+        public virtual void Play(Transform followTarget)
         {
             Stop();
             CurrentPlayer = BroAudio.Play(_sound, followTarget, _overrideGroup);
         }
 
         ///<inheritdoc cref="BroAudio.Play(SoundID, Vector3)"/>
-        public void Play(Vector3 positon)
+        public virtual void Play(Vector3 positon)
         {
             Stop();
             CurrentPlayer = BroAudio.Play(_sound, positon, _overrideGroup);
@@ -87,10 +87,10 @@ namespace Ami.BroAudio
 
         #region Modification
         ///<inheritdoc cref="BroAudio.SetVolume(SoundID,float)"/>
-        public void SetVolume(float vol) => SetVolume(vol, BroAdvice.FadeTime_Immediate);
+        public virtual void SetVolume(float vol) => SetVolume(vol, BroAdvice.FadeTime_Immediate);
 
         ///<inheritdoc cref="BroAudio.SetVolume(SoundID,float,float)"/>
-        public void SetVolume(float vol, float fadeTime)
+        public virtual void SetVolume(float vol, float fadeTime)
         {
             if (IsPlaying)
             {
@@ -98,8 +98,8 @@ namespace Ami.BroAudio
             }
         }
 
-        public void SetPitch(float pitch) => SetPitch(pitch, BroAdvice.FadeTime_Immediate);
-        public void SetPitch(float pitch, float fadeTime)
+        public virtual void SetPitch(float pitch) => SetPitch(pitch, BroAdvice.FadeTime_Immediate);
+        public virtual void SetPitch(float pitch, float fadeTime)
         {
             if (IsPlaying)
             {

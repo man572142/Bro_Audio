@@ -21,7 +21,6 @@ namespace Ami.BroAudio.Runtime
             public AudioEntity Entity;
             public AudioClip CurrentClip;
             public AsyncOperationHandle<AudioClip> PreloadHandle;
-            public bool IsPreloaded;
             public LocalizedAsset<AudioClip>.ChangeHandler Tracker;
             public Dictionary<Action<SoundID>, LocalizedAsset<AudioClip>.ChangeHandler> UserHandlers;
         }
@@ -41,7 +40,7 @@ namespace Ami.BroAudio.Runtime
 
             var entry = GetOrCreateEntry(id, audioEntity);
 
-            if (entry.IsPreloaded)
+            if (entry.PreloadHandle.IsValid())
             {
                 return entry.CurrentClip != null
                     ? Addressables.ResourceManager.CreateCompletedOperation(entry.CurrentClip, string.Empty)
@@ -49,7 +48,6 @@ namespace Ami.BroAudio.Runtime
             }
 
             entry.PreloadHandle = audioEntity.LocalizedAudio.LoadAssetAsync();
-            entry.IsPreloaded = true;
             return entry.PreloadHandle;
         }
 
@@ -76,20 +74,21 @@ namespace Ami.BroAudio.Runtime
         {
             return _localizedRuntime != null
                 && _localizedRuntime.TryGetValue(id, out var entry)
-                && entry.IsPreloaded
+                && entry.PreloadHandle.IsValid()
                 && entry.CurrentClip != null;
         }
 
         private void ReleaseLocalizationClipInternal(SoundID id)
         {
-            if (_localizedRuntime == null || !_localizedRuntime.TryGetValue(id, out var entry) || !entry.IsPreloaded)
+            if (_localizedRuntime == null
+                || !_localizedRuntime.TryGetValue(id, out var entry)
+                || !entry.PreloadHandle.IsValid())
             {
                 return;
             }
 
             ReleaseUnderlyingAsset(entry.Entity.LocalizedAudio);
 
-            entry.IsPreloaded = false;
             entry.PreloadHandle = default;
             MaybeTearDownEntry(id, entry);
         }
@@ -98,23 +97,33 @@ namespace Ami.BroAudio.Runtime
         {
             if (_localizedRuntime == null) return;
 
-            foreach (var entry in _localizedRuntime.Values)
+            List<SoundID> ghosts = null;
+            foreach (var kv in _localizedRuntime)
             {
+                var entry = kv.Value;
                 entry.CurrentClip = null;
-                if (entry.IsPreloaded)
+                if (entry.PreloadHandle.IsValid())
                 {
-                    // The Localization handle is invalidated by the locale switch; calling Release
-                    // is a no-op when already invalid, but covers the rare in-flight case.
-                    if (entry.PreloadHandle.IsValid())
-                    {
-                        Addressables.Release(entry.PreloadHandle);
-                    }
-                    entry.IsPreloaded = false;
+                    // Defensive: covers the rare in-flight load at the moment of locale switch.
+                    // Once Unity completes the switch the handle is invalidated naturally.
+                    Addressables.Release(entry.PreloadHandle);
                     entry.PreloadHandle = default;
                 }
+                if (entry.UserHandlers.Count == 0)
+                {
+                    (ghosts ??= new List<SoundID>()).Add(kv.Key);
+                }
             }
-            // Unity reloads each entry's asset for the new locale and fires AssetChanged on its
-            // subscribers — the Tracker on each entry repopulates CurrentClip.
+
+            if (ghosts != null)
+            {
+                foreach (var id in ghosts)
+                {
+                    MaybeTearDownEntry(id, _localizedRuntime[id]);
+                }
+            }
+            // For surviving entries, Unity re-fires AssetChanged for the new locale and the
+            // Tracker repopulates CurrentClip.
         }
 
         private void ReleaseAllLocalizationPreloads()
@@ -123,7 +132,7 @@ namespace Ami.BroAudio.Runtime
             {
                 foreach (var entry in _localizedRuntime.Values)
                 {
-                    if (entry.IsPreloaded)
+                    if (entry.PreloadHandle.IsValid())
                     {
                         ReleaseUnderlyingAsset(entry.Entity.LocalizedAudio);
                     }
@@ -220,7 +229,7 @@ namespace Ami.BroAudio.Runtime
 
         private void MaybeTearDownEntry(SoundID id, LocalizedRuntimeEntry entry)
         {
-            if (entry.IsPreloaded || entry.UserHandlers.Count > 0)
+            if (entry.PreloadHandle.IsValid() || entry.UserHandlers.Count > 0)
             {
                 return;
             }

@@ -1,4 +1,5 @@
 #if PACKAGE_LOCALIZATION
+using System;
 using Ami.BroAudio.Data;
 using UnityEngine;
 using UnityEngine.Localization;
@@ -14,15 +15,15 @@ namespace Ami.BroAudio.Runtime
     /// </summary>
     public class LocalizationClipStrategy : IClipSelectionStrategy
     {
-        private SoundID _id;
         private LocalizedAudioClip _localizedAudio;
         private string _entityName;
+        private Func<AudioClip> _tryGetCachedClip;
 
-        public void Inject(SoundID id, LocalizedAudioClip localizedAudio, string entityName)
+        public void Inject(LocalizedAudioClip localizedAudio, string entityName, Func<AudioClip> tryGetCachedClip)
         {
-            _id = id;
             _localizedAudio = localizedAudio;
             _entityName = entityName;
+            _tryGetCachedClip = tryGetCachedClip;
         }
 
         public IBroAudioClip SelectClip(BroAudioClip[] clips, ClipSelectionContext context, out int index)
@@ -42,12 +43,8 @@ namespace Ami.BroAudio.Runtime
                 return null;
             }
 
-            AudioClip resolvedClip;
-            if (SoundManager.HasInstance && SoundManager.Instance.TryGetCachedLocalizedClip(_id, out var cached))
-            {
-                resolvedClip = cached;
-            }
-            else
+            AudioClip resolvedClip = _tryGetCachedClip?.Invoke();
+            if (resolvedClip == null)
             {
                 var handle = _localizedAudio.LoadAssetAsync();
                 if (!handle.IsDone)

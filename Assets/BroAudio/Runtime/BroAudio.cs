@@ -353,11 +353,6 @@ namespace Ami.BroAudio
         /// <param name="clipIndex"></param>
         public static void ReleaseAsset(SoundID id, int clipIndex)
             => Manager?.ReleaseAsset(id, clipIndex);
-        
-        public static void PlayOnAudioLoaded(SoundID id)
-        {
-            Play(id, FadeData.UseClipSetting);
-        }
 #endif
 
 #if PACKAGE_LOCALIZATION
@@ -375,6 +370,13 @@ namespace Ami.BroAudio
         /// </summary>
         public static void UnsubscribeLocalizedClipChanged(SoundID id, Action<SoundID> handler)
             => Manager?.UnsubscribeLocalizedAudioChanged(id, handler);
+        
+        /// <summary>
+        /// <see cref="Action{T}"/>-compatible adapter for hooking <see cref="SoundID.LocalizedAudioChanged"/>:
+        /// <c>id.LocalizedAudioChanged += BroAudio.PlayOnLocalizedAudioChanged;</c>
+        /// </summary>
+        public static Action<SoundID> PlayOnLocalizedAudioChanged => _playOnLocalizedAudioChanged ??= (id => Play(id)) ;
+        private static Action<SoundID> _playOnLocalizedAudioChanged;
 #endif
     }
 }

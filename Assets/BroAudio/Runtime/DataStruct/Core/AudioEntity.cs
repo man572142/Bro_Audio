@@ -55,7 +55,11 @@ namespace Ami.BroAudio.Data
 #if PACKAGE_LOCALIZATION
                 case MulticlipsPlayMode.Localization:
                     EnsureClipSelectionStrategy<LocalizationClipStrategy>();
-                    ((LocalizationClipStrategy)_clipSelectionStrategy).Inject(new SoundID(this), _localizedAudio, Name);
+                    var id = new SoundID(this);
+                    ((LocalizationClipStrategy)_clipSelectionStrategy).Inject(
+                        _localizedAudio,
+                        Name,
+                        () => SoundManager.HasInstance && SoundManager.Instance.TryGetCachedLocalizedClip(id, out var c) ? c : null);
                     break;
 #endif
                 default:

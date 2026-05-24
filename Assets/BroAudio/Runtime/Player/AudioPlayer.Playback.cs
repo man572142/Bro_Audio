@@ -27,7 +27,7 @@ namespace Ami.BroAudio.Runtime
 
         public int PlaybackStartingTime { get; private set; }
         public bool HasStartedPlaying => PlaybackStartingTime > 0;
-        private bool IsOnHold => _stopMode == StopMode.Pause && !HasStartedPlaying;
+        private bool IsPausedBeforeStart => _stopMode == StopMode.Pause && !HasStartedPlaying;
 
         public void SetPlaybackData(SoundID id, PlaybackPreference pref, IAudioMixerPool mixerPool, IBroAudioClip clip = null)
         {
@@ -39,7 +39,7 @@ namespace Ami.BroAudio.Runtime
 
         public void Play()
         {
-            if (IsStopping || IsOnHold || _pref.ScheduledStartTime > 0 || !ID.IsValid())
+            if (IsStopping || IsPausedBeforeStart || _pref.ScheduledStartTime > 0 || !ID.IsValid())
             {
                 return;
             }
@@ -51,7 +51,7 @@ namespace Ami.BroAudio.Runtime
         {
             if (!ValidatePlayback(ID.IsValid() && _pref.Entity != null, $"Cannot play audio. Invalid ID:{ID} or Entity is null.") ||
                 !ValidatePlayback(SoundManager.Instance.TryGetAudioTypePref(ID.ToAudioType(), out var audioTypePref), $"Cannot play audio. Failed to get audio type preference for {ID.ToAudioType()}.") ||
-                !ValidatePlayback(!HasStartedPlaying, "Audio Player wasn't cleaned up correctly"))
+                !ValidatePlayback(!HasStartedPlaying || _stopMode == StopMode.Pause, "Audio Player wasn't cleaned up correctly"))
             {
                 EndPlaying();
                 return;
@@ -250,7 +250,6 @@ namespace Ami.BroAudio.Runtime
 
         private void SetPlayPosition(int sampleRate)
         {
-            AudioSource.Stop();
             AudioSource.timeSamples = GetSample(sampleRate, _clip.StartPosition);
         }
         

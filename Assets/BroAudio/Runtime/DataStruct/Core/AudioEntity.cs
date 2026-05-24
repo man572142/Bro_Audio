@@ -63,7 +63,7 @@ namespace Ami.BroAudio.Data
                     EnsureClipSelectionStrategy<SingleClipStrategy>(); 
                     break;
             }
-
+            context.EntityName = Name;
             return _clipSelectionStrategy.SelectClip(Clips, context, out index);
         }
 

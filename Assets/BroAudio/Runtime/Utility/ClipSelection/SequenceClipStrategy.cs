@@ -13,6 +13,12 @@ namespace Ami.BroAudio.Runtime
 
         public IBroAudioClip SelectClip(BroAudioClip[] clips, ClipSelectionContext context, out int currentIndex)
         {
+            currentIndex = 0;
+            if (Utility.ClipListIsNullOrEmpty(clips, context.EntityName))
+            {
+                return null;
+            }
+            
             if (context.SequenceId != null)
             {
                 return SelectClipForNamedSequence(clips, context.SequenceId, out currentIndex);

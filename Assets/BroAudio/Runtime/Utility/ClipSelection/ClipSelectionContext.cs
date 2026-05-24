@@ -16,11 +16,14 @@ namespace Ami.BroAudio.Runtime
         /// The sequence identifier for named sequence instances. Null means the default sequence.
         /// </summary>
         public string SequenceId { get; set; }
+        
+        public string EntityName { get; set; }
 
         public ClipSelectionContext(int value)
         {
             Value = value;
             SequenceId = null;
+            EntityName = string.Empty;
         }
 
         public static implicit operator ClipSelectionContext(int value) { return new ClipSelectionContext(value); }

@@ -29,12 +29,12 @@ namespace Ami.BroAudio.Runtime
             _playbackControlCoroutine = null;
             _handoverScheduleCoroutine = null;
             _nextPlayer = null;
-
+            
             if (TryGetMixerAndTrack(out _, out var track))
             {
                 MixerPool?.ReturnTrack(TrackType, track);
-                TrackType = AudioTrackType.Generic;
             }
+            TrackType = AudioTrackType.Generic;
             MixerPool?.ReturnPlayer(this);
 
             if (_decorators != null)

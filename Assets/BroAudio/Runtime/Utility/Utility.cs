@@ -215,6 +215,16 @@ namespace Ami.BroAudio
             return float.IsNegativeInfinity(v.x) && float.IsNegativeInfinity(v.y) && float.IsNegativeInfinity(v.z);
         }
 
+        public static bool ClipListIsNullOrEmpty(BroAudioClip[] clips, string entityName)
+        {
+            if (clips == null || clips.Length < 1)
+            {
+                Debug.LogError(LogTitle + $"<b>{entityName}</b>'s clips array is empty or null.");
+                return true;
+            }
+            return false;
+        }
+
         public static void Log(string message, LogType type)
         {
             switch (type)

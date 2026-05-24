@@ -7,6 +7,11 @@ namespace Ami.BroAudio.Runtime
         public IBroAudioClip SelectClip(BroAudioClip[] clips, ClipSelectionContext context, out int index)
         {
             index = 0;
+            if (Utility.ClipListIsNullOrEmpty(clips, context.EntityName))
+            {
+                return null;
+            }
+            
             for(int i = 0; i < clips.Length; i++)
             {
                 var clip = clips[i];
@@ -16,7 +21,7 @@ namespace Ami.BroAudio.Runtime
                     return clips[index];
                 }
             }
-            return clips.Length > 0 ? clips[clips.Length - 1] : null;
+            return clips[clips.Length - 1];
         }
 
         public void Reset() { }

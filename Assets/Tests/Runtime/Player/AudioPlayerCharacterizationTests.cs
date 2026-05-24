@@ -63,7 +63,8 @@ namespace Ami.BroAudio.Tests
         /// GetInterfaceMap, which maps interface slots to concrete target methods.
         /// Needed by sections 20, 21, 26.
         /// </summary>
-        private static object InvokeInterfaceMethod<T>(T instance, Type interfaceType, string name, params object[] args)
+        private static object InvokeInterfaceMethod<T>(T instance, Type interfaceType, string name,
+            params object[] args)
         {
             var map = typeof(AudioPlayer).GetInterfaceMap(interfaceType);
             MethodInfo targetMethod = null;
@@ -75,6 +76,7 @@ namespace Ami.BroAudio.Tests
                     break;
                 }
             }
+
             Assert.IsNotNull(targetMethod, $"Method '{interfaceType.Name}.{name}' not found on {nameof(T)}");
             return targetMethod.Invoke(instance, args);
         }
@@ -82,7 +84,7 @@ namespace Ami.BroAudio.Tests
         /// <summary>
         /// Read a private/internal instance field from a target instance via reflection.
         /// </summary>
-        private static TValue GetField<TTarget,TValue>(TTarget target, string name)
+        private static TValue GetField<TTarget, TValue>(TTarget target, string name)
         {
             var field = typeof(TTarget).GetField(
                 name,
@@ -126,10 +128,11 @@ namespace Ami.BroAudio.Tests
             {
                 return;
             }
+
             SoundManager.Init();
             var sm = typeof(SoundManager)
                 .GetField("_instance", BindingFlags.Static | BindingFlags.NonPublic)
-                .GetValue(null) as SoundManager;
+                ?.GetValue(null) as SoundManager;
             _soundManagerGo = sm != null ? sm.gameObject : null;
         }
 
@@ -138,7 +141,7 @@ namespace Ami.BroAudio.Tests
             if (_soundManagerGo != null)
             {
                 typeof(SoundManager).GetField("_instance", BindingFlags.Static | BindingFlags.NonPublic)
-                    .SetValue(null, null);
+                    ?.SetValue(null, null);
                 UnityEngine.Object.DestroyImmediate(_soundManagerGo);
                 _soundManagerGo = null;
             }
@@ -162,7 +165,7 @@ namespace Ami.BroAudio.Tests
 
             var broClip = new BroAudioClip();
             typeof(BroAudioClip).GetField("AudioClip", BindingFlags.Instance | BindingFlags.NonPublic)
-                .SetValue(broClip, testClip);
+                ?.SetValue(broClip, testClip);
             broClip.Volume = AudioConstant.FullVolume;
 
             entity.Clips = new[] { broClip };
@@ -187,9 +190,12 @@ namespace Ami.BroAudio.Tests
                     {
                         var audioClip = clip.GetAudioClip();
                         if (audioClip != null)
+                        {
                             UnityEngine.Object.DestroyImmediate(audioClip);
+                        }
                     }
                 }
+
                 UnityEngine.Object.DestroyImmediate(entity);
             }
         }
@@ -216,8 +222,9 @@ namespace Ami.BroAudio.Tests
 
             if (_listener != null)
             {
-                UnityEngine.Object.DestroyImmediate(_listener);
+                UnityEngine.Object.DestroyImmediate(_listener.gameObject);
             }
+
             TearDownStubSoundManager();
         }
 
@@ -253,7 +260,7 @@ namespace Ami.BroAudio.Tests
         {
             Assert.IsFalse(_player.IsStopping);
         }
-        
+
         [Test]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         public void CurrentActiveTrackEffects_OnFreshPlayer_IsNone()
@@ -334,7 +341,7 @@ namespace Ami.BroAudio.Tests
             var entity = MakeEntity();
             var id = new SoundID(entity);
 
-            _player.SetPlaybackData(id, default(PlaybackPreference), null);
+            _player.SetPlaybackData(id, default, null);
 
             // IsActive = ID.IsValid() = entity != null
             Assert.IsTrue(_player.IsActive);
@@ -345,7 +352,7 @@ namespace Ami.BroAudio.Tests
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         public void SetPlaybackData_WithInvalidID_IsActiveRemainsFalse()
         {
-            _player.SetPlaybackData(SoundID.Invalid, default(PlaybackPreference), null);
+            _player.SetPlaybackData(SoundID.Invalid, default, null);
 
             Assert.IsFalse(_player.IsActive);
         }
@@ -357,7 +364,7 @@ namespace Ami.BroAudio.Tests
             var entity = MakeEntity();
             var id = new SoundID(entity);
 
-            _player.SetPlaybackData(id, default(PlaybackPreference), null);
+            _player.SetPlaybackData(id, default, null);
 
             Assert.AreEqual(id, _player.ID);
             UnityEngine.Object.DestroyImmediate(entity);
@@ -371,8 +378,8 @@ namespace Ami.BroAudio.Tests
             var entityA = MakeEntity("A");
             var entityB = MakeEntity("B");
 
-            _player.SetPlaybackData(new SoundID(entityA), default(PlaybackPreference), null);
-            _player.SetPlaybackData(new SoundID(entityB), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entityA), default, null);
+            _player.SetPlaybackData(new SoundID(entityB), default, null);
 
             Assert.AreEqual(new SoundID(entityB), _player.ID);
             UnityEngine.Object.DestroyImmediate(entityA);
@@ -390,10 +397,10 @@ namespace Ami.BroAudio.Tests
         public void IsActive_ReflectsOnlyWhetherIDEntityIsNonNull()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
             Assert.IsTrue(_player.IsActive, "valid entity → IsActive true");
 
-            _player.SetPlaybackData(SoundID.Invalid, default(PlaybackPreference), null);
+            _player.SetPlaybackData(SoundID.Invalid, default, null);
             Assert.IsFalse(_player.IsActive, "Invalid SoundID → IsActive false");
 
             UnityEngine.Object.DestroyImmediate(entity);
@@ -414,7 +421,7 @@ namespace Ami.BroAudio.Tests
         // =====================================================================
         // 4. Play() guard conditions
         //    Play() has three early-return guards before calling PlayInternal():
-        //    IsStopping, IsOnHold (_stopMode==Pause && !HasStartedPlaying),
+        //    IsStopping, IsPausedBeforeStart (_stopMode==Pause && !HasStartedPlaying),
         //    and _pref.ScheduledStartTime > 0.
         //    PlayInternal() itself has a guard: !ID.IsValid() → logs error + returns.
         // =====================================================================
@@ -430,7 +437,7 @@ namespace Ami.BroAudio.Tests
             {
                 var method = typeof(AudioPlayer).GetMethod(
                     "PlayInternal", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                var args = new object[] { null };
+                object[] args = new object[] { null };
                 method.Invoke(_player, null);
             });
         }
@@ -588,7 +595,7 @@ namespace Ami.BroAudio.Tests
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         public void OnEnd_ReturnsThisInstance()
         {
-            IAudioPlayer result = _player.OnEnd(_ => { });
+            var result = _player.OnEnd(_ => { });
             Assert.AreSame(_player, result);
         }
 
@@ -596,7 +603,7 @@ namespace Ami.BroAudio.Tests
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         public void OnStart_ReturnsThisInstance()
         {
-            IAudioPlayer result = _player.OnStart(_ => { });
+            var result = _player.OnStart(_ => { });
             Assert.AreSame(_player, result);
         }
 
@@ -604,7 +611,7 @@ namespace Ami.BroAudio.Tests
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         public void OnUpdate_ReturnsThisInstance()
         {
-            IAudioPlayer result = _player.OnUpdate(_ => { });
+            var result = _player.OnUpdate(_ => { });
             Assert.AreSame(_player, result);
         }
 
@@ -612,7 +619,7 @@ namespace Ami.BroAudio.Tests
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         public void OnPause_ReturnsThisInstance()
         {
-            IAudioPlayer result = _player.OnPause(_ => { });
+            var result = _player.OnPause(_ => { });
             Assert.AreSame(_player, result);
         }
 
@@ -620,7 +627,7 @@ namespace Ami.BroAudio.Tests
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         public void SetFadeInEase_ReturnsThisInstance()
         {
-            IAudioPlayer result = _player.SetFadeInEase(Ease.Linear);
+            var result = _player.SetFadeInEase(Ease.Linear);
             Assert.AreSame(_player, result);
         }
 
@@ -628,7 +635,7 @@ namespace Ami.BroAudio.Tests
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         public void SetFadeOutEase_ReturnsThisInstance()
         {
-            IAudioPlayer result = _player.SetFadeOutEase(Ease.Linear);
+            var result = _player.SetFadeOutEase(Ease.Linear);
             Assert.AreSame(_player, result);
         }
 
@@ -648,7 +655,7 @@ namespace Ami.BroAudio.Tests
                 "TransferOnUpdates", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             Assert.IsNotNull(method, "TransferOnUpdates not found");
 
-            var args = new object[] { null };
+            object[] args = new object[] { null };
             bool result = (bool)method.Invoke(_player, args);
             var delegates = args[0] as Delegate[];
 
@@ -667,7 +674,7 @@ namespace Ami.BroAudio.Tests
             var method = typeof(AudioPlayer).GetMethod(
                 "TransferOnUpdates", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-            var args = new object[] { null };
+            object[] args = new object[] { null };
             bool firstResult = (bool)method.Invoke(_player, args);
             var delegates = (Delegate[])args[0];
 
@@ -676,7 +683,7 @@ namespace Ami.BroAudio.Tests
             Assert.AreEqual(1, delegates.Length);
 
             // Source event must be null after transfer
-            var args2 = new object[] { null };
+            object[] args2 = new object[] { null };
             bool secondResult = (bool)method.Invoke(_player, args2);
             Assert.IsFalse(secondResult, "After transfer, source event must be cleared");
             Assert.IsNull(args2[0]);
@@ -688,7 +695,7 @@ namespace Ami.BroAudio.Tests
         {
             var method = typeof(AudioPlayer).GetMethod(
                 "TransferOnEnds", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            var args = new object[] { null };
+            object[] args = new object[] { null };
             bool result = (bool)method.Invoke(_player, args);
 
             Assert.IsFalse(result);
@@ -704,12 +711,12 @@ namespace Ami.BroAudio.Tests
             var method = typeof(AudioPlayer).GetMethod(
                 "TransferOnEnds", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-            var args = new object[] { null };
+            object[] args = new object[] { null };
             bool result = (bool)method.Invoke(_player, args);
             Assert.IsTrue(result);
             Assert.IsNotNull(args[0]);
 
-            var args2 = new object[] { null };
+            object[] args2 = new object[] { null };
             Assert.IsFalse((bool)method.Invoke(_player, args2));
         }
 
@@ -719,7 +726,7 @@ namespace Ami.BroAudio.Tests
         {
             var method = typeof(AudioPlayer).GetMethod(
                 "TransferOnPauses", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            var args = new object[] { null };
+            object[] args = new object[] { null };
             bool result = (bool)method.Invoke(_player, args);
 
             Assert.IsFalse(result);
@@ -735,11 +742,11 @@ namespace Ami.BroAudio.Tests
             var method = typeof(AudioPlayer).GetMethod(
                 "TransferOnPauses", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-            var args = new object[] { null };
+            object[] args = new object[] { null };
             bool result = (bool)method.Invoke(_player, args);
             Assert.IsTrue(result);
 
-            var args2 = new object[] { null };
+            object[] args2 = new object[] { null };
             Assert.IsFalse((bool)method.Invoke(_player, args2));
         }
 
@@ -750,7 +757,7 @@ namespace Ami.BroAudio.Tests
         {
             var method = typeof(AudioPlayer).GetMethod(
                 "TransferDecorators", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            var args = new object[] { null };
+            object[] args = new object[] { null };
             bool result = (bool)method.Invoke(_player, args);
 
             Assert.IsFalse(result);
@@ -771,7 +778,7 @@ namespace Ami.BroAudio.Tests
 
             var method = typeof(AudioPlayer).GetMethod(
                 "TransferDecorators", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            var args = new object[] { null };
+            object[] args = new object[] { null };
             method.Invoke(_player, args);
 
             // Source _decorators must be null after transfer
@@ -800,7 +807,7 @@ namespace Ami.BroAudio.Tests
         public void SetTrackEffect_NoneEffectWithAddMode_IsNoOp()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             _player.SetTrackEffect(EffectType.None, SetEffectMode.Add);
 
@@ -817,7 +824,7 @@ namespace Ami.BroAudio.Tests
         public void SetTrackEffect_NoneEffectWithOverrideMode_StillLeavesEffectsAtNone()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             // No AudioMixerGroup assigned → TryGetMixerAndTrack returns false → early return
             _player.SetTrackEffect(EffectType.None, SetEffectMode.Override);
@@ -842,7 +849,7 @@ namespace Ami.BroAudio.Tests
                 new System.Text.RegularExpressions.Regex("audio player is not playing"));
 
             IAudioPlayer player = _player;
-            IAudioSourceProxy proxy = player.AudioSource;
+            var proxy = player.AudioSource;
 
             Assert.AreSame(Empty.AudioSource, proxy,
                 "Inactive player must return Empty.AudioSource, not null");
@@ -855,8 +862,10 @@ namespace Ami.BroAudio.Tests
         // Both calls therefore return the shared Empty.AudioSource singleton.
         public void AudioSourceProperty_AccessedTwiceWhileInactive_ReturnsSameEmptyInstance()
         {
-            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("The audio player is not playing"));
-            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("The audio player is not playing"));
+            LogAssert.Expect(LogType.Error,
+                new System.Text.RegularExpressions.Regex("The audio player is not playing"));
+            LogAssert.Expect(LogType.Error,
+                new System.Text.RegularExpressions.Regex("The audio player is not playing"));
 
             IAudioPlayer player = _player;
             var first = player.AudioSource;
@@ -878,7 +887,7 @@ namespace Ami.BroAudio.Tests
             LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("Cannot add"));
 
             IAudioPlayer player = _player;
-            IAudioPlayer result = player.AddLowPassEffect();
+            var result = player.AddLowPassEffect();
 
             // Returns 'this' (the AudioPlayer), not Empty.AudioPlayer
             Assert.AreSame(player, result);
@@ -892,7 +901,7 @@ namespace Ami.BroAudio.Tests
             LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("Cannot remove"));
 
             IAudioPlayer player = _player;
-            IAudioPlayer result = player.RemoveLowPassEffect();
+            var result = player.RemoveLowPassEffect();
 
             Assert.AreSame(player, result);
         }
@@ -903,12 +912,12 @@ namespace Ami.BroAudio.Tests
         public void RemoveAudioEffect_WhenActiveButNoEffects_LogsWarningAndReturnsSelf()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("No effects to remove"));
 
             IAudioPlayer player = _player;
-            IAudioPlayer result = player.RemoveLowPassEffect();
+            var result = player.RemoveLowPassEffect();
 
             Assert.AreSame(player, result);
             UnityEngine.Object.DestroyImmediate(entity);
@@ -923,7 +932,7 @@ namespace Ami.BroAudio.Tests
         // GetOutputData is a direct passthrough; does not throw on a non-playing source.
         public void GetOutputData_WhenNotPlaying_DoesNotThrow()
         {
-            var samples = new float[256];
+            float[] samples = new float[256];
             Assert.DoesNotThrow(() => _player.GetOutputData(samples, 0));
         }
 
@@ -931,7 +940,7 @@ namespace Ami.BroAudio.Tests
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         public void GetSpectrumData_WhenNotPlaying_DoesNotThrow()
         {
-            var samples = new float[256];
+            float[] samples = new float[256];
             Assert.DoesNotThrow(() =>
                 _player.GetSpectrumData(samples, 0, FFTWindow.Rectangular));
         }
@@ -1004,7 +1013,7 @@ namespace Ami.BroAudio.Tests
             var wrapper = new AudioPlayerInstanceWrapper(_player);
             wrapper.Recycle();
 
-            AudioPlayer cast = (AudioPlayer)wrapper;
+            var cast = (AudioPlayer)wrapper;
             Assert.IsNull(cast);
         }
 
@@ -1019,7 +1028,7 @@ namespace Ami.BroAudio.Tests
             var wrapper = new AudioPlayerInstanceWrapper(_player);
             wrapper.Recycle();
 
-            IAudioPlayer setVolResult = ((IAudioPlayer)wrapper).SetVolume(0.5f, 0f);
+            var setVolResult = ((IAudioPlayer)wrapper).SetVolume(0.5f, 0f);
             Assert.AreSame(Empty.AudioPlayer, setVolResult,
                 "Fluent calls on recycled wrapper must return Empty.AudioPlayer, not null");
         }
@@ -1033,7 +1042,7 @@ namespace Ami.BroAudio.Tests
         {
             var wrapper = new AudioPlayerInstanceWrapper(_player);
 
-            IAudioPlayer setFadeResult = wrapper.SetFadeInEase(Ease.Linear);
+            var setFadeResult = wrapper.SetFadeInEase(Ease.Linear);
             Assert.AreSame(wrapper, setFadeResult,
                 "Fluent calls on a live wrapper must return the wrapper, not the underlying player");
         }
@@ -1049,7 +1058,7 @@ namespace Ami.BroAudio.Tests
             var newGo = new GameObject("NewPlayer");
             var newPlayer = newGo.AddComponent<AudioPlayer>();
             var entity = MakeEntity("NewEntity");
-            newPlayer.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            newPlayer.SetPlaybackData(new SoundID(entity), default, null);
 
             wrapper.UpdateInstance(newPlayer);
 
@@ -1076,7 +1085,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -1118,7 +1127,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5); // 5 sec clip
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5); // 5 sec clip
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -1161,7 +1170,7 @@ namespace Ami.BroAudio.Tests
 
             var trackVolumeField = typeof(AudioPlayer).GetField(
                 "_trackVolume", BindingFlags.Instance | BindingFlags.NonPublic);
-            var trackVolume = trackVolumeField.GetValue(_player);
+            object trackVolume = trackVolumeField.GetValue(_player);
             float current = (float)trackVolume.GetType().GetProperty("Current").GetValue(trackVolume);
 
             Assert.Less(current, AudioConstant.FullVolume,
@@ -1218,12 +1227,16 @@ namespace Ami.BroAudio.Tests
 
             var entity = MakeEntity();
             var id = new SoundID(entity);
-            _player.SetPlaybackData(id, default(PlaybackPreference), new NullMixerPool());
+            _player.SetPlaybackData(id, default, new NullMixerPool());
             Assert.IsTrue(_player.IsActive);
 
             int onEndCount = 0;
-            SoundID endedId = SoundID.Invalid;
-            _player.OnEnd(soundId => { onEndCount++; endedId = soundId; });
+            var endedId = SoundID.Invalid;
+            _player.OnEnd(soundId =>
+            {
+                onEndCount++;
+                endedId = soundId;
+            });
 
             // Stop on a non-playing player with valid ID triggers EndPlaying directly
             _player.Stop(0f, StopMode.Stop, null);
@@ -1254,7 +1267,7 @@ namespace Ami.BroAudio.Tests
 
             // "Track3" and "Track3_Effect" are both exposed parameters on BroAudioMixer
             var groups = mixer.FindMatchingGroups("Track3");
-            var track3 = System.Array.Find(groups, g => g.name == "Track3");
+            var track3 = Array.Find(groups, g => g.name == "Track3");
             Assert.IsNotNull(track3, "AudioMixerGroup 'Track3' must exist in BroAudioMixer");
 
             // Capture original mixer parameter values so we can restore them unconditionally.
@@ -1268,7 +1281,7 @@ namespace Ami.BroAudio.Tests
             // Wire the player to the Track3 group and give it a valid ID
             _go.GetComponent<AudioSource>().outputAudioMixerGroup = track3;
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             try
             {
@@ -1306,7 +1319,7 @@ namespace Ami.BroAudio.Tests
         // =====================================================================
         // 18. Play() Early-Return Guards (Gap A)
         //     Play() has three guards before calling PlayInternal():
-        //       IsStopping, IsOnHold, and _pref.ScheduledStartTime > 0.
+        //       IsStopping, IsPausedBeforeStart, and _pref.ScheduledStartTime > 0.
         //     None of these were covered. All return without calling PlayInternal,
         //     so no SoundManager access occurs.
         // =====================================================================
@@ -1317,7 +1330,7 @@ namespace Ami.BroAudio.Tests
         public void Play_WhenIsStopping_ReturnsWithoutPlaying()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
             SetAutoProperty(_player, "IsStopping", true);
 
             _player.Play();
@@ -1331,19 +1344,19 @@ namespace Ami.BroAudio.Tests
 
         [Test]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
-        // IsOnHold = (_stopMode == Pause && !HasStartedPlaying).
-        // When IsOnHold is true, Play() returns immediately without calling PlayInternal.
-        public void Play_WhenIsOnHold_ReturnsWithoutPlaying()
+        // IsPausedBeforeStart = (_stopMode == Pause && !HasStartedPlaying).
+        // When IsPausedBeforeStart is true, Play() returns immediately without calling PlayInternal.
+        public void Play_WhenIsPausedBeforeStart_ReturnsWithoutPlaying()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
-            // HasStartedPlaying is false by default; set _stopMode = Pause to trigger IsOnHold
+            _player.SetPlaybackData(new SoundID(entity), default, null);
+            // HasStartedPlaying is false by default; set _stopMode = Pause to trigger IsPausedBeforeStart
             SetField(_player, "_stopMode", StopMode.Pause);
 
             _player.Play();
 
             Assert.IsFalse(_player.HasStartedPlaying,
-                "HasStartedPlaying must remain false — Play() must return early when IsOnHold");
+                "HasStartedPlaying must remain false — Play() must return early when IsPausedBeforeStart");
 
             UnityEngine.Object.DestroyImmediate(entity);
         }
@@ -1355,7 +1368,7 @@ namespace Ami.BroAudio.Tests
         public void Play_WhenScheduledStartTimePositive_ReturnsWithoutPlaying()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             // Read the _pref struct, set ScheduledStartTime > 0, write it back.
             var pref = GetField<AudioPlayer, PlaybackPreference>(_player, "_pref");
@@ -1382,7 +1395,7 @@ namespace Ami.BroAudio.Tests
         public void Stop_WhenIsStopping_WithNonImmediateFade_ReturnsEarly()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
             SetAutoProperty(_player, "IsStopping", true);
 
             _player.Stop(1.0f, StopMode.Stop, null); // non-immediate fade
@@ -1401,7 +1414,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
 
@@ -1450,7 +1463,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
 
@@ -1482,7 +1495,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
 
@@ -1517,7 +1530,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
             // Do NOT call Play() — SetScheduledStartTime must trigger PlayInternal itself.
@@ -1532,7 +1545,7 @@ namespace Ami.BroAudio.Tests
             Assert.AreEqual(scheduledTime, prefAfter.ScheduledStartTime, 0.001,
                 "_pref.ScheduledStartTime must equal the value passed to SetScheduledStartTime");
 
-            var secondsUntilScheduledStart = GetField<AudioPlayer, double>(_player, "_secondsUntilScheduledStart");
+            double secondsUntilScheduledStart = GetField<AudioPlayer, double>(_player, "_secondsUntilScheduledStart");
             Assert.Greater(secondsUntilScheduledStart, 0f,
                 "_secondsUntilScheduledStart must be set to a positive value");
 
@@ -1551,7 +1564,7 @@ namespace Ami.BroAudio.Tests
         public void SetScheduledEndTime_AddsCheckScheduledEndToOnUpdate()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             double endTime = AudioSettings.dspTime + 10.0;
             InvokeInterfaceMethod(_player, typeof(ISchedulable), "SetScheduledEndTime", endTime);
@@ -1572,6 +1585,7 @@ namespace Ami.BroAudio.Tests
                     break;
                 }
             }
+
             Assert.IsTrue(hasCheckScheduledEnd,
                 "CheckScheduledEnd must be registered in _onUpdate after SetScheduledEndTime");
 
@@ -1586,7 +1600,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
 
@@ -1618,7 +1632,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
 
             // BroAudioClip is a class with a public Delay field — set it directly.
             Assert.IsNotNull(entity.Clips, "Entity must have clips");
@@ -1631,7 +1645,7 @@ namespace Ami.BroAudio.Tests
             _player.Play();
             yield return null; // let PlayControl run one frame (calls SchedulePlayback)
 
-            var secondsUntilScheduledStart = GetField<AudioPlayer, double>(_player, "_secondsUntilScheduledStart");
+            double secondsUntilScheduledStart = GetField<AudioPlayer, double>(_player, "_secondsUntilScheduledStart");
             Assert.AreEqual(0.5f, secondsUntilScheduledStart, 0.05f,
                 "_secondsUntilScheduledStart must equal clip.Delay after PlayDelayed path");
 
@@ -1653,9 +1667,9 @@ namespace Ami.BroAudio.Tests
         public void AsBGM_SetsIsBGMTrue_ReturnsMusicPlayer()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
-            var result = InvokeInterfaceMethod(_player, typeof(IMusicDecoratable), "AsBGM");
+            object result = InvokeInterfaceMethod(_player, typeof(IMusicDecoratable), "AsBGM");
 
             Assert.IsTrue(_player.IsBGM, "IsBGM must be true after AsBGM()");
             Assert.IsInstanceOf<MusicPlayer>(result, "AsBGM() must return a MusicPlayer");
@@ -1675,9 +1689,9 @@ namespace Ami.BroAudio.Tests
         public void AsDominator_SetsIsDominatorTrue_ReturnsDominatorPlayer()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
-            var result = InvokeInterfaceMethod(_player, typeof(IEffectDecoratable), "AsDominator");
+            object result = InvokeInterfaceMethod(_player, typeof(IEffectDecoratable), "AsDominator");
 
             Assert.IsTrue(_player.IsDominator, "IsDominator must be true after AsDominator()");
             Assert.IsInstanceOf<DominatorPlayer>(result, "AsDominator() must return a DominatorPlayer");
@@ -1693,10 +1707,10 @@ namespace Ami.BroAudio.Tests
         public void AsBGM_CalledTwice_ReturnsSameInstance()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
-            var first  = InvokeInterfaceMethod(_player, typeof(IMusicDecoratable), "AsBGM");
-            var second = InvokeInterfaceMethod(_player, typeof(IMusicDecoratable), "AsBGM");
+            object first = InvokeInterfaceMethod(_player, typeof(IMusicDecoratable), "AsBGM");
+            object second = InvokeInterfaceMethod(_player, typeof(IMusicDecoratable), "AsBGM");
 
             Assert.AreSame(first, second,
                 "AsBGM() called twice must return the same MusicPlayer instance (get-or-create)");
@@ -1719,7 +1733,7 @@ namespace Ami.BroAudio.Tests
         public void AddAudioEffect_WhenSameTypeAlreadyExists_LogsWarning()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
             IAudioPlayer player = _player;
 
             player.AddLowPassEffect(); // first add — succeeds silently
@@ -1740,19 +1754,19 @@ namespace Ami.BroAudio.Tests
         public void RemoveAudioEffect_WhenEffectExists_RemovesFromList()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
             IAudioPlayer player = _player;
 
             player.AddLowPassEffect();
 
-            var listBefore = (System.Collections.ICollection)typeof(AudioPlayer)
+            var listBefore = (ICollection)typeof(AudioPlayer)
                 .GetField("_addedEffects", BindingFlags.Instance | BindingFlags.NonPublic)
                 .GetValue(_player);
             Assert.AreEqual(1, listBefore.Count, "Precondition: _addedEffects must have 1 entry");
 
             var result = player.RemoveLowPassEffect();
 
-            var listAfter = (System.Collections.ICollection)typeof(AudioPlayer)
+            var listAfter = (ICollection)typeof(AudioPlayer)
                 .GetField("_addedEffects", BindingFlags.Instance | BindingFlags.NonPublic)
                 .GetValue(_player);
             Assert.AreEqual(0, listAfter.Count, "_addedEffects must have 0 entries after remove");
@@ -1769,7 +1783,7 @@ namespace Ami.BroAudio.Tests
         public IEnumerator AddThenRemove_RoundTrip_DestroysComponentOnGameObject()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
             IAudioPlayer player = _player;
 
             player.AddLowPassEffect();
@@ -1840,9 +1854,9 @@ namespace Ami.BroAudio.Tests
 
             InvokeMethod(_player, "ResetVolume");
 
-            var trackVol     = GetField<AudioPlayer, Fader>(_player, "_trackVolume");
+            var trackVol = GetField<AudioPlayer, Fader>(_player, "_trackVolume");
             var audioTypeVol = GetField<AudioPlayer, Fader>(_player, "_audioTypeVolume");
-            var clipVol      = GetField<AudioPlayer, Fader>(_player, "_clipVolume");
+            var clipVol = GetField<AudioPlayer, Fader>(_player, "_clipVolume");
 
             Assert.AreEqual(AudioPlayer.DefaultTrackVolume, trackVol.Current, 0.001f,
                 "_trackVolume.Current must reset to DefaultTrackVolume (1.0)");
@@ -1865,7 +1879,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager(); // needed for PlaybackPreference constructor
 
-            var entity     = MakeEntity();
+            var entity = MakeEntity();
             var followTarget = new GameObject("FollowTarget");
             followTarget.transform.position = new Vector3(5f, 0f, 0f);
 
@@ -1892,18 +1906,18 @@ namespace Ami.BroAudio.Tests
 
             // Set non-default values
             audioSource.spatialBlend = 1f;
-            audioSource.panStereo    = 0.5f;
+            audioSource.panStereo = 0.5f;
             _player.transform.position = new Vector3(10f, 0f, 0f);
 
             InvokeMethod(_player, "ResetSpatial");
 
-            Assert.AreEqual(AudioConstant.SpatialBlend_2D,  audioSource.spatialBlend,  0.001f,
+            Assert.AreEqual(AudioConstant.SpatialBlend_2D, audioSource.spatialBlend, 0.001f,
                 "spatialBlend must reset to 2D (0)");
             Assert.AreEqual(Vector3.zero, _player.transform.position,
                 "transform.position must reset to zero");
-            Assert.AreEqual(AudioConstant.DefaultPanStereo, audioSource.panStereo,     0.001f,
+            Assert.AreEqual(AudioConstant.DefaultPanStereo, audioSource.panStereo, 0.001f,
                 "panStereo must reset to DefaultPanStereo");
-            Assert.AreEqual(AudioConstant.DefaultDoppler,   audioSource.dopplerLevel,  0.001f,
+            Assert.AreEqual(AudioConstant.DefaultDoppler, audioSource.dopplerLevel, 0.001f,
                 "dopplerLevel must reset to DefaultDoppler");
         }
 
@@ -1921,7 +1935,7 @@ namespace Ami.BroAudio.Tests
             SetupStubSoundManager();
 
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), new NullMixerPool());
+            _player.SetPlaybackData(new SoundID(entity), default, new NullMixerPool());
             Assert.IsTrue(_player.IsActive, "Precondition: player must be active");
 
             // Subscribe to all four events
@@ -1943,13 +1957,14 @@ namespace Ami.BroAudio.Tests
 
             _player.Recycle();
 
-            Assert.IsFalse(_player.ID.IsValid(),        "ID must be invalid after Recycle");
-            Assert.IsNull(GetField<AudioPlayer, Action<SoundID>>(_player, "_onEnd"),                  "_onEnd must be null");
-            Assert.IsNull(GetField<AudioPlayer, Action<IAudioPlayer>>(_player, "_onStart"),           "_onStart must be null");
-            Assert.IsNull(GetField<AudioPlayer, Action<IAudioPlayer>>(_player, "_onUpdate"),          "_onUpdate must be null");
-            Assert.IsNull(GetField<AudioPlayer, Action<IAudioPlayer>>(_player, "_onPaused"),          "_onPaused must be null");
-            Assert.IsNull(GetField<AudioPlayer, List<AudioPlayerDecorator>>(_player, "_decorators"),  "_decorators must be null");
-            Assert.IsNull(_player.RequestNextPlayer,                                    "RequestNextPlayer must be null");
+            Assert.IsFalse(_player.ID.IsValid(), "ID must be invalid after Recycle");
+            Assert.IsNull(GetField<AudioPlayer, Action<SoundID>>(_player, "_onEnd"), "_onEnd must be null");
+            Assert.IsNull(GetField<AudioPlayer, Action<IAudioPlayer>>(_player, "_onStart"), "_onStart must be null");
+            Assert.IsNull(GetField<AudioPlayer, Action<IAudioPlayer>>(_player, "_onUpdate"), "_onUpdate must be null");
+            Assert.IsNull(GetField<AudioPlayer, Action<IAudioPlayer>>(_player, "_onPaused"), "_onPaused must be null");
+            Assert.IsNull(GetField<AudioPlayer, List<AudioPlayerDecorator>>(_player, "_decorators"),
+                "_decorators must be null");
+            Assert.IsNull(_player.RequestNextPlayer, "RequestNextPlayer must be null");
 
             UnityEngine.Object.DestroyImmediate(entity);
         }
@@ -2024,7 +2039,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var followTarget = new GameObject("FollowTarget");
             followTarget.transform.position = new Vector3(5f, 0f, 0f);
 
@@ -2060,7 +2075,7 @@ namespace Ami.BroAudio.Tests
             SetField(entity, "MulticlipsPlayMode", MulticlipsPlayMode.Velocity);
             _player.SetPlaybackData(new SoundID(entity), new PlaybackPreference(entity), null);
 
-            var result = InvokeInterfaceMethod(_player, typeof(IAudioPlayer), "SetVelocity", 100);
+            object result = InvokeInterfaceMethod(_player, typeof(IAudioPlayer), "SetVelocity", 100);
 
             Assert.AreSame(_player, result,
                 "IAudioPlayer.SetVelocity must return 'this' (fluent pattern)");
@@ -2116,7 +2131,7 @@ namespace Ami.BroAudio.Tests
 
             // Short 1-second clip so the handover coroutine fires quickly.
             const int sampleRate = 44100;
-            var entity = MakeLoopEntityWithClip(sampleLength: sampleRate, masterVolume: 1f);
+            var entity = MakeLoopEntityWithClip(sampleRate, 1f);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -2155,7 +2170,7 @@ namespace Ami.BroAudio.Tests
             Assert.Greater(capturedHandover.Pref.ScheduledEndTime, 0.0,
                 "Handover Pref.ScheduledEndTime must be > 0");
             Assert.Greater(capturedHandover.Pref.ScheduledEndTime,
-                           capturedHandover.Pref.ScheduledStartTime,
+                capturedHandover.Pref.ScheduledStartTime,
                 "ScheduledEndTime must be after ScheduledStartTime");
 
             // For a plain Loop (not chained mode), ChainedModeStage stays at None/0 because
@@ -2177,6 +2192,7 @@ namespace Ami.BroAudio.Tests
                 _player.Stop(FadeData.Immediate, StopMode.Stop, null);
                 yield return null;
             }
+
             DestroyEntityWithClip(entity);
         }
 
@@ -2193,7 +2209,7 @@ namespace Ami.BroAudio.Tests
             // 2-second clip, 0.3 s seamless transition (fade-out = 0.3 s overlap).
             const float transitionTime = 0.3f;
             const int sampleRate = 44100;
-            var entity = MakeSeamlessLoopEntityWithClip(transitionTime, sampleLength: sampleRate * 2);
+            var entity = MakeSeamlessLoopEntityWithClip(transitionTime, sampleRate * 2);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -2224,7 +2240,10 @@ namespace Ami.BroAudio.Tests
                 yield return null;
                 elapsed += Time.unscaledDeltaTime;
                 injectedNext = GetField<AudioPlayer, AudioPlayer>(_player, "_nextPlayer");
-                if (injectedNext != null) break;
+                if (injectedNext != null)
+                {
+                    break;
+                }
             }
 
             Assert.IsNotNull(injectedNext,
@@ -2265,11 +2284,13 @@ namespace Ami.BroAudio.Tests
                 _player.Stop(FadeData.Immediate, StopMode.Stop, null);
                 yield return null;
             }
+
             if (nextPlayer != null && nextPlayer.IsActive)
             {
                 nextPlayer.Stop(FadeData.Immediate, StopMode.Stop, null);
                 yield return null;
             }
+
             UnityEngine.Object.DestroyImmediate(nextGo);
             DestroyEntityWithClip(entity);
         }
@@ -2286,7 +2307,7 @@ namespace Ami.BroAudio.Tests
             // ── SeamlessLoop entity: ScheduledStartTime should be shifted back by fadeOut ──
             const float transitionTime = 0.3f;
             const int sampleRate = 44100;
-            var seamlessEntity = MakeSeamlessLoopEntityWithClip(transitionTime, sampleLength: sampleRate * 2);
+            var seamlessEntity = MakeSeamlessLoopEntityWithClip(transitionTime, sampleRate * 2);
             var seamlessId = new SoundID(seamlessEntity);
             var seamlessPref = new PlaybackPreference(seamlessEntity);
             _player.SetPlaybackData(seamlessId, seamlessPref, new NullMixerPool());
@@ -2319,7 +2340,7 @@ namespace Ami.BroAudio.Tests
             // because fadeOut is subtracted from both by the same amount, and their difference
             // (the clip duration) stays the same regardless of shift.
             Assert.Greater(capturedSeamless.Pref.ScheduledEndTime,
-                           capturedSeamless.Pref.ScheduledStartTime,
+                capturedSeamless.Pref.ScheduledStartTime,
                 "SeamlessLoop: ScheduledEndTime must be after ScheduledStartTime (offsets cancel out)");
 
             // The gap between ScheduledEndTime and ScheduledStartTime should equal the
@@ -2334,6 +2355,7 @@ namespace Ami.BroAudio.Tests
                 _player.Stop(FadeData.Immediate, StopMode.Stop, null);
                 yield return null;
             }
+
             DestroyEntityWithClip(seamlessEntity);
 
             // ── Plain Loop entity: NO fade offset should be applied ──
@@ -2343,7 +2365,7 @@ namespace Ami.BroAudio.Tests
             loopSource.playOnAwake = false;
             loopSource.Stop();
 
-            var loopEntity = MakeLoopEntityWithClip(sampleLength: sampleRate * 2);
+            var loopEntity = MakeLoopEntityWithClip(sampleRate * 2);
             var loopId = new SoundID(loopEntity);
             var loopPref = new PlaybackPreference(loopEntity);
             loopPlayer.SetPlaybackData(loopId, loopPref, new NullMixerPool());
@@ -2382,6 +2404,7 @@ namespace Ami.BroAudio.Tests
                 loopPlayer.Stop(FadeData.Immediate, StopMode.Stop, null);
                 yield return null;
             }
+
             UnityEngine.Object.DestroyImmediate(loopGo);
             DestroyEntityWithClip(loopEntity);
         }
@@ -2400,7 +2423,7 @@ namespace Ami.BroAudio.Tests
             // Build a Chained entity with two clips (Start + Loop stages).
             const int sampleRate = 44100;
             var testClip1 = AudioClip.Create("StartClip", sampleRate, 1, sampleRate, false);
-            var testClip2 = AudioClip.Create("LoopClip",  sampleRate, 1, sampleRate, false);
+            var testClip2 = AudioClip.Create("LoopClip", sampleRate, 1, sampleRate, false);
 
             var entity = ScriptableObject.CreateInstance<AudioEntity>();
             entity.name = "ChainedTestEntity";
@@ -2488,9 +2511,9 @@ namespace Ami.BroAudio.Tests
             SetupStubSoundManager();
 
             const int sampleRate = 44100;
-            var testClip1 = AudioClip.Create("StartClip2",  sampleRate, 1, sampleRate, false);
-            var testClip2 = AudioClip.Create("LoopClip2",   sampleRate, 1, sampleRate, false);
-            var testClip3 = AudioClip.Create("EndClip2",    sampleRate, 1, sampleRate, false);
+            var testClip1 = AudioClip.Create("StartClip2", sampleRate, 1, sampleRate, false);
+            var testClip2 = AudioClip.Create("LoopClip2", sampleRate, 1, sampleRate, false);
+            var testClip3 = AudioClip.Create("EndClip2", sampleRate, 1, sampleRate, false);
 
             var entity = ScriptableObject.CreateInstance<AudioEntity>();
             entity.name = "ChainedEndTestEntity";
@@ -2506,6 +2529,7 @@ namespace Ami.BroAudio.Tests
                     .SetValue(bc, ac);
                 bc.Volume = AudioConstant.FullVolume;
             }
+
             BroAudioClip bc1 = default, bc2 = default, bc3 = default;
             SetBroClip(ref bc1, testClip1);
             SetBroClip(ref bc2, testClip2);
@@ -2576,7 +2600,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var id = new SoundID(entity);
 
             // Build a handover that carries non-default values.
@@ -2591,7 +2615,7 @@ namespace Ami.BroAudio.Tests
                 TrackVolume = handoverTrackVolume,
                 Pitch = handoverPitch,
                 // TrackEffect: leave at None (no mixer assigned, SetTrackEffect would no-op).
-                TrackEffect = EffectType.None,
+                TrackEffect = EffectType.None
             };
 
             // Call ReceiveHandover via reflection (it's internal).
@@ -2632,7 +2656,7 @@ namespace Ami.BroAudio.Tests
             // Prepare the "incoming" player: needs a valid ID so it can become active.
             var nextGo = new GameObject("BeginHandoverNextPlayer");
             var nextPlayer = nextGo.AddComponent<AudioPlayer>();
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100);
             var id = new SoundID(entity);
             nextPlayer.SetPlaybackData(id, new PlaybackPreference(entity), new NullMixerPool());
 
@@ -2658,7 +2682,7 @@ namespace Ami.BroAudio.Tests
                 "BeginHandover",
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 null,
-                new System.Type[] { typeof(bool) },
+                new Type[] { typeof(bool) },
                 null);
             Assert.IsNotNull(beginHandoverMethod, "BeginHandover(bool) not found — has it been renamed?");
             beginHandoverMethod.Invoke(_player, new object[] { false });
@@ -2694,7 +2718,7 @@ namespace Ami.BroAudio.Tests
 
             // Prepare the main player with a loop entity.
             const int sampleRate = 44100;
-            var entity = MakeLoopEntityWithClip(sampleLength: sampleRate * 5);
+            var entity = MakeLoopEntityWithClip(sampleRate * 5);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -2728,7 +2752,7 @@ namespace Ami.BroAudio.Tests
                 "ScheduleNextPlayback",
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 null,
-                new System.Type[] { typeof(double), typeof(bool) },
+                new Type[] { typeof(double), typeof(bool) },
                 null);
             Assert.IsNotNull(scheduleMethod, "ScheduleNextPlayback(double, bool) not found");
 
@@ -2767,11 +2791,12 @@ namespace Ami.BroAudio.Tests
                 _player.Stop(FadeData.Immediate, StopMode.Stop, null);
                 yield return null;
             }
+
             if (prevNextGo != null)
             {
                 UnityEngine.Object.DestroyImmediate(prevNextGo);
             }
-            
+        }
         // 30. Stop during natural fade-out must cancel the loop handover
         //     Regression for: LoopType.Loop with fadeOut. While PlayControl is
         //     in its natural fade-out (endDspTime - fadeOut .. endDspTime),
@@ -2790,7 +2815,7 @@ namespace Ami.BroAudio.Tests
             // 2 sec clip with 0.5 sec fade-out, looped. Timing chosen so the fade-out's
             // ride-out outlasts the loop-handover schedule firing (warmUpTime >= 0.1s),
             // i.e. without the fix the schedule fires BEFORE EndPlaying/Recycle can stop it.
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 2);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 2);
             SetAutoProperty(entity, "Loop", true);
             Assert.Greater(entity.Clips.Length, 0, "Precondition: entity must have a clip");
             entity.Clips[0].FadeOut = 0.5f;
@@ -2799,7 +2824,11 @@ namespace Ami.BroAudio.Tests
             _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
 
             int requestNextPlayerCount = 0;
-            _player.RequestNextPlayer = _ => { requestNextPlayerCount++; return null; };
+            _player.RequestNextPlayer = _ =>
+            {
+                requestNextPlayerCount++;
+                return null;
+            };
 
             _player.Play();
 
@@ -2851,7 +2880,7 @@ namespace Ami.BroAudio.Tests
             int sampleLength = 44100 * 5, BroAudioType audioType = BroAudioType.SFX)
         {
             var entity = MakeEntityWithClip(audioType, sampleLength);
-            entity.Clips[0].FadeIn  = fadeIn;
+            entity.Clips[0].FadeIn = fadeIn;
             entity.Clips[0].FadeOut = fadeOut;
             return entity;
         }
@@ -2868,7 +2897,7 @@ namespace Ami.BroAudio.Tests
 
             // 5-second clip, 0.2 s fade-in so we can observe mid-ramp values within the test.
             const float fadeInTime = 0.2f;
-            var entity = MakeEntityWithFade(fadeIn: fadeInTime, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithFade(fadeInTime, sampleLength: 44100 * 5);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -2980,6 +3009,7 @@ namespace Ami.BroAudio.Tests
                 _player.Stop(FadeData.Immediate, StopMode.Stop, null);
                 yield return null;
             }
+
             DestroyEntityWithClip(entity);
         }
 
@@ -2991,12 +3021,6 @@ namespace Ami.BroAudio.Tests
         //
         // To set up _clipVolume.IsFadingOut=true we directly manipulate the Fader fields via
         // reflection (SetTarget(0f) with Current>0).
-        //
-        // TODO: The waiting-for-endSample loop is deep inside a coroutine and relies on real
-        //       AudioSource playback progress.  Full end-to-end coverage would need the audio
-        //       engine to advance timeSamples, which is unreliable in headless test runs.
-        //       This test characterizes the guard condition: when IsFadingOut is true on entry,
-        //       StopControl does NOT call _clipVolume.SetTarget(0f) a second time.
         public IEnumerator StopControl_AlreadyFadingOut_WaitsForEndSample()
         {
             SetupStubSoundManager();
@@ -3019,6 +3043,7 @@ namespace Ami.BroAudio.Tests
 
             // SetTarget(0f) makes IsFadingOut = (Current > 0) = true.
             clipVol.SetTarget(0f);
+            clipVol.Fade(0.3f, Ease.Linear);
             Assert.IsTrue(clipVol.IsFadingOut,
                 "Precondition: _clipVolume.IsFadingOut must be true before Stop is called");
 
@@ -3116,7 +3141,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -3165,7 +3190,7 @@ namespace Ami.BroAudio.Tests
 
             const float fadeInTime = 0.2f;
             // Clip with no built-in fade so the override from UnPause is the only source.
-            var entity = MakeEntityWithFade(fadeIn: 0f, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithFade(0f, sampleLength: 44100 * 5);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -3223,7 +3248,7 @@ namespace Ami.BroAudio.Tests
             SetupStubSoundManager();
 
             const float pauseFadeTime = 0.2f;
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -3294,7 +3319,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -3337,7 +3362,7 @@ namespace Ami.BroAudio.Tests
 
             // Inspect IsPlaying — AudioSource may still be running (Mute doesn't stop it).
             // We have already asserted IsActive above; a second Play() call is guarded by
-            // IsStopping and IsOnHold checks, both of which are false here.
+            // IsStopping and IsPausedBeforeStart checks, both of which are false here.
 
             // Clean up.
             _player.Stop(FadeData.Immediate, StopMode.Stop, null);
@@ -3363,10 +3388,10 @@ namespace Ami.BroAudio.Tests
             Assert.IsNotNull(mixer, "BroAudioMixer must be present in Resources/");
 
             var groups = mixer.FindMatchingGroups("Track3");
-            var track3 = System.Array.Find(groups, g => g.name == "Track3");
+            var track3 = Array.Find(groups, g => g.name == "Track3");
             Assert.IsNotNull(track3, "AudioMixerGroup 'Track3' must exist in BroAudioMixer");
 
-            mixer.GetFloat("Track3",        out float origTrack3);
+            mixer.GetFloat("Track3", out float origTrack3);
             mixer.GetFloat("Track3_Effect", out float origTrack3Effect);
 
             const float initialDecibel = AudioConstant.FullDecibelVolume;
@@ -3374,7 +3399,7 @@ namespace Ami.BroAudio.Tests
             _go.GetComponent<AudioSource>().outputAudioMixerGroup = track3;
 
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             try
             {
@@ -3406,7 +3431,7 @@ namespace Ami.BroAudio.Tests
             }
             finally
             {
-                mixer.SetFloat("Track3",        origTrack3);
+                mixer.SetFloat("Track3", origTrack3);
                 mixer.SetFloat("Track3_Effect", origTrack3Effect);
                 UnityEngine.Object.DestroyImmediate(entity);
             }
@@ -3422,10 +3447,10 @@ namespace Ami.BroAudio.Tests
             Assert.IsNotNull(mixer, "BroAudioMixer must be present in Resources/");
 
             var groups = mixer.FindMatchingGroups("Track3");
-            var track3 = System.Array.Find(groups, g => g.name == "Track3");
+            var track3 = Array.Find(groups, g => g.name == "Track3");
             Assert.IsNotNull(track3, "AudioMixerGroup 'Track3' must exist in BroAudioMixer");
 
-            mixer.GetFloat("Track3",        out float origTrack3);
+            mixer.GetFloat("Track3", out float origTrack3);
             mixer.GetFloat("Track3_Effect", out float origTrack3Effect);
 
             const float initialDecibel = AudioConstant.FullDecibelVolume;
@@ -3433,7 +3458,7 @@ namespace Ami.BroAudio.Tests
             _go.GetComponent<AudioSource>().outputAudioMixerGroup = track3;
 
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             try
             {
@@ -3460,7 +3485,7 @@ namespace Ami.BroAudio.Tests
             }
             finally
             {
-                mixer.SetFloat("Track3",        origTrack3);
+                mixer.SetFloat("Track3", origTrack3);
                 mixer.SetFloat("Track3_Effect", origTrack3Effect);
                 UnityEngine.Object.DestroyImmediate(entity);
             }
@@ -3479,10 +3504,10 @@ namespace Ami.BroAudio.Tests
             Assert.IsNotNull(mixer, "BroAudioMixer must be present in Resources/");
 
             var groups = mixer.FindMatchingGroups("Track3");
-            var track3 = System.Array.Find(groups, g => g.name == "Track3");
+            var track3 = Array.Find(groups, g => g.name == "Track3");
             Assert.IsNotNull(track3, "AudioMixerGroup 'Track3' must exist in BroAudioMixer");
 
-            mixer.GetFloat("Track3",        out float origTrack3);
+            mixer.GetFloat("Track3", out float origTrack3);
             mixer.GetFloat("Track3_Effect", out float origTrack3Effect);
 
             const float initialDecibel = AudioConstant.FullDecibelVolume;
@@ -3490,7 +3515,7 @@ namespace Ami.BroAudio.Tests
             _go.GetComponent<AudioSource>().outputAudioMixerGroup = track3;
 
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             try
             {
@@ -3498,7 +3523,7 @@ namespace Ami.BroAudio.Tests
                 _player.SetTrackEffect(EffectType.Volume, SetEffectMode.Add);
                 Assert.IsTrue(_player.IsUsingTrackEffect, "Precondition: must be on effect channel");
 
-                mixer.GetFloat("Track3",        out float track3AfterFirstAdd);
+                mixer.GetFloat("Track3", out float track3AfterFirstAdd);
                 mixer.GetFloat("Track3_Effect", out float track3EffectAfterFirstAdd);
 
                 // Second Add: a second (imagined) effect bit — here we simply re-add Volume
@@ -3506,10 +3531,10 @@ namespace Ami.BroAudio.Tests
                 // Using Volume again: bitmask stays the same; ChangeChannel must NOT be called.
                 _player.SetTrackEffect(EffectType.Volume, SetEffectMode.Add);
 
-                mixer.GetFloat("Track3",        out float track3AfterSecondAdd);
+                mixer.GetFloat("Track3", out float track3AfterSecondAdd);
                 mixer.GetFloat("Track3_Effect", out float track3EffectAfterSecondAdd);
 
-                Assert.AreEqual(track3AfterFirstAdd,       track3AfterSecondAdd,       0.001f,
+                Assert.AreEqual(track3AfterFirstAdd, track3AfterSecondAdd, 0.001f,
                     "Track3 must be unchanged after second Add (no ChangeChannel call)");
                 Assert.AreEqual(track3EffectAfterFirstAdd, track3EffectAfterSecondAdd, 0.001f,
                     "Track3_Effect must be unchanged after second Add (no ChangeChannel call)");
@@ -3519,7 +3544,7 @@ namespace Ami.BroAudio.Tests
             }
             finally
             {
-                mixer.SetFloat("Track3",        origTrack3);
+                mixer.SetFloat("Track3", origTrack3);
                 mixer.SetFloat("Track3_Effect", origTrack3Effect);
                 UnityEngine.Object.DestroyImmediate(entity);
             }
@@ -3535,10 +3560,10 @@ namespace Ami.BroAudio.Tests
             Assert.IsNotNull(mixer, "BroAudioMixer must be present in Resources/");
 
             var groups = mixer.FindMatchingGroups("Track3");
-            var track3 = System.Array.Find(groups, g => g.name == "Track3");
+            var track3 = Array.Find(groups, g => g.name == "Track3");
             Assert.IsNotNull(track3, "AudioMixerGroup 'Track3' must exist in BroAudioMixer");
 
-            mixer.GetFloat("Track3",        out float origTrack3);
+            mixer.GetFloat("Track3", out float origTrack3);
             mixer.GetFloat("Track3_Effect", out float origTrack3Effect);
 
             const float initialDecibel = AudioConstant.FullDecibelVolume;
@@ -3546,7 +3571,7 @@ namespace Ami.BroAudio.Tests
             _go.GetComponent<AudioSource>().outputAudioMixerGroup = track3;
 
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             try
             {
@@ -3569,7 +3594,7 @@ namespace Ami.BroAudio.Tests
             }
             finally
             {
-                mixer.SetFloat("Track3",        origTrack3);
+                mixer.SetFloat("Track3", origTrack3);
                 mixer.SetFloat("Track3_Effect", origTrack3Effect);
                 UnityEngine.Object.DestroyImmediate(entity);
             }
@@ -3587,10 +3612,10 @@ namespace Ami.BroAudio.Tests
             Assert.IsNotNull(mixer, "BroAudioMixer must be present in Resources/");
 
             var groups = mixer.FindMatchingGroups("Track3");
-            var track3 = System.Array.Find(groups, g => g.name == "Track3");
+            var track3 = Array.Find(groups, g => g.name == "Track3");
             Assert.IsNotNull(track3, "AudioMixerGroup 'Track3' must exist in BroAudioMixer");
 
-            mixer.GetFloat("Track3",        out float origTrack3);
+            mixer.GetFloat("Track3", out float origTrack3);
             mixer.GetFloat("Track3_Effect", out float origTrack3Effect);
 
             const float initialDecibel = AudioConstant.FullDecibelVolume;
@@ -3598,12 +3623,12 @@ namespace Ami.BroAudio.Tests
             _go.GetComponent<AudioSource>().outputAudioMixerGroup = track3;
 
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             try
             {
                 // Before adding any effect _sendParaName is null (lazy).
-                var sendParaName1 = GetField<AudioPlayer, string>(_player, "_sendParaName");
+                string sendParaName1 = GetField<AudioPlayer, string>(_player, "_sendParaName");
                 Assert.IsNull(sendParaName1,
                     "_sendParaName must be null before any effect is added");
 
@@ -3611,13 +3636,13 @@ namespace Ami.BroAudio.Tests
                 _player.SetTrackEffect(EffectType.Volume, SetEffectMode.Add);
 
                 // Call GetSendParaName via InvokeMethod to force lazy initialisation.
-                var name1 = (string)InvokeMethod(_player, "GetSendParaName");
+                string name1 = (string)InvokeMethod(_player, "GetSendParaName");
                 Assert.IsNotNull(name1, "GetSendParaName must return a non-null string");
                 Assert.AreEqual("Track3" + "_Effect", name1,
                     "GetSendParaName must return '<trackName>_Effect'");
 
                 // Confirm the backing field is now cached.
-                var cachedName = GetField<AudioPlayer, string>(_player, "_sendParaName");
+                string cachedName = GetField<AudioPlayer, string>(_player, "_sendParaName");
                 Assert.AreEqual(name1, cachedName, "_sendParaName backing field must be cached");
 
                 // Simulate the AudioTrack setter with null to reset the cache.
@@ -3625,10 +3650,10 @@ namespace Ami.BroAudio.Tests
                 // TODO: AudioTrack is a property with a private setter — we directly zero the
                 //       cached fields that the setter nulls when value==null.
                 SetField(_player, "_currTrackName", (string)null);
-                SetField(_player, "_sendParaName",  (string)null);
+                SetField(_player, "_sendParaName", (string)null);
 
-                var currTrackNameAfterReset = GetField<AudioPlayer, string>(_player, "_currTrackName");
-                var sendParaNameAfterReset  = GetField<AudioPlayer, string>(_player, "_sendParaName");
+                string currTrackNameAfterReset = GetField<AudioPlayer, string>(_player, "_currTrackName");
+                string sendParaNameAfterReset = GetField<AudioPlayer, string>(_player, "_sendParaName");
 
                 Assert.IsNull(currTrackNameAfterReset,
                     "_currTrackName must be null after simulated AudioTrack=null assignment");
@@ -3637,7 +3662,7 @@ namespace Ami.BroAudio.Tests
             }
             finally
             {
-                mixer.SetFloat("Track3",        origTrack3);
+                mixer.SetFloat("Track3", origTrack3);
                 mixer.SetFloat("Track3_Effect", origTrack3Effect);
                 UnityEngine.Object.DestroyImmediate(entity);
             }
@@ -3663,7 +3688,7 @@ namespace Ami.BroAudio.Tests
             Assert.IsNotNull(mixer, "BroAudioMixer must be present in Resources/");
 
             var groups = mixer.FindMatchingGroups("Track3");
-            var track3 = System.Array.Find(groups, g => g.name == "Track3");
+            var track3 = Array.Find(groups, g => g.name == "Track3");
             Assert.IsNotNull(track3, "AudioMixerGroup 'Track3' must exist in BroAudioMixer");
 
             mixer.GetFloat("Track3", out float origTrack3);
@@ -3671,7 +3696,7 @@ namespace Ami.BroAudio.Tests
             _go.GetComponent<AudioSource>().outputAudioMixerGroup = track3;
 
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             try
             {
@@ -3720,7 +3745,7 @@ namespace Ami.BroAudio.Tests
             _go.GetComponent<AudioSource>().outputAudioMixerGroup = null;
 
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
             _player.MixerPool = new NullMixerPool();
 
             try
@@ -3758,9 +3783,9 @@ namespace Ami.BroAudio.Tests
             SetupStubSoundManager();
             _player.MixerPool = new NullMixerPool();
 
-            const float clipVol  = 0.8f;
+            const float clipVol = 0.8f;
             const float trackVol = 0.6f;
-            const float typeVol  = 0.5f;
+            const float typeVol = 0.5f;
 
             // Set _clipVolume directly (it's private).
             var clipVolField = typeof(AudioPlayer)
@@ -3834,7 +3859,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
 
@@ -3882,36 +3907,28 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
-            var pref = new PlaybackPreference(entity);
-            _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
-
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             // Set a scheduled start time a tiny bit in the future and an end time
             // just after the start so the audio stops almost immediately.
+            float startDelay = 0.1f;
+            float duration = 0.4f;
             double dspNow = AudioSettings.dspTime;
-            var prefStruct = GetField<AudioPlayer, PlaybackPreference>(_player, "_pref");
-            prefStruct.ScheduledStartTime = dspNow + 0.05;
-            prefStruct.ScheduledEndTime   = dspNow + 0.15;
-            SetField(_player, "_pref", prefStruct);
-            SetField(_player, "_secondsUntilScheduledStart", (double)0.05);
-
-            // Call SchedulePlayback directly via reflection.
-            InvokeMethod(_player, "SchedulePlayback");
-
+            var pref = new PlaybackPreference(entity);
+            pref.ScheduledStartTime = dspNow + startDelay;
+            pref.ScheduledEndTime = dspNow + startDelay + duration;
+            _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
+            
+            // Call PlayInternal directly via reflection.
+            InvokeMethod(_player, "PlayInternal");
+            
             // AudioSource.PlayScheduled should have been called → isPlaying returns true
             // (Unity sets isPlaying=true as soon as PlayScheduled is called, even before
             // the start time).
-            yield return null;
             Assert.IsTrue(_go.GetComponent<AudioSource>().isPlaying,
                 "AudioSource.isPlaying must be true after PlayScheduled (even before scheduled start)");
 
             // Wait for the scheduled end time to pass — audio should stop.
-            float elapsed = 0f;
-            while (_go.GetComponent<AudioSource>().isPlaying && elapsed < 1f)
-            {
-                yield return null;
-                elapsed += Time.unscaledDeltaTime;
-            }
+            yield return new WaitForSeconds(startDelay + duration + Time.deltaTime);
 
             Assert.IsFalse(_go.GetComponent<AudioSource>().isPlaying,
                 "AudioSource must have stopped at or after ScheduledEndTime");
@@ -3922,6 +3939,7 @@ namespace Ami.BroAudio.Tests
                 _player.Stop(FadeData.Immediate, StopMode.Stop, null);
                 yield return null;
             }
+
             DestroyEntityWithClip(entity);
         }
 
@@ -3933,7 +3951,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
 
@@ -3951,8 +3969,13 @@ namespace Ami.BroAudio.Tests
             bool wasRegistered = false;
             foreach (var d in onUpdate.GetInvocationList())
             {
-                if (d.Method.Name == "CheckScheduledEnd") { wasRegistered = true; break; }
+                if (d.Method.Name == "CheckScheduledEnd")
+                {
+                    wasRegistered = true;
+                    break;
+                }
             }
+
             Assert.IsTrue(wasRegistered, "Precondition: CheckScheduledEnd must be in _onUpdate");
 
             // Directly stop the AudioSource to simulate the scheduled end passing.
@@ -3975,9 +3998,14 @@ namespace Ami.BroAudio.Tests
             {
                 foreach (var d in onUpdate.GetInvocationList())
                 {
-                    if (d.Method.Name == "CheckScheduledEnd") { stillRegistered = true; break; }
+                    if (d.Method.Name == "CheckScheduledEnd")
+                    {
+                        stillRegistered = true;
+                        break;
+                    }
                 }
             }
+
             Assert.IsFalse(stillRegistered,
                 "CheckScheduledEnd must unsubscribe itself from _onUpdate after firing");
 
@@ -3999,7 +4027,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(new SoundID(entity), pref, new NullMixerPool());
 
@@ -4039,7 +4067,7 @@ namespace Ami.BroAudio.Tests
         public void SetScheduledStartTime_WhenAlreadyScheduled_AccumulatesIntoSecondsUntilStart()
         {
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default(PlaybackPreference), null);
+            _player.SetPlaybackData(new SoundID(entity), default, null);
 
             // Pre-seed _pref.ScheduledStartTime and _secondsUntilScheduledStart.
             const double originalScheduled = 100.0;
@@ -4086,6 +4114,7 @@ namespace Ami.BroAudio.Tests
             {
                 currentSeconds += newScheduled - prefForAccumulate.ScheduledStartTime;
             }
+
             SetField(_player, "_secondsUntilScheduledStart", currentSeconds);
             prefForAccumulate.ScheduledStartTime = newScheduled;
             SetField(_player, "_pref", prefForAccumulate);
@@ -4141,11 +4170,11 @@ namespace Ami.BroAudio.Tests
 
             // Fire playerB's events manually via reflection.
             var onUpdateB = GetField<AudioPlayer, Action<IAudioPlayer>>(playerB, "_onUpdate");
-            var onEndB    = GetField<AudioPlayer, Action<SoundID>>(playerB, "_onEnd");
+            var onEndB = GetField<AudioPlayer, Action<SoundID>>(playerB, "_onEnd");
             var onPausedB = GetField<AudioPlayer, Action<IAudioPlayer>>(playerB, "_onPaused");
 
             Assert.IsNotNull(onUpdateB, "playerB._onUpdate must be non-null after transfer");
-            Assert.IsNotNull(onEndB,    "playerB._onEnd must be non-null after transfer");
+            Assert.IsNotNull(onEndB, "playerB._onEnd must be non-null after transfer");
             Assert.IsNotNull(onPausedB, "playerB._onPaused must be non-null after transfer");
 
             onUpdateB.Invoke(playerB);
@@ -4153,8 +4182,8 @@ namespace Ami.BroAudio.Tests
             onPausedB.Invoke(playerB);
 
             Assert.AreEqual(1, updateCount, "onUpdate handler must fire exactly once on playerB");
-            Assert.AreEqual(1, endCount,    "onEnd handler must fire exactly once on playerB");
-            Assert.AreEqual(1, pauseCount,  "onPause handler must fire exactly once on playerB");
+            Assert.AreEqual(1, endCount, "onEnd handler must fire exactly once on playerB");
+            Assert.AreEqual(1, pauseCount, "onPause handler must fire exactly once on playerB");
 
             UnityEngine.Object.DestroyImmediate(goB);
             UnityEngine.Object.DestroyImmediate(entity);
@@ -4213,12 +4242,13 @@ namespace Ami.BroAudio.Tests
 
             // Add a LowPassFilter effect with a distinctive cutoff frequency.
             const float customCutoff = 2000f;
-            ((IAudioPlayer)_player).AddAudioEffect<AudioLowPassFilter, ILowPassFilter>(
-                proxy => proxy.cutoffFrequency = customCutoff);
+            ((IAudioPlayer)_player).AddAudioEffect<AudioLowPassFilter, IAudioLowPassFilterProxy>(proxy =>
+                proxy.cutoffFrequency = customCutoff);
 
             // Verify precondition: _player now has a LowPass component.
             var lpOnA = _player.GetComponent<AudioLowPassFilter>();
-            Assert.IsNotNull(lpOnA, "Precondition: _player must have AudioLowPassFilter component after AddAudioEffect");
+            Assert.IsNotNull(lpOnA,
+                "Precondition: _player must have AudioLowPassFilter component after AddAudioEffect");
             Assert.AreEqual(customCutoff, lpOnA.cutoffFrequency, 1f,
                 "Precondition: cutoffFrequency must be set via proxy callback");
 
@@ -4273,7 +4303,10 @@ namespace Ami.BroAudio.Tests
             // wrapper.ID uses IsAvailable() — with playerB as instance it should return without the
             // LogInstanceIsNull path (though ID itself will be SoundID.Invalid since playerB has none).
             // The call must complete without exceptions.
-            Assert.DoesNotThrow(() => { var _ = wrapper.IsPlaying; },
+            Assert.DoesNotThrow(() =>
+                {
+                    bool _ = wrapper.IsPlaying;
+                },
                 "IsPlaying on wrapper (now pointing to playerB) must not throw");
 
             UnityEngine.Object.DestroyImmediate(goB);
@@ -4331,7 +4364,7 @@ namespace Ami.BroAudio.Tests
             SetupStubSoundManager();
 
             // Use a fresh entity whose AudioType we control.
-            var entity = MakeEntityWithClip(BroAudioType.None);  // BroAudioType.None is typically not registered
+            var entity = MakeEntityWithClip(BroAudioType.None); // BroAudioType.None is typically not registered
             var id = new SoundID(entity);
             _player.SetPlaybackData(id, new PlaybackPreference(entity), new NullMixerPool());
 
@@ -4350,8 +4383,9 @@ namespace Ami.BroAudio.Tests
         [UnityTest]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         // In PlayControl, _clip ??= _pref.PickNewClip() returns null when the entity
-        // has no clips.  The coroutine calls EndPlaying and yields break — no exception
-        // and no LogError from this path.  Observable: player is recycled quickly.
+        // has no clips.  The clip selection strategy logs an error for the empty clips
+        // array, then the coroutine calls EndPlaying and yields break.
+        // Observable: player is recycled quickly.
         public IEnumerator Play_WhenPickNewClipReturnsNull_EndsPlayingWithoutError()
         {
             SetupStubSoundManager();
@@ -4362,10 +4396,12 @@ namespace Ami.BroAudio.Tests
             SetAutoProperty(entity, "AudioType", BroAudioType.SFX);
             SetAutoProperty(entity, "MasterVolume", 1f);
             SetAutoProperty(entity, "Pitch", AudioConstant.DefaultPitch);
-            entity.Clips = System.Array.Empty<BroAudioClip>();
+            entity.Clips = Array.Empty<BroAudioClip>();
 
             var id = new SoundID(entity);
             _player.SetPlaybackData(id, new PlaybackPreference(entity), new NullMixerPool());
+
+            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("NoClipEntity.*clips array is empty or null"));
 
             _player.Play();
             // Let PlayControl coroutine run.
@@ -4476,7 +4512,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -4489,20 +4525,20 @@ namespace Ami.BroAudio.Tests
             // After Play, _playbackControlCoroutine must be non-null.
             var playbackCoroutineField = typeof(AudioPlayer).GetField(
                 "_playbackControlCoroutine", BindingFlags.Instance | BindingFlags.NonPublic);
-            var coroutineBefore = playbackCoroutineField?.GetValue(_player);
+            object coroutineBefore = playbackCoroutineField?.GetValue(_player);
             Assert.IsNotNull(coroutineBefore, "Precondition: _playbackControlCoroutine must be non-null while playing");
 
             // Recycle (goes through Stop → EndPlaying → Recycle internally, but we can
             // call Recycle directly to test its own behavior).
             _player.Recycle();
 
-            var playbackCoroutineAfter = playbackCoroutineField?.GetValue(_player);
+            object playbackCoroutineAfter = playbackCoroutineField?.GetValue(_player);
             Assert.IsNull(playbackCoroutineAfter,
                 "_playbackControlCoroutine must be null after Recycle()");
 
             var handoverCoroutineField = typeof(AudioPlayer).GetField(
                 "_handoverScheduleCoroutine", BindingFlags.Instance | BindingFlags.NonPublic);
-            var handoverCoroutineAfter = handoverCoroutineField?.GetValue(_player);
+            object handoverCoroutineAfter = handoverCoroutineField?.GetValue(_player);
             Assert.IsNull(handoverCoroutineAfter,
                 "_handoverScheduleCoroutine must be null after Recycle()");
 
@@ -4522,7 +4558,7 @@ namespace Ami.BroAudio.Tests
             Assert.IsNotNull(mixer, "BroAudioMixer must be present in Resources/");
 
             var groups = mixer.FindMatchingGroups("Track3");
-            var track3 = System.Array.Find(groups, g => g.name == "Track3");
+            var track3 = Array.Find(groups, g => g.name == "Track3");
             Assert.IsNotNull(track3, "AudioMixerGroup 'Track3' must exist");
 
             // Assign an output group so TryGetMixerAndTrack returns true.
@@ -4598,12 +4634,12 @@ namespace Ami.BroAudio.Tests
             Assert.IsNotNull(proxyField, "_proxy field must exist");
 
             // _proxy should now be non-null (lazy-initialised).
-            var proxyBefore = proxyField.GetValue(_player);
+            object proxyBefore = proxyField.GetValue(_player);
             Assert.IsNotNull(proxyBefore, "Precondition: _proxy must be non-null after accessing AudioSource");
 
             _player.Recycle();
 
-            var proxyAfter = proxyField.GetValue(_player);
+            object proxyAfter = proxyField.GetValue(_player);
             Assert.IsNull(proxyAfter,
                 "_proxy must be null after Recycle() (ResetAudioSource sets it to null)");
 
@@ -4625,10 +4661,10 @@ namespace Ami.BroAudio.Tests
             var entity = MakeEntity();
             _player.SetPlaybackData(new SoundID(entity), new PlaybackPreference(entity), new NullMixerPool());
 
-            ILowPassFilter capturedProxy = null;
+            IAudioLowPassFilterProxy capturedProxy = null;
             bool callbackFired = false;
 
-            ((IAudioPlayer)_player).AddAudioEffect<AudioLowPassFilter, ILowPassFilter>(proxy =>
+            ((IAudioPlayer)_player).AddAudioEffect<AudioLowPassFilter, IAudioLowPassFilterProxy>(proxy =>
             {
                 capturedProxy = proxy;
                 callbackFired = true;
@@ -4640,23 +4676,25 @@ namespace Ami.BroAudio.Tests
             UnityEngine.Object.DestroyImmediate(entity);
         }
 
-        [Test]
+        [UnityTest]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         // After Recycle(), DestroyAddedEffectComponents removes all added effect Components
         // from the GameObject.  The AudioLowPassFilter must no longer exist on the player.
-        public void Recycle_DestroysAllAddedEffectComponents()
+        public IEnumerator Recycle_DestroysAllAddedEffectComponents()
         {
             SetupStubSoundManager();
 
             var entity = MakeEntity();
             _player.SetPlaybackData(new SoundID(entity), new PlaybackPreference(entity), new NullMixerPool());
 
-            ((IAudioPlayer)_player).AddAudioEffect<AudioLowPassFilter, ILowPassFilter>(_ => { });
+            ((IAudioPlayer)_player).AddAudioEffect<AudioLowPassFilter, IAudioLowPassFilterProxy>(_ => { });
 
             Assert.IsNotNull(_player.GetComponent<AudioLowPassFilter>(),
                 "Precondition: LowPassFilter component must be present after AddAudioEffect");
 
             _player.Recycle();
+
+            yield return null;
 
             Assert.IsNull(_player.GetComponent<AudioLowPassFilter>(),
                 "AudioLowPassFilter must be destroyed after Recycle()");
@@ -4687,10 +4725,10 @@ namespace Ami.BroAudio.Tests
             UnityEngine.Object.DestroyImmediate(entity);
         }
 
-        [Test]
+        [UnityTest]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         // After Recycle(), DestroyAudioFilterReader destroys the AudioFilterReader component.
-        public void Recycle_DestroysAudioFilterReader()
+        public IEnumerator Recycle_DestroysAudioFilterReader()
         {
             SetupStubSoundManager();
 
@@ -4703,6 +4741,8 @@ namespace Ami.BroAudio.Tests
                 "Precondition: AudioFilterReader must be present before Recycle");
 
             _player.Recycle();
+
+            yield return null;
 
             Assert.IsNull(_player.GetComponent<AudioFilterReader>(),
                 "AudioFilterReader must be destroyed after Recycle()");
@@ -4956,7 +4996,7 @@ namespace Ami.BroAudio.Tests
         {
             SetupStubSoundManager();
 
-            var entity = MakeEntityWithClip(BroAudioType.SFX, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -5008,7 +5048,7 @@ namespace Ami.BroAudio.Tests
             // Ensure no leftover BGM from a previous test.
             MusicPlayer.CleanUp();
 
-            var entity = MakeEntityWithClip(BroAudioType.Music, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.Music, 44100 * 5);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -5076,7 +5116,7 @@ namespace Ami.BroAudio.Tests
                 .GetField("_currentBGMPlayer", BindingFlags.Static | BindingFlags.NonPublic)
                 .SetValue(null, previousPlayer);
 
-            var entity = MakeEntityWithClip(BroAudioType.Music, sampleLength: 44100 * 5);
+            var entity = MakeEntityWithClip(BroAudioType.Music, 44100 * 5);
             var id = new SoundID(entity);
             var pref = new PlaybackPreference(entity);
             _player.SetPlaybackData(id, pref, new NullMixerPool());
@@ -5093,8 +5133,13 @@ namespace Ami.BroAudio.Tests
             MusicPlayer realMusicPlayer = null;
             foreach (var d in decoratorList)
             {
-                if (d is MusicPlayer mp) { realMusicPlayer = mp; break; }
+                if (d is MusicPlayer mp)
+                {
+                    realMusicPlayer = mp;
+                    break;
+                }
             }
+
             Assert.IsNotNull(realMusicPlayer, "Precondition: MusicPlayer decorator must be present");
             ((IMusicPlayer)realMusicPlayer).SetTransition(Transition.Default, StopMode.Stop, 0f);
 
@@ -5124,7 +5169,11 @@ namespace Ami.BroAudio.Tests
             finally
             {
                 MusicPlayer.CleanUp();
-                if (previousSrc != null) previousSrc.Stop();
+                if (previousSrc != null)
+                {
+                    previousSrc.Stop();
+                }
+
                 UnityEngine.Object.DestroyImmediate(previousGo);
                 UnityEngine.Object.DestroyImmediate(previousClip);
                 DestroyEntityWithClip(entity);
@@ -5151,7 +5200,7 @@ namespace Ami.BroAudio.Tests
         {
             var setting = ScriptableObject.CreateInstance<SpatialSetting>();
             // Default-2D blend curve (single key at 0).
-            setting.SpatialBlend = spatialBlend ?? AnimationCurve.Constant(0f, 1f, AudioConstant.SpatialBlend_2D);
+            setting.SpatialBlend = spatialBlend ?? AnimationCurve.Constant(0f, 0f, AudioConstant.SpatialBlend_2D);
             setting.RolloffMode = rolloffMode;
             setting.CustomRolloff = customRolloff;
             setting.HasLowPassFilter = hasLowPassFilter;
@@ -5183,7 +5232,6 @@ namespace Ami.BroAudio.Tests
                 // Reset transform/AudioSource state to known values before the call.
                 _go.transform.position = Vector3.zero;
                 var src = _go.GetComponent<AudioSource>();
-                src.spatialBlend = AudioConstant.SpatialBlend_2D;
 
                 InvokeMethod(_player, "SetSpatial", pref);
 
@@ -5208,13 +5256,12 @@ namespace Ami.BroAudio.Tests
         public void SetSpatial_With2DSpatialBlendCurve_StillForces3D_WhenPositionSpecified()
         {
             // An explicitly default-2D curve.
-            var setting = MakeSpatialSetting(spatialBlend: AnimationCurve.Constant(0f, 1f, AudioConstant.SpatialBlend_2D));
+            var setting = MakeSpatialSetting();
             var entity = MakeEntityWithSpatial(setting);
             try
             {
                 var pref = new PlaybackPreference(entity, new Vector3(1f, 2f, 3f));
                 var src = _go.GetComponent<AudioSource>();
-                src.spatialBlend = AudioConstant.SpatialBlend_2D;
 
                 InvokeMethod(_player, "SetSpatial", pref);
 
@@ -5298,7 +5345,7 @@ namespace Ami.BroAudio.Tests
 
                 Assert.IsNotNull(_player.GetComponent<AudioLowPassFilter>(),
                     "AudioLowPassFilter must be attached after SetSpatial when HasLowPassFilter is true");
-                var addedAfterFirst = (System.Collections.ICollection)addedField.GetValue(_player);
+                var addedAfterFirst = (ICollection)addedField.GetValue(_player);
                 Assert.IsNotNull(addedAfterFirst, "_addedEffects must be non-null after AddLowPassEffect");
                 int countAfterFirst = addedAfterFirst.Count;
                 Assert.AreEqual(1, countAfterFirst,
@@ -5307,7 +5354,7 @@ namespace Ami.BroAudio.Tests
                 // Second call: _addedEffects is non-null → guard prevents re-add.
                 InvokeMethod(_player, "SetSpatial", pref);
 
-                var addedAfterSecond = (System.Collections.ICollection)addedField.GetValue(_player);
+                var addedAfterSecond = (ICollection)addedField.GetValue(_player);
                 Assert.AreEqual(countAfterFirst, addedAfterSecond.Count,
                     "Second SetSpatial must NOT add another AudioLowPassFilter (the _addedEffects guard);" +
                     " this protects transferred players from re-adding the filter.");
@@ -5345,21 +5392,21 @@ namespace Ami.BroAudio.Tests
 
                 IAudioPlayer iap = wrapper;
 
-                Assert.AreSame(Empty.AudioPlayer, iap.SetPitch(1.5f, 0f),    "SetPitch");
-                Assert.AreSame(Empty.AudioPlayer, iap.SetVelocity(64),       "SetVelocity");
-                Assert.AreSame(Empty.AudioPlayer, iap.OnEnd(_ => { }),       "OnEnd");
-                Assert.AreSame(Empty.AudioPlayer, iap.OnStart(_ => { }),     "OnStart");
-                Assert.AreSame(Empty.AudioPlayer, iap.OnUpdate(_ => { }),    "OnUpdate");
-                Assert.AreSame(Empty.AudioPlayer, iap.OnPause(_ => { }),     "OnPause");
+                Assert.AreSame(Empty.AudioPlayer, iap.SetPitch(1.5f, 0f), "SetPitch");
+                Assert.AreSame(Empty.AudioPlayer, iap.SetVelocity(64), "SetVelocity");
+                Assert.AreSame(Empty.AudioPlayer, iap.OnEnd(_ => { }), "OnEnd");
+                Assert.AreSame(Empty.AudioPlayer, iap.OnStart(_ => { }), "OnStart");
+                Assert.AreSame(Empty.AudioPlayer, iap.OnUpdate(_ => { }), "OnUpdate");
+                Assert.AreSame(Empty.AudioPlayer, iap.OnPause(_ => { }), "OnPause");
                 Assert.AreSame(Empty.AudioPlayer, iap.SetFadeOutEase(Ease.Linear), "SetFadeOutEase");
 
                 ISchedulable sch = wrapper;
                 Assert.AreSame(Empty.AudioPlayer, sch.SetScheduledStartTime(1.0), "SetScheduledStartTime");
-                Assert.AreSame(Empty.AudioPlayer, sch.SetScheduledEndTime(2.0),   "SetScheduledEndTime");
-                Assert.AreSame(Empty.AudioPlayer, sch.SetDelay(0.1f),             "SetDelay");
+                Assert.AreSame(Empty.AudioPlayer, sch.SetScheduledEndTime(2.0), "SetScheduledEndTime");
+                Assert.AreSame(Empty.AudioPlayer, sch.SetDelay(0.1f), "SetDelay");
 
                 Assert.AreSame(Empty.AudioPlayer,
-                    iap.AddAudioEffect<AudioLowPassFilter, ILowPassFilter>(_ => { }),
+                    iap.AddAudioEffect<AudioLowPassFilter, IAudioLowPassFilterProxy>(_ => { }),
                     "AddAudioEffect");
                 Assert.AreSame(Empty.AudioPlayer,
                     iap.RemoveAudioEffect<AudioLowPassFilter>(),
@@ -5386,7 +5433,7 @@ namespace Ami.BroAudio.Tests
             var wrapper = new AudioPlayerInstanceWrapper(_player);
             wrapper.Recycle();
 
-            IAudioSourceProxy proxy = ((IAudioPlayer)wrapper).AudioSource;
+            var proxy = ((IAudioPlayer)wrapper).AudioSource;
 
             Assert.IsNull(proxy,
                 "wrapper.AudioSource must return null (not Empty.AudioSource) when Instance is null — current inconsistent behavior");
@@ -5463,7 +5510,11 @@ namespace Ami.BroAudio.Tests
 
         private class NullMixerPool : IAudioMixerPool
         {
-            AudioMixerGroup IAudioMixerPool.GetTrack(AudioTrackType _) => null;
+            AudioMixerGroup IAudioMixerPool.GetTrack(AudioTrackType _)
+            {
+                return null;
+            }
+
             void IAudioMixerPool.ReturnTrack(AudioTrackType _, AudioMixerGroup __) { }
             void IAudioMixerPool.ReturnPlayer(AudioPlayer _) { }
         }
@@ -5476,12 +5527,17 @@ namespace Ami.BroAudio.Tests
             public bool ReturnTrackCalled { get; private set; }
             public AudioTrackType LastReturnedTrackType { get; private set; }
 
-            AudioMixerGroup IAudioMixerPool.GetTrack(AudioTrackType _) => null;
+            AudioMixerGroup IAudioMixerPool.GetTrack(AudioTrackType _)
+            {
+                return null;
+            }
+
             void IAudioMixerPool.ReturnTrack(AudioTrackType trackType, AudioMixerGroup _)
             {
                 ReturnTrackCalled = true;
                 LastReturnedTrackType = trackType;
             }
+
             void IAudioMixerPool.ReturnPlayer(AudioPlayer _) { }
         }
     }

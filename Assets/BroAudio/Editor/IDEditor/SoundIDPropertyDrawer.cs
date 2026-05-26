@@ -101,8 +101,8 @@ namespace Ami.BroAudio.Editor
         private void CacheDebugObject(SerializedProperty property)
         {
             SerializedProperty debugObjectProp = property.FindBackingFieldProperty(nameof(SoundID.DebugObject));
-            if (property.serializedObject.targetObject != debugObjectProp.objectReferenceValue &&
-                property.serializedObject.targetObject is MonoBehaviour mono)
+            if (property.serializedObject.targetObject is MonoBehaviour mono &&
+                mono.gameObject != debugObjectProp.objectReferenceValue)
             {
                 debugObjectProp.objectReferenceValue = mono.gameObject;
                 debugObjectProp.serializedObject.ApplyModifiedPropertiesWithoutUndo();

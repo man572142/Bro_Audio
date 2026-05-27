@@ -1,25 +1,24 @@
 # BroAudio
 
-Audio middleware for Unity, distributed as a UPM package (`com.ami.broaudio`). The package itself lives under `Assets/BroAudio/`; everything else in `Assets/` is the host project used to develop and test it. The `Assets/BroAudio/` subtree is what consumers install. Product docs: https://man572142s-organization.gitbook.io/broaudio/
+Audio middleware for Unity, shipped from one source down two channels: a UPM package (`com.ami.broaudio`) and a Unity Asset Store asset (the `.unitypackage`, exported via `PackageExporter`). The package itself lives under `Assets/BroAudio/`; everything else in `Assets/` is the host project used to develop and test it. The `Assets/BroAudio/` subtree is what consumers install.
 
 ## Commands
 No CLI build/test pipeline — everything runs from the Unity Editor (Unity 6000.3).
 - Library Manager (primary authoring window): `Tools > BroAudio > Library Manager`
 - Preferences (feature toggles): `Tools > BroAudio > Preferences`
 - Tests: `Window > General > Test Runner` (Unity Test Framework). Tests, when present, live under `Assets/Tests/` — check that folder first; a branch may have none. CLI form: `Unity -batchmode -projectPath . -runTests -testPlatform PlayMode -testResults results.xml -quit`
-- Regenerate audio proxies: BroAudio Dev Tools window (see Auto-generated code).
+- Regenerate audio proxies: BroAudio Dev Tools window.
 - Player build / package export: `BroProjectBuilder.Build()` and `PackageExporter` in `Editor/DevTools/`.
 
 ## Tech Stack
 Unity 6000.3.9f1 (Unity 6.3), C#. Distributed package version in `Assets/BroAudio/package.json` (declared min `2020.3`).
-Optional integrations: Addressables and Localization — both compile-gated (see below) and absent from `Packages/manifest.json` by default.
 
 ## Assemblies
-Two assemblies — keep `using` directives and new files in the right one:
-- `BroAudio` (`Assets/BroAudio/Runtime/`) — all platforms, auto-referenced. Namespaces `Ami.BroAudio` (public API), `Ami.BroAudio.Runtime` (internals), `Ami.BroAudio.Data` (data + ScriptableObjects), `Ami.BroAudio.Tools`, and the generic `Ami.Extension`.
-- `BroAudioEditor` (`Assets/BroAudio/Editor/`) — Editor platform only; references `BroAudio` plus the Addressables/Localization editor assemblies.
+Two assemblies; put new files (and their `using` directives) in the matching one:
+- `BroAudio` (`Assets/BroAudio/Runtime/`) — all platforms, auto-referenced.
+- `BroAudioEditor` (`Assets/BroAudio/Editor/`) — Editor only. Editor-only runtime code can instead live behind `#if UNITY_EDITOR`.
 
-Namespaces do not follow the package id: it's `Ami.*`, not `Ami.BroAudio` everywhere. Editor-only code belongs in `BroAudioEditor` or behind `#if UNITY_EDITOR`.
+Namespaces are `Ami.*` (`Ami.BroAudio` public API, `Ami.BroAudio.Runtime` internals, `Ami.BroAudio.Data` data + ScriptableObjects, `Ami.BroAudio.Tools`, generic `Ami.Extension`) and track neither the package id nor the folder layout — e.g. `Ami.BroAudio.Data` types live under `Runtime/DataStruct/`.
 
 ## Optional packages (compile-gated)
 `versionDefines` in the runtime asmdef define `PACKAGE_ADDRESSABLES` (from `com.unity.addressables`) and `PACKAGE_LOCALIZATION` (from `com.unity.localization`) only when those packages are installed. Support lives in partial files suffixed `.Addressables.cs` / `.Localization.cs`, wrapped in the matching `#if`.
@@ -29,7 +28,7 @@ IMPORTANT: code that touches Addressables or Localization APIs must stay inside 
 Opt-in manual init: defining `BroAudio_InitManually` skips the `[RuntimeInitializeOnLoadMethod]` auto-bootstrap and requires an explicit `BroAudio.Init()`.
 
 ## Partial classes
-`AudioPlayer`, `SoundManager`, `AudioEntity`, and `BroAudioClip` are each split across many feature files (e.g. `AudioPlayer.Playback.cs`, `.Volume.cs`, `.Pitch.cs`, `.Scheduling.cs`, `.Recycling.cs`; `SoundManager.Playback.cs`, `.Setting.cs`, `.Misc.cs`, `.Editor.cs`, `.Addressables.cs`, `.Localization.cs`). Put new feature code in the matching partial; reserve the no-suffix file for core/shared members. Grep across all partials before assuming a member is missing or adding a duplicate.
+Several classes are split across feature files — extensively for `AudioPlayer` (`.Playback`, `.Volume`, `.Pitch`, `.Scheduling`, `.Recycling`) and `SoundManager` (`.Playback`, `.Setting`, `.Misc`, `.Editor`, `.Addressables`, `.Localization`), and minimally for `AudioEntity` and `BroAudioClip` (core file plus the `.Addressables.cs` / `.Localization.cs` partials). Put new feature code in the matching partial; reserve the no-suffix file for core/shared members. Grep across all partials before assuming a member is missing or adding a duplicate, and watch for `*_LEGACY_DEPRECATED.cs` files — read them for context, don't extend them.
 
 ## Runtime architecture (gotchas, not obvious from one file)
 - The static `BroAudio` facade (`Runtime/BroAudio.cs`) delegates everything to `SoundManager`. Play verbs call `SoundManager.Instance` (throws if uninitialized); release verbs use the null-safe `BroAudio.Manager` because they can run during `OnDestroy`/`OnApplicationQuit`. Don't swap these — the asymmetry is intentional for teardown ordering.

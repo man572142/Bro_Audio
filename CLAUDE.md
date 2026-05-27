@@ -1,127 +1,65 @@
-# Using BroAudio
+# BroAudio
 
-BroAudio is the audio middleware installed in this project. This file is about **using** it from gameplay code — playing and controlling sounds, and wiring the no-code components. It does not cover modifying the package itself.
+Audio middleware for Unity, distributed as a UPM package (`com.ami.broaudio`). The package itself lives under `Assets/BroAudio/`; everything else in `Assets/` is the host project used to develop and test it. The `Assets/BroAudio/` subtree is what consumers install. Product docs: https://man572142s-organization.gitbook.io/broaudio/
 
-All public API is in the `Ami.BroAudio` namespace:
+## Commands
+No CLI build/test pipeline — everything runs from the Unity Editor (Unity 6000.3).
+- Library Manager (primary authoring window): `Tools > BroAudio > Library Manager`
+- Preferences (feature toggles): `Tools > BroAudio > Preferences`
+- Tests: `Window > General > Test Runner` (Unity Test Framework). Tests, when present, live under `Assets/Tests/` — check that folder first; a branch may have none. CLI form: `Unity -batchmode -projectPath . -runTests -testPlatform PlayMode -testResults results.xml -quit`
+- Regenerate audio proxies: BroAudio Dev Tools window (see Auto-generated code).
+- Player build / package export: `BroProjectBuilder.Build()` and `PackageExporter` in `Editor/DevTools/`.
 
-```csharp
-using Ami.BroAudio;
-```
+## Tech Stack
+Unity 6000.3.9f1 (Unity 6.3), C#. Distributed package version in `Assets/BroAudio/package.json` (declared min `2020.3`).
+Optional integrations: Addressables and Localization — both compile-gated (see below) and absent from `Packages/manifest.json` by default.
 
-## Data model (read this first)
+## Assemblies
+Two assemblies — keep `using` directives and new files in the right one:
+- `BroAudio` (`Assets/BroAudio/Runtime/`) — all platforms, auto-referenced. Namespaces `Ami.BroAudio` (public API), `Ami.BroAudio.Runtime` (internals), `Ami.BroAudio.Data` (data + ScriptableObjects), `Ami.BroAudio.Tools`, and the generic `Ami.Extension`.
+- `BroAudioEditor` (`Assets/BroAudio/Editor/`) — Editor platform only; references `BroAudio` plus the Addressables/Localization editor assemblies.
 
-- Sounds are authored in the **Library Manager** (`Tools > BroAudio > Library Manager`), not in code. It produces `AudioAsset` library files under `Assets/BroAudio/AudioAssets/` (or the consumer's chosen folder).
-- Each row in a library is an **AudioEntity**: a named entry with an `AudioType`, one or more `AudioClip`s, and per-clip settings (volume, fade, loop, delay…).
-- A **`SoundID`** is the runtime handle to one entity. It is a serializable struct — expose it as a field and pick the entity from the inspector dropdown:
+Namespaces do not follow the package id: it's `Ami.*`, not `Ami.BroAudio` everywhere. Editor-only code belongs in `BroAudioEditor` or behind `#if UNITY_EDITOR`.
 
-```csharp
-public class Gun : MonoBehaviour
-{
-    [SerializeField] private SoundID _fireSound; // dropdown lists all library entities
+## Optional packages (compile-gated)
+`versionDefines` in the runtime asmdef define `PACKAGE_ADDRESSABLES` (from `com.unity.addressables`) and `PACKAGE_LOCALIZATION` (from `com.unity.localization`) only when those packages are installed. Support lives in partial files suffixed `.Addressables.cs` / `.Localization.cs`, wrapped in the matching `#if`.
 
-    public void Fire() => BroAudio.Play(_fireSound);
-}
-```
+IMPORTANT: code that touches Addressables or Localization APIs must stay inside the matching `#if` block and the matching `.Addressables.cs` / `.Localization.cs` partial — otherwise compilation breaks when the package is absent.
 
-- `BroAudioType` is a `[Flags]` enum: `Music`, `UI`, `Ambience`, `SFX`, `VoiceOver`, `All`. Used for bulk control (stop/pause/volume per category).
-- Initialization is automatic — the system boots itself on first use. Only call `BroAudio.Init()` if the project defines `BroAudio_InitManually`.
+Opt-in manual init: defining `BroAudio_InitManually` skips the `[RuntimeInitializeOnLoadMethod]` auto-bootstrap and requires an explicit `BroAudio.Init()`.
 
-## Playing — the `BroAudio` facade
+## Partial classes
+`AudioPlayer`, `SoundManager`, `AudioEntity`, and `BroAudioClip` are each split across many feature files (e.g. `AudioPlayer.Playback.cs`, `.Volume.cs`, `.Pitch.cs`, `.Scheduling.cs`, `.Recycling.cs`; `SoundManager.Playback.cs`, `.Setting.cs`, `.Misc.cs`, `.Editor.cs`, `.Addressables.cs`, `.Localization.cs`). Put new feature code in the matching partial; reserve the no-suffix file for core/shared members. Grep across all partials before assuming a member is missing or adding a duplicate.
 
-`BroAudio.Play(...)` returns an `IAudioPlayer` you can chain on. Overloads pick the spatial mode:
+## Runtime architecture (gotchas, not obvious from one file)
+- The static `BroAudio` facade (`Runtime/BroAudio.cs`) delegates everything to `SoundManager`. Play verbs call `SoundManager.Instance` (throws if uninitialized); release verbs use the null-safe `BroAudio.Manager` because they can run during `OnDestroy`/`OnApplicationQuit`. Don't swap these — the asymmetry is intentional for teardown ordering.
+- `SoundManager` is a `MonoBehaviour` singleton bootstrapped from `Resources/SoundManager.prefab`. It owns the player pool, the mixer-group pools, the shared `AudioMixer`, and the `IAudioMixerPool` impl that players recycle through.
+- `AudioPlayer.Recycle()` routes through `MixerPool.ReturnPlayer(this)`. Driving `AudioPlayer` directly in tests/tooling without a real `SoundManager` requires supplying an `IAudioMixerPool` test double.
+- `PlaybackPreference`'s constructor reaches `SoundManager.FadeInEase` — constructing one needs a live `SoundManager`.
+- `Fader.StopCoroutine()` defensively no-ops when `SoundManager.Instance` is null (relied on during teardown).
+- Behavior modes are layered via `AudioPlayerDecorator` subclasses (`MusicPlayer`, `DominatorPlayer`) — `AsBGM()`/`AsDominator()` attach a decorator, not inheritance. Clip selection is a strategy pattern under `Runtime/Utility/ClipSelection/`.
+- `BroAudioClip` is a **class** (not struct) with a public `Delay` field; `AudioPlayer._pref` is a `PlaybackPreference` struct.
 
-```csharp
-BroAudio.Play(id);                 // 2D / global
-BroAudio.Play(id, worldPosition);  // 3D one-shot at a Vector3
-BroAudio.Play(id, followTarget);   // 3D, follows a Transform continuously
-BroAudio.Play(id, fadeIn: 0.5f);   // optional fade-in seconds (also on the 3D overloads)
-id.Play();                         // SoundID extension, equivalent to BroAudio.Play(id)
-```
+## Auto-generated code
+`Runtime/Player/AutoGeneratedCode/` (AudioSource and audio-effect filter proxies) is produced by `Editor/DevTools/AudioProxyModifierCodeGenerator.cs` via the Dev Tools window. Change the generator and regenerate — don't hand-edit the output.
 
-Stop / pause by id or by type. Release verbs are null-safe and may be called during teardown:
+## Style
+Defer to `.editorconfig`.
 
-```csharp
-BroAudio.Stop(id);                 BroAudio.Stop(id, fadeOut: 1f);
-BroAudio.Stop(BroAudioType.SFX);   BroAudio.Stop(BroAudioType.All);
-BroAudio.Pause(id);  BroAudio.UnPause(id);
-```
-
-Volume and pitch (target the master bus, a type, or a specific id):
-
-```csharp
-BroAudio.SetVolume(0.5f);                        // master (0~10, 1 = unity gain)
-BroAudio.SetVolume(BroAudioType.Music, 0.3f, fadeTime: 1f);
-BroAudio.SetVolume(id, 0.8f, fadeTime: 0.2f);
-BroAudio.SetPitch(BroAudioType.All, 1.2f);       // pitch range -3~3, default 1
-```
-
-Queries: `id.IsValid()`, `BroAudio.HasAnyPlayingInstances(id)`, `BroAudio.TryGetEntityInfo(id, out var info)`.
-
-## The fluent `IAudioPlayer` chain
-
-The object returned by `Play()` exposes a fluent API. Chain calls immediately after `Play()`:
-
-```csharp
-BroAudio.Play(_music)
-    .AsBGM()                              // -> IMusicPlayer: auto-transitions when the next BGM plays
-    .SetTransition(Transition.CrossFade)
-    .SetVolume(0.7f, fadeTime: 2f);
-
-BroAudio.Play(_sfx)
-    .SetVolume(0.8f)
-    .SetPitch(Random.Range(0.9f, 1.1f))
-    .SetDelay(0.1f)
-    .OnEnd(id => Debug.Log($"{id} finished"));
-
-BroAudio.Play(_voice)
-    .AsDominator()                        // -> IPlayerEffect: ducks everything else while playing
-    .QuietOthers(0.2f, fadeTime: 0.3f);   // also LowPassOthers / HighPassOthers
-```
-
-- Lifecycle callbacks: `OnStart`, `OnUpdate`, `OnPause`, `OnEnd`. Easing: `SetFadeInEase` / `SetFadeOutEase`.
-- Per-player effects: `AddLowPassEffect`, `AddHighPassEffect`, `AddReverbEffect`, `AddEchoEffect`, `AddChorusEffect`, `AddDistortionEffect` (each with a matching `Remove…`). Not available on WebGL.
-- Scheduling: `SetScheduledStartTime(dspTime)` / `SetScheduledEndTime(dspTime)` for sample-accurate timing.
-
-Global effects (not per-player) go through `BroAudio.SetEffect`, built from `Effect` factory methods:
-
-```csharp
-BroAudio.SetEffect(Effect.LowPass(800f, fadeTime: 0.5f));   // muffle everything
-BroAudio.SetEffect(Effect.ResetLowPass(0.5f), BroAudioType.SFX);
-```
-
-## No-code MonoComponents
-
-For designers / quick wiring, add these via the `Add Component > BroAudio` menu instead of scripting:
-
-- **`SoundSource`** — plays a chosen `SoundID` on enable. Inspector toggles: play-on-enable, stop-on-disable, play-once, position mode (Global / FollowGameObject / StayHere), delay. Exposes `Play()`, `Stop()`, `SetVolume()`, `CurrentPlayer`.
-- **`SoundVolume`** — binds UI `Slider`s to per-`BroAudioType` volume (options menu sliders), with apply/reset-on-enable.
-- **`SpectrumAnalyzer`** — exposes frequency-band amplitudes via an `OnUpdate` event for audio-reactive visuals.
-
-## Optional: Addressables & Localization
-
-These APIs exist **only when** the matching Unity package is installed (`com.unity.addressables` / `com.unity.localization`); don't reference them unless the consumer project has the package, or the project won't compile.
-
-```csharp
-// Addressables (manual load/release of an entity's clips)
-var handle = await id.LoadAssetAsync().Task;   // also LoadAllAssetsAsync
-id.ReleaseAsset();                             // also ReleaseAllAssets
-bool ready = BroAudio.IsLoaded(id);
-
-// Localization (clip swaps with the active locale)
-id.LocalizedAudioChanged += BroAudio.PlayOnLocalizedAudioChanged;
-```
-
-## Pitfalls
-
-- A pooled player from `Play()` is recycled when it finishes — it's safe to cache an `IAudioPlayer`, but don't assume it's still your sound across frames. Re-check `IsPlaying` / `IsActive`, or re-`Play()`.
-- An unset or invalid `SoundID` (`SoundID.Invalid`) makes `Play` a silent no-op. Author the entity in the Library Manager and assign it; gate on `id.IsValid()` if it may be unset.
-- `BroAudio.Play(...)` throws if the manager isn't initialized — don't call it from `OnDestroy`/`OnApplicationQuit`. Stop/Pause/SetVolume are safe there (they no-op when torn down).
-- Don't bypass BroAudio with a raw `AudioSource` + `id.GetAudioClip()` — you'd lose pooling, mixing, fading, and the playback rules. Route playback through the facade.
+## Enforced by hooks (`.claude/settings.json`)
+These run automatically — don't restate them as rules, just know they'll block/act:
+- Hand-edits to Unity YAML assets (`.prefab`, `.unity`, `.asset`, `.mat`, `.controller`, `.anim`, `.playable`, `.mixer`, `.overrideController`) and `.meta` files are blocked.
+- Edits under `AutoGeneratedCode/` are blocked.
+- Edits to `ProjectSettings/` and `Packages/manifest.json` are blocked (shared config).
+- New `.cs` / `.asmdef` files get a `.meta` with a fresh GUID auto-generated on write.
 
 ## Boundaries
+- ✅ Always: read the governing `.asmdef` before editing files in that assembly so `using` directives match.
+- ⚠️ Ask first: adding package dependencies, creating new `.asmdef` files, schema changes to ScriptableObjects that already have saved instances.
+- 🚫 Never: force-push or push to `main`.
 
-- ✅ Reference sounds with a serialized `SoundID` field; author entities in the Library Manager.
-- ⚠️ Adding/renaming sound entities is an authoring task in the Library Manager, not a code edit — ask before changing the data model other code relies on.
-- 🚫 Never hand-edit `AudioAsset` `.asset` library files (YAML/GUIDs — they break silently) or call the internal `SoundManager` directly; use the `BroAudio` facade.
-
-Full docs: https://man572142s-organization.gitbook.io/broaudio/
+## Definition of Done
+1. No compiler errors in changed files (full verification requires the Unity Editor).
+2. New scripts have their paired `.meta` (the hook generates it; confirm in Unity on next refresh).
+3. Addressables/Localization code compiles with those packages absent (stays behind the `#if`).
+4. All `.claude/settings.json` hooks pass.

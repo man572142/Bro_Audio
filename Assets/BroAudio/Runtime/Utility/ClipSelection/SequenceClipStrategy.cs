@@ -59,9 +59,8 @@ namespace Ami.BroAudio.Runtime
         {
             _namedSequenceIndices ??= new Dictionary<string, int>();
 
-            _namedSequenceIndices.TryGetValue(sequenceId, out int seqIndex);
-            // TryGetValue returns 0 for missing keys; we use -1 as uninitialized, so default to -1
-            if (!_namedSequenceIndices.ContainsKey(sequenceId))
+            // TryGetValue yields 0 for missing keys; we use -1 as uninitialized, so default to -1.
+            if (!_namedSequenceIndices.TryGetValue(sequenceId, out int seqIndex))
             {
                 seqIndex = -1;
             }

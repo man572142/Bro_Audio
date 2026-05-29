@@ -161,7 +161,7 @@ namespace Ami.BroAudio.Runtime
             if (!TryGetLocalizationEntity(id, out var entity))
             {
                 Debug.LogWarning(Utility.LogTitle +
-                    $"SubscribeLocalizedClipChanged: entity for SoundID '{id}' is not in Localization mode.");
+                    $"SubscribeLocalizedAudioChanged: entity for SoundID '{id}' is not in Localization mode.");
                 return;
             }
 

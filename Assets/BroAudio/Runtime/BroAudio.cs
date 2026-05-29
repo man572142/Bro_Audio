@@ -360,15 +360,15 @@ namespace Ami.BroAudio
         /// Subscribes to localized clip changes for a Localization-mode entity, identified by <see cref="SoundID"/>.
         /// Uses <c>LocalizedAsset&lt;T&gt;.AssetChanged</c> under the hood, so behavior matches Unity Localization's standard asset-change notification.
         /// </summary>
-        public static void SubscribeLocalizedClipChanged(SoundID id, Action<SoundID> handler)
+        public static void SubscribeLocalizedAudioChanged(SoundID id, Action<SoundID> handler)
             => Manager?.SubscribeLocalizedAudioChanged(id, handler);
 
         /// <summary>
-        /// Removes a handler previously registered with <see cref="SubscribeLocalizedClipChanged"/>.
+        /// Removes a handler previously registered with <see cref="SubscribeLocalizedAudioChanged"/>.
         /// Unsubscribing the last handler for an <paramref name="id"/> causes Unity Localization to release the
         /// underlying Addressables handle automatically.
         /// </summary>
-        public static void UnsubscribeLocalizedClipChanged(SoundID id, Action<SoundID> handler)
+        public static void UnsubscribeLocalizedAudioChanged(SoundID id, Action<SoundID> handler)
             => Manager?.UnsubscribeLocalizedAudioChanged(id, handler);
         
         /// <summary>

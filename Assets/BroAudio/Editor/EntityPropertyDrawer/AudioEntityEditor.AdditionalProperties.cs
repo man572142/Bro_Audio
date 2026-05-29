@@ -103,7 +103,9 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
-            var addressableGUIContent = new GUIContent("Addressable");
+            var addressableGUIContent = new GUIContent("Addressable",
+                "Register this audio entity asset as an Addressable entry so it can be loaded and unloaded at runtime through the Addressables system. " +
+                "When enabled, set its address and group below.");
             var addressableToggleSize = EditorStyles.toggle.CalcSize(addressableGUIContent);
 
             // Checkbox at the start

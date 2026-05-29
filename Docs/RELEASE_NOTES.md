@@ -23,7 +23,7 @@ tables.
 - **`SubscribeLocalizedAudioChanged` / `UnsubscribeLocalizedAudioChanged`**
   runtime events for reacting to locale-driven clip changes.
 - Library Manager additions:
-    - **"Open Localization Table"** button on the reorderable clip list.
+    - **"Open Localization Tables"** button on the reorderable clip list.
     - Inline locale **table / entry dropdowns** integrated as the first
       row of the clip list.
     - Confirmation dialog when switching an existing entity into
@@ -49,7 +49,8 @@ tables.
 
 ### Editor / Tooling
 - BroAudio editor windows are now also accessible under
-  **Window ▸ Audio**, alongside the existing **Tools ▸ BroAudio** menu.
+  **Window ▸ Audio ▸ BroAudio**, alongside the existing
+  **Tools ▸ BroAudio** menu.
 - The **Play Mode** dropdown is now always visible in the Library
   Manager.
 

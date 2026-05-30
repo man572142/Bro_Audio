@@ -34,6 +34,14 @@ namespace Ami.BroAudio.Runtime
             {
                 MixerPool?.ReturnTrack(TrackType, track);
             }
+            if (_isTrackReleasedWhileVirtual)
+            {
+                // The track was lent back to the pool while virtual, so the volume fell back to
+                // driving AudioSource.volume directly. Restore it so the mixer is the sole volume
+                // authority again when this pooled player is reused.
+                AudioSource.volume = AudioConstant.FullVolume;
+                _isTrackReleasedWhileVirtual = false;
+            }
             TrackType = AudioTrackType.Generic;
             MixerPool?.ReturnPlayer(this);
 

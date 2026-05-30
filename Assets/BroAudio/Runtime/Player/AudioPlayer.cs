@@ -100,6 +100,10 @@ namespace Ami.BroAudio.Runtime
             {
                 transform.position = target.position;
             }
+
+#if !UNITY_WEBGL
+            UpdateTrackVirtualization();
+#endif
         }
 
         private void SetSpatial(PlaybackPreference pref)

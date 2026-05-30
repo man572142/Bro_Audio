@@ -109,6 +109,7 @@ namespace Ami.BroAudio.Runtime
             SetSpatial(_pref);
 #if !UNITY_WEBGL
             AudioTrack = MixerPool.GetTrack(TrackType);
+            _isTrackReleasedWhileVirtual = false; // a fresh track is held; clear any prior virtual release
 #endif
 
             if (IsDominator)

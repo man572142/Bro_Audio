@@ -328,8 +328,11 @@ namespace Ami.BroAudio.Editor
             }
 #endif
 
+            var content = new GUIContent("Addressables",
+                "Reference this entity's audio clips through Addressables (AssetReference) instead of direct references. " +
+                "Toggling converts the existing clip references between the two types.");
             EditorGUI.BeginChangeCheck();
-            useAddressablesProp.boolValue = EditorGUI.ToggleLeft(toggleRect, "Addressables", useAddressablesProp.boolValue);
+            useAddressablesProp.boolValue = EditorGUI.ToggleLeft(toggleRect, content, useAddressablesProp.boolValue);
             if (EditorGUI.EndChangeCheck())
             {
                 EditorAudioPreviewer.Instance.StopAllClips();

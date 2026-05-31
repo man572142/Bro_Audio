@@ -45,6 +45,7 @@ namespace Ami.BroAudio.Editor
         public bool OpenLastEditAudioAsset = FactorySettings.OpenLastEditAudioAsset;
         public ReferenceConversionDecision DirectReferenceDecision = FactorySettings.DirectReferenceDecision;
         public ReferenceConversionDecision AddressableDecision = FactorySettings.AddressableDecision;
+        public bool ShowEntityAddressableToggle = FactorySettings.ShowEntityAddressableToggle;
 
         public bool EditTheNewClipAfterSaveAs = FactorySettings.EditTheNewClipAfterSaveAs;
         public bool PingTheNewClipAfterSaveAs = FactorySettings.PingTheNewClipAfterSaveAs;
@@ -148,6 +149,7 @@ namespace Ami.BroAudio.Editor
             PromptForPathOnAssetCreation = FactorySettings.PromptForPathOnAssetCreation;
             ShowPlayButtonWhenEntityCollapsed = FactorySettings.ShowPlayButtonWhenEntityIsFolded;
             OpenLastEditAudioAsset = FactorySettings.OpenLastEditAudioAsset;
+            ShowEntityAddressableToggle = FactorySettings.ShowEntityAddressableToggle;
             CreateNewAudioTypeSettings();
             CreateDefaultSpectrumColors();
 		}
@@ -188,6 +190,7 @@ namespace Ami.BroAudio.Editor
             public const bool OpenLastEditAudioAsset = false;
             public const bool ShowPlayButtonWhenEntityIsFolded = false;
             public const bool ShowWarningWhenEntityHasNoLoopInChainedMode = true;
+            public const bool ShowEntityAddressableToggle = false;
 
             public const string MusicColor = "#012F874C";
 			public const string UIColor = "#0E9C884C";

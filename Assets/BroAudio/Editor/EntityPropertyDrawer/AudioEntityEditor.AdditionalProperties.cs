@@ -103,8 +103,11 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
-            var addressableGUIContent = new GUIContent("Addressable",
-                "Register this audio entity asset as an Addressable entry so it can be loaded and unloaded at runtime through the Addressables system. " +
+            var addressableGUIContent = new GUIContent("Addressable Entity Asset",
+                "Registers this entity asset ITSELF as an Addressables entry so your own code can load it by address " +
+                "(e.g. Addressables.LoadAssetAsync<AudioEntity>(address)) and play it via new SoundID(entity). " +
+                "This does NOT change how BroAudio loads audio clips — for that, use the \"Addressable Audio Clips\" toggle on the Clips tab. " +
+                "Note: if this entity is also referenced directly by a scene or prefab, marking it Addressable may duplicate it into a bundle. " +
                 "When enabled, set its address and group below.");
             var addressableToggleSize = EditorStyles.toggle.CalcSize(addressableGUIContent);
 

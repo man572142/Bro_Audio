@@ -307,7 +307,6 @@ namespace Ami.BroAudio.Editor
         {
             SerializedProperty useAddressablesProp = serializedObject.FindProperty(nameof(AudioEntity.UseAddressables));
             Rect rect = GetRectAndIterateLine(position);
-            Rect toggleRect = new Rect(rect) { width = 100f, x = position.xMax - 100f };
 
 #if PACKAGE_LOCALIZATION
             var playModeProp = serializedObject.FindProperty(AudioEntity.EditorPropertyName.MulticlipsPlayMode);
@@ -318,19 +317,24 @@ namespace Ami.BroAudio.Editor
                     useAddressablesProp.boolValue = true;
                 }
 
-                var lockedContent = new GUIContent("Addressables",
-                    "Locked on while in Localization mode — Unity Localization requires Addressables.");
+                var lockedContent = new GUIContent("Addressable Audio Clips",
+                    "Loads this entity's audio clips through Addressables (AssetReference) instead of direct references. " +
+                    "Locked on while in Localization mode — Unity Localization requires Addressables. " +
+                    "This is separate from the Overall tab's \"Addressable Entity Asset\" toggle, which registers the entity asset itself.");
+                Rect lockedToggleRect = GetRightAlignedToggleRect(rect, lockedContent, position);
                 using (new EditorGUI.DisabledScope(true))
                 {
-                    EditorGUI.ToggleLeft(toggleRect, lockedContent, true);
+                    EditorGUI.ToggleLeft(lockedToggleRect, lockedContent, true);
                 }
                 return;
             }
 #endif
 
-            var content = new GUIContent("Addressables",
-                "Reference this entity's audio clips through Addressables (AssetReference) instead of direct references. " +
-                "Toggling converts the existing clip references between the two types.");
+            var content = new GUIContent("Addressable Audio Clips",
+                "Loads this entity's audio clips through Addressables (AssetReference) instead of direct references, " +
+                "so the clips are pulled from Addressable bundles on demand. Toggling converts the existing clip references between the two types. " +
+                "This is separate from the Overall tab's \"Addressable Entity Asset\" toggle — that one registers the entity asset itself; this one only affects clip loading.");
+            Rect toggleRect = GetRightAlignedToggleRect(rect, content, position);
             EditorGUI.BeginChangeCheck();
             useAddressablesProp.boolValue = EditorGUI.ToggleLeft(toggleRect, content, useAddressablesProp.boolValue);
             if (EditorGUI.EndChangeCheck())
@@ -338,6 +342,12 @@ namespace Ami.BroAudio.Editor
                 EditorAudioPreviewer.Instance.StopAllClips();
                 SwitchAddressable(useAddressablesProp, clips);
             }
+        }
+
+        private static Rect GetRightAlignedToggleRect(Rect lineRect, GUIContent content, Rect position)
+        {
+            float width = EditorStyles.toggle.CalcSize(content).x;
+            return new Rect(lineRect) { width = width, x = position.xMax - width };
         }
 
         private void SwitchAddressable(SerializedProperty property, ReorderableClips clips)

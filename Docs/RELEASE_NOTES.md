@@ -75,6 +75,13 @@ tables.
 - Playback validation paths were tightened.
 - Addressable cleanup is now scoped via conditional compilation so it
   no longer runs in builds that do not include Addressables.
+- Renamed the two Addressable toggles for clarity: the Clips tab toggle
+  is now **"Addressable Audio Clips"** and the Overall tab toggle is now
+  **"Addressable Entity Asset"**, each tooltip naming the other. The
+  entity-asset toggle is now hidden by default and can be re-enabled
+  under **Tools ▸ BroAudio ▸ Preferences ▸ Addressable Settings**.
+  Existing `AddressableAssetSettings` entries are unaffected. See the
+  documentation for a full explanation of both toggles.
 
 ---
 

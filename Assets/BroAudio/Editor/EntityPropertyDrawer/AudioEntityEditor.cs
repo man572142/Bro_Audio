@@ -307,7 +307,6 @@ namespace Ami.BroAudio.Editor
         {
             SerializedProperty useAddressablesProp = serializedObject.FindProperty(nameof(AudioEntity.UseAddressables));
             Rect rect = GetRectAndIterateLine(position);
-            Rect toggleRect = new Rect(rect) { width = 100f, x = position.xMax - 100f };
 
 #if PACKAGE_LOCALIZATION
             var playModeProp = serializedObject.FindProperty(AudioEntity.EditorPropertyName.MulticlipsPlayMode);
@@ -318,23 +317,34 @@ namespace Ami.BroAudio.Editor
                     useAddressablesProp.boolValue = true;
                 }
 
-                var lockedContent = new GUIContent("Addressables",
-                    "Locked on while in Localization mode — Unity Localization requires Addressables.");
+                var lockedContent = new GUIContent("Addressable Audio Clips",
+                    "Loads this entity's audio clips through Addressables. Locked on in Localization mode.");
+                Rect lockedToggleRect = GetRightAlignedToggleRect(rect, lockedContent, position);
                 using (new EditorGUI.DisabledScope(true))
                 {
-                    EditorGUI.ToggleLeft(toggleRect, lockedContent, true);
+                    EditorGUI.ToggleLeft(lockedToggleRect, lockedContent, true);
                 }
                 return;
             }
 #endif
 
+            var content = new GUIContent("Addressable Audio Clips",
+                "Loads this entity's audio clips through Addressables instead of direct references. " +
+                "Preload via BroAudio.LoadAssetAsync(SoundID).");
+            Rect toggleRect = GetRightAlignedToggleRect(rect, content, position);
             EditorGUI.BeginChangeCheck();
-            useAddressablesProp.boolValue = EditorGUI.ToggleLeft(toggleRect, "Addressables", useAddressablesProp.boolValue);
+            useAddressablesProp.boolValue = EditorGUI.ToggleLeft(toggleRect, content, useAddressablesProp.boolValue);
             if (EditorGUI.EndChangeCheck())
             {
                 EditorAudioPreviewer.Instance.StopAllClips();
                 SwitchAddressable(useAddressablesProp, clips);
             }
+        }
+
+        private static Rect GetRightAlignedToggleRect(Rect lineRect, GUIContent content, Rect position)
+        {
+            float width = EditorStyles.toggle.CalcSize(content).x;
+            return new Rect(lineRect) { width = width, x = position.xMax - width };
         }
 
         private void SwitchAddressable(SerializedProperty property, ReorderableClips clips)

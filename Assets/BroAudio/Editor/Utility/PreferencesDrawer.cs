@@ -18,8 +18,8 @@ namespace Ami.BroAudio.Editor
         private readonly GUIContent _filterSlopeGUIContent, _playMusicAsBgmGUIContent, _showWarnForNoLoopChainedModeGUIContent,
             _updateModeGUIContent, _logAccessRecycledWarningGUIContent, _poolSizeCountGUIContent, _globalGroupGUIContent;
 #if PACKAGE_ADDRESSABLES
-        private readonly GUIContent _directToAddressableGUIContent, _addressableToDirectGUIContent, _automaticallyLoadAddressableAudioClipsGUIContent, 
-            _automaticallyUnloadUnusedAddressableAudioClipsAfterGUIContent, _addressablesNonPreloadedLogLevelGUIContent;
+        private readonly GUIContent _directToAddressableGUIContent, _addressableToDirectGUIContent, _automaticallyLoadAddressableAudioClipsGUIContent,
+            _automaticallyUnloadUnusedAddressableAudioClipsAfterGUIContent, _addressablesNonPreloadedLogLevelGUIContent, _showEntityAddressableToggleGUIContent;
 #endif
         public readonly SerializedObject RuntimeSettingSO;
         public readonly SerializedObject EditorSettingSO;
@@ -45,8 +45,12 @@ namespace Ami.BroAudio.Editor
                 $"NOTE: On-demand loading may cause latency. Preload with BroAudio.{nameof(BroAudio.LoadAssetAsync)}() if precise timing is required."); 
             _automaticallyUnloadUnusedAddressableAudioClipsAfterGUIContent = new GUIContent("Automatically Unload Unused Addressable Audio Clips After", 
                 "Automatically unload unused audio clips from addressable assets after X seconds"); 
-            _addressablesNonPreloadedLogLevelGUIContent = new GUIContent("Non-Preloaded Log Level", 
+            _addressablesNonPreloadedLogLevelGUIContent = new GUIContent("Non-Preloaded Log Level",
                 "Log level used when an Addressable AudioClip is played without being preloaded.");
+            _showEntityAddressableToggleGUIContent = new GUIContent("Show \"Addressable Entity Asset\" Toggle",
+                "Shows the \"Addressable Entity Asset\" toggle on the entity's Overall tab (hidden by default).\n" +
+                "That toggle registers the entity asset (ScriptableObject) itself as an Addressables entry, " +
+                $"so your code can load it by address, e.g. Addressables.{nameof(UnityEngine.AddressableAssets.Addressables.LoadAssetAsync)}<AudioEntity>(address).");
 #endif
         }
         
@@ -178,6 +182,10 @@ namespace Ami.BroAudio.Editor
 
             addressableNonPreloadedLogLevelProp.enumValueIndex = (int)(LogType)EditorGUI.EnumPopup(
                 popupRect, (LogType)addressableNonPreloadedLogLevelProp.enumValueIndex);
+
+            var showEntityAddressableToggleProp = EditorSettingSO.FindProperty(nameof(EditorSetting.ShowEntityAddressableToggle));
+            showEntityAddressableToggleProp.boolValue = EditorGUI.ToggleLeft(GetRectAndIterateLine(drawer, rect),
+                _showEntityAddressableToggleGUIContent, showEntityAddressableToggleProp.boolValue);
         }
 #endif
 

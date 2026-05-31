@@ -52,7 +52,10 @@ namespace Ami.BroAudio.Editor
             }
 
 #if PACKAGE_ADDRESSABLES
-            lineCount++;
+            if (BroEditorUtility.EditorSetting.ShowEntityAddressableToggle)
+            {
+                lineCount++;
+            }
 #endif
 
             float offset = 0f;
@@ -73,7 +76,10 @@ namespace Ami.BroAudio.Editor
         private void DrawAdditionalBaseProperties(Rect position, AudioTypeSetting setting)
         {
 #if PACKAGE_ADDRESSABLES
-            DrawEntityAddressableProperty(position);
+            if (BroEditorUtility.EditorSetting.ShowEntityAddressableToggle)
+            {
+                DrawEntityAddressableProperty(position);
+            }
 #endif
 
             var drawFlags = setting.DrawedProperty;
@@ -103,7 +109,9 @@ namespace Ami.BroAudio.Editor
                 return;
             }
 
-            var addressableGUIContent = new GUIContent("Addressable");
+            var addressableGUIContent = new GUIContent("Addressable Entity Asset",
+                "Registers this entity asset (ScriptableObject) itself as an Addressables entry so your code can load it by address, " +
+                "e.g. Addressables.LoadAssetAsync<AudioEntity>(address).");
             var addressableToggleSize = EditorStyles.toggle.CalcSize(addressableGUIContent);
 
             // Checkbox at the start

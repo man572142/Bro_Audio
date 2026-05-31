@@ -52,7 +52,10 @@ namespace Ami.BroAudio.Editor
             }
 
 #if PACKAGE_ADDRESSABLES
-            lineCount++;
+            if (BroEditorUtility.EditorSetting.ShowEntityAddressableToggle)
+            {
+                lineCount++;
+            }
 #endif
 
             float offset = 0f;
@@ -73,7 +76,10 @@ namespace Ami.BroAudio.Editor
         private void DrawAdditionalBaseProperties(Rect position, AudioTypeSetting setting)
         {
 #if PACKAGE_ADDRESSABLES
-            DrawEntityAddressableProperty(position);
+            if (BroEditorUtility.EditorSetting.ShowEntityAddressableToggle)
+            {
+                DrawEntityAddressableProperty(position);
+            }
 #endif
 
             var drawFlags = setting.DrawedProperty;

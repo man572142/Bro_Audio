@@ -48,9 +48,9 @@ namespace Ami.BroAudio.Editor
             _addressablesNonPreloadedLogLevelGUIContent = new GUIContent("Non-Preloaded Log Level",
                 "Log level used when an Addressable AudioClip is played without being preloaded.");
             _showEntityAddressableToggleGUIContent = new GUIContent("Show \"Addressable Entity Asset\" Toggle",
-                "Shows the \"Addressable Entity Asset\" toggle on the entity's Overall tab. " +
-                "When off (default), the entity inspector stays decluttered; you can still register an entity asset as Addressable " +
-                "from Unity's Addressables Groups window or the asset's native Addressable checkbox in the Inspector header.");
+                "Shows the \"Addressable Entity Asset\" toggle on the entity's Overall tab (hidden by default).\n" +
+                "That toggle registers the entity asset (ScriptableObject) itself as an Addressables entry, " +
+                $"so your code can load it by address, e.g. Addressables.{nameof(UnityEngine.AddressableAssets.Addressables.LoadAssetAsync)}<AudioEntity>(address).");
 #endif
         }
         

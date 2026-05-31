@@ -318,9 +318,7 @@ namespace Ami.BroAudio.Editor
                 }
 
                 var lockedContent = new GUIContent("Addressable Audio Clips",
-                    "Loads this entity's audio clips through Addressables (AssetReference) instead of direct references. " +
-                    "Locked on while in Localization mode — Unity Localization requires Addressables. " +
-                    "This is separate from the Overall tab's \"Addressable Entity Asset\" toggle, which registers the entity asset itself.");
+                    "Loads this entity's audio clips through Addressables. Locked on in Localization mode.");
                 Rect lockedToggleRect = GetRightAlignedToggleRect(rect, lockedContent, position);
                 using (new EditorGUI.DisabledScope(true))
                 {
@@ -331,9 +329,8 @@ namespace Ami.BroAudio.Editor
 #endif
 
             var content = new GUIContent("Addressable Audio Clips",
-                "Loads this entity's audio clips through Addressables (AssetReference) instead of direct references, " +
-                "so the clips are pulled from Addressable bundles on demand. Toggling converts the existing clip references between the two types. " +
-                "This is separate from the Overall tab's \"Addressable Entity Asset\" toggle — that one registers the entity asset itself; this one only affects clip loading.");
+                "Loads this entity's audio clips through Addressables instead of direct references. " +
+                "Preload via BroAudio.LoadAssetAsync(SoundID).");
             Rect toggleRect = GetRightAlignedToggleRect(rect, content, position);
             EditorGUI.BeginChangeCheck();
             useAddressablesProp.boolValue = EditorGUI.ToggleLeft(toggleRect, content, useAddressablesProp.boolValue);

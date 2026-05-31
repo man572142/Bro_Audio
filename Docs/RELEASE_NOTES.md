@@ -80,7 +80,8 @@ tables.
   **"Addressable Entity Asset"**, each tooltip naming the other. The
   entity-asset toggle is now hidden by default and can be re-enabled
   under **Tools ▸ BroAudio ▸ Preferences ▸ Addressable Settings**.
-  Existing `AddressableAssetSettings` entries are unaffected.
+  Existing `AddressableAssetSettings` entries are unaffected. See the
+  documentation for a full explanation of both toggles.
 
 ---
 

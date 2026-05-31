@@ -43,6 +43,10 @@ namespace Ami.BroAudio.Runtime
         public PlaybackPreference(IAudioEntity entity, Transform followTarget) : this(entity)
         {
             _followTarget = followTarget;
+            // Leave _position unset so Position resolves from the live follow target each frame.
+            // Otherwise the base constructor's sentinel makes follow-target plays read as global,
+            // which bypasses the distance-based comb-filtering rule.
+            _position = null;
         }
 
         public PlaybackPreference(IAudioEntity entity)

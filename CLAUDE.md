@@ -1,6 +1,6 @@
 # BroAudio
 
-Audio middleware for Unity, shipped from one source down two channels: a UPM package (`com.ami.broaudio`) and a Unity Asset Store asset (the `.unitypackage`, exported via `PackageExporter`). The package itself lives under `Assets/BroAudio/`; everything else in `Assets/` is the host project used to develop and test it. The `Assets/BroAudio/` subtree is what consumers install.
+Audio middleware for Unity. The project under `Assets/BroAudio/` **is** the package — that subtree is exactly what consumers install, and it's effectively the whole codebase (the rest of `Assets/` holds only its `.meta`). It ships from one source down two channels: a UPM package (`com.ami.broaudio`) and a Unity Asset Store `.unitypackage`, exported via `PackageExporter` (gated behind `#if BroAudio_DevOnly`). Current version lives in `Assets/BroAudio/package.json`; user-facing changes are summarized in `Docs/RELEASE_NOTES.md`.
 
 ## Commands
 No CLI build/test pipeline — everything runs from the Unity Editor (Unity 6000.3).
@@ -28,7 +28,7 @@ IMPORTANT: code that touches Addressables or Localization APIs must stay inside 
 Opt-in manual init: defining `BroAudio_InitManually` skips the `[RuntimeInitializeOnLoadMethod]` auto-bootstrap and requires an explicit `BroAudio.Init()`.
 
 ## Partial classes
-Several classes are split across feature files — extensively for `AudioPlayer` (`.Playback`, `.Volume`, `.Pitch`, `.Scheduling`, `.Recycling`) and `SoundManager` (`.Playback`, `.Setting`, `.Misc`, `.Editor`, `.Addressables`, `.Localization`), and minimally for `AudioEntity` and `BroAudioClip` (core file plus the `.Addressables.cs` / `.Localization.cs` partials). Put new feature code in the matching partial; reserve the no-suffix file for core/shared members. Grep across all partials before assuming a member is missing or adding a duplicate, and watch for `*_LEGACY_DEPRECATED.cs` files — read them for context, don't extend them.
+Many classes are split by feature into suffixed files — most heavily `AudioPlayer` and `SoundManager`. Put new feature code in the matching partial and keep the no-suffix file for core/shared members. Grep across all partials before assuming a member is missing or adding a duplicate, and read but never extend `*_LEGACY_DEPRECATED.cs` files.
 
 ## Runtime architecture (gotchas, not obvious from one file)
 - The static `BroAudio` facade (`Runtime/BroAudio.cs`) delegates everything to `SoundManager`. Play verbs call `SoundManager.Instance` (throws if uninitialized); release verbs use the null-safe `BroAudio.Manager` because they can run during `OnDestroy`/`OnApplicationQuit`. Don't swap these — the asymmetry is intentional for teardown ordering.
@@ -39,11 +39,25 @@ Several classes are split across feature files — extensively for `AudioPlayer`
 - Behavior modes are layered via `AudioPlayerDecorator` subclasses (`MusicPlayer`, `DominatorPlayer`) — `AsBGM()`/`AsDominator()` attach a decorator, not inheritance. Clip selection is a strategy pattern under `Runtime/Utility/ClipSelection/`.
 - `BroAudioClip` is a **class** (not struct) with a public `Delay` field; `AudioPlayer._pref` is a `PlaybackPreference` struct.
 
+## Logging & errors
+- Prefix every log with `Utility.LogTitle` (the `[BroAudio]` rich-text tag): `Debug.LogError(Utility.LogTitle + "...")`. Don't emit bare `Debug.Log*`.
+- There is one custom exception, `BroAudioException` — reuse it instead of adding new exception types. Throw only for genuine setup/programmer errors (e.g. uninitialized manager); for expected "not found / invalid" gameplay paths, log and return gracefully (often via a `TryGet*` bool pattern) rather than throwing.
+
+## Null-safety & teardown
+- For `UnityEngine.Object` references use Unity's null semantics (`if (obj)`), not `== null`, so destroyed-but-not-null objects are caught.
+- Code reachable during `OnDestroy`/`OnApplicationQuit` must treat "already torn down" as a silent no-op. Mirror the existing guards — the null-safe `BroAudio.Manager` (returns null when there's no instance) and `InstanceWrapper<T>.IsAvailable()` — instead of dereferencing `SoundManager.Instance` directly in teardown paths.
+- For `[Flags]` enums use the `FlagsExtension` helpers / the `Contains` extension rather than `Enum.HasFlag` (avoids boxing).
+
+## Editor conventions
+- User-facing editor strings are **not hardcoded**: add an entry to the `Instruction` enum (respecting its numeric range grouping) and fetch it via `BroInstructionHelper.GetText(Instruction.X)`, backed by the `BroInstruction` asset.
+- Persistent, shareable settings/toggles belong in the `EditorSetting` ScriptableObject (`BroEditorUtility.EditorSetting`; runtime-facing config via `RuntimeSetting`). Only per-developer, non-VCS state (e.g. last-edited asset) goes in `EditorPrefs`, keyed by `PlayerSettings.productGUID`.
+- Custom inspectors/windows derive from `MiEditor` / `MiEditorWindow` (auto wide-mode + rect line-counting); prefer the rect-layout helpers in `EditorScriptingExtension` over ad-hoc `EditorGUILayout`. Reference serialized properties through each type's nested `NameOf` class, not string literals.
+
 ## Auto-generated code
 `Runtime/Player/AutoGeneratedCode/` (AudioSource and audio-effect filter proxies) is produced by `Editor/DevTools/AudioProxyModifierCodeGenerator.cs` via the Dev Tools window. Change the generator and regenerate — don't hand-edit the output.
 
 ## Style
-Defer to `.editorconfig`.
+Defer to `.editorconfig` (4-space indent, CRLF, no final newline; `_camelCase` private fields, `PascalCase` types/public fields, `I`-prefixed interfaces; explicit type over `var` for built-ins). Public serialized data prefers `[field: SerializeField] public T X { get; private set; }`.
 
 ## Enforced by hooks (`.claude/settings.json`)
 These run automatically — don't restate them as rules, just know they'll block/act:

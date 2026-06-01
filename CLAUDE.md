@@ -11,7 +11,7 @@ No CLI build/test pipeline — everything runs from the Unity Editor (Unity 6000
 - Player build / package export: `BroProjectBuilder.Build()` and `PackageExporter` in `Editor/DevTools/`.
 
 ## Tech Stack
-Unity 6000.3.9f1 (Unity 6.3), C#. Distributed package version in `Assets/BroAudio/package.json` (declared min `2020.3`).
+C#, Unity. Developed on Unity 6 (6000.3.9f1), but the distributed package declares a minimum of `2020.3` (`Assets/BroAudio/package.json`) — keep runtime code within that API floor rather than reaching for newer-Editor-only APIs.
 
 ## Assemblies
 Two assemblies; put new files (and their `using` directives) in the matching one:

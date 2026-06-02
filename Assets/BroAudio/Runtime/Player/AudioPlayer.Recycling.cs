@@ -35,6 +35,10 @@ namespace Ami.BroAudio.Runtime
                 MixerPool?.ReturnTrack(TrackType, track);
             }
             TrackType = AudioTrackType.Generic;
+#if !UNITY_WEBGL
+            _trackReleasedByVirtual = false;
+            _virtualElapsed = 0f;
+#endif
             MixerPool?.ReturnPlayer(this);
 
             if (_decorators != null)

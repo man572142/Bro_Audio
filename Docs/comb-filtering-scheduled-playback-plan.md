@@ -4,25 +4,36 @@
 
 **No, the comb-filtering prevention does not take scheduled playback into account.**
 
-Comb-filtering decides whether to reject a play by comparing **game-clock** timestamps
-(`Time.unscaledTime`, via `TimeExtension.UnscaledCurrentFrameBeganTime`), captured at the
-moment `Play()` is invoked / when the player actually starts. Scheduled playback, on the
-other hand, lives entirely on the **DSP clock** (`AudioSettings.dspTime`) and defers the
-audible onset to a future time. The two clocks are never reconciled inside the
-comb-filtering rule, so a sound that is *scheduled* (or delayed) to be audible far in the
-future is treated as if it were sounding "right now." This produces false rejections in
-both directions:
+The comb-filtering rule never reasons about an *as-yet-unstarted* play's future audible
+onset — neither a pending previous one nor the incoming one being validated. It only knows
+two things: the game-clock "now" (`TimeExtension.UnscaledCurrentFrameBeganTime`) and each
+tracked player's `PlaybackStartingTime`. Crucially, `PlaybackStartingTime` is stamped **after**
+the coroutine's `yield return WaitForScheduledStartTime()` completes
+(`AudioPlayer.Playback.cs:137-160`), so for a scheduled/delayed play it stays `0` the entire
+time the play is pending, and is only set (to the game-clock onset) once the sound actually
+becomes audible. Scheduled playback itself lives entirely on the **DSP clock**
+(`AudioSettings.dspTime`, via `ScheduledStartTime`), and that future onset is never compared
+against. The breakage is therefore not a *wrong recorded timestamp* — once a scheduled sound
+has started, `PlaybackStartingTime` is a fine onset proxy — but two **pre-onset window**
+problems:
 
-- A new immediate play can be rejected because a previously-queued **scheduled** instance
-  of the same sound is still sitting in the comb-filtering preventer with a `0`
-  (not-yet-started) timestamp, which the rule reads as "same frame."
-- A new **scheduled** (or `SetDelay`/`clip.Delay`) play can be rejected because an instance
-  that is actually audible *now* was registered moments earlier — even though the new one
-  won't be heard for seconds.
+- **A pending scheduled previous poisons immediate plays (the `0` sentinel).** While a
+  scheduled instance waits, its `PlaybackStartingTime == 0`, so the rule's
+  `previousIsInQueue = Mathf.Approximately(previousPlayTime, 0f)` is `true`, forcing
+  `isSameFrame = true`. The code comment assumes "the current and the previous will end up
+  being played in the same frame" — false when the previous one is parked on a long schedule.
+  With the default `_ignoreCombFilteringIfSameFrame = false` and same position, a new
+  *immediate* play of that clip is rejected by an instance that won't be heard for seconds.
+- **An incoming play's own future onset is ignored.** The comb check runs synchronously in
+  `SoundManager.IsPlayable` at the `Play()` call — *before* the coroutine and its scheduled
+  wait. So `Play(A).SetScheduledStartTime(dsp + 10)` (or `SetDelay`/`clip.Delay`) is validated
+  against "now" and compared to an instance of A audible right now → `difference ≈ 0` →
+  rejected, even though its real onset is 10 s out.
 
 Comb filtering is fundamentally about whether two copies of the same clip become *audible*
 within a ~40 ms window. With scheduling, the audible onset is `ScheduledStartTime` (a DSP
-time), not the `Play()` call time — and that is precisely the value the current rule ignores.
+time), not the `Play()` call time and not the `0`-sentinel — and neither of those is what the
+rule compares.
 
 ---
 
@@ -87,8 +98,8 @@ time), not the `Play()` call time — and that is precisely the value the curren
 | | Comb-filtering rule | Scheduled playback |
 |---|---|---|
 | Clock | `Time.unscaledTime` (game) | `AudioSettings.dspTime` (audio) |
-| Reference moment | `Play()` call / actual start | future `ScheduledStartTime` |
-| Recorded for next comparison | `PlaybackStartingTime` (game clock, or `0` while waiting) | `ScheduledStartTime` (never read by the rule) |
+| Reference moment | `Play()`-call "now" vs. previous player's onset | future `ScheduledStartTime` |
+| Recorded for next comparison | `PlaybackStartingTime` — `0` until the scheduled wait ends, then the game-clock onset | `ScheduledStartTime` (never read by the rule) |
 | Evaluated | synchronously in `IsPlayable`, before scheduling resolves | asynchronously, frames/seconds later |
 
 ---

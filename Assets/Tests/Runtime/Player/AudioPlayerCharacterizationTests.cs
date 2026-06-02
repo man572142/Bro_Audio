@@ -3927,10 +3927,21 @@ namespace Ami.BroAudio.Tests
             Assert.IsTrue(_go.GetComponent<AudioSource>().isPlaying,
                 "AudioSource.isPlaying must be true after PlayScheduled (even before scheduled start)");
 
-            // Wait for the scheduled end time to pass — audio should stop.
-            yield return new WaitForSeconds(startDelay + duration + Time.deltaTime);
+            // Poll for isPlaying to flip rather than sleeping for a fixed duration.
+            // ScheduledEndTime is anchored to the DSP (audio hardware) clock, but
+            // WaitForSeconds uses the game clock — the two drift, and the audio
+            // buffer adds up to ~21 ms of additional latency before isPlaying flips.
+            // A one-frame margin is smaller than that latency, causing a race.
+            float timeout = startDelay + duration + 0.5f;
+            float elapsed = 0f;
+            AudioSource audioSource = _go.GetComponent<AudioSource>();
+            while (audioSource.isPlaying && elapsed < timeout)
+            {
+                yield return null;
+                elapsed += Time.deltaTime;
+            }
 
-            Assert.IsFalse(_go.GetComponent<AudioSource>().isPlaying,
+            Assert.IsFalse(audioSource.isPlaying,
                 "AudioSource must have stopped at or after ScheduledEndTime");
 
             // Clean up (player may still be active since we bypassed normal playback).

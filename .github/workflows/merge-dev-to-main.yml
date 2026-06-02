@@ -1,0 +1,75 @@
+# .github/workflows/merge-dev-to-main.yml
+name: Merge dev → main
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_branch:
+        description: Branch to merge from
+        type: string
+        default: DEV
+      target_branch:
+        description: Branch to merge into
+        type: string
+        default: main
+      excluded_files:
+        description: Space-separated files to restore from target after merge
+        type: string
+        default: CLAUDE.md AGENTS.md
+      excluded_dirs:
+        description: Space-separated directories to remove after merge
+        type: string
+        default: .claude .agents
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.target_branch }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge ${{ inputs.source_branch }} with exclusions
+        env:
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          EXCLUDED_FILES: ${{ inputs.excluded_files }}
+          EXCLUDED_DIRS: ${{ inputs.excluded_dirs }}
+        run: |
+          if ! git merge "origin/$SOURCE_BRANCH" --no-commit --no-ff; then
+            conflicts=$(git diff --name-only --diff-filter=U | tr '\n' ' ')
+            echo "::error::Merge conflict between $SOURCE_BRANCH and $TARGET_BRANCH in: $conflicts"
+            echo "::error::Resolve on $SOURCE_BRANCH (merge $TARGET_BRANCH into it, fix conflicts, push) then re-run this workflow."
+            git merge --abort
+            exit 1
+          fi
+
+          for file in $EXCLUDED_FILES; do
+            if git cat-file -e "$TARGET_BRANCH:$file" 2>/dev/null; then
+              git checkout "$TARGET_BRANCH" -- "$file"
+            else
+              echo "::warning::$file not present on $TARGET_BRANCH — skipping restore"
+            fi
+          done
+
+          for dir in $EXCLUDED_DIRS; do
+            if [ -e "$dir" ]; then
+              git rm -rf "$dir"
+            else
+              echo "::warning::$dir not found after merge — nothing to remove"
+            fi
+          done
+
+          git commit -m "Merge $SOURCE_BRANCH into $TARGET_BRANCH"
+
+      - name: Push
+        run: git push origin ${{ inputs.target_branch }}

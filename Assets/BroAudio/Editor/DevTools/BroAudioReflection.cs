@@ -257,7 +257,7 @@ namespace Ami.Extension.Reflection
             {
                 UnityEngine.Debug.LogError(Utility.LogTitle + $"Cast GUID failed! object :{obj}");
             }
-            return guid != default && !guid.Empty();
+            return guid != default(GUID);
         }
     }
 }

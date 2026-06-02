@@ -207,9 +207,14 @@ public class FieldUsageFinder : EditorWindow
         return new MultiColumnHeaderState.Column
         {
             headerContent = new GUIContent(header),
+#if UNITY_6000_0_OR_NEWER
+            headerTextAlignment = TextAnchor.MiddleLeft,
+            sortingArrowAlignment = TextAnchor.MiddleCenter,
+#else
             headerTextAlignment = TextAlignment.Left,
-            sortedAscending = true,
             sortingArrowAlignment = TextAlignment.Center,
+#endif
+            sortedAscending = true,
             width = width,
             minWidth = 50,
             autoResize = true,

@@ -65,6 +65,10 @@ namespace Ami.BroAudio.Runtime
             }
 
             MixerPool?.ReturnTrack(AudioTrackType.Generic, track);
+            // Once unrouted (no mixer group), the source plays at AudioSource.volume directly to the
+            // listener. We normally keep that at full and drive loudness via the track, so preserve
+            // the player's real computed level here to avoid a full-volume blip while released.
+            AudioSource.volume = (_clipVolume.Current * _trackVolume.Current * _audioTypeVolume.Current).ClampNormalize();
             AudioTrack = null; // clears outputAudioMixerGroup and the cached track/send names
             _mixerDecibelVolume = UnSetMixerDecibelVolume; // force a re-read/re-push on re-acquire
             _trackReleasedByVirtual = true;
@@ -83,6 +87,9 @@ namespace Ami.BroAudio.Runtime
 
             AudioTrack = track;
             _trackReleasedByVirtual = false;
+
+            // Hand loudness control back to the mixer track by restoring the source to full volume.
+            AudioSource.volume = AudioConstant.FullVolume;
 
             // _mixerDecibelVolume is UnSet, so UpdateVolume recomputes from the faders and writes
             // to VolumeParaName, which routes to the send param automatically when effects are

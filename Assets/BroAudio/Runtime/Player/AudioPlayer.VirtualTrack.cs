@@ -23,7 +23,7 @@ namespace Ami.BroAudio.Runtime
         /// </summary>
         private void MonitorVirtualTrack()
         {
-            if (!HasStartedPlaying || IsStopping || TrackType != AudioTrackType.Generic)
+            if (!HasStartedPlaying || IsStopping || TrackType != AudioTrackType.Generic || !IsPlaying)
             {
                 return;
             }

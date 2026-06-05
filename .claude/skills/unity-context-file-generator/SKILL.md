@@ -1,7 +1,6 @@
 ---
 name: unity-context-file-generator
-description: Generate, audit, or improve a Unity project's CLAUDE.md for Claude Code. Use this skill whenever the user wants to create, audit, refactor, or debug a CLAUDE.md file for a Unity (C#/.NET) project — including when they say "Claude keeps ignoring X" in a Unity repo, mention .asmdef structure, or want to set up Claude Code for their Unity workflow. Also triggers for requests about Unity project context files, Unity-specific agent rules, or structuring CLAUDE.md around Unity conventions (assembly definitions, serialization, Editor vs Runtime, ScriptableObjects, Addressables, etc.). Do NOT use for non-Unity .NET or general C# projects — use the general context-file-generator skill instead.
----
+description: Generate, audit, or improve a Unity project's CLAUDE.md for Claude Code. Use this skill whenever the user wants to create, audit, refactor, or debug a CLAUDE.md file for a Unity (C#/.NET) project 
 
 # Unity CLAUDE.md Generator & Auditor
 

@@ -65,8 +65,8 @@ namespace Ami.BroAudio.Runtime
             
             void HandleCurrentBGM()
             {
-                IsWaitingForTransition = (_transition == Transition.Default || _transition == Transition.OnlyFadeOut) &&
-                                         CurrentBGMPlayer.IsPlaying;
+                bool fadeOutTransition = _transition == Transition.Default || _transition == Transition.OnlyFadeOut;
+                IsWaitingForTransition = fadeOutTransition && CurrentBGMPlayer && CurrentBGMPlayer.IsActive;
                 if (IsWaitingForTransition)
                 {
                     StopCurrentPlayer(FinishTransition);

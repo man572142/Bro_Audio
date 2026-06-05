@@ -107,15 +107,16 @@ namespace Ami.BroAudio.Runtime
             SetPlayPosition(sampleRate);
             SetInitialPitch(_pref.Entity, audioTypePref);
             SetSpatial(_pref);
-#if !UNITY_WEBGL
-            AudioTrack = MixerPool.GetTrack(TrackType);
-#endif
-
             if (IsDominator)
             {
                 TrackType = AudioTrackType.Dominator;
             }
-            else
+
+#if !UNITY_WEBGL
+            AudioTrack = MixerPool.GetTrack(TrackType);
+#endif
+
+            if (!IsDominator)
             {
                 SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
             }

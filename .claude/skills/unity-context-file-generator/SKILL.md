@@ -1,6 +1,7 @@
 ---
 name: unity-context-file-generator
 description: Generate, audit, or improve a Unity project's CLAUDE.md for Claude Code. Use this skill whenever the user wants to create, audit, refactor, or debug a CLAUDE.md file for a Unity (C#/.NET) project 
+---
 
 # Unity CLAUDE.md Generator & Auditor
 

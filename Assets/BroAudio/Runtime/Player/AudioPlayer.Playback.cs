@@ -107,50 +107,10 @@ namespace Ami.BroAudio.Runtime
             }
             else
             {
-                _clipVolume.Complete(0f, false);
-                int sampleRate = audioClip.frequency;
-                AudioSource.clip = audioClip;
-                AudioSource.priority = _pref.Entity.Priority;
-
-                SetPlayPosition(sampleRate);
-                SetInitialPitch(_pref.Entity, audioTypePref);
-                SetSpatial(_pref);
-                if (IsDominator)
-                {
-                    TrackType = AudioTrackType.Dominator;
-                }
-
-#if !UNITY_WEBGL
-                AudioTrack = MixerPool.GetTrack(TrackType);
-#endif
-
-                if (!IsDominator)
-                {
-                    SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
-                }
+                SetupFreshSource(audioClip, audioTypePref);
             }
 
-            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
-            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : AudioSettings.dspTime;
-            double endDspTime;
-            if (isResuming)
-            {
-                // Slide the stored end time forward by the pause duration; also covers one-shots where ScheduledEndTime stays 0 and would be wrongly recomputed as a fresh duration.
-                endDspTime = _playbackEndDspTime + (AudioSettings.dspTime - _pauseDspTime);
-            }
-            else
-            {
-                endDspTime = _pref.ScheduledEndTime <= 0 ? startBaseTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
-                if (_pref.HasLoop() && _pref.ScheduledStartTime <= 0)
-                {
-                    _pref.ScheduledStartTime = startBaseTime;
-                    _pref.ScheduledEndTime = endDspTime;
-                }
-                else if (_pref.ScheduledStartTime > 0 && _pref.ScheduledEndTime <= 0)
-                {
-                    _pref.ScheduledEndTime = endDspTime;
-                }
-            }
+            double endDspTime = ResolveEndDspTime(isResuming);
             _playbackEndDspTime = endDspTime;
 
             if (!isResuming)
@@ -280,7 +240,56 @@ namespace Ami.BroAudio.Runtime
         {
             AudioSource.timeSamples = GetSample(sampleRate, _clip.StartPosition);
         }
-        
+
+        // Full first-play setup: bind the clip to the source, position the playhead, and acquire the mixer track/effects.
+        private void SetupFreshSource(AudioClip audioClip, IAudioPlaybackPref audioTypePref)
+        {
+            _clipVolume.Complete(0f, false);
+            int sampleRate = audioClip.frequency;
+            AudioSource.clip = audioClip;
+            AudioSource.priority = _pref.Entity.Priority;
+
+            SetPlayPosition(sampleRate);
+            SetInitialPitch(_pref.Entity, audioTypePref);
+            SetSpatial(_pref);
+            if (IsDominator)
+            {
+                TrackType = AudioTrackType.Dominator;
+            }
+
+#if !UNITY_WEBGL
+            AudioTrack = MixerPool.GetTrack(TrackType);
+#endif
+
+            if (!IsDominator)
+            {
+                SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
+            }
+        }
+
+        private double ResolveEndDspTime(bool isResuming)
+        {
+            if (isResuming)
+            {
+                // Slide the stored end time forward by the pause duration; also covers one-shots where ScheduledEndTime stays 0 and would be wrongly recomputed as a fresh duration.
+                return _playbackEndDspTime + (AudioSettings.dspTime - _pauseDspTime);
+            }
+
+            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
+            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : AudioSettings.dspTime;
+            double endDspTime = _pref.ScheduledEndTime <= 0 ? startBaseTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
+            if (_pref.HasLoop() && _pref.ScheduledStartTime <= 0)
+            {
+                _pref.ScheduledStartTime = startBaseTime;
+                _pref.ScheduledEndTime = endDspTime;
+            }
+            else if (_pref.ScheduledStartTime > 0 && _pref.ScheduledEndTime <= 0)
+            {
+                _pref.ScheduledEndTime = endDspTime;
+            }
+            return endDspTime;
+        }
+
         private IEnumerator ScheduleNextPlayback(double endDspTime, bool isEnd = false)
         {
             var newPref = _pref;

@@ -43,6 +43,17 @@ namespace Ami.BroAudio.Runtime
             _overrideFade = FadeData.UseClipSetting;
         }
 
+        public override void UpdateInstance(AudioPlayer newInstance)
+        {
+            // Track the live player across loop/chain iterations so transitions act on the playing source.
+            // Write the backing field to skip OnBGMChanged — the logical BGM hasn't changed.
+            if (_currentBGMPlayer == Instance)
+            {
+                _currentBGMPlayer = newInstance;
+            }
+            base.UpdateInstance(newInstance);
+        }
+
         IAudioPlayer IMusicPlayer.SetTransition(Transition transition, StopMode stopMode, float overrideFade)
         {
             _transition = transition;
@@ -53,8 +64,8 @@ namespace Ami.BroAudio.Runtime
 
         public void DoTransition(ref PlaybackPreference pref)
         {
-            // No BGM is playing
-            if (CurrentBGMPlayer == null)
+            // No prior BGM, this player is already current (pause/resume or same-instance replay), or the prior player is gone — stopping it would self-stop mid-PlayControl or double-recycle it.
+            if (CurrentBGMPlayer == null || CurrentBGMPlayer == Instance || !CurrentBGMPlayer.IsActive)
             {
                 CurrentBGMPlayer = Instance;
                 return;

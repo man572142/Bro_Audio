@@ -73,7 +73,6 @@ namespace Ami.BroAudio.Runtime
             {
                 _audioTypeVolume.Complete(audioTypePref.Volume, false);
             }
-            _clipVolume.Complete(0f, false);
             _clip ??= _pref.PickNewClip();
             if (_clip == null)
             {
@@ -100,44 +99,67 @@ namespace Ami.BroAudio.Runtime
                 yield break;
             }
 
-            int sampleRate = audioClip.frequency;
-            AudioSource.clip = audioClip;
-            AudioSource.priority = _pref.Entity.Priority;
-
-            SetPlayPosition(sampleRate);
-            SetInitialPitch(_pref.Entity, audioTypePref);
-            SetSpatial(_pref);
-            if (IsDominator)
+            // Skip full setup on resume: the source is frozen mid-clip and already configured; re-running would leak the held track and rewind the playhead.
+            bool isResuming = _stopMode == StopMode.Pause && HasStartedPlaying;
+            if (isResuming)
             {
-                TrackType = AudioTrackType.Dominator;
+                RebaseScheduleAfterPause();
             }
+            else
+            {
+                _clipVolume.Complete(0f, false);
+                int sampleRate = audioClip.frequency;
+                AudioSource.clip = audioClip;
+                AudioSource.priority = _pref.Entity.Priority;
+
+                SetPlayPosition(sampleRate);
+                SetInitialPitch(_pref.Entity, audioTypePref);
+                SetSpatial(_pref);
+                if (IsDominator)
+                {
+                    TrackType = AudioTrackType.Dominator;
+                }
 
 #if !UNITY_WEBGL
-            AudioTrack = MixerPool.GetTrack(TrackType);
+                AudioTrack = MixerPool.GetTrack(TrackType);
 #endif
 
-            if (!IsDominator)
-            {
-                SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
-            }
-            
-            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
-            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : AudioSettings.dspTime;
-            double endDspTime = _pref.ScheduledEndTime <= 0 ? startBaseTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
-            if (_pref.HasLoop() && _pref.ScheduledStartTime <= 0)
-            {
-                _pref.ScheduledStartTime = startBaseTime;
-                _pref.ScheduledEndTime = endDspTime;
-            }
-            else if (_pref.ScheduledStartTime > 0 && _pref.ScheduledEndTime <= 0)
-            {
-                _pref.ScheduledEndTime = endDspTime;
+                if (!IsDominator)
+                {
+                    SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
+                }
             }
 
-            SchedulePlayback();
-            if (_secondsUntilScheduledStart > 0)
+            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
+            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : AudioSettings.dspTime;
+            double endDspTime;
+            if (isResuming)
             {
-                yield return WaitForScheduledStartTime();
+                // Slide the stored end time forward by the pause duration; also covers one-shots where ScheduledEndTime stays 0 and would be wrongly recomputed as a fresh duration.
+                endDspTime = _playbackEndDspTime + (AudioSettings.dspTime - _pauseDspTime);
+            }
+            else
+            {
+                endDspTime = _pref.ScheduledEndTime <= 0 ? startBaseTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
+                if (_pref.HasLoop() && _pref.ScheduledStartTime <= 0)
+                {
+                    _pref.ScheduledStartTime = startBaseTime;
+                    _pref.ScheduledEndTime = endDspTime;
+                }
+                else if (_pref.ScheduledStartTime > 0 && _pref.ScheduledEndTime <= 0)
+                {
+                    _pref.ScheduledEndTime = endDspTime;
+                }
+            }
+            _playbackEndDspTime = endDspTime;
+
+            if (!isResuming)
+            {
+                SchedulePlayback();
+                if (_secondsUntilScheduledStart > 0)
+                {
+                    yield return WaitForScheduledStartTime();
+                }
             }
 
             if (_decorators.TryGetDecorator<MusicPlayer>(out var musicPlayer))
@@ -150,10 +172,16 @@ namespace Ami.BroAudio.Runtime
                     yield return null;
                 }
             }
-            
-            if (_pref.ScheduledStartTime <= 0)
+
+            // On resume, start is past — UnPause (via StartPlaying) restores playback without rewinding; re-arm the rebased end time after.
+            if (isResuming || _pref.ScheduledStartTime <= 0)
             {
                 StartPlaying();
+            }
+
+            if (isResuming)
+            {
+                ScheduleEndTime();
             }
 
             if (!HasStartedPlaying)
@@ -392,6 +420,7 @@ namespace Ami.BroAudio.Runtime
             {
                 bool hasPaused = _stopMode == StopMode.Pause;
                 _stopMode = StopMode.Pause;
+                _pauseDspTime = AudioSettings.dspTime;
                 if (!hasPaused)
                 {
                     _onPaused?.Invoke(this);
@@ -470,6 +499,8 @@ namespace Ami.BroAudio.Runtime
                     EndPlaying();
                     break;
                 case StopMode.Pause:
+                    // Snapshot freeze time so resume can slide the dsp schedule forward by the pause duration.
+                    _pauseDspTime = AudioSettings.dspTime;
                     AudioSource.Pause();
                     _onPaused?.Invoke(this);
                     break;
@@ -484,6 +515,8 @@ namespace Ami.BroAudio.Runtime
         private void EndPlaying()
         {
             PlaybackStartingTime = 0;
+            _pauseDspTime = 0d;
+            _playbackEndDspTime = 0d;
             _stopMode = default;
             _pref = default;
             IsStopping = false;

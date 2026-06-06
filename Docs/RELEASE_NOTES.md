@@ -75,6 +75,13 @@ tables.
 - Playback validation paths were tightened.
 - Addressable cleanup is now scoped via conditional compilation so it
   no longer runs in builds that do not include Addressables.
+- **Virtual AudioTrack recycling for Generic players** – Generic players
+  now release their mixer track back to the pool while inaudible and
+  reacquire one on demand, reducing the number of live mixer tracks
+  (#76). The player's real computed level is preserved on
+  `AudioSource.volume` while the track is released so virtual players do
+  not leak to the listener at full volume, and mixer control is restored
+  on reacquire.
 - Renamed the two Addressable toggles for clarity: the Clips tab toggle
   is now **"Addressable Audio Clips"** and the Overall tab toggle is now
   **"Addressable Entity Asset"**, each tooltip naming the other. The
@@ -91,6 +98,9 @@ tables.
 - Suppress the "invalid ID" error when the audio player is stopped in
   the same frame it was played.
 - Fix the `audioTypePref` typo in editor preference handling.
+- Fix follow-target plays being treated as global by the comb-filtering
+  distance rule, which caused `DefaultPlaybackGroup`'s "Ignore If
+  Distance Is Greater Than" check to be skipped (#73).
 
 ---
 

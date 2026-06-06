@@ -8,6 +8,8 @@ namespace Ami.BroAudio.Runtime
     public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
         private double _secondsUntilScheduledStart;
+        private double _pauseDspTime;
+        private double _playbackEndDspTime;
 
         private void SchedulePlayback()
         {
@@ -18,9 +20,28 @@ namespace Ami.BroAudio.Runtime
                 _secondsUntilScheduledStart = _pref.ScheduledStartTime - dspTime;
             }
 
+            ScheduleEndTime();
+        }
+
+        private void ScheduleEndTime()
+        {
             if (_pref.ScheduledEndTime > 0d)
             {
                 AudioSource.SetScheduledEndTime(_pref.ScheduledEndTime);
+            }
+        }
+
+        // Slide dsp-time schedule forward by the pause duration; caller re-arms the end via ScheduleEndTime after UnPause (PlayScheduled would restart the source).
+        private void RebaseScheduleAfterPause()
+        {
+            double pauseDuration = AudioSettings.dspTime - _pauseDspTime;
+            if (_pref.ScheduledStartTime > 0)
+            {
+                _pref.ScheduledStartTime += pauseDuration;
+            }
+            if (_pref.ScheduledEndTime > 0)
+            {
+                _pref.ScheduledEndTime += pauseDuration;
             }
         }
 

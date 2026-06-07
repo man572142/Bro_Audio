@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using static UnityEditor.EditorGUILayout;
+﻿using UnityEditor;
+using UnityEngine;
 
 namespace Ami.BroAudio.Editor.Setting
 {
@@ -8,6 +8,7 @@ namespace Ami.BroAudio.Editor.Setting
         public override string PageTitle => "Transition Easing";
         public override string PageDescription => "Choose the default easing curve for fade‑ins and fade‑outs.";
         public override SetupDepth RequiredDepth => SetupDepth.Comprehensive;
+
         protected override (string Name, string Url)[] DocReferences { get; set; } =
         {
             ("#Fading", "https://man572142s-organization.gitbook.io/broaudio/core-features/library-manager/design-the-sound/fade-in-out-and-cross-fade"),
@@ -18,14 +19,14 @@ namespace Ami.BroAudio.Editor.Setting
         public override void DrawContent()
         {
             GUILayout.FlexibleSpace();
-            using (Section.NewSection("Default Easing", GetControlRect()))
+            using (Section.NewSection("Default Easing", EditorGUILayout.GetControlRect()))
             {
-                Drawer.DrawDefaultEasing(GetControlRect(), GetControlRect());
+                Drawer.DrawDefaultEasing(default, GetControlRect);
             }
 
-            using (Section.NewSection("Seamless Loop Easing", GetControlRect()))
+            using (Section.NewSection("Seamless Loop Easing", EditorGUILayout.GetControlRect()))
             {
-                Drawer.DrawSeamlessLoopEasing(GetControlRect(), GetControlRect());
+                Drawer.DrawSeamlessLoopEasing(default, GetControlRect);
             }
         }
     }

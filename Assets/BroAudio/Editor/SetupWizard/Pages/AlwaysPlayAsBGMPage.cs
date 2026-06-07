@@ -1,7 +1,6 @@
 ﻿using Ami.Extension;
 using UnityEditor;
 using UnityEngine;
-using static UnityEditor.EditorGUILayout;
 
 namespace Ami.BroAudio.Editor.Setting
 {
@@ -22,7 +21,7 @@ namespace Ami.BroAudio.Editor.Setting
             GUILayout.FlexibleSpace();
             using (new EditorScriptingExtension.LabelWidthScope(EditorGUIUtility.labelWidth * 1.2f))
             {
-                Drawer.DrawBGMSetting(GetControlRect(), GetControlRect(), GetControlRect());
+                Drawer.DrawBGMSetting(default, GetControlRect);
             }
         }
     }

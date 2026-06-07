@@ -20,6 +20,8 @@ namespace Ami.BroAudio.Editor.Setting
         private readonly GUIContent _buttonGUIContent = new GUIContent("Open Library Manager", 
             "It's recommended to open the Library Manager so you can see the difference side by side.\n" +
             "If you don't see any changes, try hovering your mouse over the Library Manager window to trigger a repaint.");
+
+        protected readonly Func<Rect, Rect> GetControlRect = _ => EditorGUILayout.GetControlRect();
         public abstract string PageTitle { get; }
         public abstract string PageDescription { get; }
         public virtual SetupDepth RequiredDepth => SetupDepth.Essential;

@@ -1,17 +1,13 @@
+using System;
 using Ami.Extension;
 using Ami.Extension.Reflection;
 using System.IO;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.Compilation;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Audio;
 using Ami.BroAudio.Data;
-using Ami.BroAudio.Editor;
-#if UNITY_2022_3_OR_NEWER
-using UnityEditor.Build;
-#endif
 using static Ami.BroAudio.Editor.IconConstant;
 using static Ami.BroAudio.Editor.Section;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
@@ -63,6 +59,7 @@ namespace Ami.BroAudio.Editor.Setting
         private SerializedObject _runtimeSettingSO = null;
         private SerializedObject _editorSettingSO = null;
         private PreferencesDrawer _preferenceDrawer;
+        private Func<Rect, Rect> _getRectFunc;
 
         public override float SingleLineSpace => EditorGUIUtility.singleLineHeight + 3f;
 
@@ -110,6 +107,7 @@ namespace Ami.BroAudio.Editor.Setting
 
         private void OnEnable()
         {
+            _getRectFunc = GetRectAndIterateLine;
             InitTabsLabel();
             InitGUIContents();
             _hasOutputAssetPath = Directory.Exists(BroEditorUtility.AssetOutputPath);
@@ -230,14 +228,12 @@ namespace Ami.BroAudio.Editor.Setting
             DrawEmptyLine(1);
             using (NewSection("BGM", GetRectAndIterateLine(drawPos), 1.3f)) 
             {
-                _preferenceDrawer.DrawBGMSetting(
-                    GetRectAndIterateLine(drawPos), GetRectAndIterateLine(drawPos), GetRectAndIterateLine(drawPos).SetWidth(250f));
+                _preferenceDrawer.DrawBGMSetting(drawPos, _getRectFunc);
             }
             DrawEmptyLine(1);
             using (NewSection("Chained Play Mode", GetRectAndIterateLine(drawPos), 1.3f))
             {
-                _preferenceDrawer.DrawChainedPlayMode(
-                    GetRectAndIterateLine(drawPos), GetRectAndIterateLine(drawPos), GetRectAndIterateLine(drawPos));
+                _preferenceDrawer.DrawChainedPlayMode(drawPos, _getRectFunc);
             }
 
             // To make room for other functions to use exposed parameters, we only use AudioSource.pitch for now
@@ -245,18 +241,17 @@ namespace Ami.BroAudio.Editor.Setting
             DrawEmptyLine(1);
             using (NewSection("Default Easing", GetRectAndIterateLine(drawPos)))
             {
-                _preferenceDrawer.DrawDefaultEasing(GetRectAndIterateLine(drawPos), GetRectAndIterateLine(drawPos));
+                _preferenceDrawer.DrawDefaultEasing(drawPos, _getRectFunc);
             }
             DrawEmptyLine(1);
             using (NewSection("Seamless Loop Easing", GetRectAndIterateLine(drawPos)))
             {
-                _preferenceDrawer.DrawSeamlessLoopEasing(GetRectAndIterateLine(drawPos), GetRectAndIterateLine(drawPos));
+                _preferenceDrawer.DrawSeamlessLoopEasing(drawPos, _getRectFunc);
             }
             DrawEmptyLine(1);
             using (NewSection("Audio Player", GetRectAndIterateLine(drawPos), 1.65f))
             {
-                _preferenceDrawer.DrawAudioPlayerSetting(
-                    GetRectAndIterateLine(drawPos), GetRectAndIterateLine(drawPos));
+                _preferenceDrawer.DrawAudioPlayerSetting(drawPos, _getRectFunc);
             }
             DrawEmptyLine(1);
             using (NewSection(ProjectSettings, GetRectAndIterateLine(drawPos)))
@@ -432,8 +427,7 @@ namespace Ami.BroAudio.Editor.Setting
             drawPosition.xMax -= Gap;
             using (NewSection(_addressableConversionGUIContent, GetRectAndIterateLine(drawPosition)))
             {
-                _preferenceDrawer.DrawAddressableNeverAskOptions(
-                    GetRectAndIterateLine(drawPosition), GetRectAndIterateLine(drawPosition));
+                _preferenceDrawer.DrawAddressableNeverAskOptions(drawPosition, _getRectFunc);
             }
 
             using (NewSection(_addressableSettingsGUIContent, GetRectAndIterateLine(drawPosition)))

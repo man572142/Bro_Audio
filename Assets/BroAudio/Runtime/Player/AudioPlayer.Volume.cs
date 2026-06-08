@@ -62,9 +62,9 @@ namespace Ami.BroAudio.Runtime
             _audioTypeVolume = new Fader(DefaultTrackVolume, this);
         }
 
-        public void UpdateVolume()
+        public void UpdateVolume(bool forceUpdate = false)
         {
-            if (!HasStartedPlaying)
+            if (!HasStartedPlaying && !forceUpdate)
             {
                 return;
             }

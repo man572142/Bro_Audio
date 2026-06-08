@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -26,6 +27,7 @@ namespace Ami.BroAudio.Runtime
         private float _overrideFade = FadeData.UseClipSetting;
 
         public bool IsWaitingForTransition { get; private set; }
+        public bool NeedTransition => CurrentBGMPlayer != null && CurrentBGMPlayer.IsActive && CurrentBGMPlayer != Instance;
 
         public MusicPlayer(AudioPlayer audioPlayer) : base(audioPlayer)
         {
@@ -65,7 +67,7 @@ namespace Ami.BroAudio.Runtime
         public void DoTransition(ref PlaybackPreference pref)
         {
             // No prior BGM, this player is already current (pause/resume or same-instance replay), or the prior player is gone — stopping it would self-stop mid-PlayControl or double-recycle it.
-            if (CurrentBGMPlayer == null || CurrentBGMPlayer == Instance || !CurrentBGMPlayer.IsActive)
+            if (!NeedTransition)
             {
                 CurrentBGMPlayer = Instance;
                 return;

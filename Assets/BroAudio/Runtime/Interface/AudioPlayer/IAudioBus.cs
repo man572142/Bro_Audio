@@ -2,6 +2,6 @@ namespace Ami.BroAudio.Runtime
 {
     public interface IAudioBus
     {
-        void UpdateVolume();
+        void UpdateVolume(bool forceUpdate = false);
     } 
 }

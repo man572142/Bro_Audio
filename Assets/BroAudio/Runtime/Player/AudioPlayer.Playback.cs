@@ -101,16 +101,28 @@ namespace Ami.BroAudio.Runtime
 
             // Skip full setup on resume: the source is frozen mid-clip and already configured; re-running would leak the held track and rewind the playhead.
             bool isResuming = _stopMode == StopMode.Pause && HasStartedPlaying;
+            bool isMusicPlayer = _decorators.TryGetDecorator<MusicPlayer>(out var musicPlayer);
             if (isResuming)
             {
                 RebaseScheduleAfterPause();
             }
             else
             {
-                SetupFreshSource(audioClip, audioTypePref);
+                AudioSource.clip = audioClip;
+                AudioSource.priority = _pref.Entity.Priority;
+                AudioSource.timeSamples = GetSample(audioClip.frequency, _clip.StartPosition);
+                SetInitialPitch(_pref.Entity, audioTypePref);
+                SetSpatial(_pref);
+                SetupAudioTrack(audioTypePref);
+            }
+            
+            bool clipVolumeReady = !isMusicPlayer || !musicPlayer.NeedTransition;
+            if (clipVolumeReady)
+            {
+                SetupClipVolume();
             }
 
-            double endDspTime = ResolveEndDspTime(isResuming);
+            ResolveScheduledTiming(isResuming, out double endDspTime);
             _playbackEndDspTime = endDspTime;
 
             if (!isResuming)
@@ -122,11 +134,15 @@ namespace Ami.BroAudio.Runtime
                 }
             }
 
-            if (_decorators.TryGetDecorator<MusicPlayer>(out var musicPlayer))
+            if (isMusicPlayer)
             {
                 AudioSource.reverbZoneMix = 0f;
                 AudioSource.priority = AudioConstant.HighestPriority;
                 musicPlayer.DoTransition(ref _pref);
+                if (!clipVolumeReady)
+                {
+                    SetupClipVolume();
+                }
                 while (musicPlayer.IsWaitingForTransition)
                 {
                     yield return null;
@@ -151,20 +167,14 @@ namespace Ami.BroAudio.Runtime
                 _onStart = null;
                 _onUpdate?.Invoke(this);
             }
-
-            float targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
-            if (_pref.HasFadeIn(_clip.FadeIn, out var fadeIn, out var fadeInEase))
+            
+            if (_pref.TryGetFadeIn(_clip.FadeIn, out var fadeIn, out var fadeInEase))
             {
-                _clipVolume.SetTarget(targetClipVolume);
                 _clipVolume.Fade(fadeIn, fadeInEase, _onUpdate, (IAudioPlayer)this);
                 while (_clipVolume.IsFading)
                 {
                     yield return null;
                 }
-            }
-            else
-            {
-                _clipVolume.Complete(targetClipVolume);
             }
 
             if (_pref.HasLoop() && _pref.ChainedModeStage != PlaybackStage.End)
@@ -177,7 +187,7 @@ namespace Ami.BroAudio.Runtime
                 this.RestartCoroutine(ScheduleNextPlayback(endDspTime), ref _handoverScheduleCoroutine);
             }
 
-            if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
+            if (_pref.TryGetFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
             {
                 double fadeOutDspTime = endDspTime - fadeOut;
                 while (AudioSettings.dspTime < fadeOutDspTime)
@@ -236,22 +246,8 @@ namespace Ami.BroAudio.Runtime
             _stopMode = default;
         }
 
-        private void SetPlayPosition(int sampleRate)
+        private void SetupAudioTrack(IAudioPlaybackPref audioTypePref)
         {
-            AudioSource.timeSamples = GetSample(sampleRate, _clip.StartPosition);
-        }
-
-        // Full first-play setup: bind the clip to the source, position the playhead, and acquire the mixer track/effects.
-        private void SetupFreshSource(AudioClip audioClip, IAudioPlaybackPref audioTypePref)
-        {
-            _clipVolume.Complete(0f, false);
-            int sampleRate = audioClip.frequency;
-            AudioSource.clip = audioClip;
-            AudioSource.priority = _pref.Entity.Priority;
-
-            SetPlayPosition(sampleRate);
-            SetInitialPitch(_pref.Entity, audioTypePref);
-            SetSpatial(_pref);
             if (IsDominator)
             {
                 TrackType = AudioTrackType.Dominator;
@@ -266,19 +262,30 @@ namespace Ami.BroAudio.Runtime
                 SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
             }
         }
+        
+        private void SetupClipVolume()
+        {
+            float targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
+            _clipVolume.Complete(_pref.HasFadeIn(_clip.FadeIn) ? 0f : targetClipVolume);
+            _clipVolume.SetTarget(targetClipVolume);
+            UpdateVolume(true);
+        }
 
-        private double ResolveEndDspTime(bool isResuming)
+        private void ResolveScheduledTiming(bool isResuming, out double endDspTime)
         {
             if (isResuming)
             {
                 // Slide the stored end time forward by the pause duration; also covers one-shots where ScheduledEndTime stays 0 and would be wrongly recomputed as a fresh duration.
-                return _playbackEndDspTime + (AudioSettings.dspTime - _pauseDspTime);
+                endDspTime = _playbackEndDspTime + (AudioSettings.dspTime - _pauseDspTime);
+                return;
             }
 
+            bool isFirstLoopIteration = _pref.HasLoop() && _pref.ScheduledStartTime <= 0;
+            double warmUpTime = isFirstLoopIteration ? SoundManager.Instance.ScheduledPlaybackWarmUpTime : 0d;
+            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : AudioSettings.dspTime + warmUpTime;
             double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
-            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : AudioSettings.dspTime;
-            double endDspTime = _pref.ScheduledEndTime <= 0 ? startBaseTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
-            if (_pref.HasLoop() && _pref.ScheduledStartTime <= 0)
+            endDspTime = _pref.ScheduledEndTime > 0 ? _pref.ScheduledEndTime : startBaseTime + pitchAdjustedDuration;
+            if (isFirstLoopIteration)
             {
                 _pref.ScheduledStartTime = startBaseTime;
                 _pref.ScheduledEndTime = endDspTime;
@@ -287,7 +294,6 @@ namespace Ami.BroAudio.Runtime
             {
                 _pref.ScheduledEndTime = endDspTime;
             }
-            return endDspTime;
         }
 
         private IEnumerator ScheduleNextPlayback(double endDspTime, bool isEnd = false)
@@ -301,7 +307,7 @@ namespace Ami.BroAudio.Runtime
             double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
             newPref.ScheduledStartTime = endDspTime;
             newPref.ScheduledEndTime = endDspTime + pitchAdjustedDuration;
-            if (!isEnd && _pref.IsLoop(LoopType.SeamlessLoop) && newPref.HasFadeOut(_clip.FadeOut, out float fadeOut, out _))
+            if (!isEnd && _pref.IsLoop(LoopType.SeamlessLoop) && newPref.TryGetFadeOut(_clip.FadeOut, out float fadeOut, out _))
             {
                 newPref.ScheduledStartTime -= fadeOut;
                 newPref.ScheduledEndTime -= fadeOut;
@@ -476,7 +482,7 @@ namespace Ami.BroAudio.Runtime
 
             #region FadeOut
             bool hasExplicitOverride = _pref.HasFadeOutOverride;
-            if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
+            if (_pref.TryGetFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
             {
                 // After end-handover, the in-flight Fade captured the old player's _onUpdate before
                 // BeginHandover ran. Restart it with a null callback to keep the ce15a806 invariant.

@@ -72,19 +72,21 @@ namespace Ami.BroAudio.Runtime
             _fadeOutData.SetEase(ease);
         }
 
-        public bool HasFadeIn(float clipFade, out float fadeIn, out Ease ease)
+        public bool TryGetFadeIn(float clipFade, out float fadeIn, out Ease ease)
         {
-            return HasFading(clipFade, SoundManager.FadeInEase, ref _fadeInData, out fadeIn, out ease);
+            return TryGetOrConsumeOverride(clipFade, SoundManager.FadeInEase, ref _fadeInData, out fadeIn, out ease);
         }
 
+        // Matches whether TryGetFadeIn would actually run a fade (override/base/clip setting > 0) without consuming the override.
+        public bool HasFadeIn(float clipFade) => _fadeInData.ResolveFade(clipFade) > FadeData.Immediate;
         public bool HasFadeOutOverride => _fadeOutData.HasPendingOverride;
 
-        public bool HasFadeOut(float clipFade, out float fadeOut, out Ease ease)
+        public bool TryGetFadeOut(float clipFade, out float fadeOut, out Ease ease)
         {
-            return HasFading(clipFade, SoundManager.FadeOutEase, ref _fadeOutData, out fadeOut, out ease);
+            return TryGetOrConsumeOverride(clipFade, SoundManager.FadeOutEase, ref _fadeOutData, out fadeOut, out ease);
         }
 
-        private static bool HasFading(float clipFade, Ease clipEase, ref FadeData overrideData, out float fadeIn, out Ease ease)
+        private static bool TryGetOrConsumeOverride(float clipFade, Ease clipEase, ref FadeData overrideData, out float fadeIn, out Ease ease)
         {
             fadeIn = clipFade;
             ease = clipEase;

@@ -113,16 +113,43 @@ namespace Ami.BroAudio.Runtime
             double endDspTime = ResolveEndDspTime(isResuming);
             _playbackEndDspTime = endDspTime;
 
+            // GetMasterVolume() may return a random value, so read it exactly once.
+            float targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
+
+            // BGM transitions set the fade-in inside DoTransition (below), so theirs can only be resolved
+            // after it runs. For every other play the fade-in is fully known now, so resolve it once up-front
+            // and use it to seed the mixer before a scheduled (future) start. HasFadeIn consumes a pending
+            // override, so it must be evaluated exactly once per play.
+            bool hasMusicTransition = _decorators.TryGetDecorator<MusicPlayer>(out var musicPlayer);
+            bool hasFadeIn = false;
+            float fadeIn = 0f;
+            Ease fadeInEase = default;
+            bool fadeInResolved = false;
+            if (!hasMusicTransition)
+            {
+                hasFadeIn = _pref.HasFadeIn(_clip.FadeIn, out fadeIn, out fadeInEase);
+                fadeInResolved = true;
+            }
+
             if (!isResuming)
             {
                 SchedulePlayback();
+
+                // Establish the initial clip volume on the mixer before the engine emits the first scheduled
+                // sample: 0 with a fade-in, targetClipVolume without. The source is already armed via
+                // PlayScheduled and the track acquired, so this push lands before the first audible sample.
+                if (_pref.ScheduledStartTime > 0 && fadeInResolved)
+                {
+                    EstablishScheduledStartVolume(hasFadeIn ? 0f : targetClipVolume);
+                }
+
                 if (_secondsUntilScheduledStart > 0)
                 {
                     yield return WaitForScheduledStartTime();
                 }
             }
 
-            if (_decorators.TryGetDecorator<MusicPlayer>(out var musicPlayer))
+            if (hasMusicTransition)
             {
                 AudioSource.reverbZoneMix = 0f;
                 AudioSource.priority = AudioConstant.HighestPriority;
@@ -152,8 +179,13 @@ namespace Ami.BroAudio.Runtime
                 _onUpdate?.Invoke(this);
             }
 
-            float targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
-            if (_pref.HasFadeIn(_clip.FadeIn, out var fadeIn, out var fadeInEase))
+            // Resolve a BGM transition's fade-in now that DoTransition has set it (no-op for plays already resolved above).
+            if (!fadeInResolved)
+            {
+                hasFadeIn = _pref.HasFadeIn(_clip.FadeIn, out fadeIn, out fadeInEase);
+            }
+
+            if (hasFadeIn)
             {
                 _clipVolume.SetTarget(targetClipVolume);
                 _clipVolume.Fade(fadeIn, fadeInEase, _onUpdate, (IAudioPlayer)this);
@@ -276,7 +308,13 @@ namespace Ami.BroAudio.Runtime
             }
 
             double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
-            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : AudioSettings.dspTime;
+            // The first loop iteration needs scheduling lead time so the audio engine can begin the clip
+            // precisely at startBaseTime (a PlayScheduled at "now" only starts at the next buffer boundary,
+            // which would make endDspTime — and the boundary handed to the second iteration — inaccurate).
+            double warmUpTime = _pref.HasLoop() && _pref.ScheduledStartTime <= 0
+                ? SoundManager.Instance.ScheduledPlaybackWarmUpTime
+                : 0d;
+            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : AudioSettings.dspTime + warmUpTime;
             double endDspTime = _pref.ScheduledEndTime <= 0 ? startBaseTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
             if (_pref.HasLoop() && _pref.ScheduledStartTime <= 0)
             {

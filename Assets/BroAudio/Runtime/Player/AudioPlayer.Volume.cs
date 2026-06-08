@@ -68,6 +68,11 @@ namespace Ami.BroAudio.Runtime
             {
                 return;
             }
+            PushVolumeToMixer();
+        }
+
+        private void PushVolumeToMixer()
+        {
 #if UNITY_WEBGL
             UpdateWebGLVolume();
 #else
@@ -77,6 +82,15 @@ namespace Ami.BroAudio.Runtime
                 AudioSource.volume = vol.ClampNormalize();
             }
 #endif
+        }
+
+        // Pushes the initial clip volume to the mixer ahead of a scheduled (future) start, bypassing the
+        // HasStartedPlaying guard in UpdateVolume. The source is already armed via PlayScheduled and the
+        // track acquired, so this lands the correct level on the mixer before the first audible sample.
+        private void EstablishScheduledStartVolume(float clipVolume)
+        {
+            _clipVolume.Complete(clipVolume, false); // set the fader state without going through the guarded UpdateVolume
+            PushVolumeToMixer();
         }
 
         IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime)

@@ -757,6 +757,17 @@ namespace Ami.BroAudio.Editor
             {
                 EditorUtility.SetDirty(tableCollection.SharedData);
             }
+
+            // Like DrawObjectPicker: reset playback settings and invalidate the cached transport on reassign,
+            // else the previous clip's Volume/Start/End/Fade persist and clamping keeps the old clip length.
+            int clipIndex = FindClipIndexByLocaleCode(localeCode);
+            if (clipIndex >= 0 && clipIndex < _reorderableList.serializedProperty.arraySize)
+            {
+                var clipProp = _reorderableList.serializedProperty.GetArrayElementAtIndex(clipIndex);
+                ResetBroClipPlaybackSetting(clipProp);
+                _entity.ApplyModifiedProperties();
+                OnClipChanged?.Invoke(clipProp.propertyPath);
+            }
         }
     }
 }

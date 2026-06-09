@@ -1,7 +1,7 @@
 ---
 cover: >-
-  https://images.unsplash.com/photo-1526554850534-7c78330d5f90?crop=entropy&cs=srgb&fm=jpg&q=85
-coverY: 0
+  https://images.unsplash.com/photo-1555564883-acd71fa27745?crop=entropy&cs=srgb&fm=jpg&ixid=M3wxOTcwMjR8MHwxfHNlYXJjaHw0fHx0cmFuc2xhdGlvbnxlbnwwfHx8fDE3ODEwMTQwMjF8MA&ixlib=rb-4.1.0&q=85
+coverY: -240.83600614859645
 layout:
   width: default
   cover:
@@ -41,11 +41,11 @@ Unity's Localization is built on top of [Addressables](addressables.md). Switchi
 
 ## How To Use?
 
-To install the Localization package, please follow the instructions in [Unity's manual](https://docs.unity3d.com/Packages/com.unity.localization/manual/Installation.html), then set up your project's locales and at least one [Asset Table](https://docs.unity3d.com/Packages/com.unity.localization/manual/AssetTables.html) under _<mark style="color:orange;">Edit/Project Settings/Localization</mark>_. Once the package is installed, BroAudio will automatically unlock all localization related options. No further configuration on the BroAudio side is needed!
+To install the Localization package, please follow the instructions in [Unity's manual](https://docs.unity3d.com/Packages/com.unity.localization/manual/Installation.html), then set up your project's locales and creates at least one [Asset Table](https://docs.unity3d.com/Packages/com.unity.localization/manual/AssetTables.html). Once the package is installed, BroAudio will automatically unlock all localization related options. No further configuration on the BroAudio side is needed!
 
 ### Switching an Entity to Localization Mode
 
-Open the [Library Manager](library-manager/README.md), select an entity, and set its **Play Mode** to <mark style="color:orange;">**Localization**</mark>.
+Open the [Library Manager](library-manager/), select an entity, and set its **Play Mode** to <mark style="color:orange;">**Localization**</mark>.
 
 Because Localization mode resolves clips through Asset Tables rather than the entity's own clip list, switching to it changes how the entity stores clips. **If the entity already contains clips, a confirmation window will appear:**
 
@@ -69,13 +69,9 @@ Once in Localization mode, the Clips tab shows a dedicated layout:
 
 Assigning a clip here writes it straight into the selected Asset Table for that locale, so the table and your BroAudio entity always stay in sync. The locale rows update automatically whenever you add or remove locales in your project's Localization settings.
 
-{% hint style="info" %}
-Reassigning a clip for a locale resets that row's playback settings (Volume, Start/End position, Fades, Delay), matching the behavior of the standard clip object picker.
-{% endhint %}
-
 ## Playing Localized Audio
 
-Playing a Localization-mode entity is no different from playing any other sound — just call `Play` with its [SoundID](../reference/api-documentation/struct/audioid.md):
+Playing a Localized entity is no different from playing any other sound, just call `Play` with its [SoundID](../reference/api-documentation/struct/audioid.md):
 
 ```csharp
 BroAudio.Play(SoundID id);

@@ -51,7 +51,7 @@ namespace Ami.BroAudio.Runtime
                 {
                     Debug.LogWarning(Utility.LogTitle +
                         $"Localized AudioClip for entity '{_entityName}' was not preloaded; " +
-                        $"resolving synchronously will block the main thread. " +
+                        $"resolving synchronously will block the main thread until the clip is loaded. " +
                         $"Call {nameof(BroAudio)}.{nameof(BroAudio.LoadAssetAsync)}(SoundID) before playback to avoid hitches.");
                 }
                 resolvedClip = handle.WaitForCompletion();

@@ -28,6 +28,7 @@ namespace Ami.BroAudio.Editor
 			property.FindPropertyRelative(nameof(BroAudioClip.EndPosition)).floatValue = 0f;
 			property.FindPropertyRelative(nameof(BroAudioClip.FadeIn)).floatValue = 0f;
 			property.FindPropertyRelative(nameof(BroAudioClip.FadeOut)).floatValue = 0f;
+            property.FindPropertyRelative(nameof(BroAudioClip.Delay)).floatValue = 0f;
 		}
 
 		public static int GetSerializedEnumIndex(this BroAudioType audioType)

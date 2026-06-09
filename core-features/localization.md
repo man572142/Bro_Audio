@@ -93,9 +93,17 @@ In Localization mode, the loading methods always operate on the active locale's 
 
 <table data-full-width="false"><thead><tr><th width="159">Method</th><th width="205">Return</th><th width="133">Parameters</th><th width="251">Description</th></tr></thead><tbody><tr><td><mark style="color:orange;"><strong>LoadAssetAsync</strong></mark></td><td><a href="https://docs.unity3d.com/Packages/com.unity.addressables@1.22/manual/AddressableAssetsAsyncOperationHandle.html">AsyncOperationHandle</a>&#x3C;AudioClip></td><td><a href="../reference/api-documentation/struct/audioid.md"><mark style="color:green;">SoundID</mark></a> id</td><td>Preloads the clip for the currently active locale</td></tr><tr><td><mark style="color:orange;"><strong>LoadAllAssetsAsync</strong></mark></td><td><a href="https://docs.unity3d.com/Packages/com.unity.addressables@1.22/manual/AddressableAssetsAsyncOperationHandle.html">AsyncOperationHandle</a>&#x3C;IList&#x3C;AudioClip>></td><td><a href="../reference/api-documentation/struct/audioid.md"><mark style="color:green;">SoundID</mark></a> id</td><td>Preloads the active locale's clip, returned as a single-item list</td></tr><tr><td><mark style="color:orange;"><strong>ReleaseAsset</strong></mark></td><td>void</td><td><a href="../reference/api-documentation/struct/audioid.md"><mark style="color:green;">SoundID</mark></a> id</td><td>Releases the active locale's clip (any <mark style="color:green;">int</mark> <code>clipIndex</code> is ignored)</td></tr><tr><td><mark style="color:orange;"><strong>ReleaseAllAssets</strong></mark></td><td>void</td><td><a href="../reference/api-documentation/struct/audioid.md"><mark style="color:green;">SoundID</mark></a> id</td><td>Releases the loaded localized clip for the entity</td></tr></tbody></table>
 
-## Reacting to Locale Changes
+## Reacting to Localized Audio Changes
 
-When the active locale changes, you often want to react — for example, restarting a piece of localized voice-over in the new language. BroAudio exposes the locale-change notification through the [SoundID](../reference/api-documentation/struct/audioid.md) so you can subscribe per sound.
+When the localized clip changes, you often want to react — for example, restarting a piece of localized voice-over in the new language. BroAudio exposes this notification through the [SoundID](../reference/api-documentation/struct/audioid.md) so you can subscribe per sound.
+
+`LocalizedAudioChanged` wraps Unity Localization's `LocalizedAsset<T>.AssetChanged`, so it inherits the same side effect: the moment you subscribe, Unity starts loading the clip for the **currently active locale** and fires your handler once that load completes — not only on subsequent locale changes. In other words, subscribing both:
+
+* **Preloads** the active locale's clip (holding an Addressables reference for it), and
+* **Invokes your handler once right away**, in addition to every later locale change.
+
+So a handler that calls `BroAudio.Play(id)` on subscribe (e.g. in `OnEnable`) will play the sound immediately, not just when the language is switched afterward. If that isn't what you want, guard the first invocation or subscribe only at the point you actually intend playback to begin.
+{% endhint %}
 
 {% tabs %}
 {% tab title="Event" %}
@@ -138,5 +146,5 @@ BroAudio.UnsubscribeLocalizedAudioChanged(id, OnVoiceLocaleChanged);
 {% endtabs %}
 
 {% hint style="info" %}
-The notification uses Unity Localization's `LocalizedAsset<T>.AssetChanged` under the hood, so its behavior matches Unity's standard asset-change notification. Always unsubscribe handlers you no longer need — unsubscribing the last handler for a [SoundID](../reference/api-documentation/struct/audioid.md) lets Unity Localization release the underlying Addressables handle automatically.
+Because subscribing loads the asset, always unsubscribe handlers you no longer need. Unsubscribing the last handler for a [SoundID](../reference/api-documentation/struct/audioid.md) — and with no preload outstanding — lets BroAudio release the underlying Addressables handle automatically, so balance every subscribe with an unsubscribe (typically `OnEnable`/`OnDisable`) to avoid leaking the loaded clip.
 {% endhint %}

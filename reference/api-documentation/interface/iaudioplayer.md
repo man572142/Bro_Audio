@@ -63,7 +63,7 @@ If you've cached the instance of the AudioPlayer and tried to access it after it
 
 ### IVolumeSettable
 
-<table data-full-width="false"><thead><tr><th width="173">Method</th><th width="129">Return</th><th width="193">Parameters</th><th width="249">Description</th></tr></thead><tbody><tr><td><mark style="color:orange;"><strong>SetVolume</strong></mark></td><td>IAudioPlayer</td><td><mark style="color:green;">float</mark> volume</td><td>Set the player's volume<br>(acceptable range 0~10)</td></tr><tr><td></td><td>void</td><td><mark style="color:green;">float</mark> volume, <mark style="color:green;">float</mark> fadeTime</td><td>Set the player's volume by the given fadeTime</td></tr></tbody></table>
+<table data-full-width="false"><thead><tr><th width="173">Method</th><th width="129">Return</th><th width="193">Parameters</th><th width="249">Description</th></tr></thead><tbody><tr><td><mark style="color:orange;"><strong>SetVolume</strong></mark></td><td>IAudioPlayer</td><td><mark style="color:green;">float</mark> volume</td><td>Set the player's volume<br>(acceptable range 0~10)</td></tr><tr><td></td><td>void</td><td><mark style="color:green;">float</mark> volume, <mark style="color:green;">float</mark> fadeTime</td><td>Set the player's volume by the given fadeTime</td></tr><tr><td><mark style="color:orange;"><strong>GetVolume</strong></mark></td><td>float</td><td>none</td><td>Get the player's current volume</td></tr></tbody></table>
 
 ### IMusicDecoratable
 

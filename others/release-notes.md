@@ -21,6 +21,33 @@ layout:
 
 # Release Notes
 
+## Ver. 3.2.0 **(**[**Github**](https://github.com/man572142/Bro_Audio/releases/tag/3.2.0)**,** [**Unity Asset Store**](https://assetstore.unity.com/packages/tools/audio/bro-audio-257362)**)**
+
+**New Features**
+
+* **Unity** [**Localization**](../core-features/localization.md) **integration** — drive an entity's clips through locale-aware Asset Tables, with a deferred preload API and `SubscribeLocalizedAudioChanged` / `UnsubscribeLocalizedAudioChanged` events.
+* [**Change Clip Per Loop**](../core-features/library-manager/design-the-sound/seamless-loop.md#change-clip-per-loop) — looping entities with multiple clips can pick a new clip on every loop iteration.
+* **Sample-accurate** [**Seamless Loop**](../core-features/library-manager/design-the-sound/seamless-loop.md) — seamless loops are now driven by `AudioSource.PlayScheduled` with a handover between players for sample-accurate loop boundaries.
+* Added `IAudioPlayer.GetVolume()` for reading the player's current volume.
+* **Editor crossfade preview** for Chained play mode combined with Seamless Loop.
+* All BroAudio windows are now also accessible under **Window > Audio > BroAudio**, alongside the existing **Tools > BroAudio** menu.
+
+**Improvements & Optimizations**
+
+* The [Play Mode](../core-features/library-manager/design-the-sound/#playmode) dropdown is now always visible in the Library Manager.
+* Volume changes via `IAudioPlayer.SetVolume()` now carry across loop handovers, so fades stay smooth across sample-accurate loop boundaries.
+* [**Virtual AudioTrack recycling**](../designs/audio-mixer.md#virtual-tracks) for generic players — players release their mixer track while inaudible and reacquire one on demand, reducing the number of live mixer tracks.
+* Renamed the two Addressable toggles for clarity — the Clips tab toggle is now [**Addressable Audio Clips**](../core-features/addressables.md) and the Overall tab toggle is now **Addressable Entity Asset** (now hidden by default; re-enable under **Tools > BroAudio > Preferences > Addressable Settings**).
+* `StopControl` now honors `overrideFade` while a natural fade-out is already in progress, so an explicit stop can shorten or lengthen an in-flight fade.
+* Reworked the Chained play mode editor preview to better match runtime behavior (the End clip now plays on stop, and only transitions on the entity preview button).
+* Release verbs are now guarded against a torn-down `SoundManager`, so shutdown / domain-reload paths no longer throw.
+
+**Bug Fixes**
+
+* Fixed an IMGUI layout exception when switching `MulticlipsPlayMode`.
+* Suppressed the "invalid ID" error when a player is stopped in the same frame it was played.
+* Fixed follow-target plays being treated as global by the comb-filtering distance rule.
+
 ## Ver. 3.1.2 **(**[**Github**](https://github.com/man572142/Bro_Audio/releases/tag/3.1.1)**,** [**Unity Asset Store**](https://assetstore.unity.com/packages/tools/audio/bro-audio-257362)**)**
 
 #### Upgrading from v2.x.x to v3.x.x

@@ -34,6 +34,10 @@ Get it from [Unity Asset Store](https://assetstore.unity.com/packages/tools/audi
 * **Locate** _<mark style="color:orange;">**Tools > BroAudio > Library Manager**</mark>_**&#x20;in the Unity menu bar.**
 * **Drag and drop the required AudioClip.**
 
+{% hint style="info" %}
+All BroAudio windows are also available under _<mark style="color:orange;">**Window > Audio > BroAudio**</mark>_, alongside the _<mark style="color:orange;">**Tools > BroAudio**</mark>_ menu.
+{% endhint %}
+
 <div align="center" data-full-width="false"><figure><img src="../.gitbook/assets/DragNDrop.gif" alt="" width="563"><figcaption><p>If multiple clips are dropped, a confirmation window will appear, asking how you would like to structure them.</p></figcaption></figure></div>
 
 * **Edit the parameters**\

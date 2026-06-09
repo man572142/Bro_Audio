@@ -27,7 +27,7 @@ Chained Playback lets you build a sound sequence that plays in stages: a **Start
 
 ## How To Use?
 
-If an AudioEntity contains more than one clip, the [PlayMode](./#playmode) option will appear at the top of the clip list. Set it to **Chained**, and you'll see the Playback stage: Start, Loop, and End displayed on the right side.
+The [PlayMode](./#playmode) dropdown sits at the top of the clip list. Set it to **Chained**, and you'll see the Playback stage: Start, Loop, and End displayed on the right side.
 
 <figure><img src="../../../.gitbook/assets/ChainedPlayMode.png" alt=""><figcaption></figcaption></figure>
 
@@ -56,3 +56,7 @@ This is actually optional. If not assigned, the **Start** and **Loop** sounds wi
 {% hint style="success" %}
 The 3 clips don’t necessarily have to be different! You can use the same clip for all three stages by using different parts of it.
 {% endhint %}
+
+## Editor Preview
+
+The [editor preview](../../editor-audio-preview.md) of Chained mode closely mirrors runtime behavior: the **End** clip is played when you stop the preview, and the transition to the **End** clip only happens when you press the entity preview button. When Chained mode is combined with [Seamless Loop](seamless-loop.md), the preview also crossfades between stages, just like it will in play mode.

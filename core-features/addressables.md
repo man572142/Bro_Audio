@@ -50,9 +50,18 @@ Addressables requires two things to work:
 
 The first step is pretty straightforward. Just find all the audio clips you plan to use with Addressables and mark them as Addressable in the inspector.
 
-The second step is also simple. Open the LibraryManager, select an entity, and you will see an Addressables checkbox in the upper-right area of the Clips tab. Just check it!
+The second step is also simple. Open the LibraryManager, select an entity, and you will see the <mark style="color:orange;">**Addressable Audio Clips**</mark> checkbox in the upper-right area of the Clips tab. Just check it!
 
 These two steps can actually be done at the same time. You can first add audio clips to an entity and then mark the entity as Addressable. **If the entity already contains clips, a&#x20;**<mark style="color:orange;">**Reference Conversion Confirmation**</mark>**&#x20;window will appear**, asking how you want to handle them.
+
+{% hint style="info" %}
+BroAudio exposes **two distinct** Addressable toggles, each tooltip naming the other to avoid confusion:
+
+* <mark style="color:orange;">**Addressable Audio Clips**</mark> (Clips tab) — loads this entity's audio **clips** through Addressables instead of direct references. This is the toggle described above and the one most projects need.
+* <mark style="color:orange;">**Addressable Entity Asset**</mark> (Overall tab) — registers the entity **asset (ScriptableObject) itself** as an Addressables entry, so your own code can load it by address, e.g. `Addressables.LoadAssetAsync<AudioEntity>(address)`.
+
+The **Addressable Entity Asset** toggle is **hidden by default**. To show it, enable _<mark style="color:orange;">**Tools > BroAudio > Preferences > Addressable Settings > Show "Addressable Entity Asset" Toggle**</mark>_.
+{% endhint %}
 
 ### Reference Conversion
 

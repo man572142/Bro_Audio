@@ -46,6 +46,10 @@ To guarantee that all [voices ](../reference/audio-terminology.md#real-voices-an
 
 Just as the 32 tracks are designated for 'Real' voices, 'Virtual' voices also require tracks to utilize features and be managed effectively. Although they are inaudible initially, they can become audible when a 'Real' voice ceases. To ensure continuity in their current processing or settings, maintaining a number of virtual tracks as a backup is essential.
 
+{% hint style="info" %}
+To keep the number of live mixer tracks low, a generic player releases its mixer track back to the pool while it is inaudible and reacquires one on demand. Its real computed level is preserved on the `AudioSource` while the track is released, so a virtual player never leaks to the listener at full volume, and full mixer control is restored the moment it becomes audible again.
+{% endhint %}
+
 ## Customizing The BroAudioMixer
 
 To customize the BroAudioMixer, you need to pay attention to the following few things:

@@ -40,7 +40,7 @@ When an entity is played, it will follow the rule of the following options to pi
 5. [**Velocity**](velocity.md)**:** Play clip by the specified number.
 6. [**Chained**](chained-playback.md): Plays a start sound when triggered, then loops a base sound. An end sound is played when stopped.
 
-🔔 if there is only one AudioClip, the options won't show, and it will use **Single** mode
+🔔 The Play Mode dropdown is always shown. If there is only one AudioClip, the mode has no effect, and the single clip will always be played.
 
 ### Clip Parameters
 

@@ -54,4 +54,14 @@ If this option is selected, "Seamless Setting" will appear, allowing you to set 
 2. **Time:** The replay starts a specified number of seconds before the end.
 3. **Tempo:** The replay starts a specified number of beats before the end.
 
+### Change Clip Per Loop
+
+When an AudioEntity has more than one clip and either **Loop** or **Seamless Loop** is enabled, a **Change Clip Per Loop** toggle appears below the looping options.
+
+Enable it to pick a new clip on every loop iteration, following the entity's [Play Mode](./#playmode) (e.g. Random or Shuffle), instead of repeating the same clip. This is handy for varied ambiences or evolving loops without authoring a single long clip.
+
+{% hint style="info" %}
+Volume changes made through `IAudioPlayer.SetVolume()` are carried across each loop, so fades stay smooth even when the loop transitions between clips or audio tracks.
+{% endhint %}
+
 [^1]: If you can't see this option, it might be because the GUI setting of this AudioType is set to be invisible. [Click here for more details.](../../customization.md#displayed-properties)

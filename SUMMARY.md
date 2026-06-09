@@ -29,6 +29,7 @@
   * [Sound Volume](core-features/no-code-components/sound-volume.md)
   * [Spectrum Analyzer](core-features/no-code-components/spectrum-analyzer.md)
 * [Addressables](core-features/addressables.md)
+* [Localization](core-features/localization.md)
 * [Customization](core-features/customization.md)
 
 ## Designs

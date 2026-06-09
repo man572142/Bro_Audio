@@ -2,6 +2,15 @@
 
 Audio middleware for Unity. The project under `Assets/BroAudio/` **is** the package — that subtree is exactly what consumers install, and it's effectively the whole codebase (the rest of `Assets/` holds only its `.meta`). It ships from one source down two channels: a UPM package (`com.ami.broaudio`) and a Unity Asset Store `.unitypackage`, exported via `PackageExporter` (gated behind `#if BroAudio_DevOnly`). Current version lives in `Assets/BroAudio/package.json`; user-facing changes are summarized in `Docs/RELEASE_NOTES.md`.
 
+This repo also holds the **GitBook documentation** at the repo root (`overview/`, `core-features/`, `designs/`, `tools/`, `reference/`, `others/`, plus `README.md` homepage and `SUMMARY.md` table of contents). Doc writing/updating happens on the `Docs` branch — see the Documentation section below.
+
+## Documentation (GitBook)
+The root-level markdown tree is a GitBook space kept in sync via Git Sync (bidirectional — GitBook may auto-commit edits made in its UI). Do doc work on the `Docs` branch.
+- Use the `edit-gitbook-documentation` skill for GitBook syntax: hints, tabs, steppers, cards, expandables, frontmatter, etc. Don't hand-author these blocks from memory.
+- `SUMMARY.md` is the navigation/table of contents. When adding, moving, or renaming a page, update `SUMMARY.md` to match — and never reference the same `.md` file twice (each page maps to one URL). `README.md` is the homepage.
+- Images live in `.gitbook/assets/`; reference them with relative paths. There is no `.gitbook.yaml` (default root layout).
+- Two distinct release-notes locations: `Docs/RELEASE_NOTES.md` (package changelog) vs `others/release-notes.md` (the GitBook page). They are not the same file.
+
 ## Commands
 No CLI build/test pipeline — everything runs from the Unity Editor (Unity 6000.3).
 - Library Manager (primary authoring window): `Tools > BroAudio > Library Manager`

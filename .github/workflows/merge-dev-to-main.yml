@@ -7,11 +7,11 @@ on:
       source_branch:
         description: Branch to merge from
         type: string
-        default: DEV
+        default: DEV_Unity6
       target_branch:
         description: Branch to merge into
         type: string
-        default: main
+        default: pre-merge
       excluded_files:
         description: Space-separated files to restore from target after merge
         type: string

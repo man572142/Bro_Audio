@@ -24,13 +24,22 @@ namespace Ami.BroAudio.Runtime
             DestroyAudioFilterReader();
             DestroyAddedEffectComponents();
             ClearEvents();
-
+            this.SafeStopCoroutine(_playbackControlCoroutine);
+            this.SafeStopCoroutine(_handoverScheduleCoroutine);
+            _playbackControlCoroutine = null;
+            _handoverScheduleCoroutine = null;
+            _nextPlayer = null;
+            
             if (TryGetMixerAndTrack(out _, out var track))
             {
-                MixerPool.ReturnTrack(TrackType, track);
-                TrackType = AudioTrackType.Generic;
+                MixerPool?.ReturnTrack(TrackType, track);
             }
-            MixerPool.ReturnPlayer(this);
+            TrackType = AudioTrackType.Generic;
+#if !UNITY_WEBGL
+            _trackReleasedByVirtual = false;
+            _virtualElapsed = 0f;
+#endif
+            MixerPool?.ReturnPlayer(this);
 
             if (_decorators != null)
             {
@@ -44,7 +53,7 @@ namespace Ami.BroAudio.Runtime
             _instanceWrapper?.Recycle();
             _instanceWrapper = null;
 
-            OnPlaybackHandover = null;
+            RequestNextPlayer = null;
             AudioTrack = null;
 
             ID = SoundID.Invalid;

@@ -67,9 +67,8 @@ namespace Ami.BroAudio.Runtime
 
         [System.Obsolete("Only for backwards compatibility")]
         [SerializeField] BroAudioData _data = null;
-
-        //private Dictionary<int, IAudioEntity> _audioBank = new Dictionary<int, IAudioEntity>();
-        private Dictionary<BroAudioType, AudioTypePlaybackPreference> _auidoTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
+        
+        private Dictionary<BroAudioType, AudioTypePlaybackPreference> _audioTypePref = new Dictionary<BroAudioType, AudioTypePlaybackPreference>();
         private EffectAutomationHelper _automationHelper = null;
         private EffectAutomationHelper _dominatorAutomationHelper = null;
         private Dictionary<SoundID, AudioPlayer> _combFilteringPreventer = null;
@@ -85,6 +84,7 @@ namespace Ami.BroAudio.Runtime
         public float WebGLMasterVolume { get; private set; } = AudioConstant.FullVolume;
 #endif
 
+        internal double ScheduledPlaybackWarmUpTime { get; private set; } = AudioConstant.MixerWarmUpTime;
         public AudioMixer AudioMixer => _broAudioMixer;
 
         private void Awake()
@@ -101,6 +101,7 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
+            CacheScheduledPlaybackWarmUpTime();
             _audioPlayerPool = new AudioPlayerObjectPool(_audioPlayerPrefab, transform, Setting.DefaultAudioPlayerPoolSize);
             AudioMixerGroup[] mixerGroups = _broAudioMixer.FindMatchingGroups(GenericTrackName);
             AudioMixerGroup[] dominatorGroups = _broAudioMixer.FindMatchingGroups(DominatorTrackName);
@@ -118,6 +119,21 @@ namespace Ami.BroAudio.Runtime
 #endif
         }
 
+        private void CacheScheduledPlaybackWarmUpTime()
+        {
+            AudioSettings.GetDSPBufferSize(out int bufferLength, out int numBuffers);
+            int outputSampleRate = AudioSettings.outputSampleRate;
+            if (bufferLength <= 0 || numBuffers <= 0 || outputSampleRate <= 0)
+            {
+                ScheduledPlaybackWarmUpTime = AudioConstant.MixerWarmUpTime;
+                return;
+            }
+
+            double outputLatency = (double)bufferLength * numBuffers / outputSampleRate;
+            // This handover path wakes on frames rather than DSP ticks, so keep the historical fallback as a floor.
+            ScheduledPlaybackWarmUpTime = Math.Max(outputLatency, AudioConstant.MixerWarmUpTime);
+        }
+
         private void OnDestroy()
         {
             MusicPlayer.CleanUp();
@@ -130,12 +146,16 @@ namespace Ami.BroAudio.Runtime
                 _addressableCleanupCoroutine = null;
             }
 #endif
+
+#if PACKAGE_LOCALIZATION
+            ReleaseAllLocalizationPreloads();
+#endif
         }
 
         #region InitBank
         private void InitBank()
         {
-            ForeachConcreteAudioType(new PlaybackPrefInitializer() { AudioTypePref = _auidoTypePref });
+            ForeachConcreteAudioType(new PlaybackPrefInitializer() { AudioTypePref = _audioTypePref });
         }
         #endregion
 
@@ -215,7 +235,7 @@ namespace Ami.BroAudio.Runtime
 
                 if(fadeTime != 0f)
                 {
-                    this.StartCoroutineAndReassign(SetMasterVolume(currentVol, targetVol, fadeTime), ref _masterVolumeCoroutine);
+                    this.RestartCoroutine(SetMasterVolume(currentVol, targetVol, fadeTime), ref _masterVolumeCoroutine);
                 }
                 else
                 {
@@ -341,7 +361,7 @@ namespace Ami.BroAudio.Runtime
         public bool TryGetAudioTypePref(BroAudioType audioType, out IAudioPlaybackPref result)
         {
             result = null;
-            if (_auidoTypePref.TryGetValue(audioType, out var typePref))
+            if (_audioTypePref.TryGetValue(audioType, out var typePref))
             {
                 result = typePref;
             }
@@ -386,7 +406,7 @@ namespace Ami.BroAudio.Runtime
             var setter = new PlaybackPrefSetter<TParameter>()
             {
                 TargetType = targetType,
-                AudioTypePref = _auidoTypePref,
+                AudioTypePref = _audioTypePref,
                 OnModifyPref = onModifyPref,
                 Parameter = parameter,
             };
@@ -406,7 +426,8 @@ namespace Ami.BroAudio.Runtime
             return _audioPlayerPool.GetCurrentAudioPlayers();
         }
         #endregion
-
+        
+#if PACKAGE_ADDRESSABLES
         #region Addressable Cleanup
         private WaitForSecondsRealtime _addressableCleanupInterval = null;
         private readonly List<SoundID> _addressableCleanupEntitiesList = new List<SoundID>();
@@ -460,12 +481,10 @@ namespace Ami.BroAudio.Runtime
 
         private void UnloadAddressableEntity(SoundID id)
         {
-#if PACKAGE_ADDRESSABLES
             if (TryGetEntity(id, out var entity) && entity is AudioEntity audioEntity && audioEntity.UseAddressables)
             {
                 audioEntity.ReleaseAllAssets();
             }
-#endif
         }
 
         public void UpdateLoadedEntityLastPlayedTime(SoundID id)
@@ -481,7 +500,7 @@ namespace Ami.BroAudio.Runtime
             }
         }
         #endregion
-
+#endif
 
         [System.Obsolete("Only for backwards compatibility")]
         public bool TryConvertIdToEntity(int id, out AudioEntity entity)

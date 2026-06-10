@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using static UnityEditor.EditorGUILayout;
 
 namespace Ami.BroAudio.Editor.Setting
 {
@@ -17,7 +16,7 @@ namespace Ami.BroAudio.Editor.Setting
         public override void DrawContent()
         {
             GUILayout.FlexibleSpace();
-            Drawer.DrawChainedPlayMode(GetControlRect(), GetControlRect(), GetControlRect());
+            Drawer.DrawChainedPlayMode(default, GetControlRect);
         }
     }
 }

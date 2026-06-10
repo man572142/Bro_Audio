@@ -25,6 +25,12 @@ namespace Ami.BroAudio
 
         internal IAudioPlayer SetVelocity(int velocity);
         internal IAudioPlayer SetPitch(float pitch, float fadeTime);
+        internal float GetVolume();
+
+        /// <summary>
+        /// Sets the sequence identifier for this playback, allowing multiple independent sequence instances per entity.
+        /// </summary>
+        internal IAudioPlayer SetSequenceId(string sequenceId);
 
         /// <summary>
         /// Triggered when the AudioPlayer starts to play
@@ -45,12 +51,12 @@ namespace Ami.BroAudio
         /// Triggered when the AudioPlayer stops playing
         /// </summary>
         IAudioPlayer OnEnd(Action<SoundID> onEnd);
-        
+
         /// <summary>
         /// Sets the fade in easing function for this player
         /// </summary>
         IAudioPlayer SetFadeInEase(Ease ease);
-        
+
         /// <summary>
         /// Sets the fade out easing function for this player
         /// </summary>
@@ -71,7 +77,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="onSet">Optional callback to configure the component after creation</param>
         internal IAudioPlayer AddAudioEffect<T, TProxy>(Action<TProxy> onSet)
-            where T : Behaviour 
+            where T : Behaviour
             where TProxy : class;
 
         /// <summary>

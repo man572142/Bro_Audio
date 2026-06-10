@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using static Ami.Extension.EditorScriptingExtension;
 
@@ -42,9 +43,9 @@ namespace Ami.BroAudio.Editor
         public bool ShowPlayButtonWhenEntityCollapsed = FactorySettings.ShowPlayButtonWhenEntityIsFolded;
         public bool ShowWarningWhenEntityHasNoLoopInChainedMode = FactorySettings.ShowWarningWhenEntityHasNoLoopInChainedMode;
         public bool OpenLastEditAudioAsset = FactorySettings.OpenLastEditAudioAsset;
-        public string LastEditAudioAsset;
         public ReferenceConversionDecision DirectReferenceDecision = FactorySettings.DirectReferenceDecision;
         public ReferenceConversionDecision AddressableDecision = FactorySettings.AddressableDecision;
+        public bool ShowEntityAddressableToggle = FactorySettings.ShowEntityAddressableToggle;
 
         public bool EditTheNewClipAfterSaveAs = FactorySettings.EditTheNewClipAfterSaveAs;
         public bool PingTheNewClipAfterSaveAs = FactorySettings.PingTheNewClipAfterSaveAs;
@@ -53,7 +54,17 @@ namespace Ami.BroAudio.Editor
         public int VirtualTrackCount = FactorySettings.VirtualTrackCount;
 
         public List<AudioTypeSetting> AudioTypeSettings;
-        public List<Color> SpectrumBandColors; 
+        public List<Color> SpectrumBandColors;
+
+        private const string LastEditAudioAssetPrefsKey = "BroAudio.LastEditAudioAsset.";
+
+        // Per-developer state — stored in EditorPrefs (scoped to project) rather than the asset
+        // so it does not churn version control with each developer's last selection.
+        public string LastEditAudioAsset
+        {
+            get => EditorPrefs.GetString(LastEditAudioAssetPrefsKey + PlayerSettings.productGUID, string.Empty);
+            set => EditorPrefs.SetString(LastEditAudioAssetPrefsKey + PlayerSettings.productGUID, value ?? string.Empty);
+        }
 
 		public Color GetAudioTypeColor(BroAudioType audioType)
 		{
@@ -138,6 +149,7 @@ namespace Ami.BroAudio.Editor
             PromptForPathOnAssetCreation = FactorySettings.PromptForPathOnAssetCreation;
             ShowPlayButtonWhenEntityCollapsed = FactorySettings.ShowPlayButtonWhenEntityIsFolded;
             OpenLastEditAudioAsset = FactorySettings.OpenLastEditAudioAsset;
+            ShowEntityAddressableToggle = FactorySettings.ShowEntityAddressableToggle;
             CreateNewAudioTypeSettings();
             CreateDefaultSpectrumColors();
 		}
@@ -178,6 +190,7 @@ namespace Ami.BroAudio.Editor
             public const bool OpenLastEditAudioAsset = false;
             public const bool ShowPlayButtonWhenEntityIsFolded = false;
             public const bool ShowWarningWhenEntityHasNoLoopInChainedMode = true;
+            public const bool ShowEntityAddressableToggle = false;
 
             public const string MusicColor = "#012F874C";
 			public const string UIColor = "#0E9C884C";

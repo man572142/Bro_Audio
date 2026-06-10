@@ -62,6 +62,7 @@ namespace Ami.BroAudio.Editor
         private EditorSetting EditorSetting => BroEditorUtility.EditorSetting;
 
         [MenuItem(LibraryManagerMenuPath, false, LibraryManagerMenuIndex)]
+        [MenuItem(LibraryManagerMenuPath_Window, false, LibraryManagerMenuIndex)]
         public static LibraryManagerWindow ShowWindow()
         {
             EditorWindow window = GetWindow(typeof(LibraryManagerWindow));
@@ -407,7 +408,6 @@ namespace Ami.BroAudio.Editor
                 if(EditorSetting.OpenLastEditAudioAsset && list.list[list.index] is AudioAssetEditor editor)
                 {
                     EditorSetting.LastEditAudioAsset = AssetDatabase.GetAssetPath(editor.target);
-                    EditorUtility.SetDirty(EditorSetting);
                 }
             }
         }
@@ -689,10 +689,7 @@ namespace Ami.BroAudio.Editor
                     {
                         editor.DrawEntitiesList(out float listHeight);
                         float compensateHeight = GetScrollPosCompensateHeight(listHeight);
-                        if (compensateHeight > 0f)
-                        {
-                            GUILayout.Space(compensateHeight);
-                        }
+                        GUILayout.Space(Mathf.Max(0f, compensateHeight));
                     }
 
                     HandleDragAndDropEntitiesToEntityList(editor);

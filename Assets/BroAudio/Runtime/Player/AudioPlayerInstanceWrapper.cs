@@ -1,9 +1,9 @@
-using UnityEngine;
-using Ami.BroAudio.Runtime;
-using Ami.Extension;
 using System;
 using System.Collections.Generic;
 using Ami.BroAudio.Data;
+using Ami.BroAudio.Runtime;
+using Ami.Extension;
+using UnityEngine;
 
 namespace Ami.BroAudio
 {
@@ -20,11 +20,12 @@ namespace Ami.BroAudio
         {
             if (SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning)
             {
-                Debug.LogWarning(Utility.LogTitle + "Invalid operation. The audio player you're accessing has finished playing and has been recycled.");
+                Debug.LogWarning(Utility.LogTitle + "This audio player has been recycled after playback and can no longer be accessed. \n" +
+                    "To avoid this warning, check IsActive before use, or use the OnEnd callback to clear your IAudioPlayer reference when playback completes.");
             }
         }
 
-#region Interface
+        #region Interface
 #pragma warning disable UNT0008
         public SoundID ID => IsAvailable() ? Instance.ID : SoundID.Invalid;
         public bool IsActive => IsAvailable(false) && Instance.IsActive;
@@ -37,6 +38,8 @@ namespace Ami.BroAudio
         IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => IsAvailable() ? Wrap(Instance.SetVolume(vol, fadeTime)) : Empty.AudioPlayer;
         IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime) => IsAvailable() ? Wrap(Instance.SetPitch(pitch, fadeTime)) : Empty.AudioPlayer;
         IAudioPlayer IAudioPlayer.SetVelocity(int velocity) => IsAvailable() ? Wrap(Instance.SetVelocity(velocity)) : Empty.AudioPlayer;
+        IAudioPlayer IAudioPlayer.SetSequenceId(string sequenceId) => IsAvailable() ? Wrap(Instance.SetSequenceId(sequenceId)) : Empty.AudioPlayer;
+        float IAudioPlayer.GetVolume() => IsAvailable(false) ? ((IAudioPlayer)Instance).GetVolume() : 0f;
 
         void IAudioStoppable.Stop() => Instance?.Stop();
         void IAudioStoppable.Stop(Action onFinished) => Instance?.Stop(onFinished);
@@ -51,10 +54,10 @@ namespace Ami.BroAudio
         IAudioPlayer IAudioPlayer.OnUpdate(Action<IAudioPlayer> onUpdate) => IsAvailable() ? Wrap(Instance.OnUpdate(onUpdate)) : Empty.AudioPlayer;
         IAudioPlayer IAudioPlayer.OnPause(Action<IAudioPlayer> onPause) => IsAvailable() ? Wrap(Instance.OnPause(onPause)) : Empty.AudioPlayer;
         IAudioPlayer IAudioPlayer.OnEnd(Action<SoundID> onEnd) => IsAvailable() ? Wrap(Instance.OnEnd(onEnd)) : Empty.AudioPlayer;
-        
+
         public IAudioPlayer SetFadeInEase(Ease ease) => IsAvailable() ? Wrap(Instance.SetFadeInEase(ease)) : Empty.AudioPlayer;
         public IAudioPlayer SetFadeOutEase(Ease ease) => IsAvailable() ? Wrap(Instance.SetFadeOutEase(ease)) : Empty.AudioPlayer;
-        
+
         IAudioSourceProxy IAudioPlayer.AudioSource
         {
             get
@@ -74,13 +77,13 @@ namespace Ami.BroAudio
 
         public void GetOutputData(float[] samples, int channels) => Instance?.GetOutputData(samples, channels);
         public void GetSpectrumData(float[] samples, int channels, FFTWindow window) => Instance?.GetSpectrumData(samples, channels, window);
-        IAudioPlayer IAudioPlayer.AddAudioEffect<T, TProxy>(Action<TProxy> onSet) 
+        IAudioPlayer IAudioPlayer.AddAudioEffect<T, TProxy>(Action<TProxy> onSet)
             => IsAvailable() ? Wrap(((IAudioPlayer)Instance).AddAudioEffect<T, TProxy>(onSet)) : Empty.AudioPlayer;
-        
-        IAudioPlayer IAudioPlayer.RemoveAudioEffect<T>() 
+
+        IAudioPlayer IAudioPlayer.RemoveAudioEffect<T>()
             => IsAvailable() ? Wrap(((IAudioPlayer)Instance).RemoveAudioEffect<T>()) : Empty.AudioPlayer;
 
-        IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead) 
+        IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead)
             => IsAvailable() ? Wrap(Instance.OnAudioFilterRead(onAudioFilterRead)) : Empty.AudioPlayer;
 
         // These decorator methods will only be called when there's corresponding instance in the _decorators list
@@ -104,7 +107,7 @@ namespace Ami.BroAudio
             => Wrap(GetDecorator<DominatorPlayer>()?.HighPassOthers(freq, fading));
 #endif
 #pragma warning restore UNT0008
-#endregion
+        #endregion
 
         public override void UpdateInstance(AudioPlayer newInstance)
         {
@@ -113,10 +116,10 @@ namespace Ami.BroAudio
                 base.UpdateInstance(newInstance);
                 return;
             }
-            
-            if(Instance.TransferOnUpdates(out var onUpdateDelegates))
+
+            if (Instance.TransferOnUpdates(out var onUpdateDelegates))
             {
-                foreach(var onUpdate in onUpdateDelegates)
+                foreach (var onUpdate in onUpdateDelegates)
                 {
                     newInstance.OnUpdate(onUpdate as Action<IAudioPlayer>);
                 }
@@ -159,7 +162,7 @@ namespace Ami.BroAudio
         {
             return this;
         }
-        
+
         /// <inheritdoc cref="Wrap"/>
         private IMusicPlayer Wrap(IMusicPlayer musicPlayer)
         {

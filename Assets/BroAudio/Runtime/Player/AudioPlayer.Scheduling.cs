@@ -5,39 +5,52 @@ using System.Collections;
 namespace Ami.BroAudio.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
-	public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
-	{
-        private float _timeBeforeStartSchedule = 0f;
+    public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
+    {
+        private double _secondsUntilScheduledStart;
+        private double _pauseDspTime;
+        private double _playbackEndDspTime;
 
-        private void SchedulePlayback(out bool hasScheduledPlay)
+        private void SchedulePlayback()
         {
-            hasScheduledPlay = false;
             if (_pref.ScheduledStartTime > 0d) // Scheduled has higher priority than clip.delay
             {
-                AudioSource.PlayScheduled(_pref.ScheduledStartTime);
-                _timeBeforeStartSchedule = (float)(_pref.ScheduledStartTime - AudioSettings.dspTime);
-                hasScheduledPlay = true;
-            }
-            else if (_clip.Delay > 0f)
-            {
-                // PlayDelayed() can also be rescheduled
-                AudioSource.PlayDelayed(_clip.Delay);
-                _timeBeforeStartSchedule = _clip.Delay;
-                hasScheduledPlay = true;
+                var dspTime = AudioSettings.dspTime;
+                AudioSource.PlayScheduled(System.Math.Max(_pref.ScheduledStartTime, dspTime));
+                _secondsUntilScheduledStart = _pref.ScheduledStartTime - dspTime;
             }
 
+            ScheduleEndTime();
+        }
+
+        private void ScheduleEndTime()
+        {
             if (_pref.ScheduledEndTime > 0d)
             {
                 AudioSource.SetScheduledEndTime(_pref.ScheduledEndTime);
             }
         }
 
+        // Slide dsp-time schedule forward by the pause duration; caller re-arms the end via ScheduleEndTime after UnPause (PlayScheduled would restart the source).
+        private void RebaseScheduleAfterPause()
+        {
+            double pauseDuration = AudioSettings.dspTime - _pauseDspTime;
+            if (_pref.ScheduledStartTime > 0)
+            {
+                _pref.ScheduledStartTime += pauseDuration;
+            }
+            if (_pref.ScheduledEndTime > 0)
+            {
+                _pref.ScheduledEndTime += pauseDuration;
+            }
+        }
+
         IAudioPlayer ISchedulable.SetScheduledStartTime(double dspTime)
         {
-            if(_pref.ScheduledStartTime > 0d)
+            if (_pref.ScheduledStartTime > 0d)
             {
                 // Recalculate the time when WaitForScheduledStartTime() is already running
-                _timeBeforeStartSchedule += (float)(dspTime - _pref.ScheduledStartTime);
+                _secondsUntilScheduledStart += dspTime - _pref.ScheduledStartTime;
             }
             _pref.ScheduledStartTime = dspTime;
 
@@ -83,13 +96,20 @@ namespace Ami.BroAudio.Runtime
             return this.SetScheduledStartTime(AudioSettings.dspTime + delay);
         }
 
+        private void SetClipDelayIfNotScheduled()
+        {
+            if (_pref.ScheduledStartTime <= 0 && _clip != null && _clip.Delay > 0)
+            {
+                _pref.ScheduledStartTime = AudioSettings.dspTime + _clip.Delay;
+            }
+        }
 
         private IEnumerator WaitForScheduledStartTime()
         {
-            while (_timeBeforeStartSchedule > 0)
+            while (_secondsUntilScheduledStart > 0)
             {
                 yield return null;
-                _timeBeforeStartSchedule -= Utility.GetDeltaTime();
+                _secondsUntilScheduledStart -= Utility.GetDeltaTime();
             }
         }
 

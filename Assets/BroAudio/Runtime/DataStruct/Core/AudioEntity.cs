@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Ami.BroAudio.Runtime;
+using Ami.BroAudio;
 using UnityEngine;
 using Ami.Extension;
 
@@ -33,6 +34,7 @@ namespace Ami.BroAudio.Data
         [field: SerializeField] public float PitchRandomRange { get; private set; }
         [field: SerializeField] public float VolumeRandomRange { get; private set; }
         [field: SerializeField] public RandomFlag RandomFlags { get; private set; }
+        [field: SerializeField] public AudioEntityFlag Flags { get; private set; }
         public PlaybackGroup PlaybackGroup => _group ? _group : _upperGroup;
 
         IReadOnlyList<IBroAudioClip> IReadOnlyAudioEntity.Clips => Clips;
@@ -50,12 +52,22 @@ namespace Ami.BroAudio.Data
                 case MulticlipsPlayMode.Shuffle: EnsureClipSelectionStrategy<ShuffleClipStrategy>(); break;
                 case MulticlipsPlayMode.Chained: EnsureClipSelectionStrategy<ChainedClipStrategy>(); break;
                 case MulticlipsPlayMode.Velocity: EnsureClipSelectionStrategy<VelocityClipStrategy>(); break;
-                default: 
-                    Debug.LogError(Utility.LogTitle + $"Invalid multiclips play mode: {MulticlipsPlayMode}");
+#if PACKAGE_LOCALIZATION
+                case MulticlipsPlayMode.Localization:
+                    EnsureClipSelectionStrategy<LocalizationClipStrategy>();
+                    var id = new SoundID(this);
+                    ((LocalizationClipStrategy)_clipSelectionStrategy).Inject(
+                        _localizedAudio,
+                        Name,
+                        () => SoundManager.HasInstance && SoundManager.Instance.TryGetCachedLocalizedClip(id, out var c) ? c : null);
+                    break;
+#endif
+                default:
+                    Debug.LogError(Utility.LogTitle + $"Invalid play mode: {MulticlipsPlayMode}");
                     EnsureClipSelectionStrategy<SingleClipStrategy>(); 
                     break;
             }
-
+            context.EntityName = Name;
             return _clipSelectionStrategy.SelectClip(Clips, context, out index);
         }
 
@@ -98,6 +110,13 @@ namespace Ami.BroAudio.Data
         
         public bool HasLoop(out LoopType loopType, out float transitionTime)
         {
+            return HasLoop(out loopType, out transitionTime,
+                SoundManager.Instance.Setting.DefaultChainedPlayModeLoop,
+                SoundManager.Instance.Setting.DefaultChainedPlayModeTransitionTime);
+        }
+
+        public bool HasLoop(out LoopType loopType, out float transitionTime, LoopType chainedDefaultLoop, float chainedDefaultTransitionTime)
+        {
             loopType = LoopType.None;
             transitionTime = 0f;
             if (Loop)
@@ -111,8 +130,8 @@ namespace Ami.BroAudio.Data
             }
             else if (MulticlipsPlayMode == MulticlipsPlayMode.Chained)
             {
-                loopType = SoundManager.Instance.Setting.DefaultChainedPlayModeLoop;
-                transitionTime = SoundManager.Instance.Setting.DefaultChainedPlayModeTransitionTime;
+                loopType = chainedDefaultLoop;
+                transitionTime = chainedDefaultTransitionTime;
             }
             return loopType != LoopType.None;
         }
@@ -124,7 +143,15 @@ namespace Ami.BroAudio.Data
                 _clipSelectionStrategy.Reset();
             }
         }
-        
+
+        public void ResetMultiClipStrategy(string sequenceId)
+        {
+            if (_clipSelectionStrategy is SequenceClipStrategy sequenceStrategy)
+            {
+                sequenceStrategy.Reset(sequenceId);
+            }
+        }
+
         public override string ToString()
         {
             return Name;

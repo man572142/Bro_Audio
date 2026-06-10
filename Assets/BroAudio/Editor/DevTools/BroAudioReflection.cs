@@ -7,6 +7,12 @@ using static Ami.Extension.ReflectionExtension;
 using Ami.BroAudio.Tools;
 using Ami.BroAudio;
 
+#if UNITY_6000_4_OR_NEWER
+using GUID = UnityEngine.GUID;
+#else
+using GUID = UnityEditor.GUID;
+#endif
+
 namespace Ami.Extension.Reflection
 {
     public static class BroAudioReflection

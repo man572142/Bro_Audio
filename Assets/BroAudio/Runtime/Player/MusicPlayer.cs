@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -26,6 +27,7 @@ namespace Ami.BroAudio.Runtime
         private float _overrideFade = FadeData.UseClipSetting;
 
         public bool IsWaitingForTransition { get; private set; }
+        public bool NeedTransition => CurrentBGMPlayer != null && CurrentBGMPlayer.IsActive && CurrentBGMPlayer != Instance;
 
         public MusicPlayer(AudioPlayer audioPlayer) : base(audioPlayer)
         {
@@ -43,6 +45,17 @@ namespace Ami.BroAudio.Runtime
             _overrideFade = FadeData.UseClipSetting;
         }
 
+        public override void UpdateInstance(AudioPlayer newInstance)
+        {
+            // Track the live player across loop/chain iterations so transitions act on the playing source.
+            // Write the backing field to skip OnBGMChanged — the logical BGM hasn't changed.
+            if (_currentBGMPlayer == Instance)
+            {
+                _currentBGMPlayer = newInstance;
+            }
+            base.UpdateInstance(newInstance);
+        }
+
         IAudioPlayer IMusicPlayer.SetTransition(Transition transition, StopMode stopMode, float overrideFade)
         {
             _transition = transition;
@@ -53,8 +66,8 @@ namespace Ami.BroAudio.Runtime
 
         public void DoTransition(ref PlaybackPreference pref)
         {
-            // No BGM is playing
-            if (CurrentBGMPlayer == null)
+            // No prior BGM, this player is already current (pause/resume or same-instance replay), or the prior player is gone — stopping it would self-stop mid-PlayControl or double-recycle it.
+            if (!NeedTransition)
             {
                 CurrentBGMPlayer = Instance;
                 return;
@@ -65,8 +78,8 @@ namespace Ami.BroAudio.Runtime
             
             void HandleCurrentBGM()
             {
-                IsWaitingForTransition = (_transition == Transition.Default || _transition == Transition.OnlyFadeOut) &&
-                                         CurrentBGMPlayer.IsPlaying;
+                bool fadeOutTransition = _transition == Transition.Default || _transition == Transition.OnlyFadeOut;
+                IsWaitingForTransition = fadeOutTransition && CurrentBGMPlayer && CurrentBGMPlayer.IsActive;
                 if (IsWaitingForTransition)
                 {
                     StopCurrentPlayer(FinishTransition);

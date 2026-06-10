@@ -13,6 +13,7 @@ namespace Ami.BroAudio.Runtime
         private FadeData _fadeInData;
         private FadeData _fadeOutData;
         private int _contextValue;
+        public string SequenceId { get; set; }
         public double ScheduledStartTime { get; set; }
         public double ScheduledEndTime { get; set; }
 
@@ -42,6 +43,10 @@ namespace Ami.BroAudio.Runtime
         public PlaybackPreference(IAudioEntity entity, Transform followTarget) : this(entity)
         {
             _followTarget = followTarget;
+            // Leave _position unset so Position resolves from the live follow target each frame.
+            // Otherwise the base constructor's sentinel makes follow-target plays read as global,
+            // which bypasses the distance-based comb-filtering rule.
+            _position = null;
         }
 
         public PlaybackPreference(IAudioEntity entity)
@@ -49,6 +54,7 @@ namespace Ami.BroAudio.Runtime
             Entity = entity;
             _fadeInData = new FadeData(entity.GetFadeInEase(), SoundManager.FadeInEase);
             _fadeOutData = new FadeData(entity.GetFadeOutEase(), SoundManager.FadeOutEase);
+            SequenceId = null;
             ScheduledStartTime = 0;
             ScheduledEndTime = 0;
             _position = Utility.GloballyPlayedPosition;
@@ -66,17 +72,21 @@ namespace Ami.BroAudio.Runtime
             _fadeOutData.SetEase(ease);
         }
 
-        public bool HasFadeIn(float clipFade, out float fadeIn, out Ease ease)
+        public bool TryGetFadeIn(float clipFade, out float fadeIn, out Ease ease)
         {
-            return HasFading(clipFade, SoundManager.FadeInEase, ref _fadeInData, out fadeIn, out ease);
+            return TryGetOrConsumeOverride(clipFade, SoundManager.FadeInEase, ref _fadeInData, out fadeIn, out ease);
         }
 
-        public bool HasFadeOut(float clipFade, out float fadeOut, out Ease ease)
+        // Matches whether TryGetFadeIn would actually run a fade (override/base/clip setting > 0) without consuming the override.
+        public bool HasFadeIn(float clipFade) => _fadeInData.ResolveFade(clipFade) > FadeData.Immediate;
+        public bool HasFadeOutOverride => _fadeOutData.HasPendingOverride;
+
+        public bool TryGetFadeOut(float clipFade, out float fadeOut, out Ease ease)
         {
-            return HasFading(clipFade, SoundManager.FadeOutEase, ref _fadeOutData, out fadeOut, out ease);
+            return TryGetOrConsumeOverride(clipFade, SoundManager.FadeOutEase, ref _fadeOutData, out fadeOut, out ease);
         }
 
-        private static bool HasFading(float clipFade, Ease clipEase, ref FadeData overrideData, out float fadeIn, out Ease ease)
+        private static bool TryGetOrConsumeOverride(float clipFade, Ease clipEase, ref FadeData overrideData, out float fadeIn, out Ease ease)
         {
             fadeIn = clipFade;
             ease = clipEase;
@@ -90,7 +100,8 @@ namespace Ami.BroAudio.Runtime
 
         public IBroAudioClip PickNewClip()
         {
-            return Entity.PickNewClip(_contextValue);
+            var context = new ClipSelectionContext(_contextValue) { SequenceId = SequenceId };
+            return Entity.PickNewClip(context);
         }
 
         public void ApplySeamlessFade()
@@ -142,8 +153,7 @@ namespace Ami.BroAudio.Runtime
             {
                 return false;
             }
-            return IsLoop(LoopType.SeamlessLoop) || 
-                   (IsChainedMode() && ChainedModeStage == PlaybackStage.Start); // normal loop uses the same audio player to loop
+            return Entity.HasLoop(out _, out _);
         }
 
         public bool CanHandoverToEnd()
@@ -160,6 +170,11 @@ namespace Ami.BroAudio.Runtime
         public bool IsChainedMode()
         {
             return Entity.PlayMode == MulticlipsPlayMode.Chained;
+        }
+
+        public bool HasLoop()
+        {
+            return Entity.HasLoop(out _, out _);
         }
         
         public bool IsLoop(LoopType targetType)

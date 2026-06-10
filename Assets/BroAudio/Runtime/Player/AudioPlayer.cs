@@ -36,7 +36,6 @@ namespace Ami.BroAudio.Runtime
         public bool IsPlaying => AudioSource.isPlaying;
         public Vector3 PlayingPosition => _pref.Position;
         public bool IsStopping { get; private set; }
-        public bool IsFadingOut { get; private set; }
         public EffectType CurrentActiveTrackEffects { get; private set; } = EffectType.None;
         public bool IsUsingTrackEffect => CurrentActiveTrackEffects != EffectType.None;
         public bool IsDominator => HasDecoratorOf<DominatorPlayer>();
@@ -101,6 +100,10 @@ namespace Ami.BroAudio.Runtime
             {
                 transform.position = target.position;
             }
+
+#if !UNITY_WEBGL
+            MonitorVirtualTrack();
+#endif
         }
 
         private void SetSpatial(PlaybackPreference pref)
@@ -184,6 +187,12 @@ namespace Ami.BroAudio.Runtime
         IAudioPlayer IAudioPlayer.SetVelocity(int velocity)
         {
             _pref.SetVelocity(velocity);
+            return this;
+        }
+
+        IAudioPlayer IAudioPlayer.SetSequenceId(string sequenceId)
+        {
+            _pref.SequenceId = sequenceId;
             return this;
         }
 

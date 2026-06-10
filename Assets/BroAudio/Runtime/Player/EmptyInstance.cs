@@ -22,12 +22,12 @@ namespace Ami.BroAudio.Runtime
 
             IMusicPlayer IMusicDecoratable.AsBGM() => MusicPlayer;
 #if !UNITY_WEBGL
-            IPlayerEffect IEffectDecoratable.AsDominator() => DominatorPlayer; 
+            IPlayerEffect IEffectDecoratable.AsDominator() => DominatorPlayer;
 #endif
 
             void IAudioPlayer.GetOutputData(float[] samples, int channels) { }
             void IAudioPlayer.GetSpectrumData(float[] samples, int channels, FFTWindow window) { }
-            
+
             IAudioPlayer IAudioPlayer.AddAudioEffect<T, TProxy>(Action<TProxy> onSet) => this;
             IAudioPlayer IAudioPlayer.RemoveAudioEffect<T>() => this;
             IAudioPlayer IAudioPlayer.OnAudioFilterRead(Action<float[], int> onAudioFilterRead) => this;
@@ -43,6 +43,7 @@ namespace Ami.BroAudio.Runtime
             void IAudioStoppable.UnPause(float fadeOut) { }
             IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime) => this;
             IAudioPlayer IAudioPlayer.SetVelocity(int velocity) => this;
+            IAudioPlayer IAudioPlayer.SetSequenceId(string sequenceId) => this;
             IAudioPlayer IVolumeSettable.SetVolume(float vol, float fadeTime) => this;
             void IAudioStoppable.Stop() { }
             void IAudioStoppable.Stop(Action onFinished) { }
@@ -51,6 +52,7 @@ namespace Ami.BroAudio.Runtime
             IAudioPlayer ISchedulable.SetScheduledStartTime(double dspTime) => this;
             IAudioPlayer ISchedulable.SetScheduledEndTime(double dspTime) => this;
             IAudioPlayer ISchedulable.SetDelay(float time) => this;
+            float IAudioPlayer.GetVolume() => 0f;
         }
 
         public class EmptyMusicPlayer : EmptyAudioPlayer, IMusicPlayer
@@ -71,7 +73,7 @@ namespace Ami.BroAudio.Runtime
             IPlayerEffect IPlayerEffect.LowPassOthers(float freq, Fading fading) => this;
             IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, float fadeTime) => this;
             IPlayerEffect IPlayerEffect.QuietOthers(float othersVol, Fading fading) => this;
-        } 
+        }
 #endif
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Ami.BroAudio.Data;
+using UnityEngine;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -10,6 +11,15 @@ namespace Ami.BroAudio.Runtime
         public IBroAudioClip SelectClip(BroAudioClip[] clips, ClipSelectionContext context, out int index)
         {
             index = 0;
+            if (Utility.ClipListIsNullOrEmpty(clips, context.EntityName))
+            {
+                return null;
+            }
+            if (clips[0] == null)
+            {
+                Debug.LogError(Utility.LogTitle + $"`{context.EntityName}`'s first clip is null.");
+                return null;
+            }
             return clips[0];
         }
 

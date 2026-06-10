@@ -54,6 +54,15 @@ namespace Ami.BroAudio.Editor
         {
             StopAndDestroyStrategy();
         }
+
+        public bool TryTransitionToEnd()
+        {
+            if (_currentStrategy is AudioSourcePreviewStrategy audioSourceStrategy)
+            {
+                return audioSourceStrategy.TryTransitionToEnd();
+            }
+            return false;
+        }
         
         public void UpdatePreview()
         {

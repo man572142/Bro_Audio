@@ -29,7 +29,24 @@ namespace Ami.BroAudio
             => player?.UnPause();
 
         public static void UnPause(this IAudioStoppable player, float fadeOut)
-            => player?.UnPause( fadeOut);
+            => player?.UnPause(fadeOut);
+        #endregion
+
+        #region Get Volume
+        /// <summary>
+        /// Gets the player's current final volume (trackVolume × clipVolume × audioTypeVolume).
+        /// Returns 0 if the player is null or has been recycled.
+        /// </summary>
+        public static float GetVolume(this IAudioPlayer player)
+            => player?.GetVolume() ?? 0f;
+
+        /// <inheritdoc cref="GetVolume(IAudioPlayer)"/>
+        public static float GetVolume(this IMusicPlayer player)
+            => (player as IAudioPlayer)?.GetVolume() ?? 0f;
+
+        /// <inheritdoc cref="GetVolume(IAudioPlayer)"/>
+        public static float GetVolume(this IPlayerEffect player)
+            => (player as IAudioPlayer)?.GetVolume() ?? 0f;
         #endregion
 
         #region Set Volume
@@ -38,15 +55,15 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="vol">The target volume</param>
         /// <param name="fadeTime">Time to reach the target volume from the current volume.</param>
-        public static IAudioPlayer SetVolume(this IAudioPlayer player, float vol, float fadeTime = FadeTime_Immediate) 
+        public static IAudioPlayer SetVolume(this IAudioPlayer player, float vol, float fadeTime = FadeTime_Immediate)
             => player?.SetVolume(vol, fadeTime);
 
         /// <inheritdoc cref="SetVolume(IAudioPlayer,float,float)"/>
-        public static IAudioPlayer SetVolume(this IMusicPlayer player, float vol, float fadeTime = FadeTime_Immediate) 
+        public static IAudioPlayer SetVolume(this IMusicPlayer player, float vol, float fadeTime = FadeTime_Immediate)
             => player?.SetVolume(vol, fadeTime);
 
         /// <inheritdoc cref="SetVolume(IAudioPlayer,float,float)"/>
-        public static IAudioPlayer SetVolume(this IPlayerEffect player, float vol, float fadeTime = FadeTime_Immediate) 
+        public static IAudioPlayer SetVolume(this IPlayerEffect player, float vol, float fadeTime = FadeTime_Immediate)
             => player?.SetVolume(vol, fadeTime);
         #endregion
 
@@ -85,14 +102,22 @@ namespace Ami.BroAudio
         /// Set the velocity and use it to determine which audio clip to play
         /// </summary>
         public static IAudioPlayer SetVelocity(this IAudioPlayer player, int velocity)
-            => player?.SetVelocity(velocity); 
+            => player?.SetVelocity(velocity);
+        #endregion
+
+        #region Sequence
+        /// <summary>
+        /// Set the sequence identifier for this playback, allowing multiple independent sequence instances per entity.
+        /// </summary>
+        public static IAudioPlayer SetSequenceId(this IAudioPlayer player, string sequenceId)
+            => player?.SetSequenceId(sequenceId);
         #endregion
 
         #region As Background Music
         /// <summary>
         /// As a background music, which will transition automatically if another BGM is played after it.
         /// </summary>
-        public static IMusicPlayer AsBGM(this IAudioPlayer player) 
+        public static IMusicPlayer AsBGM(this IAudioPlayer player)
             => player?.AsBGM();
 
         /// <inheritdoc cref="AsBGM(IAudioPlayer)"/>
@@ -107,7 +132,7 @@ namespace Ami.BroAudio
         /// <param name="player"></param>
         /// <param name="transition">Transition type</param>
         /// <returns></returns>
-        public static IAudioPlayer SetTransition(this IMusicPlayer player, Transition transition) 
+        public static IAudioPlayer SetTransition(this IMusicPlayer player, Transition transition)
             => player?.SetTransition(transition, Runtime.FadeData.UseClipSetting);
 
         /// <param name="overrideFade">Override value of the fading time</param>
@@ -136,78 +161,78 @@ namespace Ami.BroAudio
         /// Adds a chorus effect to the audio player, creating multiple delayed copies of the sound to produce a richer, fuller tone
         /// </summary>
         /// <param name="onSet">Optional callback to configure the chorus settings</param>
-        public static IAudioPlayer AddChorusEffect(this IAudioPlayer player, Action<IAudioChorusFilterProxy> onSet = null) 
+        public static IAudioPlayer AddChorusEffect(this IAudioPlayer player, Action<IAudioChorusFilterProxy> onSet = null)
             => player?.AddAudioEffect<AudioChorusFilter, IAudioChorusFilterProxy>(onSet);
-        
+
         /// <summary>
         /// Adds a distortion effect to the audio player, creating audio clipping and harmonic distortion
         /// </summary>
         /// <param name="onSet">Optional callback to configure the distortion settings</param>
-        public static IAudioPlayer AddDistortionEffect(this IAudioPlayer player, Action<IAudioDistortionFilterProxy> onSet = null) 
+        public static IAudioPlayer AddDistortionEffect(this IAudioPlayer player, Action<IAudioDistortionFilterProxy> onSet = null)
             => player?.AddAudioEffect<AudioDistortionFilter, IAudioDistortionFilterProxy>(onSet);
-        
+
         /// <summary>
         /// Adds an echo effect to the audio player, creating delayed repetitions of the original sound
         /// </summary>
         /// <param name="onSet">Optional callback to configure the echo settings</param>
-        public static IAudioPlayer AddEchoEffect(this IAudioPlayer player, Action<IAudioEchoFilterProxy> onSet = null) 
+        public static IAudioPlayer AddEchoEffect(this IAudioPlayer player, Action<IAudioEchoFilterProxy> onSet = null)
             => player?.AddAudioEffect<AudioEchoFilter, IAudioEchoFilterProxy>(onSet);
-        
+
         /// <summary>
         /// Adds a high-pass filter effect to the audio player, attenuating low frequencies below the cutoff point
         /// </summary>
         /// <param name="onSet">Optional callback to configure the high-pass filter settings</param>
-        public static IAudioPlayer AddHighPassEffect(this IAudioPlayer player, Action<IAudioHighPassFilterProxy> onSet = null) 
+        public static IAudioPlayer AddHighPassEffect(this IAudioPlayer player, Action<IAudioHighPassFilterProxy> onSet = null)
             => player?.AddAudioEffect<AudioHighPassFilter, IAudioHighPassFilterProxy>(onSet);
 
         /// <summary>
         /// Adds a low-pass filter effect to the audio player, attenuating high frequencies above the cutoff point
         /// </summary>
         /// <param name="onSet">Optional callback to configure the low-pass filter settings</param>
-        public static IAudioPlayer AddLowPassEffect(this IAudioPlayer player, Action<IAudioLowPassFilterProxy> onSet = null) 
+        public static IAudioPlayer AddLowPassEffect(this IAudioPlayer player, Action<IAudioLowPassFilterProxy> onSet = null)
             => player?.AddAudioEffect<AudioLowPassFilter, IAudioLowPassFilterProxy>(onSet);
-        
+
         /// <summary>
         /// Adds a reverb effect to the audio player, simulating acoustic reflections in various environments
         /// </summary>
         /// <param name="onSet">Optional callback to configure the reverb settings</param>
-        public static IAudioPlayer AddReverbEffect(this IAudioPlayer player, Action<IAudioReverbFilterProxy> onSet = null) 
+        public static IAudioPlayer AddReverbEffect(this IAudioPlayer player, Action<IAudioReverbFilterProxy> onSet = null)
             => player?.AddAudioEffect<AudioReverbFilter, IAudioReverbFilterProxy>(onSet);
 
         /// <summary>
         /// Removes a chorus effect from the audio player
         /// </summary>
-        public static IAudioPlayer RemoveChorusEffect(this IAudioPlayer player) 
+        public static IAudioPlayer RemoveChorusEffect(this IAudioPlayer player)
             => player?.RemoveAudioEffect<AudioChorusFilter>();
-        
+
         /// <summary>
         /// Removes a distortion effect from the audio player
         /// </summary>
-        public static IAudioPlayer RemoveDistortionEffect(this IAudioPlayer player) 
+        public static IAudioPlayer RemoveDistortionEffect(this IAudioPlayer player)
             => player?.RemoveAudioEffect<AudioDistortionFilter>();
-        
+
         /// <summary>
         /// Removes an echo effect from the audio player
         /// </summary>
-        public static IAudioPlayer RemoveEchoEffect(this IAudioPlayer player) 
+        public static IAudioPlayer RemoveEchoEffect(this IAudioPlayer player)
             => player?.RemoveAudioEffect<AudioEchoFilter>();
-        
+
         /// <summary>
         /// Removes a high-pass filter effect from the audio player
         /// </summary>
-        public static IAudioPlayer RemoveHighPassEffect(this IAudioPlayer player) 
+        public static IAudioPlayer RemoveHighPassEffect(this IAudioPlayer player)
             => player?.RemoveAudioEffect<AudioHighPassFilter>();
 
         /// <summary>
         /// Removes a low-pass filter effect from the audio player
         /// </summary>
-        public static IAudioPlayer RemoveLowPassEffect(this IAudioPlayer player) 
+        public static IAudioPlayer RemoveLowPassEffect(this IAudioPlayer player)
             => player?.RemoveAudioEffect<AudioLowPassFilter>();
-        
+
         /// <summary>
         /// Removes a reverb effect from the audio player
         /// </summary>
-        public static IAudioPlayer RemoveReverbEffect(this IAudioPlayer player) 
+        public static IAudioPlayer RemoveReverbEffect(this IAudioPlayer player)
             => player?.RemoveAudioEffect<AudioReverbFilter>();
         #endregion
 
@@ -218,7 +243,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="player"></param>
         /// <param name="dominatedType">The audio type that being dominated</param>
-        public static IPlayerEffect AsDominator(this IAudioPlayer player) 
+        public static IPlayerEffect AsDominator(this IAudioPlayer player)
             => player?.AsDominator();
 
         /// <inheritdoc cref="AsDominator(IAudioPlayer, BroAudioType)"/>
@@ -230,7 +255,7 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="othersVol"></param>
         /// <param name="fadeTime">The time duration of the FadeIn and FadeOut</param>
-        public static IPlayerEffect QuietOthers(this IPlayerEffect player, float othersVol, float fadeTime = FadeTime_Quick) 
+        public static IPlayerEffect QuietOthers(this IPlayerEffect player, float othersVol, float fadeTime = FadeTime_Quick)
             => player?.QuietOthers(othersVol, fadeTime);
 
         /// <inheritdoc cref = "QuietOthers(IPlayerEffect, float, float)" />
@@ -243,8 +268,8 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="freq">10 Hz ~ 22000Hz</param>
         /// <param name="fadeTime">The time duration of the FadeIn and FadeOut</param>
-        public static IPlayerEffect LowPassOthers(this IPlayerEffect player, float freq = LowPassFrequency, float fadeTime = FadeTime_Quick) 
-            => player?.LowPassOthers(freq,fadeTime);
+        public static IPlayerEffect LowPassOthers(this IPlayerEffect player, float freq = LowPassFrequency, float fadeTime = FadeTime_Quick)
+            => player?.LowPassOthers(freq, fadeTime);
 
         /// <inheritdoc cref = "LowPassOthers(IPlayerEffect, float, float)" />
         /// <param name="fading">The fading setting of this action</param>
@@ -256,8 +281,8 @@ namespace Ami.BroAudio
         /// </summary>
         /// <param name="freq">10 Hz ~ 22000Hz</param>
         /// <param name="fadeTime">The time duration of the FadeIn and FadeOut</param>
-        public static IPlayerEffect HighPassOthers(this IPlayerEffect player, float freq = HighPassFrequency, float fadeTime = FadeTime_Quick) 
-            => player?.HighPassOthers(freq,fadeTime);
+        public static IPlayerEffect HighPassOthers(this IPlayerEffect player, float freq = HighPassFrequency, float fadeTime = FadeTime_Quick)
+            => player?.HighPassOthers(freq, fadeTime);
 
         /// <inheritdoc cref = "HighPassOthers(IPlayerEffect, float, float)" />
         /// <param name="fading">The fading setting of this action</param>

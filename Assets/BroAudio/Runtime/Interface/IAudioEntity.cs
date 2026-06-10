@@ -15,6 +15,8 @@ namespace Ami.BroAudio.Data
 		float GetPitch();
 		float GetRandomValue(float baseValue, RandomFlag flags);
         void ResetMultiClipStrategy();
+        void ResetMultiClipStrategy(string sequenceId);
         MulticlipsPlayMode PlayMode { get; }
-    } 
+        AudioEntityFlag Flags { get; }
+    }
 }

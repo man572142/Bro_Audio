@@ -16,7 +16,7 @@ namespace Ami.Extension
             }
         }
 
-        public static Coroutine StartCoroutineAndReassign(this MonoBehaviour source, IEnumerator enumerator, ref Coroutine coroutine)
+        public static Coroutine RestartCoroutine(this MonoBehaviour source, IEnumerator enumerator, ref Coroutine coroutine)
         {
             if(source)
             {

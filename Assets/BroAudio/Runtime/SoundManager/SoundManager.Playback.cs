@@ -9,7 +9,7 @@ namespace Ami.BroAudio.Runtime
     public partial class SoundManager : MonoBehaviour
     {
         private readonly Queue<IPlayable> _playbackQueue = new Queue<IPlayable>();
-        private AudioPlayer.PlaybackHandover _playbackHandoverDelegate;
+        private AudioPlayer.HandoverPlayerFactory _scheduleHandover;
 
         #region Play
         public IAudioPlayer Play(SoundID id, float fadeIn, IPlayableValidator customValidator = null)
@@ -64,7 +64,7 @@ namespace Ami.BroAudio.Runtime
 
         private IAudioPlayer PlayerToPlay(SoundID id, AudioPlayer player, PlaybackPreference pref)
         {
-            BroAudioType audioType = id.ToAudioType();
+            var audioType = id.ToAudioType();
             var wrapper = new AudioPlayerInstanceWrapper(player);
             player.SetInstanceWrapper(wrapper);
             player.SetPlaybackData(id, pref);
@@ -80,10 +80,10 @@ namespace Ami.BroAudio.Runtime
             _combFilteringPreventer ??= new Dictionary<SoundID, AudioPlayer>();
             _combFilteringPreventer[id] = player;
             
-            if (pref.IsLoop(LoopType.SeamlessLoop) || pref.Entity.PlayMode == MulticlipsPlayMode.Chained)
+            if (pref.Entity.HasLoop(out _, out _) || pref.Entity.PlayMode == MulticlipsPlayMode.Chained)
             {
-                _playbackHandoverDelegate ??= PlaybackHandover;
-                player.OnPlaybackHandover = _playbackHandoverDelegate;
+                _scheduleHandover ??= ScheduleNextPlayback;
+                player.RequestNextPlayer = _scheduleHandover;
             }
 
             // Start loading addressable clips if needed
@@ -117,25 +117,12 @@ namespace Ami.BroAudio.Runtime
 #endif
         }
 
-        private void PlaybackHandover(SoundID id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType prevTrackEffect, float trackVolume, float pitch)
+        private AudioPlayer ScheduleNextPlayback(PlaybackHandoverData handover)
         {
             var newPlayer = _audioPlayerPool.Extract();
-            wrapper.UpdateInstance(newPlayer);
-            newPlayer.SetInstanceWrapper(wrapper);
-
-            newPlayer.SetVolume(trackVolume);
-            newPlayer.SetPitch(pitch);
-            newPlayer.SetPlaybackData(id, pref);
-            newPlayer.Play();
-            if (pref.ScheduledEndTime > 0d)
-            {
-                newPlayer.SetScheduledEndTime(pref.ScheduledEndTime);
-            }
-#if !UNITY_WEBGL
-            newPlayer.SetTrackEffect(prevTrackEffect, SetEffectMode.Override);
-#endif
-
-            newPlayer.OnPlaybackHandover = PlaybackHandover;
+            newPlayer.ReceiveHandover(handover);
+            newPlayer.RequestNextPlayer = _scheduleHandover;
+            return newPlayer;
         }
 
         private void RemoveFromPreventer(AudioPlayer target)

@@ -25,6 +25,11 @@ namespace Ami.BroAudio
         {
             return ((int)flags & (int)targetFlag) != 0;
         }
+
+        public static bool Contains(this AudioEntityFlag flags, AudioEntityFlag targetFlag)
+        {
+            return ((int)flags & (int)targetFlag) != 0;
+        }
         #endregion
 
         public static BroAudioType ConvertEverythingFlag(this BroAudioType audioType)
@@ -51,13 +56,19 @@ namespace Ami.BroAudio
             return (int)(sampleRate * seconds);
         }
 
+        public static double GetPlayableDuration(this IBroAudioClip clip)
+        {
+            var audioClip = clip.GetAudioClip();
+            return audioClip != null ? audioClip.GetPreciseLength() - clip.StartPosition - clip.EndPosition : 0d;
+        }
+
         public static bool IsDefaultCurve(this AnimationCurve curve , float defaultValue)
         {
             if(curve == null || curve.length == 0)
             {
                 return true;
             }
-            else if(curve.length == 1 && curve[0].value == defaultValue)
+            else if(curve.length == 1 && Mathf.Approximately(curve[0].value, defaultValue))
             {
                 return true;
             }
@@ -202,6 +213,16 @@ namespace Ami.BroAudio
         public static bool IsNegativeInfinity(this Vector3 v)
         {
             return float.IsNegativeInfinity(v.x) && float.IsNegativeInfinity(v.y) && float.IsNegativeInfinity(v.z);
+        }
+
+        public static bool ClipListIsNullOrEmpty(BroAudioClip[] clips, string entityName)
+        {
+            if (clips == null || clips.Length < 1)
+            {
+                Debug.LogError(LogTitle + $"<b>{entityName}</b>'s clips array is empty or null.");
+                return true;
+            }
+            return false;
         }
 
         public static void Log(string message, LogType type)

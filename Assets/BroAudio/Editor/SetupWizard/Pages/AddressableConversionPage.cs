@@ -1,6 +1,5 @@
 ﻿#if PACKAGE_ADDRESSABLES
 using UnityEngine;
-using static UnityEditor.EditorGUILayout;
 
 namespace Ami.BroAudio.Editor.Setting
 {
@@ -9,6 +8,7 @@ namespace Ami.BroAudio.Editor.Setting
         public override string PageTitle => "Addressables Conversion";
         public override string PageDescription => "Choose how Bro Audio handles entities when you mark them as Addressables.";
         public override SetupDepth RequiredDepth => SetupDepth.Comprehensive;
+
         protected override (string Name, string Url)[] DocReferences { get; set; } =
         {
             ("#Addressables In Bro Audio", "https://man572142s-organization.gitbook.io/broaudio/core-features/addressables"),
@@ -18,7 +18,7 @@ namespace Ami.BroAudio.Editor.Setting
         public override void DrawContent()
         {
             GUILayout.FlexibleSpace();
-            Drawer.DrawAddressableNeverAskOptions(GetControlRect(), GetControlRect());
+            Drawer.DrawAddressableNeverAskOptions(default, GetControlRect);
         }
     }
 }

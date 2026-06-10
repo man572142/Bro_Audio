@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
 using Ami.BroAudio.Data;
-using UnityEngine;
 using Ami.Extension;
+using UnityEngine;
 using static Ami.BroAudio.Utility;
 
 namespace Ami.BroAudio.Runtime
@@ -10,13 +10,15 @@ namespace Ami.BroAudio.Runtime
     [RequireComponent(typeof(AudioSource))]
     public partial class AudioPlayer : MonoBehaviour, IAudioPlayer, IPlayable, IRecyclable<AudioPlayer>
     {
-        public delegate void PlaybackHandover(SoundID id, InstanceWrapper<AudioPlayer> wrapper, PlaybackPreference pref, EffectType effectType, float trackVolume, float pitch);
+        public delegate AudioPlayer HandoverPlayerFactory(PlaybackHandoverData handover);
 
-        public PlaybackHandover OnPlaybackHandover;
+        public HandoverPlayerFactory RequestNextPlayer;
 
         private PlaybackPreference _pref;
         private StopMode _stopMode;
         private Coroutine _playbackControlCoroutine = null;
+        private Coroutine _handoverScheduleCoroutine = null;
+        private AudioPlayer _nextPlayer;
 
         private event Action<SoundID> _onEnd = null;
         private event Action<IAudioPlayer> _onUpdate = null;
@@ -25,17 +27,18 @@ namespace Ami.BroAudio.Runtime
 
         public int PlaybackStartingTime { get; private set; }
         public bool HasStartedPlaying => PlaybackStartingTime > 0;
-        private bool IsOnHold => _stopMode == StopMode.Pause && !HasStartedPlaying;
+        private bool IsPausedBeforeStart => _stopMode == StopMode.Pause && !HasStartedPlaying;
 
-        public void SetPlaybackData(SoundID id, PlaybackPreference pref)
+        public void SetPlaybackData(SoundID id, PlaybackPreference pref, IBroAudioClip clip = null)
         {
             ID = id;
             _pref = pref;
+            _clip = clip;
         }
 
         public void Play()
         {
-            if(IsStopping || IsOnHold || _pref.ScheduledStartTime > 0)
+            if (IsStopping || IsPausedBeforeStart || _pref.ScheduledStartTime > 0 || !ID.IsValid())
             {
                 return;
             }
@@ -45,19 +48,20 @@ namespace Ami.BroAudio.Runtime
 
         private void PlayInternal()
         {
-            if(!ID.IsValid() || _pref.Entity == null
-                       || !SoundManager.Instance.TryGetAudioTypePref(ID.ToAudioType(), out var audioTypePref))
+            if (!ValidatePlayback(ID.IsValid() && _pref.Entity != null, $"Cannot play audio. Invalid ID:{ID} or Entity is null.") ||
+                !ValidatePlayback(SoundManager.Instance.TryGetAudioTypePref(ID.ToAudioType(), out var audioTypePref), $"Cannot play audio. Failed to get audio type preference for {ID.ToAudioType()}.") ||
+                !ValidatePlayback(!HasStartedPlaying || _stopMode == StopMode.Pause, "Audio Player wasn't cleaned up correctly"))
             {
-                Debug.LogError(LogTitle + $"Cannot play audio. Invalid ID:{ID} or Entity is null.");
+                EndPlaying();
                 return;
             }
+
             try
             {
-                this.StartCoroutineAndReassign(PlayControl(audioTypePref), ref _playbackControlCoroutine);
+                this.RestartCoroutine(PlayControl(audioTypePref), ref _playbackControlCoroutine);
             }
             catch (Exception ex)
             {
-                ClearEvents();
                 EndPlaying();
                 Debug.LogException(ex);
             }
@@ -69,154 +73,160 @@ namespace Ami.BroAudio.Runtime
             {
                 _audioTypeVolume.Complete(audioTypePref.Volume, false);
             }
-            _clipVolume.Complete(0f, false);
-            int sampleRate = _clip != null ? _clip.GetAudioClip().frequency : 0;
-            bool hasScheduledPlay = false;
-            if (!HasStartedPlaying) // we only do the following process when it's fresh
+            _clip ??= _pref.PickNewClip();
+            if (_clip == null)
             {
-                _clip = _pref.PickNewClip();
+                EndPlaying();
+                yield break;
+            }
 
+            SetClipDelayIfNotScheduled();
 #if PACKAGE_ADDRESSABLES
-                if (_clip is BroAudioClip broAudioClip && broAudioClip.IsAddressablesAvailable() && !broAudioClip.IsLoaded)
+            if (_clip is BroAudioClip broAudioClip && broAudioClip.IsAddressablesAvailable() && !broAudioClip.IsLoaded)
+            {
+                if (!SoundManager.Instance.Setting.AutomaticallyLoadAddressableAudioClips)
                 {
-                    if (!SoundManager.Instance.Setting.AutomaticallyLoadAddressableAudioClips)
-                    {
-                        LogNotPreloadedMessage(broAudioClip);
-                    }
-                    yield return WaitForAddressablesToLoad(broAudioClip);
+                    LogNotPreloadedMessage(broAudioClip);
                 }
+                yield return WaitForAddressablesToLoad(broAudioClip);
+            }
 #endif
 
-                var audioClip = _clip.GetAudioClip();
-                sampleRate = audioClip.frequency;
+            var audioClip = _clip.GetAudioClip();
+            if (!ValidatePlayback(audioClip != null, $"Audio Clip is not assigned in {ID}"))
+            {
+                EndPlaying();
+                yield break;
+            }
+
+            // Skip full setup on resume: the source is frozen mid-clip and already configured; re-running would leak the held track and rewind the playhead.
+            bool isResuming = _stopMode == StopMode.Pause && HasStartedPlaying;
+            bool isMusicPlayer = _decorators.TryGetDecorator<MusicPlayer>(out var musicPlayer);
+            if (isResuming)
+            {
+                RebaseScheduleAfterPause();
+            }
+            else
+            {
                 AudioSource.clip = audioClip;
                 AudioSource.priority = _pref.Entity.Priority;
-
-                SetPlayPosition(sampleRate);
+                AudioSource.timeSamples = GetSample(audioClip.frequency, _clip.StartPosition);
                 SetInitialPitch(_pref.Entity, audioTypePref);
                 SetSpatial(_pref);
+                SetupAudioTrack(audioTypePref);
+            }
+            
+            bool clipVolumeReady = !isMusicPlayer || !musicPlayer.NeedTransition;
+            if (clipVolumeReady)
+            {
+                SetupClipVolume();
+            }
 
-                if (IsDominator)
-                {
-                    TrackType = AudioTrackType.Dominator;
-                }
-                else
-                {
-                    SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
-                }
+            ResolveScheduledTiming(isResuming, out double endDspTime);
+            _playbackEndDspTime = endDspTime;
 
-                SchedulePlayback(out hasScheduledPlay);
-                if(hasScheduledPlay)
+            if (!isResuming)
+            {
+                SchedulePlayback();
+                if (_secondsUntilScheduledStart > 0)
                 {
                     yield return WaitForScheduledStartTime();
                 }
-
-                if (_decorators.TryGetDecorator<MusicPlayer>(out var musicPlayer))
-                {
-                    AudioSource.reverbZoneMix = 0f;
-                    AudioSource.priority = AudioConstant.HighestPriority;
-                    musicPlayer.DoTransition(ref _pref);
-                    while (musicPlayer.IsWaitingForTransition)
-                    {
-                        yield return null;
-                    }
-                }
-#if !UNITY_WEBGL
-                AudioTrack = MixerPool.GetTrack(TrackType);
-#endif
             }
 
-            do
+            if (isMusicPlayer)
             {
-                if(!hasScheduledPlay)
+                AudioSource.reverbZoneMix = 0f;
+                AudioSource.priority = AudioConstant.HighestPriority;
+                musicPlayer.DoTransition(ref _pref);
+                if (!clipVolumeReady)
                 {
-                    StartPlaying(sampleRate);
+                    SetupClipVolume();
                 }
-
-                if(!HasStartedPlaying)
+                while (musicPlayer.IsWaitingForTransition)
                 {
-                    PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
-                    _onStart?.Invoke(this);
-                    _onStart = null;
-                    _onUpdate?.Invoke(this);
-                    hasScheduledPlay = false;
+                    yield return null;
                 }
+            }
 
-                float targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
-                float elapsedTime = 0f;
+            // On resume, start is past — UnPause (via StartPlaying) restores playback without rewinding; re-arm the rebased end time after.
+            if (isResuming || _pref.ScheduledStartTime <= 0)
+            {
+                StartPlaying();
+            }
 
-                #region FadeIn
-                if (_pref.HasFadeIn(_clip.FadeIn, out var fadeIn, out var fadeInEase))
+            if (isResuming)
+            {
+                ScheduleEndTime();
+            }
+
+            if (!HasStartedPlaying)
+            {
+                PlaybackStartingTime = TimeExtension.UnscaledCurrentFrameBeganTime;
+                _onStart?.Invoke(this);
+                _onStart = null;
+                _onUpdate?.Invoke(this);
+            }
+            
+            if (_pref.TryGetFadeIn(_clip.FadeIn, out var fadeIn, out var fadeInEase))
+            {
+                _clipVolume.Fade(fadeIn, fadeInEase, _onUpdate, (IAudioPlayer)this);
+                while (_clipVolume.IsFading)
                 {
-                    _clipVolume.SetTarget(targetClipVolume);
-                    while (_clipVolume.Update(ref elapsedTime, fadeIn, fadeInEase))
-                    {
-                        yield return null;
-                        if (!OnUpdate())
-                        {
-                            yield break;
-                        }
-                    }
+                    yield return null;
                 }
-                else
-                {
-                    _clipVolume.Complete(targetClipVolume);
-                }
-                #endregion
+            }
 
+            if (_pref.HasLoop() && _pref.ChainedModeStage != PlaybackStage.End)
+            {
                 if (_pref.IsLoop(LoopType.SeamlessLoop))
                 {
-                    _pref.ScheduledStartTime = 0d;
                     _pref.ApplySeamlessFade();
                 }
 
-                #region FadeOut
-                int endSample = AudioSource.clip.samples - GetSample(sampleRate, _clip.EndPosition);
-                if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
-                {
-                    while (endSample - AudioSource.timeSamples > fadeOut * sampleRate)
-                    {
-                        yield return null;
-                        if (!OnUpdate())
-                        {
-                            yield break;
-                        }
-                    }
+                this.RestartCoroutine(ScheduleNextPlayback(endDspTime), ref _handoverScheduleCoroutine);
+            }
 
-                    TriggerPlaybackHandover();
-                    _clipVolume.SetTarget(0f);
-                    elapsedTime = 0f;
-                    IsFadingOut = true;
-                    while (_clipVolume.Update(ref elapsedTime, fadeOut, fadeOutEase))
-                    {
-                        yield return null;
-                        if (!OnUpdate())
-                        {
-                            yield break;
-                        }
-                    }
-                    IsFadingOut = false;
-                }
-                else
+            if (_pref.TryGetFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
+            {
+                double fadeOutDspTime = endDspTime - fadeOut;
+                while (AudioSettings.dspTime < fadeOutDspTime)
                 {
-                    bool hasPlayed = false;
-                    while(!HasEndPlaying(ref hasPlayed, endSample, sampleRate))
-                    {
-                        yield return null;
-                        if (!OnUpdate())
-                        {
-                            yield break;
-                        }
-                    }
-                    TriggerPlaybackHandover();
+                    yield return null;
+                    _onUpdate?.Invoke(this);
                 }
-                #endregion
-            } while (_pref.IsLoop(LoopType.Loop) && CanLoopIfIsChainedMode());
 
+                if (_pref.IsLoop(LoopType.SeamlessLoop))
+                {
+                    BeginHandover();
+                }
+
+                _clipVolume.SetTarget(0f);
+                _clipVolume.Fade(fadeOut, fadeOutEase, _onUpdate, (IAudioPlayer)this);
+                while (_clipVolume.IsFading)
+                {
+                    yield return null;
+                }
+
+                if (_pref.IsLoop(LoopType.Loop))
+                {
+                    BeginHandover();
+                }
+            }
+            else
+            {
+                while (AudioSettings.dspTime < endDspTime)
+                {
+                    yield return null;
+                    _onUpdate?.Invoke(this);
+                }
+
+                BeginHandover();
+            }
             EndPlaying();
         }
 
-        private void StartPlaying(int sampleRate)
+        private void StartPlaying()
         {
             switch (_stopMode)
             {
@@ -228,7 +238,7 @@ namespace Ami.BroAudio.Runtime
                 case StopMode.Stop:
                 case StopMode.Pause:
                 case StopMode.Mute:
-                    PlayFromPos(sampleRate);
+                    AudioSource.Play();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -236,48 +246,155 @@ namespace Ami.BroAudio.Runtime
             _stopMode = default;
         }
 
-        private void PlayFromPos(int sampleRate)
+        private void SetupAudioTrack(IAudioPlaybackPref audioTypePref)
         {
-            SetPlayPosition(sampleRate);
-            AudioSource.Play();
-        }
-
-        private void SetPlayPosition(int sampleRate)
-        {
-            AudioSource.Stop();
-            AudioSource.timeSamples = GetSample(sampleRate, _clip.StartPosition);
-        }
-
-        // more accurate than AudioSource.isPlaying
-        private bool HasEndPlaying(ref bool hasPlayed, int endSample, int sampleRate)
-        {
-            int currentSample = AudioSource.timeSamples;
-            int startSample = GetSample(sampleRate, _clip.StartPosition);
-            if (!hasPlayed)
+            if (IsDominator)
             {
-                hasPlayed = currentSample > startSample;
+                TrackType = AudioTrackType.Dominator;
             }
 
-            return hasPlayed && (currentSample <= startSample || currentSample >= endSample);
+#if !UNITY_WEBGL
+            AudioTrack = MixerPool.GetTrack(TrackType);
+#endif
+
+            if (!IsDominator)
+            {
+                SetTrackEffect(audioTypePref.EffectType, SetEffectMode.Add);
+            }
+        }
+        
+        private void SetupClipVolume()
+        {
+            float targetClipVolume = _clip.Volume * _pref.Entity.GetMasterVolume();
+            _clipVolume.Complete(_pref.HasFadeIn(_clip.FadeIn) ? 0f : targetClipVolume);
+            _clipVolume.SetTarget(targetClipVolume);
+            UpdateVolume(true);
         }
 
-        private void TriggerPlaybackHandover(bool isEnd = false)
+        private void ResolveScheduledTiming(bool isResuming, out double endDspTime)
         {
-            if ((isEnd && !_pref.CanHandoverToEnd()) || (!isEnd && !_pref.CanHandoverToLoop()))
+            if (isResuming)
             {
+                // Slide the stored end time forward by the pause duration; also covers one-shots where ScheduledEndTime stays 0 and would be wrongly recomputed as a fresh duration.
+                endDspTime = _playbackEndDspTime + (AudioSettings.dspTime - _pauseDspTime);
                 return;
             }
 
+            bool isFirstLoopIteration = _pref.HasLoop() && _pref.ScheduledStartTime <= 0;
+            double warmUpTime = isFirstLoopIteration ? SoundManager.Instance.ScheduledPlaybackWarmUpTime : 0d;
+            double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : AudioSettings.dspTime + warmUpTime;
+            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
+            endDspTime = _pref.ScheduledEndTime > 0 ? _pref.ScheduledEndTime : startBaseTime + pitchAdjustedDuration;
+            if (isFirstLoopIteration)
+            {
+                _pref.ScheduledStartTime = startBaseTime;
+                _pref.ScheduledEndTime = endDspTime;
+            }
+            else if (_pref.ScheduledStartTime > 0 && _pref.ScheduledEndTime <= 0)
+            {
+                _pref.ScheduledEndTime = endDspTime;
+            }
+        }
+
+        private IEnumerator ScheduleNextPlayback(double endDspTime, bool isEnd = false)
+        {
             var newPref = _pref;
             if (newPref.IsChainedMode())
             {
                 newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
             }
+            
+            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
+            newPref.ScheduledStartTime = endDspTime;
+            newPref.ScheduledEndTime = endDspTime + pitchAdjustedDuration;
+            if (!isEnd && _pref.IsLoop(LoopType.SeamlessLoop) && newPref.TryGetFadeOut(_clip.FadeOut, out float fadeOut, out _))
+            {
+                newPref.ScheduledStartTime -= fadeOut;
+                newPref.ScheduledEndTime -= fadeOut;
+            }
 
-            ClearScheduleEndEvents(); // it should be rescheduled in the new player
-            OnPlaybackHandover?.Invoke(ID, _instanceWrapper, newPref, CurrentActiveTrackEffects, _trackVolume.Target, StaticPitch);
-            OnPlaybackHandover = null;
-            _instanceWrapper = null; // the instance has been transferred to the new player
+            bool changePerLoop = _pref.Entity.Flags.Contains(AudioEntityFlag.ChangeClipPerLoop);
+            bool needNewClip = changePerLoop
+                            || (_pref.IsChainedMode() && (isEnd || _pref.ChainedModeStage == PlaybackStage.Start));
+            if (needNewClip)
+            {
+                // Reset so the new player can recalculate against its picked clip's duration.
+                newPref.ScheduledEndTime = 0;
+            }
+            
+            var warmUpTime = isEnd ? 0d : SoundManager.Instance.ScheduledPlaybackWarmUpTime;
+            while (AudioSettings.dspTime < newPref.ScheduledStartTime - warmUpTime)
+            {
+                yield return null;
+            }
+
+            var handover = new PlaybackHandoverData()
+            {
+                ID = ID,
+                Pref = newPref,
+                Clip = needNewClip ? null : _clip,
+                TrackEffect = CurrentActiveTrackEffects,
+                TrackVolume = _trackVolume.Target,
+                Pitch = StaticPitch,
+            };
+
+            if (_trackVolume.IsFading)
+            {
+                handover.TrackVolumeCurrent = _trackVolume.Current;
+                handover.TrackVolumeRemaining = _trackVolume.RemainingTime;
+                handover.TrackVolumeEase = _trackVolume.Ease;
+            }
+            
+            _nextPlayer?.Stop(FadeData.Immediate, StopMode.Stop, null);
+            _nextPlayer = RequestNextPlayer?.Invoke(handover);
+        }
+
+        private void BeginHandover(bool isEnd = false)
+        {
+            if (!CanHandover(isEnd) || _instanceWrapper == null || _nextPlayer == null)
+            {
+                return;
+            }
+
+            ClearScheduleEndEvents();
+            _instanceWrapper.UpdateInstance(_nextPlayer);
+            _nextPlayer.SetInstanceWrapper(_instanceWrapper);
+            _instanceWrapper = null;
+            _nextPlayer = null;
+        }
+
+        private bool CanHandover(bool isEnd = false) =>
+            isEnd ? _pref.CanHandoverToEnd() : _pref.CanHandoverToLoop();
+
+        private static double PitchAdjusted(double duration, float pitch) =>
+            Mathf.Approximately(pitch, 0f) ? duration : duration / pitch;
+
+        internal void ReceiveHandover(PlaybackHandoverData handover)
+        {
+            SetPlaybackData(handover.ID, handover.Pref, handover.Clip);
+            if (handover.TrackVolumeRemaining > 0f)
+            {
+                _trackVolume.Resume(handover.TrackVolumeCurrent, handover.TrackVolume);
+                _trackVolume.Fade(handover.TrackVolumeRemaining, handover.TrackVolumeEase);
+            }
+            else
+            {
+                _trackVolume.Complete(handover.TrackVolume);
+            }
+            this.SetPitch(handover.Pitch);
+            PlayInternal();
+#if !UNITY_WEBGL
+            SetTrackEffect(handover.TrackEffect, SetEffectMode.Override);
+#endif
+        }
+
+        private static bool ValidatePlayback(bool condition, string message, UnityEngine.Object context = null)
+        {
+            if (!condition)
+            {
+                Debug.LogError(LogTitle + message, context);
+            }
+            return condition;
         }
 
         #region Stop Overloads
@@ -314,10 +431,11 @@ namespace Ami.BroAudio.Runtime
             }
 
             bool isPlaying = AudioSource.isPlaying;
-            if(stopMode == StopMode.Pause && !isPlaying)
+            if (stopMode == StopMode.Pause && !isPlaying)
             {
                 bool hasPaused = _stopMode == StopMode.Pause;
                 _stopMode = StopMode.Pause;
+                _pauseDspTime = AudioSettings.dspTime;
                 if (!hasPaused)
                 {
                     _onPaused?.Invoke(this);
@@ -332,7 +450,7 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            this.StartCoroutineAndReassign(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);
+            this.RestartCoroutine(StopControl(overrideFade, stopMode, onFinished), ref _playbackControlCoroutine);
         }
 
         private IEnumerator StopControl(float overrideFade, StopMode stopMode, Action onFinished)
@@ -340,20 +458,40 @@ namespace Ami.BroAudio.Runtime
             _stopMode = stopMode;
             IsStopping = true;
             _pref.SetNextFadeOut(overrideFade);
-            
-            TriggerPlaybackHandover(isEnd: true);
-            #region FadeOut
-            if (_pref.HasFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
+
+            bool didHandoverToEnd = false;
+            if (_instanceWrapper != null && _pref.CanHandoverToEnd())
             {
-                if (IsFadingOut)
+                this.RestartCoroutine(ScheduleNextPlayback(AudioSettings.dspTime, isEnd: true), ref _handoverScheduleCoroutine);  // Start the next playback immediately
+                BeginHandover(isEnd: true);
+                // BeginHandover only nulls _instanceWrapper on success; the next player now owns onUpdate dispatch.
+                didHandoverToEnd = _instanceWrapper == null;
+            }
+            else
+            {
+                // Stop pre-empts any scheduled loop handover; cancel the schedule and
+                // discard a pre-spawned next player so no unwanted iteration starts.
+                this.SafeStopCoroutine(_handoverScheduleCoroutine);
+                _handoverScheduleCoroutine = null;
+                if(_nextPlayer != null)
                 {
-                    // if it's fading out. then don't stop. just wait for it
-                    AudioClip clip = AudioSource.clip;
-                    float endSample = clip.samples - (_clip.EndPosition * clip.frequency);
-                    while(AudioSource.timeSamples < endSample)
+                    _nextPlayer.Stop(FadeData.Immediate, StopMode.Stop, null);
+                    _nextPlayer = null;
+                }
+            }
+
+            #region FadeOut
+            bool hasExplicitOverride = _pref.HasFadeOutOverride;
+            if (_pref.TryGetFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
+            {
+                // After end-handover, the in-flight Fade captured the old player's _onUpdate before
+                // BeginHandover ran. Restart it with a null callback to keep the ce15a806 invariant.
+                if (_clipVolume.IsFadingOut && !hasExplicitOverride && !didHandoverToEnd)
+                {
+                    while (_clipVolume.IsFading)
                     {
                         yield return null;
-                        if(!OnUpdate())
+                        if (!IsActive)
                         {
                             yield break;
                         }
@@ -361,25 +499,23 @@ namespace Ami.BroAudio.Runtime
                 }
                 else
                 {
-                    float elapsedTime = 0f;
                     _clipVolume.SetTarget(0f);
-                    while(_clipVolume.Update(ref elapsedTime, fadeOut, fadeOutEase))
+                    _clipVolume.Fade(fadeOut, fadeOutEase, didHandoverToEnd ? null : _onUpdate, (IAudioPlayer)this);
+                    while (_clipVolume.IsFading)
                     {
                         yield return null;
-                        if (!OnUpdate())
-                        {
-                            yield break;
-                        }
                     }
                 }
             }
             #endregion
             switch (stopMode)
             {
-                case StopMode.Stop: 
+                case StopMode.Stop:
                     EndPlaying();
                     break;
                 case StopMode.Pause:
+                    // Snapshot freeze time so resume can slide the dsp schedule forward by the pause duration.
+                    _pauseDspTime = AudioSettings.dspTime;
                     AudioSource.Pause();
                     _onPaused?.Invoke(this);
                     break;
@@ -391,41 +527,27 @@ namespace Ami.BroAudio.Runtime
             onFinished?.Invoke();
         }
 
-        private bool OnUpdate()
-        {
-            _onUpdate?.Invoke(this);
-            return IsActive;
-        }
-
         private void EndPlaying()
         {
             PlaybackStartingTime = 0;
+            _pauseDspTime = 0d;
+            _playbackEndDspTime = 0d;
             _stopMode = default;
             _pref = default;
-            IsFadingOut = false;
             IsStopping = false;
             ResetVolume();
             ResetPitch();
-            
+
             AudioSource.Stop();
             AudioSource.clip = null;
             _clip = null;
             ResetSpatial();
             ResetEffect();
-
-            // Don't add StopCoroutine(_playbackCoroutine) here, as this method is typically called within it, and further processing after this method cannot be guaranteed.
-            _trackVolume.StopCoroutine();
-            _audioTypeVolume.StopCoroutine();
-
+            
             _onEnd?.Invoke(ID);
             _onEnd = null;
 
             Recycle();
-        }
-        
-        private bool CanLoopIfIsChainedMode()
-        {
-            return !_pref.IsChainedMode() || (_pref.IsChainedMode() && _pref.ChainedModeStage == PlaybackStage.Loop);
         }
 
         public IAudioPlayer OnEnd(Action<SoundID> onEnd)

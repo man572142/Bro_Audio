@@ -19,6 +19,7 @@ namespace Ami.BroAudio.Data
         float PitchRandomRange { get; }
         float VolumeRandomRange { get; }
         RandomFlag RandomFlags { get; }
+        AudioEntityFlag Flags { get; }
         PlaybackGroup PlaybackGroup { get; }
         MulticlipsPlayMode PlayMode { get; }
     }

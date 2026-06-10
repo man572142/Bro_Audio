@@ -26,8 +26,10 @@ namespace Ami.BroAudio.Runtime
             ClearEvents();
             this.SafeStopCoroutine(_playbackControlCoroutine);
             this.SafeStopCoroutine(_handoverScheduleCoroutine);
+            this.SafeStopCoroutine(_pitchCoroutine);
             _playbackControlCoroutine = null;
             _handoverScheduleCoroutine = null;
+            _pitchCoroutine = null;
             _nextPlayer = null;
             
             if (TryGetMixerAndTrack(out _, out var track))

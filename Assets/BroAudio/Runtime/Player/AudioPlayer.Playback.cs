@@ -157,6 +157,9 @@ namespace Ami.BroAudio.Runtime
 
             if (isResuming)
             {
+                // The rebased end time is provisional (slid by the pause duration); now that the source is
+                // un-paused, derive the exact end from the playhead — this also covers SetPitch while paused.
+                RecalculateScheduledEndTime();
                 ScheduleEndTime();
             }
 
@@ -184,13 +187,13 @@ namespace Ami.BroAudio.Runtime
                     _pref.ApplySeamlessFade();
                 }
 
-                this.RestartCoroutine(ScheduleNextPlayback(endDspTime), ref _handoverScheduleCoroutine);
+                this.RestartCoroutine(ScheduleNextPlayback(), ref _handoverScheduleCoroutine);
             }
 
+            // Re-read _playbackEndDspTime every frame from here on — a mid-play pitch change recomputes it.
             if (_pref.TryGetFadeOut(_clip.FadeOut, out float fadeOut, out var fadeOutEase))
             {
-                double fadeOutDspTime = endDspTime - fadeOut;
-                while (AudioSettings.dspTime < fadeOutDspTime)
+                while (AudioSettings.dspTime < _playbackEndDspTime - fadeOut)
                 {
                     yield return null;
                     _onUpdate?.Invoke(this);
@@ -215,7 +218,7 @@ namespace Ami.BroAudio.Runtime
             }
             else
             {
-                while (AudioSettings.dspTime < endDspTime)
+                while (AudioSettings.dspTime < _playbackEndDspTime)
                 {
                     yield return null;
                     _onUpdate?.Invoke(this);
@@ -284,7 +287,8 @@ namespace Ami.BroAudio.Runtime
             double warmUpTime = isFirstLoopIteration ? SoundManager.Instance.ScheduledPlaybackWarmUpTime : 0d;
             double startBaseTime = _pref.ScheduledStartTime > 0 ? _pref.ScheduledStartTime : AudioSettings.dspTime + warmUpTime;
             double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
-            endDspTime = _pref.ScheduledEndTime > 0 ? _pref.ScheduledEndTime : startBaseTime + pitchAdjustedDuration;
+            bool isDerivedFromClip = _pref.ScheduledEndTime <= 0;
+            endDspTime = isDerivedFromClip ? startBaseTime + pitchAdjustedDuration : _pref.ScheduledEndTime;
             if (isFirstLoopIteration)
             {
                 _pref.ScheduledStartTime = startBaseTime;
@@ -294,39 +298,46 @@ namespace Ami.BroAudio.Runtime
             {
                 _pref.ScheduledEndTime = endDspTime;
             }
+            if (isDerivedFromClip)
+            {
+                _isEndTimeDerivedFromClip = true;
+            }
         }
 
-        private IEnumerator ScheduleNextPlayback(double endDspTime, bool isEnd = false)
+        private IEnumerator ScheduleNextPlayback(bool isEnd = false)
         {
             var newPref = _pref;
             if (newPref.IsChainedMode())
             {
                 newPref.ChainedModeStage = isEnd ? PlaybackStage.End : PlaybackStage.Loop;
             }
-            
-            double pitchAdjustedDuration = PitchAdjusted(_clip.GetPlayableDuration(), AudioSource.pitch);
-            newPref.ScheduledStartTime = endDspTime;
-            newPref.ScheduledEndTime = endDspTime + pitchAdjustedDuration;
+
+            // Consume the fade-out override on the copied pref up front (so it isn't consumed twice),
+            // but bake the handover times only after the wait — a mid-play pitch change moves the seam.
+            double seamlessFadeOut = 0d;
             if (!isEnd && _pref.IsLoop(LoopType.SeamlessLoop) && newPref.TryGetFadeOut(_clip.FadeOut, out float fadeOut, out _))
             {
-                newPref.ScheduledStartTime -= fadeOut;
-                newPref.ScheduledEndTime -= fadeOut;
+                seamlessFadeOut = fadeOut;
             }
 
             bool changePerLoop = _pref.Entity.Flags.Contains(AudioEntityFlag.ChangeClipPerLoop);
             bool needNewClip = changePerLoop
                             || (_pref.IsChainedMode() && (isEnd || _pref.ChainedModeStage == PlaybackStage.Start));
-            if (needNewClip)
+
+            if (!isEnd)
             {
-                // Reset so the new player can recalculate against its picked clip's duration.
-                newPref.ScheduledEndTime = 0;
+                double warmUpTime = SoundManager.Instance.ScheduledPlaybackWarmUpTime;
+                while (AudioSettings.dspTime < _playbackEndDspTime - seamlessFadeOut - warmUpTime)
+                {
+                    yield return null;
+                }
             }
-            
-            var warmUpTime = isEnd ? 0d : SoundManager.Instance.ScheduledPlaybackWarmUpTime;
-            while (AudioSettings.dspTime < newPref.ScheduledStartTime - warmUpTime)
-            {
-                yield return null;
-            }
+
+            double rawStart = (isEnd ? AudioSettings.dspTime : _playbackEndDspTime) - seamlessFadeOut;
+            newPref.ScheduledStartTime = System.Math.Max(rawStart, AudioSettings.dspTime);
+            // Reset to 0 so the receiver derives the end from its own resolved pitch, avoiding both
+            // mid-fade bake mismatch and per-iteration pitch randomization disagreement.
+            newPref.ScheduledEndTime = 0;
 
             var handover = new PlaybackHandoverData()
             {
@@ -372,6 +383,8 @@ namespace Ami.BroAudio.Runtime
         internal void ReceiveHandover(PlaybackHandoverData handover)
         {
             SetPlaybackData(handover.ID, handover.Pref, handover.Clip);
+            // Handover end times always come from a clip-duration computation (or 0 when a new clip is needed).
+            _isEndTimeDerivedFromClip = true;
             if (handover.TrackVolumeRemaining > 0f)
             {
                 _trackVolume.Resume(handover.TrackVolumeCurrent, handover.TrackVolume);
@@ -462,7 +475,7 @@ namespace Ami.BroAudio.Runtime
             bool didHandoverToEnd = false;
             if (_instanceWrapper != null && _pref.CanHandoverToEnd())
             {
-                this.RestartCoroutine(ScheduleNextPlayback(AudioSettings.dspTime, isEnd: true), ref _handoverScheduleCoroutine);  // Start the next playback immediately
+                this.RestartCoroutine(ScheduleNextPlayback(isEnd: true), ref _handoverScheduleCoroutine);  // Start the next playback immediately
                 BeginHandover(isEnd: true);
                 // BeginHandover only nulls _instanceWrapper on success; the next player now owns onUpdate dispatch.
                 didHandoverToEnd = _instanceWrapper == null;
@@ -532,6 +545,7 @@ namespace Ami.BroAudio.Runtime
             PlaybackStartingTime = 0;
             _pauseDspTime = 0d;
             _playbackEndDspTime = 0d;
+            _isEndTimeDerivedFromClip = false;
             _stopMode = default;
             _pref = default;
             IsStopping = false;

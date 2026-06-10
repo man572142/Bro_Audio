@@ -32,6 +32,7 @@ namespace Ami.BroAudio.Runtime
                     else
                     {
                         AudioSource.pitch = pitch;
+                        RecalculateScheduledEndTime();
                     }
                     break;
             }
@@ -64,6 +65,7 @@ namespace Ami.BroAudio.Runtime
             {
                 currentTime += Utility.GetDeltaTime();
                 AudioSource.pitch = Mathf.Lerp(startPitch, targetPitch, (currentTime / fadeTime).SetEase(Ease.Linear));
+                RecalculateScheduledEndTime();
                 yield return null;
             }
         }

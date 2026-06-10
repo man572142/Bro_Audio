@@ -12,14 +12,12 @@ on:
         description: Branch to merge into
         type: string
         default: pre-merge
-      excluded_files:
-        description: Space-separated files to restore from target after merge
+      excluded_paths:
+        description: >-
+          Space-separated paths (files or dirs) to exclude from the merge. Each is
+          forced to match the target: restored if the target has it, deleted if not.
         type: string
-        default: CLAUDE.md AGENTS.md Assets/AddressableAssetsData.meta Assets/Localization.meta
-      excluded_dirs:
-        description: Space-separated directories to remove after merge
-        type: string
-        default: .claude .agents Docs Packages ProjectSettings Assets/AddressableAssetsData Assets/Localization
+        default: CLAUDE.md AGENTS.md Packages ProjectSettings .claude .agents Docs Assets/AddressableAssetsData Assets/Localization Assets/AddressableAssetsData.meta Assets/Localization.meta
 
 jobs:
   merge:
@@ -42,8 +40,7 @@ jobs:
         env:
           SOURCE_BRANCH: ${{ inputs.source_branch }}
           TARGET_BRANCH: ${{ inputs.target_branch }}
-          EXCLUDED_FILES: ${{ inputs.excluded_files }}
-          EXCLUDED_DIRS: ${{ inputs.excluded_dirs }}
+          EXCLUDED_PATHS: ${{ inputs.excluded_paths }}
         run: |
           if ! git merge "origin/$SOURCE_BRANCH" --no-commit --no-ff; then
             conflicts=$(git diff --name-only --diff-filter=U | tr '\n' ' ')
@@ -53,19 +50,15 @@ jobs:
             exit 1
           fi
 
-          for file in $EXCLUDED_FILES; do
-            if git cat-file -e "$TARGET_BRANCH:$file" 2>/dev/null; then
-              git checkout "$TARGET_BRANCH" -- "$file"
+          # Force each excluded path to match the target branch, dropping whatever the
+          # merge introduced. If the target has the path, restore its version; if not,
+          # remove it (a merge adds source-only paths — it never auto-deletes them).
+          for path in $EXCLUDED_PATHS; do
+            if git cat-file -e "$TARGET_BRANCH:$path" 2>/dev/null; then
+              git rm -rf --quiet --ignore-unmatch "$path"
+              git checkout "$TARGET_BRANCH" -- "$path"
             else
-              echo "::warning::$file not present on $TARGET_BRANCH — skipping restore"
-            fi
-          done
-
-          for dir in $EXCLUDED_DIRS; do
-            if [ -e "$dir" ]; then
-              git rm -rf "$dir"
-            else
-              echo "::warning::$dir not found after merge — nothing to remove"
+              git rm -rf --ignore-unmatch "$path"
             fi
           done
 

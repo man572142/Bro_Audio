@@ -15,11 +15,11 @@ on:
       excluded_files:
         description: Space-separated files to restore from target after merge
         type: string
-        default: CLAUDE.md AGENTS.md
+        default: CLAUDE.md AGENTS.md Assets/AddressableAssetsData.meta Assets/Localization.meta
       excluded_dirs:
         description: Space-separated directories to remove after merge
         type: string
-        default: .claude .agents
+        default: .claude .agents Docs Packages ProjectSettings Assets/AddressableAssetsData Assets/Localization
 
 jobs:
   merge:

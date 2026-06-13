@@ -68,6 +68,12 @@ namespace Ami.BroAudio.Data
                     return clip;
                 }
 
+                if (AudioClipAssetReference.OperationHandle.IsValid() && !AudioClipAssetReference.OperationHandle.IsDone)
+                {
+                    Debug.LogWarning($"AudioClip [<b>{assetIdentity}</b>] is still loading!");
+                    return null;
+                }
+
                 // Synchronously load the addressable if it's not loaded
                 var handle = AudioClipAssetReference.LoadAssetAsync();
                 handle.WaitForCompletion();

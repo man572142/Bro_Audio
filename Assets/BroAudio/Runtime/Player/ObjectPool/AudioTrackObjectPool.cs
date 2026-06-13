@@ -26,7 +26,7 @@ namespace Ami.BroAudio.Runtime
                 else
                 {
                     LogWarning(Utility.LogTitle + "You have reached the limit of BroAudio tracks count, which is way beyond the MaxRealVoices count. " +
-                    "That means the sound will be inaudible, and also uncontrollable. For more infomation, please check the documentation");
+                    "That means the sound will be inaudible, and also uncontrollable. For more information, please check the documentation");
                 }
                 return null;
             }

@@ -191,7 +191,7 @@ namespace Ami.BroAudio.Runtime
             {
                 if (fadeTime > 0f)
                 {
-                    this.StartCoroutineAndReassign(SetMasterVolume(WebGLMasterVolume, targetVol, fadeTime), ref _masterVolumeCoroutine);
+                    this.RestartCoroutine(SetMasterVolume(WebGLMasterVolume, targetVol, fadeTime), ref _masterVolumeCoroutine);
                 }
                 else
                 {

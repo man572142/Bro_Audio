@@ -333,9 +333,15 @@ namespace Ami.BroAudio.Editor
                 "Preload via BroAudio.LoadAssetAsync(SoundID).");
             Rect toggleRect = GetRightAlignedToggleRect(rect, content, position);
             EditorGUI.BeginChangeCheck();
-            useAddressablesProp.boolValue = EditorGUI.ToggleLeft(toggleRect, content, useAddressablesProp.boolValue);
+            var newAddressableState = EditorGUI.ToggleLeft(toggleRect, content, useAddressablesProp.boolValue);
             if (EditorGUI.EndChangeCheck())
             {
+                if (newAddressableState && UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings == null)
+                {
+                    Debug.LogError("AddressableAssetSettings is not found.");
+                    return;
+                }
+                useAddressablesProp.boolValue = newAddressableState;
                 EditorAudioPreviewer.Instance.StopAllClips();
                 SwitchAddressable(useAddressablesProp, clips);
             }

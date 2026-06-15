@@ -250,10 +250,11 @@ namespace Ami.BroAudio.Editor
                     .FindPropertyRelative(BroAudioClip.NameOf.AudioClipAssetReference)
                     .FindPropertyRelative(AssetReferenceGUIDFieldName);
                 string path;
+                AddressableAssetSettings settings;
                 switch (referenceType)
                 {
                     case ReferenceType.Direct:
-                        if (directRefProp.objectReferenceValue != null)
+                        if (directRefProp.objectReferenceValue != null && TryGetAddressableSettings(out settings))
                         {
                             path = AssetDatabase.GetAssetPath(directRefProp.objectReferenceValue);
                             string guid = AssetDatabase.AssetPathToGUID(path);
@@ -261,20 +262,19 @@ namespace Ami.BroAudio.Editor
                             directRefProp.objectReferenceValue = null;
                             if (needSetAddressable)
                             {
-                                var settings = GetAddressableSettings();
                                 settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
                             }
                         }
                         break;
                     case ReferenceType.Addressalbes:
-                        if (!string.IsNullOrEmpty(assetRefGuidProp.stringValue))
+                        if (!string.IsNullOrEmpty(assetRefGuidProp.stringValue) && TryGetAddressableSettings(out settings))
                         {
                             path = AssetDatabase.GUIDToAssetPath(assetRefGuidProp.stringValue);
                             var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
                             directRefProp.objectReferenceValue = obj;
                             if (needSetAddressable)
                             {
-                                GetAddressableSettings().RemoveAssetEntry(assetRefGuidProp.stringValue);
+                                settings.RemoveAssetEntry(assetRefGuidProp.stringValue);
                             }
                             assetRefGuidProp.stringValue = string.Empty;
                         }
@@ -282,7 +282,16 @@ namespace Ami.BroAudio.Editor
                 }
             }
 
-            AddressableAssetSettings GetAddressableSettings() => AddressableAssetSettingsDefaultObject.Settings;
+            bool TryGetAddressableSettings(out AddressableAssetSettings settings)
+            {
+                settings = AddressableAssetSettingsDefaultObject.Settings;
+                if (settings == null)
+                {
+                    Debug.LogError("AddressableAssetSettings is not found.");
+                    return false;
+                }
+                return true;
+            }
         }
 #endif
 

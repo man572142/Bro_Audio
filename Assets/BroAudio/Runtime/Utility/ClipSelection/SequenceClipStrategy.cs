@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Ami.BroAudio.Data;
+using UnityEngine;
 
 namespace Ami.BroAudio.Runtime
 {
@@ -11,6 +12,11 @@ namespace Ami.BroAudio.Runtime
         private int _sequenceIndex = -1;
         private Dictionary<string, int> _namedSequenceIndices;
 
+        private static string GetNoValidClipMessage(int nextIndex, string entityName)
+        {
+            return Utility.LogTitle + $"No valid clip is set for sequence index: {nextIndex} in [<b>{entityName}</b>]. Please check the clip settings.";
+        }
+
         public IBroAudioClip SelectClip(BroAudioClip[] clips, ClipSelectionContext context, out int currentIndex)
         {
             currentIndex = 0;
@@ -21,13 +27,13 @@ namespace Ami.BroAudio.Runtime
             
             if (context.SequenceId != null)
             {
-                return SelectClipForNamedSequence(clips, context.SequenceId, out currentIndex);
+                return SelectClipForNamedSequence(clips, context.SequenceId, context.EntityName, out currentIndex);
             }
 
-            return SelectClipForDefaultSequence(clips, out currentIndex);
+            return SelectClipForDefaultSequence(clips, context.EntityName, out currentIndex);
         }
 
-        private IBroAudioClip SelectClipForDefaultSequence(BroAudioClip[] clips, out int currentIndex)
+        private IBroAudioClip SelectClipForDefaultSequence(BroAudioClip[] clips, string entityName, out int currentIndex)
         {
             int nextIndex = 0;
 
@@ -50,12 +56,14 @@ namespace Ami.BroAudio.Runtime
             {
                 _sequenceIndex = -1;
                 currentIndex = -1;
+                Debug.LogError(GetNoValidClipMessage(nextIndex, entityName));
+                return null;
             }
 
             return clips[_sequenceIndex];
         }
 
-        private IBroAudioClip SelectClipForNamedSequence(BroAudioClip[] clips, string sequenceId, out int currentIndex)
+        private IBroAudioClip SelectClipForNamedSequence(BroAudioClip[] clips, string sequenceId, string entityName, out int currentIndex)
         {
             _namedSequenceIndices ??= new Dictionary<string, int>();
 
@@ -86,9 +94,11 @@ namespace Ami.BroAudio.Runtime
             {
                 _namedSequenceIndices[sequenceId] = -1;
                 currentIndex = -1;
+                Debug.LogError(GetNoValidClipMessage(nextIndex, entityName));
+                return null;
             }
 
-            return clips[_namedSequenceIndices[sequenceId]];
+            return clips[currentIndex];
         }
 
         public void Reset()

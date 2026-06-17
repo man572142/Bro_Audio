@@ -89,7 +89,7 @@ namespace Ami.BroAudio.Data
             return AudioClip;
         }
 
-        public bool IsAddressablesAvailable() => !string.IsNullOrEmpty(AudioClipAssetReference.AssetGUID);
+        public bool IsAddressablesAvailable() => AudioClipAssetReference != null && !string.IsNullOrEmpty(AudioClipAssetReference.AssetGUID);
     }
 }
 #endif

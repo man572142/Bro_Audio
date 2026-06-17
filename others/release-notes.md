@@ -21,7 +21,17 @@ layout:
 
 # Release Notes
 
-## Ver. 3.2.0 **(**[**Github**](https://github.com/man572142/Bro_Audio/releases/tag/3.2.0)**,** [**Unity Asset Store**](https://assetstore.unity.com/packages/tools/audio/bro-audio-257362)**)**
+## Ver. 3.2.1 **(**[**Github**](https://github.com/man572142/Bro_Audio/releases/tag/3.2.1)**,** [**Unity Asset Store**](https://assetstore.unity.com/packages/tools/audio/bro-audio-257362)**)**
+
+#### Fixes & Improvements
+
+* Fix WebGL compile error.
+* Sequence play mode no longer throws when no valid clip is available.
+* Avoid redundant synchronous loads for Addressable AudioClips that are still loading.
+* Guard against a missing `AddressableAssetSettings` asset when toggling a clip's Addressable state.
+* Fix a typo in the track-limit warning message.
+
+## Ver. 3.2.0&#x20;
 
 **New Features**
 
@@ -61,7 +71,7 @@ SoundID has been completely rearchitected from an integer-based struct to a dire
 
 * Fix infinite loop in SoundIDUpgrader causing memory exhaustion while searching in the VisualTreeAsset
 
-## Ver. **3.1.1**&#x20;
+## Ver. **3.1.1**
 
 **Fixes & Improvements**
 
@@ -89,7 +99,7 @@ However, this is a non-backwards-compatible change that affects every SoundID in
 * Allow existing AudioEntity assets to be reassigned to an AudioAsset via drag-and-drop
 * Fixed position not initialized before playback in Transform-follow mode
 
-## **Ver. 2.2.2**&#x20;
+## **Ver. 2.2.2**
 
 **New Features**
 
@@ -163,7 +173,7 @@ _**Other New Features**_
 * Upgrade SoundID usage finder tool
 * Add null checks and refactor background logo handling
 
-## **Ver. 2.1.0**&#x20;
+## **Ver. 2.1.0**
 
 **Chained Play Mode**\
 Plays a start sound when triggered, then loops a base sound. An end sound is played when stopped.
@@ -201,7 +211,7 @@ The preview now responds in real time to volume and pitch adjustments, offering 
 * Improved the audio clip picking logic to prevent the clip sequencer and shuffle from updating when the audio clip is unavailable
 * Improved error handling for the audio player
 
-## **Ver. 2.0.6**&#x20;
+## **Ver. 2.0.6**
 
 * Added an automatic process to fix duplicate SoundIDs.
 * Fixed LibraryManager unexpectedly getting focus after OnPostprocessAllAssets.
@@ -238,7 +248,7 @@ The preview now responds in real time to volume and pitch adjustments, offering 
 * Fixed a `StackOverflowException` that occurred when the topmost rule was not overridden.
 * Fixed an issue where setting the master volume had no effect in WebGL.
 
-## **Ver. 2.0.2**&#x20;
+## **Ver. 2.0.2**
 
 #### Behavior Changes
 
@@ -309,7 +319,7 @@ The preview now responds in real time to volume and pitch adjustments, offering 
 * Fixed drag and drop with MultipleForEach option doesn't work as intended
 * Added a debug object reference to SoundID
 
-## **Ver. 1.14**&#x20;
+## **Ver. 1.14**
 
 * Fixed `SoundID` doesn't work as intended when it's in an array
 * Fixed `OnEnd` is executed on the first loop of the play
@@ -337,7 +347,7 @@ The minimum supported Unity version is now set to 2020.2, and the code base has 
 * Added `SoundVolume` component to help create volume configurations without coding.
 * Added a preview version of `SpectrumAnalyzer` component.
 
-**API**&#x20;
+**API**
 
 * Added `GetAudioClip` and `Play` extension method to `SoundID`.
 * Added message type methods:`OnStart`, `OnUpdate`, `OnEnd`, and `OnAudioFilterRead` to `IAudioPlayer`.
@@ -360,7 +370,7 @@ The minimum supported Unity version is now set to 2020.2, and the code base has 
 * Fixed slider float field clipping when the `[Volume]` and `[Frequency]` attributes were used in a sub-structure.
 * Improved shuffle picking algorithm to prevent repetition.
 
-## **Ver. 1.11**&#x20;
+## **Ver. 1.11**
 
 * Fixed an issue where the fading used for BGM transitions was applied to later loops.
 * Fixed SoundID dropdown menu failed to open if there were any empty audio assets.

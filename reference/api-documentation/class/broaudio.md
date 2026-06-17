@@ -26,4 +26,10 @@ description: The main entry of BroAudio, all Api starts from here !
 
 see [Addressables](../../../core-features/addressables.md#public-methods-in-broaudio-class) page
 
+## Localization
+
+see [Localization](../../../core-features/localization.md) page
+
+
+
 [^1]: WebGL is not supported

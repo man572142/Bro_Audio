@@ -2743,6 +2743,11 @@ namespace Ami.BroAudio.Tests
 
             // Inject the prevNextPlayer as _nextPlayer on the main player.
             SetField(_player, "_nextPlayer", prevNextPlayer);
+            
+            // Use dspTime - 1 so (dspTime < scheduledStartTime - warmup) is immediately false,
+            // meaning the coroutine body runs past the while-loop in the first frame.
+            double pastEndDspTime = AudioSettings.dspTime - 1.0;
+            SetField(_player, "_playbackEndDspTime", pastEndDspTime);
 
             // Now trigger ScheduleNextPlayback again by calling it directly via reflection.
             // With isEnd=false, warmUpTime = 0.1s — but the player's pref has ScheduledEndTime set
@@ -2752,13 +2757,9 @@ namespace Ami.BroAudio.Tests
                 "ScheduleNextPlayback",
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 null,
-                new Type[] { typeof(double), typeof(bool) },
+                new Type[] { typeof(bool) },
                 null);
-            Assert.IsNotNull(scheduleMethod, "ScheduleNextPlayback(double, bool) not found");
-
-            // Use dspTime - 1 so (dspTime < scheduledStartTime - warmup) is immediately false,
-            // meaning the coroutine body runs past the while-loop in the first frame.
-            double pastEndDspTime = AudioSettings.dspTime - 1.0;
+            Assert.IsNotNull(scheduleMethod, "ScheduleNextPlayback(bool) not found");
 
             // Start the coroutine by invoking the method (it returns IEnumerator).
             var handoverCoroutineRef = typeof(AudioPlayer).GetField(
@@ -2766,7 +2767,7 @@ namespace Ami.BroAudio.Tests
                 BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.IsNotNull(handoverCoroutineRef, "_handoverScheduleCoroutine field not found");
 
-            var enumerator = scheduleMethod.Invoke(_player, new object[] { pastEndDspTime, false }) as IEnumerator;
+            var enumerator = scheduleMethod.Invoke(_player, new object[] { false }) as IEnumerator;
             Assert.IsNotNull(enumerator, "ScheduleNextPlayback must return an IEnumerator");
 
             // Drive the coroutine to its first suspension point (the while condition).
@@ -5469,7 +5470,7 @@ namespace Ami.BroAudio.Tests
                 // Warning ON: a fluent call on the recycled wrapper logs a warning.
                 SoundManager.Instance.Setting.LogAccessRecycledPlayerWarning = true;
                 LogAssert.Expect(LogType.Warning,
-                    new System.Text.RegularExpressions.Regex("audio player you're accessing has finished playing"));
+                    new System.Text.RegularExpressions.Regex("audio player has been recycled"));
                 _ = ((IAudioPlayer)wrapper).SetPitch(2f, 0f);
 
                 // Warning OFF: no warning is emitted.  If a warning slipped through here,

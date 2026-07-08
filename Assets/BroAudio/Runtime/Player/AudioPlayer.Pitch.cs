@@ -14,6 +14,8 @@ namespace Ami.BroAudio.Runtime
         public float StaticPitch { get; private set; } = AudioConstant.DefaultPitch;
 
         private Coroutine _pitchCoroutine;
+        // Fade requested before SetInitialPitch has run; consumed there to anchor the fade.
+        private float _pendingPitchFadeTime;
 
         IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime)
         {
@@ -21,16 +23,26 @@ namespace Ami.BroAudio.Runtime
             switch (SoundManager.PitchSetting)
             {
                 case PitchShiftingSetting.AudioMixer:
-                    //_audioMixer.SafeSetFloat(_pitchParaName, pitch); // Don't * 100f, the value in percentage is displayed in Editor only.  
+                    //_audioMixer.SafeSetFloat(_pitchParaName, pitch); // Don't * 100f, the value in percentage is displayed in Editor only.
                     break;
                 case PitchShiftingSetting.AudioSource:
                     pitch = Mathf.Clamp(pitch, AudioConstant.MinAudioSourcePitch, AudioConstant.MaxAudioSourcePitch);
                     if (fadeTime > 0f)
                     {
-                        this.RestartCoroutine(PitchControl(pitch, fadeTime), ref _pitchCoroutine);
+                        // Before SetInitialPitch runs, the source pitch isn't the entity pitch yet, so defer.
+                        if (HasStartedPlaying || AudioSource.isPlaying)
+                        {
+                            _pendingPitchFadeTime = 0f;
+                            this.RestartCoroutine(PitchControl(pitch, fadeTime), ref _pitchCoroutine);
+                        }
+                        else
+                        {
+                            _pendingPitchFadeTime = fadeTime;
+                        }
                     }
                     else
                     {
+                        _pendingPitchFadeTime = 0f;
                         AudioSource.pitch = pitch;
                         RecalculateScheduledEndTime();
                     }
@@ -41,20 +53,33 @@ namespace Ami.BroAudio.Runtime
 
         private void SetInitialPitch(IAudioEntity entity, IAudioPlaybackPref audioTypePlaybackPref)
         {
-            float pitch;
-            if(!Mathf.Approximately(StaticPitch, AudioConstant.DefaultPitch))
+            if (_pendingPitchFadeTime > 0f)
             {
-                pitch = entity.GetRandomValue(StaticPitch, RandomFlag.Pitch);
+                // Fade from the entity's base pitch to StaticPitch (the pending target) instead of snapping.
+                AudioSource.pitch = GetBasePitch(entity, audioTypePlaybackPref);
+                float target = Mathf.Clamp(StaticPitch, AudioConstant.MinAudioSourcePitch, AudioConstant.MaxAudioSourcePitch);
+                this.RestartCoroutine(PitchControl(target, _pendingPitchFadeTime), ref _pitchCoroutine);
+                _pendingPitchFadeTime = 0f;
+                return;
             }
-            else if(!Mathf.Approximately(audioTypePlaybackPref.Pitch, AudioConstant.DefaultPitch))
+
+            if (!Mathf.Approximately(StaticPitch, AudioConstant.DefaultPitch))
             {
-                pitch = entity.GetRandomValue(audioTypePlaybackPref.Pitch, RandomFlag.Pitch);
+                AudioSource.pitch = entity.GetRandomValue(StaticPitch, RandomFlag.Pitch);
             }
             else
             {
-                pitch = entity.GetPitch();
+                AudioSource.pitch = GetBasePitch(entity, audioTypePlaybackPref);
             }
-            AudioSource.pitch = pitch;
+        }
+
+        private float GetBasePitch(IAudioEntity entity, IAudioPlaybackPref audioTypePlaybackPref)
+        {
+            if (!Mathf.Approximately(audioTypePlaybackPref.Pitch, AudioConstant.DefaultPitch))
+            {
+                return entity.GetRandomValue(audioTypePlaybackPref.Pitch, RandomFlag.Pitch);
+            }
+            return entity.GetPitch();
         }
 
         private IEnumerator PitchControl(float targetPitch, float fadeTime)
@@ -74,6 +99,7 @@ namespace Ami.BroAudio.Runtime
         {
             StaticPitch = AudioConstant.DefaultPitch;
             AudioSource.pitch = AudioConstant.DefaultPitch;
+            _pendingPitchFadeTime = 0f;
         }
     } 
 }

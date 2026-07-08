@@ -65,7 +65,8 @@ namespace Ami.BroAudio.Runtime
 
             if (!Mathf.Approximately(StaticPitch, AudioConstant.DefaultPitch))
             {
-                AudioSource.pitch = entity.GetRandomValue(StaticPitch, RandomFlag.Pitch);
+                // An explicit SetPitch() overrides the entity's pitch randomization — use the value verbatim.
+                AudioSource.pitch = Mathf.Clamp(StaticPitch, AudioConstant.MinAudioSourcePitch, AudioConstant.MaxAudioSourcePitch);
             }
             else
             {

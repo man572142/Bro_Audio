@@ -488,7 +488,7 @@ namespace Ami.BroAudio.Tests
         public void Stop_WhileNotStopping_DoesNotThrow()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
             Assert.DoesNotThrow(() => _player.Stop(0f, StopMode.Stop, null));
         }
 
@@ -1156,7 +1156,7 @@ namespace Ami.BroAudio.Tests
         public IEnumerator SetVolume_WithFadeTime_StartsCoroutineAndUpdatesVolume()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             IAudioPlayer player = _player;
             float targetVol = 0.5f;
@@ -1196,7 +1196,13 @@ namespace Ami.BroAudio.Tests
             float targetPitch = 2f;
             float fadeTime = 0.2f;
             float initialPitch = _go.GetComponent<AudioSource>().pitch;
+            
+            var entity = MakeEntityWithClip(BroAudioType.SFX, 44100 * 5);
+            var id = new SoundID(entity);
+            var pref = new PlaybackPreference(entity);
+            _player.SetPlaybackData(id, pref, new NullMixerPool());
 
+            _player.Play();
             player.SetPitch(targetPitch, fadeTime);
 
             // StaticPitch is set immediately
@@ -1445,7 +1451,7 @@ namespace Ami.BroAudio.Tests
             SetupStubSoundManager();
             // Player has no valid ID (default); AudioSource is not playing.
             // NullMixerPool is required because EndPlaying → Recycle → MixerPool.ReturnPlayer.
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             bool callbackFired = false;
             _player.Stop(0f, StopMode.Stop, () => callbackFired = true);
@@ -1813,7 +1819,7 @@ namespace Ami.BroAudio.Tests
         public void SetAudioTypeVolume_StoresValueInFader()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             _player.SetAudioTypeVolume(0.5f, 0f);
 
@@ -1828,7 +1834,7 @@ namespace Ami.BroAudio.Tests
         public void SetVolume_ZeroFadeTime_CompletesImmediately()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             ((IAudioPlayer)_player).SetVolume(0.5f, 0f);
 
@@ -1845,7 +1851,7 @@ namespace Ami.BroAudio.Tests
         public void ResetVolume_RestoresDefaults()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             // Deviate all three volumes from their defaults
             _player.SetAudioTypeVolume(0.3f, 0f);
@@ -2123,8 +2129,8 @@ namespace Ami.BroAudio.Tests
         // With LoopType.Loop set on the entity, PlayControl calls ScheduleNextPlayback which
         // eventually calls RequestNextPlayer with a PlaybackHandoverData whose Pref carries
         // ChainedModeStage=Loop (PlaybackStage.None for regular loop), non-zero
-        // ScheduledStartTime and ScheduledEndTime, and copies TrackVolume + Pitch from
-        // the originating player.
+        // ScheduledStartTime, a reset (0) ScheduledEndTime so the receiver derives its own end
+        // time (commit 9b31aea1), and copies TrackVolume + Pitch from the originating player.
         public IEnumerator Loop_OnEndReached_RequestNextPlayerInvokedWithExpectedPref()
         {
             SetupStubSoundManager();
@@ -2163,15 +2169,15 @@ namespace Ami.BroAudio.Tests
             Assert.IsTrue(requestFired,
                 "RequestNextPlayer must be invoked by ScheduleNextPlayback within clip duration");
 
-            // ScheduledStartTime and ScheduledEndTime must be positive (set by PlayControl
-            // for looping entities when ScheduledStartTime starts at 0).
+            // ScheduledStartTime must be positive (set by PlayControl for looping entities
+            // when ScheduledStartTime starts at 0). ScheduledEndTime is reset to 0 by
+            // ScheduleNextPlayback (commit 9b31aea1) so the receiving player derives its own
+            // end time from its own resolved pitch, rather than trusting a value baked by
+            // the outgoing player.
             Assert.Greater(capturedHandover.Pref.ScheduledStartTime, 0.0,
                 "Handover Pref.ScheduledStartTime must be > 0 (set to endDspTime of current clip)");
-            Assert.Greater(capturedHandover.Pref.ScheduledEndTime, 0.0,
-                "Handover Pref.ScheduledEndTime must be > 0");
-            Assert.Greater(capturedHandover.Pref.ScheduledEndTime,
-                capturedHandover.Pref.ScheduledStartTime,
-                "ScheduledEndTime must be after ScheduledStartTime");
+            Assert.AreEqual(0.0, capturedHandover.Pref.ScheduledEndTime,
+                "Handover Pref.ScheduledEndTime must be reset to 0 so the receiver derives its own end time");
 
             // For a plain Loop (not chained mode), ChainedModeStage stays at None/0 because
             // IsChainedMode() is false — the stage assignment in ScheduleNextPlayback is
@@ -2298,8 +2304,10 @@ namespace Ami.BroAudio.Tests
         [UnityTest]
         // CHARACTERIZATION TEST — captures current behavior, not ideal behavior.
         // ScheduleNextPlayback subtracts the fade-out duration from ScheduledStartTime
-        // and ScheduledEndTime ONLY for SeamlessLoop and ONLY when !isEnd (lines 263-267
-        // of Playback.cs).  A plain Loop entity must NOT receive this adjustment.
+        // ONLY for SeamlessLoop and ONLY when !isEnd (lines 337-338 of Playback.cs).
+        // A plain Loop entity must NOT receive this adjustment. ScheduledEndTime itself is
+        // always reset to 0 in the handover (commit 9b31aea1) regardless of loop type, so the
+        // receiver derives its own end time — that part is no longer loop-type-specific.
         public IEnumerator Loop_ScheduleNextPlayback_AppliesFadeOffsetForSeamlessLoop()
         {
             SetupStubSoundManager();
@@ -2313,10 +2321,15 @@ namespace Ami.BroAudio.Tests
             _player.SetPlaybackData(seamlessId, seamlessPref, new NullMixerPool());
 
             PlaybackHandoverData capturedSeamless = default;
+            double seamlessEndDspTimeAtHandover = 0d;
             bool seamlessFired = false;
             _player.RequestNextPlayer = handover =>
             {
                 capturedSeamless = handover;
+                // Read the outgoing player's own end-time schedule at the exact moment of
+                // handover, before anything else can move it, so we can verify the offset
+                // applied to ScheduledStartTime relative to it.
+                seamlessEndDspTimeAtHandover = GetField<AudioPlayer, double>(_player, "_playbackEndDspTime");
                 seamlessFired = true;
                 return null;
             };
@@ -2331,24 +2344,17 @@ namespace Ami.BroAudio.Tests
 
             Assert.IsTrue(seamlessFired, "SeamlessLoop: RequestNextPlayer must fire");
 
-            // The scheduled start time of the next clip must be EARLIER than endDspTime
-            // by exactly fadeOut (transitionTime), so the clips overlap.
-            // endDspTime is ScheduledEndTime of the *outgoing* player — read it before
-            // ScheduleNextPlayback runs; we can reconstruct it as:
-            //   capturedSeamless.Pref.ScheduledStartTime + pitchAdjustedDuration == original ScheduledStartTime (not shifted)
-            // Simpler check: ScheduledEndTime should equal ScheduledStartTime + pitchAdjustedDuration
-            // because fadeOut is subtracted from both by the same amount, and their difference
-            // (the clip duration) stays the same regardless of shift.
-            Assert.Greater(capturedSeamless.Pref.ScheduledEndTime,
-                capturedSeamless.Pref.ScheduledStartTime,
-                "SeamlessLoop: ScheduledEndTime must be after ScheduledStartTime (offsets cancel out)");
+            // ScheduledEndTime is always reset to 0 by ScheduleNextPlayback (commit 9b31aea1),
+            // regardless of loop type, so the receiver derives its own end time.
+            Assert.AreEqual(0.0, capturedSeamless.Pref.ScheduledEndTime,
+                "SeamlessLoop: handover Pref.ScheduledEndTime must be reset to 0");
 
-            // The gap between ScheduledEndTime and ScheduledStartTime should equal the
-            // pitch-adjusted clip duration — unaffected by the fade offset.
-            double seamlessDuration = capturedSeamless.Pref.ScheduledEndTime - capturedSeamless.Pref.ScheduledStartTime;
-            double expectedDuration = (double)sampleRate * 2 / sampleRate; // 2 seconds
-            Assert.AreEqual(expectedDuration, seamlessDuration, 0.1,
-                "SeamlessLoop: ScheduledEndTime - ScheduledStartTime must equal the clip duration");
+            // The scheduled start time of the next clip must be EARLIER than the outgoing
+            // player's own endDspTime by exactly fadeOut (== transitionTime for SeamlessLoop),
+            // so the clips overlap.
+            Assert.AreEqual(seamlessEndDspTimeAtHandover - transitionTime,
+                capturedSeamless.Pref.ScheduledStartTime, 0.01,
+                "SeamlessLoop: ScheduledStartTime must be shifted earlier by fadeOut (transitionTime)");
 
             if (_player.IsActive)
             {
@@ -2371,10 +2377,12 @@ namespace Ami.BroAudio.Tests
             loopPlayer.SetPlaybackData(loopId, loopPref, new NullMixerPool());
 
             PlaybackHandoverData capturedLoop = default;
+            double loopEndDspTimeAtHandover = 0d;
             bool loopFired = false;
             loopPlayer.RequestNextPlayer = handover =>
             {
                 capturedLoop = handover;
+                loopEndDspTimeAtHandover = GetField<AudioPlayer, double>(loopPlayer, "_playbackEndDspTime");
                 loopFired = true;
                 return null;
             };
@@ -2389,15 +2397,14 @@ namespace Ami.BroAudio.Tests
 
             Assert.IsTrue(loopFired, "Loop: RequestNextPlayer must fire");
 
+            Assert.AreEqual(0.0, capturedLoop.Pref.ScheduledEndTime,
+                "Loop: handover Pref.ScheduledEndTime must be reset to 0");
+
             // For a plain Loop, the clip's FadeOut is 0 by default (no SeamlessLoop fade applied),
-            // so ScheduledStartTime should equal endDspTime (no backward shift).
-            // We verify there is no negative gap (start before previous start), meaning the
-            // offset was NOT subtracted.
-            Assert.Greater(capturedLoop.Pref.ScheduledStartTime, 0.0,
-                "Loop: ScheduledStartTime must be > 0 (set to endDspTime)");
-            double loopDuration = capturedLoop.Pref.ScheduledEndTime - capturedLoop.Pref.ScheduledStartTime;
-            Assert.AreEqual(expectedDuration, loopDuration, 0.1,
-                "Loop: ScheduledEndTime - ScheduledStartTime must equal the clip duration (no fade offset)");
+            // so ScheduledStartTime should equal the outgoing player's own endDspTime exactly
+            // (no backward shift).
+            Assert.AreEqual(loopEndDspTimeAtHandover, capturedLoop.Pref.ScheduledStartTime, 0.01,
+                "Loop: ScheduledStartTime must equal endDspTime (no fade offset)");
 
             if (loopPlayer.IsActive)
             {
@@ -3697,7 +3704,7 @@ namespace Ami.BroAudio.Tests
             _go.GetComponent<AudioSource>().outputAudioMixerGroup = track3;
 
             var entity = MakeEntity();
-            _player.SetPlaybackData(new SoundID(entity), default, null);
+            _player.SetPlaybackData(new SoundID(entity), default, SoundManager.Instance);
 
             try
             {
@@ -3747,7 +3754,7 @@ namespace Ami.BroAudio.Tests
 
             var entity = MakeEntity();
             _player.SetPlaybackData(new SoundID(entity), default, null);
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             try
             {
@@ -3782,7 +3789,7 @@ namespace Ami.BroAudio.Tests
         public void GetVolume_ReturnsProductOfAllThreeFaders()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             const float clipVol = 0.8f;
             const float trackVol = 0.6f;
@@ -3812,7 +3819,7 @@ namespace Ami.BroAudio.Tests
         public void SetVolume_DirectionDeterminesFadeEase()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             var trackVolField = typeof(AudioPlayer)
                 .GetField("_trackVolume", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -4581,7 +4588,7 @@ namespace Ami.BroAudio.Tests
 
             // Install a spy pool.
             var spyPool = new SpyMixerPool();
-            _player.MixerPool = spyPool;
+            _player.Mixer = spyPool;
 
             _player.Recycle();
 
@@ -4774,7 +4781,7 @@ namespace Ami.BroAudio.Tests
         public void SetPitch_WhenAudioMixerSetting_DoesNotWriteAudioSourcePitch()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             // Capture original PitchSetting and override via reflection.
             var pitchSettingField = typeof(SoundManager).GetField(
@@ -4829,7 +4836,7 @@ namespace Ami.BroAudio.Tests
         public void SetPitch_AboveMaxAudioSourcePitch_ClampsToMax()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             float tooHighPitch = AudioConstant.MaxAudioSourcePitch + 5f;
 
@@ -4846,7 +4853,7 @@ namespace Ami.BroAudio.Tests
         public void SetPitch_BelowMinAudioSourcePitch_ClampsToMin()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             float tooLowPitch = AudioConstant.MinAudioSourcePitch - 5f;
 
@@ -4863,7 +4870,7 @@ namespace Ami.BroAudio.Tests
         public void ResetPitch_RestoresDefaults()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             // Deviate from default.
             ((IAudioPlayer)_player).SetPitch(0.5f, 0f);
@@ -4888,7 +4895,7 @@ namespace Ami.BroAudio.Tests
         public void SetInitialPitch_UsesStaticPitchWhenNonDefault()
         {
             SetupStubSoundManager();
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             const float nonDefaultPitch = 1.5f;
 
@@ -5331,7 +5338,7 @@ namespace Ami.BroAudio.Tests
         public void SetSpatial_WithLowPassFilter_AddsLowPassEffectOnce()
         {
             SetupStubSoundManager(); // AddAudioEffect path may consult SoundManager.
-            _player.MixerPool = new NullMixerPool();
+            _player.Mixer = new NullMixerPool();
 
             var lpCurve = AnimationCurve.Linear(0f, 22000f, 1f, 1000f);
             var setting = MakeSpatialSetting(hasLowPassFilter: true, lowPassCurve: lpCurve);
@@ -5522,6 +5529,8 @@ namespace Ami.BroAudio.Tests
 
         private class NullMixerPool : IAudioMixerPool
         {
+            WaitForEndOfFrame IAudioMixerPool.WaitForAudioMixerInitialization => null;
+
             AudioMixerGroup IAudioMixerPool.GetTrack(AudioTrackType _)
             {
                 return null;
@@ -5538,6 +5547,8 @@ namespace Ami.BroAudio.Tests
         {
             public bool ReturnTrackCalled { get; private set; }
             public AudioTrackType LastReturnedTrackType { get; private set; }
+
+            WaitForEndOfFrame IAudioMixerPool.WaitForAudioMixerInitialization => null;
 
             AudioMixerGroup IAudioMixerPool.GetTrack(AudioTrackType _)
             {

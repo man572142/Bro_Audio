@@ -33,7 +33,7 @@ namespace Ami.BroAudio.Runtime
         {
             ID = id;
             _pref = pref;
-            MixerPool = mixerPool;
+            Mixer = mixerPool;
             _clip = clip;
         }
 

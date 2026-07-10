@@ -346,7 +346,7 @@ namespace Ami.BroAudio.Runtime
                 Clip = needNewClip ? null : _clip,
                 TrackEffect = CurrentActiveTrackEffects,
                 TrackVolume = _trackVolume.Target,
-                Pitch = StaticPitch,
+                Pitch = TargetPitch ?? AudioConstant.DefaultPitch,
             };
 
             if (_trackVolume.IsFading)

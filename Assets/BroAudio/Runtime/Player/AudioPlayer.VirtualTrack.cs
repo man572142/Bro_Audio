@@ -64,7 +64,7 @@ namespace Ami.BroAudio.Runtime
                 mixer.SafeSetFloat(GetSendParaName(), AudioConstant.MinDecibelVolume);
             }
 
-            MixerPool?.ReturnTrack(AudioTrackType.Generic, track);
+            Mixer?.ReturnTrack(AudioTrackType.Generic, track);
             // Once unrouted (no mixer group), the source plays at AudioSource.volume directly to the
             // listener. We normally keep that at full and drive loudness via the track, so preserve
             // the player's real computed level here to avoid a full-volume blip while released.
@@ -77,7 +77,7 @@ namespace Ami.BroAudio.Runtime
 
         private void ReacquireVirtualTrack()
         {
-            var track = MixerPool.GetTrack(AudioTrackType.Generic);
+            var track = Mixer.GetTrack(AudioTrackType.Generic);
             if (track == null)
             {
                 // Pool still exhausted; stay released and retry next frame. The source remains

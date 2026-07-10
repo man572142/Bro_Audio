@@ -257,7 +257,7 @@ namespace Ami.BroAudio.Runtime
             }
 
 #if !UNITY_WEBGL
-            AudioTrack = MixerPool.GetTrack(TrackType);
+            AudioTrack = Mixer.GetTrack(TrackType);
 #endif
 
             if (!IsDominator)

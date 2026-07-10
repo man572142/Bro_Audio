@@ -184,24 +184,15 @@ namespace Ami.BroAudio.Runtime
         {
             _pref.ScheduledEndTime = dspTime;
             _isEndTimeDerivedFromClip = false;
-            _onUpdate -= CheckScheduledEnd;
-            _onUpdate += CheckScheduledEnd;
+            // Keep PlayControl's own end-wait in sync with the explicit end so it (not a separate isPlaying poll)
+            // is the single authority that ends playback, avoiding a double EndPlaying.
+            _playbackEndDspTime = dspTime;
 
             if (AudioSource.isPlaying)
             {
                 AudioSource.SetScheduledEndTime(dspTime);
             }
             return this;
-        }
-
-        private void CheckScheduledEnd(IAudioPlayer player)
-        {
-            if (!AudioSource.isPlaying)
-            {
-                this.SafeStopCoroutine(_playbackControlCoroutine);
-                EndPlaying();
-                _onUpdate -= CheckScheduledEnd;
-            }
         }
 
         IAudioPlayer ISchedulable.SetDelay(float delay)
@@ -224,11 +215,6 @@ namespace Ami.BroAudio.Runtime
                 yield return null;
                 _secondsUntilScheduledStart -= Utility.GetDeltaTime();
             }
-        }
-
-        private void ClearScheduleEndEvents()
-        {
-            _onUpdate -= CheckScheduledEnd;
         }
     }
 }

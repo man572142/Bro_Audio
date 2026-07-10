@@ -367,7 +367,6 @@ namespace Ami.BroAudio.Runtime
                 return;
             }
 
-            ClearScheduleEndEvents();
             _instanceWrapper.UpdateInstance(_nextPlayer);
             _nextPlayer.SetInstanceWrapper(_instanceWrapper);
             _instanceWrapper = null;
@@ -542,6 +541,11 @@ namespace Ami.BroAudio.Runtime
 
         private void EndPlaying()
         {
+            if (!IsActive)
+            {
+                return;
+            }
+
             PlaybackStartingTime = 0;
             _pauseDspTime = 0d;
             _playbackEndDspTime = 0d;

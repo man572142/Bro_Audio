@@ -20,6 +20,14 @@ namespace Ami.BroAudio.Runtime
 
         public void Recycle()
         {
+            // Public IRecyclable entry point; guard against a second teardown pass. IsActive flips
+            // false once ID is cleared at the tail below, so a repeat call no-ops. EndPlaying() (this
+            // method's only internal caller) carries the same guard.
+            if (!IsActive)
+            {
+                return;
+            }
+
             ResetAudioSource();
             DestroyAudioFilterReader();
             DestroyAddedEffectComponents();

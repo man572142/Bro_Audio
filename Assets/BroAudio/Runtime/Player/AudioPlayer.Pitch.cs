@@ -11,27 +11,40 @@ namespace Ami.BroAudio.Runtime
         /// <summary>
         /// Pitch value without any fading process
         /// </summary>
-        public float StaticPitch { get; private set; } = AudioConstant.DefaultPitch;
+        private float? TargetPitch { get; set; }
 
         private Coroutine _pitchCoroutine;
+        // Fade requested before SetInitialPitch has run; consumed there to anchor the fade.
+        private float _pendingPitchFadeTime;
 
         IAudioPlayer IAudioPlayer.SetPitch(float pitch, float fadeTime)
         {
-            StaticPitch = pitch;
+            TargetPitch = pitch;
             switch (SoundManager.PitchSetting)
             {
                 case PitchShiftingSetting.AudioMixer:
-                    //_audioMixer.SafeSetFloat(_pitchParaName, pitch); // Don't * 100f, the value in percentage is displayed in Editor only.  
+                    //_audioMixer.SafeSetFloat(_pitchParaName, pitch); // Don't * 100f, the value in percentage is displayed in Editor only.
                     break;
                 case PitchShiftingSetting.AudioSource:
                     pitch = Mathf.Clamp(pitch, AudioConstant.MinAudioSourcePitch, AudioConstant.MaxAudioSourcePitch);
                     if (fadeTime > 0f)
                     {
-                        this.RestartCoroutine(PitchControl(pitch, fadeTime), ref _pitchCoroutine);
+                        // Before SetInitialPitch runs, the source pitch isn't the entity pitch yet, so defer.
+                        if (HasStartedPlaying || AudioSource.isPlaying)
+                        {
+                            _pendingPitchFadeTime = 0f;
+                            this.RestartCoroutine(PitchControl(pitch, fadeTime), ref _pitchCoroutine);
+                        }
+                        else
+                        {
+                            _pendingPitchFadeTime = fadeTime;
+                        }
                     }
                     else
                     {
+                        _pendingPitchFadeTime = 0f;
                         AudioSource.pitch = pitch;
+                        RecalculateScheduledEndTime();
                     }
                     break;
             }
@@ -40,20 +53,34 @@ namespace Ami.BroAudio.Runtime
 
         private void SetInitialPitch(IAudioEntity entity, IAudioPlaybackPref audioTypePlaybackPref)
         {
-            float pitch;
-            if(!Mathf.Approximately(StaticPitch, AudioConstant.DefaultPitch))
+            if (_pendingPitchFadeTime > 0f && TargetPitch.HasValue)
             {
-                pitch = entity.GetRandomValue(StaticPitch, RandomFlag.Pitch);
+                // Fade from the entity's base pitch to StaticPitch (the pending target) instead of snapping.
+                AudioSource.pitch = GetBasePitch(entity, audioTypePlaybackPref);
+                float target = Mathf.Clamp(TargetPitch.Value, AudioConstant.MinAudioSourcePitch, AudioConstant.MaxAudioSourcePitch);
+                this.RestartCoroutine(PitchControl(target, _pendingPitchFadeTime), ref _pitchCoroutine);
+                _pendingPitchFadeTime = 0f;
+                return;
             }
-            else if(!Mathf.Approximately(audioTypePlaybackPref.Pitch, AudioConstant.DefaultPitch))
+
+            if (TargetPitch.HasValue)
             {
-                pitch = entity.GetRandomValue(audioTypePlaybackPref.Pitch, RandomFlag.Pitch);
+                // An explicit SetPitch() overrides the entity's pitch randomization — use the value verbatim.
+                AudioSource.pitch = Mathf.Clamp(TargetPitch.Value, AudioConstant.MinAudioSourcePitch, AudioConstant.MaxAudioSourcePitch);
             }
             else
             {
-                pitch = entity.GetPitch();
+                AudioSource.pitch = GetBasePitch(entity, audioTypePlaybackPref);
             }
-            AudioSource.pitch = pitch;
+        }
+
+        private float GetBasePitch(IAudioEntity entity, IAudioPlaybackPref audioTypePlaybackPref)
+        {
+            if (!Mathf.Approximately(audioTypePlaybackPref.Pitch, AudioConstant.DefaultPitch))
+            {
+                return entity.GetRandomValue(audioTypePlaybackPref.Pitch, RandomFlag.Pitch);
+            }
+            return entity.GetPitch();
         }
 
         private IEnumerator PitchControl(float targetPitch, float fadeTime)
@@ -64,14 +91,16 @@ namespace Ami.BroAudio.Runtime
             {
                 currentTime += Utility.GetDeltaTime();
                 AudioSource.pitch = Mathf.Lerp(startPitch, targetPitch, (currentTime / fadeTime).SetEase(Ease.Linear));
+                RecalculateScheduledEndTime();
                 yield return null;
             }
         }
 
         private void ResetPitch()
         {
-            StaticPitch = AudioConstant.DefaultPitch;
+            TargetPitch = null;
             AudioSource.pitch = AudioConstant.DefaultPitch;
+            _pendingPitchFadeTime = 0f;
         }
     } 
 }

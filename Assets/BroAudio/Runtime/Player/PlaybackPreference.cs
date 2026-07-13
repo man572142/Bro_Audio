@@ -149,6 +149,13 @@ namespace Ami.BroAudio.Runtime
         
         public bool CanHandoverToLoop()
         {
+            // A default/reset pref (Entity == null) belongs to a torn-down player; it has nothing to hand
+            // over. This is reachable when pause/resume lets a recycled player fall into BeginHandover.
+            if (Entity == null)
+            {
+                return false;
+            }
+
             if (IsChainedMode() && (ChainedModeStage == PlaybackStage.End || ChainedModeStage == PlaybackStage.None))
             {
                 return false;
@@ -158,12 +165,17 @@ namespace Ami.BroAudio.Runtime
 
         public bool CanHandoverToEnd()
         {
-            if (!IsChainedMode() || 
+            if (Entity == null)
+            {
+                return false;
+            }
+
+            if (!IsChainedMode() ||
                 (Entity is AudioEntity entity && entity.Clips.Length < (int)PlaybackStage.End))
             {
                 return false;
             }
-            
+
             return ChainedModeStage != PlaybackStage.End && ChainedModeStage != PlaybackStage.None;
         }
 

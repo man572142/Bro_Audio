@@ -4,7 +4,6 @@ using UnityEditor;
 using Ami.BroAudio.Tools;
 using System.Linq;
 using static Ami.BroAudio.Editor.Setting.BroAudioGUISetting;
-using Ami.BroAudio.Data;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -24,6 +23,8 @@ namespace Ami.BroAudio.Editor.DevTool
             string userFacingContextFilesDir = Path.GetFullPath(Path.Combine(Application.dataPath, "..\\UserFacingContextFiles"));
             File.Copy(Path.Combine(userFacingContextFilesDir, "AGENTS.md"), "Assets/BroAudio/AGENTS.md", true);
             File.Copy(Path.Combine(userFacingContextFilesDir, "CLAUDE.md"), "Assets/BroAudio/CLAUDE.md", true);
+            File.Copy(Path.Combine(userFacingContextFilesDir, "AGENTS.md.meta"), "Assets/BroAudio/AGENTS.md.meta", true);
+            File.Copy(Path.Combine(userFacingContextFilesDir, "CLAUDE.md.meta"), "Assets/BroAudio/CLAUDE.md.meta", true);
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 

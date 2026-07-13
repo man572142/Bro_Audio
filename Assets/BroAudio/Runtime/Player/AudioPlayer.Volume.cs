@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Ami.Extension;
 using UnityEngine;
 
@@ -27,6 +28,7 @@ namespace Ami.BroAudio.Runtime
         private Fader _audioTypeVolume = null;
 
         private float _mixerDecibelVolume = UnSetMixerDecibelVolume;
+        private bool _isWaitingForMixerInitialization = false;
 
         /// <summary>
         /// Try get the final decibel volume that is set in the mixer.
@@ -47,12 +49,34 @@ namespace Ami.BroAudio.Runtime
         /// </summary>
         private bool TrySetMixerDecibelVolume(float vol)
         {
+            if (!TryGetMixerAndTrack(out var mixer, out _))
+            {
+                return false;
+            }
+
+            _mixerDecibelVolume = vol.ClampDecibel(true);
+
+            if (Mixer.WaitForAudioMixerInitialization != null)
+            {
+                if (!_isWaitingForMixerInitialization)
+                {
+                    _isWaitingForMixerInitialization = true;
+                    StartCoroutine(DelaySetMixerVolume());
+                }
+                return true;
+            }
+
+            return mixer.SafeSetFloat(VolumeParaName, _mixerDecibelVolume);
+        }
+
+        private IEnumerator DelaySetMixerVolume()
+        {
+            yield return Mixer.WaitForAudioMixerInitialization;
             if (TryGetMixerAndTrack(out var mixer, out _))
             {
-                _mixerDecibelVolume = vol.ClampDecibel(true);
-                return mixer.SafeSetFloat(VolumeParaName, _mixerDecibelVolume);
+                mixer.SafeSetFloat(VolumeParaName, _mixerDecibelVolume);
             }
-            return false;
+            _isWaitingForMixerInitialization = false;
         }
 
         private void InitVolumeModule()

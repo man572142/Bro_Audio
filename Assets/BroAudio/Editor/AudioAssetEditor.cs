@@ -87,6 +87,11 @@ namespace Ami.BroAudio.Editor
                 var path = AssetDatabase.GenerateUniqueAssetPath(AssetDatabase.GetAssetPath(entity));
                 newEntity.name = Path.GetFileNameWithoutExtension(path);
                 AssetDatabase.CreateAsset(newEntity, path);
+
+                // Duplicates land next to their source, which may be outside AssetOutputPath (e.g. the Demo library).
+                // The cache postprocessor's path heuristic then skips it, so refresh explicitly to keep the list/dropdown in sync.
+                AudioAssetCache.RefreshCache();
+
                 var newEditor = AddOrMoveToEnd(newEntity);
                 if (_entityList != null)
                 {

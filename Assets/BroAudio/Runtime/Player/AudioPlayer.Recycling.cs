@@ -20,26 +20,36 @@ namespace Ami.BroAudio.Runtime
 
         public void Recycle()
         {
+            // Public IRecyclable entry point; guard against a second teardown pass. IsActive flips
+            // false once ID is cleared at the tail below, so a repeat call no-ops. EndPlaying() (this
+            // method's only internal caller) carries the same guard.
+            if (!IsActive)
+            {
+                return;
+            }
+
             ResetAudioSource();
             DestroyAudioFilterReader();
             DestroyAddedEffectComponents();
             ClearEvents();
             this.SafeStopCoroutine(_playbackControlCoroutine);
             this.SafeStopCoroutine(_handoverScheduleCoroutine);
+            this.SafeStopCoroutine(_pitchCoroutine);
             _playbackControlCoroutine = null;
             _handoverScheduleCoroutine = null;
+            _pitchCoroutine = null;
             _nextPlayer = null;
             
             if (TryGetMixerAndTrack(out _, out var track))
             {
-                MixerPool?.ReturnTrack(TrackType, track);
+                Mixer?.ReturnTrack(TrackType, track);
             }
             TrackType = AudioTrackType.Generic;
 #if !UNITY_WEBGL
             _trackReleasedByVirtual = false;
             _virtualElapsed = 0f;
 #endif
-            MixerPool?.ReturnPlayer(this);
+            Mixer?.ReturnPlayer(this);
 
             if (_decorators != null)
             {

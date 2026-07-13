@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Ami.BroAudio.Data;
-using Ami.Extension;
 using static Ami.BroAudio.Utility;
 
 namespace Ami.BroAudio.Runtime
@@ -129,9 +128,10 @@ namespace Ami.BroAudio.Runtime
         {
             if(!target.IsActive)
             {
-                throw new System.InvalidOperationException("Invalid target player");
+                Debug.LogWarning(LogTitle + "Tried to remove an inactive player from the comb-filtering tracker.");
+                return;
             }
-            
+
             if(_combFilteringPreventer.TryGetValue(target.ID, out var player) && player == target)
             {
                 _combFilteringPreventer.Remove(target.ID);

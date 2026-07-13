@@ -72,7 +72,7 @@ namespace Ami.BroAudio.Runtime
 
         private string VolumeParaName => IsUsingTrackEffect ? GetSendParaName() : GetCurrentTrackName();
 
-        IAudioMixerPool MixerPool => SoundManager.Instance;
+        IAudioMixerPool Mixer => SoundManager.Instance;
 
         private bool TryGetMixerAndTrack(out AudioMixer mixer, out AudioMixerGroup track)
         {

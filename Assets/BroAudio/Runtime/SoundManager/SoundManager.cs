@@ -73,6 +73,7 @@ namespace Ami.BroAudio.Runtime
         private EffectAutomationHelper _dominatorAutomationHelper = null;
         private Dictionary<SoundID, AudioPlayer> _combFilteringPreventer = null;
         private Coroutine _masterVolumeCoroutine;
+        private WaitForEndOfFrame _waitForAudioMixerParametersAvailable = new WaitForEndOfFrame();
 
         // Tracking for loaded addressable entities
         private Dictionary<SoundID, double> _loadedEntityLastPlayedTime = new Dictionary<SoundID, double>();
@@ -86,6 +87,7 @@ namespace Ami.BroAudio.Runtime
 
         internal double ScheduledPlaybackWarmUpTime { get; private set; } = AudioConstant.MixerWarmUpTime;
         public AudioMixer AudioMixer => _broAudioMixer;
+        WaitForEndOfFrame IAudioMixerPool.WaitForAudioMixerInitialization => _waitForAudioMixerParametersAvailable;
 
         private void Awake()
         {
@@ -117,6 +119,11 @@ namespace Ami.BroAudio.Runtime
             // Start the coroutine to cleanup unused loaded addressable entities
             _addressableCleanupCoroutine = StartCoroutine(AddressableCleanupRoutine());
 #endif
+        }
+
+        private void Start()
+        {
+            _waitForAudioMixerParametersAvailable = null;
         }
 
         private void CacheScheduledPlaybackWarmUpTime()

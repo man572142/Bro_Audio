@@ -39,6 +39,14 @@ Many classes are split by feature into suffixed files — most heavily `AudioPla
 - Behavior modes are layered via `AudioPlayerDecorator` subclasses (`MusicPlayer`, `DominatorPlayer`) — `AsBGM()`/`AsDominator()` attach a decorator, not inheritance. Clip selection is a strategy pattern under `Runtime/Utility/ClipSelection/`.
 - `BroAudioClip` is a **class** (not struct) with a public `Delay` field; `AudioPlayer._pref` is a `PlaybackPreference` struct.
 
+## Unity audio engine facts (empirical)
+Hand-verified engine behavior that shapes this codebase — where it conflicts with Unity's docs, trust these. Full notes in `.claude/rules/unity-audio-engine.md` (auto-loads when editing Runtime or test code).
+- `AudioSource.volume` is linear; only AudioMixer parameters take the dB/logarithmic conversion.
+- All play APIs (`Play`, `PlayOneShot`, `PlayScheduled`, `PlayDelayed`) share one mechanism and snapshot the clip at call time — clearing `clip` doesn't stop the voice, but other source operations still affect it. One voice per source, except `PlayOneShot`.
+- `PlayScheduled` needs `clip` assigned before the call, holds an AudioVoice from the call, and reports `isPlaying == true` immediately (as does `PlayDelayed`).
+- Seek by assigning `time`/`timeSamples`; re-calling `Play()` on a playing source resets to 0. After a clip finishes, `timeSamples` rests at the start sample, not 0.
+- `AudioMixer.SetFloat` silently fails in `Awake`/`OnEnable` on the first Play Mode frame, and crashes the engine if the parameter name is null.
+
 ## Logging & errors
 - Prefix every log with `Utility.LogTitle` (the `[BroAudio]` rich-text tag): `Debug.LogError(Utility.LogTitle + "...")`. Don't emit bare `Debug.Log*`.
 - There is one custom exception, `BroAudioException` — reuse it instead of adding new exception types. Throw only for genuine setup/programmer errors (e.g. uninitialized manager); for expected "not found / invalid" gameplay paths, log and return gracefully (often via a `TryGet*` bool pattern) rather than throwing.

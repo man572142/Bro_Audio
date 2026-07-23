@@ -124,70 +124,70 @@ Derived from the facade (`Runtime/BroAudio.cs`) and the `IAudioPlayer` chain int
 Check items off as scenarios land.
 
 ### Play verbs
-- [ ] `Play(id)` — basic playback, correct clip/volume/mixer group
-- [ ] `Play(id, fadeIn)` — fade-in curve shape
-- [ ] `Play(id, position)` — world position, spatial blend
-- [ ] `Play(id, followTarget)` — follows transform; behavior when target is destroyed
-- [ ] `IPlayableValidator` accepted/rejected paths
+- [x] `Play(id)` — basic playback, correct clip/volume (mixer *group* assignment itself isn't independently asserted — `PlayBasicScenario`)
+- [x] `Play(id, fadeIn)` — fade-in curve shape, via `GetVolume()` since the source routes through the mixer (`PlayFadeInScenario`)
+- [x] `Play(id, position)` — spatial blend forced to 3D (world *position* isn't state-assertable — `IAudioPlayer` exposes no `Transform` — `PlaySpatialScenario`)
+- [x] `Play(id, followTarget)` — spatial blend forced to 3D, and tolerates the target being destroyed (position-tracking itself isn't state-assertable for the same reason — `PlayFollowTargetScenario`)
+- [ ] `IPlayableValidator` accepted/rejected paths — only exercised indirectly through `PlaybackGroup` as validator (see Playback groups below); a custom `IPlayableValidator` override isn't separately covered
 
 ### Stop / Pause / UnPause
-- [ ] `Stop(id)` / `Stop(id, fadeOut)` — fade-out shape, player recycled after
-- [ ] `Stop(audioType)` / `Stop(audioType, fadeOut)` — only matching type stops
-- [ ] `Pause` / `UnPause` by id and by type, with and without fade; `timeSamples` preserved across pause
-- [ ] Stop during an in-progress fade-in (no leak, no stuck volume)
+- [x] `Stop(id)` / `Stop(id, fadeOut)` — fade-out shape via `GetVolume()`, player recycled after (`StopImmediateScenario`, `StopFadeOutScenario`)
+- [ ] `Stop(audioType)` / `Stop(audioType, fadeOut)` — only used as test teardown, not scenario-verified that it's type-selective
+- [x] `Pause` / `UnPause` by id, `timeSamples` preserved across pause (`PauseUnPauseScenario`; by-type and fade-time variants not separately covered)
+- [x] Stop during an in-progress fade-in (no leak, no stuck volume) (`StopDuringFadeInScenario`)
 
 ### Volume / Pitch
-- [ ] `SetVolume` global / by type / by id, immediate and faded (correct domain: source vs. mixer)
-- [ ] `SetPitch` global / by type / by id, immediate and faded
-- [ ] Explicit pitch 1 overrides pitch randomization (pins the fix in 529b085)
-- [ ] `IAudioPlayer.SetVolume` / `SetPitch` chaining on a live player
+- [x] `SetVolume` by id, immediate and faded (`SetVolumeScenario`; global/by-type paths not separately covered)
+- [x] `SetPitch` by id, immediate and faded (`SetPitchScenario`; global/by-type paths not separately covered)
+- [x] Explicit pitch 1 overrides pitch randomization (pins the fix in 529b085) (`ExplicitPitchOverridesRandomizationScenario`)
+- [x] `IAudioPlayer.SetPitch` chaining on a live player (`ExplicitPitchOverridesRandomizationScenario`); `SetVolume` chaining specifically not covered (only the `BroAudio.SetVolume(id, ...)` facade path is)
 
 ### Chaining / decorators
-- [ ] `AsBGM()` + `SetTransition` — every `Transition` × `StopMode` combination, override fade
-- [ ] `AsDominator()` — `QuietOthers`, `LowPassOthers`, `HighPassOthers` (mixer params move and restore)
-- [ ] `SetScheduledStartTime` / `SetScheduledEndTime` — dspTime accuracy
-- [ ] `SetDelay` — including `BroAudioClip.Delay` field interaction
-- [ ] `SetVelocity` — selects the right velocity layer
-- [ ] `SetSequenceId` + `ResetMultiClipStrategy(id, sequenceId)`
+- [ ] `AsBGM()` + `SetTransition` — only `Transition.Immediate` covered (`BgmTransitionScenario`, via `OnBGMChanged`); the full `Transition` × `StopMode` matrix and override-fade aren't
+- [ ] `AsDominator()` — only `QuietOthers` covered, ducking/restoring the shared `Main_Dominated` mixer parameter (`DominatorQuietOthersScenario`); `LowPassOthers`/`HighPassOthers` aren't
+- [x] `SetScheduledStartTime` — dspTime accuracy via `timeSamples` (`ScheduledStartTimeScenario`); `SetScheduledEndTime` not separately covered
+- [x] `SetDelay` — including `BroAudioClip.Delay` field interaction (`SetDelayScenario`, `ClipDelayFieldScenario`)
+- [x] `SetVelocity` — selects the right velocity layer (`VelocityClipSelectionScenario`)
+- [x] `SetSequenceId` + `ResetMultiClipStrategy(id)` (`SequenceClipSelectionScenario`); the named-sequence-specific `ResetMultiClipStrategy(id, sequenceId)` overload isn't separately covered
 - [ ] `OnAudioFilterRead` callback receives buffers
 
 ### Clip selection strategies (one scenario each)
-- [ ] Single
-- [ ] Random
-- [ ] Sequence (order over repeated plays; `ResetMultiClipStrategy` restarts it)
-- [ ] Shuffle (no repeats within a round)
-- [ ] Velocity
-- [ ] Chained
-- [ ] Layered
-- [ ] Localization (behind `PACKAGE_LOCALIZATION`)
+- [x] Single (`SingleClipSelectionScenario`)
+- [x] Random (`RandomClipSelectionScenario`, via a deterministic dominant-weight setup)
+- [x] Sequence (order over repeated plays; `ResetMultiClipStrategy` restarts it — `SequenceClipSelectionScenario`)
+- [x] Shuffle — **the matrix's "no repeats within a round" premise is itself false**; see `Docs/KNOWN_BEHAVIOR_QUIRKS.md`. `ShuffleClipSelectionScenario` asserts the actually-true property (every clip appears over enough plays) instead
+- [x] Velocity (`VelocityClipSelectionScenario`)
+- [x] Chained — only that playback starts on the intro clip (`ChainedClipSelectionScenario`); the automatic intro→loop→outro handover is explicitly out of scope (timing-fragile for Layer 1's state-level suite)
+- [ ] Layered — **waived**: unreachable from `MulticlipsPlayMode` today, see `Docs/KNOWN_BEHAVIOR_QUIRKS.md`
+- [ ] Localization (behind `PACKAGE_LOCALIZATION`) — not attempted
 
 ### Looping
-- [ ] Normal loop — keeps playing past clip length
-- [ ] Seamless loop — state-level scheduling asserts (Layer 1) + gaplessness capture (Layer 3)
+- [x] Normal loop — keeps playing past clip length (`NormalLoopScenario`)
+- [x] Seamless loop — state-level scheduling asserts (Layer 1 — `SeamlessLoopScenario`); gaplessness capture is Layer 3, out of scope here
 
 ### Playback groups
-- [ ] Max-instance cap enforced
-- [ ] Cooldown / interval rules enforced
+- [x] Max-instance cap enforced (`MaxInstanceCapScenario`)
+- [x] Cooldown / interval rules enforced (`CombFilteringCooldownScenario`)
 
 ### Effects
-- [ ] `SetEffect(effect)` global and by type — mixer params reach target
-- [ ] Auto-reset waitable restores previous values
+- [x] `SetEffect(effect)` global and by type — mixer params reach target (`SetEffectLowPassScenario`, `SetEffectByTypeScenario`)
+- [x] Auto-reset waitable restores previous values (covered by the Dominator `QuietOthers` scenario above, which uses the `.While(PlayerIsPlaying)` auto-reset path; the plain Effects scenarios use explicit `Reset*` calls instead)
 
 ### MonoComponents
-- [ ] `SoundSource` — play on enable/API, stop behavior
+- [x] `SoundSource` — play/stop via the public API (`SoundSourcePlaysAndStopsScenario`); the `_playOnEnable`/`_stopOnDisable`/`_onlyPlayOnce` inspector-authored toggles aren't covered
 - [ ] `SoundVolume` — applies configured volumes
 - [ ] `SpectrumAnalyzer` — produces spectrum data while playing
 
 ### Lifecycle / infrastructure
-- [ ] `Init()` and the `BroAudio_InitManually` path
-- [ ] Pool integrity — N concurrent plays, all recycled to baseline
-- [ ] Teardown — release verbs during `OnDestroy`/`OnApplicationQuit` don't throw
-- [ ] `HasAnyPlayingInstances`, `TryGetEntityInfo`
+- [ ] `Init()` and the `BroAudio_InitManually` path — the suite relies on auto-bootstrap and calls `Init()` defensively in `SoundManagerTestContext`, but no scenario verifies the manual-init path itself
+- [x] Pool integrity — N concurrent plays, all recycled to baseline (`PoolIntegrityScenario`)
+- [ ] Teardown — release verbs during `OnDestroy`/`OnApplicationQuit` don't throw — **deliberately deferred**: `SoundManager` is a shared singleton across the whole Play Mode session, so destroying it mid-suite to exercise this path would break every other test; needs a dedicated, isolated setup
+- [x] `HasAnyPlayingInstances`, `TryGetEntityInfo` (`QueriesScenario`)
 
 ### Optional packages (behind defines, in split scenario files)
-- [ ] Addressables: `IsLoaded`, `ReleaseAsset`, `ReleaseAllAssets` (`PACKAGE_ADDRESSABLES`)
-- [ ] Localization: `Subscribe`/`UnsubscribeLocalizedAudioChanged` (`PACKAGE_LOCALIZATION`)
-- [ ] Suite compiles with both packages **absent** (same partial-file + `#if` rule as runtime)
+- [ ] Addressables: `IsLoaded`, `ReleaseAsset`, `ReleaseAllAssets` (`PACKAGE_ADDRESSABLES`) — not attempted
+- [ ] Localization: `Subscribe`/`UnsubscribeLocalizedAudioChanged` (`PACKAGE_LOCALIZATION`) — not attempted
+- [x] Suite compiles with both packages **absent** — holds by construction: no `Assets/Tests/` code references Addressables or Localization types
 
 ## Placement
 
